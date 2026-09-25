@@ -1,193 +1,152 @@
-import { type Wallet } from '@layerswap/widget-types';
-import { ComponentProps, FC, useCallback, useMemo, useRef, useState } from "react";
-import { WalletIcon } from "@layerswap/ui-kit/components";
-import { ActionData } from "./sharedTypes";
-import SubmitButton, { SubmitButtonProps } from "@/components/Buttons/submitButton";
-import useWallet from "@/hooks/useWallet";
-import { useSwapDataState, useSwapDataUpdate } from "@/context/swap";
-import { Loader2 } from "lucide-react";
-import { ErrorDisplay } from "@/components/Pages/Swap/Form/SecondaryComponents/validationError/ErrorDisplay";
-import ErrorDismissButton from "@/components/Pages/Swap/Form/SecondaryComponents/validationError/ErrorDismissButton";
-import FailIcon from "@/components/Icons/FailIcon";
-import WalletMessage from "../../messages/Message";
-import { useConnectModal } from "@/components/Wallet/WalletModal";
-import { Network, NetworkRoute } from "@layerswap/widget-types";
-import { useInitialSettings, useSettingsState } from "@/context/settings";
-import { useGaslessAuthorizationStore, useSwapTransactionStore } from "@/stores/swapTransactionStore";
-import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
-import LayerSwapApiClient, { DepositAction, SwapBasicData, SwapDetails } from "@/lib/apiClients/layerSwapApiClient";
-import { sleep } from "@layerswap/utils";
-import { isDiffByPercent } from "@/components/utils/numbers";
-import { useWalletWithdrawalState } from "@/context/withdrawalContext";
-import { useSelectedAccount } from "@/context/swapAccounts";
-import { SwapFormValues } from "../../../Form/SwapFormValues";
-import { ErrorHandler } from "@/lib/ErrorHandler";
-import { resolvePriceImpactValues } from "@/lib/fees";
-import InfoIcon from "@/components/Icons/InfoIcon";
-import { ICON_CLASSES_WARNING } from "@/components/Pages/Swap/Form/SecondaryComponents/validationError/constants";
-import { useBalance } from "@/lib/balances/useBalance";
-import useSWRGas from "@/lib/gases/useSWRGas";
-import { useDepositSettings } from "@/context/depositSettings";
-import { DepositExecutionContext, GaslessSigner, WalletTransfer, executeGaslessAuthorization, executeWalletTransfer, getActionableDepositAction, getDepositActionLabel, getDepositActionDescription, isSignAction, isTransferAction, requiresDepositActionRefresh } from "./depositExecution";
-import Steps from "../../Processing/StepsComponent";
-import { ProgressStatus, type StatusStep } from "../../Processing/types";
-import { hasSwapExecutionProgress } from "@/helpers/swapProgress";
-import { isGaslessCapableRoute, isGaslessDepositWorkflow } from "@/helpers/gasless";
-import { isUserRejection } from "./isUserRejection";
-import useSWR, { useSWRConfig } from "swr";
-import type { ApiResponse } from "@/Models/ApiResponse";
+import { hasSwapExecutionProgress } from '@/helpers/swapProgress';
+import { isGaslessCapableRoute, isGaslessDepositWorkflow } from '@/helpers/gasless';
+import { isUserRejection } from './isUserRejection';
+import useSWR, { useSWRConfig } from 'swr';
+import type { ApiResponse } from '@/Models/ApiResponse';
+import { SubmitButtonProps } from '@/components/Buttons/submitButton';
+import { isDiffByPercent } from '@/components/utils/numbers';
+import { useConnectModal } from '@/components/Wallet/WalletModal';
+import { useDepositSettings } from '@/context/depositSettings';
+import { useInitialSettings, useSettingsState } from '@/context/settings';
+import { useSwapDataState, useSwapDataUpdate } from '@/context/swap';
+import { useSelectedAccount } from '@/context/swapAccounts';
+import { useWalletWithdrawalState } from '@/context/withdrawalContext';
+import useWallet from '@/hooks/useWallet';
+import LayerSwapApiClient, {
+    DepositAction,
+    SwapBasicData,
+    SwapDetails,
+} from '@/lib/apiClients/layerSwapApiClient';
+import { useBalance } from '@/lib/balances/useBalance';
+import { ErrorHandler } from '@/lib/ErrorHandler';
+import { resolvePriceImpactValues } from '@/lib/fees';
+import useSWRGas from '@/lib/gases/useSWRGas';
+import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore';
+import { useGaslessAuthorizationStore, useSwapTransactionStore } from '@/stores/swapTransactionStore';
+import { sleep } from '@layerswap/utils';
+import { Network, NetworkRoute } from '@layerswap/widget-types';
+import { ComponentProps, FC, type ReactNode, useCallback, useMemo, useRef, useState } from 'react';
+import { SwapFormValues } from '../../../Form/SwapFormValues';
+import {
+    ButtonWrapper,
+    ChangeNetworkView,
+    ConnectWalletView,
+    SendTransactionView,
+} from '../../Presentation/WalletActionsView';
+import {
+    DepositExecutionContext,
+    GaslessSigner,
+    WalletTransfer,
+    executeGaslessAuthorization,
+    executeWalletTransfer,
+    isSignAction,
+    isTransferAction,
+    getActionableDepositAction,
+    requiresDepositActionRefresh,
+} from './depositExecution';
+export {
+    ButtonWrapper,
+    ChangeNetworkMessage,
+} from '../../Presentation/WalletActionsView';
 
-const layerswapApiClient = new LayerSwapApiClient()
-const DEPOSIT_ACTIONS_POLL_INTERVAL_MS = 5000
+const layerswapApiClient = new LayerSwapApiClient();
+const DEPOSIT_ACTIONS_POLL_INTERVAL_MS = 5000;
 const depositActionsKey = (swapId: string, sourceAddress: string) =>
-    `/swaps/${swapId}/deposit_actions?source_address=${sourceAddress}`
+    `/swaps/${swapId}/deposit_actions?source_address=${sourceAddress}`;
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
-    const { swapBasicData } = useSwapDataState()
-    const { source_network } = swapBasicData || {}
-    const [loading, setLoading] = useState(false)
-    const [connectError, setConnectError] = useState<string>("")
-    const { provider } = useWallet(source_network, 'withdrawal')
-    const { connect } = useConnectModal()
+    const { swapBasicData } = useSwapDataState();
+    const { source_network } = swapBasicData || {};
+    const [loading, setLoading] = useState(false);
+    const [connectError, setConnectError] = useState<string>('');
+    const { provider } = useWallet(source_network, 'withdrawal');
+    const { connect } = useConnectModal();
 
     const clickHandler = useCallback(async () => {
         try {
-            setLoading(true)
-            setConnectError("")
+            setLoading(true);
+            setConnectError('');
 
-            if (!provider) throw new Error(`No provider from ${source_network?.name}`)
+            if (!provider)
+                throw new Error(`No provider from ${source_network?.name}`);
 
-            await connect(provider)
+            await connect(provider);
+        } catch (e) {
+            setConnectError(e.message);
+        } finally {
+            setLoading(false);
         }
-        catch (e) {
-            setConnectError(e.message)
-        }
-        finally {
-            setLoading(false)
-        }
-    }, [provider])
+    }, [provider]);
 
-    return <div className="flex flex-col gap-2 w-full">
-        {connectError ? (
-            <ErrorDisplay
-                icon={<FailIcon className="h-5 w-5" />}
-                title="Couldn't connect wallet"
-                message={connectError}
-                action={
-                    <ErrorDismissButton onClick={() => setConnectError("")} />
-                }
-            />
-        ) : null}
-        <ButtonWrapper
-            onClick={props.onClick ?? clickHandler}
-            icon={loading ? <Loader2 className="h-6 w-6 animate-spin" /> : (props.icon ?? <WalletIcon className="stroke-2 w-6 h-6" />)}
-            isDisabled={loading || props.isDisabled}
-            isSubmitting={loading || props.isSubmitting}
+    return (
+        <ConnectWalletView
             {...props}
-        >
-            Send from wallet
-        </ButtonWrapper>
-    </div>
-}
-
-export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = ({ data, network }) => {
-    if (data.isPending) {
-        return <WalletMessage
-            status="pending"
-            header='Network switch required'
-            details="Confirm switching the network with your wallet"
+            loading={loading}
+            connectError={connectError}
+            onConnect={clickHandler}
+            onDismiss={() => setConnectError('')}
         />
-    }
-    else if (data.isError) {
-        const error = data.error as (Error & { shortMessage?: string, cause?: { shortMessage?: string } }) | null
-        const reason = error?.cause?.shortMessage ?? error?.shortMessage
-        return <WalletMessage
-            status="error"
-            header='Network switch failed'
-            details={reason
-                ? `${reason} Please try again or switch your wallet network manually to ${network}.`
-                : `Please try again or switch your wallet network manually to ${network}`}
-        />
-    }
-}
+    );
+};
 
 type ChangeNetworkProps = {
-    chainId: number | string,
-    network: Network,
-}
+    chainId: number | string;
+    network: Network;
+};
 
 export const ChangeNetworkButton: FC<ChangeNetworkProps> = (props) => {
-    const { chainId, network } = props
-    const [error, setError] = useState<Error | null>(null)
-    const [isPending, setIsPending] = useState(false)
+    const { chainId, network } = props;
+    const [error, setError] = useState<Error | null>(null);
+    const [isPending, setIsPending] = useState(false);
 
-    const selectedSourceAccount = useSelectedAccount("from", network?.name);
-    const { wallets } = useWallet(network, 'withdrawal')
+    const selectedSourceAccount = useSelectedAccount('from', network?.name);
+    const { wallets } = useWallet(network, 'withdrawal');
 
     const clickHandler = useCallback(async () => {
         try {
-            setIsPending(true)
-            const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id)
-            if (!selectedWallet) throw new Error(`No selectedWallet for ${network?.name}`)
-            if (!selectedSourceAccount) throw new Error(`No selectedSourceAccount for ${network?.name}`)
-            if (!selectedSourceAccount.provider.switchChain) throw new Error(`No switchChain from ${network?.name}`)
+            setIsPending(true);
+            const selectedWallet = wallets.find(
+                (w) => w.id === selectedSourceAccount?.id,
+            );
+            if (!selectedWallet)
+                throw new Error(`No selectedWallet for ${network?.name}`);
+            if (!selectedSourceAccount)
+                throw new Error(
+                    `No selectedSourceAccount for ${network?.name}`,
+                );
+            if (!selectedSourceAccount.provider.switchChain)
+                throw new Error(`No switchChain from ${network?.name}`);
 
-            return await selectedSourceAccount.provider.switchChain(selectedWallet, chainId)
+            return await selectedSourceAccount.provider.switchChain(
+                selectedWallet,
+                chainId,
+            );
         } catch (e) {
-            setError(e)
+            setError(e);
         } finally {
-            setIsPending(false)
+            setIsPending(false);
         }
+    }, [selectedSourceAccount, chainId]);
 
-    }, [selectedSourceAccount, chainId])
-
-    return <>
-        <ChangeNetworkMessage
-            data={{
-                isPending: isPending,
-                isError: !!error,
-                error
-            }}
+    return (
+        <ChangeNetworkView
             network={network.display_name}
+            isPending={isPending}
+            error={error}
+            onSwitch={clickHandler}
         />
-        {
-            !isPending &&
-            <ButtonWrapper
-                onClick={clickHandler}
-                icon={<WalletIcon className="stroke-2 w-6 h-6" />}
-            >
-                {
-                    error ? <span>Try again</span>
-                        : <span>Switch network</span>
-                }
-            </ButtonWrapper>
-        }
-    </>
-}
-
-export const ButtonWrapper: FC<SubmitButtonProps> = ({
-    ...props
-}) => {
-    return <SubmitButton
-        text_align='center'
-        buttonStyle='filled'
-        size="medium"
-        type="button"
-        className="text-base my-1"
-        {...props}
-    >
-        {props.children}
-    </SubmitButton>
-}
+    );
+};
 
 type ButtonWrapperProps = ComponentProps<typeof ButtonWrapper>;
 type SendFromWalletButtonProps = Omit<ButtonWrapperProps, 'onClick'> & {
+    errorMessage?: ReactNode;
     error?: boolean;
-    clearError?: () => void
-    onClick: WalletTransfer
-    onSign?: GaslessSigner
-    swapData: SwapBasicData,
-    refuel: boolean
+    clearError?: () => void;
+    onClick: WalletTransfer;
+    onSign?: GaslessSigner;
+    swapData: SwapBasicData;
+    refuel: boolean;
 };
 
 export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
@@ -241,50 +200,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
     const activeWorkflowState = workflowState && workflowState.swapId === swapId ? workflowState : undefined
     const depositActions = polledDepositActions?.data ?? activeWorkflowState?.actions ?? depositActionsResponse
-    const workflowActions = depositActions?.filter(action => !!action.step) ?? []
-    const currentStepIndex = workflowActions.findIndex(action =>
-        action.status === 'action_required' || action.status === 'pending' || action.status === 'failed'
-    )
-    const currentStepHasError = !loading && !!(error || swapError)
-        && workflowActions[currentStepIndex]?.status !== 'pending'
-    const workflowSteps: StatusStep[] = workflowActions.map((action, index) => ({
-        name: getDepositActionLabel(action),
-        status: action.status === 'completed'
-            ? ProgressStatus.Complete
-            : action.status === 'failed' || (index === currentStepIndex && currentStepHasError)
-                ? ProgressStatus.Failed
-                : index === currentStepIndex
-                    ? ProgressStatus.Current
-                    : ProgressStatus.Upcoming,
-        isLoading: index === currentStepIndex && (loading || action.status === 'pending'),
-        description: action.status === 'failed'
-            ? action.detail
-            : index === currentStepIndex
-                ? ((loading || action.status === 'pending') ? actionStateText : undefined) || getDepositActionDescription(action)
-                : undefined,
-        index: index + 1,
-    }))
-    const currentStep = workflowSteps[currentStepIndex]
-    const isMultiStepWorkflow = workflowSteps.length > 1
-    const workflowProgress = isMultiStepWorkflow ? (
-        <section className="rounded-2xl bg-secondary-500 px-3 py-4" aria-label="Wallet confirmation progress">
-            <div className="mb-4 flex items-center gap-3">
-                <span className="h-px flex-1 bg-secondary-400" aria-hidden="true" />
-                <h3 className="shrink-0 text-sm font-normal text-secondary-text">Continue in your wallet</h3>
-                <span className="h-px flex-1 bg-secondary-400" aria-hidden="true" />
-            </div>
-            <p className="sr-only" aria-live="polite" aria-atomic="true">
-                {currentStep
-                    ? `Step ${currentStep.index} of ${workflowSteps.length}: ${currentStep.name}. ${currentStep.description ?? ''}`
-                    : 'Wallet confirmation steps complete.'}
-            </p>
-            <Steps steps={workflowSteps} />
-        </section>
-    ) : null
-
     const { actionButtonText } = useDepositSettings()
 
-    const workflowCompleted = !!depositActions?.length && depositActions.every(action => action.status === 'completed')
     const hasProgress = useMemo(() => hasSwapExecutionProgress({
         swapDetails,
         depositActions,
@@ -303,11 +220,6 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const flowPreferenceChanged = !!swapId
         && currentGasless !== undefined
         && currentGasless !== desiredGasless
-    const actionableDepositAction = getActionableDepositAction(depositActions)
-    const primaryActionText = actionableDepositAction
-        ? getDepositActionLabel(actionableDepositAction)
-        : (actionButtonText || 'Swap now')
-
     const priceImpactValues = useMemo(() => quote ? resolvePriceImpactValues(quote, refuel ? refuelData : undefined) : undefined, [quote, refuel]);
     const criticalMarketPriceImpact = useMemo(() => priceImpactValues?.criticalMarketPriceImpact, [priceImpactValues]);
 
@@ -563,96 +475,29 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         executeWorkflow(true)
     }
 
-    if (quoteIsLoading || loading)
-        return (
-            <>
-                {workflowProgress}
-                {isMultiStepWorkflow && loading ? null : (
-                    <ButtonWrapper
-                        {...props}
-                        isSubmitting={true}
-                        isDisabled={true}
-                    >
-                        {actionStateText || "Preparing…"}
-                    </ButtonWrapper>
-                )}
-            </>
-        )
-
-    if (showCriticalMarketPriceImpactButtons) {
-        return (<>
-            {workflowProgress}
-            {quote && priceImpactValues && (
-                <ErrorDisplay
-                    icon={<InfoIcon className={ICON_CLASSES_WARNING} />}
-                    title="Critical receiving amount"
-                    message={`By continuing, you agree to receive as low as ${quote.min_receive_amount} ${quote.destination_token?.asset} ($ ${priceImpactValues.minReceiveAmountUSD})`}
-                />
-            )}
-            <ButtonWrapper
-                {...props}
-                onClick={handleCriticalContinue}
-                buttonStyle="secondary"
-                size="small"
-                isSubmitting={false}
-                isDisabled={false}
-            >
-                Continue anyway
-            </ButtonWrapper>
-            <ButtonWrapper
-                {...props}
-                size="small"
-                onClick={() => onCancelWithdrawal?.()}
-                isSubmitting={false}
-                isDisabled={false}
-            >
-                Cancel & try another route
-            </ButtonWrapper>
-        </>
-        )
-    }
     return (
-        <>
-            {!!(!swapId && criticalMarketPriceImpact && quote?.destination_token && priceImpactValues && !error) && (
-                <ErrorDisplay
-                    icon={<InfoIcon className={ICON_CLASSES_WARNING} />}
-                    title="Critical receiving amount"
-                    message={`The “receive at least” amount is affected by high price impact. You will receive at least ${quote.min_receive_amount} ${quote.destination_token.asset} ($ ${priceImpactValues.minReceiveAmountUSD})`}
-                />
-            )}
-            {workflowProgress}
-            {gaslessUnavailable ? (
-                <div className="space-y-2">
-                    {gaslessFailureStage === 'deposit' &&
-                        <ButtonWrapper
-                            {...props}
-                            isSubmitting={props.isSubmitting || loading || quoteIsLoading}
-                            onClick={retryGasless}
-                            isDisabled={quoteIsLoading || !!quoteError}
-                        >
-                            Try again
-                        </ButtonWrapper>
-                    }
-                    <ButtonWrapper
-                        {...props}
-                        buttonStyle={gaslessFailureStage === 'deposit' ? 'secondary' : 'filled'}
-                        isSubmitting={props.isSubmitting || loading || quoteIsLoading}
-                        onClick={switchToStandard}
-                        isDisabled={quoteIsLoading || !!quoteError}
-                    >
-                        Switch to standard transfer
-                    </ButtonWrapper>
-                </div>
-            ) : (
-                <ButtonWrapper
-                    {...props}
-                    isSubmitting={props.isSubmitting || loading || quoteIsLoading}
-                    onClick={handleClick}
-                    isDisabled={quoteIsLoading || !!quoteError || workflowCompleted}
-                >
-                    {(error || swapError) ? 'Try again' : workflowCompleted ? 'Completed' : primaryActionText}
-                </ButtonWrapper>
-            )}
-        </>
-    )
-}
+        <SendTransactionView
+            {...props}
+            quote={quote}
+            quoteIsLoading={quoteIsLoading}
+            quoteError={!!quoteError}
+            loading={loading}
+            actionStateText={actionStateText}
+            actionButtonText={actionButtonText}
+            depositActions={depositActions}
+            error={error}
+            swapError={!!swapError}
+            swapId={swapId}
+            criticalMarketPriceImpact={criticalMarketPriceImpact}
+            showCriticalMarketPriceImpactButtons={showCriticalMarketPriceImpactButtons}
+            priceImpactValues={priceImpactValues}
+            gaslessUnavailable={gaslessUnavailable}
+            gaslessFailureStage={gaslessFailureStage}
+            handleClick={handleClick}
+            handleCriticalContinue={handleCriticalContinue}
+            retryGasless={retryGasless}
+            switchToStandard={switchToStandard}
+            onCancelWithdrawal={onCancelWithdrawal}
+        />
+    );
+};

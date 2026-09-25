@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import test from 'node:test'
 import ts from 'typescript'
+import { createElement, Fragment } from 'react'
 
 const require = createRequire(import.meta.url)
 const walletPath = '../src/components/Pages/Swap/Withdraw/Wallet/Common/'
@@ -23,6 +24,7 @@ function loadSource(path, imports = {}) {
 const walletTypes = loadSource('../../types/src/actionMessage.ts')
 const rejection = loadSource(`${walletPath}isUserRejection.ts`, { '@layerswap/widget-types': walletTypes })
 const gasless = loadSource('../src/helpers/gasless.ts')
+const depositActions = loadSource('../src/helpers/depositActions.ts')
 const progressTypes = loadSource('../src/components/Pages/Swap/Withdraw/Processing/types.ts')
 const noop = () => {}
 const sourceAddress = '0x123'
@@ -34,7 +36,7 @@ const actionsFor = nonce => [
 ]
 
 function createWorkflow() {
-    const calls = { refresh: [], sign: [], authorize: [], transfer: [], errors: [], success: 0 }
+    const calls = { refresh: [], sign: [], authorize: [], transfer: [], storedTransactions: [], errors: [], success: 0 }
     const state = {
         apiActions: actionsFor('fresh'),
         refreshError: undefined,
@@ -43,13 +45,16 @@ function createWorkflow() {
         swapId,
         swapDetails: { id: swapId, metadata: {} },
         depositActionsResponse: actionsFor('expired'),
+        onWalletPrompt: undefined,
+        onTransition: undefined,
+        completedStep: undefined,
         setSwapError(value) { state.swapError = value },
     }
     const preferences = { gaslessEnabled: false, gaslessUnavailable: false }
     const store = value => Object.assign(selector => selector(value), { getState: () => value })
     const stores = {
         useGaslessAuthorizationStore: store({ authorizations: {} }),
-        useSwapTransactionStore: store({ swapTransactions: {}, setSwapTransaction: noop }),
+        useSwapTransactionStore: store({ swapTransactions: {}, setSwapTransaction: (...args) => calls.storedTransactions.push(args) }),
     }
     const preferenceStore = { useGaslessPreferenceStore: store(preferences) }
     const network = { name: 'BASE_MAINNET' }
@@ -63,9 +68,14 @@ function createWorkflow() {
             return state.refreshError ? { error: state.refreshError } : { data: state.apiActions }
         },
         AuthorizeSwapAsync: async (...args) => { calls.authorize.push(args) },
-        GetSwapAsync: async () => ({ data: { deposit_actions: state.apiActions.map(action => ({
-            ...action, status: action.step === 'sign' ? 'completed' : 'action_required',
-        })) } }),
+        GetSwapAsync: async () => {
+            state.onTransition?.(state.completedStep)
+            const completedIndex = state.apiActions.findIndex(action => action.step === state.completedStep)
+            state.apiActions = state.apiActions.map((action, index) => ({
+                ...action, status: index <= completedIndex ? 'completed' : index === completedIndex + 1 ? 'action_required' : 'waiting',
+            }))
+            return { data: { deposit_actions: state.apiActions } }
+        },
         SwapCatchup: async () => {},
     }
     const apiModule = { default: class { constructor() { return api } }, BackendTransactionStatus: { Pending: 'pending' } }
@@ -75,6 +85,7 @@ function createWorkflow() {
         '@/stores/swapTransactionStore': stores,
         '@/stores/gaslessPreferenceStore': preferenceStore,
         './isUserRejection': rejection,
+        '@/helpers/depositActions': depositActions,
         '@/lib/ErrorHandler': { ErrorHandler: error => calls.errors.push(error) },
     })
 
@@ -87,7 +98,35 @@ function createWorkflow() {
         if (!(index in hooks)) hooks[index] = initial
         return [hooks[index], value => { hooks[index] = typeof value === 'function' ? value(hooks[index]) : value }]
     }
-    const Steps = noop
+    const Steps = () => null
+    const workflowView = loadSource('../src/components/Pages/Swap/Withdraw/Presentation/DepositWorkflowView.tsx', {
+        '@/helpers/depositActions': depositActions,
+        '../Processing/StepsComponent': {
+            default: Steps,
+            StepsPanel: ({ children }) => createElement(Fragment, null, children),
+        },
+        '../Processing/StepTransactionLink': { StepTransactionLink: noop },
+        '@/components/utils/RoundDecimals': { truncateDecimals: value => value },
+        './TransferStatusHeader': { TransferStatusHeader: noop },
+        '../Processing/types': progressTypes,
+    })
+    const walletViews = loadSource('../src/components/Pages/Swap/Withdraw/Presentation/WalletActionsView.tsx', {
+        '@/components/Buttons/submitButton': { default: noop },
+        '@/components/Icons/FailIcon': { default: noop },
+        '@/components/Icons/InfoIcon': { default: noop },
+        '@/helpers/depositActions': depositActions,
+        './DepositWorkflowView': workflowView,
+        './WalletExecutionTransition': {
+            WalletExecutionTransition: ({ workflow, controls }) =>
+                createElement(Fragment, null, workflow, controls),
+        },
+        '@layerswap/ui-kit/components': { WalletIcon: noop },
+        'lucide-react': { Loader2: noop },
+        '../../Form/SecondaryComponents/validationError/constants': {},
+        '../../Form/SecondaryComponents/validationError/ErrorDismissButton': { default: noop },
+        '../../Form/SecondaryComponents/validationError/ErrorDisplay': { ErrorDisplay: noop },
+        '../messages/Message': { default: noop },
+    })
     const { SendTransactionButton, ButtonWrapper } = loadSource(`${walletPath}buttons.tsx`, {
         react: { useState, useRef: initial => useState({ current: initial })[0], useMemo: fn => fn(), useCallback: fn => fn },
         '@layerswap/ui-kit/components': { WalletIcon: noop },
@@ -123,6 +162,7 @@ function createWorkflow() {
         '@/lib/gases/useSWRGas': { default: () => ({}) },
         '@/context/depositSettings': { useDepositSettings: () => ({}) },
         './depositExecution': execution,
+        '../../Presentation/WalletActionsView': walletViews,
         '../../Processing/StepsComponent': { default: Steps },
         '../../Processing/types': progressTypes,
         '@/helpers/swapProgress': { hasSwapExecutionProgress: () => false },
@@ -136,6 +176,7 @@ function createWorkflow() {
     const findElement = (node, type) => {
         if (!node || typeof node !== 'object') return undefined
         if (node.type === type) return node
+        if (typeof node.type === 'function') return findElement(node.type(node.props), type)
         for (const child of [node.props?.children].flat()) {
             const match = findElement(child, type)
             if (match) return match
@@ -150,13 +191,21 @@ function createWorkflow() {
             clearError: () => { state.rejected = false },
             onSign: async action => {
                 calls.sign.push(action.typed_data.message.nonce)
+                state.onWalletPrompt?.('sign')
                 if (state.rejectSigning) {
                     state.rejected = true
                     throw { code: 4001 }
                 }
+                state.completedStep = 'sign'
                 return 'fresh-signature'
             },
-            onClick: async props => { calls.transfer.push(props); return '0xtransaction' },
+            onClick: async props => {
+                calls.transfer.push(props)
+                const step = depositActions.getActionableDepositAction(state.apiActions).step
+                state.onWalletPrompt?.(step)
+                state.completedStep = step
+                return step === 'approve_permit2' ? '0xapproval' : '0xtransaction'
+            },
         })
         return { button: findElement(tree, ButtonWrapper), steps: findElement(tree, Steps)?.props.steps }
     }
@@ -169,6 +218,41 @@ function createWorkflow() {
         },
     }
 }
+
+test('one click runs approval, signing and publication without intermediate action buttons', async () => {
+    const flow = createWorkflow()
+    flow.state.apiActions = [
+        { type: 'transfer', step: 'approve_permit2', status: 'action_required', amount: '0', to_address: '0x456' },
+        ...actionsFor('fresh').map(action => ({ ...action, status: 'waiting' })),
+    ]
+    flow.state.rejectSigning = false
+    const prompts = []
+    const transitions = []
+    flow.state.onWalletPrompt = step => {
+        prompts.push(step)
+        const { button, steps } = flow.render()
+        assert.equal(button, undefined, `${step}: wallet prompt does not require another click`)
+        const current = steps.findIndex(item => item.status === 'current')
+        assert.equal(current, prompts.length - 1)
+        assert.equal(steps[current].isLoading, true)
+        assert.ok(steps.slice(0, current).every(item => item.status === 'complete'))
+        assert.deepEqual(flow.calls.storedTransactions, [], 'prerequisites are not recorded as swap deposits')
+    }
+    flow.state.onTransition = step => {
+        transitions.push(step)
+        const { button, steps } = flow.render()
+        assert.equal(button, undefined, `${step}: refreshing the workflow never exposes an action button`)
+        assert.ok(steps.some(item => item.isLoading))
+    }
+
+    await flow.render().button.props.onClick()
+
+    assert.deepEqual(prompts, ['approve_permit2', 'sign', 'publish'])
+    assert.deepEqual(transitions, ['approve_permit2', 'sign'])
+    assert.deepEqual(flow.calls.storedTransactions, [[swapId, 'pending', '0xtransaction']])
+    assert.equal(flow.calls.success, 1)
+    assert.deepEqual(flow.calls.errors, [])
+})
 
 test('rejected signing retries on the same swap using refreshed typed data', async () => {
     const flow = createWorkflow()

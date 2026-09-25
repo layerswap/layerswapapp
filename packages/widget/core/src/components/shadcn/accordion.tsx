@@ -1,5 +1,6 @@
 import * as React from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { useHydratedReducedMotion } from "@/hooks/useHydratedReducedMotion"
 import { classNames } from "../utils/classNames"
 
 interface AccordionContextValue {
@@ -133,10 +134,12 @@ const AccordionItemProvider = ({ value, children }: { value: string; children: R
 interface AccordionContentProps extends React.HTMLAttributes<HTMLDivElement> {
     estimatedHeight?: number
     itemsCount?: number
+    animate?: boolean
 }
 
 const AccordionContent = React.forwardRef<HTMLDivElement, AccordionContentProps>(
-    ({ className, children, estimatedHeight, itemsCount, ...props }, ref) => {
+    ({ className, children, estimatedHeight, itemsCount, animate = true, ...props }, ref) => {
+        const reducedMotion = useHydratedReducedMotion()
         const context = React.useContext(AccordionContext)
         const itemContext = React.useContext(AccordionItemContext)
         
@@ -165,6 +168,14 @@ const AccordionContent = React.forwardRef<HTMLDivElement, AccordionContentProps>
             
             return Math.min(baseDuration + (itemsCount * perItemDuration), maxDuration)
         }, [itemsCount])
+
+        if (!animate || reducedMotion) {
+            return isOpen ? (
+                <div className={classNames("AccordionContent", className)}>
+                    <div ref={ref} className="pt-1" {...props}>{children}</div>
+                </div>
+            ) : null
+        }
 
         return (
             <motion.div

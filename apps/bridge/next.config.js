@@ -1,4 +1,4 @@
-const { PHASE_PRODUCTION_SERVER } = require('next/constants');
+const { PHASE_DEVELOPMENT_SERVER, PHASE_PRODUCTION_SERVER } = require('next/constants');
 const { withPostHogConfig } = require('@posthog/nextjs-config');
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
@@ -50,7 +50,16 @@ module.exports = (phase, { defaultConfig }) => {
     },
   }) : {};
 
+  const vercelEnvironment = process.env.VERCEL_ENV;
+  const includeDevPages = vercelEnvironment
+    ? vercelEnvironment === 'preview' || vercelEnvironment === 'development'
+    : phase === PHASE_DEVELOPMENT_SERVER;
+
   const nextConfig = {
+    // Preview deployments also use next build; VERCEL_ENV distinguishes them from production.
+    pageExtensions: includeDevPages
+      ? ['dev.mjs', ...defaultConfig.pageExtensions]
+      : defaultConfig.pageExtensions,
     i18n: {
       locales: ["en"],
       defaultLocale: "en",

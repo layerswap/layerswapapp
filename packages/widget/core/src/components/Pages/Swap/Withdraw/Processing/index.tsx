@@ -5,15 +5,16 @@ import { SwapFailureReason } from '@/hooks/useSwapRetry';
 
 type Props = {
     failureReason?: SwapFailureReason;
+    inputFailureMessage?: string;
 }
 
-const Component: FC<Props> = ({ failureReason }) => {
+const Component: FC<Props> = ({ failureReason, inputFailureMessage }) => {
 
     const { swapBasicData, swapDetails, quote, refuel } = useSwapDataState()
 
     return (
         <>
-            {swapDetails && swapBasicData && <Processing swapBasicData={swapBasicData} swapDetails={swapDetails} quote={quote} refuel={refuel} failureReason={failureReason} />}
+            {swapDetails && swapBasicData && <Processing swapBasicData={swapBasicData} swapDetails={swapDetails} quote={quote} refuel={refuel} failureReason={failureReason} inputFailureMessage={inputFailureMessage} />}
         </>
 
     )

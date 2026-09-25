@@ -1,36 +1,40 @@
 import { type Refuel } from '@layerswap/widget-types';
-import { FC } from 'react'
+import { FC } from 'react';
 import { SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
 import { SwapValues } from '../Form/FeeDetails';
 import SwapQuoteComp from '../Form/FeeDetails/SwapQuote';
 import { QuoteError } from '@/hooks/useFee';
-import { ErrorDisplay } from '../Form/SecondaryComponents/validationError/ErrorDisplay';
 import { Partner } from '@/Models';
-import { RouteOff } from 'lucide-react';
-import { ICON_CLASSES_WARNING } from '../Form/SecondaryComponents/validationError/constants';
+import { QuoteAvailabilityView } from './Presentation/QuoteAvailabilityView';
 
 type Props = {
-    swapBasicData: SwapBasicData | undefined,
-    quote: SwapQuote | undefined,
-    quoteError: QuoteError | undefined,
-    refuel: Refuel | undefined,
-    quoteIsLoading: boolean,
-    partner?: Partner | undefined,
-    compact?: boolean
-}
+    swapBasicData: SwapBasicData | undefined;
+    quote: SwapQuote | undefined;
+    quoteError: QuoteError | undefined;
+    refuel: Refuel | undefined;
+    quoteIsLoading: boolean;
+    partner?: Partner | undefined;
+    compact?: boolean;
+};
 
-export const SwapQuoteDetails: FC<Props> = ({ swapBasicData: swapData, quote, refuel, quoteIsLoading, quoteError, partner, compact }) => {
-    const { source_network, destination_network, use_deposit_address, destination_token, requested_amount, source_token, destination_address } = swapData || {}
-
-    if (quoteError) return (
-        <ErrorDisplay
-            icon={<RouteOff className={ICON_CLASSES_WARNING} />}
-            title="Unable to retrieve quote"
-            message="Unable to retrieve quote"
-        />
-    )
-
-    if (!quote) return <div className='h-[150px] w-full rounded-xl bg-secondary-500 animate-pulse' />
+export const SwapQuoteDetails: FC<Props> = ({
+    swapBasicData: swapData,
+    quote,
+    refuel,
+    quoteIsLoading,
+    quoteError,
+    partner,
+    compact,
+}) => {
+    const {
+        source_network,
+        destination_network,
+        use_deposit_address,
+        destination_token,
+        requested_amount,
+        source_token,
+        destination_address,
+    } = swapData || {};
 
     const values: SwapValues = {
         amount: requested_amount?.toString(),
@@ -40,7 +44,19 @@ export const SwapQuoteDetails: FC<Props> = ({ swapBasicData: swapData, quote, re
         toAsset: destination_token,
         depositMethod: use_deposit_address ? 'deposit_address' : 'wallet',
         destination_address,
-    }
+    };
 
-    return <SwapQuoteComp quote={{ quote, refuel }} swapValues={values} isQuoteLoading={quoteIsLoading} partner={partner} compact={compact} />
-}
+    return (
+        <QuoteAvailabilityView error={!!quoteError} available={!!quote}>
+            {quote && (
+                <SwapQuoteComp
+                    quote={{ quote, refuel }}
+                    swapValues={values}
+                    isQuoteLoading={quoteIsLoading}
+                    partner={partner}
+                    compact={compact}
+                />
+            )}
+        </QuoteAvailabilityView>
+    );
+};

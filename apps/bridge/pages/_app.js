@@ -23,7 +23,7 @@ Router.events.on("routeChangeStart", progress.start);
 Router.events.on("routeChangeComplete", progress.finish);
 Router.events.on("routeChangeError", progress.finish);
 
-function App({ Component, pageProps }) {
+function AppLayout({ children }) {
   const router = useRouter()
 
   // Intercom needs a provider in scope for pages that render outside the
@@ -94,7 +94,7 @@ function App({ Component, pageProps }) {
         }}
       >
         <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500} shouldInitialize={intercomReady}>
-          <Component key={router.asPath} {...pageProps} />
+          {children}
         </IntercomProvider>
       </SWRConfig>
       <SpeedInsights />
@@ -102,4 +102,11 @@ function App({ Component, pageProps }) {
     </>)
 }
 
-export default App
+function getDefaultLayout(page) {
+  return <AppLayout>{page}</AppLayout>
+}
+
+export default function App({ Component, pageProps, router }) {
+  const getLayout = Component.getLayout ?? getDefaultLayout
+  return getLayout(<Component key={router.asPath} {...pageProps} />)
+}

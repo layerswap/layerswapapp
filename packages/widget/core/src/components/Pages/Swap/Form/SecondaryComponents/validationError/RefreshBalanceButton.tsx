@@ -1,5 +1,5 @@
-import { RefreshCw } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { RefreshBalanceButtonView } from '../../../Withdraw/Presentation/BalanceButtonsView';
 
 const MIN_SPIN_DURATION = 1000;
 
@@ -8,7 +8,10 @@ interface RefreshBalanceButtonProps {
     isLoading?: boolean;
 }
 
-export const RefreshBalanceButton: React.FC<RefreshBalanceButtonProps> = ({ onRefresh, isLoading }) => {
+export const RefreshBalanceButton: React.FC<RefreshBalanceButtonProps> = ({
+    onRefresh,
+    isLoading,
+}) => {
     const [isSpinning, setIsSpinning] = useState(false);
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -20,20 +23,18 @@ export const RefreshBalanceButton: React.FC<RefreshBalanceButtonProps> = ({ onRe
         clearTimeout(timerRef.current ?? undefined);
         setIsSpinning(true);
         onRefresh();
-        timerRef.current = setTimeout(() => setIsSpinning(false), MIN_SPIN_DURATION);
+        timerRef.current = setTimeout(
+            () => setIsSpinning(false),
+            MIN_SPIN_DURATION,
+        );
     }, [onRefresh]);
 
     const showSpinner = isSpinning || isLoading;
 
     return (
-        <button
-            type="button"
-            onClick={handleRefresh}
-            disabled={showSpinner}
-            className="text-primary-text disabled:text-secondary-text bg-secondary-300 hover:bg-secondary-200 flex justify-center items-end gap-2 py-2.5 px-3 rounded-xl mt-3"
-        >
-            <RefreshCw className={`${showSpinner ? 'animate-spin' : ''} w-4 h-4`} />
-            <span className="text-sm font-medium">Refresh</span>
-        </button>
+        <RefreshBalanceButtonView
+            showSpinner={showSpinner}
+            onRefresh={handleRefresh}
+        />
     );
 };
