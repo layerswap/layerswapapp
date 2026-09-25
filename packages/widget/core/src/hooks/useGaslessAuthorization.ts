@@ -35,22 +35,25 @@ export function useGaslessAuthorization(swapDetails: SwapDetails | undefined): U
         && swapDetails?.status === SwapStatus.UserTransferPending
 
     const validBefore = authorization?.validBefore
-    const [expiredByTimer, setExpiredByTimer] = useState(false)
+    const [expiredDeadline, setExpiredDeadline] = useState<{
+        swapId: string;
+        validBefore: number;
+    } | undefined>(undefined)
     useEffect(() => {
-        if (!pendingPublish || validBefore == null) {
-            setExpiredByTimer(false)
+        if (!swapId || !pendingPublish || validBefore == null) {
+            setExpiredDeadline(undefined)
             return
         }
         const deadlineMs = (validBefore + EXPIRY_GRACE_SECONDS) * 1000
         const msLeft = deadlineMs - Date.now()
         if (msLeft <= 0) {
-            setExpiredByTimer(true)
+            setExpiredDeadline({ swapId, validBefore })
             return
         }
-        setExpiredByTimer(false)
-        const timer = setTimeout(() => setExpiredByTimer(true), msLeft)
+        setExpiredDeadline(undefined)
+        const timer = setTimeout(() => setExpiredDeadline({ swapId, validBefore }), msLeft)
         return () => clearTimeout(timer)
-    }, [pendingPublish, validBefore])
+    }, [swapId, pendingPublish, validBefore])
 
     useEffect(() => {
         if (swapId && authorization && hasInputTransaction) {
@@ -58,6 +61,12 @@ export function useGaslessAuthorization(swapDetails: SwapDetails | undefined): U
         }
     }, [swapId, authorization, hasInputTransaction])
 
+    // Ignore an obsolete expiry during render, before the effect resets it after a
+    // swap change, retry, or authoritative poll result.
+    const expiredByTimer = pendingPublish
+        && expiredDeadline !== undefined
+        && expiredDeadline.swapId === swapId
+        && expiredDeadline.validBefore === validBefore
     const failureStatus = polledFailure ?? (expiredByTimer ? 'expired' : undefined)
 
     return {
