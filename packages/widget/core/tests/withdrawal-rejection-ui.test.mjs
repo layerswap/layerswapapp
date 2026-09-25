@@ -16,7 +16,7 @@ const fixtureUrl = 'data:text/javascript,' + encodeURIComponent(`
   export const useSwapDataState = () => ({ swapDetails: state.swapDetails, depositActionsResponse: [
     { type: 'transfer', to_address: 'deposit', call_data: '0x' }
   ] })
-  export const useSwapDataUpdate = () => ({ setSwapId() {}, createSwap: (...args) => state.createSwap(...args) })
+  export const useSwapDataUpdate = () => ({ setSwapId() {}, startFreshSwapAttempt() {}, createSwap: (...args) => state.createSwap(...args) })
   export const useSettingsState = () => ({ networks: [], sourceRoutes: [] })
   export const useInitialSettings = () => ({})
   export const useWalletWithdrawalState = () => ({ onWalletWithdrawalSuccess() { state.successes++; state.onSuccess?.() } })

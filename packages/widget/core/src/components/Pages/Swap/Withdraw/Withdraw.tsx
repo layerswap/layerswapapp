@@ -41,7 +41,7 @@ const Withdraw: FC<{
 }> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal }) => {
     const { swapBasicData, swapDetails, refuel, quoteIsLoading } =
         useSwapDataState();
-    const { setSubmitedFormValues } = useSwapDataUpdate();
+    const { setSubmitedFormValues, startFreshSwapAttempt } = useSwapDataUpdate();
 
     const { networks } = useSettingsState();
     const source_network =
@@ -100,6 +100,7 @@ const Withdraw: FC<{
             maxAmount,
             swapBasicData.source_token?.precision,
         );
+        startFreshSwapAttempt();
         setFieldValue('amount', newAmount, true);
         setSubmitedFormValues({
             amount: newAmount,
@@ -120,6 +121,7 @@ const Withdraw: FC<{
         refuel,
         setFieldValue,
         setSubmitedFormValues,
+        startFreshSwapAttempt,
     ]);
 
     let withdraw: {

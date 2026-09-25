@@ -238,9 +238,13 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         destinationToken: swapBasicData?.destination_token.symbol,
     })
 
-    const selectedSourceAccount = useSelectedAccount("from", swapBasicFormData?.source_network?.name);
-    const { wallets } = useWallet(swapBasicFormData?.source_network, 'asSource')
-    const selectedWallet = (selectedSourceAccount?.address && swapBasicFormData) && wallets.find(w => Address.equals(w.address, selectedSourceAccount.address, swapBasicFormData?.source_network))
+    // Restored swaps must resolve their account before a fresh retry populates form state.
+    const sourceNetwork = swapBasicData?.source_network
+    const selectedSourceAccount = useSelectedAccount("from", sourceNetwork?.name);
+    const { wallets } = useWallet(sourceNetwork, 'asSource')
+    const selectedWallet = selectedSourceAccount?.address && sourceNetwork
+        ? wallets.find(wallet => Address.equals(wallet.address, selectedSourceAccount.address, sourceNetwork))
+        : undefined
     const { checkContractStatus } = useContractAddressStore();
 
     const sourceIsSupported = (swapBasicData && selectedWallet) && WalletIsSupportedForSource({

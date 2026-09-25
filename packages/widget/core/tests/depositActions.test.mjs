@@ -3,7 +3,9 @@ import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import test from 'node:test'
 import ts from 'typescript'
-import { createElement, Fragment } from 'react'
+import React, { act, createElement, Fragment } from 'react'
+import { createRoot } from 'react-dom/client'
+import { JSDOM } from 'jsdom'
 
 const require = createRequire(import.meta.url)
 const walletPath = '../src/components/Pages/Swap/Withdraw/Wallet/Common/'
@@ -36,7 +38,8 @@ const actionsFor = nonce => [
     { type: 'transfer', step: 'publish', status: 'waiting', amount: '1', to_address: '0x456' },
 ]
 
-function createWorkflow() {
+function createWorkflow({ mounted = false } = {}) {
+    let view
     const calls = { refresh: [], sign: [], authorize: [], transfer: [], storedTransactions: [], errors: [], lifecycle: [], success: 0 }
     const state = {
         apiActions: actionsFor('fresh'),
@@ -70,7 +73,7 @@ function createWorkflow() {
         },
         AuthorizeSwapAsync: async (...args) => { calls.authorize.push(args) },
         GetSwapAsync: async () => {
-            state.onTransition?.(state.completedStep)
+            await state.onTransition?.(state.completedStep)
             const completedIndex = state.apiActions.findIndex(action => action.step === state.completedStep)
             state.apiActions = state.apiActions.map((action, index) => ({
                 ...action, status: index <= completedIndex ? 'completed' : index === completedIndex + 1 ? 'action_required' : 'waiting',
@@ -135,11 +138,16 @@ function createWorkflow() {
         '../../Form/SecondaryComponents/validationError/ErrorDisplay': { ErrorDisplay: noop },
         '../messages/Message': { default: noop },
     })
+    const useFakeLayoutEffect = callback => {
+        const [scope] = useState({ initialized: false })
+        if (!scope.initialized) { callback(); scope.initialized = true }
+    }
     const { SendTransactionButton, ButtonWrapper } = loadSource(`${walletPath}buttons.tsx`, {
         '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: event => calls.lifecycle.push(event) }) },
         '@/lib/swapLifecycle': lifecycle,
         '@/hooks/useTransferBlocked': { useTransferBlocked: noop },
-        react: { useState, useRef: initial => useState({ current: initial })[0], useMemo: fn => fn(), useCallback: fn => fn },
+        '@/hooks/useClientLayoutEffect': { useClientLayoutEffect: mounted ? React.useLayoutEffect : useFakeLayoutEffect },
+        react: mounted ? React : { useState, useRef: initial => useState({ current: initial })[0], useMemo: fn => fn(), useCallback: fn => fn },
         '@layerswap/ui-kit/components': { WalletIcon: noop },
         '@/components/Buttons/submitButton': { default: noop },
         '@/hooks/useWallet': { default: () => ({ wallets: [wallet] }) },
@@ -164,7 +172,7 @@ function createWorkflow() {
         '@layerswap/utils': { sleep: async () => {} },
         '@/components/utils/numbers': { isDiffByPercent: () => false },
         '@/context/withdrawalContext': { useWalletWithdrawalState: () => ({ onWalletWithdrawalSuccess: () => calls.success++ }) },
-        '@/context/swapAccounts': { useSelectedAccount: () => ({ id: wallet.id, address: sourceAddress }) },
+        '@/context/swapAccounts': { useSelectedAccount: () => ({ id: wallet.id, address: wallet.address }) },
         '@/lib/ErrorHandler': { ErrorHandler: error => calls.errors.push(error) },
         '@/lib/fees': { resolvePriceImpactValues: noop },
         '@/components/Icons/InfoIcon': { default: noop },
@@ -173,7 +181,7 @@ function createWorkflow() {
         '@/lib/gases/useSWRGas': { default: () => ({}) },
         '@/context/depositSettings': { useDepositSettings: () => ({}) },
         './depositExecution': execution,
-        '../../Presentation/WalletActionsView': walletViews,
+        '../../Presentation/WalletActionsView': mounted ? { ...walletViews, SendTransactionView: props => { view = props; return null } } : walletViews,
         '../../Processing/StepsComponent': { default: Steps },
         '../../Processing/types': progressTypes,
         '@/helpers/swapProgress': { hasSwapExecutionProgress: () => false },
@@ -193,16 +201,14 @@ function createWorkflow() {
             if (match) return match
         }
     }
-    const render = () => {
-        hookIndex = 0
-        const tree = SendTransactionButton({
+    const props = () => ({
             swapData: { source_network: network, source_token: {}, requested_amount: '1' },
             refuel: false,
             error: state.rejected,
             clearError: () => { state.rejected = false },
             onSign: async action => {
                 calls.sign.push(action.typed_data.message.nonce)
-                state.onWalletPrompt?.('sign')
+                await state.onWalletPrompt?.('sign')
                 if (state.rejectSigning) {
                     state.rejected = true
                     throw { code: 4001 }
@@ -213,15 +219,20 @@ function createWorkflow() {
             onClick: async props => {
                 calls.transfer.push(props)
                 const step = depositActions.getActionableDepositAction(state.apiActions).step
-                state.onWalletPrompt?.(step)
+                await state.onWalletPrompt?.(step)
                 state.completedStep = step
                 return step === 'approve_permit2' ? '0xapproval' : '0xtransaction'
             },
         })
+    const render = () => {
+        hookIndex = 0
+        const tree = SendTransactionButton(props())
         return { button: findElement(tree, ButtonWrapper), steps: findElement(tree, Steps)?.props.steps }
     }
     return {
-        state, calls, render,
+        state, calls, render, wallet,
+        Component: () => createElement(SendTransactionButton, props()),
+        get view() { return view },
         poll: async () => {
             assert.ok(swrRequest.key, 'Polling remains enabled after rejection')
             assert.ok(swrRequest.options.refreshInterval > 0, 'Polling has a repeating interval')
@@ -311,5 +322,94 @@ test('a failed or empty refresh never falls back to signing an expired cached ac
         assert.deepEqual(flow.calls.authorize, [])
         assert.equal(flow.calls.errors.length, 1)
         assert.equal(flow.state.swapId, swapId)
+    }
+})
+
+
+for (const stop of ['unmount', 'reopen', 'account change']) {
+    test(`approval confirmation cannot continue after ${stop}`, async () => {
+        const dom = new JSDOM('<div id="root"></div>')
+        const previous = Object.getOwnPropertyDescriptors(globalThis)
+        Object.assign(globalThis, { window: dom.window, document: dom.window.document, IS_REACT_ACT_ENVIRONMENT: true })
+        const flow = createWorkflow({ mounted: true })
+        flow.state.apiActions = [
+            { type: 'transfer', step: 'approve_permit2', status: 'action_required', amount: '0', to_address: '0x456' },
+            ...actionsFor('fresh').map(action => ({ ...action, status: 'waiting' })),
+        ]
+        flow.state.rejectSigning = false
+        const confirmation = Promise.withResolvers()
+        flow.state.onTransition = () => confirmation.promise
+        const root = createRoot(document.getElementById('root'))
+        let pending
+        let unmounted = false
+        try {
+            await act(async () => root.render(createElement(flow.Component)))
+            await act(async () => { pending = flow.view.handleClick() })
+            assert.equal(flow.calls.transfer.length, 1)
+            assert.deepEqual(flow.calls.sign, [])
+            if (stop === 'unmount') {
+                await act(async () => root.unmount())
+                unmounted = true
+            } else if (stop === 'reopen') {
+                await act(async () => root.render(null))
+                await act(async () => root.render(createElement(flow.Component)))
+            } else {
+                flow.wallet.address = '0xother'
+                await act(async () => root.render(createElement(flow.Component)))
+            }
+            await act(async () => { confirmation.resolve(); await pending })
+            assert.deepEqual(flow.calls.sign, [], 'cancelled approval cannot request a signature')
+            assert.equal(flow.calls.transfer.length, 1, 'cancelled workflow cannot publish')
+            assert.deepEqual(flow.calls.authorize, [])
+            assert.deepEqual(flow.calls.storedTransactions, [])
+            assert.deepEqual(flow.calls.errors, [])
+            if (!unmounted) assert.equal(flow.view.loading, false, 'the active controller can retry')
+            if (stop === 'reopen') {
+                await act(async () => flow.view.handleClick())
+                assert.equal(flow.calls.sign.length, 1, 'only the reopened controller requests a signature')
+                assert.equal(flow.calls.transfer.length, 2, 'publication is requested once')
+                assert.equal(flow.calls.success, 1)
+            }
+        } finally {
+            confirmation.resolve()
+            if (pending) await act(async () => pending)
+            if (!unmounted) await act(async () => root.unmount())
+            dom.window.close()
+            for (const key of ['window', 'document', 'IS_REACT_ACT_ENVIRONMENT']) {
+                if (previous[key]) Object.defineProperty(globalThis, key, previous[key])
+                else delete globalThis[key]
+            }
+        }
+    })
+}
+
+test('closing while publication is in flight retains the submitted transaction without a stale UI callback', async () => {
+    const dom = new JSDOM('<div id="root"></div>')
+    const previous = Object.getOwnPropertyDescriptors(globalThis)
+    Object.assign(globalThis, { window: dom.window, document: dom.window.document, IS_REACT_ACT_ENVIRONMENT: true })
+    const flow = createWorkflow({ mounted: true })
+    flow.state.apiActions = [{ type: 'transfer', step: 'publish', status: 'action_required', amount: '1', to_address: '0x456' }]
+    const publication = Promise.withResolvers()
+    flow.state.onWalletPrompt = () => publication.promise
+    const root = createRoot(document.getElementById('root'))
+    let pending
+    try {
+        await act(async () => root.render(createElement(flow.Component)))
+        await act(async () => { pending = flow.view.handleClick() })
+        assert.equal(flow.calls.transfer.length, 1)
+        await act(async () => root.unmount())
+        publication.resolve()
+        await pending
+        assert.deepEqual(flow.calls.storedTransactions, [[swapId, 'pending', '0xtransaction']])
+        assert.equal(flow.calls.success, 0, 'a closed form is not updated by the old controller')
+        assert.deepEqual(flow.calls.errors, [])
+    } finally {
+        publication.resolve()
+        if (pending) await pending
+        dom.window.close()
+        for (const key of ['window', 'document', 'IS_REACT_ACT_ENVIRONMENT']) {
+            if (previous[key]) Object.defineProperty(globalThis, key, previous[key])
+            else delete globalThis[key]
+        }
     }
 })

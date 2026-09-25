@@ -1,5 +1,6 @@
 import { useCallbacks } from '@/context/callbackProvider';
 import { lifecycleContextFromSwap, lifecycleErrorDetails } from '@/lib/swapLifecycle';
+import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect';
 import { useTransferBlocked } from '@/hooks/useTransferBlocked';
 import { hasSwapExecutionProgress } from '@/helpers/swapProgress';
 import { isGaslessCapableRoute, isGaslessDepositWorkflow } from '@/helpers/gasless';
@@ -225,7 +226,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const switchToStandardTransfer = useGaslessPreferenceStore(s => s.switchToStandardTransfer)
     const clearGaslessUnavailable = useGaslessPreferenceStore(s => s.clearGaslessUnavailable)
     const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess, onCancelWithdrawal } = useWalletWithdrawalState();
-    const { createSwap, mutateSwap, setSwapId, setQuoteLoading } = useSwapDataUpdate()
+    const { createSwap, mutateSwap, setSwapId, setQuoteLoading, startFreshSwapAttempt } = useSwapDataUpdate()
     const setSwapTransaction = useSwapTransactionStore(state => state.setSwapTransaction)
     const storedWalletTransaction = useSwapTransactionStore(
         state => swapId ? state.swapTransactions[swapId] : undefined,
@@ -250,6 +251,17 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const [showCriticalMarketPriceImpactButtons, setShowCriticalMarketPriceImpactButtons] = useState(false)
     const [workflowState, setWorkflowState] = useState<{ swapId: string, actions: DepositAction[], swapData?: SwapDetails }>()
     const executionInFlight = useRef(false)
+    const executionScope = useRef<AbortController | null>(null)
+    // Closing the screen or changing accounts stops future wallet requests.
+    // An already-open request still finishes so its submitted transaction is recorded.
+    useClientLayoutEffect(() => {
+        const scope = new AbortController()
+        executionScope.current = scope
+        return () => {
+            scope.abort()
+            if (executionScope.current === scope) executionScope.current = null
+        }
+    }, [selectedSourceAccount?.id, selectedSourceAccount?.address, swapBasicData.source_network.name])
     const { mutate: mutateCache } = useSWRConfig()
     // Share the context's cache, but keep refreshing while this wallet flow is
     // mounted, including while idle or waiting for a retry after rejection.
@@ -288,7 +300,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         lifecycleContextFromSwap(swapBasicData, swapDetails), 'SendTransactionButton')
 
     const executeWorkflow = async (requestFreshSwap = false) => {
-        if (executionInFlight.current) return
+        const signal = executionScope.current?.signal
+        if (!signal || signal.aborted || executionInFlight.current) return
         executionInFlight.current = true
         // Explicit mode changes can start a new swap before execution has progressed.
         // Ordinary wallet retries reuse the swap with freshly fetched deposit actions.
@@ -314,7 +327,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
             if (!executionSwapId || !swapData) {
                 setActionStateText("Preparing swap…")
-                setSwapId(undefined)
+                startFreshSwapAttempt()
                 setWorkflowState(undefined)
 
                 const swapValues: SwapFormValues = {
@@ -329,6 +342,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 }
 
                 const newSwapData = await createSwap(swapValues, initialSettings).catch((e: any) => {
+                    signal.throwIfAborted()
                     // Failed gasless attempt is surfaced as the switch prompt, not a raw API error.
                     if (useGaslessPreferenceStore.getState().gaslessUnavailable) {
                         setSwapError?.(null)
@@ -337,6 +351,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     }
                     throw e
                 });
+                signal.throwIfAborted()
                 const newSwapId = newSwapData?.swap?.id;
                 if (!newSwapId) {
                     throw new Error('Swap ID is undefined');
@@ -346,6 +361,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 if (newSwapData.deposit_actions) {
                     await mutateCache(depositActionsKey(newSwapId, selectedSourceAccount.address), { data: newSwapData.deposit_actions }, false)
                 }
+                signal.throwIfAborted()
                 setWorkflowState(newSwapData.deposit_actions ? { swapId: newSwapId, actions: newSwapData.deposit_actions, swapData: newSwapData.swap } : undefined)
                 setSwapId(newSwapId)
 
@@ -361,6 +377,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     setQuoteLoading(true)
                     await sleep(3500)
                     setQuoteLoading(false)
+                    signal.throwIfAborted()
                 }
                 swapData = newSwapData.swap
                 activeDepositActions = newSwapData.deposit_actions;
@@ -377,6 +394,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     }),
                     { revalidate: false },
                 )
+                signal.throwIfAborted()
                 activeDepositActions = refreshed?.data
                 if (activeDepositActions) {
                     setWorkflowState({ swapId: executionSwapId, actions: activeDepositActions, swapData })
@@ -395,6 +413,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             // without requiring another click in the Layerswap UI.
             const maxActions = Math.max(activeDepositActions.length, 1) + 1
             for (let executedActions = 0; executedActions < maxActions; executedActions++) {
+                signal.throwIfAborted()
                 const currentAction = getActionableDepositAction(activeDepositActions)
                 if (!currentAction) {
                     const failedStep = activeDepositActions.find(action => action.status === 'failed')
@@ -413,10 +432,11 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     selectedWallet,
                     sourceAddress: selectedSourceAccount.address,
                     layerswapApiClient,
-                    setActionStateText,
+                    signal,
+                    setActionStateText: text => { if (!signal.aborted) setActionStateText(text) },
                     setSwapTransaction,
-                    setSwapError,
-                    onSuccess: () => onWalletWithdrawalSuccess?.(),
+                    setSwapError: value => { if (!signal.aborted) setSwapError?.(value) },
+                    onSuccess: () => { if (!signal.aborted) onWalletWithdrawalSuccess?.() },
                     onLifecycle: onSwapLifecycle,
                 }
 
@@ -427,6 +447,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     await executeWalletTransfer(executionContext, onClick, currentAction)
                 }
 
+                signal.throwIfAborted()
                 if (!requiresDepositActionRefresh(currentAction, activeDepositActions)) return
 
                 setActionStateText(currentAction.step === 'approve_permit2' ? 'Confirming approval…' : 'Preparing transaction…')
@@ -434,13 +455,16 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     swapId: swapData.id,
                     sourceAddress: selectedSourceAccount.address,
                     previousAction: currentAction,
+                    signal,
                 })
+                signal.throwIfAborted()
                 setWorkflowState({ swapId: swapData.id, actions: activeDepositActions, swapData })
             }
 
             throw new Error('The swap workflow has more actions than expected')
         }
         catch (e) {
+            if (signal.aborted) return
             if (isUserRejection(e)) {
                 setSwapError?.(null)
                 return
@@ -482,7 +506,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         }
         finally {
             executionInFlight.current = false
-            setLoading(false)
+            if (executionScope.current) setLoading(false)
         }
     }
 
@@ -490,14 +514,19 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         swapId: activeSwapId,
         sourceAddress,
         previousAction,
+        signal,
     }: {
         swapId: string,
         sourceAddress: string,
         previousAction: DepositAction,
+        signal: AbortSignal,
     }): Promise<DepositAction[]> => {
         for (let attempt = 0; attempt < 69; attempt++) {
+            signal.throwIfAborted()
             if (attempt > 0) await sleep(2000)
+            signal.throwIfAborted()
             const response = await layerswapApiClient.GetSwapAsync(activeSwapId, sourceAddress)
+            signal.throwIfAborted()
             if (response?.error) throw response.error
 
             const latestActions = response?.data?.deposit_actions ?? []
@@ -508,7 +537,9 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
             if (failedStep || transitioned) {
                 await mutateCache(depositActionsKey(activeSwapId, sourceAddress), { data: latestActions }, false)
+                signal.throwIfAborted()
                 await mutateSwap(response, false)
+                signal.throwIfAborted()
                 setWorkflowState(previous => ({
                     swapId: activeSwapId,
                     actions: latestActions,

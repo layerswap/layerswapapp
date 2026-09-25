@@ -20,9 +20,12 @@ export function useCanvasViewport() {
     const [panning, setPanning] = useState(false);
     const [spacePressed, setSpacePressed] = useState(false);
     const autoFit = useRef(true);
-    const drag = useRef<{ id: number; x: number; y: number } | undefined>(
-        undefined,
-    );
+    const drag = useRef<{
+        id: number;
+        x: number;
+        y: number;
+        scrollContainer?: HTMLElement;
+    } | undefined>(undefined);
     const dragged = useRef(false);
 
     const fit = useCallback(() => {
@@ -146,16 +149,25 @@ export function useCanvasViewport() {
             target.closest('[data-milestone-id]')
         )
             return;
+        const body = !hand && event.pointerType === 'touch'
+            ? target.closest<HTMLElement>('[data-page2-preview] .styled-scroll')
+            : null;
+        const scrollContainer = body && body.scrollHeight > body.clientHeight
+            ? body
+            : undefined;
         event.preventDefault();
-        event.currentTarget.focus({ preventScroll: true });
+        if (!scrollContainer) {
+            event.currentTarget.focus({ preventScroll: true });
+            autoFit.current = false;
+        }
         event.currentTarget.setPointerCapture(event.pointerId);
-        autoFit.current = false;
         drag.current = {
             id: event.pointerId,
             x: event.clientX,
             y: event.clientY,
+            scrollContainer,
         };
-        setPanning(true);
+        setPanning(!scrollContainer);
     };
     const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {
         const previous = drag.current;
@@ -164,10 +176,14 @@ export function useCanvasViewport() {
         const dy = event.clientY - previous.y;
         if (dx || dy) dragged.current = true;
         drag.current = {
-            id: event.pointerId,
+            ...previous,
             x: event.clientX,
             y: event.clientY,
         };
+        if (previous.scrollContainer) {
+            previous.scrollContainer.scrollTop -= dy / view.scale;
+            return;
+        }
         setView((current) => ({
             ...current,
             x: current.x + dx,

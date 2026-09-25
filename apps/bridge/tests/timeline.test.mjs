@@ -922,6 +922,51 @@ test('canvas preserves modal body wheel scrolling while keeping canvas pan and z
     }
 });
 
+test('touch swipes scroll an overflowing modal body without moving the canvas', async () => {
+    const container = document.getElementById('root');
+    const root = createRoot(container);
+    try {
+        await act(async () => root.render(React.createElement(TimelinePage)));
+        await chooseMode(container, 'modal');
+        const canvas = container.querySelector('[aria-label="Scenario canvas"]');
+        const world = container.querySelector('[data-canvas-transform]');
+        const modal = canvas.querySelector('[data-page2-modal]');
+        await act(async () => modal.querySelector('[aria-label="See details"]').click());
+        const body = modal.querySelector('.styled-scroll');
+        Object.defineProperties(body, {
+            clientHeight: { value: 400 },
+            scrollHeight: { value: 800, configurable: true },
+        });
+        let captured = false;
+        canvas.setPointerCapture = () => { captured = true; };
+        canvas.hasPointerCapture = () => captured;
+        canvas.releasePointerCapture = () => { captured = false; };
+        const pointer = async (target, type, y) => {
+            const event = new window.MouseEvent(type, { clientX: 80, clientY: y, button: 0, bubbles: true, cancelable: true });
+            Object.defineProperties(event, { pointerId: { value: 1 }, pointerType: { value: 'touch' } });
+            await act(async () => target.dispatchEvent(event));
+        };
+        const before = world.style.transform;
+        const scale = Number(before.match(/scale\(([^)]+)\)/)[1]);
+        await pointer(body, 'pointerdown', 200);
+        await pointer(canvas, 'pointermove', 160);
+        assert.equal(body.scrollTop, 40 / scale, 'scroll distance accounts for the preview zoom');
+        assert.equal(world.style.transform, before);
+        assert.equal(canvas.classList.contains('cursor-grabbing'), false);
+        await pointer(canvas, 'pointerup', 160);
+        assert.equal(captured, false);
+        await pointer(canvas, 'pointermove', 120);
+        assert.equal(body.scrollTop, 40 / scale, 'released gestures stop scrolling');
+        await pointer(canvas, 'pointerdown', 200);
+        await pointer(canvas, 'pointermove', 160);
+        await pointer(canvas, 'pointerup', 160);
+        assert.notEqual(world.style.transform, before, 'touch gestures on the background still pan');
+        assert.deepEqual(forbidden, []);
+    } finally {
+        await act(async () => root.unmount());
+    }
+});
+
 test('the viewer hydrates shared selection controls without replacing server markup', async () => {
     const container = document.getElementById('root');
     const element = React.createElement(TimelinePage);

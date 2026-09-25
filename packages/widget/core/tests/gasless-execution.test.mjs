@@ -126,6 +126,35 @@ test('the re-sign after an expired authorization opens a second wallet prompt', 
   assert.equal(submitted.length, 1)
 })
 
+test('cancelling during authorization refresh prevents another wallet prompt', async t => {
+  const lifecycle = []
+  const submitted = []
+  const telemetry = []
+  t.after(widgetTelemetry.register(event => telemetry.push(event)))
+  const refresh = Promise.withResolvers()
+  const refreshing = Promise.withResolvers()
+  const scope = new AbortController()
+  const { ctx, signAction } = gaslessContext({
+    authorize: async () => { throw new Error('Authorization expired') },
+    refresh: () => { refreshing.resolve(); return refresh.promise },
+    lifecycle,
+    submitted,
+  })
+  ctx.signal = scope.signal
+  let signed = 0
+  const pending = executeGaslessAuthorization(ctx, async () => { signed++; return '0xsig' })
+  await refreshing.promise
+  scope.abort()
+  refresh.resolve({ data: [signAction] })
+  await assert.rejects(pending, { name: 'AbortError' })
+  assert.equal(signed, 1)
+  assert.deepEqual(lifecycle.map(event => event.step), ['wallet_prompt_opened'])
+  assert.deepEqual(submitted, [])
+  assert.equal(useGaslessPreferenceStore.getState().gaslessUnavailable, false)
+  assert.equal(telemetry.length, 1)
+  assert.equal(telemetry[0].attributes.outcome, 'cancelled')
+})
+
 for (const fails of [false, true]) {
   test(`self-paid authorization ${fails ? 'failure' : 'success'} never submits a gasless deposit`, async () => {
     const lifecycle = []

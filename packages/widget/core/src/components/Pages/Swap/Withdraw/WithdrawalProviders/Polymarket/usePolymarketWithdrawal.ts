@@ -58,7 +58,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
     const initialSettings = useInitialSettings()
     const { onWalletWithdrawalSuccess } = useWalletWithdrawalState()
     const { swapDetails, depositActionsResponse } = useSwapDataState()
-    const { createSwap, setSwapId } = useSwapDataUpdate()
+    const { createSwap, setSwapId, startFreshSwapAttempt } = useSwapDataUpdate()
     const { executeTransfer } = useTransfer()
     const { onSwapLifecycle } = useCallbacks()
 
@@ -115,7 +115,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
             let depositActions = retryingUnstartedSwap ? undefined : depositActionsResponse
             let activeSwapId = retryingUnstartedSwap ? undefined : swapId
             if (retryingUnstartedSwap || !swapId || !swapDetails) {
-                setSwapId(undefined)
+                startFreshSwapAttempt()
                 const swapValues: SwapFormValues = {
                     amount,
                     from: source_network as NetworkRoute,
@@ -206,7 +206,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
             }
             submittingRef.current = false
         }
-    }, [sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, networks, sourceRoutes, depositActionsResponse, swapId, swapDetails, refuel, initialSettings, wallet, createSwap, setSwapId, executeTransfer, onWalletWithdrawalSuccess, swapBasicData.requested_amount, error, rejected, onSwapLifecycle])
+    }, [sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, networks, sourceRoutes, depositActionsResponse, swapId, swapDetails, refuel, initialSettings, wallet, createSwap, setSwapId, startFreshSwapAttempt, executeTransfer, onWalletWithdrawalSuccess, swapBasicData.requested_amount, error, rejected, onSwapLifecycle])
 
     return {
         handleWithdraw,

@@ -15,7 +15,7 @@ globalThis.window = dom.window;
 globalThis.document = dom.window.document;
 globalThis.localStorage = dom.window.localStorage;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-const { default: useSWR, SWRConfig } = coreRequire('swr');
+const { default: useSWR, SWRConfig, useSWRConfig } = coreRequire('swr');
 const container = document.getElementById('root');
 const noop = () => {};
 const empty = () => null;
@@ -84,6 +84,7 @@ test('switching gasless mode preserves the live execution lock while swap creati
         useSwapDataUpdate: () => ({
             createSwap: () => { creates++; return creation; },
             setSwapId: noop,
+            startFreshSwapAttempt: noop,
         }),
     };
     const { SendTransactionButton } = loadSource(`${withdraw}Wallet/Common/buttons.tsx`, {
@@ -91,6 +92,7 @@ test('switching gasless mode preserves the live execution lock while swap creati
         '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: noop }) },
         '@/lib/swapLifecycle': { lifecycleContextFromSwap: () => ({}) },
         '@/hooks/useTransferBlocked': { useTransferBlocked: noop },
+        '@/hooks/useClientLayoutEffect': { useClientLayoutEffect: React.useLayoutEffect },
         '@/helpers/swapProgress': { hasSwapExecutionProgress: () => false },
         '@/helpers/gasless': gasless,
         './isUserRejection': { isUserRejection: () => false },
@@ -389,9 +391,14 @@ test('compact quote controls retain their nodes and cached values without gas re
     }
 });
 
-function createSwapHistoryHarness(fetcher) {
+function createSwapHistoryHarness(fetcher, { onCreate, selectedAccount } = {}) {
     const api = {
-        default: class { fetcher = fetcher; },
+        default: class {
+            fetcher = fetcher;
+            CreateSwapAsync = onCreate;
+            GetDepositActionsAsync = (id, sourceAddress) => fetcher(`/swaps/${id}/deposit_actions?source_address=${sourceAddress}`);
+            SwapCatchup = async () => {};
+        },
         TransactionType: { Input: 'input', Output: 'output', Refuel: 'refuel', Refund: 'refund' },
         BackendTransactionStatus: { Completed: 'completed', Pending: 'pending', Failed: 'failed' },
         TransactionStatus: { Completed: 'completed', Pending: 'pending', Failed: 'failed' },
@@ -451,19 +458,23 @@ function createSwapHistoryHarness(fetcher) {
         '@/hooks/useSwapStatusNotification': { useSwapStatusNotification: noop },
         '@/hooks/useGaslessAuthorization': { useGaslessAuthorization: () => ({}) },
         './depositSettings': { useDepositSettings: () => ({}) },
-        '@/lib/swapLifecycle': {},
-        '@/lib/swapCreation': {},
+        '@/lib/swapLifecycle': { lifecycleContextFromForm: () => ({}) },
+        '@/lib/swapCreation': loadSource('lib/swapCreation.ts', {
+            '@layerswap/widget-types': { getErrorOccurrenceId: noop },
+            '@/lib/ErrorHandler': { ErrorHandler: error => assert.fail(error.message) },
+            './swapLifecycle': { lifecycleErrorDetails: () => ({}) },
+        }),
         ...walletHooks,
         '@/lib/apiClients/layerSwapApiClient': api,
         '@/components/utils/resolveSwapPhase': phases,
         swr: { default: useSWR },
         './settings': { useInitialSettings: () => ({ swapId: 'first' }), useSettingsState: () => ({ networks: [network] }) },
-        './swapAccounts': { useSelectedAccount: () => undefined },
-        './callbackProvider': { useCallbacks: () => ({}) },
+        './swapAccounts': { useSelectedAccount: (_, name) => name === network.name ? selectedAccount : undefined },
+        './callbackProvider': { useCallbacks: () => ({ onSwapCreate: noop, onSwapLifecycle: noop }) },
         '@/hooks/useFee': { transformSwapDataToQuoteArgs: noop, useQuoteData: () => ({}) },
         '@/stores/recentRoutesStore': { useRecentNetworksStore: () => noop },
-        '@/stores/slippageStore': {},
-        '@/lib/address/Address': {},
+        '@/stores/slippageStore': { useSlippageStore: { getState: () => ({}) } },
+        '@/lib/address/Address': { Address: { equals: (left, right) => left === right } },
         '@/stores': {
             useSwapTransactionStore: selector => selector({ swapTransactions: {} }),
             useGaslessAuthorizationStore: selector => selector({ authorizations: {} }),
@@ -472,14 +483,14 @@ function createSwapHistoryHarness(fetcher) {
         '@/hooks/useExtendedSwapDisplay': { useExtendedSwapData: noop },
         '@/stores/gaslessPreferenceStore': { useGaslessPreferenceStore },
         '@/helpers/gasless': gasless,
-        '@/lib/extendedRoutes/registry': {},
+        '@/lib/extendedRoutes/registry': { resolveExtendedRoutePlan: () => undefined },
         '@/lib/extendedRoutes/transforms': {},
         '@/stores/extendedRoutesStore': {},
         '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
         '@/lib/swapPollingPolicy': pollingPolicy,
-        '@layerswap/utils': {},
+        '@layerswap/utils': { KnownInternalNames: { Networks: {} } },
     });
-    const harness = { Provider: context.SwapDataProvider };
+    const harness = { Provider: context.SwapDataProvider, context, api };
     harness.Completion = function Completion() {
         harness.state = context.useSwapDataState();
         harness.update = context.useSwapDataUpdate();
@@ -614,5 +625,287 @@ test('a real atomic swap keeps its receipts without completion time when the API
         t.mock.timers.reset();
     }
 });
+
+
+for (const provider of ['Hyperliquid', 'Polymarket']) {
+    for (const outcome of ['failure', 'success']) {
+        test(`${provider} retry after reload preserves its controller through creation ${outcome}`, async () => {
+            const swap = {
+                id: 'first', status: 'user_transfer_pending', requested_amount: '1',
+                source_network: network, destination_network: network,
+                source_token: { ...token, asset: 'USDC', decimals: 6 },
+                destination_token: { ...token, asset: 'USDC', decimals: 6 },
+                destination_address: '0xdestination', use_deposit_address: false, transactions: [],
+            };
+            const actions = [{ type: 'transfer', to_address: '0xdeposit', call_data: '0x' }];
+            const harness = createSwapHistoryHarness(async key => key.includes('/deposit_actions')
+                ? { data: actions }
+                : { data: { swap: { ...swap, id: key.includes('/second?') ? 'second' : 'first' } } });
+            const creation = Promise.withResolvers();
+            const transfer = Promise.withResolvers();
+            const records = [];
+            let successes = 0;
+            let creates = 0;
+            let mounts = 0;
+            let walletCalls = 0;
+            let current;
+            const swapContext = {
+                ...harness.context,
+                useSwapDataUpdate: () => ({ ...harness.context.useSwapDataUpdate(), createSwap: () => { creates++; return creation.promise; } }),
+            };
+            const name = `use${provider}Withdrawal`;
+            const { [name]: useWithdrawal } = loadSource(`${withdraw}WithdrawalProviders/${provider}/${name}.ts`, {
+                ...walletHooks,
+                '@/context/swap': swapContext,
+                '@/context/withdrawalContext': { useWalletWithdrawalState: () => ({ onWalletWithdrawalSuccess: () => { successes++; } }) },
+                '@/context/settings': { useInitialSettings: () => ({}), useSettingsState: () => ({ networks: [network], sourceRoutes: [] }) },
+                '@/hooks/useTransfer': { useTransfer: () => ({ executeTransfer: async () => {
+                    if (++walletCalls === 1) throw { code: 4001 };
+                    return transfer.promise;
+                } }) },
+                '@/components/Pages/Swap/Withdraw/Wallet/Common/executeWalletOperation': { executeWalletOperation: (_, execute) => execute() },
+                '@layerswap/wallet-core/errors': { isUserRejection: error => error.code === 4001 },
+                '@layerswap/widget-types': { ActionMessageType: { TransactionRejected: 'TransactionRejected' } },
+                '@/lib/apiClients/layerSwapApiClient': { BackendTransactionStatus: { Pending: 'pending' } },
+                '@/stores/swapTransactionStore': { useSwapTransactionStore: { getState: () => ({ setSwapTransaction: (...args) => records.push(args) }) } },
+                '@/lib/ErrorHandler': { ErrorHandler: noop },
+                '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: noop }) },
+                '@/lib/swapLifecycle': { lifecycleContextFromSwap: () => ({}) },
+                '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
+            });
+            function Withdrawal({ data }) {
+                React.useEffect(() => { mounts++; }, []);
+                current = useWithdrawal({ swapBasicData: data.swapBasicData, swapId: data.swapId, refuel: false });
+                return React.createElement('div', { 'data-withdrawal': true }, current.error?.details || (current.loading ? 'Preparing' : 'Ready'));
+            }
+            function Screen() {
+                const data = harness.context.useSwapDataState();
+                return data.swapBasicData ? React.createElement(Withdrawal, { data }) : 'Skeleton';
+            }
+            const root = createRoot(container);
+            let pending;
+            try {
+                await act(async () => root.render(React.createElement(SWRConfig, { value: { provider: () => new Map() } },
+                    React.createElement(harness.Provider, null, React.createElement(Screen)))));
+                await act(async () => current.handleWithdraw());
+                assert.equal(current.rejected, true);
+                await act(async () => { pending = current.handleWithdraw(); });
+                assert.equal(creates, 1);
+                assert.ok(container.querySelector('[data-withdrawal]'), 'clearing the restored ID must keep the controller mounted');
+                assert.equal(mounts, 1);
+                if (outcome === 'failure') {
+                    await act(async () => { creation.reject(new Error('Creation unavailable')); await pending; });
+                    assert.match(container.textContent, /Creation unavailable/);
+                    assert.equal(current.loading, false);
+                    assert.equal(walletCalls, 1);
+                } else {
+                    await act(async () => { creation.resolve({ swap: { ...swap, id: 'second' }, deposit_actions: actions }); });
+                    assert.equal(walletCalls, 2);
+                    assert.equal(mounts, 1, 'the refreshed swap must reuse the original controller');
+                    await act(async () => { transfer.resolve('0xpublished'); await pending; });
+                    assert.deepEqual(records, [['second', 'pending', '0xpublished']]);
+                    assert.equal(successes, 1);
+                }
+            } finally {
+                creation.resolve({ swap: { ...swap, id: 'second' }, deposit_actions: actions });
+                transfer.resolve('0xpublished');
+                if (pending) await act(async () => pending);
+                await act(async () => root.unmount());
+            }
+        });
+    }
+}
+
+for (const gaslessEnabled of [true, false]) {
+    test(`fresh retry after reload preserves the source account with gasless ${gaslessEnabled}`, async () => {
+        const swap = {
+            id: 'first', status: 'user_transfer_pending', requested_amount: '1',
+            source_network: network, destination_network: network,
+            source_token: token, destination_token: token,
+            destination_address: '0xdestination', use_deposit_address: false, transactions: [],
+        };
+        const requests = [];
+        const harness = createSwapHistoryHarness(async key => key.includes('/deposit_actions')
+            ? { data: [] }
+            : { data: { swap } }, {
+            selectedAccount: account,
+            onCreate: async params => {
+                requests.push(params);
+                return { data: { swap: { ...swap, id: 'replacement' } } };
+            },
+        });
+        function Retry() {
+            const { swapBasicData } = harness.context.useSwapDataState();
+            const { startFreshSwapAttempt, createSwap } = harness.context.useSwapDataUpdate();
+            if (!swapBasicData) return null;
+            return React.createElement('button', { onClick: async () => {
+                startFreshSwapAttempt();
+                await createSwap({
+                    from: swapBasicData.source_network, to: swapBasicData.destination_network,
+                    fromAsset: swapBasicData.source_token, toAsset: swapBasicData.destination_token,
+                    amount: swapBasicData.requested_amount,
+                    destination_address: swapBasicData.destination_address, depositMethod: 'wallet',
+                }, {});
+            } }, 'Retry');
+        }
+        const root = createRoot(container);
+        useGaslessPreferenceStore.getState().setGaslessEnabled(gaslessEnabled);
+        try {
+            await act(async () => root.render(React.createElement(SWRConfig, { value: { provider: () => new Map() } },
+                React.createElement(harness.Provider, null, React.createElement(Retry)))));
+            await act(async () => container.querySelector('button').click());
+            assert.equal(requests.length, 1);
+            assert.equal(requests[0].source_address, account.address);
+            assert.equal(requests[0].refund_address, account.address);
+            assert.equal(requests[0].use_gasless, gaslessEnabled);
+            assert.equal(requests[0].use_frontend_swap, true);
+        } finally {
+            await act(() => root.unmount());
+            useGaslessPreferenceStore.getState().resetGaslessPreference();
+        }
+    });
+}
+
+for (const failure of ['rejected', 'failed']) {
+    test(`adjusting the amount after a ${failure} transfer replaces the swap and wallet payload`, async () => {
+        const nativeToken = { symbol: 'ETH', asset: 'ETH', decimals: 18, precision: 6 };
+        const makeResponse = (id, amount) => ({ data: {
+            swap: {
+                id, status: 'user_transfer_pending', requested_amount: amount,
+                source_network: network, destination_network: network,
+                source_token: nativeToken, destination_token: nativeToken,
+                destination_address: '0xdestination', use_deposit_address: false, transactions: [], metadata: {},
+            },
+            quote: { receive_amount: Number(amount) },
+            deposit_actions: [{ type: 'transfer', step: 'deposit', status: 'action_required', amount: Number(amount), to_address: '0xdeposit' }],
+        } });
+        const responses = new Map([['first', makeResponse('first', '1')]]);
+        const requests = [];
+        const walletRequests = [];
+        const records = [];
+        const harness = createSwapHistoryHarness(async key => {
+            const id = key.split('/')[2].split('?')[0];
+            const response = responses.get(id);
+            assert.ok(response, `Unexpected swap request: ${key}`);
+            return key.includes('/deposit_actions') ? { data: response.data.deposit_actions } : response;
+        }, {
+            selectedAccount: account,
+            onCreate: async params => {
+                requests.push(params);
+                const response = makeResponse('replacement', params.amount);
+                responses.set('replacement', response);
+                return response;
+            },
+        });
+        const store = value => Object.assign(selector => selector(value), { getState: () => value });
+        const stores = {
+            useSwapTransactionStore: store({ swapTransactions: {}, setSwapTransaction: (...args) => records.push(args) }),
+            useGaslessAuthorizationStore: store({ authorizations: {} }),
+        };
+        const lifecycle = { lifecycleContextFromSwap: () => ({}), lifecycleErrorDetails: () => ({}) };
+        const rejection = { isUserRejection: error => error?.code === 4001 };
+        const execution = loadSource(`${withdraw}Wallet/Common/depositExecution.ts`, {
+            '@layerswap/widget-types': { ActionMessageType: { TransactionExpired: 'TransactionExpired' } },
+            '@/lib/apiClients/layerSwapApiClient': harness.api,
+            '@/stores/swapTransactionStore': stores,
+            '@/stores/gaslessPreferenceStore': { useGaslessPreferenceStore },
+            './isUserRejection': rejection,
+            '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
+            '@/lib/swapLifecycle': lifecycle,
+            '@/lib/widgetTelemetry': { widgetTelemetry: { beginOperation: () => noop } },
+            './executeWalletOperation': loadSource(`${withdraw}Wallet/Common/executeWalletOperation.ts`, {
+                '@/lib/swapLifecycle': lifecycle, './isUserRejection': rejection,
+            }),
+            '@/lib/ErrorHandler': { ErrorHandler: noop },
+        });
+        let walletView;
+        let formAmount;
+        const controllerImports = {
+            ...walletHooks,
+            '@/context/swap': harness.context,
+            '@/context/settings': { useInitialSettings: () => ({}), useSettingsState: () => ({ networks: [network] }) },
+            '@/lib/swapLifecycle': lifecycle,
+            '@/hooks/useTransferBlocked': { useTransferBlocked: noop },
+            '@/lib/balances/useBalance': { useBalance: () => ({ balances: [{ network: network.name, token: 'ETH', amount: 1, isNativeCurrency: true }] }) },
+            '@/lib/gases/useSWRGas': { default: () => ({ gasData: { gas: 0.01 } }) },
+        };
+        const { SendTransactionButton } = loadSource(`${withdraw}Wallet/Common/buttons.tsx`, {
+            ...controllerImports,
+            '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: noop }) },
+            '@/hooks/useClientLayoutEffect': { useClientLayoutEffect: React.useLayoutEffect },
+            '@/helpers/swapProgress': loadSource('helpers/swapProgress.ts', {
+                '@layerswap/widget-types': loadSource('../../types/src/SwapStatus.ts'),
+                '@/lib/apiClients/layerSwapApiClient': harness.api,
+            }),
+            '@/helpers/gasless': gasless,
+            './isUserRejection': rejection,
+            swr: { default: useSWR, useSWRConfig },
+            '@/components/utils/numbers': { isDiffByPercent: () => false },
+            '@/components/Wallet/WalletModal': { useConnectModal: () => ({}) },
+            '@/context/depositSettings': { useDepositSettings: () => ({}) },
+            '@/context/withdrawalContext': { useWalletWithdrawalState: () => ({}) },
+            '@/lib/apiClients/layerSwapApiClient': harness.api,
+            '@/lib/ErrorHandler': { ErrorHandler: noop },
+            '@/lib/fees': { resolvePriceImpactValues: noop },
+            '@/stores/gaslessPreferenceStore': { useGaslessPreferenceStore },
+            '@/stores/swapTransactionStore': stores,
+            '@layerswap/utils': { sleep: noop },
+            '../../Presentation/WalletActionsView': { SendTransactionView: props => { walletView = props; return null; } },
+            './depositExecution': execution,
+        });
+        const { default: Withdraw } = loadSource(`${withdraw}Withdraw.tsx`, {
+            ...controllerImports,
+            '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
+            '@/components/Widget/Index': { Widget: { Footer: childrenOnly } },
+            '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
+            '@/hooks/useFee': { transformSwapDataToQuoteArgs: noop, useQuoteData: () => ({}) },
+            '@/lib/gases/useOutOfGas': { default: () => ({ outOfGas: true }) },
+            formik: { useFormikContext: () => ({ setFieldValue: (_, value) => { formAmount = value; } }) },
+            '../Form/SecondaryComponents/validationError/AdjustAmountButton': {
+                AdjustAmountButton: ({ onEditAmount }) => React.createElement('button', { onClick: onEditAmount }, 'Adjust amount'),
+            },
+            '../Form/SecondaryComponents/validationError/RefreshBalanceButton': { RefreshBalanceButton: empty },
+            './Presentation/BalanceWarningView': { GasWarningView: ({ adjustButton }) => adjustButton },
+            './Presentation/WalletActionTransition': { WalletActionTransition: childrenOnly },
+            '@/hooks/useLifecycleObservation': { useLifecycleObservation: noop },
+            './WalletTransferButton': { default: ({ swapBasicData, warning }) => React.createElement(React.Fragment, null,
+                warning, React.createElement(SendTransactionButton, { swapData: swapBasicData, refuel: false, onClick: async props => {
+                    walletRequests.push(props);
+                    if (walletRequests.length === 1) {
+                        throw failure === 'rejected' ? { code: 4001 } : new Error('Insufficient gas');
+                    }
+                    return '0xpublished';
+                } })) },
+        });
+        function Screen() {
+            harness.state = harness.context.useSwapDataState();
+            return harness.state.swapBasicData ? React.createElement(Withdraw, { type: 'contained' }) : null;
+        }
+        const root = createRoot(container);
+        useGaslessPreferenceStore.getState().resetGaslessPreference();
+        try {
+            await act(async () => root.render(React.createElement(SWRConfig, { value: { provider: () => new Map() } },
+                React.createElement(harness.Provider, null, React.createElement(Screen)))));
+            await act(async () => walletView.handleClick());
+            assert.equal(walletRequests.length, 1);
+            assert.equal(walletRequests[0].amount, 1);
+            assert.equal(harness.state.swapId, 'first', 'wallet failure retains the original attempt until inputs change');
+            await act(async () => container.querySelector('button').click());
+            assert.equal(formAmount, '0.9898');
+            assert.equal(harness.state.swapBasicData.requested_amount, '0.9898');
+            assert.equal(harness.state.swapId, undefined);
+            await act(async () => walletView.handleClick());
+            assert.equal(requests.length, 1);
+            assert.equal(requests[0].amount, '0.9898');
+            assert.equal(walletRequests.length, 2);
+            assert.equal(walletRequests[1].amount, 0.9898);
+            assert.equal(walletRequests[1].swapId, 'replacement');
+            assert.deepEqual(records, [['replacement', 'pending', '0xpublished']]);
+        } finally {
+            await act(() => root.unmount());
+            useGaslessPreferenceStore.getState().resetGaslessPreference();
+        }
+    });
+}
 
 test.after(() => dom.window.close());
