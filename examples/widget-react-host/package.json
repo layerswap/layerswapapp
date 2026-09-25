@@ -10,7 +10,7 @@
     "audit": "audit-ci --config audit-ci.json"
   },
   "dependencies": {
-    "@layerswap/widget-react": "1.0.0",
+    "@layerswap/widget-react": "1.0.1",
     "@tanstack/react-query": "5.90.11",
     "react": "19.2.8",
     "react-dom": "19.2.8",
