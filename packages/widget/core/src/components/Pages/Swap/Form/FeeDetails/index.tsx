@@ -77,13 +77,14 @@ export default function QuoteDetails({
     );
 }
 
-export const DetailsButton: FC<QuoteComponentProps> = ({
+export const DetailsButton: FC<QuoteComponentProps & { enabled?: boolean }> = ({
     quote,
     reward,
     isQuoteLoading,
     swapValues: values,
     destination,
     destinationAddress,
+    enabled = true,
 }) => {
     const isCEX = !!values.fromExchange;
     const sourceAccountNetwork = !isCEX ? values.from : undefined;
@@ -99,6 +100,7 @@ export const DetailsButton: FC<QuoteComponentProps> = ({
         values.fromAsset,
         values.amount,
         wallet,
+        { enabled },
     );
     const gasTokenPriceInUsd = resolveTokenUsdPrice(gasData?.token, quote);
     const gasFeeInUsd =

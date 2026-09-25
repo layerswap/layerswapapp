@@ -74,9 +74,11 @@ export const DetailedEstimates: FC<DetailedEstimatesProps> = ({
 export const GasFee = ({
     values,
     quote,
+    enabled = true,
 }: {
     values: SwapValues;
     quote: SwapQuote | undefined;
+    enabled?: boolean;
 }) => {
     const isCEX = !!values.fromExchange;
     const { provider } = useWallet(
@@ -97,6 +99,9 @@ export const GasFee = ({
         wallet?.address,
         values.from,
         values.fromAsset,
+        undefined,
+        undefined,
+        { enabled },
     );
     const gasTokenPriceInUsd = resolveTokenUsdPrice(gasData?.token, quote);
     const gasFeeInUsd =

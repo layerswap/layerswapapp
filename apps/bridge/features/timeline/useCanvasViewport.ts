@@ -83,6 +83,23 @@ export function useCanvasViewport() {
         observer.observe(content);
         // A native non-passive listener keeps canvas gestures from scrolling or zooming the page.
         const onWheel = (event: WheelEvent) => {
+            const scrollContainer =
+                event.target instanceof Element
+                    ? event.target.closest<HTMLElement>(
+                          '[data-page2-preview] .styled-scroll',
+                      )
+                    : null;
+
+            // Let overflowing modal previews scroll without moving the canvas.
+            if (
+                !event.ctrlKey &&
+                !event.metaKey &&
+                scrollContainer &&
+                scrollContainer.scrollHeight > scrollContainer.clientHeight
+            ) {
+                return;
+            }
+
             event.preventDefault();
             autoFit.current = false;
             const unit =

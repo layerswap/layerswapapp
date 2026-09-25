@@ -8,7 +8,6 @@ import { build } from 'esbuild';
 import { JSDOM } from 'jsdom';
 import React, { act } from 'react';
 import { renderToStaticMarkup, renderToString } from 'react-dom/server';
-import { createRoot, hydrateRoot } from 'react-dom/client';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
@@ -70,6 +69,8 @@ globalThis.localStorage = dom.window.localStorage;
 globalThis.sessionStorage = dom.window.sessionStorage;
 const originalInterval = globalThis.setInterval;
 globalThis.setInterval = reject('setInterval');
+// Detect native input events against JSDOM so slider changes exercise React's handlers.
+const { createRoot, hydrateRoot } = await import('react-dom/client');
 
 // Bundle the actual package export, using the same workspace package boundaries as Next.
 const result = await build({
@@ -868,6 +869,59 @@ test('canvas fits, zooms, pans and focuses frames without remounting previews', 
     }
 });
 
+test('canvas preserves modal body wheel scrolling while keeping canvas pan and zoom', async () => {
+    const container = document.getElementById('root');
+    const root = createRoot(container);
+    try {
+        await act(async () => root.render(React.createElement(TimelinePage)));
+        await chooseMode(container, 'modal');
+        const canvas = container.querySelector('[aria-label="Scenario canvas"]');
+        const world = container.querySelector('[data-canvas-transform]');
+        const modal = canvas.querySelector('[data-page2-modal]');
+        await act(async () => modal.querySelector('[aria-label="See details"]').click());
+        const body = modal.querySelector('.styled-scroll');
+        const target = [...body.querySelectorAll('button')].find(button => button.textContent === 'Close details');
+        assert.ok(target, 'wheel input starts inside the expanded quote');
+        // JSDOM has no layout or native scroll; supply overflow dimensions and
+        // verify that the real modal event remains available to the browser.
+        Object.defineProperties(body, {
+            clientHeight: { value: 400 },
+            scrollHeight: { value: 800, configurable: true },
+        });
+        const dispatchWheel = async (element, options = {}) => {
+            const event = new window.WheelEvent('wheel', {
+                deltaY: 80, bubbles: true, cancelable: true, ...options,
+            });
+            await act(async () => element.dispatchEvent(event));
+            return event;
+        };
+
+        const beforeScroll = world.style.transform;
+        for (const deltaY of [80, -80]) {
+            const wheel = await dispatchWheel(target, { deltaY });
+            assert.equal(wheel.defaultPrevented, false, 'overflowing modal keeps native scrolling');
+            assert.equal(world.style.transform, beforeScroll, 'scrolling the modal does not pan the canvas');
+        }
+        for (const modifier of ['ctrlKey', 'metaKey']) {
+            const beforeZoom = world.style.transform;
+            const wheel = await dispatchWheel(target, { deltaY: -25, [modifier]: true });
+            assert.equal(wheel.defaultPrevented, true, `${modifier} zoom still belongs to the canvas`);
+            assert.notEqual(world.style.transform, beforeZoom);
+        }
+        const beforePan = world.style.transform;
+        assert.equal((await dispatchWheel(canvas)).defaultPrevented, true);
+        assert.notEqual(world.style.transform, beforePan, 'background wheel input still pans');
+
+        Object.defineProperty(body, 'scrollHeight', { value: 400 });
+        const beforeFittedBodyWheel = world.style.transform;
+        assert.equal((await dispatchWheel(target)).defaultPrevented, true);
+        assert.notEqual(world.style.transform, beforeFittedBodyWheel, 'a body without overflow keeps canvas gestures');
+        assert.deepEqual(forbidden, []);
+    } finally {
+        await act(async () => root.unmount());
+    }
+});
+
 test('the viewer hydrates shared selection controls without replacing server markup', async () => {
     const container = document.getElementById('root');
     const element = React.createElement(TimelinePage);
@@ -977,6 +1031,22 @@ test('quote disclosures work in both modes and reset on timeline navigation with
         assert.ok(button, label);
         await act(async () => button.click());
     };
+    const scrub = async seconds => {
+        const slider = container.querySelector('#timeline-time');
+        await act(async () => {
+            Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(slider, String(seconds));
+            slider.dispatchEvent(new window.Event('input', { bubbles: true }));
+        });
+        assert.equal(container.querySelector('output[for="timeline-time"]').textContent, `00:00:${String(seconds).padStart(2, '0')}`);
+    };
+    const selectMilestone = async seconds => {
+        const button = [...container.querySelectorAll('[aria-label="Milestones"] button')].find(
+            item => item.textContent.startsWith(`00:00:${String(seconds).padStart(2, '0')}`),
+        );
+        assert.ok(button, `milestone at ${seconds} seconds`);
+        await act(async () => button.click());
+        assert.equal(container.querySelector('#timeline-time').value, String(seconds));
+    };
     try {
         await act(async () => root.render(React.createElement(TimelinePage)));
         await chooseLayout(container, 'Timeline');
@@ -1005,6 +1075,15 @@ test('quote disclosures work in both modes and reset on timeline navigation with
             await click('← Previous');
             assert.equal(expanded(), false);
 
+            await scrub(5);
+            await click('See details', previewElement());
+            await scrub(0);
+            assert.equal(expanded(), false, 'slider rewind restores the earlier closed quote');
+            await selectMilestone(5);
+            await click('See details', previewElement());
+            await selectMilestone(0);
+            assert.equal(expanded(), false, 'milestone buttons restore the earlier closed quote');
+
             // These two scenarios share the same initial fixture and timestamp.
             await click('See details', previewElement());
             await choose('Quote update during preparation');
@@ -1025,6 +1104,14 @@ test('quote disclosures work in both modes and reset on timeline navigation with
             assert.equal(expanded(), false);
             await click('Next →');
             assert.equal(expanded(), true);
+            await click('Close details', previewElement());
+            await scrub(12);
+            await scrub(20);
+            assert.equal(expanded(), true, 'slider navigation restores a snapshot whose quote starts open');
+            await click('Close details', previewElement());
+            await selectMilestone(12);
+            await selectMilestone(20);
+            assert.equal(expanded(), true, 'milestone navigation restores a snapshot whose quote starts open');
         }
         await chooseMode(container, 'component');
         assert.equal(expanded(), true);
@@ -1547,6 +1634,56 @@ test('completed token swaps use the actual output and do not invent missing acti
         assert.match(steps.textContent, /Received 0\.0395 ETH/);
         assert.doesNotMatch(steps.textContent, /0\.0396 ETH/);
         assert.equal(steps.querySelectorAll('.lucide-check').length, 4);
+    } finally {
+        await act(async () => root.unmount());
+    }
+});
+
+test('token swaps retain the refuel amount and receipt when delivery completes', async () => {
+    const native = frontendMilestone('frontend-native', 'publishing').snapshot;
+    const refuelComplete = frontendMilestone('refuel', 'complete').snapshot;
+    const snapshot = {
+        ...native,
+        refuel: refuelComplete.refuel,
+        details: {
+            ...refuelComplete.details,
+            transactions: refuelComplete.details.transactions.map(transaction => ({
+                ...transaction,
+                amount: transaction.type === 'input' ? Number(native.swap.requested_amount) : transaction.amount,
+                transaction_hash: `${transaction.type}/hash`,
+            })),
+        },
+    };
+    const container = document.getElementById('root');
+    const root = createRoot(container);
+    try {
+        for (const depositActions of [
+            native.depositActions.map(action => ({ ...action, status: 'completed' })),
+            undefined,
+        ]) {
+            const completed = { ...snapshot, depositActions };
+            const pending = {
+                ...completed,
+                details: {
+                    ...completed.details,
+                    transactions: completed.details.transactions.filter(transaction => transaction.type !== 'refuel'),
+                },
+            };
+            assert.equal(phase(pending).phase, SwapPhase.SettlingOutput);
+            await act(async () => root.render(processingElement(pending)));
+            assert.match(container.querySelectorAll('li')[2].textContent, /Sending ETH to your address/);
+
+            assert.equal(phase(completed).phase, SwapPhase.Completed);
+            await act(async () => root.render(processingElement(completed)));
+            const rows = container.querySelectorAll('li');
+            assert.equal(rows.length, 3, 'deposit, output and refuel remain visible with or without wallet action history');
+            const refuelRow = rows[2];
+            assert.equal(refuelRow.textContent, `${snapshot.refuel.amount} ${snapshot.refuel.token.asset} was sent to your address`);
+            const link = refuelRow.querySelector('a[data-step-transaction]');
+            assert.equal(link.href, 'https://explorer.example.invalid/tx/refuel%2Fhash');
+            assert.equal(link.target, '_blank');
+            assert.ok(refuelRow.querySelector('.lucide-check'), 'the delivered refuel is marked complete');
+        }
     } finally {
         await act(async () => root.unmount());
     }

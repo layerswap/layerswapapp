@@ -383,7 +383,11 @@ export function ProcessingView({
             phase === SwapPhase.OutputPending ||
             phase === SwapPhase.SettlingOutput);
 
-    if (isTokenSwap && (showUnifiedProgress || phase === SwapPhase.Completed)) {
+    if (
+        isTokenSwap &&
+        !refuel &&
+        (showUnifiedProgress || phase === SwapPhase.Completed)
+    ) {
         return (
             <DepositWorkflowView
                 actions={depositActions}

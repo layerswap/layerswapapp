@@ -69,7 +69,7 @@ export function SwapOverviewView({
     );
 }
 
-// Keep the overview mounted when wallet controls give way to processing steps.
+// Keep the overview and controller ancestors stable when the flow changes animation mode.
 export function SwapContentView({
     summary,
     quote,
@@ -94,24 +94,16 @@ export function SwapContentView({
     return (
         <StepsPanelProvider>
             <div className="w-full flex flex-col gap-2 text-secondary-text">
-                {transferStage ? (
-                    <WalletExecutionTransition
-                        overview={overview}
-                        workflow={
-                            transferStage === 'processing'
-                                ? children
-                                : undefined
-                        }
-                        controls={
-                            transferStage === 'withdraw' ? children : undefined
-                        }
-                    />
-                ) : (
-                    <>
-                        {overview}
-                        {children}
-                    </>
-                )}
+                <WalletExecutionTransition
+                    animate={!!transferStage}
+                    overview={overview}
+                    workflow={
+                        transferStage === 'processing' ? children : undefined
+                    }
+                    controls={
+                        transferStage !== 'processing' ? children : undefined
+                    }
+                />
             </div>
         </StepsPanelProvider>
     );

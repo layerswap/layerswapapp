@@ -7,10 +7,12 @@ export function WalletExecutionTransition({
     overview,
     workflow,
     controls,
+    animate = true,
 }: {
     overview?: ReactNode;
     workflow?: ReactNode;
     controls?: ReactNode;
+    animate?: boolean;
 }) {
     const reducedMotion = useHydratedReducedMotion();
     const panels = [
@@ -19,6 +21,7 @@ export function WalletExecutionTransition({
                 key="overview"
                 kind="overview"
                 reducedMotion={reducedMotion}
+                animate={animate}
             >
                 <div className="pb-2">{overview}</div>
             </ExecutionPanel>
@@ -28,6 +31,7 @@ export function WalletExecutionTransition({
                 key="workflow"
                 kind="workflow"
                 reducedMotion={reducedMotion}
+                animate={animate}
             >
                 {workflow}
             </ExecutionPanel>
@@ -37,6 +41,7 @@ export function WalletExecutionTransition({
                 key="controls"
                 kind="controls"
                 reducedMotion={reducedMotion}
+                animate={animate}
             >
                 {controls}
             </ExecutionPanel>
@@ -60,10 +65,12 @@ function ExecutionPanel({
     children,
     kind,
     reducedMotion,
+    animate,
 }: {
     children: ReactNode;
     kind: 'overview' | 'workflow' | 'controls';
     reducedMotion: boolean;
+    animate: boolean;
 }) {
     const isPresent = useIsPresent();
 
@@ -72,7 +79,7 @@ function ExecutionPanel({
     if (kind === 'workflow') {
         return (
             <div
-                data-wallet-execution-panel={kind}
+                data-wallet-execution-panel={animate ? kind : undefined}
                 aria-hidden={!isPresent}
                 inert={!isPresent}
             >
@@ -83,12 +90,14 @@ function ExecutionPanel({
 
     return (
         <motion.div
-            data-wallet-execution-panel={kind}
+            data-wallet-execution-panel={animate ? kind : undefined}
             className="w-full overflow-hidden"
-            initial={reducedMotion ? false : { height: 0, opacity: 0 }}
+            initial={!animate || reducedMotion ? false : { height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={reducedMotion ? { duration: 0 } : swapFlowTransition}
+            transition={
+                !animate || reducedMotion ? { duration: 0 } : swapFlowTransition
+            }
             aria-hidden={!isPresent}
             inert={!isPresent}
         >

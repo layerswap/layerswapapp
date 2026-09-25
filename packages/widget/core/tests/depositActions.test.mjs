@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import test from 'node:test'
 import ts from 'typescript'
+import { createElement, Fragment } from 'react'
 
 const require = createRequire(import.meta.url)
 const walletPath = '../src/components/Pages/Swap/Withdraw/Wallet/Common/'
@@ -97,10 +98,16 @@ function createWorkflow() {
         if (!(index in hooks)) hooks[index] = initial
         return [hooks[index], value => { hooks[index] = typeof value === 'function' ? value(hooks[index]) : value }]
     }
-    const Steps = noop
+    const Steps = () => null
     const workflowView = loadSource('../src/components/Pages/Swap/Withdraw/Presentation/DepositWorkflowView.tsx', {
         '@/helpers/depositActions': depositActions,
-        '../Processing/StepsComponent': { default: Steps },
+        '../Processing/StepsComponent': {
+            default: Steps,
+            StepsPanel: ({ children }) => createElement(Fragment, null, children),
+        },
+        '../Processing/StepTransactionLink': { StepTransactionLink: noop },
+        '@/components/utils/RoundDecimals': { truncateDecimals: value => value },
+        './TransferStatusHeader': { TransferStatusHeader: noop },
         '../Processing/types': progressTypes,
     })
     const walletViews = loadSource('../src/components/Pages/Swap/Withdraw/Presentation/WalletActionsView.tsx', {
@@ -109,6 +116,10 @@ function createWorkflow() {
         '@/components/Icons/InfoIcon': { default: noop },
         '@/helpers/depositActions': depositActions,
         './DepositWorkflowView': workflowView,
+        './WalletExecutionTransition': {
+            WalletExecutionTransition: ({ workflow, controls }) =>
+                createElement(Fragment, null, workflow, controls),
+        },
         '@layerswap/ui-kit/components': { WalletIcon: noop },
         'lucide-react': { Loader2: noop },
         '../../Form/SecondaryComponents/validationError/constants': {},

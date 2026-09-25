@@ -79,9 +79,16 @@ export const SummaryRow: FC<{
                 ) : undefined
             }
             slippage={<Slippage quoteData={quoteData.quote} values={values} />}
-            gasFee={<GasFee values={values} quote={quoteData.quote} />}
+            gasFee={
+                <GasFee
+                    values={values}
+                    quote={quoteData.quote}
+                    enabled={!compact}
+                />
+            }
             detailsButton={
                 <DetailsButton
+                    enabled={!compact}
                     quote={quoteData.quote}
                     isQuoteLoading={isQuoteLoading}
                     swapValues={values}
