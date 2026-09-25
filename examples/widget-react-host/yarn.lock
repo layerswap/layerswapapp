@@ -433,25 +433,25 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@layerswap/widget-js@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.npmjs.org/@layerswap/widget-js/-/widget-js-1.0.0.tgz#9178ae4231ee21c12503c37af5e47ba393732753"
-  integrity sha512-RJ4eJWn8zdv4ytdUxQkED1n7PtSTrLr6MOD9040OQESWU4XuoanjJ1gmc93H7t08XtMfDE2shoB0humSaCZxRQ==
+"@layerswap/widget-js@1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@layerswap/widget-js/-/widget-js-1.0.1.tgz#fc028da980c78d1476ab6da9ff6f1f9ff6014e61"
+  integrity sha512-cgSok66gVYHH6o7ka1Xa1ImorL22d4vnUtE2F7o5lOCqv5VQkJahIlX5KK6oEzn87jCF5gDdo5UGenk2TOyKtw==
   dependencies:
-    "@layerswap/widget-types" "1.0.0"
+    "@layerswap/widget-types" "2.3.0"
     "@module-federation/runtime" "^0.9.0"
 
-"@layerswap/widget-react@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.npmjs.org/@layerswap/widget-react/-/widget-react-1.0.0.tgz#cf34ba9e657283f82facb26b90f55b33ffa6b6b5"
-  integrity sha512-Noj7hzYy9uuHgrrOUKhyGcTsqd5tAzIjl1eZOAu4nujuxgoYRqF5XxvYn5T8X7XKoViVpsanYzPQM8iw6wD5dA==
+"@layerswap/widget-react@1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@layerswap/widget-react/-/widget-react-1.0.1.tgz#26c90b4b606892e278921768efb28db94bb294e2"
+  integrity sha512-gIBV1PdL/iT4NF8wga2jMc3A0OTzcMAngIbSCBwoXdWhKSe1zmiNkRByXSXWvU2nD4fJ5DbeCAasbL7vOarEZw==
   dependencies:
-    "@layerswap/widget-js" "1.0.0"
+    "@layerswap/widget-js" "1.0.1"
 
-"@layerswap/widget-types@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.npmjs.org/@layerswap/widget-types/-/widget-types-1.0.0.tgz#3d2cc1aa98de4a995fc490be2e601d1bc4b46200"
-  integrity sha512-DRZMZT0RoqpTexQbh6D10eXK8m6gwRWjceDddFgAUrDd82/POUjvuKPHUTTeUD912KQJB3RFx9u86/zOzEoRNw==
+"@layerswap/widget-types@2.3.0":
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/@layerswap/widget-types/-/widget-types-2.3.0.tgz#908af258162020641fc6d46f2409edea13c1b46b"
+  integrity sha512-fiGMAiiFmQZCgzy4Q2Ig25TKWFaVUMdbhEhZFqWUJDrfi9AE7I2Mal5oLKQuA1fjPkQiWDNWdYk/F+xmACo8Og==
   dependencies:
     csstype "^3.1.3"
 
