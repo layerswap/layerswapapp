@@ -42,7 +42,7 @@
     "autoprefixer": "^10.6.1",
     "eslint": "^8.57.1",
     "eslint-config-next": "^15.5.26",
-    "eslint-plugin-no-conditional-literals-in-jsx": "file:eslint-plugins/eslint-plugin-no-conditional-literals-in-jsx",
+    "eslint-plugin-no-conditional-literals-in-jsx": "file:../../eslint-plugins/eslint-plugin-no-conditional-literals-in-jsx",
     "tailwindcss": "^4.3.3",
     "typescript": "5.9.3"
   },

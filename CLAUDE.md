@@ -12,7 +12,9 @@ Layerswap UI — a Next.js 15 web application (Pages Router) for cross-chain tok
 pnpm install      # Install dependencies
 pnpm dev          # Start dev server
 pnpm build        # Production build
-pnpm lint         # ESLint (next/core-web-vitals + custom JSX literal plugin)
+pnpm lint         # Browser widget import restrictions
+pnpm --filter @layerswap/bridge lint  # Next.js + custom JSX literal plugin
+pnpm test:lint    # Shared JSX plugin tests + browser import restriction tests
 ANALYZE=true pnpm build  # Bundle analysis
 ```
 
@@ -56,7 +58,7 @@ Defined in `Models/Network.ts` as `NetworkType` enum: EVM, Starknet, Solana, Cos
 
 ## Linting Rules
 
-- **Custom ESLint plugin** `no-conditional-literals-in-jsx`: prevents conditional literals and unwrapped text in JSX (both set to `error`)
+- **Custom ESLint plugin** `no-conditional-literals-in-jsx`: shared workspace package at `eslint-plugins/eslint-plugin-no-conditional-literals-in-jsx`, registered in the root `package.json` and enabled by `.eslintrc.json`. It prevents conditional literals and unwrapped text in JSX (both set to `error`). Standalone examples reference this same directory with a relative `file:` dependency.
 - `react-hooks/exhaustive-deps` is **disabled**
 - `react/display-name` is **disabled**
 
