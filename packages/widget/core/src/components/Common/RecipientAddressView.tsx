@@ -62,7 +62,7 @@ export function RecipientAddressView({
                 className={
                     variant === 'manual'
                         ? 'group/addressItem min-w-0 truncate'
-                        : 'text-sm group/addressItem text-secondary-text'
+                        : 'text-sm group/addressItem text-primary-text'
                 }
             >
                 {children ??
@@ -75,7 +75,7 @@ export function RecipientAddressView({
                             readOnly
                         />
                     ) : (
-                        <span className="text-sm text-secondary-text">
+                        <span className="text-sm text-primary-text">
                             {short}
                         </span>
                     ))}

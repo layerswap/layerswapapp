@@ -109,8 +109,8 @@ const Summary: FC<SwapInfoProps> = (props) => {
                     }
                 />
                 <div className="relative text-secondary-text">
-                    <hr className="border border-secondary-400 w-full rounded-full" />
-                    <ArrowDown className="absolute left-1/2 -translate-x-1/2 -top-2.5 h-6 w-6 p-1 bg-secondary-400 rounded-md text-secondary-text" />
+                    {/* <hr className="border border-secondary-400 w-full rounded-full" /> */}
+                    <ArrowDown className="absolute left-1/2 -translate-x-1/2 -top-2.5 h-6 w-6 p-1  rounded-md text-secondary-text" />
                 </div>
                 <SwapRow
                     route={destination}

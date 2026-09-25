@@ -59,7 +59,7 @@ export function SwapOverviewView({
                         aria-hidden="true"
                     >
                         <div className="min-h-0 overflow-hidden">
-                            <div className="mx-3 border-t border-secondary-400" />
+                            <div className="mx-3 border-t border-secondary-300" />
                         </div>
                     </div>
                     {quote}
