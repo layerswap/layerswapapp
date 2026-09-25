@@ -112,3 +112,47 @@ test('a swap the API failed after its input completed carries no client failure 
   assert.equal(resolved.phase, SwapPhase.Failed)
   assert.equal(resolved.failureReason, undefined)
 })
+
+test('completed swaps retain a duration when input and output share a timestamp', () => {
+  const start = '2026-09-25T10:00:00.000Z'
+  for (const [end, expected] of [
+    [start, 'Completed in <1s'],
+    ['2026-09-25T10:00:00.750Z', 'Completed in <1s'],
+    ['2026-09-25T10:00:01.000Z', 'Completed in 1s'],
+    ['2026-09-25T10:01:10.000Z', 'Completed in 1m 10s'],
+  ]) {
+    const resolved = resolve({
+      status: 'completed',
+      transactions: [
+        inputTx({ timestamp: start }),
+        { type: 'output', status: 'completed', transaction_hash: '0x1', amount: 3.169, timestamp: end },
+      ],
+    })
+    assert.equal(resolved.phase, SwapPhase.Completed)
+    assert.equal(resolved.generalStatus.subTitle, expected)
+  }
+})
+
+test('completion duration uses recorded creation dates when block timestamps are missing', () => {
+  const resolved = resolve({
+    status: 'completed',
+    transactions: [
+      inputTx({ created_date: '2026-09-25T10:00:00.000Z' }),
+      { type: 'output', transaction_hash: '0x2', amount: 3.169, created_date: '2026-09-25T10:00:40.000Z' },
+    ],
+  })
+  assert.equal(resolved.generalStatus.subTitle, 'Completed in 40s')
+})
+
+test('missing or inconsistent timestamps do not produce a fabricated completion duration', () => {
+  for (const timestamp of [undefined, 'invalid', '2026-09-25T09:59:59.000Z']) {
+    const resolved = resolve({
+      status: 'completed',
+      transactions: [
+        inputTx({ timestamp: '2026-09-25T10:00:00.000Z' }),
+        { type: 'output', transaction_hash: '0x2', amount: 3.169, timestamp },
+      ],
+    })
+    assert.equal(resolved.generalStatus.subTitle, null)
+  }
+})

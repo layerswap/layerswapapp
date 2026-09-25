@@ -12,6 +12,7 @@ import { SwapDetailsSceleton } from '@/components/Common/Sceletons';
 import { Widget } from '@/components/Widget/Index';
 import { useCallbacks } from '@/context/callbackProvider';
 import { useSwapDataState } from '@/context/swap';
+import { useSelectedAccount } from '@/context/swapAccounts';
 import { useGaslessAuthorizationStatus } from '@/hooks/useGaslessAuthorizationStatus';
 import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
 import { useSwapRetry } from '@/hooks/useSwapRetry';
@@ -46,6 +47,10 @@ const SwapDetails: FC<Props> = ({
         quoteError,
         swapId,
     } = useSwapDataState();
+    const selectedSourceAccount = useSelectedAccount(
+        'from',
+        swapBasicData?.source_network.name,
+    );
     const { onBackClick, onSwapLifecycle } = useCallbacks();
     const isGaslessActive = useIsGaslessActive(swapBasicData);
 
@@ -101,6 +106,8 @@ const SwapDetails: FC<Props> = ({
         !swapBasicData.use_deposit_address &&
         (!resolved.showWithdrawScreen ||
             (compactsDuringWalletExecution && !!swapId));
+    const sourceAddress =
+        swapDetails?.source_address || selectedSourceAccount?.address;
 
     return (
         <Container type={type} goBack={onBackClick}>
@@ -123,6 +130,7 @@ const SwapDetails: FC<Props> = ({
                     !swapBasicData.use_deposit_address && (
                         <SwapQuoteDetails
                             swapBasicData={swapBasicData}
+                            sourceAddress={sourceAddress}
                             quote={quote}
                             refuel={refuel}
                             quoteIsLoading={quoteIsLoading}

@@ -9,6 +9,7 @@ import { QuoteAvailabilityView } from './Presentation/QuoteAvailabilityView';
 
 type Props = {
     swapBasicData: SwapBasicData | undefined;
+    sourceAddress?: string;
     quote: SwapQuote | undefined;
     quoteError: QuoteError | undefined;
     refuel: Refuel | undefined;
@@ -19,6 +20,7 @@ type Props = {
 
 export const SwapQuoteDetails: FC<Props> = ({
     swapBasicData: swapData,
+    sourceAddress,
     quote,
     refuel,
     quoteIsLoading,
@@ -52,6 +54,7 @@ export const SwapQuoteDetails: FC<Props> = ({
                 <SwapQuoteComp
                     quote={{ quote, refuel }}
                     swapValues={values}
+                    sourceAddress={sourceAddress}
                     isQuoteLoading={quoteIsLoading}
                     partner={partner}
                     compact={compact}

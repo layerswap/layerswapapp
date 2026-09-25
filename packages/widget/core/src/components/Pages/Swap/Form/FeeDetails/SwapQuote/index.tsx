@@ -1,5 +1,4 @@
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues';
-import { useSelectedAccount } from '@/context/swapAccounts';
 import useWallet from '@/hooks/useWallet';
 import { Address } from '@/lib/address/Address';
 import { Quote } from '@/lib/apiClients/layerSwapApiClient';
@@ -32,6 +31,7 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({
     swapValues: values,
     quote: quoteData,
     isQuoteLoading,
+    sourceAddress,
     partner,
     compact,
 }) => {
@@ -49,11 +49,6 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({
                   ),
               )
             : undefined;
-    const selectedSourceAccount = useSelectedAccount(
-        'from',
-        values?.from?.name,
-    );
-
     return (
         <QuoteView
             compact={compact}
@@ -68,7 +63,7 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({
                     quoteData={quoteData}
                     onOpen={() => setIsOpen(true)}
                     isOpen={isOpen}
-                    sourceAddress={selectedSourceAccount?.address}
+                    sourceAddress={sourceAddress}
                     partner={partner}
                 />
             }

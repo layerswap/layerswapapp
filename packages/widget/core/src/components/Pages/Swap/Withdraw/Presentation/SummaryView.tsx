@@ -36,6 +36,8 @@ const Summary: FC<SwapInfoProps> = (props) => {
         source_exchange: sourceExchange,
     } = swap;
     const { source = from, destination = to, isUsdMode = false } = props;
+    const destinationPrecision =
+        destinationCurrency.precision ?? destinationCurrency.decimals;
 
     const sourcePriceInUsd =
         swapQuote?.source_token?.price_in_usd ?? sourceCurrency?.price_in_usd;
@@ -130,8 +132,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                                     trend={0}
                                     format={{
                                         maximumFractionDigits:
-                                            quote.quote.destination_token
-                                                ?.decimals || 2,
+                                            destinationPrecision,
                                     }}
                                 />
                             )
@@ -152,8 +153,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                                         trend={0}
                                         format={{
                                             maximumFractionDigits:
-                                                quote.quote.destination_token
-                                                    ?.decimals || 2,
+                                                destinationPrecision,
                                         }}
                                     />
                                 ) : (

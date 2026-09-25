@@ -498,10 +498,10 @@ test('time between milestones updates elapsed text; rewind restores amounts, mes
     );
 });
 
-test('standard and token swaps keep elapsed time running through finalizing', () => {
+test('standard transfers keep elapsed time through finalizing while token swaps omit it', () => {
     for (const [scenarioId, milestoneId, currentTime, laterTime] of [
         ['wallet-success', 'finalizing', '00:55', '01:04'],
-        ['frontend-permit2', 'finalizing', '00:20', '00:29'],
+        ['frontend-permit2', 'finalizing', null, null],
         ['refuel', 'pending', '01:10', '01:19'],
     ]) {
         const scenario = scenarios.find(s => s.id === scenarioId);
@@ -510,7 +510,7 @@ test('standard and token swaps keep elapsed time running through finalizing', ()
         const container = document.createElement('div');
         for (const [at, expected] of [[milestone.at, currentTime], [milestone.at + 9, laterTime]]) {
             container.innerHTML = renderToStaticMarkup(preview(milestone.snapshot, at));
-            assert.equal(container.querySelector('[role="timer"]')?.textContent, `Elapsed time:${expected}`, scenarioId);
+            assert.equal(container.querySelector('[role="timer"]')?.textContent ?? null, expected === null ? null : `Elapsed time:${expected}`, scenarioId);
             assert.doesNotMatch(container.textContent, /Finalizing…/);
         }
         const completed = scenario.milestones.at(-1);
@@ -1479,6 +1479,14 @@ test('frontend wallet progress preserves completed steps, pending indicators and
     assert.equal(publishing.querySelectorAll('.lucide-check').length, 2);
     assert.match(publishing.textContent, /Step 3 of 4: Confirm swap/);
 
+    for (const milestone of ['approving', 'approval-pending', 'signing', 'prepare-publish', 'publishing']) {
+        const panel = progress(milestone);
+        const header = panel.querySelector('[role="progressbar"]').parentElement;
+        const snapshot = frontendMilestone('frontend-permit2', milestone).snapshot;
+        assert.equal(header.textContent, 'Swap in progress', milestone);
+        assert.ok(panel.querySelector('[aria-label="Progress"]').textContent.includes(snapshot.wallet.label), 'wallet instruction remains with its step');
+    }
+
     const snapshot = frontendMilestone('frontend-permit2', 'signing').snapshot;
     const production = document.createElement('div');
     production.innerHTML = renderToStaticMarkup(React.createElement(SendTransactionView, {
@@ -1502,6 +1510,7 @@ test('token swap timeline keeps wallet steps through confirmations and delivery'
     assert.doesNotMatch(submitted.textContent, /\[object Object\]/);
 
     const finalizing = fixtureDOM('frontend-permit2', 'finalizing');
+    assert.equal(finalizing.querySelector('[role="progressbar"]').parentElement.textContent, 'Swap in progress');
     assert.equal(finalizing.querySelectorAll('[aria-label="Swap progress"] .lucide-check').length, 3);
     assert.match(finalizing.textContent, /Step 4 of 4: Receive 0.0396 ETH/);
     assert.match(finalizing.textContent, /Sending to/);
@@ -1511,7 +1520,8 @@ test('token swap timeline keeps wallet steps through confirmations and delivery'
     const card = completed.querySelector('[aria-label="Swap complete"]');
     assert.match(card.textContent, /Transfer complete/);
     assert.equal(card.querySelector('[role="progressbar"]').getAttribute('aria-valuenow'), '100');
-    assert.match(card.textContent, /Completed in 40s/);
+    assert.doesNotMatch(card.textContent, /Completed in/);
+    assert.match(fixtureDOM('wallet-success', 'completed').textContent, /Completed in 1m 10s/);
     assert.doesNotMatch(card.textContent, /steps|quoted|Receipt|New swap/);
     assert.equal(completed.querySelector('[data-recipient-address]').closest('[hidden], [aria-hidden="true"], [inert]'), null);
     const steps = card.querySelector('[aria-label="Progress"]');
@@ -1538,8 +1548,8 @@ test('token swap keeps its inline gauge and header unchanged through completion'
         const recipient = document.querySelector('[data-recipient-address]');
         assert.equal(progressbar.getAttribute('aria-valuenow'), '50');
         assert.equal(gauge.getAttribute('width'), '32');
-        assert.match(progressbar.parentElement.textContent, /Transfer in progress/);
-        assert.ok(progressbar.parentElement.querySelector('[role="timer"]'));
+        assert.equal(progressbar.parentElement.textContent, 'Swap in progress');
+        assert.equal(progressbar.parentElement.querySelector('[role="timer"]'), null);
 
         await act(async () => root.render(preview(completed.snapshot, completed.at)));
         assert.equal(document.querySelector('[role="progressbar"]'), progressbar);
@@ -1549,7 +1559,7 @@ test('token swap keeps its inline gauge and header unchanged through completion'
         assert.equal(progressbar.parentElement.querySelector('h3').textContent, 'Transfer complete');
         assert.equal(progressbar.parentElement.querySelector('[style*="transition"], [class*="animate-"], [class*="transition-"]'), null);
         assert.ok(progressbar.querySelector('.lucide-check'));
-        assert.match(progressbar.parentElement.textContent, /Transfer completeCompleted in 40s/);
+        assert.equal(progressbar.parentElement.textContent, 'Transfer complete');
         assert.equal(document.querySelector('img[alt="Token Logo"]'), summaryToken);
         assert.equal(document.querySelector('[aria-label="Progress"]'), steps);
         assert.equal(steps.closest('[hidden], [aria-hidden="true"], [inert]'), null);
@@ -1620,12 +1630,14 @@ test('completed token swaps use the actual output and do not invent missing acti
     const root = createRoot(container);
     try {
         await act(async () => root.render(preview(snapshot, 90)));
-        const card = container.querySelector('[aria-label="Swap complete"]');
+        const card = container.querySelector('[data-steps-panel]');
         assert.match(container.textContent, /0\.0395 ETH/, 'summary shows the actual received amount');
         assert.match(card.textContent, /Transfer complete/);
-        assert.equal(card.querySelector('[aria-label="Progress"]'), null, 'missing action history does not invent wallet steps');
-        const transaction = card.querySelector('a[data-step-transaction]');
-        assert.equal(transaction.getAttribute('aria-label'), 'View transaction');
+        assert.equal(card.querySelectorAll('li').length, 2, 'receipts show deposit and delivery even without wallet action history');
+        assert.doesNotMatch(card.textContent, /Approve token|Sign to swap|Confirm swap/);
+        assert.match(card.querySelectorAll('li')[1].textContent, /0\.0395 ETH was sent to your address/);
+        const transaction = card.querySelectorAll('li')[1].querySelector('a[data-step-transaction]');
+        assert.match(transaction.getAttribute('aria-label'), /^View transaction:/);
         assert.equal(transaction.hasAttribute('href'), false, 'preview transaction links remain read-only');
         assert.doesNotMatch(card.textContent, /4 of 4/);
 
@@ -1634,6 +1646,66 @@ test('completed token swaps use the actual output and do not invent missing acti
         assert.match(steps.textContent, /Received 0\.0395 ETH/);
         assert.doesNotMatch(steps.textContent, /0\.0396 ETH/);
         assert.equal(steps.querySelectorAll('.lucide-check').length, 4);
+    } finally {
+        await act(async () => root.unmount());
+    }
+});
+
+test('live sign-only token swaps keep the deposit and delivery receipt through completion', async () => {
+    const root = createRoot(document.getElementById('root'));
+    const pending = frontendMilestone('frontend-gasless-success', 'output-pending').snapshot;
+    const completed = frontendMilestone('frontend-gasless-success', 'completed').snapshot;
+    try {
+        await act(async () => root.render(processingElement(pending)));
+        const steps = document.querySelector('[aria-label="Progress"]');
+        assert.equal(steps.querySelectorAll('li').length, 2);
+
+        for (const depositActions of [
+            completed.depositActions,
+            completed.depositActions.map(action => ({ ...action, status: 'action_required' })),
+            undefined,
+            [],
+        ]) {
+            await act(async () => root.render(processingElement({ ...completed, depositActions })));
+            const panel = document.querySelector('[data-steps-panel]');
+            assert.equal(panel.querySelector('[aria-label="Progress"]'), steps, 'completion preserves the existing transaction timeline');
+            assert.match(panel.textContent, /Transfer complete/);
+            const rows = steps.querySelectorAll('li');
+            assert.equal(rows.length, 2);
+            assert.match(rows[0].textContent, /Deposit confirmed/);
+            assert.match(rows[1].textContent, /0\.0396 ETH was sent to your address/);
+            assert.equal(steps.querySelectorAll('.lucide-check').length, 2);
+            assert.doesNotMatch(panel.textContent, /Approve token|Sign to swap|Confirm swap/);
+            const links = panel.querySelectorAll('a[data-step-transaction]');
+            assert.equal(links.length, 2);
+            assert.ok([...links].every(link => link.closest('li')), 'every transaction link belongs to its receipt row');
+            assert.ok([...links].every(link => link.hasAttribute('href')), 'live links remain usable');
+        }
+    } finally {
+        await act(async () => root.unmount());
+    }
+});
+
+test('completed stablecoin swaps display token precision instead of all on-chain decimals', async () => {
+    const root = createRoot(document.getElementById('root'));
+    const original = frontendMilestone('frontend-gasless-success', 'completed').snapshot;
+    const token = { ...original.swap.destination_token, asset: 'USDe', symbol: 'USDe', decimals: 18, precision: 6, price_in_usd: 1 };
+    const snapshot = {
+        ...original,
+        swap: { ...original.swap, requested_amount: '3.177233', destination_token: token },
+        quote: { ...original.quote, destination_token: token, receive_amount: 3.169000329540956, min_receive_amount: 3.0897734018538467 },
+        details: { ...original.details, transactions: original.details.transactions.map(tx => ({ ...tx, amount: tx.type === 'output' ? 3.169000329540956 : 3.177233 })) },
+    };
+    try {
+        for (const usdMode of [false, true]) {
+            await act(async () => root.render(preview({ ...snapshot, usdMode }, 90)));
+            const container = document.getElementById('root');
+            assert.match(container.textContent, /3\.169 USDe/);
+            assert.match(container.querySelector('[data-quote-transition]').textContent, /3\.089773 USDe/);
+            assert.doesNotMatch(container.textContent, /3\.169000329540956|3\.0897734018538467/);
+        }
+        assert.equal(snapshot.quote.min_receive_amount, 3.0897734018538467, 'only display formatting changes');
+        assert.equal(snapshot.details.transactions.find(tx => tx.type === 'output').amount, 3.169000329540956);
     } finally {
         await act(async () => root.unmount());
     }

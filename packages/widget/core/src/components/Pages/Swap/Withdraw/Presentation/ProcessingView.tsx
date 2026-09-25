@@ -110,8 +110,8 @@ export function ProcessingView({
                         : 'Processing your deposit',
                     description:
                         inputConfirmations != null &&
-                        inputMaxConfirmations != null &&
-                        inputConfirmations > 0 ? (
+                            inputMaxConfirmations != null &&
+                            inputConfirmations > 0 ? (
                             <span>
                                 Confirmations{' '}
                                 <span className="text-primary-text">
@@ -136,10 +136,10 @@ export function ProcessingView({
                         <div className="flex space-x-1">
                             <div className="space-x-1 text-primary-text">
                                 {fail_reason ==
-                                  SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? (
+                                    SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? (
                                     "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
                                 ) : fail_reason ==
-                                  SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ? (
+                                    SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ? (
                                     "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
                                 ) : (
                                     <div>
@@ -179,30 +179,30 @@ export function ProcessingView({
                     description: null,
                 },
                 complete: {
-                    name: `${swapOutputTransaction?.amount && truncateDecimals(swapOutputTransaction?.amount, destination_token.decimals)} ${destination_token.asset} ${isDepositFlow ? 'deposited' : 'was sent to your address'}`,
+                    name: `${swapOutputTransaction?.amount && truncateDecimals(swapOutputTransaction?.amount, destination_token.precision ?? destination_token.decimals)} ${destination_token.asset} ${isDepositFlow ? 'deposited' : 'was sent to your address'}`,
                     description: null,
                 },
                 failed: {
                     name:
                         swapDetails.status === SwapStatus.PendingRefund ||
-                        swapDetails.status === SwapStatus.Refunded
+                            swapDetails.status === SwapStatus.Refunded
                             ? 'Processing Failed'
                             : fail_reason ==
                                 SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE
-                              ? `The transfer is on hold`
-                              : 'The transfer has failed',
+                                ? `The transfer is on hold`
+                                : 'The transfer has failed',
                     description: (
                         <div className="flex space-x-1">
                             <div className="space-x-1 text-secondary-text">
                                 {swapDetails.status ===
                                     SwapStatus.PendingRefund ||
-                                swapDetails.status === SwapStatus.Refunded ? (
+                                    swapDetails.status === SwapStatus.Refunded ? (
                                     "There was an issue completing the transfer. We're refunding your deposit."
                                 ) : fail_reason ==
-                                  SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? (
+                                    SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? (
                                     "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
                                 ) : fail_reason ==
-                                  SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ? (
+                                    SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ? (
                                     "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
                                 ) : (
                                     <div>
@@ -291,6 +291,7 @@ export function ProcessingView({
             swapOutputTransaction,
             destination_token.asset,
             destination_token.decimals,
+            destination_token.precision,
             refuel?.token?.asset,
             truncatedRefuelAmount,
             fail_reason,
@@ -372,22 +373,30 @@ export function ProcessingView({
     const isTokenSwap =
         !isDepositFlow &&
         !swapBasicData.use_deposit_address &&
-        (hasSwapWorkflow ||
-            (source_network.name === destination_network.name &&
-                swapBasicData.source_token.asset !== destination_token.asset));
+        (hasSwapWorkflow || source_network.name === destination_network.name);
+    const displayedElapsedTime = isTokenSwap ? null : elapsedTime;
+    const statusTitle =
+        isTokenSwap && showsEstimatedTime
+            ? 'Swap in progress'
+            : generalStatus.title;
+    const statusDescription =
+        phase === SwapPhase.Completed && isTokenSwap
+            ? null
+            : generalStatus.subTitle;
+    // Only a wallet-published swap has a publish step to carry into processing.
+    // Sign-only gasless swaps and receipts without action history keep the
+    // transaction timeline for the whole processing/completion lifecycle.
     const showUnifiedProgress =
-        isTokenSwap &&
+        !isDepositFlow &&
+        !swapBasicData.use_deposit_address &&
         hasSwapWorkflow &&
         !refuel &&
         (phase === SwapPhase.InputPending ||
             phase === SwapPhase.OutputPending ||
-            phase === SwapPhase.SettlingOutput);
+            phase === SwapPhase.SettlingOutput ||
+            phase === SwapPhase.Completed);
 
-    if (
-        isTokenSwap &&
-        !refuel &&
-        (showUnifiedProgress || phase === SwapPhase.Completed)
-    ) {
+    if (showUnifiedProgress) {
         return (
             <DepositWorkflowView
                 actions={depositActions}
@@ -401,21 +410,21 @@ export function ProcessingView({
                 completed={
                     phase === SwapPhase.Completed
                         ? {
-                              completionTime: generalStatus.subTitle,
-                              explorerUrl: outputExplorerUrl,
-                          }
+                            completionTime: statusDescription,
+                            explorerUrl: outputExplorerUrl,
+                        }
                         : undefined
                 }
                 processing={{
-                    title: generalStatus.title,
+                    title: statusTitle,
                     inputExplorerUrl,
                     outputExplorerUrl,
                     inputStatus: stepStatuses.input_transfer,
                     outputStatus: stepStatuses.output_transfer,
-                    elapsedTime,
+                    elapsedTime: displayedElapsedTime,
                     inputDescription:
                         stepStatuses.input_transfer ===
-                        ProgressStatus.Current ? (
+                            ProgressStatus.Current ? (
                             <div className="space-y-1">
                                 <p>Confirming transaction · no action needed</p>
                                 <div>
@@ -445,9 +454,11 @@ export function ProcessingView({
     return (
         <StepsPanel>
             <TransferStatusHeader
-                title={generalStatus.title}
+                title={statusTitle}
                 description={
-                    showsEstimatedTime ? elapsedTime : generalStatus.subTitle
+                    showsEstimatedTime
+                        ? displayedElapsedTime
+                        : statusDescription
                 }
                 progress={stepsProgressPercentage}
                 completed={phase === SwapPhase.Completed}

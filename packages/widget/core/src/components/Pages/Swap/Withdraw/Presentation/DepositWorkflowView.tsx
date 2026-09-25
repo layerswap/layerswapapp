@@ -1,7 +1,6 @@
 import type { DepositAction } from '@/lib/apiClients/layerSwapApiClient';
 import type { Token } from '@layerswap/widget-types';
 import type { ReactNode } from 'react';
-import { StepTransactionLink } from '../Processing/StepTransactionLink';
 import { truncateDecimals } from '@/components/utils/RoundDecimals';
 import {
     getDepositActionDescription,
@@ -48,12 +47,19 @@ export function DepositWorkflowView({
     const hasDeliveryStep =
         !!destinationToken &&
         workflowActions.some((action) => action.step === 'publish');
-    const currentStepIndex = workflowActions.findIndex(
+    let currentStepIndex = workflowActions.findIndex(
         (action) =>
             action.status === 'action_required' ||
             action.status === 'pending' ||
             action.status === 'failed',
     );
+    // Between signing and publication the backend is preparing a waiting step.
+    // Keep that status attached to the step when there is no wallet prompt yet.
+    if (currentStepIndex === -1 && loading) {
+        currentStepIndex = workflowActions.findIndex(
+            (action) => action.status === 'waiting',
+        );
+    }
     const currentStepHasError =
         !loading &&
         error &&
@@ -108,7 +114,7 @@ export function DepositWorkflowView({
     }
     if (hasDeliveryStep) {
         steps.push({
-            name: `${completed ? 'Received' : 'Receive'} ${receiveAmount ? `${truncateDecimals(receiveAmount, destinationToken.decimals)} ` : ''}${destinationToken.asset}`,
+            name: `${completed ? 'Received' : 'Receive'} ${receiveAmount ? `${truncateDecimals(receiveAmount, destinationToken.precision ?? destinationToken.decimals)} ` : ''}${destinationToken.asset}`,
             status: completed
                 ? ProgressStatus.Complete
                 : (processing?.outputStatus ?? ProgressStatus.Upcoming),
@@ -133,12 +139,10 @@ export function DepositWorkflowView({
           100;
     const title = completed
         ? 'Transfer complete'
-        : (processing?.title ?? 'Continue in your wallet');
+        : (processing?.title ?? 'Swap in progress');
     const description = completed
         ? completed.completionTime
-        : processing
-          ? processing.elapsedTime
-          : actionStateText;
+        : processing?.elapsedTime;
 
     return (
         <StepsPanel
@@ -166,14 +170,6 @@ export function DepositWorkflowView({
             {steps.length > 0 && (
                 <div className="pt-4">
                     <Steps steps={steps} />
-                </div>
-            )}
-            {completed?.explorerUrl && !hasDeliveryStep && (
-                <div className="flex justify-end pt-3">
-                    <StepTransactionLink
-                        url={completed.explorerUrl}
-                        readOnly={readOnly}
-                    />
                 </div>
             )}
         </StepsPanel>

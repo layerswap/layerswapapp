@@ -1585,7 +1585,7 @@ const frontendCompleted = (inputAt = 20) =>
         90,
         'completed',
         'Swap completed',
-        'The shared inline header keeps the small gauge and Transfer complete on the left, with completion time on the right. Completed steps remain visible, with the explorer link on the receive step; quote details and action buttons are hidden.',
+        'The shared inline header keeps the small gauge and Transfer complete without a duration. Completed steps remain visible, with the explorer link on the receive step. The compact quote stays attached to the summary; full quote controls and action buttons are hidden.',
         workflowComplete,
         { kind: 'send' },
         {
@@ -2044,6 +2044,58 @@ const frontendScenarios: TimelineScenario[] = [
                     },
                 },
             ),
+        ],
+    },
+    {
+        id: 'frontend-gasless-success',
+        label: 'Gasless token swap completed',
+        group: 'token-swap',
+        section: 'main-flow',
+        milestones: [
+            frontendMilestone(
+                0,
+                'ready',
+                'Gasless quote ready',
+                'A same-network token swap uses a sign-only authorization workflow.',
+                undefined,
+                { kind: 'send' },
+                { ...gaslessFrontendState, swapId: undefined },
+            ),
+            frontendMilestone(
+                5,
+                'signing',
+                'Sign in wallet',
+                'Only authorization is requested; the wallet does not publish a transaction.',
+                gaslessFrontendActions,
+                { kind: 'send', pending: true, label: 'Sign in your wallet' },
+                gaslessFrontendState,
+            ),
+            ...[pendingInput, confirmed, completed].map((milestone) => ({
+                ...milestone,
+                snapshot: frontend({
+                    ...gaslessFrontendState,
+                    depositActions: gaslessFrontendActions.map((action) => ({
+                        ...action,
+                        status: 'completed',
+                    })),
+                    details: details({
+                        ...(milestone.snapshot as Page2LoadedSnapshot).details,
+                        transactions: (
+                            milestone.snapshot as Page2LoadedSnapshot
+                        ).details.transactions.map((tx) => ({
+                            ...tx,
+                            amount:
+                                tx.type === TransactionType.Output
+                                    ? 0.0396
+                                    : tx.amount,
+                        })),
+                    }),
+                }),
+                description:
+                    milestone.id === 'completed'
+                        ? 'A sign-only gasless swap retains the same deposit and delivery steps through completion; each transaction link stays in its step.'
+                        : milestone.description,
+            })),
         ],
     },
     {

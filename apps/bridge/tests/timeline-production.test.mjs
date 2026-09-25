@@ -125,6 +125,7 @@ test('switching gasless mode preserves the live execution lock while swap creati
         return React.createElement(SendTransactionButton, { swapData: swapBasicData, refuel: false, onClick: noop });
     }
     const { default: SwapDetails } = loadSource(`${withdraw}SwapDetails.tsx`, {
+        ...walletHooks,
         './Presentation/Page2Sections': sections,
         '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
         '@/hooks/useIsGaslessActive': { useIsGaslessActive: () => useGaslessPreferenceStore(state => state.gaslessEnabled) },
@@ -163,6 +164,137 @@ test('switching gasless mode preserves the live execution lock while swap creati
         resolveCreation(undefined);
         await act(() => root.unmount());
         useGaslessPreferenceStore.getState().resetGaslessPreference();
+    }
+});
+
+test('live recipient visibility waits for the sender and falls back to the selected account during creation', async () => {
+    const root = createRoot(container);
+    let selectedAccount;
+    let showDestinationAddress = true;
+    const source = '0x11111111111111111111111111111111111111abcd';
+    const other = '0x2222222222222222222222222222222222222222';
+    const swapBasicData = {
+        source_network: network, destination_network: network,
+        source_token: token, destination_token: { symbol: 'ETH' },
+        requested_amount: '1', use_deposit_address: false,
+        destination_address: source,
+    };
+    const context = {
+        swapBasicData, swapId: 'existing-swap',
+        swapDetails: { source_address: source.toUpperCase() },
+        quote: { source_network: network },
+    };
+    const { QuoteSummaryView } = loadSource(`${withdraw}Presentation/QuoteSummaryView.tsx`, {
+        './swapFlowAnimation': motion['./swapFlowAnimation'],
+        '@/components/Common/NumFlowWithFallback': { default: empty },
+        '@/components/Common/RecipientAddressView': {
+            RecipientAddressView: ({ address }) => React.createElement('span', { 'data-recipient': true }, address),
+        },
+        clsx: { default: require('clsx') },
+        'lucide-react': { ChevronDown: empty },
+    });
+    const { SummaryRow } = loadSource(`${fees}SwapQuote/SummaryRow.tsx`, {
+        '@/components/Input/Address/AddressPicker/AddressWithIcon': { ExtendedAddress: empty },
+        '@/context/depositSettings': { useDepositSettings: () => ({ showDestinationAddress }) },
+        '@/context/settings': { useInitialSettings: () => ({}) },
+        '@/lib/address/Address': { Address: { isValid: () => false } },
+        '@/stores/addressBookStore': { useAddressName: noop },
+        '..': { DetailsButton: empty },
+        '../Slippage': { Slippage: empty },
+        './DetailedEstimates': { GasFee: empty },
+        '../../../Withdraw/Presentation/QuoteSummaryView': { QuoteSummaryView },
+    });
+    const liveWalletHooks = {
+        '@/hooks/useWallet': { default: () => ({ wallets: [] }) },
+        '@/context/swapAccounts': { useSelectedAccount: () => selectedAccount },
+    };
+    const quoteComponent = loadSource(`${fees}SwapQuote/index.tsx`, {
+        ...liveWalletHooks,
+        '@/lib/address/Address': {},
+        '../../../Withdraw/Presentation/QuoteView': { QuoteView: ({ summary }) => summary },
+        './DetailedEstimates': { DetailedEstimates: empty },
+        './SummaryRow': { SummaryRow },
+    });
+    const quoteDetails = loadSource(`${withdraw}SwapQuoteDetails.tsx`, {
+        '../Form/FeeDetails/SwapQuote': quoteComponent,
+        './Presentation/QuoteAvailabilityView': { QuoteAvailabilityView: childrenOnly },
+    });
+    const { default: SwapDetails } = loadSource(`${withdraw}SwapDetails.tsx`, {
+        ...liveWalletHooks,
+        './Presentation/Page2Sections': sections,
+        '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
+        '@/hooks/useIsGaslessActive': { useIsGaslessActive: () => false },
+        './Summary': { default: empty },
+        './SwapQuoteDetails': quoteDetails,
+        './Presentation/Page2Contained': { Page2Contained: childrenOnly },
+        '@/components/Common/Sceletons': { SwapDetailsSceleton: empty },
+        '@/components/Widget/Index': { Widget: childrenOnly },
+        '@/context/callbackProvider': { useCallbacks: () => ({ onBackClick: noop, onSwapLifecycle: noop }) },
+        '@/lib/swapLifecycle': {},
+        '@/context/swap': { useSwapDataState: () => context },
+        '@/hooks/useGaslessAuthorizationStatus': { useGaslessAuthorizationStatus: noop },
+        '@/hooks/useResolvedSwapStatus': { useResolvedSwapStatus: () => ({ showWithdrawScreen: !context.swapDetails }) },
+        '@/hooks/useSwapRetry': { useSwapRetry: () => ({}) },
+        './ManualWithdraw': { default: empty },
+        './Presentation/RetryView': { RetryView: empty },
+        './Processing': { default: empty },
+        './Withdraw': { default: empty },
+    });
+    const render = () => act(() => root.render(React.createElement(SwapDetails, { type: 'contained' })));
+    const recipient = () => container.querySelector('[data-recipient]');
+    try {
+        await render();
+        assert.equal(recipient(), null, 'same-address receipt is hidden before the wallet restores');
+        selectedAccount = { address: source };
+        await render();
+        assert.equal(recipient(), null, 'restoring the wallet does not change the row');
+        selectedAccount = { address: other };
+        await render();
+        assert.equal(recipient(), null, 'switching wallets cannot change an existing receipt');
+
+        context.swapDetails = { source_address: other };
+        selectedAccount = undefined;
+        await render();
+        const differentRecipient = recipient();
+        assert.equal(differentRecipient?.textContent, source, 'different recipient shows immediately');
+        selectedAccount = { address: source };
+        await render();
+        assert.equal(recipient(), differentRecipient, 'reconnecting the recipient wallet cannot hide the row');
+
+        context.swapDetails = {};
+        selectedAccount = undefined;
+        await render();
+        assert.equal(recipient(), null, 'do not assume the recipient differs while the sender is unknown');
+        selectedAccount = { address: source };
+        await render();
+        assert.equal(recipient(), null, 'restoring the same account must not flash Send to');
+
+        context.swapDetails = undefined;
+        context.swapId = undefined;
+        await render();
+        assert.equal(recipient(), null, 'before creating a swap, the selected account is used');
+
+        context.swapId = 'just-created';
+        context.swapDetails = { id: 'just-created' };
+        await render();
+        assert.equal(recipient(), null, 'creation must not reveal Send to when the API omits the sender');
+        selectedAccount = { address: other };
+        await render();
+        assert.equal(recipient()?.textContent, source, 'a different selected sender reveals the destination');
+        context.swapDetails = { id: 'just-created', source_address: source };
+        await render();
+        assert.equal(recipient(), null, 'the recorded sender takes precedence over the connected wallet');
+
+        context.swapDetails = undefined;
+        context.swapId = undefined;
+        selectedAccount = { address: other };
+        await render();
+        assert.equal(recipient()?.textContent, source, 'new swaps follow intentional account changes');
+        showDestinationAddress = false;
+        await render();
+        assert.equal(recipient(), null, 'deposit settings still control recipient visibility');
+    } finally {
+        await act(() => root.unmount());
     }
 });
 
@@ -280,13 +412,16 @@ function createSwapHistoryHarness(fetcher) {
         '@/lib/apiClients/layerSwapApiClient': api,
         '@/components/utils/resolveSwapPhase': phases,
         '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
-        '@/components/utils/RoundDecimals': { truncateDecimals: value => value },
-        './TransferStatusHeader': { TransferStatusHeader: empty },
+        '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
+        './TransferStatusHeader': loadSource(`${withdraw}Presentation/TransferStatusHeader.tsx`, {
+            '../Processing/gauge': { Gauge: empty },
+        }),
         '../Processing/types': progressTypes,
         '../Processing/StepsComponent': {
             StepsPanel: childrenOnly,
             default: ({ steps }) => React.createElement('ol', null, steps.map(step =>
-                React.createElement('li', { key: step.index, 'data-status': step.status }, step.name))),
+                React.createElement('li', { key: step.index, 'data-status': step.status }, step.name,
+                    step.explorerUrl && React.createElement('a', { href: step.explorerUrl, 'aria-label': 'View transaction' })))),
         },
     };
     const workflow = loadSource(`${withdraw}Presentation/DepositWorkflowView.tsx`, {
@@ -297,7 +432,7 @@ function createSwapHistoryHarness(fetcher) {
         ...shared,
         '@layerswap/widget-types': widgetTypes,
         '@/Models/RangeError': rangeErrors,
-        '@/lib/address/explorerUrl': { getExplorerUrl: noop },
+        '@/lib/address/explorerUrl': loadSource('lib/address/explorerUrl.ts'),
         '@/components/utils/ShortenString': { default: value => value },
         'lucide-react': { CircleCheck: empty, Undo2: empty },
         './DepositWorkflowView': workflow,
@@ -352,6 +487,7 @@ function createSwapHistoryHarness(fetcher) {
         return swapDetails && React.createElement(ProcessingView, {
             swapBasicData, swapDetails, depositActions: depositActionsResponse,
             resolved: harness.state.resolved,
+            transactionHash: swapDetails.transactions.find(tx => tx.type === 'input')?.transaction_hash,
         });
     };
     return harness;
@@ -410,7 +546,7 @@ for (const cachedDetails of [false, true]) {
 
             await act(async () => harness.update.setSwapId('second'));
             assert.equal(harness.state.depositActionsResponse, undefined, 'pending history cannot leak from the previous swap');
-            assert.deepEqual(steps(), []);
+            assert.deepEqual(steps(), ['Deposit confirmed', '0.05 ETH was sent to your address'], 'receipts remain visible while wallet history loads');
             await act(async () => { finishSecondActions({ data: secondActions }); await secondResponse; });
             assert.deepEqual(steps(), ['Confirm swap', 'Received 0.05 ETH']);
 
@@ -425,5 +561,58 @@ for (const cachedDetails of [false, true]) {
         }
     });
 }
+
+test('a real atomic swap keeps its receipts without completion time when the API returns only a sign action', async t => {
+    t.mock.timers.enable({ apis: ['setTimeout', 'Date'] });
+    const root = createRoot(container);
+    const route = { ...network, transaction_explorer_template: 'https://basescan.example.invalid/tx/{0}' };
+    const response = { data: { swap: {
+        id: 'first', status: 'completed', requested_amount: 3.177233,
+        source_network: route, destination_network: route,
+        source_token: { ...token, asset: 'USDC', decimals: 6, precision: 6 },
+        destination_token: { asset: 'USDe', symbol: 'USDe', decimals: 18, precision: 6 },
+        use_deposit_address: false,
+        transactions: [
+            { type: 'input', status: 'completed', transaction_hash: '0xatomic', confirmations: 1, max_confirmations: 1, timestamp: '2026-09-25T10:00:00Z' },
+            { type: 'output', status: 'completed', transaction_hash: '0xatomic', amount: 3.169000329540956, timestamp: '2026-09-25T10:00:00Z' },
+        ],
+    } } };
+    let finishActions;
+    const actions = new Promise(resolve => { finishActions = resolve; });
+    const harness = createSwapHistoryHarness(async key => {
+        if (key === '/swaps/first?exclude_deposit_actions=true') return response;
+        if (key === '/swaps/first/deposit_actions') return actions;
+        assert.fail(`Unexpected request: ${key}`);
+    });
+    const cache = new Map();
+    const config = { provider: () => cache, dedupingInterval: 0 };
+    const assertReceipt = () => {
+        assert.match(container.textContent, /Transfer complete/);
+        assert.doesNotMatch(container.textContent, /Completed in/);
+        const rows = [...container.querySelectorAll('li')];
+        assert.deepEqual(rows.map(row => row.textContent), ['Deposit confirmed', '3.169 USDe was sent to your address']);
+        assert.ok(rows.every(row => row.dataset.status === 'complete'));
+        assert.deepEqual(rows.map(row => row.querySelector('a').href), [
+            'https://basescan.example.invalid/tx/0xatomic',
+            'https://basescan.example.invalid/tx/0xatomic',
+        ]);
+    };
+    try {
+        await act(async () => root.render(React.createElement(SWRConfig, { value: config },
+            React.createElement(harness.Provider, null, React.createElement(harness.Completion)))));
+        assertReceipt();
+        await act(async () => {
+            finishActions({ data: [{ type: 'sign', step: 'sign', status: 'completed' }] });
+            await actions;
+        });
+        assert.equal(harness.state.depositActionsResponse.length, 1);
+        assertReceipt();
+        assert.doesNotMatch(container.textContent, /Sign to swap|Confirm swap/);
+    } finally {
+        finishActions({ data: [] });
+        await act(() => root.unmount());
+        t.mock.timers.reset();
+    }
+});
 
 test.after(() => dom.window.close());

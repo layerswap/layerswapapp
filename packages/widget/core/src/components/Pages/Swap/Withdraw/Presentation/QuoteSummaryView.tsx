@@ -47,9 +47,10 @@ export function QuoteSummaryView({
             )}
         >
             {showDestinationAddress &&
+                sourceAddress &&
                 values.destination_address &&
-                sourceAddress?.toLowerCase() !==
-                    values.destination_address?.toLowerCase() && (
+                sourceAddress.toLowerCase() !==
+                    values.destination_address.toLowerCase() && (
                     <div
                         className={`flex items-center w-full justify-between gap-1 text-sm px-2 py-3`}
                     >
@@ -81,7 +82,10 @@ export function QuoteSummaryView({
                                 format={{
                                     maximumFractionDigits:
                                         quoteData?.quote.destination_token
-                                            ?.decimals || 2,
+                                            ?.precision ??
+                                        quoteData?.quote.destination_token
+                                            ?.decimals ??
+                                        2,
                                 }}
                                 suffix={` ${values?.toAsset?.asset}`}
                             />

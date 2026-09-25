@@ -328,7 +328,9 @@ function formatElapsedTime(inputTx: Transaction | undefined, outputTx: Transacti
     if (!start || !end) return null;
 
     const diffMs = new Date(end).getTime() - new Date(start).getTime();
-    if (!Number.isFinite(diffMs) || diffMs <= 0) return null;
+    if (!Number.isFinite(diffMs) || diffMs < 0) return null;
 
-    return `Completed in ${formatElapsedHms(msToParts(diffMs))}`;
+    // Atomic token swaps can record input and output in the same transaction.
+    // A zero timestamp difference is valid, not a missing completion duration.
+    return `Completed in ${diffMs < 1000 ? '<1s' : formatElapsedHms(msToParts(diffMs))}`;
 }
