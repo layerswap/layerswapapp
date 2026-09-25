@@ -260,24 +260,24 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
         />
     }
 
-    return <WalletSubmissionView message={
-            (buttonClicked || !!swapError) &&
-            <ActionMessage
-                error={error}
-                isSignatureError={isSignatureError}
-                isLoading={false}
-                selectedSourceAddress={selectedSourceAccount?.address || ''}
-                sourceNetwork={swapData.source_network}
-            />
-        } action={
-            <SendTransactionButton
-                onClick={clickHandler}
-                onSign={isGaslessSupported(swapData.source_network) ? signHandler : undefined}
-                error={!!error && buttonClicked}
-                clearError={() => setError(undefined)}
-                swapData={swapData}
-                refuel={refuel}
-            />
-        }
-    />
+    return <WalletSubmissionView>
+        <SendTransactionButton
+            errorMessage={
+                (buttonClicked || !!swapError) &&
+                <ActionMessage
+                    error={error}
+                    isSignatureError={isSignatureError}
+                    isLoading={false}
+                    selectedSourceAddress={selectedSourceAccount?.address || ''}
+                    sourceNetwork={swapData.source_network}
+                />
+            }
+            onClick={clickHandler}
+            onSign={isGaslessSupported(swapData.source_network) ? signHandler : undefined}
+            error={!!error && buttonClicked}
+            clearError={() => setError(undefined)}
+            swapData={swapData}
+            refuel={refuel}
+        />
+    </WalletSubmissionView>
 }

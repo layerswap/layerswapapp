@@ -5,7 +5,6 @@ import {
 import { truncateDecimals } from '@/components/utils/RoundDecimals';
 import { getExplorerUrl } from '@/lib/address/explorerUrl';
 import {
-    TransactionStatus,
     TransactionType,
     type SwapBasicData,
     type SwapDetails,
@@ -34,6 +33,7 @@ export function ProcessingView({
     transactionHash,
     inputConfirmations,
     inputMaxConfirmations,
+    inputFailureMessage,
     isDepositFlow = false,
     elapsedTime,
     failedPanel,
@@ -49,6 +49,7 @@ export function ProcessingView({
     transactionHash?: string;
     inputConfirmations?: number;
     inputMaxConfirmations?: number;
+    inputFailureMessage?: string;
     isDepositFlow?: boolean;
     elapsedTime: ReactNode;
     failedPanel: ReactNode;
@@ -89,7 +90,6 @@ export function ProcessingView({
         stepStatuses,
         generalStatus,
         phase,
-        swapInputTxStatus,
         hidesSteps,
         showsFailedPanel,
         showsEstimatedTime,
@@ -132,14 +132,10 @@ export function ProcessingView({
                 },
                 failed: {
                     name: `The transfer failed`,
-                    description: (
+                    description: inputFailureMessage || (
                         <div className="flex space-x-1">
                             <div className="space-x-1 text-primary-text">
-                                {swapInputTxStatus ===
-                                    TransactionStatus.Failed &&
-                                transactionHash ? (
-                                    <p>Check the transfer in the explorer</p>
-                                ) : fail_reason ==
+                                {fail_reason ==
                                   SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? (
                                     "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
                                 ) : fail_reason ==
@@ -289,9 +285,9 @@ export function ProcessingView({
             },
         }),
         [
-            transactionHash,
             inputConfirmations,
             inputMaxConfirmations,
+            inputFailureMessage,
             swapOutputTransaction,
             destination_token.asset,
             destination_token.decimals,
@@ -299,7 +295,6 @@ export function ProcessingView({
             truncatedRefuelAmount,
             fail_reason,
             swapDetails.status,
-            swapInputTxStatus,
             onGetHelp,
             isDepositFlow,
         ],

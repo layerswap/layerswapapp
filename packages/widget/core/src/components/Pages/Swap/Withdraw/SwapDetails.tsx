@@ -125,16 +125,21 @@ const SwapDetails: FC<Props> = ({
                         />
                     )
                 ) : (
-                    <ProcessingSectionView>
-                        <Processing failureReason={failureReason} />
-                        {canRetry && (
-                            <RetryView
-                                message={gaslessFailureMessage}
-                                canSwitchToStandard={canSwitchToStandard}
-                                onRetry={retry}
-                                onSwitchToStandard={switchToStandard}
-                            />
-                        )}
+                    <ProcessingSectionView
+                        actions={
+                            canRetry && (
+                                <RetryView
+                                    canSwitchToStandard={canSwitchToStandard}
+                                    onRetry={retry}
+                                    onSwitchToStandard={switchToStandard}
+                                />
+                            )
+                        }
+                    >
+                        <Processing
+                            failureReason={failureReason}
+                            inputFailureMessage={gaslessFailureMessage}
+                        />
                     </ProcessingSectionView>
                 )}
             </SwapContentView>

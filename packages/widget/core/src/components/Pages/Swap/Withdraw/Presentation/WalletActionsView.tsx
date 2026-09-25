@@ -16,7 +16,7 @@ import { WalletExecutionTransition } from './WalletExecutionTransition';
 import { resolvePriceImpactValues } from '@/lib/fees';
 import { WalletIcon } from '@layerswap/ui-kit/components';
 import { Loader2 } from 'lucide-react';
-import { type FC } from 'react';
+import { type FC, type ReactNode } from 'react';
 import { ICON_CLASSES_WARNING } from '../../Form/SecondaryComponents/validationError/constants';
 import ErrorDismissButton from '../../Form/SecondaryComponents/validationError/ErrorDismissButton';
 import { ErrorDisplay } from '../../Form/SecondaryComponents/validationError/ErrorDisplay';
@@ -116,6 +116,7 @@ export function ConnectWalletView({
     );
 }
 export type SendTransactionViewProps = SubmitButtonProps & {
+    errorMessage?: ReactNode;
     quote?: SwapQuote;
     quoteIsLoading?: boolean;
     quoteError?: boolean;
@@ -139,6 +140,7 @@ export type SendTransactionViewProps = SubmitButtonProps & {
 };
 export function SendTransactionView({
     icon = <WalletIcon className="stroke-2 w-6 h-6" />,
+    errorMessage,
     quote,
     quoteIsLoading,
     quoteError,
@@ -182,20 +184,34 @@ export function SendTransactionView({
             receiveAmount={quote?.receive_amount}
         />
     ) : undefined;
+    const message =
+        errorMessage && (error || swapError || gaslessUnavailable) ? (
+            <div
+                data-wallet-action-message
+                className={workflowProgress ? 'pt-2' : undefined}
+            >
+                {errorMessage}
+            </div>
+        ) : undefined;
     if (quoteIsLoading || loading)
         return (
             <WalletExecutionTransition
                 workflow={workflowProgress}
                 controls={
-                    isMultiStepWorkflow && loading ? undefined : (
-                        <ButtonWrapper
-                            icon={icon}
-                            {...props}
-                            isSubmitting={true}
-                            isDisabled={true}
-                        >
-                            {actionStateText || 'Preparing…'}
-                        </ButtonWrapper>
+                    isMultiStepWorkflow && loading ? (
+                        message
+                    ) : (
+                        <>
+                            {message}
+                            <ButtonWrapper
+                                icon={icon}
+                                {...props}
+                                isSubmitting={true}
+                                isDisabled={true}
+                            >
+                                {actionStateText || 'Preparing…'}
+                            </ButtonWrapper>
+                        </>
                     )
                 }
             />
@@ -207,6 +223,7 @@ export function SendTransactionView({
                 workflow={workflowProgress}
                 controls={
                     <>
+                        {message}
                         {quote && priceImpactValues && (
                             <ErrorDisplay
                                 icon={
@@ -249,6 +266,7 @@ export function SendTransactionView({
             workflow={workflowProgress}
             controls={
                 <>
+                    {message}
                     {!!(
                         !swapId &&
                         criticalMarketPriceImpact &&

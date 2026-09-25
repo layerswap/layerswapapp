@@ -1,4 +1,9 @@
-import { swapFlowTransitionStyle } from './swapFlowAnimation';
+import { motion, useIsPresent } from 'framer-motion';
+import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion';
+import {
+    swapFlowTransition,
+    swapFlowTransitionStyle,
+} from './swapFlowAnimation';
 import type { ReactNode } from 'react';
 import { WalletExecutionTransition } from './WalletExecutionTransition';
 import { StepsPanelProvider } from '../Processing/StepsComponent';
@@ -125,8 +130,38 @@ export function WalletTransferView({
         </div>
     );
 }
-export function ProcessingSectionView({ children }: { children: ReactNode }) {
-    return <div className="space-y-3 w-full h-full">{children}</div>;
+export function ProcessingSectionView({
+    children,
+    actions,
+}: {
+    children: ReactNode;
+    actions?: ReactNode;
+}) {
+    const reducedMotion = useHydratedReducedMotion();
+    const isPresent = useIsPresent();
+
+    return (
+        <div className="w-full">
+            {children}
+            {actions && (
+                <motion.div
+                    data-processing-actions
+                    className="overflow-hidden"
+                    initial={false}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={
+                        reducedMotion ? { duration: 0 } : swapFlowTransition
+                    }
+                    aria-hidden={!isPresent}
+                    inert={!isPresent}
+                >
+                    {/* Collapse the retry controls and their spacing with the steps. */}
+                    <div className="pt-3">{actions}</div>
+                </motion.div>
+            )}
+        </div>
+    );
 }
 export function PendingSwapView({
     contained,
@@ -148,17 +183,10 @@ export function PendingSwapView({
     );
 }
 
-export function WalletSubmissionView({
-    message,
-    action,
-}: {
-    message?: ReactNode;
-    action?: ReactNode;
-}) {
+export function WalletSubmissionView({ children }: { children: ReactNode }) {
     return (
         <div className="w-full space-y-2 flex flex-col justify-between h-full text-primary-text">
-            {message}
-            {action}
+            {children}
         </div>
     );
 }

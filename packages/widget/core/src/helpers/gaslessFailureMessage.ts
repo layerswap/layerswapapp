@@ -1,7 +1,7 @@
 import type { GaslessAuthorizationStatus } from '@/lib/apiClients/layerSwapApiClient';
 export function gaslessFailureMessage(
     status: GaslessAuthorizationStatus | undefined,
-): string {
+): string | undefined {
     switch (status) {
         case 'expired':
             return 'The deposit authorization expired before it was broadcast.';
@@ -10,6 +10,6 @@ export function gaslessFailureMessage(
         case 'rejected':
             return 'The deposit was rejected.';
         default:
-            return 'The gasless deposit could not be completed.';
+            return undefined;
     }
 }

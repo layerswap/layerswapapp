@@ -25,7 +25,7 @@ import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore';
 import { useGaslessAuthorizationStore, useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import { sleep } from '@layerswap/utils';
 import { Network, NetworkRoute } from '@layerswap/widget-types';
-import { ComponentProps, FC, useCallback, useMemo, useRef, useState } from 'react';
+import { ComponentProps, FC, type ReactNode, useCallback, useMemo, useRef, useState } from 'react';
 import { SwapFormValues } from '../../../Form/SwapFormValues';
 import {
     ButtonWrapper,
@@ -140,6 +140,7 @@ export const ChangeNetworkButton: FC<ChangeNetworkProps> = (props) => {
 
 type ButtonWrapperProps = ComponentProps<typeof ButtonWrapper>;
 type SendFromWalletButtonProps = Omit<ButtonWrapperProps, 'onClick'> & {
+    errorMessage?: ReactNode;
     error?: boolean;
     clearError?: () => void;
     onClick: WalletTransfer;

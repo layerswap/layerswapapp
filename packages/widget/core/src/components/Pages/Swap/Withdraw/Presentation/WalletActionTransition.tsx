@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion';
 import type { ReactNode } from 'react';
 
-/** Preserve action identity between updates, just as in the live wallet flow. */
+/** Animate action changes; the enclosing workflow owns the initial appearance. */
 export function WalletActionTransition({
     actionKey,
     children,
@@ -15,7 +15,7 @@ export function WalletActionTransition({
     if (reducedMotion) return <div>{children}</div>;
 
     return (
-        <AnimatePresence mode="wait">
+        <AnimatePresence initial={false} mode="wait">
             <motion.div
                 key={actionKey}
                 initial={{ opacity: 0, y: 10 }}

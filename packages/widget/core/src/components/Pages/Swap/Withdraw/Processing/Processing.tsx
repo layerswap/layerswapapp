@@ -35,6 +35,7 @@ type Props = {
     quote: SwapQuote | undefined;
     refuel: Refuel | undefined;
     failureReason?: SwapFailureReason;
+    inputFailureMessage?: string;
 };
 
 const Processing: FC<Props> = ({
@@ -43,6 +44,7 @@ const Processing: FC<Props> = ({
     quote,
     refuel,
     failureReason,
+    inputFailureMessage,
 }) => {
     const { boot, show, update } = useIntercom();
     const { onSwapStatusChange } = useCallbacks();
@@ -219,6 +221,7 @@ const Processing: FC<Props> = ({
             transactionHash={transactionHash}
             inputConfirmations={inputConfirmations}
             inputMaxConfirmations={inputMaxConfirmations}
+            inputFailureMessage={inputFailureMessage}
             isDepositFlow={isDepositFlow}
             failedPanel={<Failed />}
             onGetHelp={startIntercom}

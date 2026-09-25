@@ -81,6 +81,7 @@ const result = await build({
         export { default as App } from './pages/_app';
         export { SendTransactionView, ConnectWalletView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/WalletActionsView.js';
         export { ProcessingView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/ProcessingView.js';
+        export { gaslessFailureMessage } from '../../packages/widget/core/dist/esm/helpers/gaslessFailureMessage.js';
         export { SpecializedWithdrawalView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/SpecializedWithdrawalView.js';
         export { default as ProductionSummary } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Summary/Summary.js';
         export { default as ProductionAddressIcon } from '../../packages/widget/core/dist/esm/components/Common/AddressIcon/index.js';
@@ -153,6 +154,7 @@ const {
     App,
     SendTransactionView,
     ProcessingView,
+    gaslessFailureMessage,
     ConnectWalletView,
     SpecializedWithdrawalView,
     ProductionSummary,
@@ -1701,11 +1703,76 @@ test('manual network and exchange deposits use the shared instructions-to-progre
     }
 });
 
+test('gasless failure reasons replace the generic failed-step description without a separate message', async () => {
+    const root = createRoot(document.getElementById('root'));
+    const reasons = {
+        expired: 'The deposit authorization expired before it was broadcast.',
+        insufficient: 'Your balance is insufficient to complete this deposit.',
+        rejected: 'The deposit was rejected.',
+    };
+    try {
+        for (const mode of ['component', 'modal']) {
+            for (const [status, reason] of Object.entries(reasons)) {
+                const milestone = frontendMilestone(`gasless-${status}`, 'failed');
+                await act(async () => root.render(preview(milestone.snapshot, milestone.at, mode)));
+                const container = document.getElementById('root');
+                const failedStep = container.querySelector('[aria-label="Progress"] li');
+                assert.equal(failedStep.textContent, `The transfer failed${reason}`);
+                assert.equal(container.textContent.split(reason).length - 1, 1, 'show the specific reason only once');
+                assert.doesNotMatch(container.textContent, /Something went wrong while processing|please contact our support|Gasless deposit failed/);
+                const actions = container.querySelector('[data-processing-actions]');
+                assert.equal(actions.textContent, 'Try againSwitch to standard transfer', 'retry area contains only its actions');
+            }
+            const retry = frontendMilestone('gasless-expired', 'retry');
+            await act(async () => root.render(preview(retry.snapshot, retry.at, mode)));
+            assert.doesNotMatch(document.getElementById('root').textContent, /The deposit was rejected|The deposit authorization expired|Your balance is insufficient/);
+        }
+    } finally {
+        await act(async () => root.unmount());
+    }
+});
+
+test('unknown failures keep the generic support message and working support action', async () => {
+    const root = createRoot(document.getElementById('root'));
+    const input = frontendMilestone('input-failure', 'failed').snapshot;
+    const withoutHash = {
+        ...input,
+        storedWalletTransaction: { ...input.storedWalletTransaction, hash: '' },
+        details: { ...input.details, transactions: input.details.transactions.map(transaction => ({ ...transaction, transaction_hash: '' })) },
+    };
+    let supportCalls = 0;
+    try {
+        for (const snapshot of [input, withoutHash, frontendMilestone('output-failure', 'failed').snapshot]) {
+            await act(async () => root.render(React.cloneElement(processingElement(snapshot), {
+                onGetHelp: () => supportCalls++,
+                inputFailureMessage: gaslessFailureMessage(undefined),
+            })));
+            const container = document.getElementById('root');
+            assert.match(container.textContent, /Something went wrong while processing the transfer\./);
+            const support = [...container.querySelectorAll('span')].find(span => span.textContent.trim() === 'please contact our support.');
+            assert.ok(support.closest('li'), 'support stays in the failed step');
+            await act(async () => support.click());
+        }
+        assert.equal(supportCalls, 3);
+        assert.equal(gaslessFailureMessage(undefined), undefined, 'missing reasons use the shared fallback');
+        assert.equal(gaslessFailureMessage('unknown'), undefined, 'unrecognized reasons use the shared fallback');
+    } finally {
+        await act(async () => root.unmount());
+    }
+});
+
 test('frontend rejection and failed-step fixtures distinguish signature errors from transaction errors', () => {
     for (const [step, message] of [['approve_permit2', 'Transaction rejected'], ['sign', 'Signing rejected'], ['publish', 'Transaction rejected']]) {
         const rejected = fixtureDOM(`frontend-${step}-retry`, 'rejected');
         assert.match(rejected.textContent, new RegExp(message));
         assert.equal(rejected.querySelectorAll('[aria-label="Swap progress"] .lucide-x').length, 1);
+        const steps = rejected.querySelector('[data-steps-panel]');
+        const error = rejected.querySelector('[data-wallet-action-message]');
+        const retry = [...rejected.querySelectorAll('button')].find(button => button.textContent === 'Try again');
+        assert.match(error.textContent, new RegExp(message));
+        assert.ok(steps.compareDocumentPosition(error) & dom.window.Node.DOCUMENT_POSITION_FOLLOWING, 'error appears after the steps');
+        assert.ok(error.compareDocumentPosition(retry) & dom.window.Node.DOCUMENT_POSITION_FOLLOWING, 'error appears before the retry button');
+        assert.equal(rejected.querySelectorAll('[data-wallet-action-message]').length, 1);
         const refresh = fixtureDOM(`frontend-${step}-retry`, 'refresh');
         assert.match(refresh.textContent, /Refreshing swap/);
         assert.equal(refresh.querySelectorAll('[aria-label="Swap progress"] .lucide-x').length, 0);

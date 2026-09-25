@@ -171,7 +171,15 @@ function LoadedPreview({
     if (!resolved.showWithdrawScreen) {
         const authTx = s.gaslessAuthorization?.transaction;
         content = (
-            <ProcessingSectionView>
+            <ProcessingSectionView
+                actions={
+                    (gaslessFailed ||
+                        s.storedWalletTransaction?.status ===
+                            TransactionStatus.Failed) && (
+                        <RetryView canSwitchToStandard={gaslessFailed} />
+                    )
+                }
+            >
                 <ProcessingView
                     swapBasicData={s.swap}
                     swapDetails={s.details}
@@ -179,6 +187,13 @@ function LoadedPreview({
                     quote={s.quote}
                     refuel={s.refuel}
                     resolved={resolved}
+                    inputFailureMessage={
+                        gaslessFailed
+                            ? gaslessFailureMessage(
+                                  s.gaslessAuthorization?.status,
+                              )
+                            : undefined
+                    }
                     isDepositFlow={s.isDepositFlow}
                     readOnly
                     transactionHash={
@@ -214,20 +229,6 @@ function LoadedPreview({
                         />
                     }
                 />
-                {(gaslessFailed ||
-                    s.storedWalletTransaction?.status ===
-                        TransactionStatus.Failed) && (
-                    <RetryView
-                        canSwitchToStandard={gaslessFailed}
-                        message={
-                            gaslessFailed
-                                ? gaslessFailureMessage(
-                                      s.gaslessAuthorization?.status,
-                                  )
-                                : undefined
-                        }
-                    />
-                )}
             </ProcessingSectionView>
         );
     } else if (s.swap.use_deposit_address) {
@@ -507,44 +508,44 @@ function PreviewWallet({ snapshot: s }: { snapshot: Page2LoadedSnapshot }) {
                     }
                 />
             )}
-            <WalletSubmissionView
-                message={
-                    <ActionMessageView
-                        error={state.error ? { name: state.error } : undefined}
-                        isSignatureError={state.isSignatureError}
-                        sourceNetwork={s.swap.source_network}
-                        selectedSourceAddress={s.sourceAddress}
-                        expanded={state.errorExpanded ?? false}
-                        swapError={state.swapError}
-                        gaslessUnavailable={state.gaslessUnavailable}
-                        gaslessErrorMessage={state.gaslessMessage}
-                    />
-                }
-                action={
-                    <SendTransactionView
-                        swapId={s.swapId}
-                        depositActions={s.depositActions}
-                        quote={s.quote}
-                        quoteIsLoading={s.quoteState.status === 'loading'}
-                        quoteError={s.quoteState.status === 'error'}
-                        loading={state.pending}
-                        actionStateText={state.label}
-                        error={!!state.error}
-                        swapError={state.swapError}
-                        criticalMarketPriceImpact={!!state.critical}
-                        showCriticalMarketPriceImpactButtons={
-                            state.critical === 'confirmation'
-                        }
-                        priceImpactValues={
-                            s.quote
-                                ? resolvePriceImpactValues(s.quote, s.refuel)
-                                : undefined
-                        }
-                        gaslessUnavailable={state.gaslessUnavailable}
-                        gaslessFailureStage={state.gaslessFailureStage}
-                    />
-                }
-            />
+            <WalletSubmissionView>
+                <SendTransactionView
+                    errorMessage={
+                        <ActionMessageView
+                            error={
+                                state.error ? { name: state.error } : undefined
+                            }
+                            isSignatureError={state.isSignatureError}
+                            sourceNetwork={s.swap.source_network}
+                            selectedSourceAddress={s.sourceAddress}
+                            expanded={state.errorExpanded ?? false}
+                            swapError={state.swapError}
+                            gaslessUnavailable={state.gaslessUnavailable}
+                            gaslessErrorMessage={state.gaslessMessage}
+                        />
+                    }
+                    swapId={s.swapId}
+                    depositActions={s.depositActions}
+                    quote={s.quote}
+                    quoteIsLoading={s.quoteState.status === 'loading'}
+                    quoteError={s.quoteState.status === 'error'}
+                    loading={state.pending}
+                    actionStateText={state.label}
+                    error={!!state.error}
+                    swapError={state.swapError}
+                    criticalMarketPriceImpact={!!state.critical}
+                    showCriticalMarketPriceImpactButtons={
+                        state.critical === 'confirmation'
+                    }
+                    priceImpactValues={
+                        s.quote
+                            ? resolvePriceImpactValues(s.quote, s.refuel)
+                            : undefined
+                    }
+                    gaslessUnavailable={state.gaslessUnavailable}
+                    gaslessFailureStage={state.gaslessFailureStage}
+                />
+            </WalletSubmissionView>
         </>
     );
 }

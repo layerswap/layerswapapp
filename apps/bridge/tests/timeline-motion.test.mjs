@@ -28,10 +28,13 @@ const outfile = join(temporary, 'motion.mjs');
 await build({
     stdin: {
         contents: `
-            export { SwapContentView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/Page2Sections.js';
+            export { SwapContentView, ProcessingSectionView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/Page2Sections.js';
             export { StepsPanel } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Processing/StepsComponent.js';
             export { DepositWorkflowView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/DepositWorkflowView.js';
             export { WalletExecutionTransition } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/WalletExecutionTransition.js';
+            export { WalletActionTransition } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/WalletActionTransition.js';
+            export { SendTransactionView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/WalletActionsView.js';
+            export { RetryView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/RetryView.js';
         `,
         resolveDir: join(directory, '..'),
         loader: 'tsx',
@@ -44,7 +47,7 @@ await build({
     mainFields: ['module', 'main'],
     logLevel: 'silent',
 });
-const { SwapContentView, StepsPanel, DepositWorkflowView, WalletExecutionTransition } = await import(pathToFileURL(outfile));
+const { SwapContentView, ProcessingSectionView, StepsPanel, DepositWorkflowView, WalletExecutionTransition, WalletActionTransition, SendTransactionView, RetryView } = await import(pathToFileURL(outfile));
 const container = document.getElementById('root');
 const settle = () => act(() => new Promise(resolve => setTimeout(resolve, 400)));
 const view = (processing, manual = false) => React.createElement(SwapContentView, {
@@ -97,6 +100,58 @@ test('reversing an unfinished standard transfer transition settles on the latest
         assert.equal(container.querySelector('button').closest('[inert]'), null);
         assert.equal(container.querySelector('[data-steps-panel]'), null);
         assert.equal(container.querySelector('[data-quote-transition]').hasAttribute('inert'), false);
+    } finally {
+        await act(() => root.unmount());
+    }
+});
+
+test('retry collapses failed-state actions with the steps and gives Swap now one entrance animation', async () => {
+    const root = createRoot(container);
+    const scene = (failed) => React.createElement(SwapContentView, {
+        summary: React.createElement('div', null, 'Summary'),
+        quote: React.createElement('div', null, 'Quote'),
+        compactQuote: failed,
+        transferStage: failed ? 'processing' : 'withdraw',
+    }, failed
+        ? React.createElement(ProcessingSectionView, { actions: React.createElement(RetryView) },
+            React.createElement(StepsPanel, null, 'The transfer failed'))
+        : React.createElement(WalletActionTransition, { actionKey: 'transfer' },
+            React.createElement(SendTransactionView)));
+    try {
+        await act(() => root.render(scene(true)));
+        const actions = container.querySelector('[data-processing-actions]');
+        assert.ok(actions, 'retry controls have their own collapsible region');
+        const quote = container.querySelector('[data-quote-transition]');
+        const retryButton = actions.querySelector('button');
+
+        await act(() => {
+            flushSync(() => root.render(scene(false)));
+            const controls = container.querySelector('[data-wallet-execution-panel="controls"]');
+            assert.equal(controls.style.opacity, '0', 'the outer controls own the entrance');
+            const walletAction = controls.querySelector('[style*="transform"]');
+            assert.equal(walletAction.style.transform, 'none', 'no second slide under the height animation');
+            assert.equal(walletAction.style.opacity, '1');
+        });
+        assert.equal(actions.querySelector('button'), retryButton, 'outgoing retry remains mounted for its exit');
+        assert.ok(actions.hasAttribute('inert'));
+        assert.equal(actions.getAttribute('aria-hidden'), 'true');
+        assert.equal(container.querySelector('[data-quote-transition]'), quote);
+        await act(() => new Promise(resolve => setTimeout(resolve, 100)));
+        assert.ok(Number(actions.style.opacity) < 1, 'retry controls fade out with the steps');
+        assert.notEqual(actions.style.height, 'auto', 'retry controls collapse rather than leaving their height until unmount');
+
+        await settle();
+        assert.equal(container.querySelector('[data-processing-actions]'), null);
+        assert.equal(container.querySelector('[data-steps-panel]'), null);
+        assert.deepEqual([...container.querySelectorAll('button')].map(button => button.textContent), ['Swap now']);
+        assert.equal(container.querySelector('button').closest('[inert]'), null);
+
+        for (const failed of [true, false, true, false]) {
+            await act(() => root.render(scene(failed)));
+        }
+        await settle();
+        assert.equal(container.querySelector('[data-processing-actions]'), null);
+        assert.deepEqual([...container.querySelectorAll('button')].map(button => button.textContent), ['Swap now']);
     } finally {
         await act(() => root.unmount());
     }
