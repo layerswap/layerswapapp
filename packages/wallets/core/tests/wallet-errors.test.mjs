@@ -14,6 +14,8 @@ test('rejection classification works without an SDK or a particular message', ()
         new Error('user rejected transaction'),
         new Error('wrapper', { cause: { code: 'ACTION_REJECTED' } }),
         { code: -32603, cause: { code: 4001 } },
+        { info: { error: { code: '4001' } } },
+        { cause: { info: { data: { originalError: { code: 4001 } } } } },
     ]) {
         assert.equal(normalizeWalletErrorCode(error), 'user_rejected')
         assert.equal(isUserRejection(error), true)

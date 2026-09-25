@@ -9,7 +9,7 @@ import { WithdrawPageProps } from "./Common/sharedTypes";
 import { ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from "./Common/buttons";
 import { GaslessSigner } from "./Common/depositExecution";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
-import { WalletIcon } from "@layerswap/ui-kit/components";
+import { WalletSubmissionView } from "../Presentation/Page2Sections";
 import { useBalance } from "@/lib/balances/useBalance";
 import { TransferProps } from "@layerswap/widget-types";
 import { ActionMessage } from "./Common/actionMessage";
@@ -233,7 +233,7 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
 }) => {
     const [buttonClicked, setButtonClicked] = useState(false)
     const [error, setError] = useState<Error | undefined>()
-    const [loading, setLoading] = useState(false)
+    const [isSignatureError, setIsSignatureError] = useState(false)
     const { swapDetails, swapError } = useSwapDataState()
     const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
     const gaslessErrorMessage = useGaslessPreferenceStore(s => s.gaslessErrorMessage)
@@ -279,7 +279,6 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
         const { amount, depositAddress } = transferProps
         setButtonClicked(true)
         setError(undefined)
-        setLoading(true)
         try {
             if (!depositAddress)
                 throw new Error('Missing deposit address')
@@ -290,9 +289,9 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
 
             const resolvedTransferProps: TransferProps = {
                 ...transferProps,
-                token: swapData.source_token,
+                token: transferProps.token ?? swapData.source_token,
                 selectedWallet: wallet,
-                network: swapData.source_network,
+                network: transferProps.network ?? swapData.source_network,
                 balances,
                 userDestinationAddress: swapData.destination_address,
             }
@@ -324,7 +323,7 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
 
             }
         } catch (e) {
-            setLoading(false)
+            setIsSignatureError(false)
             setError(e)
 
             throw e
@@ -332,16 +331,24 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
     }, [executeTransfer, chainId, selectedSourceAccount?.address, wallet, swapData, balances])
 
     const signHandler: GaslessSigner = useCallback(async (signAction) => {
-        if (!signAction.typed_data)
-            throw new Error('Missing typed data for gasless deposit')
-        if (!selectedSourceAccount?.address)
-            throw new Error('No selected account')
-        return signGaslessDeposit({
-            network: swapData.source_network,
-            address: selectedSourceAccount.address,
-            typedData: signAction.typed_data,
-            wallet,
-        })
+        setButtonClicked(true)
+        setError(undefined)
+        try {
+            if (!signAction.typed_data)
+                throw new Error('Missing typed data for gasless deposit')
+            if (!selectedSourceAccount?.address)
+                throw new Error('No selected account')
+            return await signGaslessDeposit({
+                network: swapData.source_network,
+                address: selectedSourceAccount.address,
+                typedData: signAction.typed_data,
+                wallet,
+            })
+        } catch (e) {
+            setIsSignatureError(true)
+            setError(e)
+            throw e
+        }
     }, [signGaslessDeposit, swapData.source_network, selectedSourceAccount?.address, wallet])
 
     // Show RPC health message if available and unhealthy (EVM wallets only)
@@ -354,26 +361,24 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
         />
     }
 
-    return <div className="w-full space-y-2 flex flex-col justify-between h-full text-primary-text">
-        {
-            (buttonClicked || !!swapError) &&
-            <ActionMessage
-                error={error}
-                isLoading={loading}
-                selectedSourceAddress={selectedSourceAccount?.address || ''}
-                sourceNetwork={swapData.source_network}
-            />
-        }
-        {
-            !loading &&
-            <SendTransactionButton
-                onClick={clickHandler}
-                onSign={isGaslessSupported(swapData.source_network) ? signHandler : undefined}
-                icon={<WalletIcon className="stroke-2 w-6 h-6" />}
-                error={!!error && buttonClicked}
-                swapData={swapData}
-                refuel={refuel}
-            />
-        }
-    </div>
+    return <WalletSubmissionView>
+        <SendTransactionButton
+            errorMessage={
+                (buttonClicked || !!swapError) &&
+                <ActionMessage
+                    error={error}
+                    isSignatureError={isSignatureError}
+                    isLoading={false}
+                    selectedSourceAddress={selectedSourceAccount?.address || ''}
+                    sourceNetwork={swapData.source_network}
+                />
+            }
+            onClick={clickHandler}
+            onSign={isGaslessSupported(swapData.source_network) ? signHandler : undefined}
+            error={!!error && buttonClicked}
+            clearError={() => setError(undefined)}
+            swapData={swapData}
+            refuel={refuel}
+        />
+    </WalletSubmissionView>
 }

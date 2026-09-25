@@ -1,4 +1,5 @@
 "use client";
+import { PendingSwapView } from './Presentation/Page2Sections';
 import { FC, useEffect } from "react";
 import { Widget } from "../../../Widget/Index";
 import { SwapDataProvider, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
@@ -19,12 +20,12 @@ const Comp: FC = () => {
 
     if (!swapBasicData)
         return <Widget goBack={onBackClick}>
-            <div className={`rounded-lg w-full overflow-hidden relative h-[548px]`}>
+            <PendingSwapView>
                 {
                     swapApiError &&
                     <NotFound swapId={swapId} />
                 }
-            </div>
+            </PendingSwapView>
         </Widget>
 
 

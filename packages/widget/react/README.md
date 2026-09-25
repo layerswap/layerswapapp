@@ -60,6 +60,10 @@ props are required. The deposit widget accepts the common props below, plus
 options such as `mode="button"` and `methods={['wallet', 'deposit_address']}`.
 Import `DepositConfig` for the full set of deposit options.
 
+The telemetry `form_mode` identifies the active form: `cross-chain`, `exchange`,
+`deposit-address`, `deposit-widget-address`, or `deposit-widget-wallet`. These
+values describe the user's flow; they are not additional widget configuration options.
+
 ## Use your existing wagmi config
 
 Pass your app's wagmi config to share its connected EVM account and chain:

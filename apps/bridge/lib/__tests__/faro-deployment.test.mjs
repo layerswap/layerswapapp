@@ -23,13 +23,14 @@ const { createPageMeta } = require(join(dirname(require.resolve('@grafana/faro-w
 
 // Capture the actual initFaro options, then exercise their page metadata using
 // the installed SDK below. This harness never contacts a collector.
-function browserConfig(env) {
+function browserHarness(env, pathname = '/') {
     let config
     const exports = {}
+    const window = { location: { pathname } }
     const source = readFileSync(new URL('../faro.ts', import.meta.url), 'utf8')
     const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText
     vm.runInNewContext(compiled, {
-        exports, process: { env }, window: {}, console,
+        exports, process: { env }, window, console,
         require: name => ({
             './faro-sanitizer': sanitizer,
             './faro-session-context': sessionContext,
@@ -40,9 +41,31 @@ function browserConfig(env) {
         })[name] ?? require(name),
     })
     exports.initFaro()
+    return { config, api: exports, window }
+}
+
+function browserConfig(env) {
+    const { config } = browserHarness(env)
     assert(config)
     return config
 }
+
+test('timeline previews never initialize Faro, including under a base path', () => {
+    for (const pathname of ['/timeline', '/timeline/', '/bridge/timeline']) {
+        const { config, api } = browserHarness({ NEXT_PUBLIC_FARO_COLLECTOR_URL: 'https://collector.invalid' }, pathname)
+        assert.equal(config, undefined)
+        assert.equal(api.captureEvent('preview'), false)
+        assert.equal(api.captureException(new Error('preview')), false)
+    }
+})
+
+test('navigation into a timeline suppresses already initialized telemetry', () => {
+    const { config, api, window } = browserHarness({ NEXT_PUBLIC_FARO_COLLECTOR_URL: 'https://collector.invalid' })
+    window.location.pathname = '/timeline'
+    assert.equal(config.beforeSend({}), null)
+    assert.equal(api.getFaro(), undefined)
+    assert.equal(api.captureEvent('preview'), false)
+})
 
 test('deployment comes from platform target, independently of API mode and optimized build mode', () => {
     for (const mode of ['mainnet', 'testnet']) {

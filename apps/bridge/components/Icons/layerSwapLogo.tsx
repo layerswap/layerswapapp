@@ -19,4 +19,6 @@ const LayerswapLogo = forwardRef<SVGSVGElement, SVGProps<SVGSVGElement>>((props,
     )
 })
 
+LayerswapLogo.displayName = 'LayerswapLogo';
+
 export default LayerswapLogo;

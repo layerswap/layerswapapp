@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
-import { useSwapDataState } from '@/context/swap'
+import { useSwapDataState, useSwapDataUpdate } from '@/context/swap'
 import { useSwapTransactionStore, useGaslessAuthorizationStore } from '@/stores/swapTransactionStore'
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore'
+import { hasSwapExecutionProgress } from '@/helpers/swapProgress'
 import { gaslessFailureMessage } from './useGaslessAuthorization'
 import { useResolvedSwapStatus } from './useResolvedSwapStatus'
 import type { SwapFailureReason } from '@/components/utils/resolveSwapPhase'
@@ -20,16 +21,33 @@ type UseSwapRetryResult = {
 // Recovers from the retryable deposit failures the resolved status reports by clearing the
 // local deposit markers.
 export function useSwapRetry(): UseSwapRetryResult {
-    const { swapDetails } = useSwapDataState()
+    const { swapDetails, depositActionsResponse } = useSwapDataState()
+    const { startFreshSwapAttempt } = useSwapDataUpdate()
     const swapId = swapDetails?.id
+
+    const storedWalletTransaction = useSwapTransactionStore(
+        state => swapId ? state.swapTransactions[swapId] : undefined,
+    )
+    const gaslessAuthorization = useGaslessAuthorizationStore(
+        state => swapId ? state.authorizations[swapId] : undefined,
+    )
     const { failureReason, gaslessFailureStatus } = useResolvedSwapStatus()
+
+    const hasProgress = hasSwapExecutionProgress({
+        swapDetails,
+        depositActions: depositActionsResponse,
+        storedWalletTransaction,
+        gaslessAuthorization,
+        gaslessAuthorizationFailed: !!gaslessFailureStatus,
+    })
 
     const retry = useCallback(() => {
         if (!swapId) return
         useGaslessAuthorizationStore.getState().removeGaslessAuthorization(swapId)
         useSwapTransactionStore.getState().removeSwapTransaction(swapId)
         useGaslessPreferenceStore.getState().clearGaslessUnavailable()
-    }, [swapId])
+        if (!hasProgress) startFreshSwapAttempt()
+    }, [swapId, hasProgress, startFreshSwapAttempt])
 
     const switchToStandard = useCallback(() => {
         useGaslessPreferenceStore.getState().switchToStandardTransfer()

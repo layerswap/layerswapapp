@@ -16,7 +16,7 @@ const fixtureUrl = 'data:text/javascript,' + encodeURIComponent(`
   export const useSwapDataState = () => ({ swapDetails: state.swapDetails, depositActionsResponse: [
     { type: 'transfer', to_address: 'deposit', call_data: '0x' }
   ] })
-  export const useSwapDataUpdate = () => ({ setSwapId() {}, createSwap: (...args) => state.createSwap(...args) })
+  export const useSwapDataUpdate = () => ({ setSwapId() {}, startFreshSwapAttempt() {}, createSwap: (...args) => state.createSwap(...args) })
   export const useSettingsState = () => ({ networks: [], sourceRoutes: [] })
   export const useInitialSettings = () => ({})
   export const useWalletWithdrawalState = () => ({ onWalletWithdrawalSuccess() { state.successes++; state.onSuccess?.() } })
@@ -108,7 +108,15 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
         assert.equal(state.errors.length, outcome === 'failed' ? 1 : 0)
         assert.equal(state.successes, 0)
         assert.deepEqual(state.published, [])
+        let retryCreations = 0
+        state.createSwap = async () => {
+          retryCreations++
+          return { swap: { id: 'retry-swap' }, deposit_actions: [{ type: 'transfer', to_address: 'retry-deposit', call_data: '0x' }] }
+        }
         await act(async () => result.handleWithdraw())
+        assert.equal(retryCreations, 1, 'an unstarted specialized withdrawal retries with a fresh swap')
+        assert.equal(state.transfers.at(-1)[0].depositAddress, 'retry-deposit')
+        assert.equal(state.events.at(-1).swapId, 'retry-swap')
         const retries = state.events.filter(event => event.step === 'retry_requested')
         assert.equal(retries.length, 1)
         assert.equal(retries[0].reasonCode, outcome === 'rejected' ? 'user_rejected' : 'provider_withdrawal_failed')

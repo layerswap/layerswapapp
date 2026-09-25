@@ -213,12 +213,13 @@ const MESSAGE_RULES: Record<TextTier, NameRules> = {
 // ---- Candidate collection: a bounded tree walk over the edges wallets and
 // ---- SDKs actually use to nest the real failure (viem/ethers `cause`,
 // ---- JSON-RPC `data`, ethers v5 `error`, MetaMask `originalError`).
-const NESTED_KEYS = ['cause', 'data', 'originalError', 'error'] as const
+const NESTED_KEYS = ['cause', 'data', 'originalError', 'error', 'info'] as const
 
 function isErrorLike(value: unknown): value is ErrorCandidate {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return false
     return 'code' in value || 'message' in value || 'name' in value || 'cause' in value || 'reasonCode' in value
         || 'error' in value || 'originalError' in value || 'shortMessage' in value
+        || 'data' in value || 'info' in value || 'details' in value
 }
 
 /** Innermost first: deeper nodes describe the raw failure, wrappers add noise. */
@@ -297,7 +298,7 @@ function rawTextReason(error: unknown, tier: TextTier): WalletErrorReasonCode | 
  * `TransactionRejected` name is a failure until an adapter declares otherwise.
  * -32603 is the JSON-RPC catch-all and @metamask/rpc-errors' serializer fallback,
  * so it can never outrank text or a nested cause. Wrappers under cause/data/
- * originalError/error are transparent. Returns `unknown_error` when nothing
+ * originalError/error/info are transparent. Returns `unknown_error` when nothing
  * recognizable exists, never a guess from arbitrary text.
  */
 export function normalizeWalletErrorCode(error: unknown): WalletErrorReasonCode {

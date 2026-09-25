@@ -113,7 +113,8 @@ export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStat
     const isRefundFlow = phase === SwapPhase.PendingRefund || phase === SwapPhase.Refunded;
     const hidesSteps = phase === SwapPhase.Expired;
     const showsFailedPanel = phase === SwapPhase.Expired;
-    const showsEstimatedTime = !outputReady && !isTerminal && phase !== SwapPhase.PendingRefund;
+    // Backend completion can precede output/refuel delivery; keep timing until the resolved flow ends.
+    const showsEstimatedTime = !isTerminal && phase !== SwapPhase.PendingRefund;
 
     return {
         phase,
@@ -327,7 +328,9 @@ function formatElapsedTime(inputTx: Transaction | undefined, outputTx: Transacti
     if (!start || !end) return null;
 
     const diffMs = new Date(end).getTime() - new Date(start).getTime();
-    if (!Number.isFinite(diffMs) || diffMs <= 0) return null;
+    if (!Number.isFinite(diffMs) || diffMs < 0) return null;
 
-    return `Completed in ${formatElapsedHms(msToParts(diffMs))}`;
+    // Atomic token swaps can record input and output in the same transaction.
+    // A zero timestamp difference is valid, not a missing completion duration.
+    return `Completed in ${diffMs < 1000 ? '<1s' : formatElapsedHms(msToParts(diffMs))}`;
 }

@@ -11,7 +11,7 @@ export type {
   SupportedDestination,
 } from './config';
 export { NetworkType } from './network';
-export type { Refuel, AvailableSourceNetworkTypes } from './network';
+export type { Refuel, AvailableSourceNetworkTypes, GaslessStandard } from './network';
 export { SwapStatus } from './SwapStatus';
 export {
   SWAP_LIFECYCLE_PHASE_STEPS, SWAP_LIFECYCLE_TRANSACTION_STEPS, SWAP_LIFECYCLE_REPEATABLE_STEPS,

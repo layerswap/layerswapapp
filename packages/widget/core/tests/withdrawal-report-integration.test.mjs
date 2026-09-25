@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test, { after, afterEach, beforeEach } from 'node:test'
 import { registerHooks } from 'node:module'
 import { extname } from 'node:path'
+import { existsSync } from 'node:fs'
 import { JSDOM } from 'jsdom'
 import { act, createElement, StrictMode } from 'react'
 import axios, { AxiosError } from 'axios'
@@ -14,7 +15,7 @@ for (const [key, value] of Object.entries({ window: dom.window, document: dom.wi
 }
 const moduleUrl = source => 'data:text/javascript,' + encodeURIComponent(source)
 const fixtureUrl = moduleUrl(`
-  export const state = { wallet: { id:'wallet', address:'source', isActive:true, providerName:'test-wallet' } }
+  export const state = { wallet: { id:'wallet', address:'source', isActive:true, providerName:'test-wallet', asSourceSupportedNetworks:['A'] } }
   export const useSelectedAccount = () => state.wallet
   export const useSwapDataState = () => state.swap
   export const useSwapDataUpdate = () => ({ setSwapId() {}, setQuoteLoading() {}, createSwap() { throw new Error('unexpected creation') } })
@@ -44,18 +45,24 @@ const fixtures = ['/context/swap', '/context/swapAccounts', '/context/settings',
   '/validationError/ErrorDismissButton', '/validationError/constants', '/Icons/FailIcon', '/Icons/InfoIcon', '/messages/Message']
 const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
   if (specifier.endsWith('/AppSettings')) return { url: settingsUrl, shortCircuit: true }
-  if (context.parentURL?.endsWith('/Wallet/Common/buttons.js')) {
+  if (['/Wallet/Common/buttons.js', '/Presentation/WalletActionsView.js'].some(path => context.parentURL?.endsWith(path))) {
     if (specifier.endsWith('/Buttons/submitButton')) return { url: buttonUrl, shortCircuit: true }
     if (specifier.endsWith('/hooks/useWallet')) return { url: moduleUrl(`import { state } from ${JSON.stringify(fixtureUrl)}; export default () => ({ wallets:[state.wallet] })`), shortCircuit: true }
     if (specifier.endsWith('/lib/gases/useSWRGas')) return { url: moduleUrl('export default () => ({})'), shortCircuit: true }
     if (fixtures.some(s => specifier.endsWith(s)) || ['@layerswap/utils', '@layerswap/ui-kit/components', 'lucide-react'].includes(specifier)) return { url: fixtureUrl, shortCircuit: true }
   }
-  if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) return nextResolve(specifier + '.js', context)
+  if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
+    const file = new URL(specifier + '.js', context.parentURL)
+    return nextResolve(existsSync(file) ? specifier + '.js' : specifier + '/index.js', context)
+  }
   return nextResolve(specifier, context)
 } })
 const oldAdapter = axios.defaults.adapter
 let requests = 0, originalError
 axios.defaults.adapter = async config => {
+  if (config.method === 'get' && config.url.includes('/deposit_actions')) {
+    return { status: 200, statusText: 'OK', headers: {}, config, data: { data: state.swap.depositActionsResponse } }
+  }
   requests++
   originalError = new AxiosError('Authorization unavailable', 'ERR_BAD_RESPONSE', config, {}, {
     status: 503, statusText: 'Unavailable', headers: {}, config,
@@ -72,13 +79,13 @@ const { SendTransactionButton } = await import('../dist/esm/components/Pages/Swa
 const { useGaslessPreferenceStore } = await import('../dist/esm/stores/gaslessPreferenceStore.js')
 
 const basic = { requested_amount: '1', source_network: { name: 'A' }, destination_network: { name: 'B' },
-  source_token: { symbol: 'X' }, destination_token: { symbol: 'Y' }, destination_address: 'destination', use_deposit_address: false }
+  source_token: { symbol: 'X', contract: '0xtoken', supports_gasless_deposit: true, gasless_standard: 'eip3009' }, destination_token: { symbol: 'Y' }, destination_address: 'destination', use_deposit_address: false }
 let container, root, errors, lifecycle
 beforeEach(() => {
   container = document.createElement('div'); document.body.append(container); root = createRoot(container)
   requests = 0; errors = []; lifecycle = []; state.successes = 0
   state.swap = { swapId: 'swap-1', swapDetails: { ...basic, id: 'swap-1', status: 'user_transfer_pending', transactions: [] },
-    depositActionsResponse: [{ type: 'sign', typed_data: { message: { validBefore: '9999999999' } } }], setSwapError() {} }
+    depositActionsResponse: [{ type: 'sign', step: 'sign', status: 'action_required', typed_data: { message: { validBefore: '9999999999' } } }], setSwapError() {} }
   registerWidgetErrorLogger()
 })
 afterEach(async () => {
@@ -98,7 +105,7 @@ async function clickTransfer(onSign) {
       createElement(ErrorProvider, { onError: e => errors.push(e) },
         createElement(SendTransactionButton, { swapData: basic, refuel: false, onSign,
           onClick: () => assert.fail('gasless should sign, not send a transaction') }))))))
-  assert.equal(container.querySelector('button').textContent, 'Swap now')
+  assert.equal(container.querySelector('button').textContent, 'Sign to swap')
   await act(async () => { container.querySelector('button').click(); await state.pending })
 }
 

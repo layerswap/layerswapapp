@@ -51,4 +51,5 @@ jobs:
           pnpm --filter @layerswap/widget check:types
           pnpm --filter @layerswap/bridge check:types
           pnpm --filter @layerswap/bridge test
+          pnpm --filter @layerswap/bridge test:timeline
           pnpm --filter @layerswap/widget test
