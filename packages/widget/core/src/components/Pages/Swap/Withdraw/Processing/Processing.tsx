@@ -4,7 +4,7 @@ import LinkWithIcon from '@/components/Common/LinkWithIcon';
 import { FC, useCallback, useEffect, useMemo, useRef } from 'react'
 import { Widget } from '@/components/Widget/Index';
 import SwapSummary from '../Summary';
-import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, SwapBasicData, SwapDetails, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
+import { BackendTransactionStatus, TransactionType, TransactionStatus, SwapBasicData, SwapDetails, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
 import { truncateDecimals } from '@layerswap/utils';
 import { SwapFailReasons } from '@/Models/RangeError';
 import { Gauge } from './gauge';
@@ -13,8 +13,6 @@ import Failed from '../Failed';
 import { ProgressStates, ProgressStatus, StatusStep } from './types';
 import { useSwapTransactionStore, useGaslessAuthorizationStore } from '@/stores/swapTransactionStore';
 import CountdownTimer from '@/components/Common/CountDownTimer';
-import useSWR from 'swr';
-import { ApiResponse } from '@/Models/ApiResponse';
 import { useIntercom } from 'react-use-intercom';
 import Steps from './StepsComponent';
 import { useCallbacks } from '@/context/callbackProvider';
@@ -25,21 +23,20 @@ import { SwapPhase } from '@/components/utils/resolveSwapPhase';
 import { useDepositSettings } from '@/context/depositSettings';
 import { useSettingsState } from '@/context/settings';
 import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
-import { SwapFailureReason } from '@/hooks/useSwapRetry';
-
-const apiClient = new LayerSwapApiClient();
+import { lifecycleContextFromSwap, PHASE_LIFECYCLE_EVENTS } from '@/lib/swapLifecycle';
+import { useLifecycleObservation } from '@/hooks/useLifecycleObservation';
+import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect';
 
 type Props = {
     swapBasicData: SwapBasicData;
     swapDetails: SwapDetails;
     quote: SwapQuote | undefined;
     refuel: Refuel | undefined;
-    failureReason?: SwapFailureReason;
 }
 
-const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, failureReason }) => {
+const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) => {
     const { boot, show, update } = useIntercom();
-    const { onSwapStatusChange } = useCallbacks()
+    const { onSwapLifecycle } = useCallbacks()
     const { isDepositFlow } = useDepositSettings()
     const setSwapTransaction = useSwapTransactionStore(state => state.setSwapTransaction);
     const storedWalletTransaction = useSwapTransactionStore(
@@ -53,6 +50,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, fail
 
     const {
         source_network,
+        source_token,
         destination_network,
         destination_token,
     } = swapBasicData
@@ -75,12 +73,23 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, fail
     const swapOutputTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Refuel)
     const swapRefundTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Refund)
+    const lifecycleContext = useMemo(
+        () => lifecycleContextFromSwap(swapBasicData, swapDetails),
+        [
+            destination_network.name,
+            destination_token.symbol,
+            source_network.name,
+            source_token.symbol,
+            swapBasicData.destination_address,
+            swapBasicData.requested_amount,
+            swapBasicData.use_deposit_address,
+            swapDetails.id,
+            swapDetails.source_address,
+        ],
+    )
 
-    const { data: inputTxStatusData } = useSWR<ApiResponse<{ status: TransactionStatus }>>((transactionHash && swapInputTransaction?.status !== BackendTransactionStatus.Completed) ? [source_network?.name, transactionHash] : null, ([network, tx_id]) => apiClient.GetTransactionStatus(network, tx_id as any), { dedupingInterval: 6000 })
-
-    const inputTxStatusFromApi = inputTxStatusData?.data?.status?.toLowerCase() as TransactionStatus | undefined
-    const resolved = useResolvedSwapStatus({ inputTxStatusFromApi, gaslessAuthorizationFailed: failureReason === 'gasless_deposit_failed' })
-    const { stepStatuses, generalStatus, phase, swapInputTxStatus, isRefundFlow, hidesSteps, showsFailedPanel, showsEstimatedTime } = resolved
+    const resolved = useResolvedSwapStatus()
+    const { stepStatuses, generalStatus, phase, swapInputTxStatus, inputReady, isRefundFlow, hidesSteps, showsFailedPanel, showsEstimatedTime, failureReason } = resolved
 
     const loggedNotDetectedTxAt = useRef<number | null>(null);
 
@@ -98,7 +107,10 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, fail
                     message: error.message,
                     name: error.name,
                     stack: error.stack,
-                    cause: error.cause
+                    cause: error.cause,
+                    swapId: swapDetails.id,
+                    transactionHash,
+                    network: source_network.name,
                 })
             }
         }
@@ -132,21 +144,65 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, fail
         }
     }, [swapInputTxStatus, transactionHash, swapDetails?.id, swapInputTransaction?.from, swapBasicData?.destination_address])
 
+    // Once per hash by design: status changes are reported by input_transfer_confirmed, and the
+    // context is read from a ref so later enrichment cannot re-run it. Allowlisted in tests/lifecycle-effect-emitters.test.mjs.
+    const lifecycleContextRef = useRef(lifecycleContext)
+    useClientLayoutEffect(() => { lifecycleContextRef.current = lifecycleContext })
     useEffect(() => {
-        const status = swapDetails?.status
-        if (
-            status === SwapStatus.Completed ||
-            status === SwapStatus.Failed ||
-            status === SwapStatus.Expired ||
-            status === SwapStatus.LsTransferPending
-        ) {
-            onSwapStatusChange({
-                type: status,
-                swapId: swapDetails?.id!,
-                path: 'Processing',
-            })
-        }
-    }, [swapDetails?.status, swapDetails?.id])
+        if (!swapInputTransaction?.transaction_hash) return
+        onSwapLifecycle({
+            step: 'input_transaction_detected',
+            stage: 'input_transfer',
+            outcome: 'pending',
+            path: 'Processing',
+            transactionHash: swapInputTransaction.transaction_hash,
+            inputTransactionHash: swapInputTransaction.transaction_hash,
+            status: swapInputTransaction.status,
+            confirmations: swapInputTransaction.confirmations,
+            maxConfirmations: swapInputTransaction.max_confirmations,
+            ...lifecycleContextRef.current,
+        })
+    }, [
+        onSwapLifecycle,
+        swapInputTransaction?.transaction_hash,
+    ])
+
+    // Transaction and phase observations are keyed on their observation fingerprint
+    // (hash, status, outcome, phase, reason): a later source address or confirmation
+    // count enriches the report without repeating it.
+    useLifecycleObservation(inputReady && swapInputTransaction ? {
+        step: 'input_transfer_confirmed',
+        stage: 'input_transfer',
+        outcome: 'succeeded',
+        path: 'Processing',
+        transactionHash: swapInputTransaction.transaction_hash,
+        inputTransactionHash: swapInputTransaction.transaction_hash,
+        status: swapInputTransaction.status,
+        confirmations: swapInputTransaction.confirmations,
+        maxConfirmations: swapInputTransaction.max_confirmations,
+    } : undefined, lifecycleContext)
+
+    useLifecycleObservation(swapOutputTransaction?.transaction_hash ? {
+        step: 'output_transaction_detected',
+        stage: 'output_transfer',
+        outcome: swapOutputTransaction.status === BackendTransactionStatus.Completed
+            ? 'succeeded'
+            : swapOutputTransaction.status === BackendTransactionStatus.Failed ? 'failed' : 'pending',
+        path: 'Processing',
+        transactionHash: swapOutputTransaction.transaction_hash,
+        outputTransactionHash: swapOutputTransaction.transaction_hash,
+        status: swapOutputTransaction.status,
+        confirmations: swapOutputTransaction.confirmations,
+        maxConfirmations: swapOutputTransaction.max_confirmations,
+    } : undefined, lifecycleContext)
+
+    useLifecycleObservation({
+        ...PHASE_LIFECYCLE_EVENTS[phase],
+        path: 'Processing',
+        status: swapDetails.status,
+        phase,
+        reasonCode: swapDetails.fail_reason || failureReason,
+    }, lifecycleContext)
 
     const truncatedRefuelAmount = refuel && truncateDecimals(refuel.amount, refuel.token?.precision)
 

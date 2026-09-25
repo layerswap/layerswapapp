@@ -13,11 +13,12 @@ type DepositAddressFormButtonProps = {
     isProcessing: boolean;
     isCompleted: boolean;
     hasDepositError?: boolean;
+    onRetry: () => void;
     onDepositMore: () => void;
 }
 
 const DepositAddressFormButton: FC<DepositAddressFormButtonProps> = ({
-    values, isValid, error, isSubmitting, showDepositInfo, depositAddress, isProcessing, isCompleted, hasDepositError, onDepositMore,
+    values, isValid, error, isSubmitting, showDepositInfo, depositAddress, isProcessing, isCompleted, hasDepositError, onDepositMore, onRetry,
 }) => {
     const [copied, copy] = useCopyClipboard();
 
@@ -35,8 +36,8 @@ const DepositAddressFormButton: FC<DepositAddressFormButtonProps> = ({
 
     if (hasDepositError) {
         return (
-            <SubmitButton type="button" buttonStyle="secondary" isDisabled>
-                Couldn&apos;t generate deposit
+            <SubmitButton type="button" buttonStyle="secondary" onClick={onRetry} isDisabled={!isValid} isSubmitting={isSubmitting}>
+                Retry
             </SubmitButton>
         );
     }

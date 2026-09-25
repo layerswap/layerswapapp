@@ -1,0 +1,2341 @@
+{
+  "apiVersion": "dashboard.grafana.app/v2",
+  "kind": "Dashboard",
+  "metadata": {
+    "name": "layerswap-faro-trial-session",
+    "annotations": {
+      "grafana.app/folder": "",
+      "grafana.app/grant-permissions": "default"
+    }
+  },
+  "spec": {
+    "title": "Session investigation \u00b7 Native trial",
+    "description": "Development telemetry. Usability trial; not a production health dashboard.",
+    "tags": [
+      "layerswap",
+      "faro",
+      "development",
+      "native-trial"
+    ],
+    "editable": true,
+    "annotations": [],
+    "cursorSync": "Off",
+    "liveNow": false,
+    "preload": false,
+    "timeSettings": {
+      "timezone": "utc",
+      "from": "now-7d",
+      "to": "now",
+      "autoRefresh": "",
+      "autoRefreshIntervals": [
+        "1m",
+        "5m",
+        "15m"
+      ],
+      "hideTimepicker": false,
+      "fiscalYearStartMonth": 0
+    },
+    "variables": [
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "application",
+          "label": "Application",
+          "query": "layerswap-frontend",
+          "current": {
+            "text": "layerswap-frontend",
+            "value": "layerswap-frontend"
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "deployment",
+          "label": "Deployment (blank = all)",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "release",
+          "label": "Release (blank = all)",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "CustomVariable",
+        "spec": {
+          "name": "category",
+          "label": "Issues category",
+          "query": "All,User-impacting,Diagnostics,Unclassified",
+          "current": {
+            "text": "All",
+            "value": "All"
+          },
+          "options": [
+            {
+              "text": "All",
+              "value": "All",
+              "selected": true
+            },
+            {
+              "text": "User-impacting",
+              "value": "User-impacting",
+              "selected": false
+            },
+            {
+              "text": "Diagnostics",
+              "value": "Diagnostics",
+              "selected": false
+            },
+            {
+              "text": "Unclassified",
+              "value": "Unclassified",
+              "selected": false
+            }
+          ],
+          "multi": false,
+          "includeAll": false,
+          "allowCustomValue": false,
+          "hide": "hideVariable",
+          "skipUrlSync": false,
+          "description": "Filters the Issues list and chart."
+        }
+      },
+      {
+        "kind": "CustomVariable",
+        "spec": {
+          "name": "test_errors",
+          "label": "Test errors",
+          "query": "Include,Exclude,Only",
+          "current": {
+            "text": "Include",
+            "value": "Include"
+          },
+          "options": [
+            {
+              "text": "Include",
+              "value": "Include",
+              "selected": true
+            },
+            {
+              "text": "Exclude",
+              "value": "Exclude",
+              "selected": false
+            },
+            {
+              "text": "Only",
+              "value": "Only",
+              "selected": false
+            }
+          ],
+          "multi": false,
+          "includeAll": false,
+          "allowCustomValue": false,
+          "hide": "hideVariable",
+          "skipUrlSync": false,
+          "description": "Known controlled test errors only; does not infer tests from release or environment."
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "selected_category",
+          "label": "selected_category",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "selected_test",
+          "label": "selected_test",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "search",
+          "label": "Wallet / swap / session / journey",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "error_marker",
+          "label": "Message / type contains",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "group_key",
+          "label": "group_key",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "error_type",
+          "label": "error_type",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "session_id",
+          "label": "session_id",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "journey_id",
+          "label": "Journey (blank = all)",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "dontHide",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "event_ns",
+          "label": "event_ns",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "origin_tab",
+          "label": "origin_tab",
+          "query": "Issues",
+          "current": {
+            "text": "Issues",
+            "value": "Issues"
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "return_from",
+          "label": "return_from",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "return_to",
+          "label": "return_to",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "return_release",
+          "label": "return_release",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "route",
+          "label": "Page template (blank = all)",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "browser",
+          "label": "Browser (blank = all)",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "mobile",
+          "label": "Mobile: true / false / blank",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "form_mode",
+          "label": "Form mode (blank = all)",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "flow_id",
+          "label": "Form visit (blank = all)",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "dontHide",
+          "skipUrlSync": false
+        }
+      }
+    ],
+    "links": [
+      {
+        "title": "\u2190 Back to results",
+        "url": "/d/layerswap-faro-trial-home?orgId=1&from=${return_from:percentencode}&to=${return_to:percentencode}&dtab=${origin_tab:percentencode}&var-application=${application:percentencode}&var-deployment=${deployment:percentencode}&var-release=${return_release:percentencode}&var-category=${category:percentencode}&var-test_errors=${test_errors:percentencode}&var-selected_category=${selected_category:percentencode}&var-selected_test=${selected_test:percentencode}&var-search=${search:percentencode}&var-error_marker=${error_marker:percentencode}&var-group_key=${group_key:percentencode}&var-error_type=${error_type:percentencode}&var-session_id=${session_id:percentencode}&var-journey_id=${journey_id:percentencode}&var-event_ns=${event_ns:percentencode}&var-origin_tab=${origin_tab:percentencode}&var-return_from=${return_from:percentencode}&var-return_to=${return_to:percentencode}&var-return_release=${return_release:percentencode}&var-route=${route:percentencode}&var-browser=${browser:percentencode}&var-mobile=${mobile:percentencode}&var-form_mode=${form_mode:percentencode}&var-flow_id=${flow_id:percentencode}",
+        "targetBlank": false,
+        "type": "link",
+        "asDropdown": false,
+        "includeVars": false,
+        "keepTime": false,
+        "tags": [],
+        "icon": "external link",
+        "tooltip": ""
+      },
+      {
+        "title": "Original session range",
+        "url": "/d/layerswap-faro-trial-session?orgId=1&from=${return_from:percentencode}&to=${return_to:percentencode}&var-application=${application:percentencode}&var-deployment=${deployment:percentencode}&var-release=${release:percentencode}&var-category=${category:percentencode}&var-test_errors=${test_errors:percentencode}&var-selected_category=${selected_category:percentencode}&var-selected_test=${selected_test:percentencode}&var-search=${search:percentencode}&var-error_marker=${error_marker:percentencode}&var-group_key=${group_key:percentencode}&var-error_type=${error_type:percentencode}&var-session_id=${session_id:percentencode}&var-journey_id=${journey_id:percentencode}&var-event_ns=${event_ns:percentencode}&var-origin_tab=${origin_tab:percentencode}&var-return_from=${return_from:percentencode}&var-return_to=${return_to:percentencode}&var-return_release=${return_release:percentencode}&var-route=${route:percentencode}&var-browser=${browser:percentencode}&var-mobile=${mobile:percentencode}&var-form_mode=${form_mode:percentencode}&var-flow_id=${flow_id:percentencode}",
+        "targetBlank": false,
+        "type": "link",
+        "asDropdown": false,
+        "includeVars": false,
+        "keepTime": false,
+        "tags": [],
+        "icon": "external link",
+        "tooltip": ""
+      },
+      {
+        "title": "All activity in this session",
+        "url": "/d/layerswap-faro-trial-session?orgId=1&from=${__from}&to=${__to}&var-application=${application:percentencode}&var-deployment=${deployment:percentencode}&var-release=${release:percentencode}&var-category=${category:percentencode}&var-test_errors=${test_errors:percentencode}&var-selected_category=${selected_category:percentencode}&var-selected_test=${selected_test:percentencode}&var-search=${search:percentencode}&var-error_marker=${error_marker:percentencode}&var-group_key=${group_key:percentencode}&var-error_type=${error_type:percentencode}&var-session_id=${session_id:percentencode}&var-journey_id=&var-event_ns=${event_ns:percentencode}&var-origin_tab=${origin_tab:percentencode}&var-return_from=${return_from:percentencode}&var-return_to=${return_to:percentencode}&var-return_release=${return_release:percentencode}&var-route=${route:percentencode}&var-browser=${browser:percentencode}&var-mobile=${mobile:percentencode}&var-form_mode=${form_mode:percentencode}&var-flow_id=",
+        "targetBlank": false,
+        "type": "link",
+        "asDropdown": false,
+        "includeVars": false,
+        "keepTime": false,
+        "tags": [],
+        "icon": "external link",
+        "tooltip": ""
+      }
+    ],
+    "elements": {
+      "panel-1": {
+        "kind": "Panel",
+        "spec": {
+          "id": 1,
+          "title": "Session \u00b7 ${session_id}",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "text",
+            "version": "13.1.3",
+            "spec": {
+              "options": {
+                "mode": "markdown",
+                "content": "The time picker uses stored time; rows show browser event time. **Original session range** restores the results range. Clear Journey to see all journeys in this session."
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "noValue": "\u2014"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-2": {
+        "kind": "Panel",
+        "spec": {
+          "id": 2,
+          "title": "Records in this window \u00b7 table limit 1,000",
+          "description": "If the count exceeds 1,000, the timeline omits older records. Narrow the time range. Table pagination does not fetch more records.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "P8E80F9AEF21F6940"
+                      },
+                      "spec": {
+                        "expr": "sum(count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | label_format needle_application=`${application:percentencode}` | label_format needle_application=`{{ urldecode .needle_application }}` | label_format matched=`{{ (eq .app_name .needle_application) }}` | matched=\"true\" | label_format needle_release=`${release:percentencode}` | label_format needle_release=`{{ urldecode .needle_release }}` | label_format matched=`{{ or (eq .needle_release \"\") (eq .app_version .needle_release) }}` | matched=\"true\" | label_format deployment=`{{ if .page_attr_deployment_environment }}{{ .page_attr_deployment_environment }}{{ else }}unknown{{ end }}` | label_format needle_deployment=`${deployment:percentencode}` | label_format needle_deployment=`{{ urldecode .needle_deployment }}` | label_format matched=`{{ or (eq .needle_deployment \"\") (eq .deployment .needle_deployment) }}` | matched=\"true\" | label_format needle_session_id=`${session_id:percentencode}` | label_format needle_session_id=`{{ urldecode .needle_session_id }}` | label_format matched=`{{ (eq .session_id .needle_session_id) }}` | matched=\"true\" | session_id!=\"\" | label_format journey=`{{ if .event_data_journey_id }}{{ .event_data_journey_id }}{{ else }}{{ .session_attr_journey_id }}{{ end }}` | label_format swap=`{{ if .event_data_swap_id }}{{ .event_data_swap_id }}{{ else }}{{ .session_attr_swap_id }}{{ end }}` | label_format needle_journey_id=`${journey_id:percentencode}` | label_format needle_journey_id=`{{ urldecode .needle_journey_id }}` | label_format matched=`{{ or (eq .needle_journey_id \"\") (eq .journey .needle_journey_id) }}` | matched=\"true\" | label_format needle_flow_id=`${flow_id:percentencode}` | label_format needle_flow_id=`{{ urldecode .needle_flow_id }}` | label_format matched=`{{ or (eq .needle_flow_id \"\") (eq .event_data_flow_id .needle_flow_id) }}` | matched=\"true\" | keep session_id [$__range])) or vector(0)",
+                        "queryType": "instant",
+                        "instant": true,
+                        "range": false,
+                        "direction": "backward",
+                        "maxLines": 1000,
+                        "editorMode": "code"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.1.3",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "colorMode": "value",
+                "graphMode": "none"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "noValue": "\u2014",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "blue",
+                        "value": null
+                      },
+                      {
+                        "color": "orange",
+                        "value": 1000
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-3": {
+        "kind": "Panel",
+        "spec": {
+          "id": 3,
+          "title": "Timeline \u00b7 newest 1,000 records, shown in order",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "P8E80F9AEF21F6940"
+                      },
+                      "spec": {
+                        "expr": "{source=\"faro\"} | logfmt | __error__=\"\" | label_format needle_application=`${application:percentencode}` | label_format needle_application=`{{ urldecode .needle_application }}` | label_format matched=`{{ (eq .app_name .needle_application) }}` | matched=\"true\" | label_format needle_release=`${release:percentencode}` | label_format needle_release=`{{ urldecode .needle_release }}` | label_format matched=`{{ or (eq .needle_release \"\") (eq .app_version .needle_release) }}` | matched=\"true\" | label_format deployment=`{{ if .page_attr_deployment_environment }}{{ .page_attr_deployment_environment }}{{ else }}unknown{{ end }}` | label_format needle_deployment=`${deployment:percentencode}` | label_format needle_deployment=`{{ urldecode .needle_deployment }}` | label_format matched=`{{ or (eq .needle_deployment \"\") (eq .deployment .needle_deployment) }}` | matched=\"true\" | label_format needle_session_id=`${session_id:percentencode}` | label_format needle_session_id=`{{ urldecode .needle_session_id }}` | label_format matched=`{{ (eq .session_id .needle_session_id) }}` | matched=\"true\" | session_id!=\"\" | label_format journey=`{{ if .event_data_journey_id }}{{ .event_data_journey_id }}{{ else }}{{ .session_attr_journey_id }}{{ end }}` | label_format swap=`{{ if .event_data_swap_id }}{{ .event_data_swap_id }}{{ else }}{{ .session_attr_swap_id }}{{ end }}` | label_format needle_journey_id=`${journey_id:percentencode}` | label_format needle_journey_id=`{{ urldecode .needle_journey_id }}` | label_format matched=`{{ or (eq .needle_journey_id \"\") (eq .journey .needle_journey_id) }}` | matched=\"true\" | label_format needle_flow_id=`${flow_id:percentencode}` | label_format needle_flow_id=`{{ urldecode .needle_flow_id }}` | label_format matched=`{{ or (eq .needle_flow_id \"\") (eq .event_data_flow_id .needle_flow_id) }}` | matched=\"true\" | label_format stored_ns=`ns:{{ __timestamp__ | unixEpochNanos }}` | label_format window_from=`{{ sub (unixEpochMillis (__timestamp__)) 300000 }}` | label_format window_to=`{{ add (unixEpochMillis (__timestamp__)) 300000 }}` | label_format occurrence=`{{ if .event_data_occurrence_id }}{{ .event_data_occurrence_id }}{{ else }}{{ .context_occurrence_id }}{{ end }}` | label_format needle_event_ns=`${event_ns:percentencode}` | label_format needle_event_ns=`{{ urldecode .needle_event_ns }}` | label_format needle_event_ns=`{{ if .needle_event_ns }}ns:{{ .needle_event_ns | trimPrefix \"ns:\" }}{{ end }}` | label_format selected=`{{ if eq .stored_ns .needle_event_ns }}Selected{{ end }}` | label_format stored_ns=`ns:{{ __timestamp__ | unixEpochNanos }}` | label_format window_from=`{{ sub (unixEpochMillis (__timestamp__)) 300000 }}` | label_format window_to=`{{ add (unixEpochMillis (__timestamp__)) 300000 }}` | label_format activity=`{{ if .value }}{{ .value }}{{ else if .message }}{{ .message }}{{ else if .event_data_message }}{{ .event_data_message }}{{ else if .event_data_reason }}{{ .event_data_reason }}{{ else if .event_data_step }}{{ .event_data_step }}{{ else }}{{ .event_name }}{{ end }}` | label_format activity=`{{ regexReplaceAll \"(?s)\\n.*\" .activity \"\" | trim | trunc 240 }}` | keep timestamp, activity, event_data_step, event_data_outcome, event_data_attempt, occurrence, selected, stored_ns, window_from, window_to, session_id, journey, kind",
+                        "queryType": "range",
+                        "instant": false,
+                        "range": true,
+                        "direction": "backward",
+                        "maxLines": 1000,
+                        "editorMode": "code"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "extractFields",
+                  "spec": {
+                    "options": {
+                      "source": "labels",
+                      "format": "json",
+                      "replace": true,
+                      "keepTime": false
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "organize",
+                  "spec": {
+                    "options": {
+                      "excludeByName": {
+                        "Time": true
+                      },
+                      "indexByName": {
+                        "timestamp": 0,
+                        "activity": 1,
+                        "event_data_step": 2,
+                        "event_data_outcome": 3,
+                        "event_data_attempt": 4,
+                        "occurrence": 5,
+                        "selected": 6,
+                        "stored_ns": 7,
+                        "window_from": 8,
+                        "window_to": 9,
+                        "session_id": 10,
+                        "journey": 11,
+                        "kind": 12
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "sortBy",
+                  "spec": {
+                    "options": {
+                      "sort": [
+                        {
+                          "field": "timestamp",
+                          "desc": false
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "13.1.3",
+            "spec": {
+              "options": {
+                "showHeader": true,
+                "cellHeight": "md",
+                "enablePagination": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "noValue": "\u2014"
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "timestamp"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Client time"
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 220
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "activity"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "What happened"
+                      },
+                      {
+                        "id": "links",
+                        "value": [
+                          {
+                            "title": "Inspect event details",
+                            "url": "/d/layerswap-faro-trial-event?orgId=1&from=${__from}&to=${__to}&var-application=${application:percentencode}&var-deployment=${deployment:percentencode}&var-release=${release:percentencode}&var-category=${category:percentencode}&var-test_errors=${test_errors:percentencode}&var-selected_category=${selected_category:percentencode}&var-selected_test=${selected_test:percentencode}&var-search=${search:percentencode}&var-error_marker=${error_marker:percentencode}&var-group_key=${group_key:percentencode}&var-error_type=${error_type:percentencode}&var-session_id=${session_id:percentencode}&var-journey_id=${journey_id:percentencode}&var-event_ns=${__data.fields[\"stored_ns\"]:percentencode}&var-origin_tab=${origin_tab:percentencode}&var-return_from=${return_from:percentencode}&var-return_to=${return_to:percentencode}&var-return_release=${return_release:percentencode}&var-route=${route:percentencode}&var-browser=${browser:percentencode}&var-mobile=${mobile:percentencode}&var-form_mode=${form_mode:percentencode}&var-flow_id=${flow_id:percentencode}",
+                            "targetBlank": false
+                          }
+                        ]
+                      },
+                      {
+                        "id": "custom.wrapText",
+                        "value": true
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 480
+                      },
+                      {
+                        "id": "custom.inspect",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "event_data_step"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Step"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "event_data_outcome"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Outcome"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "event_data_attempt"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Prompt count"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "occurrence"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Occurrence"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "selected"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Selected"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "stored_ns"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "window_from"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "window_to"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "session_id"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "journey"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "kind"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-4": {
+        "kind": "Panel",
+        "spec": {
+          "id": 4,
+          "title": "Selected occurrence \u00b7 expand for raw details",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "P8E80F9AEF21F6940"
+                      },
+                      "spec": {
+                        "expr": "{source=\"faro\"} | logfmt | __error__=\"\" | label_format needle_application=`${application:percentencode}` | label_format needle_application=`{{ urldecode .needle_application }}` | label_format matched=`{{ (eq .app_name .needle_application) }}` | matched=\"true\" | label_format needle_release=`${release:percentencode}` | label_format needle_release=`{{ urldecode .needle_release }}` | label_format matched=`{{ or (eq .needle_release \"\") (eq .app_version .needle_release) }}` | matched=\"true\" | label_format deployment=`{{ if .page_attr_deployment_environment }}{{ .page_attr_deployment_environment }}{{ else }}unknown{{ end }}` | label_format needle_deployment=`${deployment:percentencode}` | label_format needle_deployment=`{{ urldecode .needle_deployment }}` | label_format matched=`{{ or (eq .needle_deployment \"\") (eq .deployment .needle_deployment) }}` | matched=\"true\" | label_format needle_session_id=`${session_id:percentencode}` | label_format needle_session_id=`{{ urldecode .needle_session_id }}` | label_format matched=`{{ (eq .session_id .needle_session_id) }}` | matched=\"true\" | session_id!=\"\" | label_format stored_ns=`ns:{{ __timestamp__ | unixEpochNanos }}` | label_format window_from=`{{ sub (unixEpochMillis (__timestamp__)) 300000 }}` | label_format window_to=`{{ add (unixEpochMillis (__timestamp__)) 300000 }}` | label_format needle_event_ns=`${event_ns:percentencode}` | label_format needle_event_ns=`{{ urldecode .needle_event_ns }}` | label_format needle_event_ns=`{{ if .needle_event_ns }}ns:{{ .needle_event_ns | trimPrefix \"ns:\" }}{{ end }}` | label_format matched=`{{ (eq .stored_ns .needle_event_ns) }}` | matched=\"true\"",
+                        "queryType": "range",
+                        "instant": false,
+                        "range": true,
+                        "direction": "backward",
+                        "maxLines": 20,
+                        "editorMode": "code"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.1.3",
+            "spec": {
+              "options": {
+                "showTime": true,
+                "showLabels": false,
+                "showCommonLabels": false,
+                "wrapLogMessage": true,
+                "enableLogDetails": true,
+                "sortOrder": "Ascending",
+                "dedupStrategy": "none"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "noValue": "\u2014"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-5": {
+        "kind": "Panel",
+        "spec": {
+          "id": 5,
+          "title": "Failures",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "text",
+            "version": "13.1.3",
+            "spec": {
+              "options": {
+                "mode": "markdown",
+                "content": "Explicit failed lifecycle outcomes, excluding generic flow_error diagnostics. Exception/API observations and expected wallet declines remain in Timeline. This is not a count of failed swaps. Legacy rows lack causal IDs."
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "noValue": "\u2014"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-6": {
+        "kind": "Panel",
+        "spec": {
+          "id": 6,
+          "title": "Explicit operation failures \u00b7 newest 1,000 observations",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "P8E80F9AEF21F6940"
+                      },
+                      "spec": {
+                        "expr": "{source=\"faro\"} | logfmt | __error__=\"\" | label_format needle_application=`${application:percentencode}` | label_format needle_application=`{{ urldecode .needle_application }}` | label_format matched=`{{ (eq .app_name .needle_application) }}` | matched=\"true\" | label_format needle_release=`${release:percentencode}` | label_format needle_release=`{{ urldecode .needle_release }}` | label_format matched=`{{ or (eq .needle_release \"\") (eq .app_version .needle_release) }}` | matched=\"true\" | label_format deployment=`{{ if .page_attr_deployment_environment }}{{ .page_attr_deployment_environment }}{{ else }}unknown{{ end }}` | label_format needle_deployment=`${deployment:percentencode}` | label_format needle_deployment=`{{ urldecode .needle_deployment }}` | label_format matched=`{{ or (eq .needle_deployment \"\") (eq .deployment .needle_deployment) }}` | matched=\"true\" | label_format needle_session_id=`${session_id:percentencode}` | label_format needle_session_id=`{{ urldecode .needle_session_id }}` | label_format matched=`{{ (eq .session_id .needle_session_id) }}` | matched=\"true\" | session_id!=\"\" | label_format journey=`{{ if .event_data_journey_id }}{{ .event_data_journey_id }}{{ else }}{{ .session_attr_journey_id }}{{ end }}` | label_format swap=`{{ if .event_data_swap_id }}{{ .event_data_swap_id }}{{ else }}{{ .session_attr_swap_id }}{{ end }}` | label_format needle_journey_id=`${journey_id:percentencode}` | label_format needle_journey_id=`{{ urldecode .needle_journey_id }}` | label_format matched=`{{ or (eq .needle_journey_id \"\") (eq .journey .needle_journey_id) }}` | matched=\"true\" | label_format needle_flow_id=`${flow_id:percentencode}` | label_format needle_flow_id=`{{ urldecode .needle_flow_id }}` | label_format matched=`{{ or (eq .needle_flow_id \"\") (eq .event_data_flow_id .needle_flow_id) }}` | matched=\"true\" | event_name=\"swap_lifecycle\" | event_data_outcome=\"failed\" | event_data_step!=\"flow_error\" | label_format stored_ns=`ns:{{ __timestamp__ | unixEpochNanos }}` | label_format window_from=`{{ sub (unixEpochMillis (__timestamp__)) 300000 }}` | label_format window_to=`{{ add (unixEpochMillis (__timestamp__)) 300000 }}` | label_format activity=`{{ if .value }}{{ .value }}{{ else if .message }}{{ .message }}{{ else if .event_data_message }}{{ .event_data_message }}{{ else if .event_data_reason }}{{ .event_data_reason }}{{ else if .event_data_step }}{{ .event_data_step }}{{ else }}{{ .event_name }}{{ end }}` | label_format activity=`{{ regexReplaceAll \"(?s)\\n.*\" .activity \"\" | trim | trunc 240 }}` | label_format incident=`{{ if .event_data_occurrence_id }}{{ .session_id }}:{{ .event_data_occurrence_id }}{{ else }}legacy:{{ .stored_ns }}:{{ __line__ }}{{ end }}` | keep timestamp, activity, event_data_step, event_data_outcome, type, event_data_occurrence_id, stored_ns, window_from, window_to, session_id, journey, kind, incident",
+                        "queryType": "range",
+                        "instant": false,
+                        "range": true,
+                        "direction": "backward",
+                        "maxLines": 1000,
+                        "editorMode": "code"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "extractFields",
+                  "spec": {
+                    "options": {
+                      "source": "labels",
+                      "format": "json",
+                      "replace": true,
+                      "keepTime": false
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "groupBy",
+                  "spec": {
+                    "options": {
+                      "fields": {
+                        "timestamp": {
+                          "operation": "aggregate",
+                          "aggregations": [
+                            "first"
+                          ]
+                        },
+                        "activity": {
+                          "operation": "aggregate",
+                          "aggregations": [
+                            "first"
+                          ]
+                        },
+                        "event_data_step": {
+                          "operation": "aggregate",
+                          "aggregations": [
+                            "first"
+                          ]
+                        },
+                        "event_data_outcome": {
+                          "operation": "aggregate",
+                          "aggregations": [
+                            "first"
+                          ]
+                        },
+                        "type": {
+                          "operation": "aggregate",
+                          "aggregations": [
+                            "first"
+                          ]
+                        },
+                        "event_data_occurrence_id": {
+                          "operation": "aggregate",
+                          "aggregations": [
+                            "first"
+                          ]
+                        },
+                        "stored_ns": {
+                          "operation": "aggregate",
+                          "aggregations": [
+                            "first"
+                          ]
+                        },
+                        "window_from": {
+                          "operation": "aggregate",
+                          "aggregations": [
+                            "first"
+                          ]
+                        },
+                        "window_to": {
+                          "operation": "aggregate",
+                          "aggregations": [
+                            "first"
+                          ]
+                        },
+                        "session_id": {
+                          "operation": "aggregate",
+                          "aggregations": [
+                            "first"
+                          ]
+                        },
+                        "journey": {
+                          "operation": "aggregate",
+                          "aggregations": [
+                            "first"
+                          ]
+                        },
+                        "kind": {
+                          "operation": "aggregate",
+                          "aggregations": [
+                            "first"
+                          ]
+                        },
+                        "incident": {
+                          "operation": "groupby",
+                          "aggregations": []
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "organize",
+                  "spec": {
+                    "options": {
+                      "excludeByName": {
+                        "Time": true
+                      },
+                      "indexByName": {
+                        "timestamp (first)": 0,
+                        "activity (first)": 1,
+                        "event_data_step (first)": 2,
+                        "event_data_outcome (first)": 3,
+                        "event_data_occurrence_id (first)": 4,
+                        "stored_ns (first)": 5,
+                        "window_from (first)": 6,
+                        "window_to (first)": 7,
+                        "session_id (first)": 8,
+                        "journey (first)": 9,
+                        "kind (first)": 10
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "sortBy",
+                  "spec": {
+                    "options": {
+                      "sort": [
+                        {
+                          "field": "timestamp (first)",
+                          "desc": true
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "13.1.3",
+            "spec": {
+              "options": {
+                "showHeader": true,
+                "cellHeight": "md",
+                "enablePagination": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "noValue": "\u2014"
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "timestamp (first)"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Client time"
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 220
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "activity (first)"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "What happened"
+                      },
+                      {
+                        "id": "links",
+                        "value": [
+                          {
+                            "title": "Inspect event",
+                            "url": "/d/layerswap-faro-trial-event?orgId=1&from=${__from}&to=${__to}&var-application=${application:percentencode}&var-deployment=${deployment:percentencode}&var-release=${release:percentencode}&var-category=${category:percentencode}&var-test_errors=${test_errors:percentencode}&var-selected_category=${selected_category:percentencode}&var-selected_test=${selected_test:percentencode}&var-search=${search:percentencode}&var-error_marker=${error_marker:percentencode}&var-group_key=${group_key:percentencode}&var-error_type=${error_type:percentencode}&var-session_id=${session_id:percentencode}&var-journey_id=${journey_id:percentencode}&var-event_ns=${__data.fields[\"stored_ns (first)\"]:percentencode}&var-origin_tab=${origin_tab:percentencode}&var-return_from=${return_from:percentencode}&var-return_to=${return_to:percentencode}&var-return_release=${return_release:percentencode}&var-route=${route:percentencode}&var-browser=${browser:percentencode}&var-mobile=${mobile:percentencode}&var-form_mode=${form_mode:percentencode}&var-flow_id=${flow_id:percentencode}",
+                            "targetBlank": false
+                          }
+                        ]
+                      },
+                      {
+                        "id": "custom.wrapText",
+                        "value": true
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 480
+                      },
+                      {
+                        "id": "custom.inspect",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "event_data_step (first)"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Step"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "event_data_outcome (first)"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Outcome"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "event_data_occurrence_id (first)"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Occurrence"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "stored_ns (first)"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "window_from (first)"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "window_to (first)"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "session_id (first)"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "journey (first)"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "kind (first)"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "incident"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-7": {
+        "kind": "Panel",
+        "spec": {
+          "id": 7,
+          "title": "Requests",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "text",
+            "version": "13.1.3",
+            "spec": {
+              "options": {
+                "mode": "markdown",
+                "content": "Recorded browser request events for this session and journey. Select a URL for its event details."
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "noValue": "\u2014"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-8": {
+        "kind": "Panel",
+        "spec": {
+          "id": 8,
+          "title": "Recorded HTTP requests \u00b7 newest 1,000",
+          "description": "Recorded request mirrors only. Absence is not proof no request occurred. Inspect raw event for other recorded timing fields.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "P8E80F9AEF21F6940"
+                      },
+                      "spec": {
+                        "expr": "{source=\"faro\"} | logfmt | __error__=\"\" | label_format needle_application=`${application:percentencode}` | label_format needle_application=`{{ urldecode .needle_application }}` | label_format matched=`{{ (eq .app_name .needle_application) }}` | matched=\"true\" | label_format needle_release=`${release:percentencode}` | label_format needle_release=`{{ urldecode .needle_release }}` | label_format matched=`{{ or (eq .needle_release \"\") (eq .app_version .needle_release) }}` | matched=\"true\" | label_format deployment=`{{ if .page_attr_deployment_environment }}{{ .page_attr_deployment_environment }}{{ else }}unknown{{ end }}` | label_format needle_deployment=`${deployment:percentencode}` | label_format needle_deployment=`{{ urldecode .needle_deployment }}` | label_format matched=`{{ or (eq .needle_deployment \"\") (eq .deployment .needle_deployment) }}` | matched=\"true\" | label_format needle_session_id=`${session_id:percentencode}` | label_format needle_session_id=`{{ urldecode .needle_session_id }}` | label_format matched=`{{ (eq .session_id .needle_session_id) }}` | matched=\"true\" | session_id!=\"\" | label_format journey=`{{ if .event_data_journey_id }}{{ .event_data_journey_id }}{{ else }}{{ .session_attr_journey_id }}{{ end }}` | label_format swap=`{{ if .event_data_swap_id }}{{ .event_data_swap_id }}{{ else }}{{ .session_attr_swap_id }}{{ end }}` | label_format needle_journey_id=`${journey_id:percentencode}` | label_format needle_journey_id=`{{ urldecode .needle_journey_id }}` | label_format matched=`{{ or (eq .needle_journey_id \"\") (eq .journey .needle_journey_id) }}` | matched=\"true\" | label_format needle_flow_id=`${flow_id:percentencode}` | label_format needle_flow_id=`{{ urldecode .needle_flow_id }}` | label_format matched=`{{ or (eq .needle_flow_id \"\") (eq .event_data_flow_id .needle_flow_id) }}` | matched=\"true\" | event_data_http_request_method!=\"\" | label_format stored_ns=`ns:{{ __timestamp__ | unixEpochNanos }}` | label_format window_from=`{{ sub (unixEpochMillis (__timestamp__)) 300000 }}` | label_format window_to=`{{ add (unixEpochMillis (__timestamp__)) 300000 }}` | label_format activity=`{{ if .value }}{{ .value }}{{ else if .message }}{{ .message }}{{ else if .event_data_message }}{{ .event_data_message }}{{ else if .event_data_reason }}{{ .event_data_reason }}{{ else if .event_data_step }}{{ .event_data_step }}{{ else }}{{ .event_name }}{{ end }}` | label_format activity=`{{ regexReplaceAll \"(?s)\\n.*\" .activity \"\" | trim | trunc 240 }}` | keep timestamp, event_data_http_request_method, event_data_url_full, event_data_http_response_status_code, stored_ns, window_from, window_to, session_id, journey, kind",
+                        "queryType": "range",
+                        "instant": false,
+                        "range": true,
+                        "direction": "backward",
+                        "maxLines": 1000,
+                        "editorMode": "code"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "extractFields",
+                  "spec": {
+                    "options": {
+                      "source": "labels",
+                      "format": "json",
+                      "replace": true,
+                      "keepTime": false
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "organize",
+                  "spec": {
+                    "options": {
+                      "excludeByName": {
+                        "Time": true
+                      },
+                      "indexByName": {
+                        "timestamp": 0,
+                        "event_data_http_request_method": 1,
+                        "event_data_url_full": 2,
+                        "event_data_http_response_status_code": 3,
+                        "stored_ns": 4,
+                        "window_from": 5,
+                        "window_to": 6,
+                        "session_id": 7,
+                        "journey": 8,
+                        "kind": 9
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "sortBy",
+                  "spec": {
+                    "options": {
+                      "sort": [
+                        {
+                          "field": "timestamp",
+                          "desc": true
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "13.1.3",
+            "spec": {
+              "options": {
+                "showHeader": true,
+                "cellHeight": "md",
+                "enablePagination": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "noValue": "\u2014"
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "timestamp"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Client time"
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 220
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "event_data_http_request_method"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Method"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "event_data_url_full"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "URL"
+                      },
+                      {
+                        "id": "links",
+                        "value": [
+                          {
+                            "title": "Inspect request event",
+                            "url": "/d/layerswap-faro-trial-event?orgId=1&from=${__from}&to=${__to}&var-application=${application:percentencode}&var-deployment=${deployment:percentencode}&var-release=${release:percentencode}&var-category=${category:percentencode}&var-test_errors=${test_errors:percentencode}&var-selected_category=${selected_category:percentencode}&var-selected_test=${selected_test:percentencode}&var-search=${search:percentencode}&var-error_marker=${error_marker:percentencode}&var-group_key=${group_key:percentencode}&var-error_type=${error_type:percentencode}&var-session_id=${session_id:percentencode}&var-journey_id=${journey_id:percentencode}&var-event_ns=${__data.fields[\"stored_ns\"]:percentencode}&var-origin_tab=${origin_tab:percentencode}&var-return_from=${return_from:percentencode}&var-return_to=${return_to:percentencode}&var-return_release=${return_release:percentencode}&var-route=${route:percentencode}&var-browser=${browser:percentencode}&var-mobile=${mobile:percentencode}&var-form_mode=${form_mode:percentencode}&var-flow_id=${flow_id:percentencode}",
+                            "targetBlank": false
+                          }
+                        ]
+                      },
+                      {
+                        "id": "custom.wrapText",
+                        "value": true
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 480
+                      },
+                      {
+                        "id": "custom.inspect",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "event_data_http_response_status_code"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Status"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "stored_ns"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "window_from"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "window_to"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "session_id"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "journey"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "kind"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-9": {
+        "kind": "Panel",
+        "spec": {
+          "id": 9,
+          "title": "Context",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "text",
+            "version": "13.1.3",
+            "spec": {
+              "options": {
+                "mode": "markdown",
+                "content": "Historical snapshots, newest first. Missing fields remain unavailable."
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "noValue": "\u2014"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-10": {
+        "kind": "Panel",
+        "spec": {
+          "id": 10,
+          "title": "Historical context snapshots \u00b7 newest 20",
+          "description": "Values belong to each record; session attributes are not automatically the context or cause of a different event.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "P8E80F9AEF21F6940"
+                      },
+                      "spec": {
+                        "expr": "{source=\"faro\"} | logfmt | __error__=\"\" | label_format needle_application=`${application:percentencode}` | label_format needle_application=`{{ urldecode .needle_application }}` | label_format matched=`{{ (eq .app_name .needle_application) }}` | matched=\"true\" | label_format needle_release=`${release:percentencode}` | label_format needle_release=`{{ urldecode .needle_release }}` | label_format matched=`{{ or (eq .needle_release \"\") (eq .app_version .needle_release) }}` | matched=\"true\" | label_format deployment=`{{ if .page_attr_deployment_environment }}{{ .page_attr_deployment_environment }}{{ else }}unknown{{ end }}` | label_format needle_deployment=`${deployment:percentencode}` | label_format needle_deployment=`{{ urldecode .needle_deployment }}` | label_format matched=`{{ or (eq .needle_deployment \"\") (eq .deployment .needle_deployment) }}` | matched=\"true\" | label_format needle_session_id=`${session_id:percentencode}` | label_format needle_session_id=`{{ urldecode .needle_session_id }}` | label_format matched=`{{ (eq .session_id .needle_session_id) }}` | matched=\"true\" | session_id!=\"\" | label_format journey=`{{ if .event_data_journey_id }}{{ .event_data_journey_id }}{{ else }}{{ .session_attr_journey_id }}{{ end }}` | label_format swap=`{{ if .event_data_swap_id }}{{ .event_data_swap_id }}{{ else }}{{ .session_attr_swap_id }}{{ end }}` | label_format needle_journey_id=`${journey_id:percentencode}` | label_format needle_journey_id=`{{ urldecode .needle_journey_id }}` | label_format matched=`{{ or (eq .needle_journey_id \"\") (eq .journey .needle_journey_id) }}` | matched=\"true\" | label_format needle_flow_id=`${flow_id:percentencode}` | label_format needle_flow_id=`{{ urldecode .needle_flow_id }}` | label_format matched=`{{ or (eq .needle_flow_id \"\") (eq .event_data_flow_id .needle_flow_id) }}` | matched=\"true\" | label_format stored_ns=`ns:{{ __timestamp__ | unixEpochNanos }}` | label_format window_from=`{{ sub (unixEpochMillis (__timestamp__)) 300000 }}` | label_format window_to=`{{ add (unixEpochMillis (__timestamp__)) 300000 }}` | label_format activity=`{{ if .value }}{{ .value }}{{ else if .message }}{{ .message }}{{ else if .event_data_message }}{{ .event_data_message }}{{ else if .event_data_reason }}{{ .event_data_reason }}{{ else if .event_data_step }}{{ .event_data_step }}{{ else }}{{ .event_name }}{{ end }}` | label_format activity=`{{ regexReplaceAll \"(?s)\\n.*\" .activity \"\" | trim | trunc 240 }}` | keep timestamp, journey, swap, session_attr_connected_wallets, browser_name, stored_ns, window_from, window_to, session_id, kind",
+                        "queryType": "range",
+                        "instant": false,
+                        "range": true,
+                        "direction": "backward",
+                        "maxLines": 20,
+                        "editorMode": "code"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "extractFields",
+                  "spec": {
+                    "options": {
+                      "source": "labels",
+                      "format": "json",
+                      "replace": true,
+                      "keepTime": false
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "organize",
+                  "spec": {
+                    "options": {
+                      "excludeByName": {
+                        "Time": true
+                      },
+                      "indexByName": {
+                        "timestamp": 0,
+                        "journey": 1,
+                        "swap": 2,
+                        "session_attr_connected_wallets": 3,
+                        "browser_name": 4,
+                        "stored_ns": 5,
+                        "window_from": 6,
+                        "window_to": 7,
+                        "session_id": 8,
+                        "kind": 9
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "sortBy",
+                  "spec": {
+                    "options": {
+                      "sort": [
+                        {
+                          "field": "timestamp",
+                          "desc": true
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "13.1.3",
+            "spec": {
+              "options": {
+                "showHeader": true,
+                "cellHeight": "md",
+                "enablePagination": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "noValue": "\u2014"
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "timestamp"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Client time"
+                      },
+                      {
+                        "id": "links",
+                        "value": [
+                          {
+                            "title": "Inspect snapshot",
+                            "url": "/d/layerswap-faro-trial-event?orgId=1&from=${__from}&to=${__to}&var-application=${application:percentencode}&var-deployment=${deployment:percentencode}&var-release=${release:percentencode}&var-category=${category:percentencode}&var-test_errors=${test_errors:percentencode}&var-selected_category=${selected_category:percentencode}&var-selected_test=${selected_test:percentencode}&var-search=${search:percentencode}&var-error_marker=${error_marker:percentencode}&var-group_key=${group_key:percentencode}&var-error_type=${error_type:percentencode}&var-session_id=${session_id:percentencode}&var-journey_id=${journey_id:percentencode}&var-event_ns=${__data.fields[\"stored_ns\"]:percentencode}&var-origin_tab=${origin_tab:percentencode}&var-return_from=${return_from:percentencode}&var-return_to=${return_to:percentencode}&var-return_release=${return_release:percentencode}&var-route=${route:percentencode}&var-browser=${browser:percentencode}&var-mobile=${mobile:percentencode}&var-form_mode=${form_mode:percentencode}&var-flow_id=${flow_id:percentencode}",
+                            "targetBlank": false
+                          }
+                        ]
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 220
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "journey"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Journey"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "swap"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Swap"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "session_attr_connected_wallets"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Wallet context"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "browser_name"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Browser"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "stored_ns"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "window_from"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "window_to"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "session_id"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "kind"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-11": {
+        "kind": "Panel",
+        "spec": {
+          "id": 11,
+          "title": "Recorded traces \u00b7 open in Tempo",
+          "description": "Exact recorded trace IDs. Nearby errors are contextual; this does not prove they caused a request. Tempo retention is independent of Loki.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "P8E80F9AEF21F6940"
+                      },
+                      "spec": {
+                        "expr": "{source=\"faro\"} | logfmt | __error__=\"\" | label_format needle_application=`${application:percentencode}` | label_format needle_application=`{{ urldecode .needle_application }}` | label_format matched=`{{ (eq .app_name .needle_application) }}` | matched=\"true\" | label_format needle_release=`${release:percentencode}` | label_format needle_release=`{{ urldecode .needle_release }}` | label_format matched=`{{ or (eq .needle_release \"\") (eq .app_version .needle_release) }}` | matched=\"true\" | label_format deployment=`{{ if .page_attr_deployment_environment }}{{ .page_attr_deployment_environment }}{{ else }}unknown{{ end }}` | label_format needle_deployment=`${deployment:percentencode}` | label_format needle_deployment=`{{ urldecode .needle_deployment }}` | label_format matched=`{{ or (eq .needle_deployment \"\") (eq .deployment .needle_deployment) }}` | matched=\"true\" | label_format needle_session_id=`${session_id:percentencode}` | label_format needle_session_id=`{{ urldecode .needle_session_id }}` | label_format matched=`{{ (eq .session_id .needle_session_id) }}` | matched=\"true\" | session_id!=\"\" | label_format journey=`{{ if .event_data_journey_id }}{{ .event_data_journey_id }}{{ else }}{{ .session_attr_journey_id }}{{ end }}` | label_format swap=`{{ if .event_data_swap_id }}{{ .event_data_swap_id }}{{ else }}{{ .session_attr_swap_id }}{{ end }}` | label_format needle_journey_id=`${journey_id:percentencode}` | label_format needle_journey_id=`{{ urldecode .needle_journey_id }}` | label_format matched=`{{ or (eq .needle_journey_id \"\") (eq .journey .needle_journey_id) }}` | matched=\"true\" | label_format needle_flow_id=`${flow_id:percentencode}` | label_format needle_flow_id=`{{ urldecode .needle_flow_id }}` | label_format matched=`{{ or (eq .needle_flow_id \"\") (eq .event_data_flow_id .needle_flow_id) }}` | matched=\"true\" | traceID=~\"[a-fA-F0-9]{32}\" | label_format stored_ns=`ns:{{ __timestamp__ | unixEpochNanos }}` | label_format window_from=`{{ sub (unixEpochMillis (__timestamp__)) 300000 }}` | label_format window_to=`{{ add (unixEpochMillis (__timestamp__)) 300000 }}` | label_format activity=`{{ if .value }}{{ .value }}{{ else if .message }}{{ .message }}{{ else if .event_data_message }}{{ .event_data_message }}{{ else if .event_data_reason }}{{ .event_data_reason }}{{ else if .event_data_step }}{{ .event_data_step }}{{ else }}{{ .event_name }}{{ end }}` | label_format activity=`{{ regexReplaceAll \"(?s)\\n.*\" .activity \"\" | trim | trunc 240 }}` | keep timestamp, traceID, event_data_url_full, stored_ns, window_from, window_to, session_id, journey, kind",
+                        "queryType": "range",
+                        "instant": false,
+                        "range": true,
+                        "direction": "backward",
+                        "maxLines": 1000,
+                        "editorMode": "code"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "extractFields",
+                  "spec": {
+                    "options": {
+                      "source": "labels",
+                      "format": "json",
+                      "replace": true,
+                      "keepTime": false
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "organize",
+                  "spec": {
+                    "options": {
+                      "excludeByName": {
+                        "Time": true
+                      },
+                      "indexByName": {
+                        "timestamp": 0,
+                        "event_data_url_full": 1,
+                        "traceID": 2,
+                        "stored_ns": 3,
+                        "window_from": 4,
+                        "window_to": 5,
+                        "session_id": 6,
+                        "journey": 7,
+                        "kind": 8
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "sortBy",
+                  "spec": {
+                    "options": {
+                      "sort": [
+                        {
+                          "field": "timestamp",
+                          "desc": false
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "13.1.3",
+            "spec": {
+              "options": {
+                "showHeader": true,
+                "cellHeight": "md",
+                "enablePagination": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "noValue": "\u2014"
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "timestamp"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Client time"
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 220
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "event_data_url_full"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Request"
+                      },
+                      {
+                        "id": "custom.wrapText",
+                        "value": true
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 480
+                      },
+                      {
+                        "id": "custom.inspect",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "traceID"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Trace"
+                      },
+                      {
+                        "id": "links",
+                        "value": [
+                          {
+                            "title": "Open trace",
+                            "url": "/explore?schemaVersion=1&panes=%7B%22trace%22%3A%7B%22datasource%22%3A%22P214B5B846CF3925F%22%2C%22queries%22%3A%5B%7B%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22tempo%22%2C%22uid%22%3A%22P214B5B846CF3925F%22%7D%2C%22queryType%22%3A%22traceql%22%2C%22query%22%3A%22${__data.fields[\"traceID\"]:percentencode}%22%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22${__from}%22%2C%22to%22%3A%22${__to}%22%7D%7D%7D",
+                            "targetBlank": false
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "stored_ns"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "window_from"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "window_to"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "session_id"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "journey"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "kind"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "layout": {
+      "kind": "TabsLayout",
+      "spec": {
+        "tabs": [
+          {
+            "kind": "TabsLayoutTab",
+            "spec": {
+              "title": "Timeline",
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-1"
+                        },
+                        "x": 0,
+                        "y": 0,
+                        "width": 19,
+                        "height": 3
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-2"
+                        },
+                        "x": 19,
+                        "y": 0,
+                        "width": 5,
+                        "height": 3
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-4"
+                        },
+                        "x": 0,
+                        "y": 3,
+                        "width": 24,
+                        "height": 5
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-3"
+                        },
+                        "x": 0,
+                        "y": 8,
+                        "width": 24,
+                        "height": 16
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "TabsLayoutTab",
+            "spec": {
+              "title": "Failures",
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-5"
+                        },
+                        "x": 0,
+                        "y": 0,
+                        "width": 24,
+                        "height": 3
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-6"
+                        },
+                        "x": 0,
+                        "y": 3,
+                        "width": 24,
+                        "height": 16
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "TabsLayoutTab",
+            "spec": {
+              "title": "Requests",
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-7"
+                        },
+                        "x": 0,
+                        "y": 0,
+                        "width": 24,
+                        "height": 3
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-8"
+                        },
+                        "x": 0,
+                        "y": 3,
+                        "width": 24,
+                        "height": 16
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-11"
+                        },
+                        "x": 0,
+                        "y": 19,
+                        "width": 24,
+                        "height": 10
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "TabsLayoutTab",
+            "spec": {
+              "title": "Context",
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-9"
+                        },
+                        "x": 0,
+                        "y": 0,
+                        "width": 24,
+                        "height": 3
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-10"
+                        },
+                        "x": 0,
+                        "y": 3,
+                        "width": 24,
+                        "height": 16
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

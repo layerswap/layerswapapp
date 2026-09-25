@@ -7,7 +7,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "audit": "audit-ci --config audit-ci.json"
   },
   "dependencies": {
     "@layerswap/wallet-evm": "next",
@@ -15,25 +16,48 @@
     "@reown/appkit": "^1.8.13",
     "@reown/appkit-adapter-wagmi": "^1.8.13",
     "@tanstack/react-query": "^5.74.7",
-    "next": "^14.0.4",
+    "next": "^15.5.26",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-error-boundary": "^4.0.11",
     "viem": "^2.21.16",
-    "wagmi": "2.14.11",
+    "wagmi": "^2.19.5",
     "zustand": "^4.5.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.13",
+    "@types/node": "20.17.6",
     "@types/react": "18.3.1",
     "@web3-react/types": "^6.0.7",
     "autoprefixer": "^10.4.5",
-    "eslint": "8.49.0",
-    "eslint-config-next": "^14.0.4",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^15.5.26",
     "tailwindcss": "^4.0.15",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "audit-ci": "7.1.0"
   },
   "engines": {
-    "node": ">=20.9.0"
+    "node": ">=22.12.0"
+  },
+  "packageManager": "yarn@1.22.22",
+  "resolutions": {
+    "elliptic": "6.6.1",
+    "@metamask/sdk": "0.33.1",
+    "@metamask/sdk-communication-layer": "0.33.1",
+    "lodash": "4.18.0",
+    "postcss": "8.5.23",
+    "uuid": "11.1.1",
+    "axios": "1.18.1",
+    "sharp": "0.35.4",
+    "@walletconnect/ethereum-provider": "2.25.0",
+    "@walletconnect/universal-provider": "2.25.0",
+    "@walletconnect/sign-client": "2.25.0",
+    "@walletconnect/utils": "2.25.0",
+    "@walletconnect/relay-auth": "1.1.0",
+    "**/@ethersproject/providers/ws": "7.5.11",
+    "@reown/appkit": "1.8.24",
+    "**/@reown/appkit-adapter-wagmi/@wagmi/connectors": "5.11.2",
+    "**/@walletconnect/jsonrpc-ws-connection/ws": "7.5.11",
+    "**/ws": "8.21.0"
   }
 }

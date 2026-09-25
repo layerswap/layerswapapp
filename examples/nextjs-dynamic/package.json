@@ -10,42 +10,78 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@bigmi/client": "^0.10.1",
-    "@bigmi/core": "^0.9.0",
-    "@bigmi/react": "^0.9.0",
-    "@dynamic-labs/ethereum": "^4.14.0",
-    "@dynamic-labs/sdk-react-core": "^4.14.0",
-    "@dynamic-labs/starknet": "^4.41.1",
-    "@dynamic-labs/wagmi-connector": "^4.14.0",
+    "@bigmi/client": "^0.10.4",
+    "@bigmi/core": "^0.9.2",
+    "@bigmi/react": "^0.9.4",
+    "@dynamic-labs/sdk-react-core": "^4.100.3",
+    "@dynamic-labs/starknet": "^4.100.3",
     "@layerswap/wallet-bitcoin": "next",
     "@layerswap/wallet-evm": "next",
     "@layerswap/wallet-starknet": "next",
     "@layerswap/wallet-svm": "next",
     "@layerswap/widget": "next",
-    "@layerswap/widget-types": "next",
-    "@tanstack/react-query": "^5.90.5",
-    "next": "^15.3.3",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
-    "react-error-boundary": "^4.0.11",
-    "viem": "^2.21.16",
+    "@layerswap/widget-types": "1.0.0",
+    "@tanstack/react-query": "^5.103.2",
+    "next": "^15.5.26",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-error-boundary": "^4.1.2",
+    "viem": "^2.56.8",
     "wagmi": "2.14.11",
-    "zustand": "^4.5.7"
+    "zustand": "^4.5.7",
+    "@layerswap/wallet-core": "2.0.0",
+    "@layerswap/utils": "2.0.0"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.13",
-    "@types/bn.js": "^5.1.0",
-    "@types/crypto-js": "^4.1.1",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/bn.js": "^5.2.0",
+    "@types/crypto-js": "^4.2.2",
+    "@types/node": "^22.0.0",
     "@types/react": "19.2.3",
     "@web3-react/types": "^6.0.7",
-    "autoprefixer": "^10.4.5",
-    "eslint": "8.49.0",
-    "eslint-config-next": "^14.0.4",
-    "eslint-plugin-no-conditional-literals-in-jsx": "file:./eslint-plugins/eslint-plugin-no-conditional-literals-in-jsx",
-    "tailwindcss": "^4.0.15",
+    "autoprefixer": "^10.6.1",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^15.5.26",
+    "eslint-plugin-no-conditional-literals-in-jsx": "file:eslint-plugins/eslint-plugin-no-conditional-literals-in-jsx",
+    "tailwindcss": "^4.3.3",
     "typescript": "5.9.3"
   },
   "engines": {
-    "node": ">=20.9.0"
+    "node": ">=22.12.0"
+  },
+  "packageManager": "pnpm@10.20.0",
+  "pnpm": {
+    "overrides": {
+      "elliptic": "6.6.1",
+      "@metamask/sdk@<0.33.1": "0.33.1",
+      "@metamask/sdk-communication-layer@<0.33.1": "0.33.1",
+      "lodash@<4.18.0": "4.18.0",
+      "postcss@<8.5.23": "8.5.23",
+      "protobufjs@>=7 <7.6.5": "7.6.5",
+      "ws@>=7 <7.5.11": "7.5.11",
+      "ws@>=8 <8.21.0": "8.21.0",
+      "uuid@<11.1.1": "11.1.1",
+      "axios@>=1 <1.18.1": "1.18.1",
+      "sharp@>=0.33 <0.35.4": "0.35.4",
+      "@walletconnect/ethereum-provider": "2.25.0",
+      "@walletconnect/universal-provider": "2.25.0",
+      "@walletconnect/sign-client": "2.25.0",
+      "@walletconnect/relay-auth": "1.1.0",
+      "jayson": "5.0.0",
+      "toml": "4.2.0",
+      "@walletconnect/utils": "2.25.0",
+      "@layerswap/wallet-core": "2.0.0",
+      "@layerswap/widget-types": "1.0.0",
+      "@reown/appkit": "1.8.24",
+      "@layerswap/ui-kit": "2.0.0",
+      "@layerswap/utils": "2.0.0",
+      "rpc-websockets>uuid": "11.1.1"
+    },
+    "auditConfig": {
+      "ignoreGhsas": [
+        "GHSA-848j-6mx2-7j84",
+        "GHSA-3gc7-fjrx-p6mg"
+      ]
+    }
   }
 }

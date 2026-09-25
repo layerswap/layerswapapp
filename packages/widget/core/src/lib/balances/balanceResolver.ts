@@ -4,6 +4,7 @@ import { NetworkWithTokens } from "@layerswap/widget-types";
 import { ErrorHandler } from "@/lib/ErrorHandler";
 import { classifyNodeError, extractErrorDetails } from "@layerswap/widget-types";
 import KnownInternalNames from "../knownIds";
+import { widgetTelemetry } from '../widgetTelemetry';
 
 const SKIP_BALANCE_NETWORKS = [
     KnownInternalNames.Networks.ParadexMainnet,
@@ -22,10 +23,8 @@ function formatErrorBalances(errorBalances: TokenBalance[]) {
         request_url: b.error?.requestUrl,
         // Include first 500 chars of stack trace for debugging
         error_stack: b.error?.stack?.substring(0, 500),
-        // Include response data if available (truncated for size)
+        // Keep the response structured so ErrorHandler can extract only error code/message.
         response_data: b.error?.responseData
-            ? JSON.stringify(b.error.responseData).substring(0, 1000)
-            : undefined
     }));
 }
 
@@ -42,6 +41,7 @@ export class BalanceResolver {
             return { balances: [] }
         }
 
+        const finishTelemetry = widgetTelemetry.beginOperation('balance_fetch', { network: network.name })
         try {
             if (!address)
                 throw new Error(`No address provided for network ${network.name}`)
@@ -73,9 +73,11 @@ export class BalanceResolver {
 
             }
 
+            finishTelemetry(errorBalances?.length ? 'partial' : 'succeeded')
             return { balances };
         }
         catch (e) {
+            finishTelemetry('failed')
             const errorDetails = extractErrorDetails(e);
             const errorCategory = classifyNodeError(e);
             const error = new Error(errorDetails.message);

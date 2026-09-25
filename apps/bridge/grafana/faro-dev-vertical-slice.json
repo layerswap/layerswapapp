@@ -1,0 +1,1765 @@
+{
+  "id": null,
+  "uid": "layerswap-faro-dev-slice",
+  "title": "Faro Dev · Error & Session Investigation (Provisional)",
+  "description": "Type-first drilldown from Error Overview. Readable variants → recorded sessions → timeline → raw Loki. Development telemetry only; no production health verdict.",
+  "tags": [
+    "layerswap",
+    "faro",
+    "development",
+    "provisional"
+  ],
+  "timezone": "utc",
+  "schemaVersion": 39,
+  "version": 0,
+  "editable": true,
+  "refresh": "",
+  "time": {
+    "from": "2026-09-08T07:50:00.000Z",
+    "to": "2026-09-08T08:30:00.000Z"
+  },
+  "timepicker": {},
+  "annotations": {
+    "list": []
+  },
+  "links": [
+    {
+      "title": "← Error overview",
+      "url": "/d/layerswap-faro-dev-errors?orgId=1&from=${__from}&to=${__to}&var-application=${application:percentencode}&var-environment=${environment:percentencode}&var-release=${release:percentencode}&var-wallet_address=${wallet_address:percentencode}&var-error_marker=${error_marker:percentencode}&var-error_type=__select_group__&var-error_hash=.*&var-session_id=__select_session__&var-event_time=__select_event__&var-event_kind=__select_event__&var-event_ns=__select_event__",
+      "type": "link",
+      "targetBlank": false
+    },
+    {
+      "title": "All variants of selected type",
+      "url": "/d/layerswap-faro-dev-slice?orgId=1&from=${__from}&to=${__to}&var-application=${application:percentencode}&var-environment=${environment:percentencode}&var-release=${release:percentencode}&var-wallet_address=${wallet_address:percentencode}&var-error_marker=${error_marker:percentencode}&var-error_type=${error_type:percentencode}&var-error_hash=.*&var-session_id=__select_session__&var-event_time=__select_event__&var-event_kind=__select_event__&var-event_ns=__select_event__",
+      "type": "link",
+      "targetBlank": false
+    },
+    {
+      "title": "Reset selections",
+      "url": "/d/layerswap-faro-dev-slice?orgId=1&from=${__from}&to=${__to}&var-application=${application:percentencode}&var-environment=${environment:percentencode}&var-release=${release:percentencode}&var-wallet_address=${wallet_address:percentencode}&var-error_marker=${error_marker:percentencode}&var-error_type=__select_group__&var-error_hash=.*&var-session_id=__select_session__&var-event_time=__select_event__&var-event_kind=__select_event__&var-event_ns=__select_event__",
+      "type": "link",
+      "targetBlank": false
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "application",
+        "label": "Application",
+        "type": "textbox",
+        "hide": 0,
+        "query": "layerswap-frontend",
+        "current": {
+          "selected": true,
+          "text": "layerswap-frontend",
+          "value": "layerswap-frontend"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "layerswap-frontend",
+            "value": "layerswap-frontend"
+          }
+        ],
+        "skipUrlSync": false
+      },
+      {
+        "name": "environment",
+        "label": "Environment (API mode)",
+        "type": "textbox",
+        "hide": 0,
+        "query": "mainnet",
+        "current": {
+          "selected": true,
+          "text": "mainnet",
+          "value": "mainnet"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "mainnet",
+            "value": "mainnet"
+          }
+        ],
+        "skipUrlSync": false
+      },
+      {
+        "name": "release",
+        "label": "Version",
+        "type": "textbox",
+        "hide": 0,
+        "query": "local",
+        "current": {
+          "selected": true,
+          "text": "local",
+          "value": "local"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "local",
+            "value": "local"
+          }
+        ],
+        "skipUrlSync": false
+      },
+      {
+        "name": "wallet_address",
+        "label": "Wallet address (exact)",
+        "type": "textbox",
+        "hide": 0,
+        "query": "",
+        "current": {
+          "selected": true,
+          "text": "",
+          "value": ""
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "",
+            "value": ""
+          }
+        ],
+        "skipUrlSync": false
+      },
+      {
+        "name": "error_marker",
+        "label": "Error record contains",
+        "type": "textbox",
+        "hide": 0,
+        "query": "FARO_CONTROLLED_",
+        "current": {
+          "selected": true,
+          "text": "FARO_CONTROLLED_",
+          "value": "FARO_CONTROLLED_"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "FARO_CONTROLLED_",
+            "value": "FARO_CONTROLLED_"
+          }
+        ],
+        "skipUrlSync": false
+      },
+      {
+        "name": "error_type",
+        "label": "Selected error type",
+        "type": "textbox",
+        "hide": 0,
+        "query": "__select_group__",
+        "current": {
+          "selected": true,
+          "text": "__select_group__",
+          "value": "__select_group__"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "__select_group__",
+            "value": "__select_group__"
+          }
+        ],
+        "skipUrlSync": false
+      },
+      {
+        "name": "error_hash",
+        "label": "Internal variant filter",
+        "type": "textbox",
+        "hide": 2,
+        "query": ".*",
+        "current": {
+          "text": ".*",
+          "value": ".*"
+        },
+        "options": [
+          {
+            "text": ".*",
+            "value": ".*",
+            "selected": true
+          }
+        ],
+        "skipUrlSync": false
+      },
+      {
+        "name": "session_id",
+        "label": "Selected session",
+        "type": "textbox",
+        "hide": 0,
+        "query": "__select_session__",
+        "current": {
+          "selected": true,
+          "text": "__select_session__",
+          "value": "__select_session__"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "__select_session__",
+            "value": "__select_session__"
+          }
+        ],
+        "skipUrlSync": false
+      },
+      {
+        "name": "event_time",
+        "label": "Selected client timestamp",
+        "type": "textbox",
+        "hide": 2,
+        "query": "__select_event__",
+        "current": {
+          "selected": true,
+          "text": "__select_event__",
+          "value": "__select_event__"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "__select_event__",
+            "value": "__select_event__"
+          }
+        ],
+        "skipUrlSync": false
+      },
+      {
+        "name": "event_kind",
+        "label": "Selected signal kind",
+        "type": "textbox",
+        "hide": 2,
+        "query": "__select_event__",
+        "current": {
+          "selected": true,
+          "text": "__select_event__",
+          "value": "__select_event__"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "__select_event__",
+            "value": "__select_event__"
+          }
+        ],
+        "skipUrlSync": false
+      },
+      {
+        "name": "event_ns",
+        "label": "Selected stored timestamp (ns)",
+        "type": "textbox",
+        "hide": 2,
+        "query": "__select_event__",
+        "current": {
+          "selected": true,
+          "text": "__select_event__",
+          "value": "__select_event__"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "__select_event__",
+            "value": "__select_event__"
+          }
+        ],
+        "skipUrlSync": false
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "PROVISIONAL · Development Loki only",
+      "type": "text",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 4
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "### Error → session investigation · Development only\n\nChoose a type in **Error overview**, then read its variants below. Click a **message** to narrow examples and matching sessions, then a **session** → **Client time** → stored record → Explore. “All variants of selected type” clears the message selection.\n\nThe selected-type total and variants ignore wallet/session selections. Examples and matching sessions honor the selected variant; the full session timeline does not. No type selected? Error panels are intentionally empty/zero. Wallet lookup and journey activity still work without an error. Counts are records and recorded sessions, not people or a health verdict.\n\n**Timeline limit: oldest 1,000 records in the selected range.** A full table may omit later activity; narrow the time range before drawing conclusions. Error examples show only the newest 20 records."
+      }
+    },
+    {
+      "id": 2,
+      "title": "Error records · selected type",
+      "type": "stat",
+      "description": "All exception records of the selected type in app/API mode/version/time/text scope. Ignores variant, wallet and session selections. Zero before choosing a type; not an outage verdict.",
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 5,
+        "h": 6
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "mappings": [],
+          "noValue": "—"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=${application:doublequote} | app_environment=${environment:doublequote} | app_version=${release:doublequote} | kind=\"exception\" |= ${error_marker:doublequote} | label_format type=`{{ if .type }}{{ .type }}{{ else }}(unknown type){{ end }}` | type=${error_type:doublequote} | type!=\"__select_group__\" [$__range])) or vector(0)",
+          "queryType": "instant",
+          "instant": true,
+          "range": false,
+          "direction": "forward",
+          "maxLines": 1000
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "value",
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 3,
+      "title": "Selected type · readable error variants",
+      "type": "table",
+      "description": "One row per stored hash + exact message within the selected type. Different stacks/messages may still look similar; these are not confirmed distinct bugs. Click the message for matching examples and sessions. Hash remains hidden and is only an internal selector. Long messages can include provider details and request context; inspect full errors below. Narrow the time range if expensive.",
+      "gridPos": {
+        "x": 5,
+        "y": 4,
+        "w": 19,
+        "h": 6
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "mappings": [],
+          "noValue": "—"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "value"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Error message"
+              },
+              {
+                "id": "custom.width",
+                "value": 850
+              },
+              {
+                "id": "custom.wrapText",
+                "value": true
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Investigate this message",
+                    "url": "/d/layerswap-faro-dev-slice?orgId=1&from=${__from}&to=${__to}&var-application=${application:percentencode}&var-environment=${environment:percentencode}&var-release=${release:percentencode}&var-wallet_address=${wallet_address:percentencode}&var-error_marker=${error_marker:percentencode}&var-error_type=${error_type:percentencode}&var-error_hash=${__data.fields[\"hash\"]:percentencode}&var-session_id=__select_session__&var-event_time=__select_event__&var-event_kind=__select_event__&var-event_ns=__select_event__",
+                    "targetBlank": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "hash"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "editorMode": "code",
+          "expr": "sum by (hash, value) (count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=${application:doublequote} | app_environment=${environment:doublequote} | app_version=${release:doublequote} | kind=\"exception\" |= ${error_marker:doublequote} | label_format type=`{{ if .type }}{{ .type }}{{ else }}(unknown type){{ end }}` | type=${error_type:doublequote} | type!=\"__select_group__\" | keep hash, value [$__range]))",
+          "queryType": "instant",
+          "instant": true,
+          "range": false,
+          "direction": "forward",
+          "maxLines": 1000
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "lg",
+        "footer": {
+          "show": false,
+          "countRows": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        },
+        "sortBy": [
+          {
+            "displayName": "Error records",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns"
+          }
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "value": 0,
+              "Value": 1,
+              "hash": 2
+            },
+            "renameByName": {
+              "Value": "Error records",
+              "Value #A": "Error records"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Selected error · readable examples",
+      "type": "table",
+      "description": "Newest 20 matching errors for the selected type and optional message variant, displayed chronologically. Click Client time for full stored details/stack or Session for all activity. Empty until a type is chosen.",
+      "gridPos": {
+        "x": 0,
+        "y": 10,
+        "w": 16,
+        "h": 7
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "mappings": [],
+          "noValue": "—"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "timestamp"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open matching raw Loki event",
+                    "url": "/d/layerswap-faro-dev-slice/faro-dev-investigation?orgId=1&from=${__from}&to=${__to}&var-application=${application:percentencode}&var-environment=${environment:percentencode}&var-release=${release:percentencode}&var-wallet_address=${wallet_address:percentencode}&var-error_marker=${error_marker:percentencode}&var-error_type=${error_type:percentencode}&var-error_hash=${error_hash:percentencode}&var-session_id=${__data.fields[\"session_id\"]:percentencode}&var-event_time=${__data.fields[\"timestamp\"]:percentencode}&var-event_kind=${__data.fields[\"kind\"]:percentencode}&var-event_ns=${__data.fields[\"stored_ns\"]:percentencode}",
+                    "targetBlank": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "session_id"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open this session timeline",
+                    "url": "/d/layerswap-faro-dev-slice/faro-dev-investigation?orgId=1&from=${__from}&to=${__to}&var-application=${application:percentencode}&var-environment=${environment:percentencode}&var-release=${release:percentencode}&var-wallet_address=${wallet_address:percentencode}&var-error_marker=${error_marker:percentencode}&var-error_type=${error_type:percentencode}&var-error_hash=${error_hash:percentencode}&var-session_id=${__data.fields[\"session_id\"]:percentencode}&var-event_time=__select_event__&var-event_kind=__select_event__&var-event_ns=__select_event__",
+                    "targetBlank": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "timestamp"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Client time"
+              },
+              {
+                "id": "custom.width",
+                "value": 245
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kind"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Signal"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "type"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Type"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "message_summary"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "What happened"
+              },
+              {
+                "id": "custom.width",
+                "value": 440
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "session_id"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Session"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "stored_ns"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Stored time (ns)"
+              },
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "editorMode": "code",
+          "expr": "{source=\"faro\"} | logfmt | __error__=\"\" | app_name=${application:doublequote} | app_environment=${environment:doublequote} | app_version=${release:doublequote} | kind=\"exception\" |= ${error_marker:doublequote} | label_format type=`{{ if .type }}{{ .type }}{{ else }}(unknown type){{ end }}` | type=${error_type:doublequote} | type!=\"__select_group__\" | hash=~${error_hash:doublequote} | label_format stored_ns=`{{ __timestamp__ | unixEpochNanos }}` | label_format message_summary=`{{ if .value }}{{ .value }}{{ else if .message }}{{ .message }}{{ else if .event_data_reason }}{{ .event_data_reason }}{{ else if .event_data_step }}{{ .event_data_step }}{{ else if .event_name }}{{ .event_name }}{{ else }}{{ .type }}{{ end }}` | line_format `{\"timestamp\":{{ printf \"%q\" .timestamp }},\"kind\":{{ printf \"%q\" .kind }},\"type\":{{ printf \"%q\" .type }},\"message_summary\":{{ printf \"%q\" .message_summary }},\"session_id\":{{ printf \"%q\" .session_id }},\"stored_ns\":{{ printf \"%q\" .stored_ns }}}` | keep app_name, app_environment, app_version, session_id",
+          "queryType": "range",
+          "instant": false,
+          "range": true,
+          "direction": "backward",
+          "maxLines": 20
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "countRows": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        },
+        "sortBy": [
+          {
+            "displayName": "Client time",
+            "desc": false
+          },
+          {
+            "displayName": "Stored time (ns)",
+            "desc": false
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "Line",
+            "format": "json",
+            "replace": true,
+            "keepTime": false
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": []
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "timestamp",
+                "desc": false
+              },
+              {
+                "field": "stored_ns",
+                "desc": false
+              }
+            ]
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {
+              "timestamp": 0,
+              "kind": 1,
+              "type": 2,
+              "message_summary": 3,
+              "session_id": 4,
+              "stored_ns": 5
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Selected error · matching sessions",
+      "type": "table",
+      "description": "Matching exception records per recorded session for the selected type and optional message variant. Not unique users. Click a session for all its activity. Empty until a type is chosen.",
+      "gridPos": {
+        "x": 16,
+        "y": 10,
+        "w": 8,
+        "h": 7
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "mappings": [],
+          "noValue": "—"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "session_id"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open this session timeline",
+                    "url": "/d/layerswap-faro-dev-slice/faro-dev-investigation?orgId=1&from=${__from}&to=${__to}&var-application=${application:percentencode}&var-environment=${environment:percentencode}&var-release=${release:percentencode}&var-wallet_address=${wallet_address:percentencode}&var-error_marker=${error_marker:percentencode}&var-error_type=${error_type:percentencode}&var-error_hash=${error_hash:percentencode}&var-session_id=${__data.fields[\"session_id\"]:percentencode}&var-event_time=__select_event__&var-event_kind=__select_event__&var-event_ns=__select_event__",
+                    "targetBlank": false
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "editorMode": "code",
+          "expr": "sum by (session_id) (count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=${application:doublequote} | app_environment=${environment:doublequote} | app_version=${release:doublequote} | kind=\"exception\" |= ${error_marker:doublequote} | label_format type=`{{ if .type }}{{ .type }}{{ else }}(unknown type){{ end }}` | type=${error_type:doublequote} | type!=\"__select_group__\" | hash=~${error_hash:doublequote} | session_id!=\"\" [$__range]))",
+          "queryType": "instant",
+          "instant": true,
+          "range": false,
+          "direction": "forward",
+          "maxLines": 1000
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "countRows": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        },
+        "sortBy": [
+          {
+            "displayName": "Error records",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns"
+          }
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "session_id": 0,
+              "Value": 1
+            },
+            "renameByName": {
+              "Value": "Error records",
+              "Value #A": "Error records"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Wallet lookup · matching sessions",
+      "type": "table",
+      "description": "Exact, case-sensitive address match in any connected_wallets JSON element, including historical records before disconnect. Independent of error-group/marker selection. Blank address or no matches returns no rows. Click a session for all its signals in the chosen range; counts are matching records, not wallet/user counts.",
+      "gridPos": {
+        "x": 0,
+        "y": 17,
+        "w": 24,
+        "h": 5
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "mappings": [],
+          "noValue": "—"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "session_id"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open full session timeline (including after disconnect)",
+                    "url": "/d/layerswap-faro-dev-slice/faro-dev-investigation?orgId=1&from=${__from}&to=${__to}&var-application=${application:percentencode}&var-environment=${environment:percentencode}&var-release=${release:percentencode}&var-wallet_address=${wallet_address:percentencode}&var-error_marker=${error_marker:percentencode}&var-error_type=__select_group__&var-error_hash=.*&var-session_id=${__data.fields[\"session_id\"]:percentencode}&var-event_time=__select_event__&var-event_kind=__select_event__&var-event_ns=__select_event__",
+                    "targetBlank": false
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "editorMode": "code",
+          "expr": "sum by (session_id) (count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=${application:doublequote} | app_environment=${environment:doublequote} | app_version=${release:doublequote} | session_id!=\"\" | session_attr_connected_wallets!=\"\" | label_format wallet_needle=${wallet_address:doublequote} | wallet_needle!=\"\" | label_format wallet_match=`{{ $found := false }}{{ $needle := .wallet_needle }}{{ range $wallet := fromJson .session_attr_connected_wallets }}{{ if eq $wallet.wallet_address $needle }}{{ $found = true }}{{ end }}{{ end }}{{ $found }}` | __error__=\"\" | wallet_match=\"true\" | keep session_id [$__range]))",
+          "queryType": "instant",
+          "instant": true,
+          "range": false,
+          "direction": "forward",
+          "maxLines": 1000
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "countRows": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        },
+        "sortBy": [
+          {
+            "displayName": "Matching records",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns"
+          }
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "session_id": 0,
+              "Value": 1
+            },
+            "renameByName": {
+              "Value": "Matching records",
+              "Value #A": "Matching records"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Journey activity · investigate without an exception",
+      "type": "table",
+      "description": "Latest 1,000 swap_lifecycle records in application/API mode/version/time, displayed chronologically. Independent of error marker, wallet search and selected session. Click Session for its full timeline. Review attempts, failures/rejections and subsequent progress; no inferred stuck-user or rage-click score. Zero rows means no matching recorded lifecycle data, not proof of healthy behavior.",
+      "gridPos": {
+        "x": 0,
+        "y": 22,
+        "w": 24,
+        "h": 10
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "mappings": [],
+          "noValue": "—"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "timestamp"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open matching raw Loki event",
+                    "url": "/d/layerswap-faro-dev-slice/faro-dev-investigation?orgId=1&from=${__from}&to=${__to}&var-application=${application:percentencode}&var-environment=${environment:percentencode}&var-release=${release:percentencode}&var-wallet_address=${wallet_address:percentencode}&var-error_marker=${error_marker:percentencode}&var-error_type=${error_type:percentencode}&var-error_hash=${error_hash:percentencode}&var-session_id=${__data.fields[\"session_id\"]:percentencode}&var-event_time=${__data.fields[\"timestamp\"]:percentencode}&var-event_kind=${__data.fields[\"kind\"]:percentencode}&var-event_ns=${__data.fields[\"stored_ns\"]:percentencode}",
+                    "targetBlank": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "session_id"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open full session timeline (including after disconnect)",
+                    "url": "/d/layerswap-faro-dev-slice/faro-dev-investigation?orgId=1&from=${__from}&to=${__to}&var-application=${application:percentencode}&var-environment=${environment:percentencode}&var-release=${release:percentencode}&var-wallet_address=${wallet_address:percentencode}&var-error_marker=${error_marker:percentencode}&var-error_type=__select_group__&var-error_hash=.*&var-session_id=${__data.fields[\"session_id\"]:percentencode}&var-event_time=__select_event__&var-event_kind=__select_event__&var-event_ns=__select_event__",
+                    "targetBlank": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "timestamp"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Client time"
+              },
+              {
+                "id": "custom.width",
+                "value": 245
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kind"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Signal"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "type"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Type"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "message_summary"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "What happened"
+              },
+              {
+                "id": "custom.width",
+                "value": 440
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "event_data_step"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Step"
+              },
+              {
+                "id": "custom.width",
+                "value": 190
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "event_data_outcome"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Outcome"
+              },
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "event_data_action"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Action"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "event_data_reason_code"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Reason code"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "session_id"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Session"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "event_data_journey_id"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Journey"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "event_data_sequence"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Progress sequence"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "event_data_attempt"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Wallet prompt count"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "event_data_source_network"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Source network"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "event_data_destination_network"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Destination network"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "traceID"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "traceID"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "spanID"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "spanID"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "event_name"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Event name"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "stored_ns"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Stored time (ns)"
+              },
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "editorMode": "code",
+          "expr": "{source=\"faro\"} | logfmt | __error__=\"\" | app_name=${application:doublequote} | app_environment=${environment:doublequote} | app_version=${release:doublequote} | event_name=\"swap_lifecycle\" | session_id!=\"\" | label_format stored_ns=`{{ __timestamp__ | unixEpochNanos }}` | label_format message_summary=`{{ if .value }}{{ .value }}{{ else if .message }}{{ .message }}{{ else if .event_data_reason }}{{ .event_data_reason }}{{ else if .event_data_step }}{{ .event_data_step }}{{ else if .event_name }}{{ .event_name }}{{ else }}{{ .type }}{{ end }}` | line_format `{\"timestamp\":{{ printf \"%q\" .timestamp }},\"kind\":{{ printf \"%q\" .kind }},\"type\":{{ printf \"%q\" .type }},\"message_summary\":{{ printf \"%q\" .message_summary }},\"event_data_step\":{{ printf \"%q\" .event_data_step }},\"event_data_outcome\":{{ printf \"%q\" .event_data_outcome }},\"event_data_action\":{{ printf \"%q\" .event_data_action }},\"event_data_reason_code\":{{ printf \"%q\" .event_data_reason_code }},\"session_id\":{{ printf \"%q\" .session_id }},\"event_data_journey_id\":{{ printf \"%q\" .event_data_journey_id }},\"event_data_sequence\":{{ printf \"%q\" .event_data_sequence }},\"event_data_attempt\":{{ printf \"%q\" .event_data_attempt }},\"event_data_source_network\":{{ printf \"%q\" .event_data_source_network }},\"event_data_destination_network\":{{ printf \"%q\" .event_data_destination_network }},\"traceID\":{{ printf \"%q\" .traceID }},\"spanID\":{{ printf \"%q\" .spanID }},\"event_name\":{{ printf \"%q\" .event_name }},\"stored_ns\":{{ printf \"%q\" .stored_ns }}}` | keep app_name, app_environment, app_version, session_id",
+          "queryType": "range",
+          "instant": false,
+          "range": true,
+          "direction": "backward",
+          "maxLines": 1000
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "countRows": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        },
+        "sortBy": [
+          {
+            "displayName": "Client time",
+            "desc": false
+          },
+          {
+            "displayName": "Stored time (ns)",
+            "desc": false
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "Line",
+            "format": "json",
+            "replace": true,
+            "keepTime": false
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "targetField": "event_data_sequence",
+                "destinationType": "number"
+              },
+              {
+                "targetField": "event_data_attempt",
+                "destinationType": "number"
+              }
+            ]
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "timestamp",
+                "desc": false
+              },
+              {
+                "field": "stored_ns",
+                "desc": false
+              }
+            ]
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {
+              "timestamp": 0,
+              "message_summary": 1,
+              "event_data_step": 2,
+              "event_data_outcome": 3,
+              "event_data_action": 4,
+              "kind": 5,
+              "session_id": 6,
+              "event_data_journey_id": 7,
+              "event_data_source_network": 8,
+              "event_data_destination_network": 9,
+              "event_data_reason_code": 10,
+              "event_data_sequence": 11,
+              "event_data_attempt": 12,
+              "type": 13,
+              "event_name": 14,
+              "traceID": 15,
+              "spanID": 16,
+              "stored_ns": 17
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Session timeline · what happened before and after",
+      "type": "table",
+      "description": "Choose a session from errors, wallet lookup or journey activity, or paste its ID above. All signals in that session and stored-time range, up to 1,000 records. What happened uses exception value, console message or event-local reason; session metadata is not presented as the event's cause. Same-client-time rows use stored time as a display tie-breaker, not proof of causality.",
+      "gridPos": {
+        "x": 0,
+        "y": 32,
+        "w": 24,
+        "h": 12
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "mappings": [],
+          "noValue": "—"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "timestamp"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open matching raw Loki event",
+                    "url": "/d/layerswap-faro-dev-slice/faro-dev-investigation?orgId=1&from=${__from}&to=${__to}&var-application=${application:percentencode}&var-environment=${environment:percentencode}&var-release=${release:percentencode}&var-wallet_address=${wallet_address:percentencode}&var-error_marker=${error_marker:percentencode}&var-error_type=${error_type:percentencode}&var-error_hash=${error_hash:percentencode}&var-session_id=${session_id:percentencode}&var-event_time=${__data.fields[\"timestamp\"]:percentencode}&var-event_kind=${__data.fields[\"kind\"]:percentencode}&var-event_ns=${__data.fields[\"stored_ns\"]:percentencode}",
+                    "targetBlank": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "timestamp"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Client time"
+              },
+              {
+                "id": "custom.width",
+                "value": 245
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kind"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Signal"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "type"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Type"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "message_summary"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "What happened"
+              },
+              {
+                "id": "custom.width",
+                "value": 440
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "event_data_step"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Step"
+              },
+              {
+                "id": "custom.width",
+                "value": 190
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "event_data_outcome"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Outcome"
+              },
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "event_data_action"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Action"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "event_data_reason_code"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Reason code"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "session_id"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Session"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "event_data_journey_id"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Journey"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "event_data_sequence"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Progress sequence"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "event_data_attempt"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Wallet prompt count"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "event_data_source_network"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Source network"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "event_data_destination_network"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Destination network"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "traceID"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "traceID"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "spanID"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "spanID"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "event_name"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Event name"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "stored_ns"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Stored time (ns)"
+              },
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "editorMode": "code",
+          "expr": "{source=\"faro\"} | logfmt | __error__=\"\" | app_name=${application:doublequote} | app_environment=${environment:doublequote} | app_version=${release:doublequote} | session_id=${session_id:doublequote} | session_id!=\"\" | session_id!=\"__select_session__\" | label_format stored_ns=`{{ __timestamp__ | unixEpochNanos }}` | label_format message_summary=`{{ if .value }}{{ .value }}{{ else if .message }}{{ .message }}{{ else if .event_data_reason }}{{ .event_data_reason }}{{ else if .event_data_step }}{{ .event_data_step }}{{ else if .event_name }}{{ .event_name }}{{ else }}{{ .type }}{{ end }}` | line_format `{\"timestamp\":{{ printf \"%q\" .timestamp }},\"kind\":{{ printf \"%q\" .kind }},\"type\":{{ printf \"%q\" .type }},\"message_summary\":{{ printf \"%q\" .message_summary }},\"event_data_step\":{{ printf \"%q\" .event_data_step }},\"event_data_outcome\":{{ printf \"%q\" .event_data_outcome }},\"event_data_action\":{{ printf \"%q\" .event_data_action }},\"event_data_reason_code\":{{ printf \"%q\" .event_data_reason_code }},\"session_id\":{{ printf \"%q\" .session_id }},\"event_data_journey_id\":{{ printf \"%q\" .event_data_journey_id }},\"event_data_sequence\":{{ printf \"%q\" .event_data_sequence }},\"event_data_attempt\":{{ printf \"%q\" .event_data_attempt }},\"event_data_source_network\":{{ printf \"%q\" .event_data_source_network }},\"event_data_destination_network\":{{ printf \"%q\" .event_data_destination_network }},\"traceID\":{{ printf \"%q\" .traceID }},\"spanID\":{{ printf \"%q\" .spanID }},\"event_name\":{{ printf \"%q\" .event_name }},\"stored_ns\":{{ printf \"%q\" .stored_ns }}}` | keep app_name, app_environment, app_version, session_id",
+          "queryType": "range",
+          "instant": false,
+          "range": true,
+          "direction": "forward",
+          "maxLines": 1000
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "countRows": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        },
+        "sortBy": [
+          {
+            "displayName": "Client time",
+            "desc": false
+          },
+          {
+            "displayName": "Stored time (ns)",
+            "desc": false
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "Line",
+            "format": "json",
+            "replace": true,
+            "keepTime": false
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "targetField": "event_data_sequence",
+                "destinationType": "number"
+              },
+              {
+                "targetField": "event_data_attempt",
+                "destinationType": "number"
+              }
+            ]
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "timestamp",
+                "desc": false
+              },
+              {
+                "field": "stored_ns",
+                "desc": false
+              }
+            ]
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {
+              "timestamp": 0,
+              "message_summary": 1,
+              "event_data_step": 2,
+              "event_data_outcome": 3,
+              "event_data_action": 4,
+              "kind": 5,
+              "session_id": 6,
+              "event_data_journey_id": 7,
+              "event_data_source_network": 8,
+              "event_data_destination_network": 9,
+              "event_data_reason_code": 10,
+              "event_data_sequence": 11,
+              "event_data_attempt": 12,
+              "type": 13,
+              "event_name": 14,
+              "traceID": 15,
+              "spanID": 16,
+              "stored_ns": 17
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Selected stored record · open Explore for full inspection",
+      "type": "logs",
+      "description": "Select a timeline timestamp. Preserves scope/session, client time, signal kind and stored nanosecond timestamp, avoiding the observed client-time collision. Multiple identical-time matches are still possible; inspect returned rows. Raw logfmt retains stacks/context and any trace IDs. Panel menu → Explore carries query/time/datasource. Tempo is deferred.",
+      "gridPos": {
+        "x": 0,
+        "y": 44,
+        "w": 24,
+        "h": 10
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "mappings": [],
+          "noValue": "—"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "editorMode": "code",
+          "expr": "{source=\"faro\"} | logfmt | __error__=\"\" | app_name=${application:doublequote} | app_environment=${environment:doublequote} | app_version=${release:doublequote} | session_id=${session_id:doublequote} | session_id!=\"\" | session_id!=\"__select_session__\" | timestamp=${event_time:doublequote} | kind=${event_kind:doublequote} | label_format stored_ns=`{{ __timestamp__ | unixEpochNanos }}` | stored_ns=${event_ns:doublequote} | stored_ns!=\"__select_event__\"",
+          "queryType": "range",
+          "instant": false,
+          "range": true,
+          "direction": "forward",
+          "maxLines": 1000
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "sortOrder": "Ascending",
+        "dedupStrategy": "none"
+      }
+    }
+  ]
+}

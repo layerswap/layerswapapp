@@ -12,7 +12,7 @@ import { ChevronDown } from 'lucide-react'
 import { CommandItem, CommandList, CommandWrapper } from '@layerswap/ui-kit'
 import { Network, NetworkRoute, Token } from '@layerswap/widget-types';
 import { useInitialSettings } from '@/context/settings'
-import { useSwapDataUpdate } from '@/context/swap'
+import { useSwapDataState, useSwapDataUpdate } from '@/context/swap'
 import { useAsyncModal } from '@/context/asyncModal'
 import { handleLimitsUpdate } from './QuoteUpdate'
 import SubmitButton from '@/components/Buttons/submitButton'
@@ -25,6 +25,17 @@ import { ExtendedAddress } from '@layerswap/ui-kit'
 import QuoteDetails from '../Form/FeeDetails'
 import { Address } from "@/lib/address/Address";
 import { AddressIcon } from '@layerswap/ui-kit'
+import { useCallbacks } from '@/context/callbackProvider'
+import { lifecycleContextFromSwap } from '@/lib/swapLifecycle'
+import { type ObservedLifecycleEvent, useLifecycleObservation } from '@/hooks/useLifecycleObservation'
+
+const AWAITING_USER_DEPOSIT: ObservedLifecycleEvent = {
+    step: 'awaiting_user_deposit',
+    stage: 'input_transfer',
+    outcome: 'pending',
+    path: 'ManualWithdraw',
+    action: 'manual_deposit',
+}
 
 interface Props {
     swapBasicData: SwapBasicData;
@@ -39,6 +50,8 @@ interface Props {
 const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, partner, type, quote, isQuoteLoading }) => {
     const { wallets } = useWallet();
     const { createSwap, setSwapId } = useSwapDataUpdate()
+    const { swapDetails } = useSwapDataState()
+    const { onSwapLifecycle } = useCallbacks()
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [selectedFrom, setSelectedFrom] = useState<{
         network: Network | null;
@@ -60,10 +73,35 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
 
     const walletIconSrc = wallets.find(wallet => wallet.address.toLowerCase() == swapBasicData?.destination_address?.toLowerCase())?.icon;
     const addressProviderIcon = destinationAddressFromQuery && partner?.is_wallet && Address.equals(destinationAddressFromQuery, swapBasicData?.destination_address!, swapBasicData?.destination_network || null) && partner?.logo
+    const lifecycleContext = useMemo(
+        () => lifecycleContextFromSwap(swapBasicData, swapDetails),
+        [
+            swapBasicData.destination_address,
+            swapBasicData.destination_network.name,
+            swapBasicData.destination_token.symbol,
+            swapBasicData.requested_amount,
+            swapBasicData.source_network.name,
+            swapBasicData.source_token.symbol,
+            swapBasicData.use_deposit_address,
+            swapDetails?.id,
+            swapDetails?.source_address,
+        ],
+    )
+
+    // A source address arriving later enriches the report but never repeats it.
+    useLifecycleObservation(swapDetails?.id ? AWAITING_USER_DEPOSIT : undefined, lifecycleContext)
 
     const handleCopy = () => {
         if (depositAddress) {
             copy(depositAddress)
+            onSwapLifecycle({
+                step: 'deposit_address_copied',
+                stage: 'input_transfer',
+                outcome: 'pending',
+                path: 'ManualWithdraw',
+                action: 'copy_deposit_address',
+                ...lifecycleContext,
+            })
         }
     }
 

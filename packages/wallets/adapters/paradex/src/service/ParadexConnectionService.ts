@@ -335,7 +335,7 @@ export class ParadexConnectionService<Network> implements WalletConnectionServic
             } else if (error?.message?.includes("Cannot read properties of undefined (reading 'toLowerCase')")) {
                 throw new Error('Please update your wallet to the latest version.')
             } else {
-                throw new Error(e?.message || e)
+                throw e instanceof Error ? e : new Error(e?.message || String(e))
             }
         }
     }

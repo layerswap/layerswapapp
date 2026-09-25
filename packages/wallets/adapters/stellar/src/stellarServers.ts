@@ -6,7 +6,13 @@ type StellarServer = Horizon.Server | rpc.Server
 const horizonServers = new Map<string, Promise<Horizon.Server>>()
 const rpcServers = new Map<string, Promise<rpc.Server>>()
 
-function getCandidateUrls(network: Network): string[] {
+function getCandidateUrls(network: Network, kind: 'Horizon' | 'RPC'): string[] {
+    // Pin mainnet endpoints by protocol so public-node health flags cannot hide either API.
+    if (network.name === 'STELLAR_MAINNET') {
+        return kind === 'Horizon'
+            ? ['https://horizon.stellar.org']
+            : ['https://mainnet.sorobanrpc.com']
+    }
     return [...new Set([network.node_url, ...(network.nodes ?? [])].filter(Boolean))]
 }
 
@@ -16,7 +22,7 @@ async function findServer<T extends StellarServer>(
     kind: 'Horizon' | 'RPC',
     createAndVerify: (url: string) => Promise<T>,
 ): Promise<T> {
-    const candidates = getCandidateUrls(network)
+    const candidates = getCandidateUrls(network, kind)
     if (candidates.length === 0) {
         throw new Error(`No Stellar ${kind} endpoints are configured for ${network.name}`)
     }
@@ -42,7 +48,7 @@ function cachedServer<T>(cache: Map<string, Promise<T>>, key: string, load: () =
 }
 
 export function getStellarHorizonServer(network: Network, networkPassphrase: string): Promise<Horizon.Server> {
-    const key = `${network.name}:${networkPassphrase}:${getCandidateUrls(network).join('|')}`
+    const key = `${network.name}:${networkPassphrase}:${getCandidateUrls(network, 'Horizon').join('|')}`
     return cachedServer(horizonServers, key, () => findServer(
         network,
         networkPassphrase,
@@ -59,7 +65,7 @@ export function getStellarHorizonServer(network: Network, networkPassphrase: str
 }
 
 export function getStellarRpcServer(network: Network, networkPassphrase: string): Promise<rpc.Server> {
-    const key = `${network.name}:${networkPassphrase}:${getCandidateUrls(network).join('|')}`
+    const key = `${network.name}:${networkPassphrase}:${getCandidateUrls(network, 'RPC').join('|')}`
     return cachedServer(rpcServers, key, () => findServer(
         network,
         networkPassphrase,
