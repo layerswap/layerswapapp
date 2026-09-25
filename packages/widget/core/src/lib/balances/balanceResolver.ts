@@ -23,7 +23,7 @@ function formatErrorBalances(errorBalances: TokenBalance[]) {
         request_url: b.error?.requestUrl,
         // Include first 500 chars of stack trace for debugging
         error_stack: b.error?.stack?.substring(0, 500),
-        // The reporting boundary extracts code/message; never stringify a raw response here.
+        // Keep the response structured so ErrorHandler can extract only error code/message.
         response_data: b.error?.responseData
     }));
 }
