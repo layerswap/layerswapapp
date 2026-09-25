@@ -18,6 +18,8 @@ dist/
 
 # misc
 .DS_Store
+__pycache__/
+*.py[cod]
 
 # debug
 npm-debug.log*
@@ -35,6 +37,7 @@ yarn-error.log*
 # lockfiles from other package managers (project uses pnpm)
 package-lock.json
 yarn.lock
+!examples/*/yarn.lock
 storybook-static/*
 
 # Sentry Config File
@@ -47,6 +50,7 @@ next-env.d.ts
 
 # PR Review Report
 pr-review-report.md
+pr-review-assessment.md
 .env*
 
 # Agents

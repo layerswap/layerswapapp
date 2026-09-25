@@ -17,6 +17,7 @@ import { useContractAddressStore } from "@/stores/contractAddressStore";
 import { Address } from "@/lib/address/Address";
 import { useDepositSelection } from "./depositSelectionContext";
 import { useDepositStep } from "./depositStepContext";
+import { lifecycleContextFromForm } from "@/lib/swapLifecycle";
 
 export type PrefetchedSource = { network: NetworkRoute; token: NetworkRouteToken };
 
@@ -35,7 +36,14 @@ type DepositPrefetchContextValue = {
     /** Reports that a swap is now driving the flow. Fires integrator callbacks
      * for prefetched swaps (deferred from creation so they only fire for swaps
      * the user actually sees) and records form-created swaps as the latest for
-     * their tuple so re-entering the flow restores them. */
+     * their tuple so re-entering the flow restores them.
+     *
+     * Without `values` (the mount-seeded hand-over) the form never submits, so
+     * a prefetched swap also gets a synthesized `form_submitted` (path
+     * `DepositPrefetchProvider`, action `auto`) before its `swap_created`:
+     * that is what starts the telemetry journey the swap attaches to. With
+     * `values` the submit path already went through SwapForm's form_submitted
+     * and it is not repeated (it would double `submission_count`). */
     markSwapUsed: (swap: SwapResponse, values?: SwapFormValues) => void;
 };
 
@@ -76,7 +84,7 @@ export function DepositPrefetchProvider({ children }: { children: ReactNode }) {
     const { step } = useDepositStep();
     const { destination, destinationToken, destinationAddress } = useDepositSelection();
     const initialSettings = useInitialSettings();
-    const { onSwapCreate } = useCallbacks();
+    const { onSwapCreate, onSwapLifecycle } = useCallbacks();
     const updateRecentTokens = useRecentNetworksStore(state => state.updateRecentNetworks);
     const checkContractStatus = useContractAddressStore(state => state.checkContractStatus);
 
@@ -201,6 +209,35 @@ export function DepositPrefetchProvider({ children }: { children: ReactNode }) {
             // Integrator callbacks for prefetched swaps are deferred to first
             // use; form-created swaps already fired them inside createSwap.
             if (createdByPrefetch.current.has(id)) {
+                const lifecycleContext = values ? lifecycleContextFromForm(values) : {
+                    depositMethod: swap.swap.use_deposit_address ? 'deposit_address' : 'wallet',
+                    requestedAmount: swap.swap.requested_amount?.toString(),
+                    fromAddress: swap.swap.source_address,
+                    toAddress: swap.swap.destination_address,
+                    sourceNetwork: swap.swap.source_network?.name,
+                    destinationNetwork: swap.swap.destination_network?.name,
+                    sourceToken: swap.swap.source_token?.symbol,
+                    destinationToken: swap.swap.destination_token?.symbol,
+                }
+                if (!values) {
+                    onSwapLifecycle({
+                        step: 'form_submitted',
+                        stage: 'form',
+                        outcome: 'started',
+                        path: 'DepositPrefetchProvider',
+                        action: 'auto',
+                        ...lifecycleContext,
+                    });
+                }
+                onSwapLifecycle({
+                    step: 'swap_created',
+                    stage: 'swap_creation',
+                    outcome: 'succeeded',
+                    path: 'DepositPrefetchProvider',
+                    swapId: id,
+                    status: swap.swap.status,
+                    ...lifecycleContext,
+                });
                 onSwapCreate(swap);
                 updateRecentTokens({
                     from: { network: swap.swap.source_network.name, token: swap.swap.source_token.symbol },
@@ -212,7 +249,7 @@ export function DepositPrefetchProvider({ children }: { children: ReactNode }) {
             const key = keyFromValues(values, candidateSourceAddress);
             if (key) setSwaps(prev => prev[key]?.swap.id === id ? prev : { ...prev, [key]: swap });
         }
-    }, [onSwapCreate, updateRecentTokens, candidateSourceAddress]);
+    }, [onSwapCreate, onSwapLifecycle, updateRecentTokens, candidateSourceAddress]);
 
     const value = useMemo<DepositPrefetchContextValue>(() => ({
         prefetchedSource,

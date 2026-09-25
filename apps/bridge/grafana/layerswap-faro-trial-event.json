@@ -1,0 +1,569 @@
+{
+  "apiVersion": "dashboard.grafana.app/v2",
+  "kind": "Dashboard",
+  "metadata": {
+    "name": "layerswap-faro-trial-event",
+    "annotations": {
+      "grafana.app/folder": "",
+      "grafana.app/grant-permissions": "default"
+    }
+  },
+  "spec": {
+    "title": "Event details \u00b7 Native trial",
+    "description": "Development telemetry. Usability trial; not a production health dashboard.",
+    "tags": [
+      "layerswap",
+      "faro",
+      "development",
+      "native-trial"
+    ],
+    "editable": true,
+    "annotations": [],
+    "cursorSync": "Off",
+    "liveNow": false,
+    "preload": false,
+    "timeSettings": {
+      "timezone": "utc",
+      "from": "now-7d",
+      "to": "now",
+      "autoRefresh": "",
+      "autoRefreshIntervals": [
+        "1m",
+        "5m",
+        "15m"
+      ],
+      "hideTimepicker": false,
+      "fiscalYearStartMonth": 0
+    },
+    "variables": [
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "application",
+          "label": "Application",
+          "query": "layerswap-frontend",
+          "current": {
+            "text": "layerswap-frontend",
+            "value": "layerswap-frontend"
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "deployment",
+          "label": "Deployment (blank = all)",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "release",
+          "label": "Release (blank = all)",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "CustomVariable",
+        "spec": {
+          "name": "category",
+          "label": "Issues category",
+          "query": "All,User-impacting,Diagnostics,Unclassified",
+          "current": {
+            "text": "All",
+            "value": "All"
+          },
+          "options": [
+            {
+              "text": "All",
+              "value": "All",
+              "selected": true
+            },
+            {
+              "text": "User-impacting",
+              "value": "User-impacting",
+              "selected": false
+            },
+            {
+              "text": "Diagnostics",
+              "value": "Diagnostics",
+              "selected": false
+            },
+            {
+              "text": "Unclassified",
+              "value": "Unclassified",
+              "selected": false
+            }
+          ],
+          "multi": false,
+          "includeAll": false,
+          "allowCustomValue": false,
+          "hide": "hideVariable",
+          "skipUrlSync": false,
+          "description": "Filters the Issues list and chart."
+        }
+      },
+      {
+        "kind": "CustomVariable",
+        "spec": {
+          "name": "test_errors",
+          "label": "Test errors",
+          "query": "Include,Exclude,Only",
+          "current": {
+            "text": "Include",
+            "value": "Include"
+          },
+          "options": [
+            {
+              "text": "Include",
+              "value": "Include",
+              "selected": true
+            },
+            {
+              "text": "Exclude",
+              "value": "Exclude",
+              "selected": false
+            },
+            {
+              "text": "Only",
+              "value": "Only",
+              "selected": false
+            }
+          ],
+          "multi": false,
+          "includeAll": false,
+          "allowCustomValue": false,
+          "hide": "hideVariable",
+          "skipUrlSync": false,
+          "description": "Known controlled test errors only; does not infer tests from release or environment."
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "selected_category",
+          "label": "selected_category",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "selected_test",
+          "label": "selected_test",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "search",
+          "label": "Wallet / swap / session / journey",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "error_marker",
+          "label": "Message / type contains",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "group_key",
+          "label": "group_key",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "error_type",
+          "label": "error_type",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "session_id",
+          "label": "session_id",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "journey_id",
+          "label": "Journey (blank = all)",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "event_ns",
+          "label": "event_ns",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "origin_tab",
+          "label": "origin_tab",
+          "query": "Issues",
+          "current": {
+            "text": "Issues",
+            "value": "Issues"
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "return_from",
+          "label": "return_from",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "return_to",
+          "label": "return_to",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "return_release",
+          "label": "return_release",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "route",
+          "label": "Page template (blank = all)",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "browser",
+          "label": "Browser (blank = all)",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "mobile",
+          "label": "Mobile: true / false / blank",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "form_mode",
+          "label": "Form mode (blank = all)",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "flow_id",
+          "label": "Form visit (blank = all)",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      }
+    ],
+    "links": [
+      {
+        "title": "\u2190 Back to timeline",
+        "url": "/d/layerswap-faro-trial-session?orgId=1&from=${__from}&to=${__to}&var-application=${application:percentencode}&var-deployment=${deployment:percentencode}&var-release=${release:percentencode}&var-category=${category:percentencode}&var-test_errors=${test_errors:percentencode}&var-selected_category=${selected_category:percentencode}&var-selected_test=${selected_test:percentencode}&var-search=${search:percentencode}&var-error_marker=${error_marker:percentencode}&var-group_key=${group_key:percentencode}&var-error_type=${error_type:percentencode}&var-session_id=${session_id:percentencode}&var-journey_id=${journey_id:percentencode}&var-event_ns=${event_ns:percentencode}&var-origin_tab=${origin_tab:percentencode}&var-return_from=${return_from:percentencode}&var-return_to=${return_to:percentencode}&var-return_release=${return_release:percentencode}&var-route=${route:percentencode}&var-browser=${browser:percentencode}&var-mobile=${mobile:percentencode}&var-form_mode=${form_mode:percentencode}&var-flow_id=${flow_id:percentencode}",
+        "targetBlank": false,
+        "type": "link",
+        "asDropdown": false,
+        "includeVars": false,
+        "keepTime": false,
+        "tags": [],
+        "icon": "external link",
+        "tooltip": ""
+      },
+      {
+        "title": "\u2190 Back to results",
+        "url": "/d/layerswap-faro-trial-home?orgId=1&from=${return_from:percentencode}&to=${return_to:percentencode}&dtab=${origin_tab:percentencode}&var-application=${application:percentencode}&var-deployment=${deployment:percentencode}&var-release=${return_release:percentencode}&var-category=${category:percentencode}&var-test_errors=${test_errors:percentencode}&var-selected_category=${selected_category:percentencode}&var-selected_test=${selected_test:percentencode}&var-search=${search:percentencode}&var-error_marker=${error_marker:percentencode}&var-group_key=${group_key:percentencode}&var-error_type=${error_type:percentencode}&var-session_id=${session_id:percentencode}&var-journey_id=${journey_id:percentencode}&var-event_ns=${event_ns:percentencode}&var-origin_tab=${origin_tab:percentencode}&var-return_from=${return_from:percentencode}&var-return_to=${return_to:percentencode}&var-return_release=${return_release:percentencode}&var-route=${route:percentencode}&var-browser=${browser:percentencode}&var-mobile=${mobile:percentencode}&var-form_mode=${form_mode:percentencode}&var-flow_id=${flow_id:percentencode}",
+        "targetBlank": false,
+        "type": "link",
+        "asDropdown": false,
+        "includeVars": false,
+        "keepTime": false,
+        "tags": [],
+        "icon": "external link",
+        "tooltip": ""
+      }
+    ],
+    "elements": {
+      "panel-1": {
+        "kind": "Panel",
+        "spec": {
+          "id": 1,
+          "title": "Session \u00b7 ${session_id}",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "text",
+            "version": "13.1.3",
+            "spec": {
+              "options": {
+                "mode": "markdown",
+                "content": "Expand the record for exact stored fields and stack, where available. Source-map attribution is unverified; a stack may still refer to minified code. Use the panel menu \u2192 Explore for deeper log inspection. Multiple records may share a stored timestamp."
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "noValue": "\u2014"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-2": {
+        "kind": "Panel",
+        "spec": {
+          "id": 2,
+          "title": "Stored event",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "P8E80F9AEF21F6940"
+                      },
+                      "spec": {
+                        "expr": "{source=\"faro\"} | logfmt | __error__=\"\" | label_format needle_application=`${application:percentencode}` | label_format needle_application=`{{ urldecode .needle_application }}` | label_format matched=`{{ (eq .app_name .needle_application) }}` | matched=\"true\" | label_format needle_release=`${release:percentencode}` | label_format needle_release=`{{ urldecode .needle_release }}` | label_format matched=`{{ or (eq .needle_release \"\") (eq .app_version .needle_release) }}` | matched=\"true\" | label_format deployment=`{{ if .page_attr_deployment_environment }}{{ .page_attr_deployment_environment }}{{ else }}unknown{{ end }}` | label_format needle_deployment=`${deployment:percentencode}` | label_format needle_deployment=`{{ urldecode .needle_deployment }}` | label_format matched=`{{ or (eq .needle_deployment \"\") (eq .deployment .needle_deployment) }}` | matched=\"true\" | label_format needle_session_id=`${session_id:percentencode}` | label_format needle_session_id=`{{ urldecode .needle_session_id }}` | label_format matched=`{{ (eq .session_id .needle_session_id) }}` | matched=\"true\" | session_id!=\"\" | label_format stored_ns=`ns:{{ __timestamp__ | unixEpochNanos }}` | label_format window_from=`{{ sub (unixEpochMillis (__timestamp__)) 300000 }}` | label_format window_to=`{{ add (unixEpochMillis (__timestamp__)) 300000 }}` | label_format needle_event_ns=`${event_ns:percentencode}` | label_format needle_event_ns=`{{ urldecode .needle_event_ns }}` | label_format needle_event_ns=`{{ if .needle_event_ns }}ns:{{ .needle_event_ns | trimPrefix \"ns:\" }}{{ end }}` | label_format matched=`{{ (eq .stored_ns .needle_event_ns) }}` | matched=\"true\"",
+                        "queryType": "range",
+                        "instant": false,
+                        "range": true,
+                        "direction": "backward",
+                        "maxLines": 20,
+                        "editorMode": "code"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.1.3",
+            "spec": {
+              "options": {
+                "showTime": true,
+                "showLabels": false,
+                "showCommonLabels": false,
+                "wrapLogMessage": true,
+                "enableLogDetails": true,
+                "sortOrder": "Ascending",
+                "dedupStrategy": "none"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "noValue": "\u2014"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      }
+    },
+    "layout": {
+      "kind": "GridLayout",
+      "spec": {
+        "items": [
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-1"
+              },
+              "x": 0,
+              "y": 0,
+              "width": 24,
+              "height": 3
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-2"
+              },
+              "x": 0,
+              "y": 3,
+              "width": 24,
+              "height": 20
+            }
+          }
+        ]
+      }
+    }
+  }
+}
