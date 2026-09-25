@@ -30,10 +30,20 @@ never re-rolled by swap/wallet context updates. Known SDK limitation
 context is being written; sessions rotate after 15 minutes of inactivity.
 
 Faro starts in `instrumentation-client.ts` before hydration. Optimized
-(`NODE_ENV=production`) builds capture console warnings as logs and console
-errors as exceptions; other build modes capture all console levels. Faro also
+(`NODE_ENV=production`) builds capture console errors as exceptions and drop
+other console levels; other build modes capture all console levels. Faro also
 captures uncaught errors and rejected promises, widget errors, sessions/views,
 CSP and performance events, web vitals, and browser traces.
+
+To keep volume bounded (`lib/faro-policy.ts`, `components/utils/logError.ts`):
+
+- Request spans (`faro.tracing.*` events and Tempo traces) are sent only for
+  failed requests (status 0, 4xx/5xx) to first-party origins: the page origin,
+  `NEXT_PUBLIC_LS_API` and `NEXT_PUBLIC_FARO_TRACE_PROPAGATION_URLS`. Successful
+  and third-party (RPC, wallet SDK analytics) requests are not reported.
+- Successful `balance_fetch` operations are not sent; failed and partial ones are.
+- `widget_diagnostic` sends the first line of the message and cause, no stacks,
+  and each distinct diagnostic once per page load.
 Full page and request URLs retain their query strings for diagnosis; only
 credential values are redacted.
 
@@ -238,7 +248,7 @@ resolution.
 - IDs, addresses, transaction hashes, URLs and raw messages remain searchable
   record fields. Do not promote them to ingestion labels or metric dimensions.
   Full ordinary URLs and wallet/form context are retained with credential
-  redaction. Deployed builds capture warn/error console records and suppress
+  redaction. Deployed builds capture console errors only and suppress
   resource-performance events; local development is more verbose. Sampling
   defaults to all sessions. Validate ingestion volume and query cost with
   representative traffic before selecting operational budgets.

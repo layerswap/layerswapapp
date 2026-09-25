@@ -29,7 +29,7 @@ function browserConfig(env) {
     const source = readFileSync(new URL('../faro.ts', import.meta.url), 'utf8')
     const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText
     vm.runInNewContext(compiled, {
-        exports, process: { env }, window: {}, console,
+        exports, process: { env }, window: { location: { origin: 'https://layerswap.io' } }, console,
         require: name => ({
             './faro-sanitizer': sanitizer,
             './faro-session-context': sessionContext,
@@ -111,4 +111,16 @@ test('SDK signals retain deployment metadata across navigation and session repla
         if (originalLocation === undefined) delete globalThis.location
         else globalThis.location = originalLocation
     }
+})
+
+test('initFaro beforeSend drops successful and third-party requests before sanitizing the rest', () => {
+    const { beforeSend } = browserConfig({ NEXT_PUBLIC_FARO_COLLECTOR_URL: 'https://collector.test.invalid', NEXT_PUBLIC_LS_API: 'https://api.test.invalid' })
+    const request = (url, status) => ({ type: web.TransportItemType.EVENT, meta: {},
+        payload: { name: 'faro.tracing.fetch', attributes: { 'url.full': url, 'http.response.status_code': String(status) } } })
+    assert.equal(beforeSend(request('https://api.test.invalid/api/v2/quote', 200)), null)
+    assert.equal(beforeSend(request('https://rpc.test.invalid/', 0)), null)
+    assert.notEqual(beforeSend(request('https://api.test.invalid/api/v2/quote', 404)), null)
+    assert.notEqual(beforeSend(request('https://layerswap.io/app/api/x', 500)), null)
+    const leaked = beforeSend({ type: web.TransportItemType.EVENT, meta: {}, payload: { name: 'widget_flow', attributes: { password: 'synthetic' } } })
+    assert.equal(leaked.payload.attributes.password, '[REDACTED]')
 })
