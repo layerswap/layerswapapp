@@ -1,5 +1,5 @@
-import { NetworkType } from '@layerswap/widget-types';
-import { FC, Suspense, useCallback, useEffect, useState } from "react";
+import { NetworkType, type TransferBlockedReasonCode } from '@layerswap/widget-types';
+import { FC, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { PublishedSwapTransactions, SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { WithdrawalProvider } from "@/context/withdrawalContext";
 import useWallet from "@/hooks/useWallet";
@@ -21,6 +21,12 @@ import RPCUnhealthyMessage from "./RPCUnhealthyMessage";
 import { isExtendedSourceNetwork } from "@/lib/extendedRoutes/registry";
 import { HyperliquidWalletWithdraw } from "../WithdrawalProviders/Hyperliquid";
 import { PolymarketWalletWithdraw } from "../WithdrawalProviders/Polymarket";
+import { useCallbacks } from "@/context/callbackProvider";
+import { lifecycleContextFromSwap, lifecycleErrorDetails } from "@/lib/swapLifecycle";
+import { useTransferBlocked } from "@/hooks/useTransferBlocked";
+import { isProviderHydrated } from "@layerswap/wallet-core";
+import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
+import { isUserRejection } from "./Common/isUserRejection";
 
 type Props = {
     swapData: SwapBasicData
@@ -66,9 +72,33 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
     const selectedSourceAccount = useSelectedAccount("from", swapBasicData.source_network.name);
     const { wallets, provider } = useWallet(source_network, "withdrawal")
     const { sameAccountNetwork } = useInitialSettings()
+    const { swapDetails } = useSwapDataState()
+    const { onSwapLifecycle } = useCallbacks()
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id && w.withdrawalSupportedNetworks?.includes(source_network?.name))
     const networkChainId = source_network?.chain_id ?? undefined
     const [savedTransactionHash, setSavedTransactionHash] = useState<string>()
+    const lifecycleContext = useMemo(
+        () => lifecycleContextFromSwap(swapBasicData, swapDetails),
+        [
+            swapBasicData.destination_address,
+            swapBasicData.destination_network.name,
+            swapBasicData.destination_token.symbol,
+            swapBasicData.requested_amount,
+            swapBasicData.source_network.name,
+            swapBasicData.source_token.symbol,
+            swapBasicData.use_deposit_address,
+            swapDetails?.id,
+            swapDetails?.source_address,
+        ],
+    )
+    const sameAccountMismatch = (
+        source_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase()
+        || destination_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase()
+    ) && !!(
+        selectedSourceAccount?.address
+        && destination_address
+        && selectedSourceAccount.address.toLowerCase() !== destination_address.toLowerCase()
+    )
 
     useEffect(() => {
         if (!swapId) return;
@@ -83,6 +113,25 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
             console.error(e.message)
         }
     }, [swapId])
+
+    const isExtendedSource = source_network?.type === NetworkType.Polymarket || isExtendedSourceNetwork(source_network?.name)
+    const hasMultiStepHandler = !!provider?.multiStepHandlers?.some(handler => handler.supportedNetworks.includes(source_network?.name))
+    // The account can restore before its provider publishes the connected wallet.
+    // useWallet's network provider may belong to another account, so check the
+    // selected account's own snapshot before treating a missing wallet as unsupported.
+    const selectedProvider = selectedSourceAccount?.provider
+    const selectedProviderReady = isProviderHydrated(selectedProvider)
+        && selectedProvider.pendingSessionRestore !== true
+    // A connected account whose wallet cannot withdraw on this network only
+    // sees the connect button again; report that as a blocked transfer step.
+    const blockedReason: TransferBlockedReasonCode | undefined = isExtendedSource || hasMultiStepHandler ? undefined
+        : sameAccountMismatch ? 'same_account_required'
+        : selectedProviderReady && !wallet ? 'wallet_unsupported_for_network'
+        : undefined
+    useTransferBlocked(blockedReason, lifecycleContext, 'WalletWithdrawal',
+        blockedReason === 'same_account_required' ? 'The selected source and destination accounts must match for this route'
+        : blockedReason === 'wallet_unsupported_for_network' ? `${selectedSourceAccount?.providerName ?? 'The selected wallet'} cannot send from ${source_network?.name}`
+        : undefined)
 
     // Extended sources (Hyperliquid, Polymarket) have their own withdraw flow — the chain
     // logic comes from the wallet package's TransferProvider, the UI lives here. Polymarket
@@ -113,14 +162,39 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
                     refuel={refuel}
                     onTransferComplete={(hash: string) => {
                         setSavedTransactionHash(hash)
+                        onSwapLifecycle({
+                            step: 'transaction_submitted',
+                            stage: 'input_transfer',
+                            outcome: 'succeeded',
+                            path: 'MultiStepWalletTransfer',
+                            action: 'send_transaction',
+                            provider: wallet?.providerName || provider?.name,
+                            transactionHash: hash,
+                            ...lifecycleContext,
+                        })
+                    }}
+                    onTransferError={(error: unknown) => {
+                        // Optional: handlers that report failures make them visible like the shared path.
+                        const rejected = isUserRejection(error)
+                        const errorDetails = lifecycleErrorDetails(error)
+                        onSwapLifecycle({
+                            step: rejected ? 'wallet_action_rejected' : 'wallet_action_failed',
+                            stage: 'wallet_action',
+                            outcome: rejected ? 'rejected' : 'failed',
+                            path: 'MultiStepWalletTransfer',
+                            action: 'send_transaction',
+                            provider: wallet?.providerName || provider?.name,
+                            ...errorDetails,
+                            reasonCode: rejected ? 'user_rejected' : errorDetails.reasonCode,
+                            ...lifecycleContext,
+                        })
                     }}
                 />
             </Suspense>
         }
     }
 
-    if ((source_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase() || destination_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase())
-        && (selectedSourceAccount?.address && destination_address && selectedSourceAccount?.address.toLowerCase() !== destination_address?.toLowerCase())) {
+    if (sameAccountMismatch) {
         const network = source_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase() ? source_network : destination_network
         return <ActionMessages.DifferentAccountsNotAllowedError network={network?.display_name!} />
     }
@@ -160,7 +234,9 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
     const [buttonClicked, setButtonClicked] = useState(false)
     const [error, setError] = useState<Error | undefined>()
     const [loading, setLoading] = useState(false)
-    const { swapError } = useSwapDataState()
+    const { swapDetails, swapError } = useSwapDataState()
+    const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
+    const gaslessErrorMessage = useGaslessPreferenceStore(s => s.gaslessErrorMessage)
 
     const selectedSourceAccount = useSelectedAccount("from", swapData.source_network.name);
 
@@ -173,8 +249,34 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
     const { executeTransfer } = useTransfer()
     const { signGaslessDeposit, isGaslessSupported } = useGasless()
     const rpcHealth = useRpcHealth(swapData.source_network)
+    const lifecycleContext = useMemo(
+        () => lifecycleContextFromSwap(swapData, swapDetails),
+        [
+            swapData.destination_address,
+            swapData.destination_network.name,
+            swapData.destination_token.symbol,
+            swapData.requested_amount,
+            swapData.source_network.name,
+            swapData.source_token.symbol,
+            swapData.use_deposit_address,
+            swapDetails?.id,
+            swapDetails?.source_address,
+        ],
+    )
 
-    const clickHandler = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
+    // Every state that replaces the send button with a message, in display priority. A swap or
+    // deposit-actions error keeps the send button rendered, so it is not a block.
+    const blockedReason: TransferBlockedReasonCode | undefined =
+        rpcHealth?.health.status === 'unhealthy' ? 'rpc_unhealthy'
+        : gaslessUnavailable ? 'gasless_unavailable'
+        : undefined
+    useTransferBlocked(blockedReason, lifecycleContext, 'TransferTokenButton',
+        blockedReason === 'rpc_unhealthy' ? (rpcHealth?.health.status === 'unhealthy' ? rpcHealth.health.reason : undefined)
+        : blockedReason === 'gasless_unavailable' ? gaslessErrorMessage ?? undefined
+        : undefined)
+
+    const clickHandler = useCallback(async (transferProps: TransferProps) => {
+        const { amount, depositAddress } = transferProps
         setButtonClicked(true)
         setError(undefined)
         setLoading(true)
@@ -186,18 +288,17 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
             if (!wallet)
                 throw new Error('No selected account')
 
+            const resolvedTransferProps: TransferProps = {
+                ...transferProps,
+                token: swapData.source_token,
+                selectedWallet: wallet,
+                network: swapData.source_network,
+                balances,
+                userDestinationAddress: swapData.destination_address,
+            }
+
             try {
-                const tx = await executeTransfer({
-                    token: swapData.source_token,
-                    amount,
-                    depositAddress,
-                    callData,
-                    selectedWallet: wallet,
-                    network: swapData.source_network,
-                    balances: balances,
-                    userDestinationAddress: swapData.destination_address,
-                    swapId,
-                }, wallet)
+                const tx = await executeTransfer(resolvedTransferProps, wallet)
 
                 if (!tx)
                     throw new Error('No transaction')
@@ -209,16 +310,7 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
                 if (typeof e === 'string' && e?.includes('No transfer provider found for network:')) {
                     if (!provider?.transfer) throw new Error('No provider transfer')
 
-                    const tx = await provider.transfer({
-                        token: swapData.source_token,
-                        amount,
-                        depositAddress,
-                        callData,
-                        selectedWallet: wallet,
-                        network: swapData.source_network,
-                        balances: balances,
-                        userDestinationAddress: swapData.destination_address,
-                    }, wallet)
+                    const tx = await provider.transfer(resolvedTransferProps, wallet)
 
                     if (!tx)
                         throw new Error('No transaction')

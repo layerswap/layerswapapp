@@ -19,6 +19,7 @@ export const walletNetworkAdapter = defineNetworkAdapter<NetworkWithTokens>({
     isSolanaNetwork: network => network.type === NetworkType.Solana,
     isStarknetNetwork: network => network.type === NetworkType.Starknet,
     isTronNetwork: network => network.type === NetworkType.Tron,
+    isStellarNetwork: network => network.type === NetworkType.Stellar,
     isBitcoinNetwork: network => network.type === NetworkType.Bitcoin,
     isTonNetwork: network => network.type === NetworkType.TON,
     isFuelNetwork: network => network.type === NetworkType.Fuel,

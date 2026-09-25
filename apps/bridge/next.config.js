@@ -1,12 +1,18 @@
-const { PHASE_PRODUCTION_SERVER } = require('next/constants');
-const { withPostHogConfig } = require('@posthog/nextjs-config');
+const { PHASE_PRODUCTION_BUILD, PHASE_PRODUCTION_SERVER } = require('next/constants');
+
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 });
 
+const { resolveFaroRelease, resolveFaroDeployment } = require('./lib/faro-release.cjs');
+
+// Framing policy (Content-Security-Policy: frame-ancestors / X-Frame-Options) is
+// intentionally absent. The 2022 values were never served (the phase gate was dead
+// config) and the bridge is iframed by partners (settings.isEmbedded, NoCookies).
+// Do not add framing headers here; see follow-up "env-driven security headers":
+// lib/security-headers.cjs + partner-embedder allowlist.
 const securityHeaders = [
-  { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
-  { key: 'Content-Security-Policy', value: 'frame-ancestors *.immutable.com' },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
 ]
 
 const REMOTE_PATTERNS = [
@@ -32,25 +38,19 @@ const REMOTE_PATTERNS = [
   },
 ];
 
-module.exports = (phase, { defaultConfig }) => {
+const buildNextConfig = (phase) => {
+  const productionBuild = phase === PHASE_PRODUCTION_BUILD || phase === PHASE_PRODUCTION_SERVER;
+  const faroRelease = resolveFaroRelease(process.env, productionBuild);
+  const faroDeployment = resolveFaroDeployment(process.env, productionBuild);
   /**
    * @type {import('next').NextConfig}
    */
 
-  const posthogConfigsAreSet = process.env.POSTHOG_PROJECT_ID && process.env.POSTHOG_API_KEY && process.env.NEXT_PUBLIC_POSTHOG_HOST;
-
-  const posthogWrapped = posthogConfigsAreSet ? withPostHogConfig({}, {
-    personalApiKey: process.env.POSTHOG_API_KEY,
-    projectId: process.env.POSTHOG_PROJECT_ID,
-    host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-    sourcemaps: {
-      enabled: true,
-      project: 'Layerswap',
-      deleteAfterUpload: true,
-    },
-  }) : {};
-
   const nextConfig = {
+    env: {
+      NEXT_PUBLIC_FARO_RELEASE: faroRelease,
+      NEXT_PUBLIC_FARO_DEPLOYMENT: faroDeployment,
+    },
     i18n: {
       locales: ["en"],
       defaultLocale: "en",
@@ -87,14 +87,6 @@ module.exports = (phase, { defaultConfig }) => {
     async rewrites() {
       return [
         {
-          source: `/lsph/static/:path*`,
-          destination: "https://us-assets.i.posthog.com/static/:path*",
-        },
-        {
-          source: `/lsph/:path*`,
-          destination: "https://us.i.posthog.com/:path*",
-        },
-        {
           source: `/.well-known/vercel/flags`,
           destination: `/api/vercel/flags`,
         },
@@ -106,18 +98,10 @@ module.exports = (phase, { defaultConfig }) => {
   if (process.env.APP_BASE_PATH) {
     nextConfig.basePath = process.env.APP_BASE_PATH
   }
-  if (phase === PHASE_PRODUCTION_SERVER) {
-    nextConfig.headers = async () => {
-      return [
-        {
-          // Apply these headers to all routes in your application.
-          source: '/:path*',
-          headers: securityHeaders,
-        },
-      ]
-    }
-  }
-  let merged = { ...posthogWrapped, ...nextConfig };
-
-  return withBundleAnalyzer(merged)
+  // Route headers are recorded into the routes manifest by `next build` and loaded
+  // from next.config.js by `next dev`; keep them phase-independent.
+  nextConfig.headers = async () => [{ source: '/:path*', headers: securityHeaders }]
+  return withBundleAnalyzer(nextConfig)
 }
+
+module.exports = buildNextConfig;

@@ -6,13 +6,14 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "audit": "audit-ci --config audit-ci.json"
   },
   "dependencies": {
-    "@layerswap/widget-react": "1.0.0",
+    "@layerswap/widget-react": "1.0.1",
     "@tanstack/react-query": "5.90.11",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
     "starknet": "8.1.0",
     "viem": "2.21.16",
     "wagmi": "2.14.11",
@@ -22,9 +23,29 @@
   "devDependencies": {
     "@types/react": "19.2.3",
     "@types/react-dom": "19.2.3",
-    "@vitejs/plugin-react": "^5.1.2",
+    "@vitejs/plugin-react": "^5.2.0",
     "typescript": "catalog:",
-    "vite": "^7.3.0",
-    "vite-plugin-node-polyfills": "^0.24.0"
+    "vite": "^7.3.6",
+    "vite-plugin-node-polyfills": "^0.24.0",
+    "audit-ci": "7.1.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "resolutions": {
+    "elliptic": "6.6.1",
+    "@metamask/sdk": "0.33.1",
+    "@metamask/sdk-communication-layer": "0.33.1",
+    "postcss": "8.5.23",
+    "uuid": "11.1.1",
+    "axios": "1.18.1",
+    "@walletconnect/ethereum-provider": "2.25.0",
+    "@walletconnect/universal-provider": "2.25.0",
+    "@walletconnect/sign-client": "2.25.0",
+    "@walletconnect/utils": "2.25.0",
+    "@walletconnect/relay-auth": "1.1.0",
+    "@reown/appkit": "1.8.24",
+    "**/@walletconnect/jsonrpc-ws-connection/ws": "7.5.11",
+    "**/ws": "8.21.0"
   }
 }

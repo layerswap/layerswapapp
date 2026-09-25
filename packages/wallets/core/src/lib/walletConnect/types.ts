@@ -46,6 +46,7 @@ export type QrCodeState =
 const CAIP_NAMESPACE_TO_NETWORK_TYPE: Record<string, NetworkType> = {
     eip155: 'evm' as NetworkType,
     solana: 'solana' as NetworkType,
+    stellar: 'stellar' as NetworkType,
 }
 
 export const chainsToNetworkTypes = (chains: string[] | undefined): NetworkType[] => {
