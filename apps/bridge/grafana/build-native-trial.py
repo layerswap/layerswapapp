@@ -1,10 +1,28 @@
 """Build the development-only native Grafana v2 usability trial (no network calls)."""
 import json
+import os
+import sys
 from pathlib import Path
 from urllib.parse import quote
 
 OUT = Path(__file__).parent
-DS = 'P8E80F9AEF21F6940'
+# Datasource UIDs identify a specific Grafana instance and stay out of the repo.
+# Committed resources keep these placeholders; see README "Datasource UIDs".
+DS = os.environ.get('GRAFANA_LOKI_UID', '${DS_LOKI}')
+TEMPO_DS = os.environ.get('GRAFANA_TEMPO_UID', '${DS_TEMPO}')
+
+
+def output_dir(args):
+    target = Path(args[0]).resolve() if args else OUT.resolve()
+    if DS != '${DS_LOKI}' or TEMPO_DS != '${DS_TEMPO}':
+        # Resources with real UIDs must never be written into the repository.
+        repo = OUT.resolve().parents[2]
+        if target == repo or repo in target.parents:
+            sys.exit('Real datasource UIDs set: pass an output directory outside the repository.')
+    target.mkdir(parents=True, exist_ok=True)
+    return target
+
+
 UIDS = {name: 'layerswap-faro-trial-' + ('home' if name == 'views' else name) for name in ['views', 'issue', 'session', 'event']}
 
 
@@ -383,6 +401,12 @@ def build():
         text_panel(1,'Session · ${session_id}','Expand the record for exact stored fields and stack, where available. Source-map attribution is unverified; a stack may still refer to minified code. Use the panel menu → Explore for deeper log inspection. Multiple records may share a stored timestamp.'),
         dict(selected, spec=dict(selected['spec'],id=2,title='Stored event'))],grid([(1,0,0,24,3),(2,0,3,24,20)]),[],[link('← Back to timeline',url('session')),back_results])
     add_experience_views(views, session)
+    # Grafana sends these titles in X-Dashboard-Title / X-Panel-Title headers.
+    # A browser serializes the middle dot as Latin-1, which production's WAF rejects.
+    for resource in [views, issue, session, event]:
+        resource['spec']['title'] = resource['spec']['title'].replace('·', '-')
+        for element in resource['spec']['elements'].values():
+            element['spec']['title'] = element['spec']['title'].replace('·', '-')
     return [views,issue,session,event]
 
 
@@ -500,7 +524,9 @@ def add_experience_views(views, session):
     # A funnel is a cohort intersection, not a division of unrelated event counts.
     viewed = count_visits(cohort)
     completed = count_visits(cohort + stages[-1][0])
-    panels.append(stat(31,'Observed completion / viewed visits', '((' + completed + ') or (0 * ' + viewed + ')) / (' + viewed + ')',
+    # The denominator already preserves no-data when there are no viewed visits.
+    # Avoid repeating its pipeline in the fallback: production proxies limit URI size.
+    panels.append(stat(31,'Observed completion / viewed visits', '((' + completed + ') or vector(0)) / (' + viewed + ')',
         'Recorded form-visit conversion in the same bounded cohort. New cohorts are incomplete; does not include backend completions after the browser stops reporting.', 'percentunit'))
     panels.append(metric_table(32,'Feature interactions',aggregate(behavior + ' | event_name="widget_interaction"','event_data_action'),
         [('event_data_action','Action'),('Value','Activations')], 'Named user activations. Form editing emits once per visit. No DOM text, typed values, replay or heatmaps.'))
@@ -547,9 +573,9 @@ def add_experience_views(views, session):
     for v in session['spec']['variables']:
         if v['spec']['name']=='flow_id': v['spec']['hide']='dontHide'
 
-    # Direct links use the observed Tempo UID, independently of the broken
+    # Direct links use the Tempo datasource UID, independently of the broken
     # provisioned Loki derived-field reference. Only rows with a trace ID qualify.
-    panes = {'trace':{'datasource':'P214B5B846CF3925F','queries':[{'refId':'A','datasource':{'type':'tempo','uid':'P214B5B846CF3925F'},'queryType':'traceql','query':'TRACE_ID'}], 'range':{'from':'RANGE_FROM','to':'RANGE_TO'}}}
+    panes = {'trace':{'datasource':TEMPO_DS,'queries':[{'refId':'A','datasource':{'type':'tempo','uid':TEMPO_DS},'queryType':'traceql','query':'TRACE_ID'}], 'range':{'from':'RANGE_FROM','to':'RANGE_TO'}}}
     trace_url = '/explore?schemaVersion=1&panes='+quote(json.dumps(panes,separators=(',',':')),safe='')
     trace_url = trace_url.replace('TRACE_ID',field('traceID')).replace('RANGE_FROM','${__from}').replace('RANGE_TO','${__to}')
     trace_panel = table(11,'Recorded traces · open in Tempo',records(SESSION+' | traceID=~"[a-fA-F0-9]{32}"',["timestamp","traceID","event_data_url_full"]),
@@ -561,7 +587,8 @@ def add_experience_views(views, session):
 
 
 if __name__ == '__main__':
+    out = output_dir(sys.argv[1:])
     for data in build():
-        path=OUT/(data['metadata']['name']+'.json')
+        path=out/(data['metadata']['name']+'.json')
         path.write_text(json.dumps(data,indent=2)+'\n')
         print(path.name)

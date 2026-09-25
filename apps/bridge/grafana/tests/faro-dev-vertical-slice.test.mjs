@@ -38,7 +38,7 @@ test('scope stays dev-only and does not modify ingest labels or add thresholds',
   assert.equal(dashboard.panels.length, 9);
   assert.equal(dashboard.refresh, '');
   for (const panel of dashboard.panels.filter(p => p.targets)) {
-    assert.equal(panel.datasource.uid, 'P8E80F9AEF21F6940');
+    assert.equal(panel.datasource.uid, '${DS_LOKI}');
     assert.equal(panel.datasource.type, 'loki');
     assert.equal(panel.fieldConfig.defaults.thresholds, undefined);
     const query = panel.targets[0].expr;

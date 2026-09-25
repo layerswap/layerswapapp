@@ -9,7 +9,7 @@
     }
   },
   "spec": {
-    "title": "Session investigation \u00b7 Native trial",
+    "title": "Session investigation - Native trial",
     "description": "Development telemetry. Usability trial; not a production health dashboard.",
     "tags": [
       "layerswap",
@@ -449,7 +449,7 @@
         "kind": "Panel",
         "spec": {
           "id": 1,
-          "title": "Session \u00b7 ${session_id}",
+          "title": "Session - ${session_id}",
           "description": "",
           "links": [],
           "data": {
@@ -483,7 +483,7 @@
         "kind": "Panel",
         "spec": {
           "id": 2,
-          "title": "Records in this window \u00b7 table limit 1,000",
+          "title": "Records in this window - table limit 1,000",
           "description": "If the count exceeds 1,000, the timeline omits older records. Narrow the time range. Table pagination does not fetch more records.",
           "links": [],
           "data": {
@@ -500,7 +500,7 @@
                       "group": "loki",
                       "version": "v0",
                       "datasource": {
-                        "name": "P8E80F9AEF21F6940"
+                        "name": "${DS_LOKI}"
                       },
                       "spec": {
                         "expr": "sum(count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | label_format needle_application=`${application:percentencode}` | label_format needle_application=`{{ urldecode .needle_application }}` | label_format matched=`{{ (eq .app_name .needle_application) }}` | matched=\"true\" | label_format needle_release=`${release:percentencode}` | label_format needle_release=`{{ urldecode .needle_release }}` | label_format matched=`{{ or (eq .needle_release \"\") (eq .app_version .needle_release) }}` | matched=\"true\" | label_format deployment=`{{ if .page_attr_deployment_environment }}{{ .page_attr_deployment_environment }}{{ else }}unknown{{ end }}` | label_format needle_deployment=`${deployment:percentencode}` | label_format needle_deployment=`{{ urldecode .needle_deployment }}` | label_format matched=`{{ or (eq .needle_deployment \"\") (eq .deployment .needle_deployment) }}` | matched=\"true\" | label_format needle_session_id=`${session_id:percentencode}` | label_format needle_session_id=`{{ urldecode .needle_session_id }}` | label_format matched=`{{ (eq .session_id .needle_session_id) }}` | matched=\"true\" | session_id!=\"\" | label_format journey=`{{ if .event_data_journey_id }}{{ .event_data_journey_id }}{{ else }}{{ .session_attr_journey_id }}{{ end }}` | label_format swap=`{{ if .event_data_swap_id }}{{ .event_data_swap_id }}{{ else }}{{ .session_attr_swap_id }}{{ end }}` | label_format needle_journey_id=`${journey_id:percentencode}` | label_format needle_journey_id=`{{ urldecode .needle_journey_id }}` | label_format matched=`{{ or (eq .needle_journey_id \"\") (eq .journey .needle_journey_id) }}` | matched=\"true\" | label_format needle_flow_id=`${flow_id:percentencode}` | label_format needle_flow_id=`{{ urldecode .needle_flow_id }}` | label_format matched=`{{ or (eq .needle_flow_id \"\") (eq .event_data_flow_id .needle_flow_id) }}` | matched=\"true\" | keep session_id [$__range])) or vector(0)",
@@ -562,7 +562,7 @@
         "kind": "Panel",
         "spec": {
           "id": 3,
-          "title": "Timeline \u00b7 newest 1,000 records, shown in order",
+          "title": "Timeline - newest 1,000 records, shown in order",
           "description": "",
           "links": [],
           "data": {
@@ -579,7 +579,7 @@
                       "group": "loki",
                       "version": "v0",
                       "datasource": {
-                        "name": "P8E80F9AEF21F6940"
+                        "name": "${DS_LOKI}"
                       },
                       "spec": {
                         "expr": "{source=\"faro\"} | logfmt | __error__=\"\" | label_format needle_application=`${application:percentencode}` | label_format needle_application=`{{ urldecode .needle_application }}` | label_format matched=`{{ (eq .app_name .needle_application) }}` | matched=\"true\" | label_format needle_release=`${release:percentencode}` | label_format needle_release=`{{ urldecode .needle_release }}` | label_format matched=`{{ or (eq .needle_release \"\") (eq .app_version .needle_release) }}` | matched=\"true\" | label_format deployment=`{{ if .page_attr_deployment_environment }}{{ .page_attr_deployment_environment }}{{ else }}unknown{{ end }}` | label_format needle_deployment=`${deployment:percentencode}` | label_format needle_deployment=`{{ urldecode .needle_deployment }}` | label_format matched=`{{ or (eq .needle_deployment \"\") (eq .deployment .needle_deployment) }}` | matched=\"true\" | label_format needle_session_id=`${session_id:percentencode}` | label_format needle_session_id=`{{ urldecode .needle_session_id }}` | label_format matched=`{{ (eq .session_id .needle_session_id) }}` | matched=\"true\" | session_id!=\"\" | label_format journey=`{{ if .event_data_journey_id }}{{ .event_data_journey_id }}{{ else }}{{ .session_attr_journey_id }}{{ end }}` | label_format swap=`{{ if .event_data_swap_id }}{{ .event_data_swap_id }}{{ else }}{{ .session_attr_swap_id }}{{ end }}` | label_format needle_journey_id=`${journey_id:percentencode}` | label_format needle_journey_id=`{{ urldecode .needle_journey_id }}` | label_format matched=`{{ or (eq .needle_journey_id \"\") (eq .journey .needle_journey_id) }}` | matched=\"true\" | label_format needle_flow_id=`${flow_id:percentencode}` | label_format needle_flow_id=`{{ urldecode .needle_flow_id }}` | label_format matched=`{{ or (eq .needle_flow_id \"\") (eq .event_data_flow_id .needle_flow_id) }}` | matched=\"true\" | label_format stored_ns=`ns:{{ __timestamp__ | unixEpochNanos }}` | label_format window_from=`{{ sub (unixEpochMillis (__timestamp__)) 300000 }}` | label_format window_to=`{{ add (unixEpochMillis (__timestamp__)) 300000 }}` | label_format occurrence=`{{ if .event_data_occurrence_id }}{{ .event_data_occurrence_id }}{{ else }}{{ .context_occurrence_id }}{{ end }}` | label_format needle_event_ns=`${event_ns:percentencode}` | label_format needle_event_ns=`{{ urldecode .needle_event_ns }}` | label_format needle_event_ns=`{{ if .needle_event_ns }}ns:{{ .needle_event_ns | trimPrefix \"ns:\" }}{{ end }}` | label_format selected=`{{ if eq .stored_ns .needle_event_ns }}Selected{{ end }}` | label_format stored_ns=`ns:{{ __timestamp__ | unixEpochNanos }}` | label_format window_from=`{{ sub (unixEpochMillis (__timestamp__)) 300000 }}` | label_format window_to=`{{ add (unixEpochMillis (__timestamp__)) 300000 }}` | label_format activity=`{{ if .value }}{{ .value }}{{ else if .message }}{{ .message }}{{ else if .event_data_message }}{{ .event_data_message }}{{ else if .event_data_reason }}{{ .event_data_reason }}{{ else if .event_data_step }}{{ .event_data_step }}{{ else }}{{ .event_name }}{{ end }}` | label_format activity=`{{ regexReplaceAll \"(?s)\\n.*\" .activity \"\" | trim | trunc 240 }}` | keep timestamp, activity, event_data_step, event_data_outcome, event_data_attempt, occurrence, selected, stored_ns, window_from, window_to, session_id, journey, kind",
@@ -858,7 +858,7 @@
         "kind": "Panel",
         "spec": {
           "id": 4,
-          "title": "Selected occurrence \u00b7 expand for raw details",
+          "title": "Selected occurrence - expand for raw details",
           "description": "",
           "links": [],
           "data": {
@@ -875,7 +875,7 @@
                       "group": "loki",
                       "version": "v0",
                       "datasource": {
-                        "name": "P8E80F9AEF21F6940"
+                        "name": "${DS_LOKI}"
                       },
                       "spec": {
                         "expr": "{source=\"faro\"} | logfmt | __error__=\"\" | label_format needle_application=`${application:percentencode}` | label_format needle_application=`{{ urldecode .needle_application }}` | label_format matched=`{{ (eq .app_name .needle_application) }}` | matched=\"true\" | label_format needle_release=`${release:percentencode}` | label_format needle_release=`{{ urldecode .needle_release }}` | label_format matched=`{{ or (eq .needle_release \"\") (eq .app_version .needle_release) }}` | matched=\"true\" | label_format deployment=`{{ if .page_attr_deployment_environment }}{{ .page_attr_deployment_environment }}{{ else }}unknown{{ end }}` | label_format needle_deployment=`${deployment:percentencode}` | label_format needle_deployment=`{{ urldecode .needle_deployment }}` | label_format matched=`{{ or (eq .needle_deployment \"\") (eq .deployment .needle_deployment) }}` | matched=\"true\" | label_format needle_session_id=`${session_id:percentencode}` | label_format needle_session_id=`{{ urldecode .needle_session_id }}` | label_format matched=`{{ (eq .session_id .needle_session_id) }}` | matched=\"true\" | session_id!=\"\" | label_format stored_ns=`ns:{{ __timestamp__ | unixEpochNanos }}` | label_format window_from=`{{ sub (unixEpochMillis (__timestamp__)) 300000 }}` | label_format window_to=`{{ add (unixEpochMillis (__timestamp__)) 300000 }}` | label_format needle_event_ns=`${event_ns:percentencode}` | label_format needle_event_ns=`{{ urldecode .needle_event_ns }}` | label_format needle_event_ns=`{{ if .needle_event_ns }}ns:{{ .needle_event_ns | trimPrefix \"ns:\" }}{{ end }}` | label_format matched=`{{ (eq .stored_ns .needle_event_ns) }}` | matched=\"true\"",
@@ -956,7 +956,7 @@
         "kind": "Panel",
         "spec": {
           "id": 6,
-          "title": "Explicit operation failures \u00b7 newest 1,000 observations",
+          "title": "Explicit operation failures - newest 1,000 observations",
           "description": "",
           "links": [],
           "data": {
@@ -973,7 +973,7 @@
                       "group": "loki",
                       "version": "v0",
                       "datasource": {
-                        "name": "P8E80F9AEF21F6940"
+                        "name": "${DS_LOKI}"
                       },
                       "spec": {
                         "expr": "{source=\"faro\"} | logfmt | __error__=\"\" | label_format needle_application=`${application:percentencode}` | label_format needle_application=`{{ urldecode .needle_application }}` | label_format matched=`{{ (eq .app_name .needle_application) }}` | matched=\"true\" | label_format needle_release=`${release:percentencode}` | label_format needle_release=`{{ urldecode .needle_release }}` | label_format matched=`{{ or (eq .needle_release \"\") (eq .app_version .needle_release) }}` | matched=\"true\" | label_format deployment=`{{ if .page_attr_deployment_environment }}{{ .page_attr_deployment_environment }}{{ else }}unknown{{ end }}` | label_format needle_deployment=`${deployment:percentencode}` | label_format needle_deployment=`{{ urldecode .needle_deployment }}` | label_format matched=`{{ or (eq .needle_deployment \"\") (eq .deployment .needle_deployment) }}` | matched=\"true\" | label_format needle_session_id=`${session_id:percentencode}` | label_format needle_session_id=`{{ urldecode .needle_session_id }}` | label_format matched=`{{ (eq .session_id .needle_session_id) }}` | matched=\"true\" | session_id!=\"\" | label_format journey=`{{ if .event_data_journey_id }}{{ .event_data_journey_id }}{{ else }}{{ .session_attr_journey_id }}{{ end }}` | label_format swap=`{{ if .event_data_swap_id }}{{ .event_data_swap_id }}{{ else }}{{ .session_attr_swap_id }}{{ end }}` | label_format needle_journey_id=`${journey_id:percentencode}` | label_format needle_journey_id=`{{ urldecode .needle_journey_id }}` | label_format matched=`{{ or (eq .needle_journey_id \"\") (eq .journey .needle_journey_id) }}` | matched=\"true\" | label_format needle_flow_id=`${flow_id:percentencode}` | label_format needle_flow_id=`{{ urldecode .needle_flow_id }}` | label_format matched=`{{ or (eq .needle_flow_id \"\") (eq .event_data_flow_id .needle_flow_id) }}` | matched=\"true\" | event_name=\"swap_lifecycle\" | event_data_outcome=\"failed\" | event_data_step!=\"flow_error\" | label_format stored_ns=`ns:{{ __timestamp__ | unixEpochNanos }}` | label_format window_from=`{{ sub (unixEpochMillis (__timestamp__)) 300000 }}` | label_format window_to=`{{ add (unixEpochMillis (__timestamp__)) 300000 }}` | label_format activity=`{{ if .value }}{{ .value }}{{ else if .message }}{{ .message }}{{ else if .event_data_message }}{{ .event_data_message }}{{ else if .event_data_reason }}{{ .event_data_reason }}{{ else if .event_data_step }}{{ .event_data_step }}{{ else }}{{ .event_name }}{{ end }}` | label_format activity=`{{ regexReplaceAll \"(?s)\\n.*\" .activity \"\" | trim | trunc 240 }}` | label_format incident=`{{ if .event_data_occurrence_id }}{{ .session_id }}:{{ .event_data_occurrence_id }}{{ else }}legacy:{{ .stored_ns }}:{{ __line__ }}{{ end }}` | keep timestamp, activity, event_data_step, event_data_outcome, type, event_data_occurrence_id, stored_ns, window_from, window_to, session_id, journey, kind, incident",
@@ -1358,7 +1358,7 @@
         "kind": "Panel",
         "spec": {
           "id": 8,
-          "title": "Recorded HTTP requests \u00b7 newest 1,000",
+          "title": "Recorded HTTP requests - newest 1,000",
           "description": "Recorded request mirrors only. Absence is not proof no request occurred. Inspect raw event for other recorded timing fields.",
           "links": [],
           "data": {
@@ -1375,7 +1375,7 @@
                       "group": "loki",
                       "version": "v0",
                       "datasource": {
-                        "name": "P8E80F9AEF21F6940"
+                        "name": "${DS_LOKI}"
                       },
                       "spec": {
                         "expr": "{source=\"faro\"} | logfmt | __error__=\"\" | label_format needle_application=`${application:percentencode}` | label_format needle_application=`{{ urldecode .needle_application }}` | label_format matched=`{{ (eq .app_name .needle_application) }}` | matched=\"true\" | label_format needle_release=`${release:percentencode}` | label_format needle_release=`{{ urldecode .needle_release }}` | label_format matched=`{{ or (eq .needle_release \"\") (eq .app_version .needle_release) }}` | matched=\"true\" | label_format deployment=`{{ if .page_attr_deployment_environment }}{{ .page_attr_deployment_environment }}{{ else }}unknown{{ end }}` | label_format needle_deployment=`${deployment:percentencode}` | label_format needle_deployment=`{{ urldecode .needle_deployment }}` | label_format matched=`{{ or (eq .needle_deployment \"\") (eq .deployment .needle_deployment) }}` | matched=\"true\" | label_format needle_session_id=`${session_id:percentencode}` | label_format needle_session_id=`{{ urldecode .needle_session_id }}` | label_format matched=`{{ (eq .session_id .needle_session_id) }}` | matched=\"true\" | session_id!=\"\" | label_format journey=`{{ if .event_data_journey_id }}{{ .event_data_journey_id }}{{ else }}{{ .session_attr_journey_id }}{{ end }}` | label_format swap=`{{ if .event_data_swap_id }}{{ .event_data_swap_id }}{{ else }}{{ .session_attr_swap_id }}{{ end }}` | label_format needle_journey_id=`${journey_id:percentencode}` | label_format needle_journey_id=`{{ urldecode .needle_journey_id }}` | label_format matched=`{{ or (eq .needle_journey_id \"\") (eq .journey .needle_journey_id) }}` | matched=\"true\" | label_format needle_flow_id=`${flow_id:percentencode}` | label_format needle_flow_id=`{{ urldecode .needle_flow_id }}` | label_format matched=`{{ or (eq .needle_flow_id \"\") (eq .event_data_flow_id .needle_flow_id) }}` | matched=\"true\" | event_data_http_request_method!=\"\" | label_format stored_ns=`ns:{{ __timestamp__ | unixEpochNanos }}` | label_format window_from=`{{ sub (unixEpochMillis (__timestamp__)) 300000 }}` | label_format window_to=`{{ add (unixEpochMillis (__timestamp__)) 300000 }}` | label_format activity=`{{ if .value }}{{ .value }}{{ else if .message }}{{ .message }}{{ else if .event_data_message }}{{ .event_data_message }}{{ else if .event_data_reason }}{{ .event_data_reason }}{{ else if .event_data_step }}{{ .event_data_step }}{{ else }}{{ .event_name }}{{ end }}` | label_format activity=`{{ regexReplaceAll \"(?s)\\n.*\" .activity \"\" | trim | trunc 240 }}` | keep timestamp, event_data_http_request_method, event_data_url_full, event_data_http_response_status_code, stored_ns, window_from, window_to, session_id, journey, kind",
@@ -1649,7 +1649,7 @@
         "kind": "Panel",
         "spec": {
           "id": 10,
-          "title": "Historical context snapshots \u00b7 newest 20",
+          "title": "Historical context snapshots - newest 20",
           "description": "Values belong to each record; session attributes are not automatically the context or cause of a different event.",
           "links": [],
           "data": {
@@ -1666,7 +1666,7 @@
                       "group": "loki",
                       "version": "v0",
                       "datasource": {
-                        "name": "P8E80F9AEF21F6940"
+                        "name": "${DS_LOKI}"
                       },
                       "spec": {
                         "expr": "{source=\"faro\"} | logfmt | __error__=\"\" | label_format needle_application=`${application:percentencode}` | label_format needle_application=`{{ urldecode .needle_application }}` | label_format matched=`{{ (eq .app_name .needle_application) }}` | matched=\"true\" | label_format needle_release=`${release:percentencode}` | label_format needle_release=`{{ urldecode .needle_release }}` | label_format matched=`{{ or (eq .needle_release \"\") (eq .app_version .needle_release) }}` | matched=\"true\" | label_format deployment=`{{ if .page_attr_deployment_environment }}{{ .page_attr_deployment_environment }}{{ else }}unknown{{ end }}` | label_format needle_deployment=`${deployment:percentencode}` | label_format needle_deployment=`{{ urldecode .needle_deployment }}` | label_format matched=`{{ or (eq .needle_deployment \"\") (eq .deployment .needle_deployment) }}` | matched=\"true\" | label_format needle_session_id=`${session_id:percentencode}` | label_format needle_session_id=`{{ urldecode .needle_session_id }}` | label_format matched=`{{ (eq .session_id .needle_session_id) }}` | matched=\"true\" | session_id!=\"\" | label_format journey=`{{ if .event_data_journey_id }}{{ .event_data_journey_id }}{{ else }}{{ .session_attr_journey_id }}{{ end }}` | label_format swap=`{{ if .event_data_swap_id }}{{ .event_data_swap_id }}{{ else }}{{ .session_attr_swap_id }}{{ end }}` | label_format needle_journey_id=`${journey_id:percentencode}` | label_format needle_journey_id=`{{ urldecode .needle_journey_id }}` | label_format matched=`{{ or (eq .needle_journey_id \"\") (eq .journey .needle_journey_id) }}` | matched=\"true\" | label_format needle_flow_id=`${flow_id:percentencode}` | label_format needle_flow_id=`{{ urldecode .needle_flow_id }}` | label_format matched=`{{ or (eq .needle_flow_id \"\") (eq .event_data_flow_id .needle_flow_id) }}` | matched=\"true\" | label_format stored_ns=`ns:{{ __timestamp__ | unixEpochNanos }}` | label_format window_from=`{{ sub (unixEpochMillis (__timestamp__)) 300000 }}` | label_format window_to=`{{ add (unixEpochMillis (__timestamp__)) 300000 }}` | label_format activity=`{{ if .value }}{{ .value }}{{ else if .message }}{{ .message }}{{ else if .event_data_message }}{{ .event_data_message }}{{ else if .event_data_reason }}{{ .event_data_reason }}{{ else if .event_data_step }}{{ .event_data_step }}{{ else }}{{ .event_name }}{{ end }}` | label_format activity=`{{ regexReplaceAll \"(?s)\\n.*\" .activity \"\" | trim | trunc 240 }}` | keep timestamp, journey, swap, session_attr_connected_wallets, browser_name, stored_ns, window_from, window_to, session_id, kind",
@@ -1894,7 +1894,7 @@
         "kind": "Panel",
         "spec": {
           "id": 11,
-          "title": "Recorded traces \u00b7 open in Tempo",
+          "title": "Recorded traces - open in Tempo",
           "description": "Exact recorded trace IDs. Nearby errors are contextual; this does not prove they caused a request. Tempo retention is independent of Loki.",
           "links": [],
           "data": {
@@ -1911,7 +1911,7 @@
                       "group": "loki",
                       "version": "v0",
                       "datasource": {
-                        "name": "P8E80F9AEF21F6940"
+                        "name": "${DS_LOKI}"
                       },
                       "spec": {
                         "expr": "{source=\"faro\"} | logfmt | __error__=\"\" | label_format needle_application=`${application:percentencode}` | label_format needle_application=`{{ urldecode .needle_application }}` | label_format matched=`{{ (eq .app_name .needle_application) }}` | matched=\"true\" | label_format needle_release=`${release:percentencode}` | label_format needle_release=`{{ urldecode .needle_release }}` | label_format matched=`{{ or (eq .needle_release \"\") (eq .app_version .needle_release) }}` | matched=\"true\" | label_format deployment=`{{ if .page_attr_deployment_environment }}{{ .page_attr_deployment_environment }}{{ else }}unknown{{ end }}` | label_format needle_deployment=`${deployment:percentencode}` | label_format needle_deployment=`{{ urldecode .needle_deployment }}` | label_format matched=`{{ or (eq .needle_deployment \"\") (eq .deployment .needle_deployment) }}` | matched=\"true\" | label_format needle_session_id=`${session_id:percentencode}` | label_format needle_session_id=`{{ urldecode .needle_session_id }}` | label_format matched=`{{ (eq .session_id .needle_session_id) }}` | matched=\"true\" | session_id!=\"\" | label_format journey=`{{ if .event_data_journey_id }}{{ .event_data_journey_id }}{{ else }}{{ .session_attr_journey_id }}{{ end }}` | label_format swap=`{{ if .event_data_swap_id }}{{ .event_data_swap_id }}{{ else }}{{ .session_attr_swap_id }}{{ end }}` | label_format needle_journey_id=`${journey_id:percentencode}` | label_format needle_journey_id=`{{ urldecode .needle_journey_id }}` | label_format matched=`{{ or (eq .needle_journey_id \"\") (eq .journey .needle_journey_id) }}` | matched=\"true\" | label_format needle_flow_id=`${flow_id:percentencode}` | label_format needle_flow_id=`{{ urldecode .needle_flow_id }}` | label_format matched=`{{ or (eq .needle_flow_id \"\") (eq .event_data_flow_id .needle_flow_id) }}` | matched=\"true\" | traceID=~\"[a-fA-F0-9]{32}\" | label_format stored_ns=`ns:{{ __timestamp__ | unixEpochNanos }}` | label_format window_from=`{{ sub (unixEpochMillis (__timestamp__)) 300000 }}` | label_format window_to=`{{ add (unixEpochMillis (__timestamp__)) 300000 }}` | label_format activity=`{{ if .value }}{{ .value }}{{ else if .message }}{{ .message }}{{ else if .event_data_message }}{{ .event_data_message }}{{ else if .event_data_reason }}{{ .event_data_reason }}{{ else if .event_data_step }}{{ .event_data_step }}{{ else }}{{ .event_name }}{{ end }}` | label_format activity=`{{ regexReplaceAll \"(?s)\\n.*\" .activity \"\" | trim | trunc 240 }}` | keep timestamp, traceID, event_data_url_full, stored_ns, window_from, window_to, session_id, journey, kind",
@@ -2049,7 +2049,7 @@
                         "value": [
                           {
                             "title": "Open trace",
-                            "url": "/explore?schemaVersion=1&panes=%7B%22trace%22%3A%7B%22datasource%22%3A%22P214B5B846CF3925F%22%2C%22queries%22%3A%5B%7B%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22tempo%22%2C%22uid%22%3A%22P214B5B846CF3925F%22%7D%2C%22queryType%22%3A%22traceql%22%2C%22query%22%3A%22${__data.fields[\"traceID\"]:percentencode}%22%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22${__from}%22%2C%22to%22%3A%22${__to}%22%7D%7D%7D",
+                            "url": "/explore?schemaVersion=1&panes=%7B%22trace%22%3A%7B%22datasource%22%3A%22%24%7BDS_TEMPO%7D%22%2C%22queries%22%3A%5B%7B%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22tempo%22%2C%22uid%22%3A%22%24%7BDS_TEMPO%7D%22%7D%2C%22queryType%22%3A%22traceql%22%2C%22query%22%3A%22${__data.fields[\"traceID\"]:percentencode}%22%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22${__from}%22%2C%22to%22%3A%22${__to}%22%7D%7D%7D",
                             "targetBlank": false
                           }
                         ]
