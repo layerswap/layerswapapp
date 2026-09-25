@@ -1,0 +1,199 @@
+import type { SwapLifecycleEvent, SwapLifecycleObservationKey, SwapLifecycleStep, WidgetTelemetryEvent, WidgetTelemetryHandler, WidgetTelemetryAttributes, WidgetTelemetryData, WidgetFlowStep, WidgetOperation, WidgetOperationOutcome } from '@layerswap/widget-types'
+import { SWAP_LIFECYCLE_ATTEMPT_START_STEPS, createRandomId, lifecycleObservationFingerprint, lifecycleObservationKey } from '@layerswap/widget-types'
+
+type Attributes = WidgetTelemetryAttributes
+type Flow = {
+    id: string; started: number; attributes: Attributes; opened: boolean; engaged: boolean;
+    submitted: boolean; prompted: boolean; transferSubmitted: boolean; deposited: boolean; completed: boolean;
+    attempts: number; swapId?: string; validation?: string;
+    observations: Map<SwapLifecycleObservationKey, string>;
+}
+
+// Unlike host callbacks, the form flow also restarts on every submission.
+const ATTEMPT_START_STEPS = new Set<SwapLifecycleStep>(['form_submitted', ...SWAP_LIFECYCLE_ATTEMPT_START_STEPS])
+
+const id = createRandomId
+const now = () => globalThis.performance?.now() ?? Date.now()
+const resetJourney = (flow: Flow) => {
+    flow.prompted = false
+    flow.transferSubmitted = false
+    flow.deposited = false
+    flow.completed = false
+}
+
+type Registration = { handler?: WidgetTelemetryHandler; active: boolean }
+const isLive = (owner?: Registration): owner is Registration & { handler: WidgetTelemetryHandler } => !!owner?.active && !!owner.handler
+
+/** Removes an entry and returns the new top; a no-op for an entry that is already gone. */
+function removeEntry<T>(stack: T[], entry: T): T | undefined {
+    const index = stack.indexOf(entry)
+    if (index !== -1) stack.splice(index, 1)
+    return stack[stack.length - 1]
+}
+
+/** One live widget is enforced by LayerswapProvider. Kept factory-based for isolation tests. */
+export function createWidgetTelemetry(clock = now, wallClock = Date.now) {
+    // Stacks, like logStore.registerLogger: providers and forms can overlap during
+    // replacement, StrictMode replay or a second widget instance, and a cleanup
+    // must restore the previous owner instead of clearing a newer one.
+    const registrations: Registration[] = []
+    const mounts: { flow: Flow }[] = []
+    let registration: Registration | undefined
+    let flow: Flow | undefined
+    const emit = <Name extends keyof WidgetTelemetryData>(owner: Registration | undefined, name: Name, attributes: WidgetTelemetryData[Name]) => {
+        if (!isLive(owner)) return
+        // The keyed arguments preserve the name/payload relationship across the
+        // shared envelope; metadata cannot be overwritten by extra attributes.
+        try { owner.handler({ name, attributes: { ...attributes, schema_version: 1, event_id: id() } } as WidgetTelemetryEvent) }
+        catch { /* An optional analytics callback must never affect a wallet or API operation. */ }
+    }
+    const snapshot = (current = flow): Attributes => current ? {
+        ...current.attributes, flow_id: current.id, flow_started_ms: current.started,
+        flow_elapsed_ms: Math.max(0, wallClock() - current.started),
+        form_started: current.engaged, submitted: current.submitted, transfer_prompted: current.prompted,
+        transfer_submitted: current.transferSubmitted, deposit_observed: current.deposited,
+        completion_observed: current.completed, submission_count: current.attempts, swap_id: current.swapId,
+    } : {}
+    const progress = (step: WidgetFlowStep, extra: Attributes = {}) => emit(registration, 'widget_flow', { ...snapshot(), ...extra, step })
+    const open = () => {
+        if (!flow || flow.opened || !isLive(registration)) return
+        flow.opened = true
+        progress('form_viewed')
+    }
+    return {
+        /** A registration without a handler still owns the slot: it silences the ones below it. */
+        register(handler?: WidgetTelemetryHandler) {
+            if (registration) registration.active = false
+            const owner: Registration = { handler, active: true }
+            registrations.push(owner)
+            registration = owner
+            return () => {
+                const wasActive = registration === owner
+                owner.active = false
+                const top = removeEntry(registrations, owner)
+                if (!wasActive) return
+                registration = top
+                if (top) top.active = true
+            }
+        },
+        createFlow(attributes: Attributes): Flow {
+            return { id: id(), started: wallClock(), attributes, opened: false, engaged: false,
+                submitted: false, prompted: false, transferSubmitted: false, deposited: false, completed: false,
+                attempts: 0, observations: new Map() }
+        },
+        mount(current: Flow) {
+            const entry = { flow: current }
+            mounts.push(entry)
+            flow = current
+            // Parent registration and StrictMode layout-effect replay finish before this runs.
+            queueMicrotask(() => { if (flow === current) open() })
+            return () => { flow = removeEntry(mounts, entry)?.flow }
+        },
+        update(current: Flow, attributes: Attributes) { current.attributes = { ...attributes } },
+        interaction(action: string, trigger: string, inForm: boolean, attributes: Attributes = {}) {
+            open()
+            const alreadyEngaged = flow?.engaged
+            if (flow && inForm && !flow.engaged) {
+                flow.engaged = true
+                progress('form_started')
+                if (flow.validation) progress('validation_shown', { reason_code: flow.validation })
+            }
+            // Text editing starts a flow once. Never emit every keystroke, and
+            // never outside a mounted form (there is no flow to start).
+            if (action === 'form_edited' && (!flow || alreadyEngaged)) return
+            emit(registration, 'widget_interaction', { ...snapshot(), ...attributes, action, trigger })
+        },
+        validation(code?: string) {
+            if (!flow || flow.validation === code) return
+            flow.validation = code
+            if (flow.engaged && code) progress('validation_shown', { reason_code: code })
+        },
+        lifecycle(event: SwapLifecycleEvent) {
+            if (!flow || event.step === 'flow_error') return
+            if (event.step === 'swap_created' && !flow.submitted) return
+            // A revisited/late swap must not complete the currently edited form.
+            if (event.swapId && event.swapId !== flow.swapId && event.step !== 'swap_created') return
+            open()
+            if (ATTEMPT_START_STEPS.has(event.step)
+                || (event.step === 'swap_created' && event.swapId !== flow.swapId)) flow.observations.clear()
+
+            // The shared slot and fingerprint (@layerswap/widget-types
+            // lifecycleObservation) keep this funnel aligned with the host
+            // callback. Four slots stay with the form across StrictMode replay;
+            // the swap id scopes them because the flow outlives one swap.
+            const observationKey = lifecycleObservationKey(event)
+            if (observationKey && isLive(registration)) {
+                const fingerprint = JSON.stringify([event.swapId ?? flow.swapId, lifecycleObservationFingerprint(event)])
+                if (flow.observations.get(observationKey) === fingerprint) return
+                flow.observations.set(observationKey, fingerprint)
+            }
+            if (event.step === 'form_submitted') {
+                // The form stays mounted between swaps and retries use
+                // retry_requested, so every submission starts a new journey. It
+                // must not inherit the previous swap's id or transfer, deposit
+                // and completion observations, whether that swap finished or failed.
+                resetJourney(flow)
+                flow.swapId = undefined
+                flow.submitted = true
+                flow.attempts++
+            }
+            if (event.step === 'swap_created') {
+                // A different swap id is a new journey even without completion,
+                // e.g. a failed swap followed by a fresh submission.
+                if (flow.swapId && flow.swapId !== event.swapId) resetJourney(flow)
+                flow.swapId = event.swapId
+            }
+            if (event.step === 'wallet_prompt_opened') flow.prompted = true
+            if (event.step === 'transaction_submitted' || event.step === 'gasless_authorization_submitted') flow.transferSubmitted = true
+            if (event.step === 'input_transaction_detected' || event.step === 'input_transfer_confirmed') flow.deposited = true
+            if (event.step === 'swap_completed') flow.completed = true
+            progress(event.step, { outcome: event.outcome, reason_code: event.reasonCode, occurrence_id: event.occurrenceId })
+        },
+        beginOperation(operation: WidgetOperation, attributes: Attributes = {}) {
+            const owner = registration
+            if (!isLive(owner)) return (_outcome: WidgetOperationOutcome, _extra?: Attributes) => {}
+            const context = { ...snapshot(), ...attributes, operation, operation_id: id() }
+            const started = clock()
+            let finished = false
+            // Only completion is emitted: polling must not double the number of records.
+            return (outcome: WidgetOperationOutcome, extra: Attributes = {}) => {
+                if (finished) return
+                finished = true
+                emit(owner, 'widget_operation', {
+                    ...context, ...extra,
+                    operation: context.operation, operation_id: context.operation_id,
+                    outcome, duration_ms: Math.max(0, clock() - started),
+                })
+            }
+        },
+    }
+}
+
+export const widgetTelemetry = createWidgetTelemetry()
+
+export function startApiOperation(method: string, endpoint: string) {
+    const [path] = endpoint.split('?')
+    const operation = path === '/quote' ? 'quote_request' : path === '/detailed_quote' ? 'detailed_quote_request'
+        : path === '/limits' ? 'limits_request' : path === '/swaps' && method === 'POST' ? 'swap_creation'
+        : /^\/swaps\/[^/]+\/deposit_actions$/.test(path) ? 'deposit_actions' : undefined
+    if (!operation) return (_outcome: string, _extra?: Attributes) => {}
+    return widgetTelemetry.beginOperation(operation)
+}
+
+/** Activated controls only: native click also covers keyboard and touch activation. */
+export function captureWidgetInteraction(event: { target: EventTarget | null; type: string; nativeEvent?: { isTrusted?: boolean } }) {
+    if (event.nativeEvent?.isTrusted === false || typeof Element === 'undefined' || !(event.target instanceof Element)) return
+    const element = event.target.closest('[data-ls-action],[data-attr]')
+    if (element?.matches(':disabled,[aria-disabled="true"]')) return
+    const inForm = !!event.target.closest('[data-ls-form]')
+    const knownActions: Record<string, string> = {
+        'connect-wallet': 'connect_wallet', 'submit-swap': 'submit_swap', 'from-route-picker': 'open_source_picker',
+        'to-route-picker': 'open_destination_picker', 'from-cex-picker': 'open_exchange_picker',
+        'min-amount': 'set_min_amount', 'half-amount': 'set_half_amount', 'max-amount': 'set_max_amount',
+        'see-swap-details': 'toggle_fee_details', 'see-deposit-details': 'toggle_deposit_details',
+        'edit-slippage': 'edit_slippage', 'add-address': 'add_address', 'address-item': 'select_address',
+    }
+    const action = event.type === 'change' ? (inForm ? 'form_edited' : undefined)
+        : element?.getAttribute('data-ls-action') ?? knownActions[element?.getAttribute('data-attr') ?? '']
+    if (action && /^[a-z][a-z0-9_]{0,63}$/.test(action)) widgetTelemetry.interaction(action, event.type, inForm)
+}

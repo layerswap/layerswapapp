@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/widget",
-  "version": "2.1.0",
+  "version": "2.3.0",
   "description": "Streamline your asset transaction experience with Layerswap Widget across 60+ blockchains and 15+ exchanges.",
   "type": "module",
   "main": "dist/esm/index.js",
@@ -37,7 +37,8 @@
     "build:esm+types": "tsc --project tsconfig.json --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm && tsc-alias -p tsconfig.json --outDir ./dist/types",
     "check:types": "tsc --noEmit",
     "clean": "rimraf dist tsconfig.tsbuildinfo",
-    "dev": "tsc-watch -p tsconfig.json --outDir ./dist/esm --onSuccess \"tsc-alias -p tsconfig.json --outDir ./dist/esm\""
+    "dev": "tsc-watch -p tsconfig.json --outDir ./dist/esm --onSuccess \"tsc-alias -p tsconfig.json --outDir ./dist/esm\"",
+    "test": "pnpm build:esm+types && node --test tests/*.test.mjs"
   },
   "author": "Layerswap",
   "homepage": "https://github.com/layerswap/layerswapapp",
@@ -105,6 +106,7 @@
     "@types/react": "catalog:",
     "chromatic": "^6.24.1",
     "esbuild-plugin-path-alias": "^1.0.7",
+    "jsdom": "^30.0.1",
     "postcss": "^8.5.10",
     "postcss-cli": "^11.0.1",
     "postcss-prefixwrap": "^1.55.0",

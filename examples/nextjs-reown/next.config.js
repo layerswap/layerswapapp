@@ -5,7 +5,15 @@ const nextConfig = {
     config.externals.push('pino-pretty', 'lokijs', 'encoding')
     return config
   },
-  transpilePackages: ['@layerswap/widget', '@layerswap/wallet-evm'],
+  // Bundle the shared ESM packages, including their extensionless imports.
+  transpilePackages: [
+    '@layerswap/utils',
+    '@layerswap/wallet-core',
+    '@layerswap/ui-kit',
+    '@layerswap/widget-types',
+    '@layerswap/widget',
+    '@layerswap/wallet-evm',
+  ],
   reactStrictMode: true,
 }
 

@@ -1,4 +1,4 @@
-import { FC, useCallback } from 'react'
+import { FC, useCallback, useMemo } from 'react'
 import type { JSX } from 'react';
 import { useSwapDataState, useSwapDataUpdate } from '@/context/swap';
 import SwapSummary from './Summary';
@@ -23,6 +23,18 @@ import { RefreshBalanceButton } from '../Form/SecondaryComponents/validationErro
 import { AdjustAmountButton } from '../Form/SecondaryComponents/validationError/AdjustAmountButton';
 import { AnimatePresence, motion } from 'framer-motion';
 import { isDepositAddressSwap } from '@/helpers/swapFlow';
+import { lifecycleContextFromSwap } from '@/lib/swapLifecycle';
+import { useTransferBlocked } from '@/hooks/useTransferBlocked';
+import { type ObservedLifecycleEvent, useLifecycleObservation } from '@/hooks/useLifecycleObservation';
+
+// "Transfer screen shown": reported once while the screen is visible, before any swap exists.
+const AWAITING_WALLET_ACTION: ObservedLifecycleEvent = {
+    step: 'awaiting_wallet_action',
+    stage: 'wallet_action',
+    outcome: 'pending',
+    path: 'Withdraw',
+    action: 'send_from_wallet',
+}
 
 const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void, onCancelWithdrawal?: () => void, partner?: Partner }> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal, partner }) => {
     const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading, quoteError } = useSwapDataState()
@@ -37,6 +49,23 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
     const walletBalanceAmount = walletBalance?.amount
     const { gasData } = useSWRGas(selectedSourceAccount?.address, source_network, swapBasicData?.source_token, swapBasicData?.requested_amount)
     const { setFieldValue } = useFormikContext<SwapFormValues>()
+    const lifecycleContext = useMemo(
+        () => swapBasicData ? lifecycleContextFromSwap(swapBasicData, swapDetails) : undefined,
+        [
+            swapBasicData?.destination_address,
+            swapBasicData?.destination_network?.name,
+            swapBasicData?.destination_token?.symbol,
+            swapBasicData?.requested_amount,
+            swapBasicData?.source_network?.name,
+            swapBasicData?.source_token?.symbol,
+            swapBasicData?.use_deposit_address,
+            swapDetails?.id,
+            swapDetails?.source_address,
+        ],
+    )
+
+    // The swap id and source address arrive after creation; they enrich the report but never repeat it.
+    useLifecycleObservation(swapBasicData && !swapBasicData.use_deposit_address ? AWAITING_WALLET_ACTION : undefined, lifecycleContext)
 
     const handleEditAmount = useCallback(() => {
         if (walletBalanceAmount == null || !gasData?.gas || !swapBasicData) return
@@ -80,6 +109,11 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
         minAllowedAmount,
         maxAllowedAmount
     })
+    useTransferBlocked(
+        swapBasicData?.use_deposit_address === false && showInsufficientBalanceWarning ? 'insufficient_balance'
+        : swapBasicData?.use_deposit_address === false && outOfGas ? 'insufficient_gas'
+        : undefined,
+        lifecycleContext, 'Withdraw')
 
     if (swapBasicData?.use_deposit_address === false && showInsufficientBalanceWarning) {
         const balanceAmount = walletBalanceAmount !== undefined ? truncateDecimals(walletBalanceAmount, swapBasicData?.source_token?.precision) : undefined;

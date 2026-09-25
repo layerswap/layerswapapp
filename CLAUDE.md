@@ -23,7 +23,7 @@ NEXT_PUBLIC_LS_API=https://api-dev.layerswap.cloud/   # API base URL
 NEXT_PUBLIC_API_KEY=mainnet                            # "sandbox" for testnets
 ```
 
-Production uses `https://api.layerswap.io` with additional env vars for identity API, Immutable, WalletConnect, and PostHog (see `.env`).
+Production uses `https://api.layerswap.io` with additional env vars for identity API, Immutable, WalletConnect, and Grafana Faro (`NEXT_PUBLIC_FARO_*`, see `apps/bridge/README.md`).
 
 ## Architecture
 
@@ -38,7 +38,7 @@ Production uses `https://api.layerswap.io` with additional env vars for identity
 - **Pages Router** (not App Router) — routes are in `pages/`, SSR via `getServerSideProps`
 - **Hybrid state**: Zustand for persistent/global state (10 stores in `stores/`), React Context for component-tree-scoped state (13 contexts in `context/`)
 - **Multi-chain wallet abstraction**: `lib/wallets/` contains adapters for each chain type, unified through `WalletProvider` model and `walletStore`
-- **API client**: `lib/apiClients/layerSwapApiClient.ts` — Axios-based with auth interceptors, retry logic, and PostHog error tracking
+- **API client**: `lib/apiClients/layerSwapApiClient.ts` — Axios-based with auth interceptors and retry logic; failures are reported through the widget's `onError`, which the bridge sends to Grafana Faro
 - **SWR fallback pattern**: Server-fetched data is injected into SWR cache at page level, enabling instant renders with background revalidation
 - **Settings compression**: Large settings objects are compressed for SSR transfer (`helpers/settingsCompression.ts`)
 - **Path alias**: `@/*` maps to project root
@@ -49,7 +49,7 @@ Defined in `Models/Network.ts` as `NetworkType` enum: EVM, Starknet, Solana, Cos
 
 ### Key Entry Points
 
-- `pages/_app.js` — Root: SWRConfig, PostHog, Intercom providers
+- `pages/_app.js` — Root: SWRConfig, Faro view tracking, Intercom providers (Faro itself initializes in `instrumentation-client.ts`)
 - `pages/index.tsx` — Home: inflates settings, sets up SWR fallback, renders `<Layout>` + `<Swap>`
 - `components/layout.tsx` — Layout wrapper with settings/query/wallet providers
 - `components/swapComponent.tsx` — Main swap interface orchestrator
@@ -89,7 +89,7 @@ styles/         # Global CSS
 | Solana | @solana/web3.js, wallet-adapter-react |
 | Starknet | starknet v8, @starknet-react/core, starknetkit |
 | Other chains | @ton/ton, @tronweb3/*, @fuel-ts/*, @imtbl/sdk, @paradex/sdk |
-| Analytics | PostHog |
+| Observability | Grafana Faro (`@grafana/faro-web-sdk`, `faro-react`, `faro-web-tracing`), Vercel Analytics |
 
 ## Merge Safety
 

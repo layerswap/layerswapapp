@@ -8,6 +8,7 @@ import { ApiResponse, EmptyApiResponse } from "../../Models/ApiResponse";
 import { NetworkWithTokens, Network, Token } from "@layerswap/widget-types";
 import { Exchange } from "../../Models/Exchange";
 import { ErrorHandler } from "@/lib/ErrorHandler";
+import { startApiOperation } from '../widgetTelemetry';
 
 const IGNORED_API_ERROR_CODES = [
     'ROUTE_NOT_FOUND_ERROR',
@@ -72,12 +73,15 @@ export default class LayerSwapApiClient {
     }
 
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
+        const finishTelemetry = startApiOperation(method, endpoint)
         let uri = LayerSwapApiClient.apiBaseEndpoint + "/api/v2" + endpoint;
         return await this._authInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
             .then(res => {
+                finishTelemetry(res?.data?.error ? 'failed' : 'succeeded', { http_status: res?.status })
                 return res?.data;
             })
             .catch(async reason => {
+                finishTelemetry(reason?.code === 'ERR_CANCELED' ? 'cancelled' : 'failed', { http_status: reason?.response?.status })
                 if (reason instanceof AuthRefreshFailedError) {
                     return Promise.resolve(new EmptyApiResponse());
                 }
@@ -102,7 +106,9 @@ export default class LayerSwapApiClient {
                             message: error.message,
                             name: error.name,
                             stack: error.stack,
-                            cause: error.cause
+                            // Internal classification and recovery retain the original. The shared
+                            // reporting boundary owns identity and conversion to a public summary.
+                            cause: reason,
                         });
                     }
                     return Promise.reject(reason);
@@ -406,16 +412,6 @@ export enum WithdrawType {
     Stripe = 'stripe',
     Coinbase = 'coinbase',
     External = 'external'
-}
-
-export enum SwapStatusInNumbers {
-    Pending = 0,
-    Completed = 1,
-    Failed = 2,
-    Expired = 3,
-    Delayed = 4,
-    Cancelled = 5,
-    SwapsWithoutCancelledAndExpired = '0&status=1&status=2&status=3&status=4'
 }
 
 export type Campaign = {
