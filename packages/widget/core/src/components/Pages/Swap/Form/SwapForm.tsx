@@ -6,7 +6,6 @@ import type { SwapFormValues } from './SwapFormValues'
 import FormTelemetry from './FormTelemetry'
 
 /**
- * `form_mode` values are documented in packages/widget/react/README.md.
  * 'deposit-address' is the Swap page tab; deposit-widget-* is the standalone
  * Deposit widget (Pages/Deposit).
  */

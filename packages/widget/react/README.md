@@ -1,9 +1,8 @@
 # @layerswap/widget-react
 
-React loader that fetches the Layerswap widget at runtime from a CDN-hosted
-Module-Federation remote. The widget code and its heavy dependencies
-(framer-motion, radix, formik, swr, wallet adapters) **never enter your
-bundle** — your app installs only this thin loader.
+Embed the Layerswap swap or deposit widget in your React app. This package loads
+the widget from the Layerswap CDN, keeping wallet SDKs and widget dependencies
+out of your app's bundle.
 
 ## Install
 
@@ -11,12 +10,8 @@ bundle** — your app installs only this thin loader.
 pnpm add @layerswap/widget-react
 ```
 
-`react` and `react-dom` are required peer dependencies — they are the only
-libraries the loader shares with the remote (see "How it works"). `wagmi` is
-an **optional**, types-only peer: install it if you pass a `wagmiConfig`
-prop. Everything else the widget needs ships inside the CDN remote. Config
-and callback prop types are bundled with this package (re-exported from
-`@layerswap/widget-types`), so no extra package is needed for typed config.
+Requires React and React DOM 18 or 19. Install `wagmi` only if you want to pass
+your app's existing `wagmiConfig`. Config and callback types are included.
 
 ## Quick start
 
@@ -28,306 +23,182 @@ export function App() {
     <LayerswapWidget
       config={{ version: 'mainnet' }}
       fallback={<div>Loading widget…</div>}
-      onReady={() => console.log('widget mounted')}
-      onError={(e) => console.error(e)}
     />
   );
 }
 ```
 
-That's it — there is nothing to configure about the widget's source. It is
-always fetched from the canonical Layerswap CDN (rolling `v1` channel) baked
-into the package, with signature verification on. The manifest layer handles
-updates transparently, so integrators auto-receive forward-compatible builds
-without a redeploy and cannot repoint the widget at another origin.
-
-Works in the Next.js App Router out of the box: the component declares
-`"use client"`, renders `fallback` during server prerender/hydration, and
-only starts the browser-only loader after hydration — no `next/dynamic`
-wrapper needed.
-
-The npm package major selects the CDN protocol major:
-
-```text
-@layerswap/widget-react@1.x → /v1/manifest.json
-@layerswap/widget-react@2.x → /v2/manifest.json
-```
-
-Minor and patch widget builds roll forward within that major without an
-integrator redeploy. Exact CDN builds are not a public pinning API.
+- **Next.js:** Works with the App Router without a `next/dynamic` wrapper.
+  Put integrations that pass callbacks in a Client Component (`'use client'`).
+- **One widget per page:** Mount only one swap or deposit widget at a time.
+- **Automatic updates:** Widget updates within the package's major version load
+  from the fixed CDN source without redeploying your app. Exact build pinning is
+  not supported.
 
 ## Deposit widget
 
-`LayerswapDepositWidget` renders the deposit flow instead of the full swap
-form: you fix the destination (one network, its allowed tokens, and the
-recipient address) and the end user only picks a funding source. Delivered
-through the same verified manifest + Module Federation pipeline as
-`LayerswapWidget`, and it accepts all of the same props plus the
-deposit-specific ones (`DepositConfig` in `@layerswap/widget-types`).
+Use `LayerswapDepositWidget` to fund a fixed destination. You choose the network,
+supported tokens, and recipient address. Users choose where to send funds from.
 
 ```tsx
 import { LayerswapDepositWidget } from '@layerswap/widget-react';
 
-export function DepositPage() {
+export function DepositPage({ recipientAddress }: { recipientAddress: string }) {
   return (
     <LayerswapDepositWidget
       config={{ version: 'mainnet' }}
       destination={{ network: 'BASE_MAINNET', tokens: ['USDC'] }}
-      destinationAddress="0x…"
+      destinationAddress={recipientAddress}
       fallback={<div>Loading widget…</div>}
     />
   );
 }
 ```
 
-Only one Layerswap widget (of either kind) may be live per page — the widget
-keeps process-global state. Vanilla hosts use `mountDepositWidget` from
-`@layerswap/widget-js` the same way they use `mountWidget`.
+Pass a valid recipient address for the destination network. Both destination
+props are required. The deposit widget accepts the common props below, plus
+options such as `mode="button"` and `methods={['wallet', 'deposit_address']}`.
+Import `DepositConfig` for the full set of deposit options.
 
-## Reusing the host's wagmi config
+## Use your existing wagmi config
 
-If your app already runs wagmi, pass its `Config` to the widget so EVM
-state (account, chain, signer) is shared:
+Pass your app's wagmi config to share its connected EVM account and chain:
 
 ```tsx
-import { WagmiProvider } from 'wagmi';
+'use client';
+
 import { LayerswapWidget } from '@layerswap/widget-react';
 import { wagmiConfig } from './wagmi';
 
-function App() {
+export function SwapWidget() {
+  return <LayerswapWidget wagmiConfig={wagmiConfig} />;
+}
+```
+
+Use the config your app already provides to `WagmiProvider`. The widget adds
+supported EVM chains that are missing from it and preserves your existing chain
+order and transports.
+
+If the same wallet appears twice after a refresh, check whether your wagmi config
+combines a bare `injected()` connector with EIP-6963 discovery. The
+[example host](../../../examples/widget-react-host/src/wagmi.ts) relies on
+discovery without adding a bare `injected()` connector.
+
+## Props
+
+All common props are optional. Types can be imported from `@layerswap/widget-react`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `config` | `WidgetConfig` | API key, network version, theme, initial values, and settings. |
+| `callbacks` | `WidgetCallbacks` | Widget errors, telemetry, and swap events. |
+| `wagmiConfig` | `wagmi/Config` | Share your app's EVM wallet connection. |
+| `walletDefaults` | `WalletDefaults` | Configure WalletConnect, TON, and Immutable Passport. |
+| `walletProvidersConfig.include` | `WalletProviderId[]` | Use only these wallet providers, e.g. `['evm', 'solana']`. |
+| `walletProvidersConfig.exclude` | `WalletProviderId[]` | Remove providers after applying `include`. |
+| `fallback` | `ReactNode` | Content shown during loading or after an outer render failure. |
+| `onReady` | `() => void` | Called once when the widget mounts. |
+| `onError` | `(error: unknown) => void` | Load failures and errors caught by the outer render boundary. |
+
+## Logging and events
+
+Pass callback functions to connect your logging or analytics service. The widget
+handles registration; you can forward each payload without handling every event
+individually.
+
+| Callback | Use it for |
+|---|---|
+| Top-level `onError` | CDN loading failures and outer render errors. |
+| `callbacks.onError` | Errors and diagnostics reported inside the widget. |
+| `callbacks.onTelemetry` | Flow progress, interactions, and operation outcomes/timings. |
+| `callbacks.onSwapLifecycle` | Detailed journey events, including wallet prompts and retries. |
+| `callbacks.onSwapStatusChange` | Observed backend swap status changes. |
+| `callbacks.onSwapCreate` / `onSwapComplete` | Responding to swap creation or completion. |
+
+```tsx
+'use client';
+
+import {
+  LayerswapWidget,
+  type WidgetCallbacks,
+} from '@layerswap/widget-react';
+
+const callbacks: WidgetCallbacks = {
+  onError(report) {
+    console.error('[widget error]', report);
+  },
+  onTelemetry({ name, attributes }) {
+    console.info(name, attributes);
+  },
+};
+
+export function App() {
   return (
-    <WagmiProvider config={wagmiConfig}>
-      <QueryClientProvider client={queryClient}>
-        <LayerswapWidget
-          wagmiConfig={wagmiConfig}
-          config={{ version: 'mainnet' }}
-        />
-      </QueryClientProvider>
-    </WagmiProvider>
+    <LayerswapWidget
+      config={{ version: 'mainnet' }}
+      callbacks={callbacks}
+      onError={(error) => console.error('[widget load/render error]', error)}
+    />
   );
 }
 ```
 
-The widget's EVM wallet provider adopts the host's `Config` via
-`createEVMProvider({ wagmiConfig })` and subscribes to its store. No
-nested `<WagmiProvider>`, no second connect flow — the widget reads the
-host's connected account/chain through the same `Config` instance.
+Replace the console calls with your logging SDK. Widget error reports are plain
+objects with a message, type, and available diagnostics. They contain sanitized
+error summaries, not raw provider errors, request bodies, or headers. An SDK that
+requires an `Error` object needs a small conversion. Without `callbacks.onError`,
+widget reports go to the console. Telemetry is opt-in.
 
-You only need to declare the chains **your own app** uses — the widget
-appends every Layerswap-supported EVM chain (with its transports) to the
-adopted config at init, so network switching and transfers work on chains
-you didn't list. Your chain order is preserved, and your transports win
-for chains you did configure.
+`onSwapStatusChange` reports observed transitions into `ls_transfer_pending`,
+`completed`, `failed`, and `expired`. Opening an existing swap establishes a
+silent baseline; swaps created in the widget may report their first eligible
+status. Unchanged statuses are not repeated on wallet retries or modal remounts.
+Use `onSwapLifecycle` for UI progress, wallet actions, and refund phases.
 
-**Gotcha:** wagmi v2 defaults `multiInjectedProviderDiscovery: true`,
-which auto-registers an EIP-6963 connector for every announced injected
-provider alongside any bare connector you declared. With both an
-`injected()` and the auto-discovered MetaMask connector active,
-`reconnect()` restores both against the same wallet on refresh — the
-widget then shows the same physical wallet twice. Either:
+Telemetry and lifecycle events overlap, so you usually only need telemetry for
+analytics. Recognized wallet rejections are lifecycle outcomes, not error reports.
+Callbacks are not awaited; handle rejected promises inside asynchronous logging
+code.
 
-- Set `multiInjectedProviderDiscovery: false` if you intend a single
-  declared connector, or
-- Drop the bare `injected()` and rely on the discovered connectors.
+## Loading and troubleshooting
 
-## Props
+The widget runs in your page's JavaScript context. Its manifest signature is
+verified automatically using a key shipped with the loader; the CDN source and
+verification policy cannot be overridden through props.
 
-The widget's source (manifest URL + signature verification) is **not**
-configurable — it is baked into the package. The props below are all about the
-widget's behavior, not where it comes from.
+Top-level `onError` can receive a `ManifestError`, exported from
+`@layerswap/widget-react`. Its `reason` identifies the failure:
 
-| Prop | Type | Description |
-|---|---|---|
-| `config` | `WidgetConfig` (from `@layerswap/widget-types`, re-exported here) | Forwarded to the widget's `LayerswapProvider`. Includes `apiKey`, `version`, `theme`, `initialValues`, `settings`. |
-| `callbacks` | `WidgetCallbacks` | `onSwapCreate`, `onSwapComplete`, `onSwapLifecycle`, `onError`, `onSwapModalStateChange`, etc. `onSwapLifecycle` reports semantic steps, outcomes, and reason codes for journey observability. |
-| `wagmiConfig` | `wagmi/Config` | Host wagmi config the widget adopts for EVM. |
-| `walletDefaults` | `WalletDefaults` | `walletConnect` (projectId, etc.), `ton`, `immutablePassport`. |
-| `walletProvidersConfig.include` | `WalletProviderId[]` | Allowlist — keep only these chains, e.g. `['evm', 'solana']`. Applied before `exclude`. |
-| `walletProvidersConfig.exclude` | `WalletProviderId[]` | Blocklist — drop chains from the provider list — `['tron', 'fuel']`, etc. |
-| `fallback` | `ReactNode` | Shown while loading. |
-| `onReady` | `() => void` | Fires once the widget mounts. |
-| `onError` | `(err) => void` | Fires on load/render failure; receives a `ManifestError` for manifest issues. |
-
-`callbacks.onSwapStatusChange` reports observed backend transitions into
-`ls_transfer_pending`, `completed`, `failed`, and `expired`. Every backend
-status establishes history before this notification filter is applied.
-Opening an existing swap establishes a silent baseline; a subsequent change
-is reported, including `user_transfer_pending` directly to `completed`.
-A swap explicitly created in the widget may report its first status.
-Address/route enrichment, callback replacement, wallet retries and modal
-remounts do not repeat an unchanged status. History is scoped to the widget
-provider and bounded to the 64 most recently observed swaps; an evicted or
-newly loaded swap starts with a fresh baseline. UI phase changes, including
-early completion and local input failures, remain on `onSwapLifecycle`.
-
-`callbacks.onError` receives data-only diagnostics. `cause` is an
-`ErrorSummary` with optional name, message, stack, code, HTTP status, method,
-URL and a bounded cause summary. `responseData` / `response_data` contain
-only server error codes/messages; unknown response fields, request bodies,
-headers, and provider objects are omitted. Diagnostic URLs never include
-query, fragment or userinfo. Layerswap API routes (`endpoint`, `requestUrl`)
-keep their path; RPC/provider URLs (`node_url`, `nodes`, `request_url`,
-`cause.url` and URLs inside messages) keep only scheme and host, because
-providers often put API keys in the path. Stack-frame locations keep their
-path. `occurrenceId` links reports of the same original
-failure. Custom adapters may still pass original errors to `ErrorHandler`;
-classification runs before the shared reporting boundary constructs the
-public report. Recovery code continues to receive the original thrown error.
-Hosts that inspected raw Axios/provider objects must migrate to these summary
-fields. Failed-token diagnostics use the same response policy.
-
-`callbacks.onSwapLifecycle` delivers phase and transaction observations once
-per meaningful transition. Confirmation counts, context enrichment, and React
-effect replay do not duplicate them. New transactions, phase recovery, and
-user actions (including every wallet prompt and retry) remain observable.
-`awaiting_wallet_action` is reported when the transfer screen is shown; for a
-swap created from the transfer button this precedes `swap_created` and carries
-no `swapId` (take the id from `swap_created`). A later id, address or
-confirmation count never repeats a phase step, and a rejected or failed attempt
-is reported by its own step rather than by repeating the awaiting phase.
-Reopening the swap, returning to the form, or submitting a new form resets
-lifecycle observation deduplication. Backend status history is preserved. Wallet transfer cancellations declared by the
-adapter (`userRejectedError` from `@layerswap/wallet-core/errors`) use
-`wallet_action_rejected` with `reasonCode: 'user_rejected'`; they no longer
-invoke `callbacks.onError`. A custom `TransferProvider` that only sets
-`name = 'TransactionRejected'` shows the rejected copy but is reported as a
-failure through `callbacks.onError` and `wallet_action_failed`.
-
-`callbacks.onTelemetry` is an optional, vendor-neutral analytics stream. Each
-event is `{ name, attributes }`, discriminated by `name`:
-
-| `name` | Event-specific attributes |
+| Reason | Meaning |
 |---|---|
-| `widget_flow` | `step` (any `onSwapLifecycle` step, plus `form_viewed`, `form_started`, `validation_shown`), optional `outcome`, `reason_code` |
-| `widget_interaction` | `action`, `trigger` |
-| `widget_operation` | `operation` (e.g. `quote_request`, `swap_creation`, `balance_fetch`, `wallet_transfer`), `operation_id`, `outcome`, `duration_ms` |
+| `fetch` | The manifest request failed because of a network or CORS issue, or returned an unsuccessful HTTP status. |
+| `parse` | The manifest is invalid JSON or is missing required fields. |
+| `signature` | The manifest signature is missing, invalid, or could not be verified. |
+| `kill-switch` | Layerswap has disabled loading through the manifest. |
+| `stale` | The manifest has expired or lacks a valid expiry; Layerswap must republish the channel. |
+| `incompatible` | The manifest protocol major does not match the loader. |
 
-Every event carries `schema_version: 1` and a unique `event_id`; all other
-attributes are primitives (`string | number | boolean`), never DOM text or
-provider response bodies. A handler that throws is ignored and never affects
-the swap. `widget_flow` events carry journey context (`flow_id`, `swap_id`,
-`submission_count`, progress flags) and deduplicate repeated phase and
-transaction observations the same way `onSwapLifecycle` does; a new journey
-starts on every `form_submitted`. Form text editing reports `form_started`
-once rather than an interaction per keystroke.
+For transient loading failures, remount the widget to retry after the underlying
+issue clears. The `fallback` remains visible after an outer render failure;
+use top-level `onError` to show an appropriate error or retry state.
 
-`widget_flow` is emitted only while a widget form is mounted; every such event
-carries `form_mode`, which names the form that owns the journey:
+## Content Security Policy
 
-| `form_mode` | Surface |
-|---|---|
-| `cross-chain` | Swap widget, network-to-network tab |
-| `exchange` | Swap widget, exchange tab |
-| `deposit-address` | Swap widget, deposit-address tab |
-| `deposit-widget-address` | Deposit widget, "Deposit address" (transfer crypto) method |
-| `deposit-widget-wallet` | Deposit widget, "Wallet" method |
+If your app uses a CSP, allow the widget CDN in `script-src` and `connect-src`,
+and allow the API, wallet, and RPC endpoints your integration uses in
+`connect-src`. This release loads from
+`https://cdn.layerswap.io`. Widget styles currently require
+`'unsafe-inline'` in `style-src`.
 
-The deposit widget emits `form_submitted` on `onSwapLifecycle` with `action`
-`auto` for the deposit-address method (including a prefetched swap that is
-handed over at mount, reported with `path: 'DepositPrefetchProvider'`) and
-`continue` for the wallet method, so `submission_count` counts swap creation
-attempts, not clicks. The `form_edited` interaction is never emitted outside a
-mounted form.
+Include `https://layerswap.io` in `connect-src`: the widget fetches extended-route
+flags from `/app/api/flags`, and Polymarket withdrawals use
+`/app/api/polymarket/relay`. Also allow the WalletConnect and chain RPC endpoints
+used by your enabled providers, including any custom wagmi transports.
 
-```tsx
-import type { WidgetTelemetryEvent } from '@layerswap/widget-react';
+## Further reading
 
-const onTelemetry = (event: WidgetTelemetryEvent) => {
-  if (event.name === 'widget_operation') {
-    analytics.track(event.attributes.operation, {
-      outcome: event.attributes.outcome,
-      durationMs: event.attributes.duration_ms,
-    });
-  }
-};
-```
+- [Layerswap documentation](https://docs.layerswap.io): integration guides and reference documentation.
+- [Example React host](../../../examples/widget-react-host/): a runnable Vite integration.
 
-These contracts also apply to `@layerswap/widget-js` and CDN consumers.
-
-## How it works
-
-1. `<LayerswapWidget>` fetches `manifest.json` from the CDN channel URL
-   baked into `@layerswap/widget-js`.
-2. If `manifest.killSwitch === true`, refuses to load and fires
-   `onError` with `ManifestError('kill-switch')`.
-3. Verifies a detached ECDSA P-256 signature on the manifest body against
-   the public key baked into this package. Tampered / unsigned manifests
-   are rejected.
-4. Calls `@module-federation/runtime` to load `manifest.remoteEntry`
-   (resolved relative to the manifest URL). React and react-dom are
-   registered into the MF shared scope from the host as singletons
-   (React 18/19 required) so the remote reuses the host's instances.
-   Everything else (wagmi, viem, react-query, zustand, wallet SDKs)
-   is bundled inside the remote.
-5. The remote's exposed `./Widget` component is rendered via
-   `React.lazy` inside the host's React tree.
-
-Heavy deps stay in the remote bundle on the CDN. Your bundle shrinks
-accordingly.
-
-## Recommended Content Security Policy
-
-The widget is served from the fixed origin baked into this package release —
-currently `https://layerswapcdntest.blob.core.windows.net` (the
-`WIDGET_MANIFEST_URL` in `@layerswap/widget-js`; if a future release moves
-to a custom domain such as `cdn.layerswap.io`, this section moves with it).
-A tight CSP that allowlists exactly that origin plus the LayerSwap endpoints
-gives integrators the smallest blast radius if the supply chain is ever
-compromised:
-
-```
-Content-Security-Policy:
-  default-src 'self';
-  script-src   'self' https://layerswapcdntest.blob.core.windows.net;
-  connect-src  'self' https://layerswapcdntest.blob.core.windows.net
-               https://api.layerswap.io https://layerswap.io
-               https://*.walletconnect.com https://*.walletconnect.org;
-  style-src    'self' 'unsafe-inline';
-  img-src      'self' data: https:;
-  font-src     'self' data:;
-  frame-src    'self';
-```
-
-Notes:
-- The CDN origin appears in both `script-src` (remoteEntry + chunks) and
-  `connect-src` (manifest fetch).
-- `https://layerswap.io` in `connect-src` covers the extended-route feature
-  flags endpoint (`/app/api/flags`) and the Polymarket relayer proxy
-  (`/app/api/polymarket/relay`) — without it those routes are disabled or
-  fail at withdrawal time.
-- `'unsafe-inline'` for `style-src` is required because the widget injects
-  styles via `style-loader` at runtime. Removing this requires a build
-  change in `apps/widget-cdn`.
-- `connect-src` includes WalletConnect relays — without them, WC v2
-  connections fail.
-- Add any additional RPC endpoints your wagmi `transports` use, plus the
-  default public RPC endpoints of the chains you enable.
-
-## Failure modes
-
-| Symptom | `onError` payload | Cause |
-|---|---|---|
-| Widget never mounts, error in console | `TypeError: fetch` etc. | Manifest URL unreachable / CORS misconfigured on the CDN. |
-| Widget never mounts | `ManifestError('parse')` | Manifest JSON missing `remoteEntry` field. |
-| Widget never mounts | `ManifestError('kill-switch')` | Operational kill-switch set on the manifest. |
-| Widget never mounts | `ManifestError('signature')` | Manifest has no/invalid signature (verification is always on). |
-| Widget never mounts | `ManifestError('stale')` | Manifest expired (or carries no validity window) — replay protection refuses possibly-rolled-back builds. Layerswap re-publishing the channel resolves it. |
-| Widget never mounts | `ManifestError('incompatible')` | Manifest protocol major does not match this loader package major. |
-| Widget loads but errors at render | Component-level | Catch via `callbacks.onError`. |
-
-## Local development
-
-The widget source and signature verification policy are owned entirely by
-`@layerswap/widget-js`. They cannot be changed through props, environment
-variables, or globals. The runnable Vite host in
-`examples/widget-react-host/` therefore exercises the same signed production
-channel as an integrator.
-
-## Security model
-
-In-page CDN delivery means the widget's code runs in your host's
-context. Trust is rooted in **the signing key baked into this package**
-(see `src/manifest.ts`). Rotating the production key requires a new
-`@layerswap/widget-react` release; integrators with SRI-pinned installs
-upgrade by bumping the package version. The CDN itself does not sign
-anything — it just hosts the artifact and the manifest.
+For vanilla JavaScript, use `mountWidget` or `mountDepositWidget` from
+`@layerswap/widget-js`. They accept the same widget callbacks.
