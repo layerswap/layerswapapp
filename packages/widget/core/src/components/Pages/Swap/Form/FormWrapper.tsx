@@ -1,4 +1,3 @@
-import { Formik } from "formik";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useSettingsState } from "@/context/settings";
 import { UpdateSwapInterface, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
@@ -29,6 +28,9 @@ import UrlAddressNote from "@/components/Input/Address/UrlAddressNote";
 import { Address } from "@/lib/address/Address";
 import ContractAddressValidationCache, { ContractSourceAddressValidationCache } from "./SecondaryComponents/validationError/ContractAddressValidationCache";
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
+import { lifecycleContextFromForm, lifecycleContextFromSwap, resolveFlowClosedEvent } from "@/lib/swapLifecycle";
+import { useResolvedSwapStatus } from "@/hooks/useResolvedSwapStatus";
+import SwapForm, { type SwapFormMode } from './SwapForm';
 const SwapDetails = lazy(() => import("../Withdraw/SwapDetails"))
 
 type NetworkToConnect = {
@@ -36,7 +38,10 @@ type NetworkToConnect = {
     AppURL: string;
 }
 
-export default function FormWrapper({ children, type, partner }: { children?: React.ReactNode, type: 'cross-chain' | 'exchange' | 'deposit-address', partner?: Partner }) {
+/** The Swap page tabs. The standalone Deposit widget owns the deposit-widget-* modes. */
+type SwapPageFormMode = Extract<SwapFormMode, 'cross-chain' | 'exchange' | 'deposit-address'>
+
+export default function FormWrapper({ children, type, partner }: { children?: React.ReactNode, type: SwapPageFormMode, partner?: Partner }) {
 
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
     const [isAddressFromQueryConfirmed, setIsAddressFromQueryConfirmed] = useState(false);
@@ -45,6 +50,9 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
     const settings = useSettingsState();
     const { swapBasicData, swapDetails, swapModalOpen } = useSwapDataState()
+    // The same resolved status object the Processing panel renders ("Transfer complete",
+    // "Transfer failed"); it can lead the API status, so flow_closed reports from it.
+    const resolved = useResolvedSwapStatus()
     const sourceNetworkWithTokens = settings.networks.find(n => n.name === swapBasicData?.source_network.name)
     const { getProvider } = useWallet(sourceNetworkWithTokens, "withdrawal")
     const { wallets: allConnectedWallets } = useWallet()
@@ -58,7 +66,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
     const [walletWihdrawDone, setWalletWihdrawDone] = useState(false);
     const selectedSourceAccount = useSelectedAccount("from", swapBasicData?.source_network?.name);
     const { mutate: mutateBalances } = useBalance(selectedSourceAccount?.address, sourceNetworkWithTokens)
-    const { onSwapModalStateChange } = useCallbacks()
+    const { onSwapLifecycle, onSwapModalStateChange } = useCallbacks()
     const { getConfirmation } = useAsyncModal();
     const initialSettings = useInitialSettings()
     const { destination_address: destinationAddressFromQuery } = initialSettings
@@ -68,6 +76,9 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
     const { setConfirmed, isConfirmed, checkContractStatus } = useContractAddressStore();
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
+        // form_submitted is emitted by SwapForm before this runs.
+        const lifecycleContext = lifecycleContextFromForm(values)
+
         setSwapError && setSwapError(null)
         useGaslessPreferenceStore.getState().clearGaslessUnavailable()
         const { destination_address, to } = values
@@ -93,6 +104,14 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                 setIsAddressFromQueryConfirmed(true)
             }
             else if (!confirmed) {
+                onSwapLifecycle({
+                    step: 'form_confirmation_cancelled',
+                    stage: 'form',
+                    outcome: 'cancelled',
+                    path: 'DestinationAddressConfirmation',
+                    reasonCode: 'destination_address_confirmation_cancelled',
+                    ...lifecycleContext,
+                })
                 return;
             }
         }
@@ -118,6 +137,14 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                     if (confirmed && dontShowContractWarningRef.current) {
                         setConfirmed(destination_address, values.to.name);
                     } else if (!confirmed) {
+                        onSwapLifecycle({
+                            step: 'form_confirmation_cancelled',
+                            stage: 'form',
+                            outcome: 'cancelled',
+                            path: 'ContractAddressConfirmation',
+                            reasonCode: 'contract_address_confirmation_cancelled',
+                            ...lifecycleContext,
+                        })
                         return;
                     }
                 }
@@ -144,7 +171,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
         catch (error) {
             setSwapError && setSwapError(error?.message || 'Could not create swap')
         }
-    }, [createSwap, initialSettings, partner, swapBasicData, getProvider, settings, type, setSwapError])
+    }, [createSwap, initialSettings, partner, swapBasicData, getProvider, settings, type, setSwapError, onSwapLifecycle])
 
     // Formik has no `enableReinitialize`, so this is read once at mount — memoize
     // to keep post-mount re-renders (wallet events, balance revalidation) from
@@ -158,16 +185,28 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
         setSwapModalOpen(value)
         onSwapModalStateChange(value)
         if (!value) {
+            if (swapBasicData) {
+                // Synchronous, after onSwapModalStateChange(false): the host's close handler
+                // defers its cleanup so this event keeps its journey context.
+                onSwapLifecycle({
+                    ...resolveFlowClosedEvent(resolved, swapDetails),
+                    path: 'SwapModal',
+                    status: swapDetails?.status,
+                    ...lifecycleContextFromSwap(swapBasicData, swapDetails),
+                })
+            }
             if (walletWihdrawDone) {
                 mutateBalances()
                 setWalletWihdrawDone(false)
             }
         }
-    }, [swapDetails, walletWihdrawDone, mutateBalances])
+    }, [swapBasicData, swapDetails, resolved, walletWihdrawDone, mutateBalances, onSwapLifecycle, onSwapModalStateChange, setSwapModalOpen])
 
 
     return <>
-        <Formik
+        <SwapForm
+            mode={type}
+            submitPath="SwapForm"
             initialValues={initialValues}
             validateOnMount={true}
             onSubmit={handleSubmit}
@@ -220,7 +259,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                 </>
             )
             }
-        </Formik >
+        </SwapForm>
     </>
 }
 
@@ -235,7 +274,7 @@ type SubmitProps = {
     setShowSwapModal: (value: boolean) => void;
     setNetworkToConnect: (value: NetworkToConnect) => void;
     setShowConnectNetworkModal: (value: boolean) => void;
-    type: 'cross-chain' | 'exchange' | 'deposit-address';
+    type: SwapPageFormMode;
 }
 
 const handleCreateSwap = async ({ query, values, partner, setShowSwapModal, createSwap, setNetworkToConnect, setShowConnectNetworkModal, setSwapId, setSubmitedFormValues, type }: SubmitProps) => {
