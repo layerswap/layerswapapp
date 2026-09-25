@@ -16,7 +16,8 @@ import { useGaslessAuthorizationStatus } from '@/hooks/useGaslessAuthorizationSt
 import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
 import { useSwapRetry } from '@/hooks/useSwapRetry';
 import type { JSX } from 'react';
-import { FC } from 'react';
+import { FC, useCallback } from 'react';
+import { lifecycleContextFromSwap } from '@/lib/swapLifecycle';
 import ManualWithdraw from './ManualWithdraw';
 import { RetryView } from './Presentation/RetryView';
 import Processing from './Processing';
@@ -45,7 +46,7 @@ const SwapDetails: FC<Props> = ({
         quoteError,
         swapId,
     } = useSwapDataState();
-    const { onBackClick } = useCallbacks();
+    const { onBackClick, onSwapLifecycle } = useCallbacks();
     const isGaslessActive = useIsGaslessActive(swapBasicData);
 
     // Polls the gasless deposit (paymaster) authorization while it's in flight; self-gates on
@@ -61,6 +62,34 @@ const SwapDetails: FC<Props> = ({
         canSwitchToStandard,
         switchToStandard,
     } = useSwapRetry();
+
+    const handleRetry = useCallback(() => {
+        if (swapBasicData) {
+            onSwapLifecycle({
+                step: 'retry_requested',
+                stage: 'swap',
+                outcome: 'started',
+                path: 'SwapDetails',
+                reasonCode: failureReason || 'swap_retry',
+                ...lifecycleContextFromSwap(swapBasicData, swapDetails),
+            })
+        }
+        retry()
+    }, [failureReason, onSwapLifecycle, retry, swapBasicData, swapDetails])
+
+    const handleSwitchToStandard = useCallback(() => {
+        if (swapBasicData) {
+            onSwapLifecycle({
+                step: 'retry_requested',
+                stage: 'swap',
+                outcome: 'started',
+                path: 'SwapDetails',
+                reasonCode: 'switch_to_standard_transfer',
+                ...lifecycleContextFromSwap(swapBasicData, swapDetails),
+            })
+        }
+        switchToStandard()
+    }, [onSwapLifecycle, swapBasicData, swapDetails, switchToStandard])
 
     if (!swapBasicData) return <SwapDetailsSceleton />;
 
@@ -130,14 +159,13 @@ const SwapDetails: FC<Props> = ({
                             canRetry && (
                                 <RetryView
                                     canSwitchToStandard={canSwitchToStandard}
-                                    onRetry={retry}
-                                    onSwitchToStandard={switchToStandard}
+                                    onRetry={handleRetry}
+                                    onSwitchToStandard={handleSwitchToStandard}
                                 />
                             )
                         }
                     >
                         <Processing
-                            failureReason={failureReason}
                             inputFailureMessage={gaslessFailureMessage}
                         />
                     </ProcessingSectionView>

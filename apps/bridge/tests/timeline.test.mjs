@@ -198,11 +198,11 @@ const phase = (s) =>
         refuel: s.refuel,
         storedWalletTransaction: s.storedWalletTransaction,
         inputTxStatusFromApi: s.inputTxStatusFromApi,
-        gaslessAuthorizationFailed: [
+        gaslessFailureStatus: [
             'expired',
             'insufficient',
             'rejected',
-        ].includes(s.gaslessAuthorization?.status),
+        ].includes(s.gaslessAuthorization?.status) ? s.gaslessAuthorization.status : undefined,
         isDepositFlow: s.isDepositFlow,
     });
 

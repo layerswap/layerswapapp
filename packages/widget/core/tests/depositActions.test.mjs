@@ -22,7 +22,8 @@ function loadSource(path, imports = {}) {
 }
 
 const walletTypes = loadSource('../../types/src/actionMessage.ts')
-const rejection = loadSource(`${walletPath}isUserRejection.ts`, { '@layerswap/widget-types': walletTypes })
+const walletErrors = loadSource('../../../wallets/core/src/lib/walletErrors.ts', { '@layerswap/widget-types': walletTypes })
+const rejection = loadSource(`${walletPath}isUserRejection.ts`, { '@layerswap/wallet-core/errors': walletErrors })
 const gasless = loadSource('../src/helpers/gasless.ts')
 const depositActions = loadSource('../src/helpers/depositActions.ts')
 const progressTypes = loadSource('../src/components/Pages/Swap/Withdraw/Processing/types.ts')
@@ -36,7 +37,7 @@ const actionsFor = nonce => [
 ]
 
 function createWorkflow() {
-    const calls = { refresh: [], sign: [], authorize: [], transfer: [], storedTransactions: [], errors: [], success: 0 }
+    const calls = { refresh: [], sign: [], authorize: [], transfer: [], storedTransactions: [], errors: [], lifecycle: [], success: 0 }
     const state = {
         apiActions: actionsFor('fresh'),
         refreshError: undefined,
@@ -79,6 +80,10 @@ function createWorkflow() {
         SwapCatchup: async () => {},
     }
     const apiModule = { default: class { constructor() { return api } }, BackendTransactionStatus: { Pending: 'pending' } }
+    const lifecycle = { lifecycleContextFromSwap: () => ({}), lifecycleErrorDetails: () => ({}) }
+    const { executeWalletOperation } = loadSource(`${walletPath}executeWalletOperation.ts`, {
+        '@/lib/swapLifecycle': lifecycle, './isUserRejection': rejection,
+    })
     const execution = loadSource(`${walletPath}depositExecution.ts`, {
         '@layerswap/widget-types': walletTypes,
         '@/lib/apiClients/layerSwapApiClient': apiModule,
@@ -86,6 +91,9 @@ function createWorkflow() {
         '@/stores/gaslessPreferenceStore': preferenceStore,
         './isUserRejection': rejection,
         '@/helpers/depositActions': depositActions,
+        '@/lib/swapLifecycle': lifecycle,
+        '@/lib/widgetTelemetry': { widgetTelemetry: { beginOperation: () => () => {} } },
+        './executeWalletOperation': { executeWalletOperation },
         '@/lib/ErrorHandler': { ErrorHandler: error => calls.errors.push(error) },
     })
 
@@ -128,6 +136,9 @@ function createWorkflow() {
         '../messages/Message': { default: noop },
     })
     const { SendTransactionButton, ButtonWrapper } = loadSource(`${walletPath}buttons.tsx`, {
+        '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: event => calls.lifecycle.push(event) }) },
+        '@/lib/swapLifecycle': lifecycle,
+        '@/hooks/useTransferBlocked': { useTransferBlocked: noop },
         react: { useState, useRef: initial => useState({ current: initial })[0], useMemo: fn => fn(), useCallback: fn => fn },
         '@layerswap/ui-kit/components': { WalletIcon: noop },
         '@/components/Buttons/submitButton': { default: noop },
@@ -237,6 +248,7 @@ test('one click runs approval, signing and publication without intermediate acti
         assert.equal(steps[current].isLoading, true)
         assert.ok(steps.slice(0, current).every(item => item.status === 'complete'))
         assert.deepEqual(flow.calls.storedTransactions, [], 'prerequisites are not recorded as swap deposits')
+        assert.ok(flow.calls.lifecycle.every(event => !['transaction_submitted', 'gasless_authorization_submitted'].includes(event.step)), 'prerequisites never report a submitted deposit')
     }
     flow.state.onTransition = step => {
         transitions.push(step)
@@ -252,6 +264,7 @@ test('one click runs approval, signing and publication without intermediate acti
     assert.deepEqual(flow.calls.storedTransactions, [[swapId, 'pending', '0xtransaction']])
     assert.equal(flow.calls.success, 1)
     assert.deepEqual(flow.calls.errors, [])
+    assert.deepEqual(flow.calls.lifecycle.filter(event => event.step.endsWith('_submitted')).map(event => [event.step, event.transactionHash]), [['transaction_submitted', '0xtransaction']])
 })
 
 test('rejected signing retries on the same swap using refreshed typed data', async () => {

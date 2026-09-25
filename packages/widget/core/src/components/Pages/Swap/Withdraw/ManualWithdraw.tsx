@@ -6,7 +6,7 @@ import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/Addres
 import { Widget } from '@/components/Widget/Index';
 import { useAsyncModal } from '@/context/asyncModal';
 import { useInitialSettings } from '@/context/settings';
-import { useSwapDataUpdate } from '@/context/swap';
+import { useSwapDataState, useSwapDataUpdate } from '@/context/swap';
 import { resolveDepositAddress } from '@/helpers/depositActions';
 import useExchangeNetworks from '@/hooks/useExchangeNetworks';
 import useWallet from '@/hooks/useWallet';
@@ -30,6 +30,17 @@ import QuoteDetails from '../Form/FeeDetails';
 import { SwapFormValues } from '../Form/SwapFormValues';
 import { ManualInstructionsView } from './Presentation/ManualInstructionsView';
 import { handleLimitsUpdate } from './QuoteUpdate';
+import { useCallbacks } from '@/context/callbackProvider'
+import { lifecycleContextFromSwap } from '@/lib/swapLifecycle'
+import { type ObservedLifecycleEvent, useLifecycleObservation } from '@/hooks/useLifecycleObservation'
+
+const AWAITING_USER_DEPOSIT: ObservedLifecycleEvent = {
+    step: 'awaiting_user_deposit',
+    stage: 'input_transfer',
+    outcome: 'pending',
+    path: 'ManualWithdraw',
+    action: 'manual_deposit',
+}
 
 interface Props {
     swapBasicData: SwapBasicData;
@@ -52,6 +63,8 @@ const ManualWithdraw: FC<Props> = ({
 }) => {
     const { wallets } = useWallet();
     const { createSwap, setSwapId } = useSwapDataUpdate();
+    const { swapDetails } = useSwapDataState();
+    const { onSwapLifecycle } = useCallbacks();
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [selectedFrom, setSelectedFrom] = useState<{
         network: Network | null;
@@ -93,9 +106,35 @@ const ManualWithdraw: FC<Props> = ({
         ) &&
         partner?.logo;
 
+    const lifecycleContext = useMemo(
+        () => lifecycleContextFromSwap(swapBasicData, swapDetails),
+        [
+            swapBasicData.destination_address,
+            swapBasicData.destination_network.name,
+            swapBasicData.destination_token.symbol,
+            swapBasicData.requested_amount,
+            swapBasicData.source_network.name,
+            swapBasicData.source_token.symbol,
+            swapBasicData.use_deposit_address,
+            swapDetails?.id,
+            swapDetails?.source_address,
+        ],
+    )
+
+    // A source address arriving later enriches the report but never repeats it.
+    useLifecycleObservation(swapDetails?.id ? AWAITING_USER_DEPOSIT : undefined, lifecycleContext)
+
     const handleCopy = () => {
         if (depositAddress) {
             copy(depositAddress);
+            onSwapLifecycle({
+                step: 'deposit_address_copied',
+                stage: 'input_transfer',
+                outcome: 'pending',
+                path: 'ManualWithdraw',
+                action: 'copy_deposit_address',
+                ...lifecycleContext,
+            })
         }
     };
 

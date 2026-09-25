@@ -16,6 +16,21 @@ Consumed by `@layerswap/widget-react` (React hosts) and
 See [AZURE_SETUP.md](./AZURE_SETUP.md) for the storage-account setup and the
 production follow-up checklist.
 
+## Browser import checks
+
+The root `build` and `build:packages` scripts and the CDN's `build` script run
+`pnpm lint:widget` before compiling. Workflows use these build scripts without
+separate lint or lint-test steps. It rejects `react-dom/server`,
+`react-dom/static` and `react-server-dom-*` imports (including subpaths,
+re-exports, literal dynamic imports and `require`) in package browser source,
+the CDN entry points and the React host example. Tests may use server rendering.
+These renderers can bundle a React DOM version that conflicts with the host's
+shared React instance. Use JSX or browser APIs for browser-side work instead.
+
+`pnpm test:lint` verifies the restriction and its scope. The focused lint command
+ignores inline ESLint directives so unrelated legacy suppressions cannot hide
+an unsafe import.
+
 ## Versioning model
 
 Every build is published to an **immutable, buildId-named prefix** and never

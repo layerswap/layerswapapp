@@ -34,7 +34,8 @@ export function ActionMessageView({
     if (isLoading) {
         return <ActionMessages.ConfirmActionMessage />;
     }
-    if (isUserRejection(error)) {
+    // A presentation label selects copy; execution classifies the underlying wallet evidence.
+    if (error?.name === ActionMessageType.TransactionRejected || isUserRejection(error)) {
         return <ActionMessages.TransactionRejectedMessage isSignature={isSignatureError} />;
     } else if (error?.name === ActionMessageType.TransactionFailed) {
         return <ActionMessages.TransactionFailedMessage />;

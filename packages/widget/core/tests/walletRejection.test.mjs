@@ -23,15 +23,14 @@ function loadSource(path, imports = {}) {
 const { ActionMessageType } = loadSource('../../types/src/actionMessage.ts')
 const walletTypes = { ActionMessageType }
 const walletPath = '../src/components/Pages/Swap/Withdraw/Wallet/Common/'
-const { isUserRejection } = loadSource(`${walletPath}isUserRejection.ts`, {
-    '@layerswap/widget-types': walletTypes,
-})
+const walletErrors = loadSource('../../../wallets/core/src/lib/walletErrors.ts', { '@layerswap/widget-types': walletTypes })
+const { isUserRejection } = loadSource(`${walletPath}isUserRejection.ts`, { '@layerswap/wallet-core/errors': walletErrors })
 
 const rejections = [
     { code: 4001 },
     { code: '4001' },
     { code: 'ACTION_REJECTED' },
-    { name: ActionMessageType.TransactionRejected },
+    { name: ActionMessageType.TransactionRejected, reasonCode: 'user_rejected' },
     { name: 'UserRejectedRequestError' },
     { message: 'MetaMask Typed Message Signature: User denied message signature.' },
     'User rejected the request.',
@@ -49,7 +48,7 @@ test('recognizes serialized and nested wallet cancellations without relying on E
 test('keeps real failures distinct and handles cyclic provider errors', () => {
     const cyclic = { code: -32603, message: 'Internal RPC error' }
     cyclic.cause = cyclic
-    for (const error of [undefined, null, cyclic, new Error('Signature expired'), { message: 'Transaction rejected by RPC' }, { code: -32000 }]) {
+    for (const error of [undefined, null, { name: ActionMessageType.TransactionRejected }, cyclic, new Error('Signature expired'), { message: 'Transaction rejected by RPC' }, { code: -32000 }]) {
         assert.equal(isUserRejection(error), false)
     }
     cyclic.data = { originalError: { code: 4001 } }
@@ -89,7 +88,7 @@ function ActionMessage(props) {
 }
 
 test('signing cancellation selects signing copy even when a generic swap error exists', () => {
-    for (const error of rejections) {
+    for (const error of [...rejections, { name: ActionMessageType.TransactionRejected }]) {
         const message = ActionMessage({ error, isSignatureError: true, isLoading: false })
         assert.equal(message.type, ActionMessages.TransactionRejectedMessage)
         const content = message.type(message.props)
@@ -120,6 +119,9 @@ test('raw EVM signing cancellation survives the resolver and authorization workf
         '@/stores/gaslessPreferenceStore': { useGaslessPreferenceStore },
         './isUserRejection': { isUserRejection },
         '@/helpers/depositActions': depositActions,
+        '@/lib/swapLifecycle': { lifecycleContextFromSwap: () => ({}), lifecycleErrorDetails: () => ({}) },
+        '@/lib/widgetTelemetry': { widgetTelemetry: { beginOperation: () => () => {} } },
+        './executeWalletOperation': {},
         '@/lib/ErrorHandler': { ErrorHandler: () => assert.fail('Cancellation must not be reported as a transfer failure') },
     })
     const resolver = new GaslessResolver([createEVMGaslessProvider({}, () => true)])
@@ -129,6 +131,9 @@ test('raw EVM signing cancellation survives the resolver and authorization workf
         gaslessState.gaslessUnavailable = false
         await assert.rejects(executeGaslessAuthorization({
             swapData: { id: 'test-swap' },
+            swapBasicData: {},
+            selectedWallet: { providerName: 'EVM' },
+            onLifecycle: () => {},
             sourceAddress: '0x1',
             depositActions,
             layerswapApiClient: { AuthorizeSwapAsync: () => assert.fail('A rejected signature must not be authorized') },

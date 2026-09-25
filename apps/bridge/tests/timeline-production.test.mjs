@@ -88,6 +88,9 @@ test('switching gasless mode preserves the live execution lock while swap creati
     };
     const { SendTransactionButton } = loadSource(`${withdraw}Wallet/Common/buttons.tsx`, {
         ...walletHooks,
+        '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: noop }) },
+        '@/lib/swapLifecycle': { lifecycleContextFromSwap: () => ({}) },
+        '@/hooks/useTransferBlocked': { useTransferBlocked: noop },
         '@/helpers/swapProgress': { hasSwapExecutionProgress: () => false },
         '@/helpers/gasless': gasless,
         './isUserRejection': { isUserRejection: () => false },
@@ -130,7 +133,8 @@ test('switching gasless mode preserves the live execution lock while swap creati
         './Presentation/Page2Contained': { Page2Contained: childrenOnly },
         '@/components/Common/Sceletons': { SwapDetailsSceleton: empty },
         '@/components/Widget/Index': { Widget: childrenOnly },
-        '@/context/callbackProvider': { useCallbacks: () => ({ onBackClick: noop }) },
+        '@/context/callbackProvider': { useCallbacks: () => ({ onBackClick: noop, onSwapLifecycle: noop }) },
+        '@/lib/swapLifecycle': { lifecycleContextFromSwap: () => ({}) },
         '@/context/swap': swapHooks,
         '@/hooks/useGaslessAuthorizationStatus': { useGaslessAuthorizationStatus: noop },
         '@/hooks/useResolvedSwapStatus': { useResolvedSwapStatus: () => ({ showWithdrawScreen: true }) },
@@ -265,6 +269,7 @@ function createSwapHistoryHarness(fetcher) {
     const rangeErrors = loadSource('Models/RangeError.ts');
     const formatTime = loadSource('components/utils/formatTime.ts');
     const phases = loadSource('components/utils/resolveSwapPhase.ts', {
+        './swapPhase': loadSource('components/utils/swapPhase.ts'),
         '@layerswap/widget-types': widgetTypes,
         '../../lib/apiClients/layerSwapApiClient': api,
         '../../Models/RangeError': rangeErrors,
@@ -297,7 +302,22 @@ function createSwapHistoryHarness(fetcher) {
         'lucide-react': { CircleCheck: empty, Undo2: empty },
         './DepositWorkflowView': workflow,
     });
+    const pollingPolicy = loadSource('lib/swapPollingPolicy.ts', {
+        '@layerswap/widget-types': widgetTypes,
+        '@/components/utils/formatTime': formatTime,
+    });
+    const polling = loadSource('hooks/useSwapPolling.ts', {
+        swr: { default: useSWR },
+        '@/lib/apiClients/layerSwapApiClient': api,
+        '@/lib/swapPollingPolicy': pollingPolicy,
+    });
     const context = loadSource('context/swap.tsx', {
+        '@/hooks/useSwapPolling': polling,
+        '@/hooks/useSwapStatusNotification': { useSwapStatusNotification: noop },
+        '@/hooks/useGaslessAuthorization': { useGaslessAuthorization: () => ({}) },
+        './depositSettings': { useDepositSettings: () => ({}) },
+        '@/lib/swapLifecycle': {},
+        '@/lib/swapCreation': {},
         ...walletHooks,
         '@/lib/apiClients/layerSwapApiClient': api,
         '@/components/utils/resolveSwapPhase': phases,
@@ -309,7 +329,10 @@ function createSwapHistoryHarness(fetcher) {
         '@/stores/recentRoutesStore': { useRecentNetworksStore: () => noop },
         '@/stores/slippageStore': {},
         '@/lib/address/Address': {},
-        '@/stores': { useSwapTransactionStore: selector => selector({ swapTransactions: {} }) },
+        '@/stores': {
+            useSwapTransactionStore: selector => selector({ swapTransactions: {} }),
+            useGaslessAuthorizationStore: selector => selector({ authorizations: {} }),
+        },
         '@/stores/contractAddressStore': { useContractAddressStore: () => ({}) },
         '@/hooks/useExtendedSwapDisplay': { useExtendedSwapData: noop },
         '@/stores/gaslessPreferenceStore': { useGaslessPreferenceStore },
@@ -318,10 +341,7 @@ function createSwapHistoryHarness(fetcher) {
         '@/lib/extendedRoutes/transforms': {},
         '@/stores/extendedRoutesStore': {},
         '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
-        '@/lib/swapPollingPolicy': loadSource('lib/swapPollingPolicy.ts', {
-            '@/components/utils/resolveSwapPhase': phases,
-            '@/components/utils/formatTime': formatTime,
-        }),
+        '@/lib/swapPollingPolicy': pollingPolicy,
         '@layerswap/utils': {},
     });
     const harness = { Provider: context.SwapDataProvider };
@@ -331,7 +351,7 @@ function createSwapHistoryHarness(fetcher) {
         const { swapBasicData, swapDetails, depositActionsResponse } = harness.state;
         return swapDetails && React.createElement(ProcessingView, {
             swapBasicData, swapDetails, depositActions: depositActionsResponse,
-            resolved: phases.resolveSwapPhase({ swapDetails }),
+            resolved: harness.state.resolved,
         });
     };
     return harness;

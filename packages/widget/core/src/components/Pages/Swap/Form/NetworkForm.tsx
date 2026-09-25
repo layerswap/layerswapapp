@@ -221,6 +221,7 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<
         <button
             type="button"
             aria-label="Reverse the source and destination"
+            data-ls-action="reverse_direction"
             onClick={() => { cycle(); valuesSwapper(); }}
             className="navigation-focus-border-primary-md hover:text-primary-text text-secondary-text absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 rounded-lg duration-200 transition">
             <motion.div

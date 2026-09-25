@@ -1,6 +1,6 @@
 import { type Refuel, type Wallet } from '@layerswap/widget-types';
-import { Context, useCallback, useEffect, useState, createContext, useContext, useMemo, useRef } from 'react'
-import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, DepositAction, SwapBasicData, SwapQuote, SwapDetails, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
+import { Context, useCallback, useEffect, useState, createContext, useContext, useMemo } from 'react'
+import LayerSwapApiClient, { BackendTransactionStatus, CreateSwapParams, PublishedSwapTransactions, SwapTransaction, TransactionStatus, WithdrawType, SwapResponse, DepositAction, SwapBasicData, SwapQuote, SwapDetails, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
 import { InitialSettings } from '@/Models/InitialSettings';
 import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '@/Models/ApiResponse';
@@ -17,8 +17,10 @@ import { useInitialSettings } from './settings';
 import { useSlippageStore } from '@/stores/slippageStore';
 import { useCallbacks } from './callbackProvider';
 import { Address } from '@/lib/address/Address';
-import { useSwapTransactionStore } from '@/stores';
-import { resolveSwapPhase } from '@/components/utils/resolveSwapPhase';
+import { useGaslessAuthorizationStore, useSwapTransactionStore } from '@/stores';
+import { ResolvedSwapStatus, resolveSwapPhase } from '@/components/utils/resolveSwapPhase';
+import { useDepositSettings } from './depositSettings';
+import { useGaslessAuthorization } from '@/hooks/useGaslessAuthorization';
 import { useContractAddressStore } from '@/stores/contractAddressStore';
 import { useExtendedSwapData } from '@/hooks/useExtendedSwapDisplay';
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore';
@@ -27,7 +29,10 @@ import { resolveExtendedRoutePlan } from '@/lib/extendedRoutes/registry';
 import { buildCreateSwapParamsForExtendedRoute } from '@/lib/extendedRoutes/transforms';
 import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
 import { isDepositAddressFlow, isDepositAddressSwap, wantsFrontendSwap } from '@/helpers/swapFlow';
-import { resolveSwapPollingInterval, SWAP_POLL_DEDUPE_MS } from '@/lib/swapPollingPolicy';
+import { useSwapPolling } from '@/hooks/useSwapPolling';
+import { useSwapStatusNotification } from '@/hooks/useSwapStatusNotification';
+import { lifecycleContextFromForm } from '@/lib/swapLifecycle';
+import { createSwapAttempt } from '@/lib/swapCreation';
 import { KnownInternalNames } from '@layerswap/utils';
 
 export const SwapDataStateContext = createContext<SwapContextData | null>(null);
@@ -64,13 +69,17 @@ export type SwapContextData = {
     swapDetails: SwapDetails | undefined,
     swapId: string | undefined,
     swapModalOpen: boolean,
+    // The single resolved swap status every reader renders and reports from (phase,
+    // step statuses, client-detected input failures). Computed once here so no reader can
+    // diverge by feeding the resolver private inputs.
+    resolved: ResolvedSwapStatus,
     swapError?: string | null | undefined,
     setSwapError?: (value: string | null) => void
 }
 
 export function SwapDataProvider({ children, initialSwapData }: { children: React.ReactNode, initialSwapData?: SwapResponse | null }) {
     const initialSettings = useInitialSettings()
-    const { onSwapCreate } = useCallbacks()
+    const { onSwapCreate, onSwapLifecycle } = useCallbacks()
     const [swapBasicFormData, setSwapBasicFormData] = useState<SwapBasicData & { refuel: boolean }>()
 
     const [quoteIsLoading, setQuoteLoading] = useState<boolean>(false)
@@ -116,46 +125,10 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     }, [sourceRoutes, destinationRoutes])
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const swap_details_endpoint = `/swaps/${swapId}?exclude_deposit_actions=true`
-
-    // Adaptive polling: burst-and-decay driven by swapPollingPolicy. The refreshInterval
-    // callback identity must stay stable across renders (SWR resets its refresh loop when it
-    // changes), so mutable inputs go through a ref — except the tx-submit timestamp, whose
-    // identity change is intentional: it discards the stale slow timer and re-enters hot polling.
-    const lastChangeRef = useRef<{ fingerprint?: string, at: number }>({ at: Date.now() })
     const storedWalletTransaction = useSwapTransactionStore(
         state => swapId ? state.swapTransactions[swapId] : undefined,
     )
-
-    const computeRefreshInterval = useCallback((latestData?: ApiResponse<SwapResponse>) => {
-        const swap = latestData?.data?.swap
-        // No usable payload (still loading, or an API error envelope): returning 0 here would
-        // permanently stop SWR's refresh loop (a 0 from the function form never reschedules),
-        // so keep it alive until a real payload arrives — slower when the API is erroring.
-        if (!swap?.status) return latestData?.error ? 5000 : 1000
-        const { phase } = resolveSwapPhase({
-            swapDetails: swap,
-            refuel: latestData?.data?.refuel,
-            storedWalletTransaction,
-        })
-        return resolveSwapPollingInterval({
-            phase,
-            now: Date.now(),
-            lastChangeAt: lastChangeRef.current.at,
-            txSubmittedAt: storedWalletTransaction?.timestamp,
-            avgCompletionTime: latestData?.data?.quote?.avg_completion_time,
-            isDepositAddressFlow: swap.use_deposit_address,
-        })
-    }, [storedWalletTransaction?.timestamp])
-
-    const { data, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, {
-        refreshInterval: computeRefreshInterval,
-        dedupingInterval: SWAP_POLL_DEDUPE_MS,
-        // Fallback data belongs to one SWR key. Reusing it after a source change
-        // makes the new swap look like the old route until its details arrive.
-        fallbackData: swapId && swapId === initialSwapData?.swap.id ? { data: initialSwapData } : undefined,
-        keepPreviousData: false,
-    })
+    const { data, mutate, error } = useSwapPolling(swapId, initialSwapData, storedWalletTransaction?.timestamp)
     // A failed background refresh must not hide usable data for the active swap.
     const swapDetailsError = swapId && data?.data?.swap?.id !== swapId && (error || data)
         ? (error?.response?.data?.error?.message || error?.message || data?.error?.message || 'Could not load swap details.')
@@ -232,6 +205,39 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         return formDataQuote?.refuel
     }, [formDataQuote, data, swapId]);
 
+    // Inputs to the resolved status that only the client observes: the gasless authorization
+    // outcome (poll status or valid_before timer) and the source-chain status of an input tx the
+    // API has not listed yet. Owned here — one timer, one SWR key — so every reader sees one status.
+    const { isDepositFlow } = useDepositSettings()
+    const { failureStatus: gaslessFailureStatus } = useGaslessAuthorization(swapDetails)
+    const gaslessAuthTx = useGaslessAuthorizationStore(
+        state => swapId ? state.authorizations[swapId]?.transaction : undefined,
+    )
+    const inputTx = swapDetails?.transactions?.find(t => t.type === TransactionType.Input)
+    const inputTransactionHash = inputTx?.transaction_hash || gaslessAuthTx?.transaction_hash || storedWalletTransaction?.hash
+    const { data: inputTxStatusData } = useSWR<ApiResponse<{ status: TransactionStatus }>>(
+        (inputTransactionHash && inputTx?.status !== BackendTransactionStatus.Completed) ? [swapBasicData?.source_network?.name, inputTransactionHash] : null,
+        ([network, tx_id]: [string, string]) => layerswapApiClient.GetTransactionStatus(network, tx_id),
+        { dedupingInterval: 6000 },
+    )
+    const inputTxStatusFromApi = inputTxStatusData?.data?.status?.toLowerCase() as TransactionStatus | undefined
+
+    const resolved = useMemo(
+        () => resolveSwapPhase({ swapDetails, refuel, inputTxStatusFromApi, storedWalletTransaction, isDepositFlow, gaslessFailureStatus }),
+        [swapDetails, refuel, inputTxStatusFromApi, storedWalletTransaction, isDepositFlow, gaslessFailureStatus],
+    )
+
+    // Observe every API status here, regardless of which screen is mounted.
+    useSwapStatusNotification(swapDetails?.id, swapDetails?.status, {
+        path: 'SwapDataProvider',
+        fromAddress: swapDetails?.source_address ?? inputTx?.from,
+        toAddress: swapBasicData?.destination_address,
+        sourceNetwork: swapBasicData?.source_network.name,
+        destinationNetwork: swapBasicData?.destination_network.name,
+        sourceToken: swapBasicData?.source_token.symbol,
+        destinationToken: swapBasicData?.destination_token.symbol,
+    })
+
     const selectedSourceAccount = useSelectedAccount("from", swapBasicFormData?.source_network?.name);
     const { wallets } = useWallet(swapBasicFormData?.source_network, 'asSource')
     const selectedWallet = (selectedSourceAccount?.address && swapBasicFormData) && wallets.find(w => Address.equals(w.address, selectedSourceAccount.address, swapBasicFormData?.source_network))
@@ -264,35 +270,6 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         ? (depositActionsSwrError?.response?.data?.error?.message || depositActionsSwrError?.message || depositActions?.error?.message || 'Could not generate deposit address.')
         : undefined
 
-    // Track when the swap payload last changed — any movement restarts the hot polling window.
-    useEffect(() => {
-        const fingerprint = swapDataFingerprint(data?.data)
-        if (fingerprint !== lastChangeRef.current.fingerprint) {
-            lastChangeRef.current = { fingerprint, at: Date.now() }
-        }
-    }, [data])
-
-    // The race starts the moment the user's withdrawal tx is submitted — poll immediately
-    // instead of waiting for the next scheduled tick. Skip txs persisted from a previous
-    // session: on reload they'd just duplicate SWR's initial fetch (it still feeds
-    // computeRefreshInterval via txSubmittedAt, so nothing else is lost).
-    const mountedAtRef = useRef(Date.now())
-    useEffect(() => {
-        if (!swapId || !storedWalletTransaction) return
-        if (storedWalletTransaction.timestamp < mountedAtRef.current) return
-        mutate()
-    }, [storedWalletTransaction?.timestamp, swapId])
-
-    // SWR pauses polling in hidden tabs; refresh as soon as the user comes back.
-    useEffect(() => {
-        if (!swapId) return
-        const onVisibilityChange = () => {
-            if (document.visibilityState === 'visible') mutate()
-        }
-        document.addEventListener('visibilitychange', onVisibilityChange)
-        return () => document.removeEventListener('visibilitychange', onVisibilityChange)
-    }, [swapId, mutate])
-
     useEffect(() => {
         if (!swapId)
             return
@@ -312,113 +289,110 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         if (!depositAddressFlow && !amount)
             throw new Error("Form data is missing")
 
-        const sourceWalletIsSupported = selectedWallet && WalletIsSupportedForSource({
-            sourceNetwork: from,
-            sourceWallet: selectedWallet
-        })
-        const contractCheckResult = (depositAddressFlow && selectedWallet) ? await checkContractStatus(selectedWallet.address, from, to) : null
-        const isContract = contractCheckResult?.sourceIsContract ?? false
-        const sourceIsSupported = sourceWalletIsSupported && !isContract
-
-        const slippage = useSlippageStore.getState().slippage
-        const gaslessEnabled = useGaslessPreferenceStore.getState().gaslessEnabled
-
-        const useGasless = isGaslessCapableRoute({
-            depositMethod,
-            supportsGaslessDeposit: fromCurrency.supports_gasless_deposit,
-            sourceTokenContract: fromCurrency.contract,
-            gaslessStandard: fromCurrency.gasless_standard,
-            sourceIsSupported: !!sourceIsSupported,
-            sourceAddress: selectedSourceAccount?.address,
-        }) && gaslessEnabled
-
-        const extendedPlan = resolveExtendedRoutePlan({
-            sourceNetworkName: from.name,
-            sourceTokenSymbol: fromCurrency.symbol,
-            destinationNetworkName: to.name,
-            destinationTokenSymbol: toCurrency.symbol,
-            sourceAmount: amount,
-            availableRoutes: sourceRoutes,
-        })
-        const isExtendedBridge = !!extendedPlan
-        const useFrontendSwap = wantsFrontendSwap({
-            depositMethod,
-            sourceNetwork: from.name,
-            destinationNetwork: to.name,
-        })
-        const requiresDepository = from.name == KnownInternalNames.Networks.StellarTestnet || from.name == KnownInternalNames.Networks.StellarMainnet
-
-        const data: CreateSwapParams = extendedPlan ? buildCreateSwapParamsForExtendedRoute({
-            plan: extendedPlan,
-            destinationNetworkName: to.name,
-            destinationTokenSymbol: toCurrency.symbol,
-            destinationAddress: destination_address,
-            referenceId: query.externalId,
-            refuel,
-            sourceAddress: selectedSourceAccount?.address,
-            useFrontendSwap,
-        }) : {
-            amount: amount || undefined,
-            source_network: from.name,
-            destination_network: to.name,
-            source_token: fromCurrency.symbol,
-            destination_token: toCurrency.symbol,
-            source_exchange: fromExchange?.name,
-            destination_address: destination_address,
-            reference_id: query.externalId,
-            refuel: !!refuel,
-            use_deposit_address: depositMethod === 'wallet' ? false : true,
-            source_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
-            refund_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
-            use_frontend_swap: useFrontendSwap,
-            use_gasless: useGasless,
-            ...(requiresDepository && { use_depository: true }),
-        }
-
-        if (!isExtendedBridge && depositMethod === 'wallet' && slippage && slippage > 0 && slippage < 0.8) {
-            data.slippage = slippage.toString()
-        }
-
-        const swapResponse = await layerswapApiClient.CreateSwapAsync(data).catch((e) => {
-            if (useGasless) useGaslessPreferenceStore.getState().reportGaslessUnavailable('create')
-            throw e
-        })
-
-        if (swapResponse?.error) {
-            if (useGasless) useGaslessPreferenceStore.getState().reportGaslessUnavailable('create')
-            throw swapResponse?.error
-        }
-
-
-
-        const swap = swapResponse?.data;
-        if (!swap?.swap.id)
-            throw new Error("Could not create swap")
-
-        onSwapCreate(swap)
-        // Persist the extended identity so the post-create UI and the withdraw step
-        // can keep showing the extended source and resume after a reload.
-        if (extendedPlan) {
-            useExtendedRoutesStore.getState().setRecord(swap.swap.id, {
-                providerId: extendedPlan.mapping.provider.id,
-                extendedNetwork: from.name,
-                extendedToken: fromCurrency.symbol,
-                realNetwork: extendedPlan.mapping.real.networkName,
-                realToken: extendedPlan.mapping.real.tokenSymbol,
-                sourceAddress: selectedSourceAccount?.address || '',
-                sourceAmount: (amount || '').toString(),
-                createdAt: Date.now(),
+        return createSwapAttempt(async () => {
+            const sourceWalletIsSupported = selectedWallet && WalletIsSupportedForSource({
+                sourceNetwork: from,
+                sourceWallet: selectedWallet
             })
-        }
+            const contractCheckResult = (depositAddressFlow && selectedWallet) ? await checkContractStatus(selectedWallet.address, from, to) : null
+            const isContract = contractCheckResult?.sourceIsContract ?? false
+            const sourceIsSupported = sourceWalletIsSupported && !isContract
 
-        updateRecentTokens({
-            from: !fromExchange ? { network: from.name, token: fromCurrency.symbol } : undefined,
-            to: { network: to.name, token: toCurrency.symbol }
-        });
+            const slippage = useSlippageStore.getState().slippage
+            const gaslessEnabled = useGaslessPreferenceStore.getState().gaslessEnabled
 
+            const useGasless = isGaslessCapableRoute({
+                depositMethod,
+                supportsGaslessDeposit: fromCurrency.supports_gasless_deposit,
+                sourceTokenContract: fromCurrency.contract,
+                gaslessStandard: fromCurrency.gasless_standard,
+                sourceIsSupported: !!sourceIsSupported,
+                sourceAddress: selectedSourceAccount?.address,
+            }) && gaslessEnabled
 
-        return swap;
-    }, [selectedSourceAccount, selectedWallet, onSwapCreate, updateRecentTokens, swapDetails?.id, networks, sourceRoutes])
+            const extendedPlan = resolveExtendedRoutePlan({
+                sourceNetworkName: from.name,
+                sourceTokenSymbol: fromCurrency.symbol,
+                destinationNetworkName: to.name,
+                destinationTokenSymbol: toCurrency.symbol,
+                sourceAmount: amount,
+                availableRoutes: sourceRoutes,
+            })
+            const isExtendedBridge = !!extendedPlan
+            const useFrontendSwap = wantsFrontendSwap({
+                depositMethod,
+                sourceNetwork: from.name,
+                destinationNetwork: to.name,
+            })
+            const requiresDepository = from.name == KnownInternalNames.Networks.StellarTestnet || from.name == KnownInternalNames.Networks.StellarMainnet
+
+            const data: CreateSwapParams = extendedPlan ? buildCreateSwapParamsForExtendedRoute({
+                plan: extendedPlan,
+                destinationNetworkName: to.name,
+                destinationTokenSymbol: toCurrency.symbol,
+                destinationAddress: destination_address,
+                referenceId: query.externalId,
+                refuel,
+                sourceAddress: selectedSourceAccount?.address,
+                useFrontendSwap,
+            }) : {
+                amount: amount || undefined,
+                source_network: from.name,
+                destination_network: to.name,
+                source_token: fromCurrency.symbol,
+                destination_token: toCurrency.symbol,
+                source_exchange: fromExchange?.name,
+                destination_address: destination_address,
+                reference_id: query.externalId,
+                refuel: !!refuel,
+                use_deposit_address: depositMethod === 'wallet' ? false : true,
+                source_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
+                refund_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
+                use_frontend_swap: useFrontendSwap,
+                use_gasless: useGasless,
+                ...(requiresDepository && { use_depository: true }),
+            }
+
+            if (!isExtendedBridge && depositMethod === 'wallet' && slippage && slippage > 0 && slippage < 0.8) {
+                data.slippage = slippage.toString()
+            }
+
+            return {
+                request: () => layerswapApiClient.CreateSwapAsync(data),
+                useGasless,
+                onCreated: [
+                    { name: 'onSwapCreate', run: onSwapCreate },
+                    // Persist the extended identity so the post-create UI and the withdraw step
+                    // can keep showing the extended source and resume after a reload.
+                    ...(extendedPlan ? [{
+                        name: 'extendedRoutes.setRecord',
+                        run: (swap: SwapResponse) => useExtendedRoutesStore.getState().setRecord(swap.swap.id, {
+                            providerId: extendedPlan.mapping.provider.id,
+                            extendedNetwork: from.name,
+                            extendedToken: fromCurrency.symbol,
+                            realNetwork: extendedPlan.mapping.real.networkName,
+                            realToken: extendedPlan.mapping.real.tokenSymbol,
+                            sourceAddress: selectedSourceAccount?.address || '',
+                            sourceAmount: (amount || '').toString(),
+                            createdAt: Date.now(),
+                        }),
+                    }] : []),
+                    {
+                        name: 'recentRoutes.updateRecentNetworks',
+                        run: () => updateRecentTokens({
+                            from: !fromExchange ? { network: from.name, token: fromCurrency.symbol } : undefined,
+                            to: { network: to.name, token: toCurrency.symbol }
+                        }),
+                    },
+                ],
+            }
+        }, {
+            path: 'SwapDataProvider.createSwap',
+            lifecycleContext: lifecycleContextFromForm(values),
+            onLifecycle: onSwapLifecycle,
+            onGaslessUnavailable: () => useGaslessPreferenceStore.getState().reportGaslessUnavailable('create'),
+        })
+    }, [selectedSourceAccount, selectedWallet, onSwapCreate, onSwapLifecycle, updateRecentTokens, swapDetails?.id, networks, sourceRoutes])
 
     const updateFns = useMemo<UpdateSwapInterface>(() => ({
         createSwap,
@@ -449,9 +423,10 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         swapDetails,
         swapId,
         swapModalOpen,
+        resolved,
         swapError,
         setSwapError
-    }), [withdrawType, swapTransaction, depositAddressIsFromAccount, error, swapDetailsError, depositActionsResponse, depositActionsError, quote, quoteIsLoading, quoteError, refuel, swapBasicData, swapDetails, swapId, swapModalOpen, swapError]);
+    }), [withdrawType, swapTransaction, depositAddressIsFromAccount, error, swapDetailsError, depositActionsResponse, depositActionsError, quote, quoteIsLoading, quoteError, refuel, swapBasicData, swapDetails, swapId, swapModalOpen, resolved, swapError]);
 
     return (
         <SwapDataStateContext.Provider value={stateValue}>
@@ -478,17 +453,6 @@ export function useSwapDataUpdate() {
     }
 
     return updateFns;
-}
-
-const swapDataFingerprint = (response: SwapResponse | undefined): string | undefined => {
-    const swap = response?.swap
-    if (!swap) return undefined
-    return [
-        swap.status,
-        // Confirmed-state boolean, not the raw counter — confirmations climb on every block,
-        // and counting each one as a payload change would re-arm hot polling indefinitely.
-        ...(swap.transactions?.map(t => `${t.type}:${t.status}:${t.confirmations >= t.max_confirmations}:${t.transaction_hash}`) ?? []),
-    ].join('|')
 }
 
 export const WalletIsSupportedForSource = ({ sourceNetwork, sourceWallet }: { sourceWallet: Wallet | undefined, sourceNetwork: Network | undefined }) => {

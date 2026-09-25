@@ -141,7 +141,9 @@ function LoadedPreview({
         refuel: s.refuel,
         storedWalletTransaction: s.storedWalletTransaction,
         inputTxStatusFromApi: s.inputTxStatusFromApi,
-        gaslessAuthorizationFailed: gaslessFailed,
+        gaslessFailureStatus: gaslessFailed
+            ? s.gaslessAuthorization?.status as 'expired' | 'insufficient' | 'rejected'
+            : undefined,
         isDepositFlow: s.isDepositFlow,
     });
     const compactsDuringWalletExecution = shouldShowCompactSwapQuote({
@@ -173,10 +175,8 @@ function LoadedPreview({
         content = (
             <ProcessingSectionView
                 actions={
-                    (gaslessFailed ||
-                        s.storedWalletTransaction?.status ===
-                            TransactionStatus.Failed) && (
-                        <RetryView canSwitchToStandard={gaslessFailed} />
+                    resolved.failureReason && (
+                        <RetryView canSwitchToStandard={resolved.failureReason === 'gasless_deposit_failed'} />
                     )
                 }
             >

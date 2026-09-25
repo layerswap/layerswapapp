@@ -2,11 +2,12 @@ import { useCallback } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '@/context/swap'
 import { useSwapTransactionStore, useGaslessAuthorizationStore } from '@/stores/swapTransactionStore'
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore'
-import { BackendTransactionStatus } from '@/lib/apiClients/layerSwapApiClient'
-import { gaslessFailureMessage, useGaslessAuthorization } from './useGaslessAuthorization'
 import { hasSwapExecutionProgress } from '@/helpers/swapProgress'
+import { gaslessFailureMessage } from './useGaslessAuthorization'
+import { useResolvedSwapStatus } from './useResolvedSwapStatus'
+import type { SwapFailureReason } from '@/components/utils/resolveSwapPhase'
 
-export type SwapFailureReason = 'transfer_failed' | 'gasless_deposit_failed'
+export type { SwapFailureReason } from '@/components/utils/resolveSwapPhase'
 
 type UseSwapRetryResult = {
     failureReason: SwapFailureReason | undefined
@@ -17,7 +18,8 @@ type UseSwapRetryResult = {
     switchToStandard: () => void
 }
 
-// Detects retryable deposit failures and recovers by clearing the local deposit markers.
+// Recovers from the retryable deposit failures the resolved status reports by clearing the
+// local deposit markers.
 export function useSwapRetry(): UseSwapRetryResult {
     const { swapDetails, depositActionsResponse } = useSwapDataState()
     const { startFreshSwapAttempt } = useSwapDataUpdate()
@@ -29,22 +31,15 @@ export function useSwapRetry(): UseSwapRetryResult {
     const gaslessAuthorization = useGaslessAuthorizationStore(
         state => swapId ? state.authorizations[swapId] : undefined,
     )
-    const { failed: gaslessDepositFailed, failureStatus } = useGaslessAuthorization()
+    const { failureReason, gaslessFailureStatus } = useResolvedSwapStatus()
 
     const hasProgress = hasSwapExecutionProgress({
         swapDetails,
         depositActions: depositActionsResponse,
         storedWalletTransaction,
         gaslessAuthorization,
-        gaslessAuthorizationFailed: gaslessDepositFailed,
+        gaslessAuthorizationFailed: !!gaslessFailureStatus,
     })
-
-    const failureReason: SwapFailureReason | undefined =
-        gaslessDepositFailed
-            ? 'gasless_deposit_failed'
-            : storedWalletTransaction?.status === BackendTransactionStatus.Failed
-                ? 'transfer_failed'
-                : undefined
 
     const retry = useCallback(() => {
         if (!swapId) return
@@ -63,7 +58,7 @@ export function useSwapRetry(): UseSwapRetryResult {
         failureReason,
         canRetry: !!failureReason,
         retry,
-        gaslessFailureMessage: failureReason === 'gasless_deposit_failed' ? gaslessFailureMessage(failureStatus) : undefined,
+        gaslessFailureMessage: failureReason === 'gasless_deposit_failed' ? gaslessFailureMessage(gaslessFailureStatus) : undefined,
         canSwitchToStandard: failureReason === 'gasless_deposit_failed',
         switchToStandard,
     }

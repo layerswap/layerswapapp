@@ -1,0 +1,472 @@
+{
+  "id": null,
+  "uid": "layerswap-faro-dev-errors",
+  "title": "Faro Dev · Error Overview (Provisional)",
+  "description": "One row per exception type; click through to readable errors and recorded sessions. Development Loki only, not production health.",
+  "tags": [
+    "layerswap",
+    "faro",
+    "development",
+    "provisional"
+  ],
+  "timezone": "utc",
+  "schemaVersion": 39,
+  "version": 0,
+  "editable": true,
+  "refresh": "",
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "annotations": {
+    "list": []
+  },
+  "links": [
+    {
+      "title": "Wallet / session / journey investigation",
+      "type": "link",
+      "targetBlank": false,
+      "url": "/d/layerswap-faro-dev-slice?orgId=1&from=${__from}&to=${__to}&var-application=${application:percentencode}&var-environment=${environment:percentencode}&var-release=${release:percentencode}&var-wallet_address=${wallet_address:percentencode}&var-error_marker=${error_marker:percentencode}&var-error_type=__select_group__&var-error_hash=.*&var-session_id=__select_session__&var-event_time=__select_event__&var-event_kind=__select_event__&var-event_ns=__select_event__"
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "application",
+        "label": "Application",
+        "type": "textbox",
+        "hide": 0,
+        "query": "layerswap-frontend",
+        "current": {
+          "selected": true,
+          "text": "layerswap-frontend",
+          "value": "layerswap-frontend"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "layerswap-frontend",
+            "value": "layerswap-frontend"
+          }
+        ],
+        "skipUrlSync": false
+      },
+      {
+        "name": "environment",
+        "label": "Environment (API mode)",
+        "type": "textbox",
+        "hide": 0,
+        "query": "mainnet",
+        "current": {
+          "selected": true,
+          "text": "mainnet",
+          "value": "mainnet"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "mainnet",
+            "value": "mainnet"
+          }
+        ],
+        "skipUrlSync": false
+      },
+      {
+        "name": "release",
+        "label": "Version",
+        "type": "textbox",
+        "hide": 0,
+        "query": "local",
+        "current": {
+          "selected": true,
+          "text": "local",
+          "value": "local"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "local",
+            "value": "local"
+          }
+        ],
+        "skipUrlSync": false
+      },
+      {
+        "name": "wallet_address",
+        "label": "Wallet address (exact)",
+        "type": "textbox",
+        "hide": 2,
+        "query": "",
+        "current": {
+          "selected": true,
+          "text": "",
+          "value": ""
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "",
+            "value": ""
+          }
+        ],
+        "skipUrlSync": false
+      },
+      {
+        "name": "error_marker",
+        "label": "Error record contains",
+        "type": "textbox",
+        "hide": 0,
+        "query": "",
+        "current": {
+          "text": "",
+          "value": ""
+        },
+        "options": [
+          {
+            "text": "",
+            "value": "",
+            "selected": true
+          }
+        ],
+        "skipUrlSync": false
+      },
+      {
+        "name": "error_type",
+        "label": "Selected error type",
+        "type": "textbox",
+        "hide": 2,
+        "query": "__select_group__",
+        "current": {
+          "selected": true,
+          "text": "__select_group__",
+          "value": "__select_group__"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "__select_group__",
+            "value": "__select_group__"
+          }
+        ],
+        "skipUrlSync": false
+      },
+      {
+        "name": "error_hash",
+        "label": "Internal variant filter",
+        "type": "textbox",
+        "hide": 2,
+        "query": ".*",
+        "current": {
+          "text": ".*",
+          "value": ".*"
+        },
+        "options": [
+          {
+            "text": ".*",
+            "value": ".*",
+            "selected": true
+          }
+        ],
+        "skipUrlSync": false
+      },
+      {
+        "name": "session_id",
+        "label": "Selected session",
+        "type": "textbox",
+        "hide": 2,
+        "query": "__select_session__",
+        "current": {
+          "selected": true,
+          "text": "__select_session__",
+          "value": "__select_session__"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "__select_session__",
+            "value": "__select_session__"
+          }
+        ],
+        "skipUrlSync": false
+      },
+      {
+        "name": "event_time",
+        "label": "Selected client timestamp",
+        "type": "textbox",
+        "hide": 2,
+        "query": "__select_event__",
+        "current": {
+          "selected": true,
+          "text": "__select_event__",
+          "value": "__select_event__"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "__select_event__",
+            "value": "__select_event__"
+          }
+        ],
+        "skipUrlSync": false
+      },
+      {
+        "name": "event_kind",
+        "label": "Selected signal kind",
+        "type": "textbox",
+        "hide": 2,
+        "query": "__select_event__",
+        "current": {
+          "selected": true,
+          "text": "__select_event__",
+          "value": "__select_event__"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "__select_event__",
+            "value": "__select_event__"
+          }
+        ],
+        "skipUrlSync": false
+      },
+      {
+        "name": "event_ns",
+        "label": "Selected stored timestamp (ns)",
+        "type": "textbox",
+        "hide": 2,
+        "query": "__select_event__",
+        "current": {
+          "selected": true,
+          "text": "__select_event__",
+          "value": "__select_event__"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "__select_event__",
+            "value": "__select_event__"
+          }
+        ],
+        "skipUrlSync": false
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "PROVISIONAL · Development Loki only",
+      "type": "text",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 4
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "### Error overview · Development only\n\n**One row per error type. Click the type to investigate its messages and sessions.** Adjust application, API mode, version and time above. The text filter is blank by default so controlled markers do not hide other errors.\n\nCounts describe stored exception records—not unique bugs or users. “Recorded sessions” counts nonempty session IDs per type; do not add these across types. “Latest stored occurrence” is Loki time, which can differ from client time after replay. No rows means no matching stored errors, not proof the app is healthy. For a user stuck without an exception, open wallet/session/journey investigation."
+      }
+    },
+    {
+      "id": 2,
+      "title": "Error records · application scope",
+      "type": "stat",
+      "description": "Matching exception records for application/API mode/version/time/error-record text. Not scoped to the selected session or wallet; not an error rate or outage verdict.",
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 5,
+        "h": 6
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "mappings": [],
+          "noValue": "—"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=${application:doublequote} | app_environment=${environment:doublequote} | app_version=${release:doublequote} | kind=\"exception\" |= ${error_marker:doublequote} | label_format type=`{{ if .type }}{{ .type }}{{ else }}(unknown type){{ end }}` [$__range])) or vector(0)",
+          "queryType": "instant",
+          "instant": true,
+          "range": false,
+          "direction": "forward",
+          "maxLines": 1000
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "value",
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 3,
+      "title": "Error types · click to investigate",
+      "type": "table",
+      "description": "One row per observed exception type (missing type shown as unknown). Query-time aggregation only, no new ingestion labels/metrics. Session IDs exclude empty values and can recur across types. Latest is stored Loki time, not necessarily browser event time. Distinct-session aggregation needs realistic scale testing; no thresholds/baselines.",
+      "gridPos": {
+        "x": 5,
+        "y": 4,
+        "w": 19,
+        "h": 12
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "mappings": [],
+          "noValue": "—"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "type"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Error type"
+              },
+              {
+                "id": "custom.width",
+                "value": 400
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Investigate this error type",
+                    "url": "/d/layerswap-faro-dev-slice?orgId=1&from=${__from}&to=${__to}&var-application=${application:percentencode}&var-environment=${environment:percentencode}&var-release=${release:percentencode}&var-wallet_address=${wallet_address:percentencode}&var-error_marker=${error_marker:percentencode}&var-error_type=${__data.fields[\"type\"]:percentencode}&var-error_hash=.*&var-session_id=__select_session__&var-event_time=__select_event__&var-event_kind=__select_event__&var-event_ns=__select_event__",
+                    "targetBlank": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Recorded sessions"
+            },
+            "properties": [
+              {
+                "id": "noValue",
+                "value": "0"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Latest stored occurrence"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              },
+              {
+                "id": "custom.width",
+                "value": 250
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "editorMode": "code",
+          "expr": "label_replace(sum by (type) (count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=${application:doublequote} | app_environment=${environment:doublequote} | app_version=${release:doublequote} | kind=\"exception\" |= ${error_marker:doublequote} | label_format type=`{{ if .type }}{{ .type }}{{ else }}(unknown type){{ end }}` | keep type [$__range])), \"statistic\", \"Error records\", \"type\", \".*\") or label_replace(count by (type) (sum by (type, session_id) (count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=${application:doublequote} | app_environment=${environment:doublequote} | app_version=${release:doublequote} | kind=\"exception\" |= ${error_marker:doublequote} | label_format type=`{{ if .type }}{{ .type }}{{ else }}(unknown type){{ end }}` | session_id!=\"\" | keep type, session_id [$__range]))), \"statistic\", \"Recorded sessions\", \"type\", \".*\") or label_replace(max by (type) (max_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=${application:doublequote} | app_environment=${environment:doublequote} | app_version=${release:doublequote} | kind=\"exception\" |= ${error_marker:doublequote} | label_format type=`{{ if .type }}{{ .type }}{{ else }}(unknown type){{ end }}` | label_format stored_ms=`{{ __timestamp__ | unixEpochMillis }}` | keep type, stored_ms | unwrap stored_ms | __error__=\"\" [$__range])), \"statistic\", \"Latest stored occurrence\", \"type\", \".*\")",
+          "queryType": "instant",
+          "instant": true,
+          "range": false,
+          "direction": "forward",
+          "maxLines": 1000
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "countRows": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        },
+        "sortBy": [
+          {
+            "displayName": "Error records",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns",
+            "valueLabel": "statistic"
+          }
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "type": 0,
+              "Error records": 1,
+              "Recorded sessions": 2,
+              "Latest stored occurrence": 3
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -3,9 +3,8 @@ import CountdownTimer from '@/components/Common/CountDownTimer';
 import { useCallbacks } from '@/context/callbackProvider';
 import { useDepositSettings } from '@/context/depositSettings';
 import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
-import { SwapFailureReason } from '@/hooks/useSwapRetry';
 import { getExplorerUrl } from '@/lib/address/explorerUrl';
-import LayerSwapApiClient, {
+import {
     BackendTransactionStatus,
     SwapBasicData,
     SwapDetails,
@@ -14,27 +13,25 @@ import LayerSwapApiClient, {
     TransactionType,
 } from '@/lib/apiClients/layerSwapApiClient';
 import { ErrorHandler } from '@/lib/ErrorHandler';
-import { ApiResponse } from '@/Models/ApiResponse';
 import {
     useGaslessAuthorizationStore,
     useSwapTransactionStore,
 } from '@/stores/swapTransactionStore';
-import { SwapStatus, type Refuel } from '@layerswap/widget-types';
-import { FC, useCallback, useEffect, useRef } from 'react';
+import { type Refuel } from '@layerswap/widget-types';
+import { FC, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useIntercom } from 'react-use-intercom';
-import useSWR from 'swr';
 import Failed from '../Failed';
 import { ProcessingView } from '../Presentation/ProcessingView';
 import { useSwapDataState } from '@/context/swap';
-
-const apiClient = new LayerSwapApiClient();
+import { lifecycleContextFromSwap, PHASE_LIFECYCLE_EVENTS } from '@/lib/swapLifecycle';
+import { useLifecycleObservation } from '@/hooks/useLifecycleObservation';
+import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect';
 
 type Props = {
     swapBasicData: SwapBasicData;
     swapDetails: SwapDetails;
     quote: SwapQuote | undefined;
     refuel: Refuel | undefined;
-    failureReason?: SwapFailureReason;
     inputFailureMessage?: string;
 };
 
@@ -43,11 +40,10 @@ const Processing: FC<Props> = ({
     swapDetails,
     quote,
     refuel,
-    failureReason,
     inputFailureMessage,
 }) => {
     const { boot, show, update } = useIntercom();
-    const { onSwapStatusChange } = useCallbacks();
+    const { onSwapLifecycle } = useCallbacks();
     const { depositActionsResponse } = useSwapDataState();
     const { isDepositFlow } = useDepositSettings();
     const setSwapTransaction = useSwapTransactionStore(
@@ -64,7 +60,7 @@ const Processing: FC<Props> = ({
             : undefined,
     );
 
-    const { source_network } = swapBasicData;
+    const { source_network, source_token, destination_network, destination_token } = swapBasicData;
 
     const startIntercom = useCallback(() => {
         boot();
@@ -86,27 +82,24 @@ const Processing: FC<Props> = ({
         swapInputTransaction?.max_confirmations ??
         gaslessAuthTx?.max_confirmations;
 
-    const { data: inputTxStatusData } = useSWR<
-        ApiResponse<{ status: TransactionStatus }>
-    >(
-        transactionHash &&
-            swapInputTransaction?.status !== BackendTransactionStatus.Completed
-            ? [source_network?.name, transactionHash]
-            : null,
-        ([network, tx_id]) =>
-            apiClient.GetTransactionStatus(network, tx_id as any),
-        { dedupingInterval: 6000 },
-    );
+    const swapOutputTransaction = swapDetails.transactions?.find(t => t.type === TransactionType.Output);
+    const lifecycleContext = useMemo(
+        () => lifecycleContextFromSwap(swapBasicData, swapDetails),
+        [
+            destination_network.name,
+            destination_token.symbol,
+            source_network.name,
+            source_token.symbol,
+            swapBasicData.destination_address,
+            swapBasicData.requested_amount,
+            swapBasicData.use_deposit_address,
+            swapDetails.id,
+            swapDetails.source_address,
+        ],
+    )
 
-    const inputTxStatusFromApi =
-        inputTxStatusData?.data?.status?.toLowerCase() as
-            | TransactionStatus
-            | undefined;
-    const resolved = useResolvedSwapStatus({
-        inputTxStatusFromApi,
-        gaslessAuthorizationFailed: failureReason === 'gasless_deposit_failed',
-    });
-    const { swapInputTxStatus } = resolved;
+    const resolved = useResolvedSwapStatus();
+    const { phase, swapInputTxStatus, inputReady, failureReason } = resolved;
 
     const loggedNotDetectedTxAt = useRef<number | null>(null);
 
@@ -138,6 +131,9 @@ const Processing: FC<Props> = ({
                     name: error.name,
                     stack: error.stack,
                     cause: error.cause,
+                    swapId: swapDetails.id,
+                    transactionHash,
+                    network: source_network.name,
                 });
             }
         }
@@ -194,21 +190,65 @@ const Processing: FC<Props> = ({
         swapBasicData?.destination_address,
     ]);
 
+    // Once per hash by design: status changes are reported by input_transfer_confirmed, and the
+    // context is read from a ref so later enrichment cannot re-run it. Allowlisted in tests/lifecycle-effect-emitters.test.mjs.
+    const lifecycleContextRef = useRef(lifecycleContext)
+    useClientLayoutEffect(() => { lifecycleContextRef.current = lifecycleContext })
     useEffect(() => {
-        const status = swapDetails?.status;
-        if (
-            status === SwapStatus.Completed ||
-            status === SwapStatus.Failed ||
-            status === SwapStatus.Expired ||
-            status === SwapStatus.LsTransferPending
-        ) {
-            onSwapStatusChange({
-                type: status,
-                swapId: swapDetails?.id!,
-                path: 'Processing',
-            });
-        }
-    }, [swapDetails?.status, swapDetails?.id]);
+        if (!swapInputTransaction?.transaction_hash) return
+        onSwapLifecycle({
+            step: 'input_transaction_detected',
+            stage: 'input_transfer',
+            outcome: 'pending',
+            path: 'Processing',
+            transactionHash: swapInputTransaction.transaction_hash,
+            inputTransactionHash: swapInputTransaction.transaction_hash,
+            status: swapInputTransaction.status,
+            confirmations: swapInputTransaction.confirmations,
+            maxConfirmations: swapInputTransaction.max_confirmations,
+            ...lifecycleContextRef.current,
+        })
+    }, [
+        onSwapLifecycle,
+        swapInputTransaction?.transaction_hash,
+    ])
+
+    // Transaction and phase observations are keyed on their observation fingerprint
+    // (hash, status, outcome, phase, reason): a later source address or confirmation
+    // count enriches the report without repeating it.
+    useLifecycleObservation(inputReady && swapInputTransaction ? {
+        step: 'input_transfer_confirmed',
+        stage: 'input_transfer',
+        outcome: 'succeeded',
+        path: 'Processing',
+        transactionHash: swapInputTransaction.transaction_hash,
+        inputTransactionHash: swapInputTransaction.transaction_hash,
+        status: swapInputTransaction.status,
+        confirmations: swapInputTransaction.confirmations,
+        maxConfirmations: swapInputTransaction.max_confirmations,
+    } : undefined, lifecycleContext)
+
+    useLifecycleObservation(swapOutputTransaction?.transaction_hash ? {
+        step: 'output_transaction_detected',
+        stage: 'output_transfer',
+        outcome: swapOutputTransaction.status === BackendTransactionStatus.Completed
+            ? 'succeeded'
+            : swapOutputTransaction.status === BackendTransactionStatus.Failed ? 'failed' : 'pending',
+        path: 'Processing',
+        transactionHash: swapOutputTransaction.transaction_hash,
+        outputTransactionHash: swapOutputTransaction.transaction_hash,
+        status: swapOutputTransaction.status,
+        confirmations: swapOutputTransaction.confirmations,
+        maxConfirmations: swapOutputTransaction.max_confirmations,
+    } : undefined, lifecycleContext)
+
+    useLifecycleObservation({
+        ...PHASE_LIFECYCLE_EVENTS[phase],
+        path: 'Processing',
+        status: swapDetails.status,
+        phase,
+        reasonCode: swapDetails.fail_reason || failureReason,
+    }, lifecycleContext)
 
     return (
         <ProcessingView
