@@ -1,6 +1,7 @@
 import { type Wallet } from '@layerswap/widget-types';
 import type { Connector } from 'wagmi'
-import { getDynamicWcMetadata, getPendingDynamicWcMetadata, type AppNetworkAdapter } from "@layerswap/wallet-core"
+import { getDynamicWcMetadata, getPendingDynamicWcMetadata } from "@layerswap/wallet-core"
+import type { AppNetworkAdapter } from "@layerswap/utils"
 import { evmConnectorNameResolver, resolveEVMWalletConnectorIcon } from '../evmUtils'
 import { HIDDEN_WALLETCONNECT_ID, immutableZKEvm } from '../constants'
 import type { LSConnector } from '../connectors/types'

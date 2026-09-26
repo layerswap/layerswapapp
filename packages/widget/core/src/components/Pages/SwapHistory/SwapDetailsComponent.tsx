@@ -1,7 +1,7 @@
 import { SwapStatus } from '@layerswap/widget-types';
 import { FC, useState } from 'react'
 import { SwapResponse, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
-import { CopyButton } from "@layerswap/ui-kit/components";
+import { CopyButton } from "@layerswap/ui-kit";
 import StatusIcon from './StatusIcons';
 import { ExternalLink } from 'lucide-react';
 import isGuid from '@/components/utils/isGuid';
@@ -13,13 +13,12 @@ import { useSettingsState } from '@/context/settings';
 import { generateSwapInitialValuesFromSwap } from '@/lib/generateSwapInitialValues';
 import SubmitButton from '@/components/Buttons/submitButton';
 import SecondaryButton from '@/components/Buttons/secondaryButton';
-import shortenString from '@/components/utils/ShortenString';
-import { getExplorerUrl } from '@/lib/address/explorerUrl';
+import { getExplorerUrl, shortenString } from '@layerswap/utils';
 import useWallet from '@/hooks/useWallet';
 import { Address } from '@/lib/address/Address';
-import AddressIcon from '@/components/Common/AddressIcon';
-import WalletIconView from '@/components/Wallet/WalletIconView';
-import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon';
+import { AddressIcon } from '@layerswap/ui-kit';
+import { WalletIconView } from '@layerswap/ui-kit';
+import { ExtendedAddress } from '@layerswap/ui-kit';
 
 type Props = {
     swapResponse: SwapResponse

@@ -14,7 +14,7 @@ import { NetworkRoute } from '@layerswap/widget-types';
 import useSWRGas from '@/lib/gases/useSWRGas';
 import { useFormikContext } from 'formik';
 import { SwapFormValues } from '../Form/SwapFormValues';
-import { truncateDecimals } from '@/components/utils/RoundDecimals';
+import { truncateDecimals } from '@layerswap/utils';
 import { transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import useOutOfGas from '@/lib/gases/useOutOfGas';
 import InfoIcon from '@/components/Icons/InfoIcon';

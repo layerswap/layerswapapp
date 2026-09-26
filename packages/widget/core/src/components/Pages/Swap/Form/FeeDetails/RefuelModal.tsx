@@ -1,5 +1,5 @@
 import { Dispatch, FC, SetStateAction } from 'react';
-import { truncateDecimals } from '@/components/utils/RoundDecimals';
+import { truncateDecimals } from '@layerswap/utils';
 import { useFormikContext } from 'formik';
 import { useBalance } from '@/lib/balances/useBalance';
 import { useQuoteData } from '@/hooks/useFee';

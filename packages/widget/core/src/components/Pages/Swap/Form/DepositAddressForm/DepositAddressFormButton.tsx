@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { useCopyClipboard } from "@layerswap/ui-kit";
+import { useCopyClipboard } from "@layerswap/utils";
 import { SubmitButton } from "@/components/Buttons";
 import { SwapFormValues } from "../SwapFormValues";
 

@@ -1,5 +1,5 @@
 import InfoIcon from "@/components/Icons/InfoIcon";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@layerswap/ui-kit";
 import { RefreshCw } from "lucide-react";
 import { ReactNode } from "react";
 

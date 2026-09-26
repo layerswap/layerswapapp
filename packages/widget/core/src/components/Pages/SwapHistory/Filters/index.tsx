@@ -4,7 +4,7 @@ import WalletsDropdown from './WalletsDropdown'
 import NetworksDropdown from './NetworksDropdown'
 import ClearAllButton from './ClearAllButton'
 import { FilterNetworkOption } from './types'
-import { SearchComponent } from "@layerswap/ui-kit/components";
+import { SearchComponent } from "@layerswap/ui-kit";
 import { HistoryWalletAddress } from '@/lib/historyWalletAddresses'
 
 type FiltersProps = {
