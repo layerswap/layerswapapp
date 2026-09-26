@@ -9,6 +9,11 @@ const REMOTE_PATTERNS = [
 
 const nextConfig = {
     reactStrictMode: true,
+    experimental: {
+        // TypeScript 7 is the native compiler and ships no JS compiler API, so
+        // Next has to shell out to `tsc` for the build's type-check step.
+        useTypeScriptCli: true,
+    },
     images: {
         remotePatterns: REMOTE_PATTERNS,
     },
