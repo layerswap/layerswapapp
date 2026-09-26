@@ -21,7 +21,9 @@
     "dist/**/*"
   ],
   "scripts": {
-    "build": "pnpm clean && pnpm build:esm+types",
+    "build": "pnpm generate:shares && pnpm clean && pnpm build:esm+types",
+    "generate:shares": "node scripts/generate-react-shares.mjs",
+    "check:shares": "node scripts/generate-react-shares.mjs --check",
     "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm && tsc-alias -p tsconfig.json --outDir ./dist/types",
     "check:types": "tsc --noEmit && tsc --project tsconfig.type-tests.json --noEmit",
     "clean": "rimraf dist tsconfig.tsbuildinfo",
@@ -53,6 +55,9 @@
     "@layerswap/widget-js": "workspace:*"
   },
   "devDependencies": {
+    "@layerswap/wallets": "workspace:^",
+    "@layerswap/widget": "workspace:^",
+    "@layerswap/widget-cdn": "workspace:*",
     "@types/react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",

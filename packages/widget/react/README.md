@@ -182,6 +182,29 @@ For transient loading failures, remount the widget to retry after the underlying
 issue clears. The `fallback` remains visible after an outer render failure;
 use top-level `onError` to show an appropriate error or retry state.
 
+## How it works
+
+1. `<LayerswapWidget>` fetches `manifest.json` from the CDN channel URL
+   baked into `@layerswap/widget-js`.
+2. If `manifest.killSwitch === true`, refuses to load and fires
+   `onError` with `ManifestError('kill-switch')`.
+3. Verifies a detached ECDSA P-256 signature on the manifest body against
+   the public key baked into this package. Tampered / unsigned manifests
+   are rejected.
+4. Calls `@module-federation/runtime` to load `manifest.remoteEntry`
+   (resolved relative to the manifest URL). React and react-dom are
+   registered into the MF shared scope from the host as singletons, including
+   the JSX runtimes and ReactDOM renderer entry points used by the remote.
+   React and ReactDOM must have the same version (React 18 or 19). The remote
+   reuses those host modules together, avoiding a mixture of React 18 and 19.
+   Everything else (wagmi, viem, react-query, zustand, wallet SDKs)
+   is bundled inside the remote.
+5. The remote's exposed `./Widget` component is rendered via
+   `React.lazy` inside the host's React tree.
+
+Heavy dependencies stay in the remote bundle on the CDN instead of being added
+to your app's bundle.
+
 ## Content Security Policy
 
 If your app uses a CSP, allow the widget CDN in `script-src` and `connect-src`,
@@ -194,6 +217,78 @@ Include `https://layerswap.io` in `connect-src`: the widget fetches extended-rou
 flags from `/app/api/flags`, and Polymarket withdrawals use
 `/app/api/polymarket/relay`. Also allow the WalletConnect and chain RPC endpoints
 used by your enabled providers, including any custom wagmi transports.
+
+```text
+Content-Security-Policy:
+  default-src 'self';
+  script-src  'self' https://cdn.layerswap.io;
+  connect-src 'self' https://cdn.layerswap.io https://api.layerswap.io
+              https://layerswap.io https://*.walletconnect.com
+              https://*.walletconnect.org;
+  style-src   'self' 'unsafe-inline';
+  img-src     'self' data: https:;
+  font-src    'self' data:;
+  frame-src   'self';
+```
+
+Notes:
+- The CDN origin appears in both `script-src` (remoteEntry + chunks) and
+  `connect-src` (manifest fetch).
+- `https://layerswap.io` in `connect-src` covers the extended-route feature
+  flags endpoint (`/app/api/flags`) and the Polymarket relayer proxy
+  (`/app/api/polymarket/relay`) — without it those routes are disabled or
+  fail at withdrawal time.
+- `'unsafe-inline'` for `style-src` is required because the widget injects
+  styles via `style-loader` at runtime. Removing this requires a build
+  change in `apps/widget-cdn`.
+- `connect-src` includes WalletConnect relays — without them, WC v2
+  connections fail.
+- Add any additional RPC endpoints your wagmi `transports` use, plus the
+  default public RPC endpoints of the chains you enable.
+
+## Failure modes
+
+| Symptom | `onError` payload | Cause |
+|---|---|---|
+| Widget never mounts, error in console | `TypeError: fetch` etc. | Manifest URL unreachable / CORS misconfigured on the CDN. |
+| Widget never mounts | `ManifestError('parse')` | Manifest JSON missing `remoteEntry` field. |
+| Widget never mounts | `ManifestError('kill-switch')` | Operational kill-switch set on the manifest. |
+| Widget never mounts | `ManifestError('signature')` | Manifest has no/invalid signature (verification is always on). |
+| Widget never mounts | `ManifestError('stale')` | Manifest expired (or carries no validity window) — replay protection refuses possibly-rolled-back builds. Layerswap re-publishing the channel resolves it. |
+| Widget never mounts | `ManifestError('incompatible')` | Manifest protocol major does not match this loader package major. |
+| Widget loads but errors at render | Component-level | Catch via `callbacks.onError`. |
+
+## Local development
+
+The widget source and signature verification policy are owned entirely by
+`@layerswap/widget-js`. They cannot be changed through props, environment
+variables, or globals. The runnable Vite host in
+`examples/widget-react-host/` therefore exercises the same signed production
+channel as an integrator.
+
+### Maintaining React sharing
+
+The loader build generates `src/reactShares.generated.ts` from the CDN's
+production and development graphs, including dependency, lazy, and emitted
+JSX imports. No CDN assets are emitted. Use `pnpm --filter
+@layerswap/widget-react check:shares` to check the generated file.
+
+React module imports are discovered automatically, without a manually maintained
+module list. Newly required modules need an updated loader in customer builds;
+generation does not update loaders already deployed by customers.
+Vanilla hosts continue using the CDN's own React/ReactDOM pair.
+
+Customers using the previous loader must receive the updated loader and
+rebuild their app to supply the missing host modules, alongside the CDN fix.
+
+## Security model
+
+In-page CDN delivery means the widget's code runs in your host's
+context. Trust is rooted in **the signing key baked into this package**
+(see `src/manifest.ts`). Rotating the production key requires a new
+`@layerswap/widget-react` release; integrators with SRI-pinned installs
+upgrade by bumping the package version. The CDN itself does not sign
+anything — it just hosts the artifact and the manifest.
 
 ## Further reading
 

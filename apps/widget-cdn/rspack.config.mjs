@@ -33,8 +33,16 @@ const depVersion = (pkg) => {
 
 // Versions that must match between host and remote (catalog-aligned).
 const SHARED_SINGLETONS = {
-  react: { singleton: true, requiredVersion: false, eager: false, version: depVersion('react') },
-  'react-dom': { singleton: true, requiredVersion: false, eager: false, version: depVersion('react-dom') },
+  // Share each React package and all of its subpaths. The loader discovers
+  // the concrete host modules automatically during its build.
+  ...Object.fromEntries(['react', 'react-dom'].flatMap((pkg) =>
+    [pkg, `${pkg}/`].map((request) => [request, {
+      singleton: true,
+      requiredVersion: '>=18.0.0 <20.0.0',
+      eager: false,
+      version: depVersion(pkg),
+    }]),
+  )),
   wagmi: { singleton: true, requiredVersion: false, eager: false, version: depVersion('wagmi') },
   viem: { singleton: true, requiredVersion: false, eager: false, version: depVersion('viem') },
   '@tanstack/react-query': { singleton: true, requiredVersion: false, eager: false, version: depVersion('@tanstack/react-query') },
@@ -51,6 +59,14 @@ const SHARED_SINGLETONS = {
 // resolved identically by `build-manifest.mjs`, `verify-manifest.mjs`, and
 // `deploy-azure.mjs`, so all four agree on the output directory.
 const { buildId: BUILD_ID } = resolveBuildIdentity(__dirname);
+
+// Discovery and federation must analyze the same entry graph.
+export const WIDGET_EXPOSES = {
+  './Widget': './src/Widget.tsx',
+  './mount': './src/mount.tsx',
+  './DepositWidget': './src/DepositWidget.tsx',
+  './mountDeposit': './src/mountDeposit.tsx',
+};
 
 // Dev-only: emit a minimal `manifest.json` next to `remoteEntry.js` so the
 // loader's (now sole) manifest path works against the dev server. Mirrors the
@@ -87,6 +103,7 @@ const devManifestPlugin = {
 export default (env, argv) => {
   const isProd = argv?.mode === 'production' || process.env.NODE_ENV === 'production';
   return {
+    context: __dirname,
     mode: isProd ? 'production' : 'development',
     devtool: isProd ? 'source-map' : 'eval-cheap-module-source-map',
     entry: {}, // Pure remote — no app entry.
@@ -120,6 +137,10 @@ export default (env, argv) => {
       // doesn't, and `fallback` only fires when the original resolve fails.
       // Aliasing forces resolution through widget-cdn's own copies.
       alias: {
+        // Fallback providers must also be one coherent runtime: nested wallet
+        // dependencies can install React 18 alongside the CDN's React 19.
+        react: path.dirname(require.resolve('react/package.json')),
+        'react-dom': path.dirname(require.resolve('react-dom/package.json')),
         buffer: polyfillDir('buffer'),
         crypto: polyfillDir('crypto-browserify'),
         stream: polyfillDir('stream-browserify'),
@@ -198,18 +219,7 @@ export default (env, argv) => {
       new ModuleFederationPlugin({
         name: 'layerswap_widget',
         filename: 'remoteEntry.js',
-        exposes: {
-          './Widget': './src/Widget.tsx',
-          // Imperative mount entry for framework-agnostic hosts. Owns its own
-          // React root so non-React pages can embed it without a host framework.
-          './mount': './src/mount.tsx',
-          // Deposit widget: fixed-destination funding flow. Same pairing —
-          // React hosts consume the component, vanilla hosts the mount.
-          // Additive expose: older loaders never request it, so this rolls
-          // within protocol v1.
-          './DepositWidget': './src/DepositWidget.tsx',
-          './mountDeposit': './src/mountDeposit.tsx',
-        },
+        exposes: WIDGET_EXPOSES,
         shared: SHARED_SINGLETONS,
         // Disable MF's dev-only live-reload bridge. With the remote consumed
         // by a host on a different origin (Vite on :3001), MF's bundled
