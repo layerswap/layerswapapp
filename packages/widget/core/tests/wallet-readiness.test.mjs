@@ -58,7 +58,7 @@ const hooks = registerHooks({
   resolve(specifier, context, nextResolve) {
     if (context.parentURL?.endsWith('/components/Pages/Swap/Withdraw/Wallet/index.js')) {
       if (specifier === '@layerswap/wallet-core') return { url: providerReadinessUrl, shortCircuit: true }
-      if (specifier === '@layerswap/ui-kit/components' || mockedDependencies.some(path => specifier.endsWith(path))) {
+      if (specifier === '@layerswap/ui-kit' || mockedDependencies.some(path => specifier.endsWith(path))) {
         return { url: mockUrl, shortCircuit: true }
       }
     }
