@@ -34,5 +34,4 @@ NEXT_PUBLIC_FARO_SAMPLE_RATE: 1 # optional; defaults to all sessions
 ```
 
 See the [Grafana guide](grafana/README.md) for configuration, dashboards,
-tracing and source maps, and the [telemetry contract](grafana/faro-telemetry-contract.md)
-for event fields and behavior.
+lifecycle event fields, tracing and source maps.
