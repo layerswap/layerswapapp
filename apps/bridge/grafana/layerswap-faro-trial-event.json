@@ -9,7 +9,7 @@
     }
   },
   "spec": {
-    "title": "Event details \u00b7 Native trial",
+    "title": "Event details - Native trial",
     "description": "Development telemetry. Usability trial; not a production health dashboard.",
     "tags": [
       "layerswap",
@@ -437,7 +437,7 @@
         "kind": "Panel",
         "spec": {
           "id": 1,
-          "title": "Session \u00b7 ${session_id}",
+          "title": "Session - ${session_id}",
           "description": "",
           "links": [],
           "data": {
@@ -488,7 +488,7 @@
                       "group": "loki",
                       "version": "v0",
                       "datasource": {
-                        "name": "P8E80F9AEF21F6940"
+                        "name": "${DS_LOKI}"
                       },
                       "spec": {
                         "expr": "{source=\"faro\"} | logfmt | __error__=\"\" | label_format needle_application=`${application:percentencode}` | label_format needle_application=`{{ urldecode .needle_application }}` | label_format matched=`{{ (eq .app_name .needle_application) }}` | matched=\"true\" | label_format needle_release=`${release:percentencode}` | label_format needle_release=`{{ urldecode .needle_release }}` | label_format matched=`{{ or (eq .needle_release \"\") (eq .app_version .needle_release) }}` | matched=\"true\" | label_format deployment=`{{ if .page_attr_deployment_environment }}{{ .page_attr_deployment_environment }}{{ else }}unknown{{ end }}` | label_format needle_deployment=`${deployment:percentencode}` | label_format needle_deployment=`{{ urldecode .needle_deployment }}` | label_format matched=`{{ or (eq .needle_deployment \"\") (eq .deployment .needle_deployment) }}` | matched=\"true\" | label_format needle_session_id=`${session_id:percentencode}` | label_format needle_session_id=`{{ urldecode .needle_session_id }}` | label_format matched=`{{ (eq .session_id .needle_session_id) }}` | matched=\"true\" | session_id!=\"\" | label_format stored_ns=`ns:{{ __timestamp__ | unixEpochNanos }}` | label_format window_from=`{{ sub (unixEpochMillis (__timestamp__)) 300000 }}` | label_format window_to=`{{ add (unixEpochMillis (__timestamp__)) 300000 }}` | label_format needle_event_ns=`${event_ns:percentencode}` | label_format needle_event_ns=`{{ urldecode .needle_event_ns }}` | label_format needle_event_ns=`{{ if .needle_event_ns }}ns:{{ .needle_event_ns | trimPrefix \"ns:\" }}{{ end }}` | label_format matched=`{{ (eq .stored_ns .needle_event_ns) }}` | matched=\"true\"",

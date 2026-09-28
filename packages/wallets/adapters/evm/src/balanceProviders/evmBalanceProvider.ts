@@ -239,42 +239,8 @@ export const getErc20Balances = async ({
                 contracts: contracts,
             })
 
-            const failedIndices: number[] = []
-            contractRes.forEach((result, index) => {
-                if (result.status === 'failure') {
-                    failedIndices.push(index)
-                }
-            })
-
-            if (failedIndices.length > 0) {
-                const mutableResults = [...contractRes] as ERC20ContractRes[]
-
-                await Promise.all(failedIndices.map(async (index) => {
-                    const contract = contracts[index]
-                    try {
-                        const balance = await publicClient.readContract({
-                            address: contract.address,
-                            abi: erc20Abi,
-                            functionName: 'balanceOf',
-                            args: [address as `0x${string}`]
-                        })
-                        mutableResults[index] = {
-                            status: 'success',
-                            result: balance,
-                            error: undefined
-                        }
-                    } catch (e) {
-                        mutableResults[index] = {
-                            status: 'failure',
-                            result: null,
-                            error: e instanceof Error ? e : new Error(String(e))
-                        }
-                    }
-                }))
-
-                return mutableResults
-            }
-
+            // Failed calls stay failures: re-requesting them one by one only multiplies
+            // requests against an RPC that is already rate limiting us.
             return contractRes
         }
         else {

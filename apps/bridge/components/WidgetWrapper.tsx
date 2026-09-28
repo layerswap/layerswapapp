@@ -13,6 +13,7 @@ import { getDefaultProviders } from "@layerswap/wallets";
 import { QueryParams } from "../helpers/querryHelper"
 import { logError } from "./utils/logError"
 import { captureEvent } from "../lib/faro"
+import { shouldCaptureWidgetTelemetry } from "../lib/faro-policy"
 import { useSwapLifecycleTelemetry } from "../hooks/useSwapLifecycleTelemetry"
 import FaroWalletContext from './FaroWalletContext'
 import {
@@ -173,7 +174,7 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
     const hostOnError = baseCallbacks?.onError
     const hostOnTelemetry = baseCallbacks?.onTelemetry
     const handleTelemetry = useCallback((event: WidgetTelemetryEvent) => {
-        captureEvent(event.name, { ...event.attributes, route: router.pathname })
+        if (shouldCaptureWidgetTelemetry(event)) captureEvent(event.name, { ...event.attributes, route: router.pathname })
         hostOnTelemetry?.(event)
     }, [hostOnTelemetry, router.pathname])
 

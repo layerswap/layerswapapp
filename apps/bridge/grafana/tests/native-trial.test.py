@@ -5,7 +5,7 @@ import re
 import sys
 import unittest
 from pathlib import Path
-from urllib.parse import parse_qs, quote, urlsplit
+from urllib.parse import parse_qs, quote, unquote, urlsplit
 
 sys.dont_write_bytecode = True
 spec = importlib.util.spec_from_file_location('trial', Path(__file__).parents[1] / 'build-native-trial.py')
@@ -120,6 +120,15 @@ class NativeTrialNavigation(unittest.TestCase):
         for dashboard in trial.build():
             self.assertEqual(dashboard['metadata']['annotations']['grafana.app/grant-permissions'], 'default')
 
+    def test_dashboard_and_panel_titles_are_safe_for_browser_request_headers(self):
+        # Grafana forwards these as HTTP header values; non-ASCII separators
+        # caused production 403s despite successful headless queries.
+        for dashboard in trial.build():
+            titles = [dashboard['spec']['title']] + [
+                panel['spec']['title'] for panel in dashboard['spec']['elements'].values()]
+            for title in titles:
+                self.assertTrue(title and all(32 <= ord(char) <= 126 for char in title), title)
+
     def test_native_loki_instant_tables_join_without_a_metric_label(self):
         panel = self.views['spec']['elements']['panel-2']['spec']
         self.assertNotIn('labelsToFields', [t['group'] for t in panel['data']['spec']['transformations']])
@@ -154,7 +163,7 @@ class NativeTrialNavigation(unittest.TestCase):
             self.assertEqual(params['var-journey_id'], [''])
             self.assertEqual((params['from'], params['to']), (['3000'], ['5000']))
         funnel = [elements['panel-%d' % id]['spec']['title'] for id in [30, 39, 40, 43, 44, 41, 42]]
-        self.assertEqual(funnel, [t + ' · form visits' for t in ['Viewed', 'Started', 'Submitted', 'Wallet prompted', 'Transaction submitted', 'Deposit observed', 'Completion observed']])
+        self.assertEqual(funnel, [t + ' - form visits' for t in ['Viewed', 'Started', 'Submitted', 'Wallet prompted', 'Transaction submitted', 'Deposit observed', 'Completion observed']])
         self.assertIn('event_data_transfer_submitted="true"', elements['panel-44']['spec']['data']['spec']['queries'][0]['spec']['query']['spec']['expr'])
 
     def test_transfer_alerts_use_journey_counts_and_their_own_windows(self):
@@ -176,6 +185,26 @@ class NativeTrialNavigation(unittest.TestCase):
             self.assertIn('panel-' + rule['annotations']['__panelId__'], self.views['spec']['elements'])
             # Only regex backreferences may remain; no dashboard variables or Grafana globals.
             self.assertIsNone(re.search(r'\$\{[a-z_]|\$__', rule['data'][0]['model']['expr']))
+
+    def test_committed_resources_contain_no_datasource_uids(self):
+        # Datasource UIDs identify a Grafana instance; the public repo keeps placeholders only.
+        allowed = {'${DS_LOKI}', '${DS_TEMPO}', '__expr__', '-- Grafana --'}
+        def walk(node):
+            if isinstance(node, dict):
+                for key, value in node.items():
+                    if key == 'datasourceUid': yield value
+                    if key == 'datasource': yield value.get('uid', value.get('name')) if isinstance(value, dict) else value
+                    yield from walk(value)
+            elif isinstance(node, list):
+                for item in node: yield from walk(item)
+        root = Path(__file__).parents[1]
+        for path in root.glob('*.json'):
+            for uid in walk(json.loads(path.read_text())):
+                self.assertIn(uid, allowed, path.name)
+        session = json.loads((root / 'layerswap-faro-trial-session.json').read_text())
+        trace_link = unquote(data_link(session, 'panel-11', 'traceID'))
+        self.assertIn('"datasource":"${DS_TEMPO}"', trace_link)
+        self.assertIn('"uid":"${DS_TEMPO}"', trace_link)
 
     def test_normalization_removes_dynamic_values_but_preserves_short_status_codes(self):
         def normalize(value):
