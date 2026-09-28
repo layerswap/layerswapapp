@@ -187,6 +187,61 @@ test('switching gasless mode preserves the live execution lock while swap creati
     }
 });
 
+test('a created same-network swap keeps quote details expanded until processing', async () => {
+    const root = createRoot(container);
+    const context = {
+        swapBasicData: {
+            source_network: network, destination_network: network,
+            source_token: token, destination_token: token,
+            use_deposit_address: false,
+        },
+    };
+    let showWithdrawScreen = true;
+    const { default: SwapDetails } = loadSource(`${withdraw}SwapDetails.tsx`, {
+        ...walletHooks,
+        './Presentation/Page2Sections': sections,
+        '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
+        '@/hooks/useIsGaslessActive': { useIsGaslessActive: () => false },
+        './Summary': { default: empty },
+        './SwapQuoteDetails': {
+            SwapQuoteDetails: ({ compact }) => React.createElement('button', { 'data-quote-details': true, hidden: compact }, 'See details'),
+        },
+        './Presentation/Page2Contained': { Page2Contained: childrenOnly },
+        '@/components/Common/Sceletons': { SwapDetailsSceleton: empty },
+        '@/components/Widget/Index': { Widget: childrenOnly },
+        '@/context/callbackProvider': { useCallbacks: () => ({ onBackClick: noop, onSwapLifecycle: noop }) },
+        '@/lib/swapLifecycle': {},
+        '@/context/swap': { useSwapDataState: () => context },
+        '@/hooks/useGaslessAuthorizationStatus': { useGaslessAuthorizationStatus: noop },
+        '@/hooks/useResolvedSwapStatus': { useResolvedSwapStatus: () => ({ showWithdrawScreen }) },
+        '@/hooks/useSwapRetry': { useSwapRetry: () => ({}) },
+        './ManualWithdraw': { default: empty },
+        './Presentation/RetryView': { RetryView: empty },
+        './Processing': { default: empty },
+        './Withdraw': { default: empty },
+    });
+    const render = () => act(() => root.render(React.createElement(SwapDetails, { type: 'contained' })));
+    try {
+        await render();
+        const details = container.querySelector('[data-quote-details]');
+        assert.equal(details.hidden, false);
+        context.swapId = 'awaiting-critical-confirmation';
+        await render();
+        assert.equal(container.querySelector('[data-quote-details]'), details);
+        assert.equal(details.hidden, false, 'assigning a swap id does not hide the quote during confirmation');
+        context.swapDetails = { id: context.swapId };
+        await render();
+        assert.equal(details.hidden, false, 'receiving created-swap details is not deposit submission');
+        assert.equal(container.querySelector('[data-quote-layout]').dataset.quoteLayout, 'separate');
+        showWithdrawScreen = false;
+        await render();
+        assert.equal(details.hidden, true);
+        assert.equal(container.querySelector('[data-quote-layout]').dataset.quoteLayout, 'attached');
+    } finally {
+        await act(() => root.unmount());
+    }
+});
+
 test('live recipient visibility preserves disconnected destinations and respects recorded or selected senders', async () => {
     const root = createRoot(container);
     let selectedAccount;

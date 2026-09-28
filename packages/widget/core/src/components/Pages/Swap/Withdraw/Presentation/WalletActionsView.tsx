@@ -133,6 +133,7 @@ export type SendTransactionViewProps = SubmitButtonProps & {
     priceImpactValues?: ReturnType<typeof resolvePriceImpactValues>;
     gaslessUnavailable?: boolean;
     gaslessFailureStage?: 'create' | 'deposit' | null;
+    canSwitchToStandard?: boolean;
     handleClick?: () => void;
     handleCriticalContinue?: () => void;
     retryGasless?: () => void;
@@ -157,6 +158,7 @@ export function SendTransactionView({
     priceImpactValues,
     gaslessUnavailable,
     gaslessFailureStage,
+    canSwitchToStandard = true,
     handleClick,
     handleCriticalContinue,
     retryGasless,
@@ -296,24 +298,26 @@ export function SendTransactionView({
                                     Try again
                                 </ButtonWrapper>
                             )}
-                            <ButtonWrapper
-                                icon={icon}
-                                {...props}
-                                buttonStyle={
-                                    gaslessFailureStage === 'deposit'
-                                        ? 'secondary'
-                                        : 'filled'
-                                }
-                                isSubmitting={
-                                    props.isSubmitting ||
-                                    loading ||
-                                    quoteIsLoading
-                                }
-                                onClick={switchToStandard}
-                                isDisabled={quoteIsLoading || !!quoteError}
-                            >
-                                Switch to standard transfer
-                            </ButtonWrapper>
+                            {canSwitchToStandard && (
+                                <ButtonWrapper
+                                    icon={icon}
+                                    {...props}
+                                    buttonStyle={
+                                        gaslessFailureStage === 'deposit'
+                                            ? 'secondary'
+                                            : 'filled'
+                                    }
+                                    isSubmitting={
+                                        props.isSubmitting ||
+                                        loading ||
+                                        quoteIsLoading
+                                    }
+                                    onClick={switchToStandard}
+                                    isDisabled={quoteIsLoading || !!quoteError}
+                                >
+                                    Switch to standard transfer
+                                </ButtonWrapper>
+                            )}
                         </div>
                     ) : (
                         <ButtonWrapper

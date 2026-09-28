@@ -21,6 +21,7 @@ import LayerSwapApiClient, {
     DepositAction,
     SwapBasicData,
     SwapDetails,
+    SwapResponse,
 } from '@/lib/apiClients/layerSwapApiClient';
 import { useBalance } from '@/lib/balances/useBalance';
 import { ErrorHandler } from '@/lib/ErrorHandler';
@@ -248,7 +249,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const { gasData } = useSWRGas(selectedSourceAccount?.address, networkWithTokens, swapBasicData.source_token, swapBasicData.requested_amount)
     const [actionStateText, setActionStateText] = useState<string | undefined>()
     const [loading, setLoading] = useState(false)
-    const [showCriticalMarketPriceImpactButtons, setShowCriticalMarketPriceImpactButtons] = useState(false)
+    const [criticalConfirmation, setCriticalConfirmation] = useState<SwapResponse>()
     const [workflowState, setWorkflowState] = useState<{ swapId: string, actions: DepositAction[], swapData?: SwapDetails }>()
     const executionInFlight = useRef(false)
     const executionScope = useRef<AbortController | null>(null)
@@ -267,6 +268,10 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         useDepositActionPolling(swapId, selectedSourceAccount?.address, loading)
 
     const activeWorkflowState = workflowState && workflowState.swapId === swapId ? workflowState : undefined
+    // Whole-swap polling can lag creation; confirm the quote for the swap being executed.
+    const activeCriticalConfirmation = criticalConfirmation?.swap.id === swapId ? criticalConfirmation : undefined
+    const displayedQuote = activeCriticalConfirmation?.quote ?? quote
+    const displayedRefuel = activeCriticalConfirmation ? activeCriticalConfirmation.refuel : refuelData
     const depositActions = polledDepositActions ?? activeWorkflowState?.actions ?? depositActionsResponse
     const { actionButtonText } = useDepositSettings()
 
@@ -288,10 +293,10 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const flowPreferenceChanged = !!swapId
         && currentGasless !== undefined
         && currentGasless !== desiredGasless
-    const priceImpactValues = useMemo(() => quote ? resolvePriceImpactValues(quote, refuel ? refuelData : undefined) : undefined, [quote, refuel]);
+    const priceImpactValues = useMemo(() => displayedQuote ? resolvePriceImpactValues(displayedQuote, refuel ? displayedRefuel : undefined) : undefined, [displayedQuote, refuel, displayedRefuel]);
     const criticalMarketPriceImpact = useMemo(() => priceImpactValues?.criticalMarketPriceImpact, [priceImpactValues]);
 
-    useTransferBlocked(showCriticalMarketPriceImpactButtons ? 'critical_price_impact' : undefined,
+    useTransferBlocked(activeCriticalConfirmation ? 'critical_price_impact' : undefined,
         lifecycleContextFromSwap(swapBasicData, swapDetails), 'SendTransactionButton')
 
     const executeWorkflow = async (requestFreshSwap = false) => {
@@ -324,6 +329,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 setActionStateText("Preparing swap…")
                 startFreshSwapAttempt()
                 setWorkflowState(undefined)
+                setCriticalConfirmation(undefined)
 
                 const swapValues: SwapFormValues = {
                     amount: swapBasicData.requested_amount.toString(),
@@ -357,13 +363,13 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     await mutateCache(depositActionsKey(newSwapId, selectedSourceAccount.address), { data: newSwapData.deposit_actions }, false)
                 }
                 signal.throwIfAborted()
-                setWorkflowState(newSwapData.deposit_actions ? { swapId: newSwapId, actions: newSwapData.deposit_actions, swapData: newSwapData.swap } : undefined)
+                setWorkflowState({ swapId: newSwapId, actions: newSwapData.deposit_actions ?? [], swapData: newSwapData.swap })
                 setSwapId(newSwapId)
 
                 const priceImpactValues = newSwapData.quote ? resolvePriceImpactValues(newSwapData.quote, newSwapData.refuel) : undefined;
 
                 if (priceImpactValues?.criticalMarketPriceImpact) {
-                    setShowCriticalMarketPriceImpactButtons(true)
+                    setCriticalConfirmation(newSwapData)
                     return
                 }
 
@@ -517,8 +523,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         return executeWorkflow()
     }
     const handleCriticalContinue = () => {
-        setShowCriticalMarketPriceImpactButtons(false)
-        executeWorkflow(false)
+        setCriticalConfirmation(undefined)
+        return executeWorkflow(false)
     }
 
     const retryGasless = () => {
@@ -536,6 +542,15 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     }
 
     const switchToStandard = () => {
+        // A signature or submission can arrive after render but before this click.
+        // Keep the preference and existing swap intact while either can move funds.
+        if (executionInFlight.current || hasSwapExecutionProgress({
+            swapDetails,
+            depositActions,
+            storedWalletTransaction: swapId ? useSwapTransactionStore.getState().swapTransactions[swapId] : undefined,
+            gaslessAuthorization: swapId ? useGaslessAuthorizationStore.getState().authorizations[swapId] : undefined,
+        })) return
+
         onSwapLifecycle({
             step: 'retry_requested',
             stage: 'wallet_action',
@@ -546,7 +561,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         })
         switchToStandardTransfer()
         setSwapError?.(null)
-        executeWorkflow(true)
+        return executeWorkflow(true)
     }
 
     const handleCancelWithdrawal = () => {
@@ -564,7 +579,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     return (
         <SendTransactionView
             {...props}
-            quote={quote}
+            quote={displayedQuote}
             quoteIsLoading={quoteIsLoading}
             quoteError={!!quoteError}
             loading={loading}
@@ -575,10 +590,11 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             swapError={!!swapError}
             swapId={swapId}
             criticalMarketPriceImpact={criticalMarketPriceImpact}
-            showCriticalMarketPriceImpactButtons={showCriticalMarketPriceImpactButtons}
+            showCriticalMarketPriceImpactButtons={!!activeCriticalConfirmation}
             priceImpactValues={priceImpactValues}
             gaslessUnavailable={gaslessUnavailable}
             gaslessFailureStage={gaslessFailureStage}
+            canSwitchToStandard={!hasProgress}
             handleClick={handleClick}
             handleCriticalContinue={handleCriticalContinue}
             retryGasless={retryGasless}

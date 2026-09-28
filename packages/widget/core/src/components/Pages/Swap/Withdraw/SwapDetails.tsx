@@ -45,7 +45,6 @@ const SwapDetails: FC<Props> = ({
         quote,
         quoteIsLoading,
         quoteError,
-        swapId,
     } = useSwapDataState();
     const selectedSourceAccount = useSelectedAccount(
         'from',
@@ -104,8 +103,7 @@ const SwapDetails: FC<Props> = ({
     });
     const compactQuote =
         !swapBasicData.use_deposit_address &&
-        (!resolved.showWithdrawScreen ||
-            (compactsDuringWalletExecution && !!swapId));
+        !resolved.showWithdrawScreen;
     const sourceAddress =
         swapDetails?.source_address || selectedSourceAccount?.address;
 

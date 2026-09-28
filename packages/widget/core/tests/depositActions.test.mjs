@@ -28,6 +28,12 @@ const walletErrors = loadSource('../../../wallets/core/src/lib/walletErrors.ts',
 const rejection = loadSource(`${walletPath}isUserRejection.ts`, { '@layerswap/wallet-core/errors': walletErrors })
 const gasless = loadSource('../src/helpers/gasless.ts')
 const depositActions = loadSource('../src/helpers/depositActions.ts')
+const swapProgress = loadSource('../src/helpers/swapProgress.ts', {
+    '@layerswap/widget-types': loadSource('../../types/src/SwapStatus.ts'),
+    '@/lib/apiClients/layerSwapApiClient': {
+        BackendTransactionStatus: { Failed: 'failed' }, TransactionType: { Input: 'input' },
+    },
+})
 const progressTypes = loadSource('../src/components/Pages/Swap/Withdraw/Processing/types.ts')
 const noop = () => {}
 const sourceAddress = '0x123'
@@ -54,15 +60,24 @@ function createWorkflow({ mounted = false } = {}) {
         completedStep: undefined,
         setSwapError(value) { state.swapError = value },
     }
-    const preferences = { gaslessEnabled: false, gaslessUnavailable: false }
+    const preferences = {
+        gaslessEnabled: false, gaslessUnavailable: false,
+        reportGaslessUnavailable(stage) { preferences.gaslessUnavailable = true; preferences.gaslessFailureStage = stage },
+        switchToStandardTransfer() { preferences.gaslessEnabled = false; preferences.gaslessUnavailable = false },
+        clearGaslessUnavailable() { preferences.gaslessUnavailable = false },
+    }
     const store = value => Object.assign(selector => selector(value), { getState: () => value })
     const stores = {
         useGaslessAuthorizationStore: store({
             authorizations: {},
             setGaslessAuthorization(id, validBefore) { this.authorizations[id] = { validBefore }; calls.authorizations.push([id, validBefore]) },
             setGaslessAuthorizationStatus: (...args) => calls.authorizations.push(args),
+            removeGaslessAuthorization(id) { delete this.authorizations[id] },
         }),
-        useSwapTransactionStore: store({ swapTransactions: {}, setSwapTransaction: (...args) => calls.storedTransactions.push(args) }),
+        useSwapTransactionStore: store({
+            swapTransactions: {}, setSwapTransaction: (...args) => calls.storedTransactions.push(args),
+            removeSwapTransaction(id) { delete this.swapTransactions[id] },
+        }),
     }
     const preferenceStore = { useGaslessPreferenceStore: store(preferences) }
     const network = { name: 'BASE_MAINNET' }
@@ -119,6 +134,7 @@ function createWorkflow({ mounted = false } = {}) {
         './TransferStatusHeader': { TransferStatusHeader: noop },
         '../Processing/types': progressTypes,
     })
+    const ErrorDisplay = () => null
     const walletViews = loadSource('../src/components/Pages/Swap/Withdraw/Presentation/WalletActionsView.tsx', {
         '@/components/Buttons/submitButton': { default: noop },
         '@/components/Icons/FailIcon': { default: noop },
@@ -133,7 +149,7 @@ function createWorkflow({ mounted = false } = {}) {
         'lucide-react': { Loader2: noop },
         '../../Form/SecondaryComponents/validationError/constants': {},
         '../../Form/SecondaryComponents/validationError/ErrorDismissButton': { default: noop },
-        '../../Form/SecondaryComponents/validationError/ErrorDisplay': { ErrorDisplay: noop },
+        '../../Form/SecondaryComponents/validationError/ErrorDisplay': { ErrorDisplay },
         '../messages/Message': { default: noop },
     })
     const useFakeLayoutEffect = callback => {
@@ -203,7 +219,7 @@ function createWorkflow({ mounted = false } = {}) {
         '@/context/withdrawalContext': { useWalletWithdrawalState: () => ({ onWalletWithdrawalSuccess: () => calls.success++ }) },
         '@/context/swapAccounts': { useSelectedAccount: () => ({ id: wallet.id, address: wallet.address }) },
         '@/lib/ErrorHandler': { ErrorHandler: error => calls.errors.push(error) },
-        '@/lib/fees': { resolvePriceImpactValues: noop },
+        '@/lib/fees': loadSource('../src/lib/fees.ts'),
         '@/components/Icons/InfoIcon': { default: noop },
         '@/components/Pages/Swap/Form/SecondaryComponents/validationError/constants': {},
         '@/lib/balances/useBalance': { useBalance: () => ({}) },
@@ -213,24 +229,24 @@ function createWorkflow({ mounted = false } = {}) {
         '../../Presentation/WalletActionsView': mounted ? { ...walletViews, SendTransactionView: props => { view = props; return null } } : walletViews,
         '../../Processing/StepsComponent': { default: Steps },
         '../../Processing/types': progressTypes,
-        '@/helpers/swapProgress': { hasSwapExecutionProgress: () => false },
+        '@/helpers/swapProgress': swapProgress,
         '@/helpers/gasless': gasless,
         './isUserRejection': rejection,
         swr: {
             useSWRConfig: () => ({ mutate: async (key, result) => { const data = await result; cache.set(key, data); return data } }),
         },
     })
-    const findElement = (node, type) => {
+    const findElement = (node, type, predicate = () => true) => {
         if (!node || typeof node !== 'object') return undefined
-        if (node.type === type) return node
-        if (typeof node.type === 'function') return findElement(node.type(node.props), type)
+        if (node.type === type && predicate(node)) return node
+        if (typeof node.type === 'function') return findElement(node.type(node.props), type, predicate)
         for (const child of [node.props?.children].flat()) {
-            const match = findElement(child, type)
+            const match = findElement(child, type, predicate)
             if (match) return match
         }
     }
     const props = () => ({
-            swapData: { source_network: network, source_token: {}, requested_amount: '1' },
+            swapData: { source_network: network, source_token: state.sourceToken ?? {}, requested_amount: '1' },
             refuel: false,
             error: state.rejected,
             clearError: () => { state.rejected = false },
@@ -255,10 +271,15 @@ function createWorkflow({ mounted = false } = {}) {
     const render = () => {
         hookIndex = 0
         const tree = SendTransactionButton(props())
-        return { button: findElement(tree, ButtonWrapper), steps: findElement(tree, Steps)?.props.steps }
+        return {
+            viewProps: tree.props,
+            button: findElement(tree, ButtonWrapper), steps: findElement(tree, Steps)?.props.steps,
+            buttonByText: label => findElement(tree, ButtonWrapper, node => node.props.children === label),
+            warning: findElement(tree, ErrorDisplay)?.props.message,
+        }
     }
     return {
-        state, calls, render, wallet,
+        state, calls, render, wallet, preferences, stores,
         Component: () => createElement(SendTransactionButton, props()),
         get view() { return view },
         poll: async () => {
@@ -586,6 +607,122 @@ test('completed prerequisites allow resuming a late publish action', async () =>
     assert.deepEqual(flow.calls.sign, [], 'resuming does not ask for another signature')
     assert.equal(flow.calls.transfer.length, 1)
     assert.equal(flow.calls.success, 1)
+})
+
+for (const includesActions of [true, false]) {
+    test(`critical confirmation uses the created quote before polling, with initial actions ${includesActions}`, async () => {
+        const flow = createWorkflow()
+        flow.state.swapId = undefined
+        flow.state.swapDetails = undefined
+        flow.state.depositActionsResponse = undefined
+        flow.state.quote = {
+            requested_amount: 100, receive_amount: 90, min_receive_amount: 90,
+            source_token: { price_in_usd: 1 }, destination_token: { asset: 'TEST', price_in_usd: 1 },
+            service_fee: 0, blockchain_fee: 0,
+        }
+        flow.state.apiActions = [{ type: 'transfer', step: 'deposit', status: 'action_required', amount: 1, to_address: '0x456' }]
+        const created = {
+            swap: { id: 'quoted-swap', metadata: {} },
+            quote: { ...flow.state.quote, receive_amount: 75, min_receive_amount: 75 },
+            deposit_actions: includesActions ? flow.state.apiActions : undefined,
+        }
+        let creates = 0
+        flow.state.createSwap = async () => { creates++; return created }
+
+        await flow.render().button.props.onClick()
+        const confirmation = flow.render()
+        assert.equal(flow.state.swapDetails, undefined, 'whole-swap polling has not returned')
+        assert.equal(confirmation.warning, 'By continuing, you agree to receive as low as 75 TEST ($ 75.00)')
+        assert.equal(confirmation.button.props.children, 'Continue anyway')
+        assert.equal(flow.calls.transfer.length, 0, 'confirmation precedes wallet execution')
+
+        await confirmation.button.props.onClick()
+        assert.equal(creates, 1, 'continuing never replaces the confirmed swap')
+        assert.deepEqual(flow.calls.refresh, [['quoted-swap', sourceAddress]])
+        assert.equal(flow.calls.transfer.length, 1)
+        assert.equal(flow.calls.transfer[0].swapId, 'quoted-swap')
+        assert.deepEqual(flow.calls.errors, [])
+    })
+}
+
+test('a failed gasless re-sign keeps the live swap resumable without offering a standard transfer', async () => {
+    const flow = createWorkflow()
+    flow.preferences.gaslessEnabled = true
+    flow.state.sourceToken = { contract: '0xtoken', supports_gasless_deposit: true, gasless_standard: 'eip3009' }
+    const sign = { ...actionsFor('gasless-retry')[0], signing_standard: 'permit2' }
+    flow.state.apiActions = [sign]
+    flow.state.rejectSigning = false
+    flow.state.onTransition = () => { throw new Error('The transaction is still confirming') }
+    flow.render()
+    await flow.poll()
+    await flow.render().button.props.onClick()
+    assert.ok(flow.stores.useGaslessAuthorizationStore.getState().authorizations[swapId])
+
+    flow.state.onWalletPrompt = () => { throw new Error('Wallet provider unavailable') }
+    await flow.render().button.props.onClick()
+    const unavailable = flow.render()
+    assert.equal(flow.preferences.gaslessUnavailable, true)
+    assert.equal(unavailable.buttonByText('Switch to standard transfer'), undefined)
+    assert.equal(unavailable.buttonByText('Try again').props.isDisabled, false)
+    const signaturesBeforeSwitch = flow.calls.sign.length
+    await unavailable.viewProps.switchToStandard()
+    assert.equal(flow.preferences.gaslessEnabled, true)
+    assert.equal(flow.calls.sign.length, signaturesBeforeSwitch, 'a guarded switch cannot request the old signature')
+
+    flow.state.onWalletPrompt = undefined
+    flow.state.onTransition = () => {
+        flow.state.authorization = { status: 'published', transaction: { transaction_hash: '0xrelayed', status: 'pending' } }
+        return [{ ...sign, status: 'completed' }]
+    }
+    unavailable.buttonByText('Try again').props.onClick()
+    await new Promise(resolve => setImmediate(resolve))
+    assert.equal(flow.state.swapId, swapId)
+    assert.equal(flow.calls.success, 1, 'the existing authorization can still be resumed')
+    assert.deepEqual(flow.calls.storedTransactions, [[swapId, 'pending', '0xrelayed']])
+})
+
+for (const progress of ['authorization', 'transaction']) {
+    test(`a ${progress} arriving after render prevents switching to standard`, async () => {
+        const flow = createWorkflow()
+        flow.preferences.gaslessEnabled = true
+        flow.preferences.reportGaslessUnavailable('deposit')
+        const { buttonByText } = flow.render()
+        const button = buttonByText('Switch to standard transfer')
+        assert.ok(button)
+        if (progress === 'authorization') {
+            flow.stores.useGaslessAuthorizationStore.getState().authorizations[swapId] = { validBefore: Date.now() / 1000 + 1800 }
+        } else {
+            flow.stores.useSwapTransactionStore.getState().swapTransactions[swapId] = { status: 'pending', hash: '0xpending' }
+        }
+        await button.props.onClick()
+        assert.equal(flow.preferences.gaslessEnabled, true)
+        assert.equal(flow.preferences.gaslessUnavailable, true)
+        assert.deepEqual(flow.calls.refresh, [])
+        assert.deepEqual(flow.calls.sign, [])
+        assert.deepEqual(flow.calls.transfer, [])
+    })
+}
+
+test('a terminal authorization with no submission can switch to a new standard swap', async () => {
+    const flow = createWorkflow()
+    flow.preferences.gaslessEnabled = true
+    flow.preferences.reportGaslessUnavailable('deposit')
+    const authorizations = flow.stores.useGaslessAuthorizationStore.getState().authorizations
+    authorizations[swapId] = { status: 'rejected' }
+    let creates = 0
+    flow.state.createSwap = async () => {
+        creates++
+        assert.equal(flow.preferences.gaslessEnabled, false)
+        flow.state.apiActions = [{ type: 'transfer', step: 'deposit', status: 'action_required', amount: 1, to_address: '0x456' }]
+        return { swap: { id: 'standard-swap', metadata: {} }, quote: {}, deposit_actions: flow.state.apiActions }
+    }
+    await flow.render().buttonByText('Switch to standard transfer').props.onClick()
+    assert.equal(creates, 1)
+    assert.equal(authorizations[swapId], undefined)
+    assert.deepEqual(flow.calls.sign, [])
+    assert.equal(flow.calls.transfer.length, 1)
+    assert.equal(flow.calls.transfer[0].swapId, 'standard-swap')
+    assert.deepEqual(flow.calls.errors, [])
 })
 
 for (const step of ['publish', 'deposit']) {

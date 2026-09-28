@@ -152,8 +152,7 @@ function LoadedPreview({
     });
     const compactQuote =
         !s.swap.use_deposit_address &&
-        (!resolved.showWithdrawScreen ||
-            (compactsDuringWalletExecution && !!s.swapId));
+        !resolved.showWithdrawScreen;
     const summary = (
         <SummaryView
             swap={{

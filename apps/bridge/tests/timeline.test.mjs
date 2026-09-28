@@ -1835,7 +1835,12 @@ test('frontend quotes match the real full-to-compact lifecycle and sign-only/nat
     const ready = fixtureDOM('frontend-permit2', 'ready');
     assert.ok(ready.querySelector('[aria-label="See details"]'));
     assert.equal(ready.querySelector('[data-quote-layout]').dataset.quoteLayout, 'separate');
-    for (const milestone of ['approving', 'signing', 'input', 'finalizing', 'completed']) {
+    for (const milestone of ['approving', 'signing']) {
+        const view = fixtureDOM('frontend-permit2', milestone);
+        assert.equal(view.querySelector('[data-quote-layout]').dataset.quoteLayout, 'separate');
+        assert.equal(view.querySelector('[aria-label="See details"]').closest('[aria-hidden="true"], [inert]'), null);
+    }
+    for (const milestone of ['input', 'finalizing', 'completed']) {
         const view = fixtureDOM('frontend-permit2', milestone);
         assert.match(view.textContent, /Send to/);
         assert.ok(view.querySelector('[data-recipient-address]'));
@@ -1852,23 +1857,26 @@ test('frontend quotes match the real full-to-compact lifecycle and sign-only/nat
     assert.match(fixtureDOM('frontend-native', 'ready').textContent, /Swap now/);
     assert.match(fixtureDOM('frontend-native', 'publishing').textContent, /Step 1 of 2: Confirm swap/);
     assert.match(fixtureDOM('frontend-native', 'publishing').textContent, /Confirm in your wallet/);
-    assert.match(fixtureDOM('frontend-critical', 'critical').textContent, /receive as low as 0.03 ETH/);
+    const critical = fixtureDOM('frontend-critical', 'critical');
+    assert.match(critical.textContent, /receive as low as 0.03 ETH/);
+    assert.equal(critical.querySelector('[data-quote-layout]').dataset.quoteLayout, 'separate');
+    assert.equal(critical.querySelector('[aria-label="See details"]').closest('[aria-hidden="true"], [inert]'), null);
 });
 
 test('compacting and attaching preserves one quote and recipient through repeated reversals', async () => {
     const container = document.getElementById('root');
     const root = createRoot(container);
     const ready = frontendMilestone('frontend-permit2', 'ready');
-    const approving = frontendMilestone('frontend-permit2', 'approving');
+    const submitted = frontendMilestone('frontend-permit2', 'input');
     try {
         await act(async () => root.render(preview(ready.snapshot, ready.at)));
         const overview = container.querySelector('[data-quote-layout]');
         const summaryToken = overview.querySelector('img[alt="Token Logo"]');
         const recipient = overview.querySelector('[data-recipient-address]');
         const disclosure = overview.querySelector('[aria-label="See details"]');
-        for (const milestone of [approving, ready, approving, ready]) {
+        for (const milestone of [submitted, ready, submitted, ready]) {
             await act(async () => root.render(preview(milestone.snapshot, milestone.at)));
-            const compact = milestone === approving;
+            const compact = milestone === submitted;
             assert.equal(container.querySelector('[data-quote-layout]'), overview);
             assert.equal(overview.dataset.quoteLayout, compact ? 'attached' : 'separate');
             assert.equal(overview.querySelector('img[alt="Token Logo"]'), summaryToken);
