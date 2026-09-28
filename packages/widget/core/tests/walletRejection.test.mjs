@@ -119,6 +119,7 @@ test('raw EVM signing cancellation survives the resolver and authorization workf
         '@/stores/gaslessPreferenceStore': { useGaslessPreferenceStore },
         './isUserRejection': { isUserRejection },
         '@/helpers/depositActions': depositActions,
+        '@/helpers/gasless': loadSource('../src/helpers/gasless.ts'),
         '@/lib/swapLifecycle': { lifecycleContextFromSwap: () => ({}), lifecycleErrorDetails: () => ({}) },
         '@/lib/widgetTelemetry': { widgetTelemetry: { beginOperation: () => () => {} } },
         './executeWalletOperation': {},

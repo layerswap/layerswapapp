@@ -40,7 +40,7 @@ const actionsFor = nonce => [
 
 function createWorkflow({ mounted = false } = {}) {
     let view
-    const calls = { refresh: [], sign: [], authorize: [], transfer: [], storedTransactions: [], errors: [], lifecycle: [], success: 0 }
+    const calls = { refresh: [], sign: [], authorize: [], transfer: [], storedTransactions: [], authorizations: [], errors: [], lifecycle: [], success: 0 }
     const state = {
         apiActions: actionsFor('fresh'),
         refreshError: undefined,
@@ -57,7 +57,11 @@ function createWorkflow({ mounted = false } = {}) {
     const preferences = { gaslessEnabled: false, gaslessUnavailable: false }
     const store = value => Object.assign(selector => selector(value), { getState: () => value })
     const stores = {
-        useGaslessAuthorizationStore: store({ authorizations: {} }),
+        useGaslessAuthorizationStore: store({
+            authorizations: {},
+            setGaslessAuthorization(id, validBefore) { this.authorizations[id] = { validBefore }; calls.authorizations.push([id, validBefore]) },
+            setGaslessAuthorizationStatus: (...args) => calls.authorizations.push(args),
+        }),
         useSwapTransactionStore: store({ swapTransactions: {}, setSwapTransaction: (...args) => calls.storedTransactions.push(args) }),
     }
     const preferenceStore = { useGaslessPreferenceStore: store(preferences) }
@@ -87,6 +91,7 @@ function createWorkflow({ mounted = false } = {}) {
         '@/stores/gaslessPreferenceStore': preferenceStore,
         './isUserRejection': rejection,
         '@/helpers/depositActions': depositActions,
+        '@/helpers/gasless': gasless,
         '@/lib/swapLifecycle': lifecycle,
         '@/lib/widgetTelemetry': { widgetTelemetry: { beginOperation: () => () => {} } },
         './executeWalletOperation': { executeWalletOperation },
@@ -136,6 +141,7 @@ function createWorkflow({ mounted = false } = {}) {
         if (!scope.initialized) { callback(); scope.initialized = true }
     }
     const { SendTransactionButton, ButtonWrapper } = loadSource(`${walletPath}buttons.tsx`, {
+        '@/helpers/depositActions': depositActions,
         '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: event => calls.lifecycle.push(event) }) },
         '@/lib/swapLifecycle': lifecycle,
         '@/hooks/useTransferBlocked': { useTransferBlocked: noop },
@@ -164,7 +170,7 @@ function createWorkflow({ mounted = false } = {}) {
                         }))
                         signal.throwIfAborted()
                         cache.set(`/swaps/${id}/deposit_actions?source_address=${address}`, { data: state.apiActions })
-                        return state.apiActions
+                        return { actions: state.apiActions, authorization: state.authorization }
                     },
                 }
             },
@@ -493,4 +499,50 @@ test('closing while publication is in flight retains the submitted transaction w
             else delete globalThis[key]
         }
     }
+})
+
+for (const resuming of [false, true]) {
+    test(`${resuming ? 'resuming a completed sign' : 'a sign-only initial response'} waits for and sends late publication`, async () => {
+        const flow = createWorkflow()
+        const [sign, publish] = actionsFor('late-publish')
+        flow.state.apiActions = [{ ...sign, status: resuming ? 'completed' : 'action_required' }]
+        flow.state.rejectSigning = false
+        const transitions = []
+        flow.state.onTransition = step => {
+            transitions.push(step)
+            assert.equal(flow.calls.success, 0, 'signing does not hand off to processing')
+            assert.deepEqual(flow.calls.storedTransactions, [])
+            assert.equal(flow.calls.authorizations.length, resuming ? 0 : 1, 'the signature is retained without a transaction marker')
+            assert.ok(flow.calls.lifecycle.every(event => !event.step.endsWith('_submitted')))
+            return [{ ...sign, status: 'completed' }, { ...publish, status: 'action_required' }]
+        }
+        await flow.render().button.props.onClick()
+        assert.deepEqual(transitions, ['sign'])
+        assert.deepEqual(flow.calls.sign, resuming ? [] : ['late-publish'])
+        assert.deepEqual(flow.calls.storedTransactions, [[swapId, 'pending', '0xtransaction']])
+        assert.equal(flow.calls.transfer.length, 1)
+        assert.equal(flow.calls.success, 1)
+        assert.deepEqual(flow.calls.errors, [])
+    })
+}
+
+test('gasless execution records success only after a confirmed server submission', async () => {
+    const flow = createWorkflow()
+    const [sign] = actionsFor('gasless')
+    flow.state.apiActions = [{ ...sign, valid_before: 12345 }]
+    flow.state.rejectSigning = false
+    flow.state.onTransition = () => {
+        assert.equal(flow.calls.success, 0)
+        assert.deepEqual(flow.calls.storedTransactions, [])
+        assert.deepEqual(flow.calls.authorizations, [[swapId, 12345]])
+        flow.state.authorization = { status: 'published', transaction: { transaction_hash: '0xrelayed', status: 'pending' } }
+        return [{ ...sign, status: 'completed' }]
+    }
+    await flow.render().button.props.onClick()
+    assert.deepEqual(flow.calls.storedTransactions, [[swapId, 'pending', '0xrelayed']])
+    assert.deepEqual(flow.calls.authorizations, [[swapId, 12345], [swapId, 'published', flow.state.authorization.transaction]])
+    assert.equal(flow.calls.transfer.length, 0)
+    assert.equal(flow.calls.success, 1)
+    assert.equal(flow.calls.lifecycle.at(-1).step, 'gasless_authorization_submitted')
+    assert.deepEqual(flow.calls.errors, [])
 })

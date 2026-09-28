@@ -59,7 +59,12 @@ export const getDepositActionDescription = (action: DepositAction): string | und
     }
 }
 
-export const requiresDepositActionRefresh = (action: DepositAction, actions: DepositAction[]): boolean =>
+export const requiresDepositActionRefresh = (action: DepositAction): boolean =>
     action.step === 'approve_permit2'
-    || (action.step === 'sign' && actions.some(candidate => candidate.step === 'publish'))
+    || action.step === 'sign' || isSignAction(action)
 
+// Completed prerequisites do not prove that the deposit was submitted. A later
+// response may still reveal a publish action after signing.
+export const isDepositWorkflowComplete = (actions: DepositAction[]): boolean =>
+    actions.some(action => action.step === 'publish' || action.step === 'deposit')
+    && actions.every(action => action.status === 'completed')

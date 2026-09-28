@@ -51,6 +51,14 @@ export function hasSwapExecutionProgress({
         || (!!gaslessAuthorization?.status
             && FAILED_AUTHORIZATION_STATUSES.has(gaslessAuthorization.status))
 
+    const authorizationTransaction = gaslessAuthorization?.transaction
+    if (authorizationTransaction?.transaction_hash
+        && authorizationTransaction.status !== BackendTransactionStatus.Failed) return true
+
+    // Older clients could persist an authorization failure as the transaction's status.
+    // That failure does not establish that a broadcast transaction failed on chain.
+    if (storedWalletTransaction?.hash && authorizationFailed) return true
+
     // Gasless authorization creates a pending local marker before a transaction hash
     // exists. A terminal authorization must invalidate that placeholder, while a real
     // transaction hash still means the swap can move funds and must be resumed.

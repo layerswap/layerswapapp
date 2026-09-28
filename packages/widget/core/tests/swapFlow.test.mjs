@@ -33,13 +33,13 @@ test('gasless mode stays unknown until deposit actions are available', () => {
     assert.equal(isGaslessDepositWorkflow([]), undefined)
 })
 
-test('authorization-only deposits are gasless, including pending and legacy actions', () => {
+test('sign-only snapshots leave the execution lane unknown, including legacy actions', () => {
     for (const actions of [
         [{ type: 'sign', step: 'sign', status: 'action_required' }],
         [{ step: 'sign', status: 'pending' }],
         [{ type: 'sign' }],
     ]) {
-        assert.equal(isGaslessDepositWorkflow(actions), true)
+        assert.equal(isGaslessDepositWorkflow(actions), undefined)
     }
 })
 
@@ -56,4 +56,12 @@ test('frontend signing followed by publishing is self-paid throughout the workfl
 test('ordinary wallet transfers are self-paid', () => {
     assert.equal(isGaslessDepositWorkflow([{ type: 'transfer', step: 'deposit' }]), false)
     assert.equal(isGaslessDepositWorkflow([{ type: 'manual_transfer' }]), false)
+})
+
+test('explicit signing standards distinguish gasless Permit2 from self-paid authorization', () => {
+    assert.equal(isGaslessDepositWorkflow([{ step: 'sign', signing_standard: 'permit2' }]), true)
+    assert.equal(isGaslessDepositWorkflow([{ step: 'sign', signing_standard: 'eip3009' }]), undefined)
+    for (const signing_standard of ['permit2_witness', 'eip2612']) {
+        assert.equal(isGaslessDepositWorkflow([{ step: 'sign', signing_standard }]), false)
+    }
 })

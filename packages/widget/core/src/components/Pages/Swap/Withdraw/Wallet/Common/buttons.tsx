@@ -5,6 +5,7 @@ import { depositActionsKey, useDepositActionPolling } from '@/hooks/useDepositAc
 import { useTransferBlocked } from '@/hooks/useTransferBlocked';
 import { hasSwapExecutionProgress } from '@/helpers/swapProgress';
 import { isGaslessCapableRoute, isGaslessDepositWorkflow } from '@/helpers/gasless';
+import { isDepositWorkflowComplete } from '@/helpers/depositActions';
 import { isUserRejection } from './isUserRejection';
 import { useSWRConfig } from 'swr';
 import { SubmitButtonProps } from '@/components/Buttons/submitButton';
@@ -42,6 +43,7 @@ import {
     GaslessSigner,
     WalletTransfer,
     executeGaslessAuthorization,
+    completeGaslessSubmission,
     executeWalletTransfer,
     isSignAction,
     isTransferAction,
@@ -396,19 +398,19 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             // Follow the server's workflow without another click. Later responses
             // can reveal additional actions, so bound wallet requests independently
             // of the initial response to stop repeated transitions.
+            let authorizedValidBefore: number | undefined
             for (let executedActions = 0; ; executedActions++) {
                 signal.throwIfAborted()
                 const currentAction = getActionableDepositAction(activeDepositActions)
                 if (!currentAction) {
                     const failedStep = activeDepositActions.find(action => action.status === 'failed')
                     if (failedStep) throw new Error(failedStep.detail || 'The swap action failed')
-                    if (activeDepositActions.every(action => action.status === 'completed')) {
+                    if (isDepositWorkflowComplete(activeDepositActions)) {
                         onWalletWithdrawalSuccess?.()
                         return
                     }
-                    throw new Error('No deposit action is currently available')
                 }
-                if (executedActions >= MAX_DEPOSIT_WORKFLOW_ACTIONS) {
+                if (currentAction && executedActions >= MAX_DEPOSIT_WORKFLOW_ACTIONS) {
                     throw new Error('The swap workflow has more actions than expected')
                 }
 
@@ -427,24 +429,29 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     onLifecycle: onSwapLifecycle,
                 }
 
-                if (isSignAction(currentAction)) {
+                if (currentAction && isSignAction(currentAction)) {
                     if (!onSign) throw new Error('This wallet cannot sign the requested authorization')
-                    await executeGaslessAuthorization(executionContext, onSign, currentAction)
-                } else if (isTransferAction(currentAction)) {
+                    authorizedValidBefore = await executeGaslessAuthorization(executionContext, onSign, currentAction)
+                } else if (currentAction && isTransferAction(currentAction)) {
                     await executeWalletTransfer(executionContext, onClick, currentAction)
                 }
 
                 signal.throwIfAborted()
-                if (!requiresDepositActionRefresh(currentAction, activeDepositActions)) return
+                if (currentAction && !requiresDepositActionRefresh(currentAction)) return
 
-                setActionStateText(currentAction.step === 'approve_permit2' ? 'Confirming approval…' : 'Preparing transaction…')
-                activeDepositActions = await waitForSwapActionTransition({
+                setActionStateText(currentAction?.step === 'approve_permit2' ? 'Confirming approval…' : 'Preparing transaction…')
+                const transition = await waitForSwapActionTransition({
                     swapId: swapData.id,
                     sourceAddress: selectedSourceAccount.address,
-                    previousAction: currentAction,
+                    previousAction: currentAction ?? activeDepositActions.find(action => action.step === 'sign') ?? activeDepositActions[0],
                     signal,
                 })
                 signal.throwIfAborted()
+                if (transition.authorization) {
+                    completeGaslessSubmission(executionContext, transition.authorization, authorizedValidBefore)
+                    return
+                }
+                activeDepositActions = transition.actions
                 setWorkflowState({ swapId: swapData.id, actions: activeDepositActions, swapData })
             }
         }

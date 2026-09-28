@@ -6,6 +6,7 @@ import LayerSwapApiClient, {
     TransferDepositAction,
     SwapBasicData,
     SwapDetails,
+    GaslessAuthorizationResult,
 } from "@/lib/apiClients/layerSwapApiClient";
 import { useGaslessAuthorizationStore } from "@/stores/swapTransactionStore";
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
@@ -15,6 +16,7 @@ import { ErrorHandler } from "@/lib/ErrorHandler";
 import { lifecycleContextFromSwap, lifecycleErrorDetails } from "@/lib/swapLifecycle";
 import { widgetTelemetry } from '@/lib/widgetTelemetry';
 import { executeWalletOperation } from './executeWalletOperation';
+import { isGaslessDepositWorkflow, isGaslessAuthorizationSubmitted } from '@/helpers/gasless';
 
 export type WalletTransfer = (props: TransferProps) => Promise<string | undefined>
 export type GaslessSigner = (signAction: SignDepositAction) => Promise<string>
@@ -129,10 +131,9 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
     return hash
 }
 
-export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, onSign: GaslessSigner, signAction: DepositAction | undefined = getActionableDepositAction(ctx.depositActions)): Promise<void> => {
-    const { swapData, depositActions, swapBasicData, selectedWallet, sourceAddress, layerswapApiClient, setActionStateText, setSwapTransaction, onSuccess, onLifecycle, signal } = ctx
+export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, onSign: GaslessSigner, signAction: DepositAction | undefined = getActionableDepositAction(ctx.depositActions)): Promise<number | undefined> => {
+    const { swapData, depositActions, swapBasicData, selectedWallet, sourceAddress, layerswapApiClient, setActionStateText, onLifecycle, signal } = ctx
 
-    const requiresUserPublish = depositActions.some(action => action.step === 'publish')
     if (!signAction || !isSignAction(signAction)) throw new Error('No sign action')
     if (!sourceAddress) throw new Error('No selected account')
 
@@ -201,7 +202,7 @@ export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, 
             ...lifecycleContext,
         })
         // Don't flag the route unavailable when the user simply declined.
-        if (!requiresUserPublish && !rejected) {
+        if (isGaslessDepositWorkflow(depositActions) === true && !rejected) {
             const message = e?.response?.data?.error?.message || e?.message
             useGaslessPreferenceStore.getState().reportGaslessUnavailable('deposit', message)
         }
@@ -209,8 +210,16 @@ export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, 
     }
 
     finishTelemetry('succeeded')
-    // A self-paid swap still needs its publish transaction; no gasless marker or submission yet.
-    if (requiresUserPublish) return
+    // Retain the accepted signature even if the screen closed during authorization.
+    // This locks the swap against replacement without marking a deposit as sent.
+    useGaslessAuthorizationStore.getState().setGaslessAuthorization(swapData.id, authorizedValidBefore ?? fallbackGaslessValidBefore())
+    // Authorization may be a prerequisite for a publish action not yet in the payload.
+    return authorizedValidBefore
+}
+
+export const completeGaslessSubmission = (ctx: DepositExecutionContext, authorization: GaslessAuthorizationResult, validBefore?: number): void => {
+    if (!isGaslessAuthorizationSubmitted(authorization)) throw new Error('The gasless deposit has not been submitted')
+    const { swapData, swapBasicData, selectedWallet, setSwapTransaction, onSuccess, onLifecycle } = ctx
 
     onLifecycle({
         step: 'gasless_authorization_submitted',
@@ -219,11 +228,15 @@ export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, 
         path: 'GaslessAuthorization',
         action: 'authorize_deposit',
         provider: selectedWallet.providerName,
-        ...lifecycleContext,
+        ...lifecycleContextFromSwap(swapBasicData, swapData),
     })
 
-    setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, '')
-    useGaslessAuthorizationStore.getState().setGaslessAuthorization(swapData.id, authorizedValidBefore ?? fallbackGaslessValidBefore())
+    const store = useGaslessAuthorizationStore.getState()
+    if (!store.authorizations[swapData.id]) {
+        store.setGaslessAuthorization(swapData.id, validBefore ?? fallbackGaslessValidBefore())
+    }
+    store.setGaslessAuthorizationStatus(swapData.id, authorization.status, authorization.transaction)
+    setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, authorization.transaction?.transaction_hash ?? '')
     onSuccess()
 }
 

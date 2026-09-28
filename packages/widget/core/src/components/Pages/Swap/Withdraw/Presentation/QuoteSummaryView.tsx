@@ -5,6 +5,7 @@ import {
     type RecipientPresentation,
 } from '@/components/Common/RecipientAddressView';
 import type { Quote } from '@/lib/apiClients/layerSwapApiClient';
+import { Address } from '@/lib/address/Address';
 import clsx from 'clsx';
 import { ChevronDown } from 'lucide-react';
 import type { ReactNode } from 'react';
@@ -47,10 +48,8 @@ export function QuoteSummaryView({
             )}
         >
             {showDestinationAddress &&
-                sourceAddress &&
                 values.destination_address &&
-                sourceAddress.toLowerCase() !==
-                    values.destination_address.toLowerCase() && (
+                !Address.equals(sourceAddress ?? '', values.destination_address, values.to) && (
                     <div
                         className={`flex items-center w-full justify-between gap-1 text-sm px-2 py-3`}
                     >

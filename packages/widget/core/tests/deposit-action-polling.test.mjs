@@ -32,7 +32,7 @@ const sign = { type: 'sign', step: 'sign', status: 'action_required', typed_data
 const publish = { type: 'transfer', step: 'publish', status: 'waiting' }
 const waiting = () => ({ data: [{ ...sign, status: 'completed' }, publish] })
 const ready = () => ({ data: [{ ...sign, status: 'completed' }, { ...publish, status: 'action_required' }] })
-let root, container, result, config, requests, response, failure
+let root, container, result, config, requests, response, failure, authorization
 const fetcher = key => globalThis.__depositTransport(key)
 
 // The context already subscribes to this SWR key. It must share the requests
@@ -50,7 +50,11 @@ const render = (props = {}) => act(async () => root.render(createElement(StrictM
         createElement(Fragment, null,
             createElement(ContextSubscriber, { id: 's1', address: 'source', ...props }),
             createElement(Withdrawal, { id: 's1', address: 'source', executing: true, ...props }))))))
-const wait = (signal, extra = {}) => result.waitForTransition({ swapId: 's1', sourceAddress: 'source', previousAction: sign, signal, ...extra })
+const wait = (signal, extra = {}) => {
+    let pending
+    act(() => { pending = result.waitForTransition({ swapId: 's1', sourceAddress: 'source', previousAction: sign, signal, ...extra }) })
+    return pending
+}
 
 beforeEach(() => {
     container = document.createElement('div')
@@ -59,11 +63,12 @@ beforeEach(() => {
     requests = []
     response = { data: [sign, publish] }
     failure = undefined
+    authorization = { data: { status: 'initiated' } }
     config = { provider: () => new Map(), revalidateOnFocus: false, revalidateOnReconnect: false, shouldRetryOnError: false, isVisible: () => true }
     globalThis.__depositTransport = async key => {
         requests.push(key)
         if (failure) throw failure
-        return response
+        return key.endsWith('/authorize') ? authorization : response
     }
 })
 afterEach(async () => {
@@ -95,8 +100,8 @@ test('one SWR request stream drives both the UI and a sign-to-publish wait longe
     assert.equal(container.textContent, 'waiting')
     response = ready()
     await act(async () => { t.mock.timers.tick(2000) })
-    assert.deepEqual(await pending, response.data)
-    assert.deepEqual(await secondObserver, result.data)
+    assert.deepEqual((await pending).actions, response.data)
+    assert.deepEqual((await secondObserver).actions, result.data)
     assert.equal(container.textContent, 'publish')
     // The context's default 2s dedupe window coalesces the first scheduled poll
     // with the mount request; subsequent polls come only from the withdrawal hook.
@@ -139,7 +144,7 @@ test('a newly created swap can start waiting before its SWR subscription mounts'
     assert.equal(requests.length, 0)
     response = ready()
     await render()
-    assert.deepEqual(await pending, response.data)
+    assert.deepEqual((await pending).actions, response.data)
     assert.equal(requests.length, 1)
 })
 
@@ -158,7 +163,7 @@ test('waiting after a retry reads the refreshed cache before React commits its n
     })
     response = ready()
     await act(async () => { await result.refresh('s1', 'source') })
-    assert.deepEqual(await pending, response.data)
+    assert.deepEqual((await pending).actions, response.data)
 })
 
 test('updates for another account cannot continue the old execution, and cancellation releases its wait', async t => {
@@ -172,7 +177,7 @@ test('updates for another account cannot continue the old execution, and cancell
     await render({ address: 'other-account' })
     assert.equal(container.textContent, 'publish')
     assert.equal(settled, false)
-    scope.abort()
+    act(() => scope.abort())
     await cancelled
 })
 
@@ -208,6 +213,80 @@ for (const kind of ['action', 'api', 'network']) {
 test('a completed workflow resolves without another request', async () => {
     response = { data: [{ ...sign, status: 'completed' }, { ...publish, status: 'completed' }] }
     await render()
-    assert.deepEqual(await wait(new AbortController().signal), response.data)
+    assert.deepEqual((await wait(new AbortController().signal)).actions, response.data)
     assert.equal(requests.length, 1)
+})
+
+test('completed signing alone keeps waiting until a late publish action arrives', async t => {
+    t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 10000 })
+    response = { data: [sign] }
+    await render()
+    let settled = false
+    const pending = wait(new AbortController().signal).then(value => { settled = true; return value })
+    response = { data: [{ step: 'sign', status: 'completed' }] }
+    for (let i = 0; i < 3; i++) await act(async () => { t.mock.timers.tick(2000) })
+    assert.equal(settled, false, 'completed signing is not a submitted deposit')
+    assert.ok(requests.includes('/swaps/s1/authorize'), 'ambiguous signing observes authoritative submission status')
+    response = ready()
+    await act(async () => { t.mock.timers.tick(2000) })
+    assert.deepEqual(await pending, { actions: response.data })
+})
+
+for (const status of ['published', 'completed']) {
+    test(`a sign-only workflow can finish when authorization is ${status}`, async t => {
+        t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 10000 })
+        response = { data: [{ step: 'sign', status: 'completed' }] }
+        await render()
+        let settled = false
+        const pending = wait(new AbortController().signal).then(value => { settled = true; return value })
+        await act(async () => { t.mock.timers.tick(4000) })
+        assert.equal(settled, false, 'initiated authorization is not submission')
+        authorization = { data: { status, transaction: { transaction_hash: '0xrelayed', status: 'pending' } } }
+        await act(async () => { t.mock.timers.tick(2000) })
+        assert.deepEqual(await pending, { actions: response.data, authorization: authorization.data })
+    })
+}
+
+for (const status of ['expired', 'insufficient', 'rejected']) {
+    test(`an ${status} authorization cannot complete a sign-only workflow`, async () => {
+        response = { data: [{ step: 'sign', status: 'completed' }] }
+        authorization = { data: { status } }
+        await render()
+        let rejected
+        await act(async () => { rejected = assert.rejects(wait(new AbortController().signal), /The swap authorization failed/) })
+        await rejected
+    })
+}
+
+test('a completed approval alone cannot finish the deposit', async () => {
+    response = { data: [{ step: 'approve_permit2', status: 'completed' }] }
+    await render()
+    const scope = new AbortController()
+    let settled = false
+    const pending = wait(scope.signal, { previousAction: { step: 'approve_permit2', status: 'action_required' } }).finally(() => { settled = true })
+    const cancelled = assert.rejects(pending, { name: 'AbortError' })
+    await Promise.resolve()
+    assert.equal(settled, false)
+    act(() => scope.abort())
+    await cancelled
+})
+
+test('an unavailable authorization lookup does not strand late publication', async () => {
+    response = { data: [{ step: 'sign', status: 'completed' }] }
+    authorization = { error: { message: 'Authorization status is unavailable' } }
+    await render()
+    let pending
+    await act(async () => { pending = wait(new AbortController().signal) })
+    response = ready()
+    await act(async () => { await result.refresh('s1', 'source') })
+    assert.deepEqual(await pending, { actions: response.data })
+})
+
+test('a failed authorization transaction cannot complete the deposit', async () => {
+    response = { data: [{ step: 'sign', status: 'completed' }] }
+    authorization = { data: { status: 'published', transaction: { transaction_hash: '0xfailed', status: 'failed' } } }
+    await render()
+    let rejected
+    await act(async () => { rejected = assert.rejects(wait(new AbortController().signal), /The swap authorization failed/) })
+    await rejected
 })

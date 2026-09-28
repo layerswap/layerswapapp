@@ -148,6 +148,9 @@ const Processing: FC<Props> = ({
     useEffect(() => {
         if (!swapDetails?.id) return;
         if (!storedWalletTransaction?.hash) return;
+        // An authorization can expire while its transaction is still settling. Only
+        // transaction evidence may overwrite the status of an already broadcast hash.
+        if (resolved.gaslessFailureStatus && !swapInputTransaction) return;
         if (storedWalletTransaction.status !== swapInputTxStatus) {
             setSwapTransaction(
                 swapDetails.id,
@@ -160,6 +163,8 @@ const Processing: FC<Props> = ({
         storedWalletTransaction,
         swapDetails?.id,
         setSwapTransaction,
+        resolved.gaslessFailureStatus,
+        swapInputTransaction,
     ]);
 
     useEffect(() => {

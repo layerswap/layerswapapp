@@ -18,10 +18,14 @@ const hooks = registerHooks({
 })
 after(() => hooks.deregister())
 
-const { executeGaslessAuthorization } = await import('../dist/esm/components/Pages/Swap/Withdraw/Wallet/Common/depositExecution.js')
+const { executeGaslessAuthorization, completeGaslessSubmission } = await import('../dist/esm/components/Pages/Swap/Withdraw/Wallet/Common/depositExecution.js')
+const { useGaslessAuthorizationStore } = await import('../dist/esm/stores/swapTransactionStore.js')
 const { useGaslessPreferenceStore } = await import('../dist/esm/stores/gaslessPreferenceStore.js')
 const { widgetTelemetry } = await import('../dist/esm/lib/widgetTelemetry.js')
-afterEach(() => useGaslessPreferenceStore.getState().resetGaslessPreference())
+afterEach(() => {
+  useGaslessPreferenceStore.getState().resetGaslessPreference()
+  useGaslessAuthorizationStore.setState({ authorizations: {} })
+})
 
 for (const [code, rejected, message = 'Wallet request failed'] of [[4001, true], ['4001', true], ['ACTION_REJECTED', true], [-32603, false], [undefined, true, 'User has rejected the request.']]) {
   test(`gasless signing with code ${JSON.stringify(code)} and a nested RPC error records ${rejected ? 'cancellation' : 'failure'}`, async t => {
@@ -30,7 +34,7 @@ for (const [code, rejected, message = 'Wallet request failed'] of [[4001, true],
     t.after(widgetTelemetry.register(event => telemetry.push(event)))
     const error = Object.assign(new Error(message), { code, cause: { code: -32603 } })
     const unexpected = () => assert.fail('a failed signature must not authorize or submit a transfer')
-    const signAction = { type: 'sign', typed_data: { message: { validBefore: '123' } } }
+    const signAction = { type: 'sign', signing_standard: 'permit2', typed_data: { message: { validBefore: '123' } } }
     const ctx = {
       swapData: { id: 'swap-gasless', source_address: 'source' },
       depositActions: [signAction],
@@ -61,7 +65,7 @@ for (const [code, rejected, message = 'Wallet request failed'] of [[4001, true],
 }
 
 function gaslessContext({ authorize, refresh, lifecycle, submitted = [] }) {
-  const signAction = { type: 'sign', typed_data: { message: { validBefore: '123' } } }
+  const signAction = { type: 'sign', signing_standard: 'permit2', typed_data: { message: { validBefore: '123' } } }
   return {
     signAction,
     ctx: {
@@ -111,7 +115,7 @@ test('the re-sign after an expired authorization opens a second wallet prompt', 
   const lifecycle = []
   const submitted = []
   let authorizations = 0
-  const freshSignAction = { type: 'sign', typed_data: { message: { validBefore: '456' } } }
+  const freshSignAction = { type: 'sign', signing_standard: 'permit2', typed_data: { message: { validBefore: '456' } } }
   const { ctx } = gaslessContext({
     authorize: async () => { if (authorizations++ === 0) throw new Error('Authorization expired') },
     refresh: async () => ({ data: [freshSignAction] }),
@@ -119,11 +123,15 @@ test('the re-sign after an expired authorization opens a second wallet prompt', 
     submitted,
   })
   const signed = []
-  await executeGaslessAuthorization(ctx, async action => { signed.push(action); return '0xsig' })
+  const validBefore = await executeGaslessAuthorization(ctx, async action => { signed.push(action); return '0xsig' })
   assert.equal(signed.length, 2)
   assert.equal(signed[1], freshSignAction)
-  assert.deepEqual(lifecycle.map(event => event.step), ['wallet_prompt_opened', 'wallet_prompt_opened', 'gasless_authorization_submitted'])
-  assert.equal(submitted.length, 1)
+  assert.deepEqual(lifecycle.map(event => event.step), ['wallet_prompt_opened', 'wallet_prompt_opened'])
+  assert.equal(validBefore, 456)
+  assert.deepEqual(submitted, [], 'a signature is not evidence of submission')
+  completeGaslessSubmission(ctx, { status: 'published', transaction: { transaction_hash: '0xgasless', status: 'pending' } }, validBefore)
+  assert.deepEqual(submitted, [['swap-gasless-api', 'pending', '0xgasless']])
+  assert.equal(lifecycle.at(-1).step, 'gasless_authorization_submitted')
 })
 
 test('cancelling during authorization refresh prevents another wallet prompt', async t => {
@@ -175,7 +183,23 @@ for (const fails of [false, true]) {
     assert.deepEqual(submitted, [])
     assert.equal(useGaslessPreferenceStore.getState().gaslessUnavailable, false)
     assert.ok(lifecycle.every(event => !event.step.endsWith('_submitted')))
-    const { useGaslessAuthorizationStore } = await import('../dist/esm/stores/swapTransactionStore.js')
-    assert.equal(useGaslessAuthorizationStore.getState().authorizations[ctx.swapData.id], undefined)
+    const stored = useGaslessAuthorizationStore.getState().authorizations[ctx.swapData.id]
+    assert.deepEqual(stored, fails ? undefined : { validBefore: 123 }, 'accepted signatures are retained without claiming a deposit was submitted')
   })
 }
+
+test('closing during authorization retains the accepted signature without a transaction marker or success', async () => {
+  const authorized = Promise.withResolvers()
+  const scope = new AbortController()
+  const submitted = []
+  const { ctx } = gaslessContext({ authorize: () => authorized.promise, lifecycle: [], submitted })
+  ctx.signal = scope.signal
+  ctx.onSuccess = () => assert.fail('signing is not a completed deposit')
+  const signing = executeGaslessAuthorization(ctx, async () => '0xsig')
+  await Promise.resolve()
+  scope.abort()
+  authorized.resolve()
+  await signing
+  assert.deepEqual(submitted, [])
+  assert.deepEqual(useGaslessAuthorizationStore.getState().authorizations[ctx.swapData.id], { validBefore: 123 })
+})

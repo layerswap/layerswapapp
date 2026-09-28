@@ -64,6 +64,9 @@ axios.defaults.adapter = async config => {
   if (config.method === 'get' && config.url.includes('/deposit_actions')) {
     return { status: 200, statusText: 'OK', headers: {}, config, data: { data: state.swap.depositActionsResponse } }
   }
+  if (config.method === 'get' && config.url.endsWith('/authorize')) {
+    return { status: 200, statusText: 'OK', headers: {}, config, data: { data: { status: 'initiated' } } }
+  }
   requests++
   if (state.authorizeSucceeds && config.method === 'post' && (config.url.endsWith('/authorize') || config.url.endsWith('/deposit_speedup'))) {
     return { status: 200, statusText: 'OK', headers: {}, config, data: {} }
@@ -120,6 +123,7 @@ async function clickTransfer(onSign, { onClick = () => assert.fail('gasless shou
 }
 
 test('real transfer button, gasless execution, API client and host logger share the safe reporting boundary', async () => {
+  state.swap.depositActionsResponse[0].signing_standard = 'permit2'
   await clickTransfer(async () => 'test-secret-authorization')
   assert.equal(requests, 1)
   assert.deepEqual(errors.map(e => e.type), ['APIError', 'SwapWithdrawalError'])
@@ -143,14 +147,15 @@ test('wallet declines keep their classification and never become host errors or 
   assert.equal(state.successes, 0)
 })
 
-test('the real button resumes publication from SWR after a delayed authorization transition', async t => {
+for (const initialPublish of [true, false]) {
+test(`the real button resumes ${initialPublish ? 'known' : 'late'} publication from SWR after signing`, async t => {
   t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 10000 })
   state.authorizeSucceeds = true
   useGaslessPreferenceStore.getState().setGaslessEnabled(false)
   state.swap.swapDetails.metadata = {}
   const sign = state.swap.depositActionsResponse[0]
   const publish = { type: 'transfer', step: 'publish', status: 'waiting', amount: 1, to_address: 'deposit' }
-  state.swap.depositActionsResponse = [sign, publish]
+  state.swap.depositActionsResponse = initialPublish ? [sign, publish] : [sign]
   let signs = 0, transfers = 0
   await clickTransfer(async () => { signs++; return 'signature' }, {
     onClick: async () => { transfers++; return 'published-hash' },
@@ -158,11 +163,11 @@ test('the real button resumes publication from SWR after a delayed authorization
   })
   assert.equal(signs, 1)
   const requestsAfterSigning = state.apiCalls.length
-  state.swap.depositActionsResponse = [{ ...sign, status: 'completed' }, publish]
+  state.swap.depositActionsResponse = initialPublish ? [{ ...sign, status: 'completed' }, publish] : [{ step: 'sign', status: 'completed' }]
   for (let i = 0; i < 14; i++) await act(async () => { t.mock.timers.tick(2000) })
   assert.equal(transfers, 0)
   assert.equal(state.successes, 0)
-  assert.ok(state.apiCalls.slice(requestsAfterSigning).every(([method, url]) => method === 'get' && url.includes('/deposit_actions')))
+  assert.ok(state.apiCalls.slice(requestsAfterSigning).every(([method, url]) => method === 'get' && (url.includes('/deposit_actions') || (!initialPublish && url.endsWith('/authorize')))))
 
   state.swap.depositActionsResponse = [{ ...sign, status: 'completed' }, { ...publish, status: 'action_required' }]
   await act(async () => { t.mock.timers.tick(2000) })
@@ -171,6 +176,7 @@ test('the real button resumes publication from SWR after a delayed authorization
   assert.equal(transfers, 1)
   assert.equal(state.successes, 1)
   assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].hash, 'published-hash')
-  assert.ok(state.apiCalls.filter(([method]) => method === 'get').every(([, url]) => url.includes('/deposit_actions')), 'execution never requests a whole swap')
+  assert.ok(state.apiCalls.filter(([method]) => method === 'get').every(([, url]) => (url.includes('/deposit_actions') || (!initialPublish && url.endsWith('/authorize')))), 'execution never requests a whole swap')
   assert.deepEqual(errors, [])
 })
+}

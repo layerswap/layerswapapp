@@ -39,6 +39,12 @@ function loadSource(path, imports = {}) {
 const withdraw = 'components/Pages/Swap/Withdraw/';
 const fees = 'components/Pages/Swap/Form/FeeDetails/';
 const gasless = loadSource('helpers/gasless.ts');
+const addressModule = loadSource('../../../utils/src/address/Address.ts', {
+    './validator': { isValidAddress: () => false },
+    './formatter': {
+        addressFormat: ({ address, network }) => network?.type === 'evm' ? address.toLowerCase() : address,
+    },
+});
 const { useGaslessPreferenceStore } = loadSource('stores/gaslessPreferenceStore.ts', { zustand: coreRequire('zustand') });
 const motion = {
     'framer-motion': { motion: { div: childrenOnly }, AnimatePresence: childrenOnly, useIsPresent: () => true },
@@ -88,6 +94,7 @@ test('switching gasless mode preserves the live execution lock while swap creati
         }),
     };
     const { SendTransactionButton } = loadSource(`${withdraw}Wallet/Common/buttons.tsx`, {
+        '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
         ...walletHooks,
         '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: noop }) },
         '@/lib/swapLifecycle': { lifecycleContextFromSwap: () => ({}) },
@@ -169,7 +176,7 @@ test('switching gasless mode preserves the live execution lock while swap creati
     }
 });
 
-test('live recipient visibility waits for the sender and falls back to the selected account during creation', async () => {
+test('live recipient visibility preserves disconnected destinations and respects recorded or selected senders', async () => {
     const root = createRoot(container);
     let selectedAccount;
     let showDestinationAddress = true;
@@ -187,6 +194,7 @@ test('live recipient visibility waits for the sender and falls back to the selec
         quote: { source_network: network },
     };
     const { QuoteSummaryView } = loadSource(`${withdraw}Presentation/QuoteSummaryView.tsx`, {
+        '@/lib/address/Address': addressModule,
         './swapFlowAnimation': motion['./swapFlowAnimation'],
         '@/components/Common/NumFlowWithFallback': { default: empty },
         '@/components/Common/RecipientAddressView': {
@@ -266,7 +274,7 @@ test('live recipient visibility waits for the sender and falls back to the selec
         context.swapDetails = {};
         selectedAccount = undefined;
         await render();
-        assert.equal(recipient(), null, 'do not assume the recipient differs while the sender is unknown');
+        assert.equal(recipient()?.textContent, source, 'the known destination stays visible while the sender is unknown');
         selectedAccount = { address: source };
         await render();
         assert.equal(recipient(), null, 'restoring the same account must not flash Send to');
@@ -343,6 +351,7 @@ test('compact quote controls retain their nodes and cached values without gas re
         '../Slippage': { Slippage: empty },
         './DetailedEstimates': gasFees,
         '../../../Withdraw/Presentation/QuoteSummaryView': loadSource(`${withdraw}Presentation/QuoteSummaryView.tsx`, {
+            '@/lib/address/Address': addressModule,
             './swapFlowAnimation': motion['./swapFlowAnimation'],
             '@/components/Common/NumFlowWithFallback': { default: empty },
             '@/components/Common/RecipientAddressView': { RecipientAddressView: empty },
@@ -805,6 +814,7 @@ for (const failure of ['rejected', 'failed']) {
         const lifecycle = { lifecycleContextFromSwap: () => ({}), lifecycleErrorDetails: () => ({}) };
         const rejection = { isUserRejection: error => error?.code === 4001 };
         const execution = loadSource(`${withdraw}Wallet/Common/depositExecution.ts`, {
+            '@/helpers/gasless': gasless,
             '@layerswap/widget-types': { ActionMessageType: { TransactionExpired: 'TransactionExpired' } },
             '@/lib/apiClients/layerSwapApiClient': harness.api,
             '@/stores/swapTransactionStore': stores,
@@ -830,6 +840,7 @@ for (const failure of ['rejected', 'failed']) {
             '@/lib/gases/useSWRGas': { default: () => ({ gasData: { gas: 0.01 } }) },
         };
         const { SendTransactionButton } = loadSource(`${withdraw}Wallet/Common/buttons.tsx`, {
+            '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
             ...controllerImports,
             '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: noop }) },
             '@/hooks/useClientLayoutEffect': { useClientLayoutEffect: React.useLayoutEffect },
@@ -907,5 +918,183 @@ for (const failure of ['rejected', 'failed']) {
         }
     });
 }
+
+function createRetryHarness({ transaction, authorization, transactions = [] }) {
+    const api = {
+        BackendTransactionStatus: { Pending: 'pending', Completed: 'completed', Failed: 'failed' },
+        TransactionStatus: { Pending: 'pending', Completed: 'completed', Failed: 'failed' },
+        TransactionType: { Input: 'input', Output: 'output', Refuel: 'refuel', Refund: 'refund' },
+    };
+    const stores = loadSource('stores/swapTransactionStore.tsx', {
+        zustand: coreRequire('zustand'),
+        'zustand/middleware': coreRequire('zustand/middleware'),
+    });
+    stores.useSwapTransactionStore.setState({ swapTransactions: transaction ? { S: transaction } : {}, pendingSubmissions: {} });
+    stores.useGaslessAuthorizationStore.setState({ authorizations: authorization ? { S: authorization } : {} });
+    const swap = {
+        id: 'S', status: 'user_transfer_pending', transactions,
+        source_network: network, destination_network: network,
+        source_token: token, destination_token: token,
+        requested_amount: 1, destination_address: '0xdestination',
+    };
+    const context = { swapDetails: swap, depositActionsResponse: [] };
+    const harness = { stores, freshAttempts: 0 };
+    const swapHooks = {
+        useSwapDataState: () => context,
+        useSwapDataUpdate: () => ({ startFreshSwapAttempt: () => { harness.freshAttempts++; } }),
+    };
+    const statusHook = loadSource('hooks/useResolvedSwapStatus.ts', { '../context/swap': swapHooks });
+    const { resolveSwapPhase } = loadSource('components/utils/resolveSwapPhase.ts', {
+        '@layerswap/widget-types': loadSource('../../types/src/SwapStatus.ts'),
+        '../../lib/apiClients/layerSwapApiClient': api,
+        '../../Models/RangeError': loadSource('Models/RangeError.ts'),
+        '../Pages/Swap/Withdraw/Processing/types': loadSource(`${withdraw}Processing/types.ts`),
+        './formatTime': loadSource('components/utils/formatTime.ts'),
+        './swapPhase': loadSource('components/utils/swapPhase.ts'),
+    });
+    const { useSwapRetry } = loadSource('hooks/useSwapRetry.ts', {
+        '@/context/swap': swapHooks,
+        '@/stores/swapTransactionStore': stores,
+        '@/stores/gaslessPreferenceStore': { useGaslessPreferenceStore },
+        '@/helpers/swapProgress': loadSource('helpers/swapProgress.ts', {
+            '@layerswap/widget-types': loadSource('../../types/src/SwapStatus.ts'),
+            '@/lib/apiClients/layerSwapApiClient': api,
+        }),
+        './useGaslessAuthorization': loadSource('helpers/gaslessFailureMessage.ts'),
+        './useResolvedSwapStatus': statusHook,
+    });
+    const { default: Processing } = loadSource(`${withdraw}Processing/Processing.tsx`, {
+        '@/components/Common/CountDownTimer': { default: empty },
+        '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: noop }) },
+        '@/context/depositSettings': { useDepositSettings: () => ({}) },
+        '@/hooks/useResolvedSwapStatus': statusHook,
+        '@/lib/address/explorerUrl': { getExplorerUrl: noop },
+        '@/lib/apiClients/layerSwapApiClient': api,
+        '@/lib/ErrorHandler': { ErrorHandler: noop },
+        '@/stores/swapTransactionStore': stores,
+        'react-use-intercom': { useIntercom: () => ({ boot: noop, show: noop, update: noop }) },
+        '../Failed': { default: empty },
+        '../Presentation/ProcessingView': { ProcessingView: empty },
+        '@/context/swap': swapHooks,
+        '@/lib/swapLifecycle': { lifecycleContextFromSwap: () => ({}), PHASE_LIFECYCLE_EVENTS: {} },
+        '@/hooks/useLifecycleObservation': { useLifecycleObservation: noop },
+        '@/hooks/useClientLayoutEffect': { useClientLayoutEffect: React.useLayoutEffect },
+    });
+    harness.Probe = function Probe() {
+        const stored = stores.useSwapTransactionStore(state => state.swapTransactions.S);
+        const auth = stores.useGaslessAuthorizationStore(state => state.authorizations.S);
+        const gaslessFailureStatus = ['expired', 'insufficient', 'rejected'].includes(auth?.status) ? auth.status : undefined;
+        context.resolved = resolveSwapPhase({ swapDetails: swap, storedWalletTransaction: stored, gaslessFailureStatus });
+        harness.resolved = context.resolved;
+        harness.retry = useSwapRetry();
+        return React.createElement(Processing, { swapBasicData: swap, swapDetails: swap });
+    };
+    return harness;
+}
+
+for (const action of ['retry', 'switchToStandard']) {
+    for (const scenario of [
+        { name: 'a pending broadcast hash', transaction: { hash: '0xbroadcast', status: 'pending' } },
+        { name: 'a broadcast hash previously marked failed by authorization expiry', transaction: { hash: '0xbroadcast', status: 'failed' } },
+        { name: 'a broadcast hash in the authorization response', transaction: { hash: '', status: 'pending' }, authTransaction: { transaction_hash: '0xbroadcast', status: 'pending' } },
+        { name: 'an input already detected by the backend', transaction: { hash: '0xbroadcast', status: 'pending' }, transactions: [{ type: 'input', transaction_hash: '0xbroadcast', status: 'pending', confirmations: 0, max_confirmations: 1 }] },
+    ]) {
+        test(`${action} preserves ${scenario.name} when authorization expires`, async () => {
+            const authorization = { validBefore: 0, status: 'expired', transaction: scenario.authTransaction };
+            const harness = createRetryHarness({ ...scenario, authorization });
+            const root = createRoot(container);
+            useGaslessPreferenceStore.getState().resetGaslessPreference();
+            useGaslessPreferenceStore.getState().reportGaslessUnavailable('deposit', 'Expired');
+            try {
+                await act(async () => root.render(React.createElement(harness.Probe)));
+                assert.equal(harness.retry.canRetry, false);
+                assert.equal(harness.retry.canSwitchToStandard, false);
+                await act(async () => harness.retry[action]());
+                assert.deepEqual(harness.stores.useSwapTransactionStore.getState().swapTransactions.S, scenario.transaction);
+                assert.deepEqual(harness.stores.useGaslessAuthorizationStore.getState().authorizations.S, authorization);
+                assert.equal(harness.freshAttempts, 0);
+                assert.equal(harness.resolved.showWithdrawScreen, false);
+                assert.equal(useGaslessPreferenceStore.getState().gaslessEnabled, true);
+                assert.equal(useGaslessPreferenceStore.getState().gaslessUnavailable, true);
+            } finally {
+                await act(() => root.unmount());
+            }
+        });
+    }
+
+    test(`${action} safely restarts an expired hashless placeholder`, async () => {
+        const harness = createRetryHarness({ transaction: { hash: '', status: 'pending' }, authorization: { validBefore: 0, status: 'expired' } });
+        const root = createRoot(container);
+        useGaslessPreferenceStore.getState().resetGaslessPreference();
+        try {
+            await act(async () => root.render(React.createElement(harness.Probe)));
+            assert.equal(harness.retry.canRetry, true);
+            assert.equal(harness.retry.canSwitchToStandard, true);
+            await act(async () => harness.retry[action]());
+            assert.equal(harness.stores.useSwapTransactionStore.getState().swapTransactions.S, undefined);
+            assert.equal(harness.stores.useGaslessAuthorizationStore.getState().authorizations.S, undefined);
+            assert.equal(harness.freshAttempts, 1);
+            assert.equal(useGaslessPreferenceStore.getState().gaslessEnabled, action === 'retry');
+        } finally {
+            await act(() => root.unmount());
+        }
+    });
+
+    test(`${action} rechecks submission evidence recorded after its render`, async () => {
+        const harness = createRetryHarness({ transaction: { hash: '', status: 'pending' }, authorization: { validBefore: 0, status: 'expired' } });
+        const root = createRoot(container);
+        useGaslessPreferenceStore.getState().resetGaslessPreference();
+        try {
+            await act(async () => root.render(React.createElement(harness.Probe)));
+            const previousCallback = harness.retry[action];
+            await act(async () => {
+                harness.stores.useSwapTransactionStore.getState().setSwapTransaction('S', 'pending', '0xbroadcast');
+                previousCallback();
+            });
+            assert.equal(harness.stores.useSwapTransactionStore.getState().swapTransactions.S?.hash, '0xbroadcast');
+            assert.ok(harness.stores.useGaslessAuthorizationStore.getState().authorizations.S);
+            assert.equal(harness.freshAttempts, 0);
+            assert.equal(useGaslessPreferenceStore.getState().gaslessEnabled, true);
+        } finally {
+            await act(() => root.unmount());
+        }
+    });
+
+    test(`${action} does not apply an old expiry to a renewed authorization`, async () => {
+        const harness = createRetryHarness({ transaction: { hash: '', status: 'pending' }, authorization: { validBefore: 0, status: 'expired' } });
+        const root = createRoot(container);
+        useGaslessPreferenceStore.getState().resetGaslessPreference();
+        try {
+            await act(async () => root.render(React.createElement(harness.Probe)));
+            const previousCallback = harness.retry[action];
+            await act(async () => {
+                harness.stores.useGaslessAuthorizationStore.getState().setGaslessAuthorization('S', 1000);
+                previousCallback();
+            });
+            assert.ok(harness.stores.useSwapTransactionStore.getState().swapTransactions.S);
+            assert.equal(harness.stores.useGaslessAuthorizationStore.getState().authorizations.S?.validBefore, 1000);
+            assert.equal(harness.freshAttempts, 0);
+            assert.equal(useGaslessPreferenceStore.getState().gaslessEnabled, true);
+        } finally {
+            await act(() => root.unmount());
+        }
+    });
+}
+
+test('retry still restarts a failed ordinary transaction without a live authorization', async () => {
+    const harness = createRetryHarness({ transaction: { hash: '0xfailed', status: 'failed' } });
+    const root = createRoot(container);
+    try {
+        await act(async () => root.render(React.createElement(harness.Probe)));
+        assert.equal(harness.retry.canRetry, true);
+        assert.equal(harness.retry.canSwitchToStandard, false);
+        await act(async () => harness.retry.retry());
+        assert.equal(harness.stores.useSwapTransactionStore.getState().swapTransactions.S, undefined);
+        assert.equal(harness.freshAttempts, 1);
+    } finally {
+        await act(() => root.unmount());
+        useGaslessPreferenceStore.getState().resetGaslessPreference();
+    }
+});
 
 test.after(() => dom.window.close());
