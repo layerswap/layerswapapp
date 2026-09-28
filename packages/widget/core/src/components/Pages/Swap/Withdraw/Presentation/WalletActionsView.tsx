@@ -10,6 +10,7 @@ import type {
 import {
     getActionableDepositAction,
     getDepositActionLabel,
+    isDepositWorkflowComplete,
 } from '@/helpers/depositActions';
 import { DepositWorkflowView } from './DepositWorkflowView';
 import { WalletExecutionTransition } from './WalletExecutionTransition';
@@ -167,9 +168,7 @@ export function SendTransactionView({
         (depositActions?.filter((action) => !!action.step).length ?? 0) > 1 ||
         (!!quote?.destination_token &&
             !!depositActions?.some((action) => action.step === 'publish'));
-    const workflowCompleted =
-        !!depositActions?.length &&
-        depositActions.every((action) => action.status === 'completed');
+    const workflowCompleted = isDepositWorkflowComplete(depositActions ?? []);
     const actionableAction = getActionableDepositAction(depositActions);
     const primaryActionText = actionableAction
         ? getDepositActionLabel(actionableAction)

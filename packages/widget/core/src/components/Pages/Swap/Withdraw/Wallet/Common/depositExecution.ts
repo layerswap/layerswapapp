@@ -247,7 +247,7 @@ const resolveTransactionData = (swapDetails: SwapDetails, depositAction: Transfe
     return {
         amount: depositAction.amount,
         amountInBaseUnits: depositAction.amount_in_base_units,
-        callData: depositAction.call_data || '0x',
+        callData: depositAction.call_data ?? '',
         encodedArgs: depositAction.encoded_args,
         depositAddress: depositAction.to_address,
         sourceAddress: depositAction.from_address,

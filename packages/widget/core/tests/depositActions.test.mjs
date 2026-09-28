@@ -546,3 +546,56 @@ test('gasless execution records success only after a confirmed server submission
     assert.equal(flow.calls.lifecycle.at(-1).step, 'gasless_authorization_submitted')
     assert.deepEqual(flow.calls.errors, [])
 })
+
+for (const status of ['expired', 'insufficient', 'rejected']) {
+    test(`a completed sign with ${status} authorization keeps its retry button enabled`, async () => {
+        const flow = createWorkflow()
+        const [sign] = actionsFor('failed-authorization')
+        flow.state.apiActions = [sign]
+        flow.state.rejectSigning = false
+        flow.state.onTransition = () => {
+            flow.state.apiActions = [{ step: 'sign', status: 'completed' }]
+            throw new Error(`The swap authorization failed: ${status}`)
+        }
+        await flow.render().button.props.onClick()
+        await flow.poll()
+        const { button } = flow.render()
+        assert.equal(button.props.children, 'Try again')
+        assert.equal(button.props.isDisabled, false)
+        assert.equal(flow.calls.success, 0)
+        assert.deepEqual(flow.calls.storedTransactions, [])
+    })
+}
+
+test('completed prerequisites allow resuming a late publish action', async () => {
+    const flow = createWorkflow()
+    flow.render()
+    flow.state.apiActions = [
+        { step: 'approve_permit2', status: 'completed' },
+        { step: 'sign', status: 'completed' },
+    ]
+    await flow.poll()
+    const { button } = flow.render()
+    assert.equal(button.props.isDisabled, false)
+    assert.notEqual(button.props.children, 'Completed')
+    flow.state.onTransition = () => [
+        ...flow.state.apiActions,
+        { type: 'transfer', step: 'publish', status: 'action_required', amount: '1', to_address: '0x456' },
+    ]
+    await button.props.onClick()
+    assert.deepEqual(flow.calls.sign, [], 'resuming does not ask for another signature')
+    assert.equal(flow.calls.transfer.length, 1)
+    assert.equal(flow.calls.success, 1)
+})
+
+for (const step of ['publish', 'deposit']) {
+    test(`a completed ${step} still disables the deposit button`, async () => {
+        const flow = createWorkflow()
+        flow.render()
+        flow.state.apiActions = [{ step, status: 'completed' }]
+        await flow.poll()
+        const { button } = flow.render()
+        assert.equal(button.props.isDisabled, true)
+        assert.equal(button.props.children, 'Completed')
+    })
+}
