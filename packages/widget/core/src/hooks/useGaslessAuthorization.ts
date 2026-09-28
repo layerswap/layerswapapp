@@ -1,7 +1,8 @@
 import { SwapStatus } from '@layerswap/widget-types';
 import { useEffect, useState } from 'react'
 import { useGaslessAuthorizationStore } from '@/stores/swapTransactionStore'
-import { GaslessAuthorizationStatus, SwapDetails, TransactionType } from '@/lib/apiClients/layerSwapApiClient'
+import { DepositAction, GaslessAuthorizationStatus, SwapDetails, TransactionType } from '@/lib/apiClients/layerSwapApiClient'
+import { isGaslessAuthorizationForWorkflow, isGaslessDepositWorkflow } from '@/helpers/gasless'
 
 // Grace for client clock skew before the fallback timer declares expiry.
 const EXPIRY_GRACE_SECONDS = 30
@@ -16,12 +17,13 @@ const FAILURE_STATUSES: ReadonlySet<GaslessAuthorizationStatus> = new Set(['expi
 
 // Poll status is authoritative; the valid_before timer is a fallback until a status arrives.
 // Takes the swap as a parameter (no context read) so SwapDataProvider can own the single instance.
-export function useGaslessAuthorization(swapDetails: SwapDetails | undefined): UseGaslessAuthorizationResult {
+export function useGaslessAuthorization(swapDetails: SwapDetails | undefined, depositActions?: DepositAction[]): UseGaslessAuthorizationResult {
     const swapId = swapDetails?.id
 
-    const authorization = useGaslessAuthorizationStore(
+    const storedAuthorization = useGaslessAuthorizationStore(
         state => swapId ? state.authorizations[swapId] : undefined,
     )
+    const authorization = isGaslessAuthorizationForWorkflow(storedAuthorization, depositActions) ? storedAuthorization : undefined
     const status = authorization?.status
 
     const hasInputTransaction = !!swapDetails?.transactions?.some(t => t.type === TransactionType.Input)
@@ -55,11 +57,13 @@ export function useGaslessAuthorization(swapDetails: SwapDetails | undefined): U
         return () => clearTimeout(timer)
     }, [swapId, pendingPublish, validBefore])
 
+    const stalePrerequisite = isGaslessDepositWorkflow(depositActions) === false
+        && !storedAuthorization?.transaction?.transaction_hash
     useEffect(() => {
-        if (swapId && authorization && hasInputTransaction) {
+        if (swapId && storedAuthorization && (hasInputTransaction || stalePrerequisite)) {
             useGaslessAuthorizationStore.getState().removeGaslessAuthorization(swapId)
         }
-    }, [swapId, authorization, hasInputTransaction])
+    }, [swapId, storedAuthorization, hasInputTransaction, stalePrerequisite])
 
     // Ignore an obsolete expiry during render, before the effect resets it after a
     // swap change, retry, or authoritative poll result.

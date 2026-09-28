@@ -20,6 +20,12 @@ globalThis.cancelAnimationFrame = dom.window.cancelAnimationFrame.bind(dom.windo
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 dom.window.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {} });
 dom.window.scrollTo = () => {};
+const measurements = new Map();
+globalThis.ResizeObserver = class {
+    constructor(callback) { this.callback = callback; }
+    observe(node) { measurements.set(this, node); }
+    disconnect() { measurements.delete(this); }
+};
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const temporary = mkdtempSync(join(directory, '.timeline-motion-'));
@@ -35,6 +41,8 @@ await build({
             export { WalletActionTransition } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/WalletActionTransition.js';
             export { SendTransactionView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/WalletActionsView.js';
             export { RetryView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/RetryView.js';
+            export { DepositLayoutView } from '../../packages/widget/core/dist/esm/components/Pages/Deposit/DepositLayoutView.js';
+            export { DepositAddressTransition } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Form/DepositAddressForm/DepositAddressTransition.js';
         `,
         resolveDir: join(directory, '..'),
         loader: 'tsx',
@@ -47,7 +55,7 @@ await build({
     mainFields: ['module', 'main'],
     logLevel: 'silent',
 });
-const { SwapContentView, ProcessingSectionView, StepsPanel, DepositWorkflowView, WalletExecutionTransition, WalletActionTransition, SendTransactionView, RetryView } = await import(pathToFileURL(outfile));
+const { SwapContentView, ProcessingSectionView, StepsPanel, DepositWorkflowView, WalletExecutionTransition, WalletActionTransition, SendTransactionView, RetryView, DepositLayoutView, DepositAddressTransition } = await import(pathToFileURL(outfile));
 const container = document.getElementById('root');
 const settle = () => act(() => new Promise(resolve => setTimeout(resolve, 400)));
 const view = (processing, manual = false) => React.createElement(SwapContentView, {
@@ -249,6 +257,104 @@ test('wallet confirmation hands off to transaction confirmation without replayin
             assert.equal(container.querySelector('[data-steps-panel]').style.opacity, '0', 'returning after the panel disappeared restores its entrance');
         });
         await settle();
+    } finally {
+        await act(() => root.unmount());
+    }
+});
+
+test('deposit screen height tweens in both directions without double-animating changes within a screen', async () => {
+    const root = createRoot(container);
+    const originalBounds = dom.window.HTMLElement.prototype.getBoundingClientRect;
+    let measuredHeight = 400;
+    dom.window.HTMLElement.prototype.getBoundingClientRect = () => ({ x: 0, y: 0, top: 0, left: 0, right: 472, bottom: measuredHeight, width: 472, height: measuredHeight });
+    const scene = step => React.createElement(DepositLayoutView, {
+        transitionKey: step,
+        header: React.createElement('header', null, 'Deposit'),
+        footer: React.createElement('footer', null, 'Layerswap'),
+    }, React.createElement('div', null, step));
+    const measure = height => {
+        measuredHeight = height;
+        for (const [observer, target] of measurements)
+            observer.callback([{ target, borderBoxSize: [{ inlineSize: 472, blockSize: height }] }]);
+    };
+    try {
+        await act(() => root.render(scene('methods')));
+        const panel = container.querySelector('header').nextElementSibling.nextElementSibling;
+        // JSDOM has no layout or default computed padding; Framer uses both
+        // when resolving the initial auto height into pixels.
+        panel.style.padding = '0px';
+        await settle();
+        await act(() => measure(400));
+        await settle();
+        assert.equal(panel.style.height, '400px');
+
+        await act(() => root.render(scene('address')));
+        await act(() => measure(600));
+        await act(() => new Promise(resolve => setTimeout(resolve, 70)));
+        assert.ok(parseFloat(panel.style.height) > 400 && parseFloat(panel.style.height) < 600, `screen entry should tween, got ${panel.style.height}`);
+        await settle();
+        assert.equal(panel.style.height, '600px');
+
+        await act(() => measure(500));
+        await act(() => new Promise(resolve => setTimeout(resolve, 40)));
+        assert.equal(panel.style.height, '500px', 'in-screen quote changes track the content without a second tween');
+
+        await act(() => root.render(scene('methods')));
+        await act(() => measure(400));
+        await act(() => new Promise(resolve => setTimeout(resolve, 70)));
+        assert.ok(parseFloat(panel.style.height) > 400 && parseFloat(panel.style.height) < 500, `rewinding should tween, got ${panel.style.height}`);
+        await settle();
+        assert.equal(panel.style.height, '400px');
+    } finally {
+        await act(() => root.unmount());
+        dom.window.HTMLElement.prototype.getBoundingClientRect = originalBounds;
+    }
+});
+
+test('deposit details collapse while confirmation expands, and rewind restores the instructions', async () => {
+    const root = createRoot(container);
+    const scene = processing => React.createElement(DepositAddressTransition, {
+        summary: processing && React.createElement('div', null, '100 USDC on Ethereum → 99 USDC on Base'),
+        instructions: !processing && React.createElement('div', null,
+            React.createElement('div', null, 'Deposit details · QR code · Minimum · Maximum · Fees'),
+            React.createElement('button', null, 'Copy deposit address')),
+        processing: processing && React.createElement(StepsPanel, null, 'Confirming deposit'),
+    });
+    try {
+        await act(() => root.render(scene(false)));
+        const details = container.querySelector('[data-wallet-execution-panel="controls"]');
+        await act(() => root.render(scene(true)));
+        assert.equal(container.querySelector('[data-wallet-execution-panel="controls"]'), details, 'keep the address and expanded details until their collapse finishes');
+        assert.ok(details.hasAttribute('inert'));
+        const summary = container.querySelector('[data-wallet-execution-panel="overview"]');
+        assert.match(summary.textContent, /100 USDC on Ethereum/);
+        const confirmation = container.querySelector('[data-steps-panel]');
+        assert.ok(confirmation, 'confirmation enters alongside the collapsing details');
+        await act(() => new Promise(resolve => setTimeout(resolve, 70)));
+        assert.notEqual(details.style.height, 'auto');
+        assert.ok(Number(details.style.opacity) < 1);
+        await settle();
+        assert.equal(container.querySelector('[data-wallet-execution-panel="controls"]'), null);
+        assert.equal(container.querySelector('[data-steps-panel]'), confirmation);
+        assert.equal(container.querySelector('[data-wallet-execution-panel="overview"]'), summary);
+        assert.equal(summary.style.opacity, '1');
+
+        await act(() => root.render(scene(false)));
+        assert.ok(summary.hasAttribute('inert'));
+        assert.equal(container.querySelector('[data-steps-panel]'), confirmation);
+        assert.ok(confirmation.closest('[inert]'));
+        await settle();
+        assert.equal(container.querySelector('[data-steps-panel]'), null);
+        assert.equal(container.querySelector('[data-wallet-execution-panel="overview"]'), null);
+        assert.equal(container.querySelector('button').textContent, 'Copy deposit address');
+        assert.equal(container.querySelector('button').closest('[inert]'), null);
+
+        for (const processing of [true, false, true, false]) {
+            await act(() => root.render(scene(processing)));
+        }
+        await settle();
+        assert.equal(container.querySelectorAll('button').length, 1);
+        assert.equal(container.querySelector('[data-steps-panel]'), null);
     } finally {
         await act(() => root.unmount());
     }

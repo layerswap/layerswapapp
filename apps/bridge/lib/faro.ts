@@ -53,7 +53,10 @@ export function initFaro(): Faro | undefined {
     if (initializationAttempted) return undefined
     initializationAttempted = true
 
-    const collectorUrl = process.env.NEXT_PUBLIC_FARO_COLLECTOR_URL
+    const localLogging = process.env.NODE_ENV === 'development'
+    const collectorUrl = localLogging
+        ? `${window.location.origin}${process.env.NEXT_PUBLIC_LOCAL_TELEMETRY_PATH || '/api/local-telemetry'}`
+        : process.env.NEXT_PUBLIC_FARO_COLLECTOR_URL
     if (!collectorUrl) {
         if (process.env.NODE_ENV !== 'production') {
             console.warn('[Faro] NEXT_PUBLIC_FARO_COLLECTOR_URL is not set; browser telemetry is disabled.')
@@ -88,10 +91,12 @@ export function initFaro(): Faro | undefined {
             },
             beforeSend: item => {
                 if (isTimelinePreview()) return null
-                const kept = filterRequestTelemetry(item)
+                const kept = localLogging ? item : filterRequestTelemetry(item)
                 return kept && beforeSend(kept)
             },
             ...volumePolicy,
+            // Flush promptly for tail -f while retaining SDK batching and unload handling.
+            ...(localLogging ? { batching: { sendTimeout: 1_000 }, logArgsSerializer: serializeConsoleArgs } : {}),
             consoleInstrumentation: {
                 ...volumePolicy.consoleInstrumentation,
                 // console.error objects are redacted by key before Faro flattens
@@ -109,7 +114,10 @@ export function initFaro(): Faro | undefined {
                     },
                 },
             },
-            sessionTracking: getSessionTrackingConfig(process.env.NEXT_PUBLIC_FARO_SAMPLE_RATE, () => PersistentSessionsManager.fetchUserSession()),
+            sessionTracking: localLogging
+                // A stored unsampled session must not suppress local debugging either.
+                ? { enabled: true, persistent: true, sampler: () => 1 }
+                : getSessionTrackingConfig(process.env.NEXT_PUBLIC_FARO_SAMPLE_RATE, () => PersistentSessionsManager.fetchUserSession()),
             experimental: {
                 trackNavigation: true,
             },
@@ -130,7 +138,10 @@ export function initFaro(): Faro | undefined {
             ],
         })
 
-        if (process.env.NEXT_PUBLIC_FARO_DEBUG === 'true') {
+        if (localLogging) {
+            faroClient?.unpatchedConsole.info('[Telemetry] Writing browser logs to apps/bridge/.next/local-logs/browser.jsonl')
+        }
+        else if (process.env.NEXT_PUBLIC_FARO_DEBUG === 'true') {
             faroClient?.unpatchedConsole.info('[Faro] Browser telemetry initialized.')
         }
     }

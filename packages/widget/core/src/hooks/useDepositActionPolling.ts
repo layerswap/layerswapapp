@@ -3,7 +3,7 @@ import useSWR, { useSWRConfig } from 'swr'
 import type { ApiResponse } from '@/Models/ApiResponse'
 import LayerSwapApiClient, { type DepositAction, type GaslessAuthorizationResult } from '@/lib/apiClients/layerSwapApiClient'
 import { getActionableDepositAction, isDepositWorkflowComplete } from '@/helpers/depositActions'
-import { isGaslessAuthorizationSubmitted } from '@/helpers/gasless'
+import { isGaslessAuthorizationSubmitted, isGaslessDepositWorkflow } from '@/helpers/gasless'
 import { useClientLayoutEffect } from './useClientLayoutEffect'
 
 const client = new LayerSwapApiClient()
@@ -32,7 +32,7 @@ export function useDepositActionPolling(swapId: string | undefined, sourceAddres
     const [authorizationWaitKey, setAuthorizationWaitKey] = useState<string | null>(null)
     const authorizationKey = executing && swapId && key === authorizationWaitKey
         && data?.data?.some(action => action.step === 'sign' || action.type === 'sign')
-        && !data.data.some(action => action.step === 'publish')
+        && isGaslessDepositWorkflow(data.data) !== false
         ? `/swaps/${swapId}/authorize` : null
     const { data: authorization, error: authorizationError } = useSWR<ApiResponse<GaslessAuthorizationResult>>(authorizationKey, client.fetcher, {
         refreshInterval: 2000,
@@ -97,7 +97,7 @@ export function useDepositActionPolling(swapId: string | undefined, sourceAddres
                     return
                 }
                 if (latest.authorizationKey !== `/swaps/${activeSwapId}/authorize`
-                    || actions.some(action => action.step === 'publish')) return
+                    || isGaslessDepositWorkflow(actions) === false) return
                 // This lookup is optional for self-paid swaps. A transient failure
                 // must not stop deposit-action polling from revealing publication.
                 if (latest.authorizationError || latest.authorization?.error) return

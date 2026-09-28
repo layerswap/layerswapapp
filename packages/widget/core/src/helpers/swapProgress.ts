@@ -5,7 +5,8 @@ import type {
     SwapDetails,
 } from '@/lib/apiClients/layerSwapApiClient'
 import { BackendTransactionStatus, TransactionType } from '@/lib/apiClients/layerSwapApiClient'
-import type { GaslessAuthorization, SwapTransaction } from '@/stores/swapTransactionStore'
+import type { DepositSignature, GaslessAuthorization, SwapTransaction } from '@/stores/swapTransactionStore'
+import { isGaslessDepositWorkflow } from './gasless'
 
 type SwapProgressOptions = {
     swapDetails: SwapDetails | undefined
@@ -13,6 +14,7 @@ type SwapProgressOptions = {
     storedWalletTransaction: SwapTransaction | undefined
     gaslessAuthorization: GaslessAuthorization | undefined
     gaslessAuthorizationFailed?: boolean
+    depositSignature?: DepositSignature
 }
 
 const FAILED_AUTHORIZATION_STATUSES: ReadonlySet<GaslessAuthorizationStatus> = new Set([
@@ -37,6 +39,7 @@ export function hasSwapExecutionProgress({
     storedWalletTransaction,
     gaslessAuthorization,
     gaslessAuthorizationFailed = false,
+    depositSignature,
 }: SwapProgressOptions): boolean {
     if (swapDetails?.status && ADVANCED_SWAP_STATUSES.has(swapDetails.status)) return true
 
@@ -47,9 +50,10 @@ export function hasSwapExecutionProgress({
     )
     if (hasLiveInputTransaction) return true
 
-    const authorizationFailed = gaslessAuthorizationFailed
+    const selfPaid = isGaslessDepositWorkflow(depositActions) === false
+    const authorizationFailed = !selfPaid && (gaslessAuthorizationFailed
         || (!!gaslessAuthorization?.status
-            && FAILED_AUTHORIZATION_STATUSES.has(gaslessAuthorization.status))
+            && FAILED_AUTHORIZATION_STATUSES.has(gaslessAuthorization.status)))
 
     const authorizationTransaction = gaslessAuthorization?.transaction
     if (authorizationTransaction?.transaction_hash
@@ -68,11 +72,11 @@ export function hasSwapExecutionProgress({
         return true
     }
 
-    if (gaslessAuthorization && !authorizationFailed) return true
+    if (!selfPaid && ((gaslessAuthorization && !authorizationFailed) || depositSignature)) return true
 
     return depositActions?.some(action => {
         if (action.status !== 'pending' && action.status !== 'completed') return false
         if (action.step === 'publish' || action.step === 'deposit') return true
-        return action.step === 'sign' && !authorizationFailed
+        return action.step === 'sign' && !selfPaid && !authorizationFailed
     }) ?? false
 }

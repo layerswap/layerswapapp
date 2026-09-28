@@ -18,6 +18,7 @@ import { useSelectedAccount } from '@/context/swapAccounts';
 import { useWalletWithdrawalState } from '@/context/withdrawalContext';
 import useWallet from '@/hooks/useWallet';
 import LayerSwapApiClient, {
+    BackendTransactionStatus,
     DepositAction,
     SwapBasicData,
     SwapDetails,
@@ -28,7 +29,7 @@ import { ErrorHandler } from '@/lib/ErrorHandler';
 import { resolvePriceImpactValues } from '@/lib/fees';
 import useSWRGas from '@/lib/gases/useSWRGas';
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore';
-import { useGaslessAuthorizationStore, useSwapTransactionStore } from '@/stores/swapTransactionStore';
+import { useDepositSignatureStore, useGaslessAuthorizationStore, useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import { sleep } from '@layerswap/utils';
 import { Network, NetworkRoute } from '@layerswap/widget-types';
 import { ComponentProps, FC, type ReactNode, useCallback, useMemo, useRef, useState } from 'react';
@@ -227,7 +228,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const switchToStandardTransfer = useGaslessPreferenceStore(s => s.switchToStandardTransfer)
     const clearGaslessUnavailable = useGaslessPreferenceStore(s => s.clearGaslessUnavailable)
     const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess, onCancelWithdrawal } = useWalletWithdrawalState();
-    const { createSwap, setSwapId, setQuoteLoading, startFreshSwapAttempt } = useSwapDataUpdate()
+    const { createSwap, setSwapId, setQuoteLoading, startFreshSwapAttempt, markWalletExecutionStarted } = useSwapDataUpdate()
     const setSwapTransaction = useSwapTransactionStore(state => state.setSwapTransaction)
     const storedWalletTransaction = useSwapTransactionStore(
         state => swapId ? state.swapTransactions[swapId] : undefined,
@@ -235,6 +236,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const gaslessAuthorization = useGaslessAuthorizationStore(
         state => swapId ? state.authorizations[swapId] : undefined,
     )
+    const depositSignature = useDepositSignatureStore(state => swapId ? state.signatures[swapId] : undefined)
     const initialSettings = useInitialSettings()
     const { onSwapLifecycle } = useCallbacks()
 
@@ -280,7 +282,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         depositActions,
         storedWalletTransaction,
         gaslessAuthorization,
-    }), [swapDetails, depositActions, storedWalletTransaction, gaslessAuthorization])
+        depositSignature,
+    }), [swapDetails, depositActions, storedWalletTransaction, gaslessAuthorization, depositSignature])
     const desiredGasless = gaslessEnabled && isGaslessCapableRoute({
         depositMethod: swapBasicData.use_deposit_address ? 'deposit_address' : 'wallet',
         supportsGaslessDeposit: swapBasicData.source_token?.supports_gasless_deposit,
@@ -320,6 +323,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             setSwapError?.("")
             if (forceNewSwap && swapId) {
                 useGaslessAuthorizationStore.getState().removeGaslessAuthorization(swapId)
+                useDepositSignatureStore.getState().removeDepositSignature(swapId)
                 useSwapTransactionStore.getState().removeSwapTransaction(swapId)
             }
             let swapData: SwapDetails | undefined = forceNewSwap ? undefined : activeWorkflowState?.swapData ?? swapDetails
@@ -401,6 +405,9 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 throw new Error('No swap data')
             }
 
+            signal.throwIfAborted()
+            markWalletExecutionStarted(swapData.id)
+
             // Follow the server's workflow without another click. Later responses
             // can reveal additional actions, so bound wallet requests independently
             // of the initial response to stop repeated transitions.
@@ -412,6 +419,10 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     const failedStep = activeDepositActions.find(action => action.status === 'failed')
                     if (failedStep) throw new Error(failedStep.detail || 'The swap action failed')
                     if (isDepositWorkflowComplete(activeDepositActions)) {
+                        if (!useSwapTransactionStore.getState().swapTransactions[swapData.id]) {
+                            setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, '')
+                        }
+                        useDepositSignatureStore.getState().removeDepositSignature(swapData.id)
                         onWalletWithdrawalSuccess?.()
                         return
                     }
@@ -549,6 +560,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             depositActions,
             storedWalletTransaction: swapId ? useSwapTransactionStore.getState().swapTransactions[swapId] : undefined,
             gaslessAuthorization: swapId ? useGaslessAuthorizationStore.getState().authorizations[swapId] : undefined,
+            depositSignature: swapId ? useDepositSignatureStore.getState().signatures[swapId] : undefined,
         })) return
 
         onSwapLifecycle({

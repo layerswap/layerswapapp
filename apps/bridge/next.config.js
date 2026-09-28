@@ -58,6 +58,7 @@ const buildNextConfig = (phase, { defaultConfig = {} } = {}) => {
     env: {
       NEXT_PUBLIC_FARO_RELEASE: faroRelease,
       NEXT_PUBLIC_FARO_DEPLOYMENT: faroDeployment,
+      NEXT_PUBLIC_LOCAL_TELEMETRY_PATH: `${process.env.APP_BASE_PATH || ''}/api/local-telemetry`,
     },
     i18n: {
       locales: ["en"],

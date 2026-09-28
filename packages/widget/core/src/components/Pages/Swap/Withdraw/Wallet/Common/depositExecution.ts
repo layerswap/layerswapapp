@@ -8,7 +8,7 @@ import LayerSwapApiClient, {
     SwapDetails,
     GaslessAuthorizationResult,
 } from "@/lib/apiClients/layerSwapApiClient";
-import { useGaslessAuthorizationStore } from "@/stores/swapTransactionStore";
+import { useDepositSignatureStore, useGaslessAuthorizationStore } from "@/stores/swapTransactionStore";
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 import { isUserRejection } from "./isUserRejection";
 import { TransferProps } from "@layerswap/widget-types";
@@ -113,6 +113,7 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
 
     onSuccess()
     setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, hash)
+    useDepositSignatureStore.getState().removeDepositSignature(swapData.id)
     try {
         await layerswapApiClient.SwapCatchup(swapData.id, hash)
     } catch (e) {
@@ -210,10 +211,15 @@ export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, 
     }
 
     finishTelemetry('succeeded')
-    // Retain the accepted signature even if the screen closed during authorization.
-    // This locks the swap against replacement without marking a deposit as sent.
-    useGaslessAuthorizationStore.getState().setGaslessAuthorization(swapData.id, authorizedValidBefore ?? fallbackGaslessValidBefore())
-    // Authorization may be a prerequisite for a publish action not yet in the payload.
+    // Retain accepted signatures after closing, but only confirmed gasless workflows
+    // may activate authorization polling/expiry. Sign-only payloads can reveal publish later.
+    const validBefore = authorizedValidBefore ?? fallbackGaslessValidBefore()
+    if (isGaslessDepositWorkflow(depositActions) === true) {
+        useGaslessAuthorizationStore.getState().setGaslessAuthorization(swapData.id, validBefore)
+        useDepositSignatureStore.getState().removeDepositSignature(swapData.id)
+    } else {
+        useDepositSignatureStore.getState().setDepositSignature(swapData.id, validBefore)
+    }
     return authorizedValidBefore
 }
 
@@ -236,6 +242,7 @@ export const completeGaslessSubmission = (ctx: DepositExecutionContext, authoriz
         store.setGaslessAuthorization(swapData.id, validBefore ?? fallbackGaslessValidBefore())
     }
     store.setGaslessAuthorizationStatus(swapData.id, authorization.status, authorization.transaction)
+    useDepositSignatureStore.getState().removeDepositSignature(swapData.id)
     setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, authorization.transaction?.transaction_hash ?? '')
     onSuccess()
 }

@@ -1,6 +1,5 @@
 import { memo, useEffect, useState, type Ref } from 'react';
 import {
-    Page2Preview,
     SecondaryButton,
     Select,
     SelectContent,
@@ -9,6 +8,7 @@ import {
     SelectValue,
     type Page2PreviewMode,
 } from '@layerswap/widget/internal';
+import { TimelinePreview, withQuoteExpanded } from './TimelinePreview';
 import { EPOCH } from './fixtures';
 import {
     formatTime,
@@ -46,7 +46,7 @@ export function ScenarioCanvas({
     }, [columns, fit]);
 
     return (
-        <div className="flex h-[calc(100dvh-96px)] min-h-[420px] flex-col overflow-hidden rounded-xl border border-secondary-400 bg-secondary-900 max-[700px]:h-[calc(100dvh-88px)]">
+        <div className="flex h-[calc(100dvh-112px)] min-h-[420px] flex-col overflow-hidden rounded-xl border border-secondary-400 bg-secondary-900 max-[700px]:h-[calc(100dvh-160px)]">
             <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-secondary-400 bg-secondary-800 px-4 py-3">
                 <div className="flex flex-wrap items-center gap-4">
                     <span className="text-sm text-secondary-text">
@@ -236,19 +236,10 @@ function MilestonePreview({
 }) {
     const [quoteExpanded, setQuoteExpanded] = useState<boolean>();
     const snapshot = milestone.snapshot;
-    const previewSnapshot =
-        snapshot.kind === 'swap' && quoteExpanded !== undefined
-            ? {
-                  ...snapshot,
-                  quoteState: {
-                      ...snapshot.quoteState,
-                      expanded: quoteExpanded,
-                  },
-              }
-            : snapshot;
+    const previewSnapshot = withQuoteExpanded(snapshot, quoteExpanded);
 
     return (
-        <Page2Preview
+        <TimelinePreview
             snapshot={previewSnapshot}
             now={EPOCH + milestone.at * 1000}
             mode={mode}

@@ -32,7 +32,31 @@ Pages can choose their wrapper with Next.js's `getLayout` convention. The defaul
   NEXT_PUBLIC_API_KEY = mainnet #sandbox for testnets
   ```
 
-### Faro browser observability
+### Local browser logs
+
+`pnpm dev` automatically writes browser telemetry to `apps/bridge/.next/local-logs/browser.jsonl`
+(relative to the repository root). No Faro configuration or access is needed;
+an existing `NEXT_PUBLIC_FARO_COLLECTOR_URL` is ignored during development.
+
+```sh
+tail -f apps/bridge/.next/local-logs/browser.jsonl
+```
+
+Each JSON line contains a signal's `type`, `payload`, `meta` (including session,
+wallet and swap context when available), and server `receivedAt`. Console output,
+errors, widget events, performance signals and request traces use the existing
+Faro instrumentation, with all sessions captured and local volume filters disabled.
+Credentials still pass through the existing redaction. Batches flush about once
+per second. The file is created on the first batch, appends across restarts, and
+is gitignored. It lives under `.next` so log writes cannot trigger Fast Refresh;
+clearing `.next` also clears the logs. Delete the file whenever you want a fresh log.
+`/timeline` remains telemetry-free.
+Next.js server/terminal output still goes to the terminal.
+
+The local collector only accepts writes during `next dev`. Restart the dev server
+and reload the browser after changing this setup.
+
+### Faro browser observability (production builds)
 
 Set the collector URL and restart/rebuild the app to enable browser telemetry.
 

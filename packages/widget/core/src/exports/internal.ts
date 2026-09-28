@@ -43,3 +43,5 @@ export { BackendTransactionStatus, TransactionStatus, TransactionType } from '..
 export type { SwapDetails, SwapQuote, Transaction, DepositAction } from '../lib/apiClients/layerSwapApiClient';
 
 export type { Page2PreviewMode } from '../components/Pages/Swap/Withdraw/Presentation/Page2PreviewFrame';
+export { DepositPreview } from '../components/Pages/Deposit/DepositPreview';
+export type { DepositSnapshot } from '../components/Pages/Deposit/DepositSnapshot';

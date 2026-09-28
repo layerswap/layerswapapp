@@ -2,7 +2,6 @@ import Head from 'next/head';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useState, type ReactElement } from 'react';
 import {
-    Page2Preview,
     SecondaryButton,
     Select,
     SelectContent,
@@ -17,8 +16,9 @@ import {
     TabsTrigger,
     type Page2PreviewMode,
 } from '@layerswap/widget/internal';
-import { EPOCH, scenarios, scenarioGroups } from './fixtures';
+import { EPOCH, scenarios, scenarioGroups, scenarioWidgets } from './fixtures';
 import { formatTime, selectScenario, selectTime } from './model';
+import { TimelinePreview, withQuoteExpanded } from './TimelinePreview';
 import { ScenarioCanvas } from './ScenarioCanvas';
 
 type PreviewLayout = 'timeline' | 'canvas';
@@ -35,6 +35,7 @@ export default function TimelinePage() {
         (item) => item.id === selection.scenarioId,
     )!;
     const group = scenarioGroups.find((item) => item.id === scenario.group)!;
+    const widget = scenarioWidgets.find((item) => item.id === group.widget)!;
     const { time, milestone, previous, next, first, last } = selectTime(
         scenario,
         selection.seconds,
@@ -45,16 +46,10 @@ export default function TimelinePage() {
             seconds,
         }));
     const snapshot = milestone.snapshot;
-    const previewSnapshot =
-        snapshot.kind === 'swap' && selection.quoteExpanded !== undefined
-            ? {
-                  ...snapshot,
-                  quoteState: {
-                      ...snapshot.quoteState,
-                      expanded: selection.quoteExpanded,
-                  },
-              }
-            : snapshot;
+    const previewSnapshot = withQuoteExpanded(
+        snapshot,
+        selection.quoteExpanded,
+    );
 
     const flowSelector = (
         <div className="min-w-0">
@@ -67,7 +62,7 @@ export default function TimelinePage() {
             <Select
                 value={group.id}
                 onValueChange={(id) => {
-                    const nextGroup = scenarioGroups.find(
+                    const nextGroup = widget.groups.find(
                         (item) => item.id === id,
                     );
                     if (nextGroup)
@@ -89,7 +84,7 @@ export default function TimelinePage() {
                     position="popper"
                     className="motion-reduce:animate-none!"
                 >
-                    {scenarioGroups.map((item) => (
+                    {widget.groups.map((item) => (
                         <SelectItem key={item.id} value={item.id}>
                             {item.label}
                         </SelectItem>
@@ -145,7 +140,7 @@ export default function TimelinePage() {
     const pageHeading = (
         <header>
             <p className="text-[11px] font-medium tracking-[0.13em] text-secondary-text">
-                LAYERSWAP · PAGE 2
+                LAYERSWAP · WIDGET FLOWS
             </p>
             <h1 className="mt-3 text-2xl font-medium tracking-tight">
                 Transfer timeline
@@ -184,12 +179,12 @@ export default function TimelinePage() {
     return (
         <>
             <Head>
-                <title>Page 2 timeline | Layerswap</title>
+                <title>Widget timeline | Layerswap</title>
                 <meta name="robots" content="noindex, nofollow" />
             </Head>
             <div className="min-h-screen bg-linear-to-b from-secondary-900 to-secondary-500">
                 <main
-                    className={`${layout === 'timeline' ? 'max-w-[1080px] px-7 pt-9 pb-12 max-[700px]:pt-6 max-[700px]:pb-8' : `max-w-none px-7 pt-20 pb-4 max-[700px]:pt-[72px] ${panelOpen ? 'min-[701px]:pl-[344px]' : ''}`} mx-auto font-sans text-primary-text max-[700px]:px-4 [&_:focus-visible]:outline-2! [&_:focus-visible]:outline-solid! [&_:focus-visible]:outline-primary-text! [&_:focus-visible]:outline-offset-3! [&_:focus-visible]:shadow-none! motion-reduce:[&_*]:animate-none! motion-reduce:[&_*]:transition-none! motion-reduce:[&_*]:scroll-auto! motion-reduce:[&_*::before]:animate-none! motion-reduce:[&_*::before]:transition-none! motion-reduce:[&_*::after]:animate-none! motion-reduce:[&_*::after]:transition-none!`}
+                    className={`${layout === 'timeline' ? 'max-w-[1080px] px-7 pt-24 pb-12 max-[700px]:pt-36 max-[700px]:pb-8' : `max-w-none px-7 pt-24 pb-4 max-[700px]:pt-36 ${panelOpen ? 'min-[701px]:pl-[344px]' : ''}`} mx-auto font-sans text-primary-text max-[700px]:px-4 [&_:focus-visible]:outline-2! [&_:focus-visible]:outline-solid! [&_:focus-visible]:outline-primary-text! [&_:focus-visible]:outline-offset-3! [&_:focus-visible]:shadow-none! motion-reduce:[&_*]:animate-none! motion-reduce:[&_*]:transition-none! motion-reduce:[&_*]:scroll-auto! motion-reduce:[&_*::before]:animate-none! motion-reduce:[&_*::before]:transition-none! motion-reduce:[&_*::after]:animate-none! motion-reduce:[&_*::after]:transition-none!`}
                 >
                     <Tabs
                         value={mode}
@@ -198,79 +193,101 @@ export default function TimelinePage() {
                         }
                     >
                         {layout === 'timeline' && (
-                            <div className="mb-8 pr-44 max-[700px]:mb-6 max-[700px]:pt-14 max-[700px]:pr-0">
+                            <div className="mb-8 max-[700px]:mb-6">
                                 {pageHeading}
                             </div>
                         )}
-                        <div
-                            role="group"
-                            aria-label="Preview layout"
-                            className="fixed top-6 right-7 z-40 flex gap-2 rounded-xl border border-secondary-400 bg-secondary-900/95 p-1.5 shadow-lg max-[700px]:top-4 max-[700px]:right-4"
-                        >
-                            {(
-                                [
-                                    ['timeline', 'Timeline'],
-                                    ['canvas', 'Canvas'],
-                                ] as const
-                            ).map(([value, label]) => (
+                        <div className="fixed inset-x-0 top-0 z-40 grid grid-cols-[1fr_auto_1fr] items-center gap-3 border-b border-secondary-400 bg-secondary-900/95 px-7 py-3 max-[700px]:grid-cols-[1fr_auto] max-[700px]:px-4">
+                            {layout === 'canvas' && (
                                 <SecondaryButton
-                                    key={value}
-                                    aria-pressed={layout === value}
-                                    onClick={() => setLayout(value)}
-                                    className="aria-pressed:border-primary aria-pressed:bg-secondary-400"
+                                    aria-label={
+                                        panelOpen
+                                            ? 'Hide canvas controls'
+                                            : 'Show canvas controls'
+                                    }
+                                    aria-expanded={panelOpen}
+                                    aria-controls="canvas-controls"
+                                    onClick={() =>
+                                        setPanelOpen((open) => !open)
+                                    }
+                                    className="col-start-1 row-start-1 h-10 justify-self-start max-[700px]:row-start-2"
                                 >
-                                    {label}
+                                    <span className="flex items-center gap-2">
+                                        {panelOpen ? (
+                                            <PanelLeftClose
+                                                size={18}
+                                                aria-hidden="true"
+                                            />
+                                        ) : (
+                                            <PanelLeftOpen
+                                                size={18}
+                                                aria-hidden="true"
+                                            />
+                                        )}
+                                        Controls
+                                    </span>
                                 </SecondaryButton>
-                            ))}
+                            )}
+                            <div
+                                role="group"
+                                aria-label="Widget"
+                                className="col-start-2 row-start-1 flex gap-1 justify-self-center rounded-xl border border-secondary-400 bg-secondary-800 p-1.5 max-[700px]:col-span-2 max-[700px]:col-start-1 max-[700px]:w-full"
+                            >
+                                {scenarioWidgets.map((item) => (
+                                    <SecondaryButton
+                                        key={item.id}
+                                        aria-pressed={widget.id === item.id}
+                                        onClick={() => {
+                                            if (widget.id !== item.id)
+                                                setSelection(
+                                                    selectScenario(
+                                                        item.groups[0]
+                                                            .scenarios[0],
+                                                    ),
+                                                );
+                                        }}
+                                        className="flex-1 whitespace-nowrap aria-pressed:border-primary aria-pressed:bg-secondary-400"
+                                    >
+                                        {item.label}
+                                    </SecondaryButton>
+                                ))}
+                            </div>
+                            <div
+                                role="group"
+                                aria-label="Preview layout"
+                                className="col-start-3 row-start-1 flex gap-2 justify-self-end max-[700px]:col-start-2 max-[700px]:row-start-2"
+                            >
+                                {(
+                                    [
+                                        ['timeline', 'Timeline'],
+                                        ['canvas', 'Canvas'],
+                                    ] as const
+                                ).map(([value, label]) => (
+                                    <SecondaryButton
+                                        key={value}
+                                        aria-pressed={layout === value}
+                                        onClick={() => setLayout(value)}
+                                        className="aria-pressed:border-primary aria-pressed:bg-secondary-400"
+                                    >
+                                        {label}
+                                    </SecondaryButton>
+                                ))}
+                            </div>
                         </div>
                         {layout === 'canvas' && (
-                            <>
-                                <div
-                                    className={`fixed top-6 z-40 max-[700px]:top-4 max-[700px]:left-4 ${panelOpen ? 'left-[260px]' : 'left-7'}`}
-                                >
-                                    <SecondaryButton
-                                        aria-label={
-                                            panelOpen
-                                                ? 'Hide canvas controls'
-                                                : 'Show canvas controls'
-                                        }
-                                        aria-expanded={panelOpen}
-                                        aria-controls="canvas-controls"
-                                        onClick={() =>
-                                            setPanelOpen((open) => !open)
-                                        }
-                                        className="h-10 shadow-lg"
-                                    >
-                                        <span className="flex items-center gap-2">
-                                            {panelOpen ? (
-                                                <PanelLeftClose
-                                                    size={18}
-                                                    aria-hidden="true"
-                                                />
-                                            ) : (
-                                                <PanelLeftOpen
-                                                    size={18}
-                                                    aria-hidden="true"
-                                                />
-                                            )}
-                                            {!panelOpen && 'Controls'}
-                                        </span>
-                                    </SecondaryButton>
+                            <aside
+                                id="canvas-controls"
+                                aria-label="Canvas controls"
+                                hidden={!panelOpen}
+                                className={`${panelOpen ? '' : 'hidden'} fixed top-20 bottom-0 left-0 z-30 w-80 overflow-y-auto border-r border-secondary-400 bg-secondary-800 px-5 pt-6 pb-6 max-[700px]:top-32 max-[700px]:bottom-4 max-[700px]:left-4 max-[700px]:w-[min(320px,calc(100%-32px))] max-[700px]:rounded-xl max-[700px]:border max-[700px]:shadow-xl styled-scroll`}
+                            >
+                                {pageHeading}
+                                <div className="mt-7 space-y-5 border-t border-secondary-400 pt-6">
+                                    {flowSelector}
+                                    {scenarioSelector}
+                                    {previewModeSelector}
                                 </div>
-                                <aside
-                                    id="canvas-controls"
-                                    aria-label="Canvas controls"
-                                    hidden={!panelOpen}
-                                    className={`${panelOpen ? '' : 'hidden'} fixed inset-y-0 left-0 z-30 w-80 overflow-y-auto border-r border-secondary-400 bg-secondary-800 px-5 pt-9 pb-6 max-[700px]:top-20 max-[700px]:bottom-4 max-[700px]:left-4 max-[700px]:w-[min(320px,calc(100%-32px))] max-[700px]:rounded-xl max-[700px]:border max-[700px]:shadow-xl styled-scroll`}
-                                >
-                                    {pageHeading}
-                                    <div className="mt-7 space-y-5 border-t border-secondary-400 pt-6">
-                                        {flowSelector}
-                                        {scenarioSelector}
-                                        {previewModeSelector}
-                                    </div>
-                                </aside>
-                            </>
+                            </aside>
                         )}
                         <div
                             className={
@@ -399,7 +416,7 @@ export default function TimelinePage() {
                                             onPagesPerRowChange={setPagesPerRow}
                                         />
                                     ) : (
-                                        <Page2Preview
+                                        <TimelinePreview
                                             snapshot={previewSnapshot}
                                             now={EPOCH + time * 1000}
                                             mode={mode}

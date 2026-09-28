@@ -1,5 +1,6 @@
 import type { GaslessStandard } from '@layerswap/widget-types'
 import type { DepositAction, GaslessAuthorizationResult } from '@/lib/apiClients/layerSwapApiClient'
+import type { GaslessAuthorization } from '@/stores/swapTransactionStore'
 
 export type GaslessCapabilityInput = {
     depositMethod: string | undefined
@@ -40,5 +41,16 @@ export function isGaslessAuthorizationSubmitted(authorization: GaslessAuthorizat
     if (!authorization) return false
     if (authorization.transaction?.status === 'failed') return false
     return !!authorization.transaction?.transaction_hash
+        || authorization.status === 'published' || authorization.status === 'completed'
+}
+
+// Legacy markers need workflow evidence before they can drive failure or expiry.
+// Always let explicit self-paid actions override an old marker, including its status.
+export function isGaslessAuthorizationForWorkflow(authorization: GaslessAuthorization | undefined, actions: DepositAction[] | undefined): boolean {
+    if (!authorization) return false
+    const gasless = isGaslessDepositWorkflow(actions)
+    if (gasless === false) return false
+    return authorization.kind === 'gasless' || gasless === true
+        || !!authorization.transaction?.transaction_hash
         || authorization.status === 'published' || authorization.status === 'completed'
 }

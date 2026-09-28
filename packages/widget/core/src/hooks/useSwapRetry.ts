@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '@/context/swap'
-import { useSwapTransactionStore, useGaslessAuthorizationStore } from '@/stores/swapTransactionStore'
+import { useSwapTransactionStore, useGaslessAuthorizationStore, useDepositSignatureStore } from '@/stores/swapTransactionStore'
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore'
 import { hasSwapExecutionProgress } from '@/helpers/swapProgress'
 import { gaslessFailureMessage } from './useGaslessAuthorization'
@@ -30,6 +30,7 @@ export function useSwapRetry(): UseSwapRetryResult {
     const gaslessAuthorization = useGaslessAuthorizationStore(
         state => swapId ? state.authorizations[swapId] : undefined,
     )
+    const depositSignature = useDepositSignatureStore(state => swapId ? state.signatures[swapId] : undefined)
     const { failureReason, gaslessFailureStatus } = useResolvedSwapStatus()
 
     const hasProgress = hasSwapExecutionProgress({
@@ -37,6 +38,7 @@ export function useSwapRetry(): UseSwapRetryResult {
         depositActions: depositActionsResponse,
         storedWalletTransaction,
         gaslessAuthorization,
+        depositSignature,
         gaslessAuthorizationFailed: !!gaslessFailureStatus,
     })
 
@@ -56,11 +58,13 @@ export function useSwapRetry(): UseSwapRetryResult {
             depositActions: depositActionsResponse,
             storedWalletTransaction: transactions.swapTransactions[swapId],
             gaslessAuthorization: currentAuthorization,
+            depositSignature: useDepositSignatureStore.getState().signatures[swapId],
             // Timer expiry belongs to the authorization that produced this render.
             gaslessAuthorizationFailed: currentAuthorization === gaslessAuthorization && !!gaslessFailureStatus,
         })) return
 
         authorizations.removeGaslessAuthorization(swapId)
+        useDepositSignatureStore.getState().removeDepositSignature(swapId)
         transactions.removeSwapTransaction(swapId)
         const preferences = useGaslessPreferenceStore.getState()
         if (standardTransfer) preferences.switchToStandardTransfer()

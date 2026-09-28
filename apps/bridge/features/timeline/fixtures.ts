@@ -12,7 +12,7 @@ import {
     TransactionType,
     SwapPhase,
     type Page2LoadedSnapshot,
-    type Page2Snapshot,
+    type DepositSnapshot,
     type Page2WalletState,
     type SwapDetails,
     type SwapQuote,
@@ -22,7 +22,9 @@ import {
 import {
     timelineGroups,
     timelineSections,
+    timelineWidgets,
     type TimelineMilestone,
+    type TimelineSnapshot,
     type TimelineScenario,
 } from './model';
 
@@ -163,7 +165,7 @@ const m = (
     id: string,
     label: string,
     description: string,
-    snapshot: Page2Snapshot,
+    snapshot: TimelineSnapshot,
     expectedPhase?: SwapPhase,
 ): TimelineMilestone => ({
     at,
@@ -1577,7 +1579,12 @@ const frontendMilestone = (
         id,
         label,
         description,
-        frontend({ depositActions: actions, wallet, ...extra }),
+        frontend({
+            depositActions: actions,
+            wallet,
+            walletExecutionStarted: !!actions?.length && !(wallet.kind === 'send' && wallet.critical === 'confirmation'),
+            ...extra,
+        }),
         expectedPhase,
     );
 const frontendCompleted = (inputAt = 20) =>
@@ -1664,7 +1671,7 @@ const frontendScenarios: TimelineScenario[] = [
                 5,
                 'approving',
                 'Approve in wallet',
-                'Creating the swap opens the approval prompt automatically and makes the quote compact.',
+                'Starting wallet execution opens the approval prompt automatically and makes the quote compact.',
                 approvalRequired,
                 {
                     kind: 'send',
@@ -2184,6 +2191,237 @@ const frontendScenarios: TimelineScenario[] = [
     },
 ];
 
+const depositDestinations = [
+    usdc,
+    { ...usdc, symbol: 'USDT', asset: 'USDT', logo: icon('$', '#26a17b') },
+].map((token) => ({
+    network: { ...base, tokens: [token] },
+    token,
+}));
+const depositMethods: Extract<DepositSnapshot, { step: 'methods' }> = {
+    kind: 'deposit',
+    step: 'methods',
+    destinations: depositDestinations,
+    methods: [
+        {
+            id: 'wallet',
+            title: 'Wallet transfer',
+            subtitle: 'Connect a wallet',
+            icon: 'wallet',
+        },
+        {
+            id: 'deposit_address',
+            title: 'Deposit address',
+            subtitle: 'Send from any wallet or CEX',
+            icon: 'address',
+        },
+        {
+            id: 'hyperliquid',
+            title: 'Deposit from Hyperliquid',
+            subtitle: 'From your Hyperliquid balance',
+            icon: 'network',
+            logo: icon('H', '#158575'),
+        },
+        {
+            id: 'polymarket',
+            title: 'Deposit from Polymarket',
+            subtitle: 'From your Polymarket balance',
+            icon: 'network',
+            logo: icon('P', '#2454dd'),
+        },
+    ],
+};
+const depositAddress: Extract<DepositSnapshot, { step: 'address' }> = {
+    kind: 'deposit',
+    step: 'address',
+    source: { network: { ...ethereum, tokens: [usdc] }, token: usdc },
+    address: deposit,
+    quote: {
+        minimum: '5 USDC',
+        maximum: '10,000 USDC',
+        fees: '$1',
+        estimatedTime: '1 minute',
+        expanded: false,
+    },
+};
+const asDepositTransfer = (s: Page2LoadedSnapshot): Page2LoadedSnapshot => ({
+    ...s,
+    isDepositFlow: true,
+    showDestinationAddress: false,
+    actionButtonText: 'Deposit',
+});
+const depositWalletMilestones = standard.milestones.map(
+    (milestone): TimelineMilestone => {
+        if (milestone.snapshot.kind !== 'swap')
+            throw new Error(
+                'A deposit wallet milestone requires transfer data',
+            );
+        return {
+            ...milestone,
+            at: milestone.at + 10,
+            snapshot: {
+                kind: 'deposit',
+                step: 'wallet',
+                transfer: asDepositTransfer(milestone.snapshot),
+            },
+        };
+    },
+);
+const depositScenarios: TimelineScenario[] = [
+    {
+        id: 'deposit-widget-wallet',
+        label: 'Wallet deposit',
+        group: 'deposit-wallet',
+        section: 'main-flow',
+        milestones: [
+            m(
+                0,
+                'methods',
+                'Choose a funding method',
+                'The destination network and recipient are fixed by the integration. Choose a token and funding method.',
+                depositMethods,
+            ),
+            ...depositWalletMilestones,
+        ],
+    },
+    {
+        id: 'deposit-widget-address',
+        label: 'Deposit from a wallet or exchange',
+        group: 'deposit-address',
+        section: 'main-flow',
+        milestones: [
+            m(
+                0,
+                'methods',
+                'Choose deposit address',
+                'Fund the deposit by sending crypto from any wallet or exchange.',
+                depositMethods,
+            ),
+            m(
+                5,
+                'generating',
+                'Generating deposit address',
+                'The source is selected and the deposit address and limits are loading.',
+                { ...depositAddress, loading: true, address: undefined },
+            ),
+            m(
+                10,
+                'address',
+                'Deposit address ready',
+                'The deposit address, QR code and transfer limits are ready.',
+                depositAddress,
+            ),
+            m(
+                15,
+                'details',
+                'Deposit details',
+                'Review the minimum, maximum and fees before sending.',
+                {
+                    ...depositAddress,
+                    quote: { ...depositAddress.quote, expanded: true },
+                },
+            ),
+            ...[pendingInput, confirmed, completed].map(
+                (milestone): TimelineMilestone => {
+                    if (milestone.snapshot.kind !== 'swap')
+                        throw new Error(
+                            'A deposit address milestone requires transfer data',
+                        );
+                    const transfer = asDepositTransfer(milestone.snapshot);
+                    return {
+                        ...milestone,
+                        snapshot: {
+                            kind: 'deposit',
+                            step: 'address-processing',
+                            transfer: {
+                                ...transfer,
+                                swap: {
+                                    ...transfer.swap,
+                                    use_deposit_address: true,
+                                },
+                            },
+                        },
+                    };
+                },
+            ),
+        ],
+    },
+    {
+        id: 'deposit-widget-methods',
+        label: 'Funding method availability',
+        group: 'deposit-methods',
+        section: 'wallet-setup',
+        milestones: [
+            m(
+                0,
+                'checking',
+                'Checking funding methods',
+                'Extended-source methods stay visible while availability resolves.',
+                {
+                    ...depositMethods,
+                    methods: depositMethods.methods.map((method) =>
+                        method.icon === 'network'
+                            ? {
+                                  ...method,
+                                  loading: true,
+                                  subtitle: 'Checking availability…',
+                              }
+                            : method,
+                    ),
+                },
+            ),
+            m(
+                5,
+                'available',
+                'Available methods',
+                'Funding methods are ready with a choice of destination tokens.',
+                depositMethods,
+            ),
+            m(
+                10,
+                'connected',
+                'Wallet connected',
+                'A connected wallet can continue directly; More wallets opens another connection.',
+                {
+                    ...depositMethods,
+                    methods: [
+                        {
+                            ...depositMethods.methods[0],
+                            subtitle: 'Connected · 0x1111...1111',
+                            logo: icon('W', '#7357cc'),
+                        },
+                        depositMethods.methods[1],
+                        {
+                            ...depositMethods.methods[2],
+                            subtitle: 'Balance: 250 USDC',
+                        },
+                        {
+                            ...depositMethods.methods[3],
+                            disabled: true,
+                            subtitle: 'Not available for this destination',
+                            disabledReason:
+                                "Polymarket can't reach this destination",
+                        },
+                        {
+                            id: 'more',
+                            title: 'More wallets',
+                            subtitle: 'Use MetaMask, Phantom and more',
+                            icon: 'wallet',
+                        },
+                    ],
+                },
+            ),
+            m(
+                15,
+                'single-destination',
+                'Single destination token',
+                'The destination picker hides when the integration permits only one token.',
+                { ...depositMethods, destinations: [depositDestinations[0]] },
+            ),
+        ],
+    },
+];
+
 export const scenarios: readonly TimelineScenario[] = [
     standard,
     ...frontendScenarios,
@@ -2255,6 +2493,7 @@ export const scenarios: readonly TimelineScenario[] = [
             ),
         ],
     },
+    ...depositScenarios,
     ...manualScenarios,
     ...[true, false].map(
         (isBelowMin): TimelineScenario => ({
@@ -2332,3 +2571,8 @@ export const scenarioGroups = timelineGroups.map((group) => {
         scenarios: sections.flatMap((section) => section.scenarios),
     };
 });
+
+export const scenarioWidgets = timelineWidgets.map((widget) => ({
+    ...widget,
+    groups: scenarioGroups.filter((group) => group.widget === widget.id),
+}));

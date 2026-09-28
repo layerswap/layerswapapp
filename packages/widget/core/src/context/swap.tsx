@@ -17,7 +17,8 @@ import { useInitialSettings } from './settings';
 import { useSlippageStore } from '@/stores/slippageStore';
 import { useCallbacks } from './callbackProvider';
 import { Address } from '@/lib/address/Address';
-import { useGaslessAuthorizationStore, useSwapTransactionStore } from '@/stores';
+import { useDepositSignatureStore, useGaslessAuthorizationStore, useSwapTransactionStore } from '@/stores';
+import { isDepositWorkflowComplete } from '@/helpers/depositActions';
 import { ResolvedSwapStatus, resolveSwapPhase } from '@/components/utils/resolveSwapPhase';
 import { useDepositSettings } from './depositSettings';
 import { useGaslessAuthorization } from '@/hooks/useGaslessAuthorization';
@@ -47,6 +48,7 @@ export type UpdateSwapInterface = {
     setDepositAddressIsFromAccount: (value: boolean) => void,
     setWithdrawType: (value: WithdrawType) => void
     setSwapId: (value: string | undefined) => void
+    markWalletExecutionStarted: (swapId: string) => void
     startFreshSwapAttempt: () => void
     setSwapDataFromQuery?: (swapData: SwapResponse | undefined) => void,
     setSubmitedFormValues: (values: NonNullable<SwapFormValues>) => void,
@@ -68,6 +70,7 @@ export type SwapContextData = {
     refuel: Refuel | undefined,
     swapDetails: SwapDetails | undefined,
     swapId: string | undefined,
+    walletExecutionStarted: boolean,
     swapModalOpen: boolean,
     // The single resolved swap status every reader renders and reports from (phase,
     // step statuses, client-detected input failures). Computed once here so no reader can
@@ -89,6 +92,9 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     // id and, via SWR fallbackData below, the swap details — so consumers render
     // with data on first paint instead of a loading state.
     const [swapId, setSwapId] = useState<string | undefined>(initialSettings.swapId?.toString() ?? initialSwapData?.swap.id)
+    // Creation can still require quote confirmation before any wallet action starts.
+    const [walletExecutionSwapId, setWalletExecutionSwapId] = useState<string>()
+    const walletExecutionStarted = !!swapId && walletExecutionSwapId === swapId
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
     const { sourceRoutes, destinationRoutes, networks } = useSettingsState()
     const updateRecentTokens = useRecentNetworksStore(state => state.updateRecentNetworks)
@@ -176,6 +182,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         if (swapBasicData) setSwapBasicFormData(swapBasicData)
         setSwapTransaction(undefined)
         setSwapError(null)
+        setWalletExecutionSwapId(undefined)
         setSwapId(undefined)
     }, [swapBasicData])
 
@@ -204,39 +211,6 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         }
         return formDataQuote?.refuel
     }, [formDataQuote, data, swapId]);
-
-    // Inputs to the resolved status that only the client observes: the gasless authorization
-    // outcome (poll status or valid_before timer) and the source-chain status of an input tx the
-    // API has not listed yet. Owned here — one timer, one SWR key — so every reader sees one status.
-    const { isDepositFlow } = useDepositSettings()
-    const { failureStatus: gaslessFailureStatus } = useGaslessAuthorization(swapDetails)
-    const gaslessAuthTx = useGaslessAuthorizationStore(
-        state => swapId ? state.authorizations[swapId]?.transaction : undefined,
-    )
-    const inputTx = swapDetails?.transactions?.find(t => t.type === TransactionType.Input)
-    const inputTransactionHash = inputTx?.transaction_hash || gaslessAuthTx?.transaction_hash || storedWalletTransaction?.hash
-    const { data: inputTxStatusData } = useSWR<ApiResponse<{ status: TransactionStatus }>>(
-        (inputTransactionHash && inputTx?.status !== BackendTransactionStatus.Completed) ? [swapBasicData?.source_network?.name, inputTransactionHash] : null,
-        ([network, tx_id]: [string, string]) => layerswapApiClient.GetTransactionStatus(network, tx_id),
-        { dedupingInterval: 6000 },
-    )
-    const inputTxStatusFromApi = inputTxStatusData?.data?.status?.toLowerCase() as TransactionStatus | undefined
-
-    const resolved = useMemo(
-        () => resolveSwapPhase({ swapDetails, refuel, inputTxStatusFromApi, storedWalletTransaction, isDepositFlow, gaslessFailureStatus }),
-        [swapDetails, refuel, inputTxStatusFromApi, storedWalletTransaction, isDepositFlow, gaslessFailureStatus],
-    )
-
-    // Observe every API status here, regardless of which screen is mounted.
-    useSwapStatusNotification(swapDetails?.id, swapDetails?.status, {
-        path: 'SwapDataProvider',
-        fromAddress: swapDetails?.source_address ?? inputTx?.from,
-        toAddress: swapBasicData?.destination_address,
-        sourceNetwork: swapBasicData?.source_network.name,
-        destinationNetwork: swapBasicData?.destination_network.name,
-        sourceToken: swapBasicData?.source_token.symbol,
-        destinationToken: swapBasicData?.destination_token.symbol,
-    })
 
     // Restored swaps must resolve their account before a fresh retry populates form state.
     const sourceNetwork = swapBasicData?.source_network
@@ -273,6 +247,53 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const depositActionsError = !depositActionsResponse && (depositActionsSwrError || depositActions)
         ? (depositActionsSwrError?.response?.data?.error?.message || depositActionsSwrError?.message || depositActions?.error?.message || 'Could not generate deposit address.')
         : undefined
+
+    const depositCompleted = use_deposit_address === false && isDepositWorkflowComplete(depositActionsResponse ?? [])
+    useEffect(() => {
+        if (!swapId) return
+        // Completed server publication also needs a handoff after reload, with no
+        // wallet button click. Preserve a real hash/status if one is already known.
+        const transactions = useSwapTransactionStore.getState()
+        if (depositCompleted && !inputTransfer && !transactions.swapTransactions[swapId]) {
+            transactions.setSwapTransaction(swapId, BackendTransactionStatus.Pending, '')
+        }
+        if (depositCompleted || inputTransfer || storedWalletTransaction) {
+            useDepositSignatureStore.getState().removeDepositSignature(swapId)
+        }
+    }, [swapId, depositCompleted, inputTransfer, storedWalletTransaction])
+
+    // Inputs to the resolved status that only the client observes: the gasless authorization
+    // outcome (poll status or valid_before timer) and the source-chain status of an input tx the
+    // API has not listed yet. Owned here — one timer, one SWR key — so every reader sees one status.
+    const { isDepositFlow } = useDepositSettings()
+    const { failureStatus: gaslessFailureStatus } = useGaslessAuthorization(swapDetails, depositActionsResponse)
+    const gaslessAuthTx = useGaslessAuthorizationStore(
+        state => swapId ? state.authorizations[swapId]?.transaction : undefined,
+    )
+    const inputTx = swapDetails?.transactions?.find(t => t.type === TransactionType.Input)
+    const inputTransactionHash = inputTx?.transaction_hash || gaslessAuthTx?.transaction_hash || storedWalletTransaction?.hash
+    const { data: inputTxStatusData } = useSWR<ApiResponse<{ status: TransactionStatus }>>(
+        (inputTransactionHash && inputTx?.status !== BackendTransactionStatus.Completed) ? [swapBasicData?.source_network?.name, inputTransactionHash] : null,
+        ([network, tx_id]: [string, string]) => layerswapApiClient.GetTransactionStatus(network, tx_id),
+        { dedupingInterval: 6000 },
+    )
+    const inputTxStatusFromApi = inputTxStatusData?.data?.status?.toLowerCase() as TransactionStatus | undefined
+
+    const resolved = useMemo(
+        () => resolveSwapPhase({ swapDetails, refuel, inputTxStatusFromApi, storedWalletTransaction, isDepositFlow, gaslessFailureStatus }),
+        [swapDetails, refuel, inputTxStatusFromApi, storedWalletTransaction, isDepositFlow, gaslessFailureStatus],
+    )
+
+    // Observe every API status here, regardless of which screen is mounted.
+    useSwapStatusNotification(swapDetails?.id, swapDetails?.status, {
+        path: 'SwapDataProvider',
+        fromAddress: swapDetails?.source_address ?? inputTx?.from,
+        toAddress: swapBasicData?.destination_address,
+        sourceNetwork: swapBasicData?.source_network.name,
+        destinationNetwork: swapBasicData?.destination_network.name,
+        sourceToken: swapBasicData?.source_token.symbol,
+        destinationToken: swapBasicData?.destination_token.symbol,
+    })
 
     useEffect(() => {
         if (!swapId)
@@ -405,6 +426,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         setDepositAddressIsFromAccount,
         setWithdrawType,
         setSwapId: handleUpdateSwapid,
+        markWalletExecutionStarted: setWalletExecutionSwapId,
         startFreshSwapAttempt,
         setSubmitedFormValues,
         setQuoteLoading,
@@ -426,11 +448,12 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         swapBasicData,
         swapDetails,
         swapId,
+        walletExecutionStarted,
         swapModalOpen,
         resolved,
         swapError,
         setSwapError
-    }), [withdrawType, swapTransaction, depositAddressIsFromAccount, error, swapDetailsError, depositActionsResponse, depositActionsError, quote, quoteIsLoading, quoteError, refuel, swapBasicData, swapDetails, swapId, swapModalOpen, resolved, swapError]);
+    }), [withdrawType, swapTransaction, depositAddressIsFromAccount, error, swapDetailsError, depositActionsResponse, depositActionsError, quote, quoteIsLoading, quoteError, refuel, swapBasicData, swapDetails, swapId, walletExecutionStarted, swapModalOpen, resolved, swapError]);
 
     return (
         <SwapDataStateContext.Provider value={stateValue}>

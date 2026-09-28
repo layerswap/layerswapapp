@@ -247,6 +247,22 @@ for (const status of ['published', 'completed']) {
     })
 }
 
+test('explicit self-paid signing waits for publication without polling gasless status', async t => {
+    t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 10000 })
+    const prerequisite = { ...sign, signing_standard: 'permit2_witness', status: 'completed' }
+    response = { data: [prerequisite] }
+    authorization = { data: { status: 'expired' } }
+    await render()
+    let settled = false
+    const pending = wait(new AbortController().signal).then(value => { settled = true; return value })
+    for (let i = 0; i < 3; i++) await act(async () => { t.mock.timers.tick(2000) })
+    assert.equal(settled, false)
+    assert.ok(requests.every(key => !key.endsWith('/authorize')))
+    response = { data: [prerequisite, { ...publish, status: 'action_required' }] }
+    await act(async () => { t.mock.timers.tick(2000) })
+    assert.deepEqual(await pending, { actions: response.data })
+})
+
 for (const status of ['expired', 'insufficient', 'rejected']) {
     test(`an ${status} authorization cannot complete a sign-only workflow`, async () => {
         response = { data: [{ step: 'sign', status: 'completed' }] }

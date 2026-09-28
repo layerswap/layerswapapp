@@ -29,6 +29,7 @@ const rejection = loadSource(`${walletPath}isUserRejection.ts`, { '@layerswap/wa
 const gasless = loadSource('../src/helpers/gasless.ts')
 const depositActions = loadSource('../src/helpers/depositActions.ts')
 const swapProgress = loadSource('../src/helpers/swapProgress.ts', {
+    './gasless': gasless,
     '@layerswap/widget-types': loadSource('../../types/src/SwapStatus.ts'),
     '@/lib/apiClients/layerSwapApiClient': {
         BackendTransactionStatus: { Failed: 'failed' }, TransactionType: { Input: 'input' },
@@ -46,7 +47,7 @@ const actionsFor = nonce => [
 
 function createWorkflow({ mounted = false } = {}) {
     let view
-    const calls = { refresh: [], sign: [], authorize: [], transfer: [], storedTransactions: [], authorizations: [], errors: [], lifecycle: [], success: 0 }
+    const calls = { refresh: [], sign: [], authorize: [], transfer: [], executionStarts: [], storedTransactions: [], authorizations: [], signatures: [], errors: [], lifecycle: [], success: 0 }
     const state = {
         apiActions: actionsFor('fresh'),
         refreshError: undefined,
@@ -68,14 +69,19 @@ function createWorkflow({ mounted = false } = {}) {
     }
     const store = value => Object.assign(selector => selector(value), { getState: () => value })
     const stores = {
+        useDepositSignatureStore: store({
+            signatures: {},
+            setDepositSignature(id, validBefore) { this.signatures[id] = { validBefore }; calls.signatures.push([id, validBefore]) },
+            removeDepositSignature(id) { delete this.signatures[id] },
+        }),
         useGaslessAuthorizationStore: store({
             authorizations: {},
-            setGaslessAuthorization(id, validBefore) { this.authorizations[id] = { validBefore }; calls.authorizations.push([id, validBefore]) },
+            setGaslessAuthorization(id, validBefore) { this.authorizations[id] = { kind: 'gasless', validBefore }; calls.authorizations.push([id, validBefore]) },
             setGaslessAuthorizationStatus: (...args) => calls.authorizations.push(args),
             removeGaslessAuthorization(id) { delete this.authorizations[id] },
         }),
         useSwapTransactionStore: store({
-            swapTransactions: {}, setSwapTransaction: (...args) => calls.storedTransactions.push(args),
+            swapTransactions: {}, setSwapTransaction(id, status, hash) { stores.useSwapTransactionStore.getState().swapTransactions[id] = { status, hash }; calls.storedTransactions.push([id, status, hash]) },
             removeSwapTransaction(id) { delete this.swapTransactions[id] },
         }),
     }
@@ -202,6 +208,7 @@ function createWorkflow({ mounted = false } = {}) {
                 startFreshSwapAttempt: noop,
                 mutateSwap: async () => {},
                 setSwapId: id => { state.swapId = id },
+                markWalletExecutionStarted: id => calls.executionStarts.push(id),
             }),
         },
         'lucide-react': { Loader2: noop },
@@ -300,6 +307,7 @@ test('one click runs approval, signing and publication without intermediate acti
     const transitions = []
     flow.state.onWalletPrompt = step => {
         prompts.push(step)
+        assert.deepEqual(flow.calls.executionStarts, [swapId], `${step}: compact layout starts before the first wallet prompt`)
         const { button, steps } = flow.render()
         assert.equal(button, undefined, `${step}: wallet prompt does not require another click`)
         const current = steps.findIndex(item => item.status === 'current')
@@ -333,14 +341,19 @@ test('a swap created with only approval discovers and executes signing and publi
     flow.state.swapDetails = undefined
     flow.state.apiActions = [approval]
     flow.state.rejectSigning = false
-    flow.state.createSwap = async () => ({
+    let resolveCreation
+    flow.state.createSwap = () => new Promise(resolve => { resolveCreation = resolve })
+    const created = {
         swap: { id: swapId, metadata: {} },
         deposit_actions: [approval],
         quote: { receive_amount: 1 },
-    })
+    }
     const prompts = []
     const transitions = []
-    flow.state.onWalletPrompt = step => { prompts.push(step) }
+    flow.state.onWalletPrompt = step => {
+        prompts.push(step)
+        assert.deepEqual(flow.calls.executionStarts, [swapId])
+    }
     flow.state.onTransition = step => {
         transitions.push(step)
         if (step === 'approve_permit2') {
@@ -348,7 +361,10 @@ test('a swap created with only approval discovers and executes signing and publi
         }
     }
 
-    await flow.render().button.props.onClick()
+    const execution = flow.render().button.props.onClick()
+    assert.deepEqual(flow.calls.executionStarts, [], 'keep the full quote while preparing the swap')
+    resolveCreation(created)
+    await execution
 
     assert.deepEqual(prompts, ['approve_permit2', 'sign', 'publish'])
     assert.deepEqual(transitions, ['approve_permit2', 'sign'])
@@ -380,7 +396,7 @@ for (const completes of [false, true]) {
 
         assert.equal(flow.calls.transfer.length + flow.calls.sign.length, 10)
         assert.equal(transitions, 10)
-        assert.deepEqual(flow.calls.storedTransactions, [])
+        assert.deepEqual(flow.calls.storedTransactions, completes ? [[swapId, 'pending', '']] : [])
         assert.equal(flow.calls.success, completes ? 1 : 0)
         assert.deepEqual(flow.calls.errors.map(error => error.message), completes ? [] : ['The swap workflow has more actions than expected'])
     })
@@ -533,7 +549,8 @@ for (const resuming of [false, true]) {
             transitions.push(step)
             assert.equal(flow.calls.success, 0, 'signing does not hand off to processing')
             assert.deepEqual(flow.calls.storedTransactions, [])
-            assert.equal(flow.calls.authorizations.length, resuming ? 0 : 1, 'the signature is retained without a transaction marker')
+            assert.equal(flow.calls.signatures.length, resuming ? 0 : 1, 'the prerequisite is retained separately from gasless state')
+            assert.deepEqual(flow.calls.authorizations, [])
             assert.ok(flow.calls.lifecycle.every(event => !event.step.endsWith('_submitted')))
             return [{ ...sign, status: 'completed' }, { ...publish, status: 'action_required' }]
         }
@@ -555,7 +572,8 @@ test('gasless execution records success only after a confirmed server submission
     flow.state.onTransition = () => {
         assert.equal(flow.calls.success, 0)
         assert.deepEqual(flow.calls.storedTransactions, [])
-        assert.deepEqual(flow.calls.authorizations, [[swapId, 12345]])
+        assert.deepEqual(flow.calls.authorizations, [])
+        assert.deepEqual(flow.calls.signatures, [[swapId, 12345]])
         flow.state.authorization = { status: 'published', transaction: { transaction_hash: '0xrelayed', status: 'pending' } }
         return [{ ...sign, status: 'completed' }]
     }
@@ -635,12 +653,14 @@ for (const includesActions of [true, false]) {
         assert.equal(confirmation.warning, 'By continuing, you agree to receive as low as 75 TEST ($ 75.00)')
         assert.equal(confirmation.button.props.children, 'Continue anyway')
         assert.equal(flow.calls.transfer.length, 0, 'confirmation precedes wallet execution')
+        assert.deepEqual(flow.calls.executionStarts, [], 'keep the full quote until the changed amount is accepted')
 
         await confirmation.button.props.onClick()
         assert.equal(creates, 1, 'continuing never replaces the confirmed swap')
         assert.deepEqual(flow.calls.refresh, [['quoted-swap', sourceAddress]])
         assert.equal(flow.calls.transfer.length, 1)
         assert.equal(flow.calls.transfer[0].swapId, 'quoted-swap')
+        assert.deepEqual(flow.calls.executionStarts, ['quoted-swap'])
         assert.deepEqual(flow.calls.errors, [])
     })
 }
@@ -681,16 +701,21 @@ test('a failed gasless re-sign keeps the live swap resumable without offering a 
     assert.deepEqual(flow.calls.storedTransactions, [[swapId, 'pending', '0xrelayed']])
 })
 
-for (const progress of ['authorization', 'transaction']) {
+for (const progress of ['authorization', 'signature', 'transaction']) {
     test(`a ${progress} arriving after render prevents switching to standard`, async () => {
         const flow = createWorkflow()
         flow.preferences.gaslessEnabled = true
         flow.preferences.reportGaslessUnavailable('deposit')
+        flow.state.apiActions = [actionsFor('sign-only')[0]]
+        flow.render()
+        await flow.poll()
         const { buttonByText } = flow.render()
         const button = buttonByText('Switch to standard transfer')
         assert.ok(button)
         if (progress === 'authorization') {
             flow.stores.useGaslessAuthorizationStore.getState().authorizations[swapId] = { validBefore: Date.now() / 1000 + 1800 }
+        } else if (progress === 'signature') {
+            flow.stores.useDepositSignatureStore.getState().signatures[swapId] = { validBefore: Date.now() / 1000 + 1800 }
         } else {
             flow.stores.useSwapTransactionStore.getState().swapTransactions[swapId] = { status: 'pending', hash: '0xpending' }
         }
@@ -736,3 +761,17 @@ for (const step of ['publish', 'deposit']) {
         assert.equal(button.props.children, 'Completed')
     })
 }
+
+test('a self-paid prerequisite cannot lock replacement but an unclassified accepted signature does', () => {
+    const depositSignature = { validBefore: Date.now() / 1000 + 60 }
+    const actions = actionsFor('self-paid')
+    actions[0].status = 'completed'
+    assert.equal(swapProgress.hasSwapExecutionProgress({ depositActions: [actions[0]], depositSignature }), true)
+    assert.equal(swapProgress.hasSwapExecutionProgress({ depositActions: actions, depositSignature }), false)
+    assert.equal(swapProgress.hasSwapExecutionProgress({ depositActions: actions, gaslessAuthorization: depositSignature }), false,
+        'legacy self-paid markers do not count as live authorizations')
+    assert.equal(swapProgress.hasSwapExecutionProgress({
+        depositActions: actions,
+        gaslessAuthorization: { ...depositSignature, transaction: { transaction_hash: '0xsubmitted', status: 'pending' } },
+    }), true, 'transaction evidence still locks replacement')
+})

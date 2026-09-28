@@ -40,6 +40,7 @@ const SwapDetails: FC<Props> = ({
     const {
         swapBasicData,
         swapDetails,
+        walletExecutionStarted,
         refuel,
         depositActionsResponse,
         quote,
@@ -55,7 +56,7 @@ const SwapDetails: FC<Props> = ({
 
     // Polls the gasless deposit (paymaster) authorization while it's in flight; self-gates on
     // the authorization marker, so it's a no-op for non-gasless swaps.
-    useGaslessAuthorizationStatus(swapDetails?.id);
+    useGaslessAuthorizationStatus(swapDetails?.id, depositActionsResponse);
 
     const resolved = useResolvedSwapStatus();
     const {
@@ -103,7 +104,8 @@ const SwapDetails: FC<Props> = ({
     });
     const compactQuote =
         !swapBasicData.use_deposit_address &&
-        !resolved.showWithdrawScreen;
+        (!resolved.showWithdrawScreen ||
+            (compactsDuringWalletExecution && walletExecutionStarted));
     const sourceAddress =
         swapDetails?.source_address || selectedSourceAccount?.address;
 

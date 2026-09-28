@@ -25,11 +25,37 @@ type SwapDepositHintClickedStore = {
 };
 
 export type GaslessAuthorization = {
+    // Absent on older clients, which also stored self-paid prerequisites here.
+    kind?: 'gasless';
     // Signature expiry (unix seconds); fallback deadline when the authorize poll is unreachable.
     validBefore: number;
     status?: GaslessAuthorizationStatus;
     transaction?: GaslessAuthorizationTransaction | null;
 };
+
+export type DepositSignature = { validBefore: number };
+
+type DepositSignatureStore = {
+    signatures: Record<string, DepositSignature>;
+    setDepositSignature: (id: string, validBefore: number) => void;
+    removeDepositSignature: (id: string) => void;
+};
+
+// A prerequisite (or an as-yet unclassified signature) must never start gasless expiry.
+export const useDepositSignatureStore = create(persist<DepositSignatureStore>(
+    set => ({
+        signatures: {},
+        setDepositSignature: (id, validBefore) => set(state => ({
+            signatures: { ...state.signatures, [id]: { validBefore } },
+        })),
+        removeDepositSignature: id => set(state => {
+            if (!state.signatures[id]) return state;
+            const { [id]: removed, ...signatures } = state.signatures;
+            return { signatures };
+        }),
+    }),
+    { name: 'depositSignatures', storage: createJSONStorage(() => localStorage) },
+));
 
 type GaslessAuthorizationStore = {
     authorizations: Record<string, GaslessAuthorization>;
@@ -92,7 +118,7 @@ export const useGaslessAuthorizationStore = create(
                 set((state) => ({
                     authorizations: {
                         ...state.authorizations,
-                        [Id]: { validBefore },
+                        [Id]: { kind: 'gasless', validBefore },
                     },
                 }));
             },

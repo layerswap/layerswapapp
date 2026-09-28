@@ -105,7 +105,7 @@ export function Page2Preview({
                         <NotFoundView />
                     </PendingSwapView>
                 ) : (
-                    <LoadedPreview
+                    <Page2LoadedPreview
                         snapshot={snapshot}
                         now={now}
                         onQuoteExpandedChange={onQuoteExpandedChange}
@@ -116,7 +116,7 @@ export function Page2Preview({
     );
 }
 
-function LoadedPreview({
+export function Page2LoadedPreview({
     snapshot: s,
     now,
     onQuoteExpandedChange,
@@ -152,7 +152,8 @@ function LoadedPreview({
     });
     const compactQuote =
         !s.swap.use_deposit_address &&
-        !resolved.showWithdrawScreen;
+        (!resolved.showWithdrawScreen ||
+            (compactsDuringWalletExecution && !!s.walletExecutionStarted));
     const summary = (
         <SummaryView
             swap={{
@@ -419,7 +420,7 @@ function PreviewQuote({
                     isOpen={s.quoteState.expanded}
                     onOpen={() => onExpandedChange?.(true)}
                     sourceAddress={s.sourceAddress}
-                    showDestinationAddress
+                    showDestinationAddress={s.showDestinationAddress ?? true}
                     recipient={s.recipient}
                     slippage={slippage}
                     gasFee={gas}
@@ -530,6 +531,7 @@ function PreviewWallet({ snapshot: s }: { snapshot: Page2LoadedSnapshot }) {
                     quoteError={s.quoteState.status === 'error'}
                     loading={state.pending}
                     actionStateText={state.label}
+                    actionButtonText={s.actionButtonText}
                     error={!!state.error}
                     swapError={state.swapError}
                     criticalMarketPriceImpact={!!state.critical}

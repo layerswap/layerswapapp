@@ -48,6 +48,7 @@ export type Page2LoadedSnapshot = {
     swap: SwapBasicData;
     details: SwapDetails;
     swapId?: string;
+    walletExecutionStarted?: boolean;
     depositActions?: DepositAction[];
     quote?: SwapQuote;
     refuel?: Refuel;
@@ -55,6 +56,8 @@ export type Page2LoadedSnapshot = {
     recipient?: RecipientPresentation;
     connectedWallets?: WalletsIconsProps['wallets'];
     isDepositFlow?: boolean;
+    showDestinationAddress?: boolean;
+    actionButtonText?: string;
     usdMode?: boolean;
     quoteState: {
         status: 'ready' | 'loading' | 'error';
