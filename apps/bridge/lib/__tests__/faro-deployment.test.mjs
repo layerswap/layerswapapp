@@ -26,11 +26,11 @@ const { createPageMeta } = require(join(dirname(require.resolve('@grafana/faro-w
 function browserHarness(env, pathname = '/') {
     let config
     const exports = {}
-    const window = { location: { pathname } }
+    const window = { location: { origin: 'https://layerswap.io', pathname } }
     const source = readFileSync(new URL('../faro.ts', import.meta.url), 'utf8')
     const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText
     vm.runInNewContext(compiled, {
-        exports, process: { env }, window: { location: { origin: 'https://layerswap.io' } }, console,
+        exports, process: { env }, window, console,
         require: name => ({
             './faro-sanitizer': sanitizer,
             './faro-session-context': sessionContext,

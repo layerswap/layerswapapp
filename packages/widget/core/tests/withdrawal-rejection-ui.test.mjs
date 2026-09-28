@@ -64,6 +64,8 @@ const { createRoot } = await import('react-dom/client')
 const { useHyperliquidWithdrawal } = await import('../dist/esm/components/Pages/Swap/Withdraw/WithdrawalProviders/Hyperliquid/useHyperliquidWithdrawal.js')
 const { usePolymarketWithdrawal } = await import('../dist/esm/components/Pages/Swap/Withdraw/WithdrawalProviders/Polymarket/usePolymarketWithdrawal.js')
 const { useSwapTransactionStore } = await import('../dist/esm/stores/swapTransactionStore.js')
+const providerExecutionUrl = new URL('../dist/esm/components/Pages/Swap/Withdraw/WithdrawalProviders/executeProviderWithdrawal.js', import.meta.url)
+const { executeProviderWithdrawal } = await import(providerExecutionUrl)
 const swapBasicData = {
   requested_amount: '1', source_network: { name: 'source' }, destination_network: { name: 'destination' },
   source_token: { decimals: 6 }, destination_token: {}, destination_address: 'destination',
@@ -97,6 +99,63 @@ async function reloadTransactionStore() {
   useSwapTransactionStore.setState({ swapTransactions: {}, pendingSubmissions: {} })
   localStorage.setItem('swapTransactions', persisted)
   await useSwapTransactionStore.persist.rehydrate()
+}
+
+for (const stage of ['preparation', 'signing']) {
+  test(`reloading during ${stage} permits retry without persisting an unsubmitted withdrawal`, async () => {
+    const paused = Promise.withResolvers()
+    const entered = Promise.withResolvers()
+    let submissions = 0
+    const abandoned = executeProviderWithdrawal({
+      swapId: 'swap-1', sourceAddress: 'source', onReconcile: async () => {},
+      prepare: async () => {
+        if (stage === 'preparation') {
+          entered.resolve()
+          await paused.promise
+        }
+        return 'prepared'
+      },
+      execute: async (_, onSubmissionStateChange) => {
+        onSubmissionStateChange('preparing')
+        entered.resolve()
+        await paused.promise
+        onSubmissionStateChange('submitting')
+        submissions++
+        return 'abandoned-hash'
+      },
+    }).catch(error => error)
+    try {
+      await entered.promise
+      assert.equal(submissions, 0)
+      assert.deepEqual(JSON.parse(localStorage.getItem('swapTransactions')).state.pendingSubmissions, {})
+
+      const retry = {
+        swapId: 'swap-1', sourceAddress: 'source', onReconcile: async () => assert.fail('nothing was submitted'),
+        prepare: async () => 'fresh',
+        execute: async (prepared, onSubmissionStateChange) => {
+          assert.equal(prepared, 'fresh')
+          onSubmissionStateChange('preparing')
+          onSubmissionStateChange('submitting')
+          submissions++
+          return 'retry-hash'
+        },
+      }
+      await assert.rejects(executeProviderWithdrawal(retry), /already in progress/)
+      assert.equal(submissions, 0, 'another controller cannot submit while the original session is active')
+
+      // A page reload rehydrates durable state and creates a fresh execution module.
+      await reloadTransactionStore()
+      const reopened = await import(`${providerExecutionUrl.href}?reload=${stage}`)
+      assert.equal(await reopened.executeProviderWithdrawal(retry), 'retry-hash')
+      assert.equal(submissions, 1)
+      assert.deepEqual(state.refreshes, [])
+      assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].hash, 'retry-hash')
+      assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, {})
+    } finally {
+      paused.reject(new Error('Original page closed before submission'))
+      await abandoned
+    }
+  })
 }
 
 test('recording a transaction clears its pending submission atomically and preserves other swaps', () => {

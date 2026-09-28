@@ -6,6 +6,7 @@ import { hasSwapExecutionProgress } from '@/helpers/swapProgress'
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore'
 
 const api = new LayerSwapApiClient()
+const activeWithdrawals = new Set<string>()
 type SubmissionCallback = NonNullable<TransferProps['onSubmissionStateChange']>
 
 export async function getProviderDepositActions(swapId: string, sourceAddress?: string) {
@@ -22,6 +23,8 @@ export async function executeProviderWithdrawal<T>({ swapId, sourceAddress, prep
     execute: (prepared: T, onSubmissionStateChange: SubmissionCallback) => Promise<string>
     onReconcile: (response: ApiResponse<SwapResponse>) => Promise<unknown>
 }): Promise<string> {
+    if (activeWithdrawals.has(swapId)) throw new Error('This withdrawal is already in progress.')
+
     const store = useSwapTransactionStore.getState()
     const transaction = store.swapTransactions[swapId]
     if (transaction && transaction.status !== BackendTransactionStatus.Failed) return transaction.hash
@@ -55,24 +58,29 @@ export async function executeProviderWithdrawal<T>({ swapId, sourceAddress, prep
         })
     }
 
-    // Claim the swap synchronously before opening a wallet/provider request.
-    store.markSubmissionPending(swapId)
+    // Preparation locks this session without leaving a submission marker on reload.
+    activeWithdrawals.add(swapId)
     let phase: Parameters<SubmissionCallback>[0] | undefined = 'preparing'
-    let hash: string
     try {
         const prepared = await prepare()
         // Providers that do not report submission progress remain conservative.
         phase = undefined
-        hash = await execute(prepared, state => {
+        store.markSubmissionPending(swapId)
+        const hash = await execute(prepared, state => {
             // Once submission starts, later progress cannot make retry safe again.
-            if (phase !== 'submitting') phase = state
+            if (phase === 'submitting') return
+            phase = state
+            if (state === 'preparing') store.clearPendingSubmission(swapId)
+            else store.markSubmissionPending(swapId)
         })
+        // Record even if the screen closed, before any UI success callback can fail.
+        return recordSubmission(hash)
     } catch (error) {
         if (phase === 'preparing' || (phase === undefined && isUserRejection(error))) {
             store.clearPendingSubmission(swapId)
         }
         throw error
+    } finally {
+        activeWithdrawals.delete(swapId)
     }
-    // Record even if the screen closed, and before any UI success callback can fail.
-    return recordSubmission(hash)
 }

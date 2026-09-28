@@ -74,7 +74,8 @@ export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStat
 
     const showWithdrawScreen =
         (!swapStatus || swapStatus === SwapStatus.UserTransferPending || swapStatus === SwapStatus.Created)
-        && !(inputTx || storedWalletTransaction);
+        && !(inputTx || storedWalletTransaction)
+        && !failureReason;
 
     const phase = resolvePhase({
         swapStatus,

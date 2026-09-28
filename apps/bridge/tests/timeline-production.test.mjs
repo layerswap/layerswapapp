@@ -36,6 +36,16 @@ function loadSource(path, imports = {}) {
     return module.exports;
 }
 
+function loadDepositActionPolling(api) {
+    return loadSource('hooks/useDepositActionPolling.ts', {
+        swr: { default: useSWR, useSWRConfig },
+        '@/lib/apiClients/layerSwapApiClient': api,
+        '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
+        '@/helpers/gasless': gasless,
+        './useClientLayoutEffect': { useClientLayoutEffect: React.useLayoutEffect },
+    });
+}
+
 const withdraw = 'components/Pages/Swap/Withdraw/';
 const fees = 'components/Pages/Swap/Form/FeeDetails/';
 const gasless = loadSource('helpers/gasless.ts');
@@ -99,6 +109,7 @@ test('switching gasless mode preserves the live execution lock while swap creati
         '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: noop }) },
         '@/lib/swapLifecycle': { lifecycleContextFromSwap: () => ({}) },
         '@/hooks/useTransferBlocked': { useTransferBlocked: noop },
+        '@/hooks/useDepositActionPolling': loadDepositActionPolling({ default: class {} }),
         '@/hooks/useClientLayoutEffect': { useClientLayoutEffect: React.useLayoutEffect },
         '@/helpers/swapProgress': { hasSwapExecutionProgress: () => false },
         '@/helpers/gasless': gasless,
@@ -638,7 +649,7 @@ test('a real atomic swap keeps its receipts without completion time when the API
 
 for (const provider of ['Hyperliquid', 'Polymarket']) {
     for (const outcome of ['failure', 'success']) {
-        test(`${provider} retry after reload preserves its controller through creation ${outcome}`, async () => {
+        test(`${provider} retry after reload preserves its swap and controller through withdrawal ${outcome}`, async () => {
             const swap = {
                 id: 'first', status: 'user_transfer_pending', requested_amount: '1',
                 source_network: network, destination_network: network,
@@ -646,37 +657,60 @@ for (const provider of ['Hyperliquid', 'Polymarket']) {
                 destination_token: { ...token, asset: 'USDC', decimals: 6 },
                 destination_address: '0xdestination', use_deposit_address: false, transactions: [],
             };
-            const actions = [{ type: 'transfer', to_address: '0xdeposit', call_data: '0x' }];
+            const actions = [{ type: 'transfer', to_address: '0xdeposit', call_data: '0x', amount: 1, amount_in_base_units: '1000000' }];
             const harness = createSwapHistoryHarness(async key => key.includes('/deposit_actions')
                 ? { data: actions }
-                : { data: { swap: { ...swap, id: key.includes('/second?') ? 'second' : 'first' } } });
-            const creation = Promise.withResolvers();
+                : { data: { swap } });
             const transfer = Promise.withResolvers();
             const records = [];
+            const walletRequests = [];
             let successes = 0;
             let creates = 0;
             let mounts = 0;
-            let walletCalls = 0;
             let current;
             const swapContext = {
                 ...harness.context,
-                useSwapDataUpdate: () => ({ ...harness.context.useSwapDataUpdate(), createSwap: () => { creates++; return creation.promise; } }),
+                useSwapDataUpdate: () => ({
+                    ...harness.context.useSwapDataUpdate(),
+                    createSwap: async () => { creates++; throw new Error('A restored withdrawal must retain its swap'); },
+                }),
             };
+            const transactions = {
+                swapTransactions: {},
+                pendingSubmissions: {},
+                markSubmissionPending: id => { transactions.pendingSubmissions[id] = true; },
+                clearPendingSubmission: id => { delete transactions.pendingSubmissions[id]; },
+                setSwapTransaction: (id, status, hash) => {
+                    records.push([id, status, hash]);
+                    transactions.swapTransactions[id] = { status, hash };
+                    delete transactions.pendingSubmissions[id];
+                },
+            };
+            const rejection = { isUserRejection: error => error?.code === 4001 };
+            const providerExecution = loadSource(`${withdraw}WithdrawalProviders/executeProviderWithdrawal.ts`, {
+                '@layerswap/wallet-core/errors': rejection,
+                '@/lib/apiClients/layerSwapApiClient': harness.api,
+                '@/stores/swapTransactionStore': { useSwapTransactionStore: { getState: () => transactions } },
+                '@/helpers/swapProgress': loadSource('helpers/swapProgress.ts', {
+                    '@layerswap/widget-types': loadSource('../../types/src/SwapStatus.ts'),
+                    '@/lib/apiClients/layerSwapApiClient': harness.api,
+                }),
+            });
             const name = `use${provider}Withdrawal`;
             const { [name]: useWithdrawal } = loadSource(`${withdraw}WithdrawalProviders/${provider}/${name}.ts`, {
                 ...walletHooks,
                 '@/context/swap': swapContext,
                 '@/context/withdrawalContext': { useWalletWithdrawalState: () => ({ onWalletWithdrawalSuccess: () => { successes++; } }) },
                 '@/context/settings': { useInitialSettings: () => ({}), useSettingsState: () => ({ networks: [network], sourceRoutes: [] }) },
-                '@/hooks/useTransfer': { useTransfer: () => ({ executeTransfer: async () => {
-                    if (++walletCalls === 1) throw { code: 4001 };
+                '@/hooks/useTransfer': { useTransfer: () => ({ executeTransfer: async props => {
+                    walletRequests.push(props);
+                    if (walletRequests.length === 1) throw { code: 4001 };
                     return transfer.promise;
                 } }) },
                 '@/components/Pages/Swap/Withdraw/Wallet/Common/executeWalletOperation': { executeWalletOperation: (_, execute) => execute() },
-                '@layerswap/wallet-core/errors': { isUserRejection: error => error.code === 4001 },
+                '@layerswap/wallet-core/errors': rejection,
                 '@layerswap/widget-types': { ActionMessageType: { TransactionRejected: 'TransactionRejected' } },
-                '@/lib/apiClients/layerSwapApiClient': { BackendTransactionStatus: { Pending: 'pending' } },
-                '@/stores/swapTransactionStore': { useSwapTransactionStore: { getState: () => ({ setSwapTransaction: (...args) => records.push(args) }) } },
+                '../executeProviderWithdrawal': providerExecution,
                 '@/lib/ErrorHandler': { ErrorHandler: noop },
                 '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: noop }) },
                 '@/lib/swapLifecycle': { lifecycleContextFromSwap: () => ({}) },
@@ -698,25 +732,31 @@ for (const provider of ['Hyperliquid', 'Polymarket']) {
                     React.createElement(harness.Provider, null, React.createElement(Screen)))));
                 await act(async () => current.handleWithdraw());
                 assert.equal(current.rejected, true);
+                assert.equal(transactions.pendingSubmissions.first, undefined,
+                    'a wallet rejection before submission permits a retry');
                 await act(async () => { pending = current.handleWithdraw(); });
-                assert.equal(creates, 1);
-                assert.ok(container.querySelector('[data-withdrawal]'), 'clearing the restored ID must keep the controller mounted');
+                assert.equal(creates, 0, 'a retry must reuse the restored swap');
+                assert.ok(container.querySelector('[data-withdrawal]'));
+                assert.equal(current.loading, true);
                 assert.equal(mounts, 1);
+                assert.deepEqual(walletRequests.map(request => request.swapId), ['first', 'first']);
                 if (outcome === 'failure') {
-                    await act(async () => { creation.reject(new Error('Creation unavailable')); await pending; });
-                    assert.match(container.textContent, /Creation unavailable/);
+                    await act(async () => { transfer.reject(new Error('Withdrawal unavailable')); await pending; });
+                    assert.match(container.textContent, /Withdrawal unavailable/);
                     assert.equal(current.loading, false);
-                    assert.equal(walletCalls, 1);
+                    assert.deepEqual(records, []);
+                    assert.equal(successes, 0);
+                    assert.equal(transactions.pendingSubmissions.first, true,
+                        'an ambiguous provider failure preserves its submission marker');
                 } else {
-                    await act(async () => { creation.resolve({ swap: { ...swap, id: 'second' }, deposit_actions: actions }); });
-                    assert.equal(walletCalls, 2);
-                    assert.equal(mounts, 1, 'the refreshed swap must reuse the original controller');
                     await act(async () => { transfer.resolve('0xpublished'); await pending; });
-                    assert.deepEqual(records, [['second', 'pending', '0xpublished']]);
+                    assert.deepEqual(records, [['first', 'pending', '0xpublished']]);
                     assert.equal(successes, 1);
+                    assert.equal(transactions.pendingSubmissions.first, undefined);
                 }
+                assert.equal(creates, 0);
+                assert.equal(mounts, 1, 'the retry must reuse the original controller');
             } finally {
-                creation.resolve({ swap: { ...swap, id: 'second' }, deposit_actions: actions });
                 transfer.resolve('0xpublished');
                 if (pending) await act(async () => pending);
                 await act(async () => root.unmount());
@@ -844,6 +884,7 @@ for (const failure of ['rejected', 'failed']) {
             ...controllerImports,
             '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: noop }) },
             '@/hooks/useClientLayoutEffect': { useClientLayoutEffect: React.useLayoutEffect },
+            '@/hooks/useDepositActionPolling': loadDepositActionPolling(harness.api),
             '@/helpers/swapProgress': loadSource('helpers/swapProgress.ts', {
                 '@layerswap/widget-types': loadSource('../../types/src/SwapStatus.ts'),
                 '@/lib/apiClients/layerSwapApiClient': harness.api,
@@ -919,7 +960,7 @@ for (const failure of ['rejected', 'failed']) {
     });
 }
 
-function createRetryHarness({ transaction, authorization, transactions = [] }) {
+function createRetryHarness({ transaction, authorization, transactions = [], depositActions = [], renderScreen = false }) {
     const api = {
         BackendTransactionStatus: { Pending: 'pending', Completed: 'completed', Failed: 'failed' },
         TransactionStatus: { Pending: 'pending', Completed: 'completed', Failed: 'failed' },
@@ -937,7 +978,7 @@ function createRetryHarness({ transaction, authorization, transactions = [] }) {
         source_token: token, destination_token: token,
         requested_amount: 1, destination_address: '0xdestination',
     };
-    const context = { swapDetails: swap, depositActionsResponse: [] };
+    const context = { swapId: swap.id, swapBasicData: swap, swapDetails: swap, depositActionsResponse: depositActions };
     const harness = { stores, freshAttempts: 0 };
     const swapHooks = {
         useSwapDataState: () => context,
@@ -980,6 +1021,31 @@ function createRetryHarness({ transaction, authorization, transactions = [] }) {
         '@/hooks/useLifecycleObservation': { useLifecycleObservation: noop },
         '@/hooks/useClientLayoutEffect': { useClientLayoutEffect: React.useLayoutEffect },
     });
+    const SwapDetails = renderScreen ? loadSource(`${withdraw}SwapDetails.tsx`, {
+        ...walletHooks,
+        '@/context/swap': swapHooks,
+        '@/context/callbackProvider': { useCallbacks: () => ({ onBackClick: noop, onSwapLifecycle: noop }) },
+        '@/lib/swapLifecycle': { lifecycleContextFromSwap: () => ({}) },
+        '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
+        '@/hooks/useIsGaslessActive': { useIsGaslessActive: () => true },
+        '@/hooks/useGaslessAuthorizationStatus': { useGaslessAuthorizationStatus: noop },
+        '@/hooks/useResolvedSwapStatus': statusHook,
+        '@/hooks/useSwapRetry': { useSwapRetry },
+        '@/components/Common/Sceletons': { SwapDetailsSceleton: empty },
+        '@/components/Widget/Index': { Widget: childrenOnly },
+        './Presentation/Page2Sections': sections,
+        './Presentation/Page2Contained': { Page2Contained: childrenOnly },
+        './Presentation/RetryView': loadSource(`${withdraw}Presentation/RetryView.tsx`, {
+            '@/components/Buttons/submitButton': {
+                default: ({ children, onClick, isDisabled }) => React.createElement('button', { onClick, disabled: isDisabled }, children),
+            },
+        }),
+        './Summary': { default: empty },
+        './SwapQuoteDetails': { SwapQuoteDetails: empty },
+        './ManualWithdraw': { default: empty },
+        './Processing': { default: props => React.createElement(Processing, { ...props, swapBasicData: swap, swapDetails: swap }) },
+        './Withdraw': { default: () => React.createElement('div', { 'data-withdrawal': true }, 'Wallet controls') },
+    }).default : undefined;
     harness.Probe = function Probe() {
         const stored = stores.useSwapTransactionStore(state => state.swapTransactions.S);
         const auth = stores.useGaslessAuthorizationStore(state => state.authorizations.S);
@@ -987,9 +1053,45 @@ function createRetryHarness({ transaction, authorization, transactions = [] }) {
         context.resolved = resolveSwapPhase({ swapDetails: swap, storedWalletTransaction: stored, gaslessFailureStatus });
         harness.resolved = context.resolved;
         harness.retry = useSwapRetry();
+        if (SwapDetails) return React.createElement(SwapDetails, { type: 'contained' });
         return React.createElement(Processing, { swapBasicData: swap, swapDetails: swap });
     };
     return harness;
+}
+
+for (const status of ['expired', 'insufficient', 'rejected']) {
+    for (const label of ['Try again', 'Switch to standard transfer']) {
+        test(`pre-broadcast ${status} authorization exposes a working ${label} control`, async () => {
+            const harness = createRetryHarness({
+                authorization: { validBefore: 1000 },
+                depositActions: [{ type: 'sign', step: 'sign', status: 'completed' }],
+                renderScreen: true,
+            });
+            const root = createRoot(container);
+            useGaslessPreferenceStore.getState().resetGaslessPreference();
+            try {
+                await act(async () => root.render(React.createElement(harness.Probe)));
+                assert.ok(container.querySelector('[data-withdrawal]'), 'accepted signing waits for publication');
+                assert.equal(container.querySelector('button'), null);
+
+                await act(async () => harness.stores.useGaslessAuthorizationStore.getState()
+                    .setGaslessAuthorizationStatus('S', status));
+                assert.equal(harness.resolved.phase, 'failed');
+                assert.equal(container.querySelector('[data-withdrawal]'), null);
+                const button = [...container.querySelectorAll('button')].find(item => item.textContent === label);
+                assert.ok(button, 'terminal pre-broadcast failure must expose recovery');
+                await act(async () => button.click());
+
+                assert.equal(harness.freshAttempts, 1);
+                assert.equal(harness.stores.useGaslessAuthorizationStore.getState().authorizations.S, undefined);
+                assert.equal(harness.stores.useSwapTransactionStore.getState().swapTransactions.S, undefined);
+                assert.equal(useGaslessPreferenceStore.getState().gaslessEnabled, label === 'Try again');
+            } finally {
+                await act(() => root.unmount());
+                useGaslessPreferenceStore.getState().resetGaslessPreference();
+            }
+        });
+    }
 }
 
 for (const action of ['retry', 'switchToStandard']) {

@@ -1,8 +1,7 @@
 import {
     type Faro,
 } from '@grafana/faro-web-sdk'
-import { createSwapContextWriter } from './faro-session-context'
-import { createRequestTelemetryFilter } from './faro-policy'
+import type { createSwapContextWriter } from './faro-session-context'
 
 // Keep this identity aligned with the existing Grafana Faro app configuration.
 const FARO_APP_NAME = 'layerswap-frontend'
@@ -66,7 +65,7 @@ export function initFaro(): Faro | undefined {
     const { TracingInstrumentation } = require('@grafana/faro-web-tracing') as typeof import('@grafana/faro-web-tracing')
     const { beforeSend, serializeConsoleArgs } = require('./faro-sanitizer') as typeof import('./faro-sanitizer')
     const { SwapContextInstrumentation } = require('./faro-session-context') as typeof import('./faro-session-context')
-    const { getFaroVolumePolicy } = require('./faro-policy') as typeof import('./faro-policy')
+    const { getFaroVolumePolicy, createRequestTelemetryFilter } = require('./faro-policy') as typeof import('./faro-policy')
     const { getSessionTrackingConfig } = require('./faro-sampling') as typeof import('./faro-sampling')
     const tracePropagationUrls = getTracePropagationUrls()
     const volumePolicy = getFaroVolumePolicy(process.env.NODE_ENV)
@@ -88,6 +87,7 @@ export function initFaro(): Faro | undefined {
                 environment: process.env.NEXT_PUBLIC_API_VERSION === 'testnet' ? 'testnet' : 'mainnet',
             },
             beforeSend: item => {
+                if (isTimelinePreview()) return null
                 const kept = filterRequestTelemetry(item)
                 return kept && beforeSend(kept)
             },
