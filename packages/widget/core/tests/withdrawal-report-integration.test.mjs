@@ -60,10 +60,14 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
 const oldAdapter = axios.defaults.adapter
 let requests = 0, originalError
 axios.defaults.adapter = async config => {
+  state.apiCalls.push([config.method, config.url])
   if (config.method === 'get' && config.url.includes('/deposit_actions')) {
     return { status: 200, statusText: 'OK', headers: {}, config, data: { data: state.swap.depositActionsResponse } }
   }
   requests++
+  if (state.authorizeSucceeds && config.method === 'post' && (config.url.endsWith('/authorize') || config.url.endsWith('/deposit_speedup'))) {
+    return { status: 200, statusText: 'OK', headers: {}, config, data: {} }
+  }
   originalError = new AxiosError('Authorization unavailable', 'ERR_BAD_RESPONSE', config, {}, {
     status: 503, statusText: 'Unavailable', headers: {}, config,
     data: { error: { code: 'SERVER_ERROR', message: 'Unavailable' }, echoedRequest: config.data },
@@ -77,13 +81,18 @@ const { ErrorProvider } = await import('../dist/esm/context/ErrorProvider.js')
 const { registerWidgetErrorLogger } = await import('../dist/esm/lib/ErrorHandler.js')
 const { SendTransactionButton } = await import('../dist/esm/components/Pages/Swap/Withdraw/Wallet/Common/buttons.js')
 const { useGaslessPreferenceStore } = await import('../dist/esm/stores/gaslessPreferenceStore.js')
+const { useSwapTransactionStore } = await import('../dist/esm/stores/swapTransactionStore.js')
+const { SWRConfig } = await import('swr')
 
 const basic = { requested_amount: '1', source_network: { name: 'A' }, destination_network: { name: 'B' },
   source_token: { symbol: 'X', contract: '0xtoken', supports_gasless_deposit: true, gasless_standard: 'eip3009' }, destination_token: { symbol: 'Y' }, destination_address: 'destination', use_deposit_address: false }
-let container, root, errors, lifecycle
+let container, root, errors, lifecycle, swrConfig
 beforeEach(() => {
   container = document.createElement('div'); document.body.append(container); root = createRoot(container)
   requests = 0; errors = []; lifecycle = []; state.successes = 0
+  state.apiCalls = []; state.authorizeSucceeds = false
+  useSwapTransactionStore.setState({ swapTransactions: {} })
+  swrConfig = { provider: () => new Map(), revalidateOnFocus: false, revalidateOnReconnect: false, isVisible: () => true }
   state.swap = { swapId: 'swap-1', swapDetails: { ...basic, id: 'swap-1', status: 'user_transfer_pending', transactions: [] },
     depositActionsResponse: [{ type: 'sign', step: 'sign', status: 'action_required', typed_data: { message: { validBefore: '9999999999' } } }], setSwapError() {} }
   registerWidgetErrorLogger()
@@ -99,14 +108,15 @@ after(() => {
     if (previous[key]) Object.defineProperty(globalThis, key, previous[key]); else delete globalThis[key]
   }
 })
-async function clickTransfer(onSign) {
+async function clickTransfer(onSign, { onClick = () => assert.fail('gasless should sign, not send a transaction'), waitForCompletion = true } = {}) {
   await act(async () => root.render(createElement(StrictMode, null,
+    createElement(SWRConfig, { value: swrConfig },
     createElement(CallbackProvider, { callbacks: { onSwapLifecycle: e => lifecycle.push(e) } },
       createElement(ErrorProvider, { onError: e => errors.push(e) },
         createElement(SendTransactionButton, { swapData: basic, refuel: false, onSign,
-          onClick: () => assert.fail('gasless should sign, not send a transaction') }))))))
+          onClick })))))))
   assert.equal(container.querySelector('button').textContent, 'Sign to swap')
-  await act(async () => { container.querySelector('button').click(); await state.pending })
+  await act(async () => { container.querySelector('button').click(); if (waitForCompletion) await state.pending })
 }
 
 test('real transfer button, gasless execution, API client and host logger share the safe reporting boundary', async () => {
@@ -131,4 +141,36 @@ test('wallet declines keep their classification and never become host errors or 
   assert.deepEqual(lifecycle.map(e => e.step), ['wallet_prompt_opened', 'wallet_action_rejected'])
   assert.equal(lifecycle[1].reasonCode, 'user_rejected')
   assert.equal(state.successes, 0)
+})
+
+test('the real button resumes publication from SWR after a delayed authorization transition', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 10000 })
+  state.authorizeSucceeds = true
+  useGaslessPreferenceStore.getState().setGaslessEnabled(false)
+  state.swap.swapDetails.metadata = {}
+  const sign = state.swap.depositActionsResponse[0]
+  const publish = { type: 'transfer', step: 'publish', status: 'waiting', amount: 1, to_address: 'deposit' }
+  state.swap.depositActionsResponse = [sign, publish]
+  let signs = 0, transfers = 0
+  await clickTransfer(async () => { signs++; return 'signature' }, {
+    onClick: async () => { transfers++; return 'published-hash' },
+    waitForCompletion: false,
+  })
+  assert.equal(signs, 1)
+  const requestsAfterSigning = state.apiCalls.length
+  state.swap.depositActionsResponse = [{ ...sign, status: 'completed' }, publish]
+  for (let i = 0; i < 14; i++) await act(async () => { t.mock.timers.tick(2000) })
+  assert.equal(transfers, 0)
+  assert.equal(state.successes, 0)
+  assert.ok(state.apiCalls.slice(requestsAfterSigning).every(([method, url]) => method === 'get' && url.includes('/deposit_actions')))
+
+  state.swap.depositActionsResponse = [{ ...sign, status: 'completed' }, { ...publish, status: 'action_required' }]
+  await act(async () => { t.mock.timers.tick(2000) })
+  await state.pending
+  assert.equal(signs, 1, 'polling does not reopen the signature prompt')
+  assert.equal(transfers, 1)
+  assert.equal(state.successes, 1)
+  assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].hash, 'published-hash')
+  assert.ok(state.apiCalls.filter(([method]) => method === 'get').every(([, url]) => url.includes('/deposit_actions')), 'execution never requests a whole swap')
+  assert.deepEqual(errors, [])
 })

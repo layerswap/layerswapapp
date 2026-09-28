@@ -11,6 +11,10 @@ export type SwapTransaction = {
 
 type SwapTransactionStore = {
     swapTransactions: Record<string, SwapTransaction>;
+    // Provider requests whose outcome is unknown; these must be reconciled before retrying.
+    pendingSubmissions: Record<string, true>;
+    markSubmissionPending: (Id: string) => void;
+    clearPendingSubmission: (Id: string) => void;
     setSwapTransaction: (Id: string, status: BackendTransactionStatus | TransactionStatus, txHash: string, failReason?: string) => void;
     removeSwapTransaction: (Id: string) => void;
 };
@@ -39,8 +43,21 @@ export const useSwapTransactionStore = create(
     persist<SwapTransactionStore>(
         (set) => ({
             swapTransactions: {},
+            pendingSubmissions: {},
+            markSubmissionPending: (Id) => {
+                set((state) => ({
+                    pendingSubmissions: { ...state.pendingSubmissions, [Id]: true },
+                }));
+            },
+            clearPendingSubmission: (Id) => {
+                set((state) => {
+                    const { [Id]: _removed, ...pendingSubmissions } = state.pendingSubmissions;
+                    return { pendingSubmissions };
+                });
+            },
             setSwapTransaction: (Id, status, txHash, failReason) => {
                 set((state) => {
+                    const { [Id]: _removed, ...pendingSubmissions } = state.pendingSubmissions;
                     const txForSwap = {
                         ...state.swapTransactions,
                         [Id]: {
@@ -50,7 +67,7 @@ export const useSwapTransactionStore = create(
                             timestamp: Date.now()
                         }
                     };
-                    return { swapTransactions: txForSwap };
+                    return { swapTransactions: txForSwap, pendingSubmissions };
                 });
             },
             removeSwapTransaction: (id) => {

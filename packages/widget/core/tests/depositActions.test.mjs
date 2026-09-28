@@ -64,7 +64,7 @@ function createWorkflow({ mounted = false } = {}) {
     const network = { name: 'BASE_MAINNET' }
     const wallet = { id: 'wallet', address: sourceAddress, isActive: true, asSourceSupportedNetworks: [network.name] }
     const cache = new Map([[cacheKey, { data: state.depositActionsResponse }]])
-    let swrRequest
+    let pollingKey
     const api = {
         fetcher: async () => ({ data: state.apiActions }),
         GetDepositActionsAsync: async (...args) => {
@@ -72,14 +72,7 @@ function createWorkflow({ mounted = false } = {}) {
             return state.refreshError ? { error: state.refreshError } : { data: state.apiActions }
         },
         AuthorizeSwapAsync: async (...args) => { calls.authorize.push(args) },
-        GetSwapAsync: async () => {
-            await state.onTransition?.(state.completedStep)
-            const completedIndex = state.apiActions.findIndex(action => action.step === state.completedStep)
-            state.apiActions = state.apiActions.map((action, index) => ({
-                ...action, status: index <= completedIndex ? 'completed' : index === completedIndex + 1 ? 'action_required' : 'waiting',
-            }))
-            return { data: { deposit_actions: state.apiActions } }
-        },
+        GetSwapAsync: () => assert.fail('Workflow execution must not poll whole swaps'),
         SwapCatchup: async () => {},
     }
     const apiModule = { default: class { constructor() { return api } }, BackendTransactionStatus: { Pending: 'pending' } }
@@ -147,6 +140,35 @@ function createWorkflow({ mounted = false } = {}) {
         '@/lib/swapLifecycle': lifecycle,
         '@/hooks/useTransferBlocked': { useTransferBlocked: noop },
         '@/hooks/useClientLayoutEffect': { useClientLayoutEffect: mounted ? React.useLayoutEffect : useFakeLayoutEffect },
+        // Script the hook's snapshots for execution tests. Its SWR requests,
+        // timers, cache subscription and cancellation are covered in the polling integration tests.
+        '@/hooks/useDepositActionPolling': {
+            depositActionsKey: (id, address) => `/swaps/${id}/deposit_actions?source_address=${address}`,
+            useDepositActionPolling: (id, address) => {
+                pollingKey = id && address ? `/swaps/${id}/deposit_actions?source_address=${address}` : null
+                return {
+                    data: cache.get(pollingKey)?.data,
+                    refresh: async (id, address) => {
+                        const response = await api.GetDepositActionsAsync(id, address)
+                        if (response.error) throw response.error
+                        if (!response.data?.length) throw new Error('No deposit actions')
+                        cache.set(`/swaps/${id}/deposit_actions?source_address=${address}`, response)
+                        return response.data
+                    },
+                    waitForTransition: async ({ swapId: id, sourceAddress: address, previousAction, signal }) => {
+                        signal.throwIfAborted()
+                        const nextActions = await state.onTransition?.(previousAction.step)
+                        const completedIndex = state.apiActions.findIndex(action => action.step === previousAction.step)
+                        state.apiActions = nextActions ?? state.apiActions.map((action, index) => ({
+                            ...action, status: index <= completedIndex ? 'completed' : index === completedIndex + 1 ? 'action_required' : 'waiting',
+                        }))
+                        signal.throwIfAborted()
+                        cache.set(`/swaps/${id}/deposit_actions?source_address=${address}`, { data: state.apiActions })
+                        return state.apiActions
+                    },
+                }
+            },
+        },
         react: mounted ? React : { useState, useRef: initial => useState({ current: initial })[0], useMemo: fn => fn(), useCallback: fn => fn },
         '@layerswap/ui-kit/components': { WalletIcon: noop },
         '@/components/Buttons/submitButton': { default: noop },
@@ -154,7 +176,8 @@ function createWorkflow({ mounted = false } = {}) {
         '@/context/swap': {
             useSwapDataState: () => state,
             useSwapDataUpdate: () => ({
-                createSwap: () => assert.fail('Retry must keep the existing swap'),
+                createSwap: (...args) => state.createSwap ? state.createSwap(...args) : assert.fail('Retry must keep the existing swap'),
+                startFreshSwapAttempt: noop,
                 mutateSwap: async () => {},
                 setSwapId: id => { state.swapId = id },
             }),
@@ -188,7 +211,6 @@ function createWorkflow({ mounted = false } = {}) {
         '@/helpers/gasless': gasless,
         './isUserRejection': rejection,
         swr: {
-            default: (key, fetcher, options) => { swrRequest = { key, fetcher, options }; return { data: cache.get(key) } },
             useSWRConfig: () => ({ mutate: async (key, result) => { const data = await result; cache.set(key, data); return data } }),
         },
     })
@@ -234,9 +256,8 @@ function createWorkflow({ mounted = false } = {}) {
         Component: () => createElement(SendTransactionButton, props()),
         get view() { return view },
         poll: async () => {
-            assert.ok(swrRequest.key, 'Polling remains enabled after rejection')
-            assert.ok(swrRequest.options.refreshInterval > 0, 'Polling has a repeating interval')
-            cache.set(swrRequest.key, await swrRequest.fetcher(swrRequest.key))
+            assert.ok(pollingKey, 'Polling remains enabled after rejection')
+            cache.set(pollingKey, await api.fetcher(pollingKey))
         },
     }
 }
@@ -277,6 +298,66 @@ test('one click runs approval, signing and publication without intermediate acti
     assert.deepEqual(flow.calls.errors, [])
     assert.deepEqual(flow.calls.lifecycle.filter(event => event.step.endsWith('_submitted')).map(event => [event.step, event.transactionHash]), [['transaction_submitted', '0xtransaction']])
 })
+
+test('a swap created with only approval discovers and executes signing and publication', async () => {
+    const flow = createWorkflow()
+    const approval = { type: 'transfer', step: 'approve_permit2', status: 'action_required', amount: '0', to_address: '0x456' }
+    flow.state.swapId = undefined
+    flow.state.swapDetails = undefined
+    flow.state.apiActions = [approval]
+    flow.state.rejectSigning = false
+    flow.state.createSwap = async () => ({
+        swap: { id: swapId, metadata: {} },
+        deposit_actions: [approval],
+        quote: { receive_amount: 1 },
+    })
+    const prompts = []
+    const transitions = []
+    flow.state.onWalletPrompt = step => { prompts.push(step) }
+    flow.state.onTransition = step => {
+        transitions.push(step)
+        if (step === 'approve_permit2') {
+            return [{ ...approval, status: 'completed' }, ...actionsFor('revealed-after-approval')]
+        }
+    }
+
+    await flow.render().button.props.onClick()
+
+    assert.deepEqual(prompts, ['approve_permit2', 'sign', 'publish'])
+    assert.deepEqual(transitions, ['approve_permit2', 'sign'])
+    assert.deepEqual(flow.calls.storedTransactions, [[swapId, 'pending', '0xtransaction']])
+    assert.equal(flow.calls.success, 1)
+    assert.deepEqual(flow.calls.errors, [])
+})
+
+for (const completes of [false, true]) {
+    test(`repeated workflow transitions ${completes ? 'can complete at' : 'stop at'} the safety bound`, async () => {
+        const flow = createWorkflow()
+        const approvalActions = [
+            { type: 'transfer', step: 'approve_permit2', status: 'action_required', amount: '0', to_address: '0x456' },
+            ...actionsFor('repeated').map(action => ({ ...action, status: 'waiting' })),
+        ]
+        flow.state.apiActions = approvalActions
+        flow.state.rejectSigning = false
+        let transitions = 0
+        flow.state.onTransition = step => {
+            transitions++
+            if (completes && transitions === 10) {
+                return flow.state.apiActions.map(action => ({ ...action, status: 'completed' }))
+            }
+            assert.ok(transitions <= 10, 'repeated transitions must not request unbounded wallet actions')
+            return step === 'approve_permit2' ? actionsFor('repeated') : approvalActions
+        }
+
+        await flow.render().button.props.onClick()
+
+        assert.equal(flow.calls.transfer.length + flow.calls.sign.length, 10)
+        assert.equal(transitions, 10)
+        assert.deepEqual(flow.calls.storedTransactions, [])
+        assert.equal(flow.calls.success, completes ? 1 : 0)
+        assert.deepEqual(flow.calls.errors.map(error => error.message), completes ? [] : ['The swap workflow has more actions than expected'])
+    })
+}
 
 test('rejected signing retries on the same swap using refreshed typed data', async () => {
     const flow = createWorkflow()

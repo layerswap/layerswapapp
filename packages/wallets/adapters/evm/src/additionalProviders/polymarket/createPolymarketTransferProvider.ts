@@ -90,6 +90,7 @@ export function createPolymarketTransferProvider(
         supportsNetwork,
 
         async executeTransfer(params: TransferProps, _wallet, onProgress?: (info: TransferProgress | undefined) => void): Promise<string> {
+            params.onSubmissionStateChange?.('preparing')
             const { network, token: sourceToken, sourceAddress, depositAddress, callData } = params
             const pmConfig = resolvePolymarketConfig(network?.name)
             if (!pmConfig) throw fail('Unsupported network', 'No Polymarket route for this destination.')
@@ -193,6 +194,7 @@ export function createPolymarketTransferProvider(
                 throw signErr
             }
 
+            params.onSubmissionStateChange?.('submitting')
             const submitResponse = await submitRelayerTransaction(request)
             if (!submitResponse?.transactionID) {
                 const { header, details } = resolvePolymarketError('Polymarket rejected the withdrawal')

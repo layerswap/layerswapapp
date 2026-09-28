@@ -1,12 +1,12 @@
 import { useCallbacks } from '@/context/callbackProvider';
 import { lifecycleContextFromSwap, lifecycleErrorDetails } from '@/lib/swapLifecycle';
 import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect';
+import { depositActionsKey, useDepositActionPolling } from '@/hooks/useDepositActionPolling';
 import { useTransferBlocked } from '@/hooks/useTransferBlocked';
 import { hasSwapExecutionProgress } from '@/helpers/swapProgress';
 import { isGaslessCapableRoute, isGaslessDepositWorkflow } from '@/helpers/gasless';
 import { isUserRejection } from './isUserRejection';
-import useSWR, { useSWRConfig } from 'swr';
-import type { ApiResponse } from '@/Models/ApiResponse';
+import { useSWRConfig } from 'swr';
 import { SubmitButtonProps } from '@/components/Buttons/submitButton';
 import { isDiffByPercent } from '@/components/utils/numbers';
 import { useConnectModal } from '@/components/Wallet/WalletModal';
@@ -54,9 +54,7 @@ export {
 } from '../../Presentation/WalletActionsView';
 
 const layerswapApiClient = new LayerSwapApiClient();
-const DEPOSIT_ACTIONS_POLL_INTERVAL_MS = 5000;
-const depositActionsKey = (swapId: string, sourceAddress: string) =>
-    `/swaps/${swapId}/deposit_actions?source_address=${sourceAddress}`;
+const MAX_DEPOSIT_WORKFLOW_ACTIONS = 10;
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData, swapDetails } = useSwapDataState()
@@ -226,7 +224,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const switchToStandardTransfer = useGaslessPreferenceStore(s => s.switchToStandardTransfer)
     const clearGaslessUnavailable = useGaslessPreferenceStore(s => s.clearGaslessUnavailable)
     const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess, onCancelWithdrawal } = useWalletWithdrawalState();
-    const { createSwap, mutateSwap, setSwapId, setQuoteLoading, startFreshSwapAttempt } = useSwapDataUpdate()
+    const { createSwap, setSwapId, setQuoteLoading, startFreshSwapAttempt } = useSwapDataUpdate()
     const setSwapTransaction = useSwapTransactionStore(state => state.setSwapTransaction)
     const storedWalletTransaction = useSwapTransactionStore(
         state => swapId ? state.swapTransactions[swapId] : undefined,
@@ -263,16 +261,11 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         }
     }, [selectedSourceAccount?.id, selectedSourceAccount?.address, swapBasicData.source_network.name])
     const { mutate: mutateCache } = useSWRConfig()
-    // Share the context's cache, but keep refreshing while this wallet flow is
-    // mounted, including while idle or waiting for a retry after rejection.
-    const { data: polledDepositActions } = useSWR<ApiResponse<DepositAction[]>>(
-        swapId && selectedSourceAccount?.address ? depositActionsKey(swapId, selectedSourceAccount.address) : null,
-        layerswapApiClient.fetcher,
-        { refreshInterval: DEPOSIT_ACTIONS_POLL_INTERVAL_MS },
-    )
+    const { data: polledDepositActions, refresh: refreshDepositActions, waitForTransition: waitForSwapActionTransition } =
+        useDepositActionPolling(swapId, selectedSourceAccount?.address, loading)
 
     const activeWorkflowState = workflowState && workflowState.swapId === swapId ? workflowState : undefined
-    const depositActions = polledDepositActions?.data ?? activeWorkflowState?.actions ?? depositActionsResponse
+    const depositActions = polledDepositActions ?? activeWorkflowState?.actions ?? depositActionsResponse
     const { actionButtonText } = useDepositSettings()
 
     const hasProgress = useMemo(() => hasSwapExecutionProgress({
@@ -385,17 +378,9 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 // A signature or prepared transaction may have expired while the user
                 // paused or rejected a prompt. Never retry the cached action payload.
                 setActionStateText("Refreshing swap…")
-                const refreshed = await mutateCache<ApiResponse<DepositAction[]>>(
-                    depositActionsKey(executionSwapId, selectedSourceAccount.address),
-                    layerswapApiClient.GetDepositActionsAsync(executionSwapId, selectedSourceAccount.address).then(response => {
-                        if (response?.error) throw response.error
-                        if (!response?.data?.length) throw new Error('No deposit actions')
-                        return response
-                    }),
-                    { revalidate: false },
-                )
+                const refreshed = await refreshDepositActions(executionSwapId, selectedSourceAccount.address)
                 signal.throwIfAborted()
-                activeDepositActions = refreshed?.data
+                activeDepositActions = refreshed
                 if (activeDepositActions) {
                     setWorkflowState({ swapId: executionSwapId, actions: activeDepositActions, swapData })
                 }
@@ -408,11 +393,10 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 throw new Error('No swap data')
             }
 
-            // The server owns the workflow state. Execute the currently actionable
-            // item, wait for the swap response to expose the next one, then continue
-            // without requiring another click in the Layerswap UI.
-            const maxActions = Math.max(activeDepositActions.length, 1) + 1
-            for (let executedActions = 0; executedActions < maxActions; executedActions++) {
+            // Follow the server's workflow without another click. Later responses
+            // can reveal additional actions, so bound wallet requests independently
+            // of the initial response to stop repeated transitions.
+            for (let executedActions = 0; ; executedActions++) {
                 signal.throwIfAborted()
                 const currentAction = getActionableDepositAction(activeDepositActions)
                 if (!currentAction) {
@@ -423,6 +407,9 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                         return
                     }
                     throw new Error('No deposit action is currently available')
+                }
+                if (executedActions >= MAX_DEPOSIT_WORKFLOW_ACTIONS) {
+                    throw new Error('The swap workflow has more actions than expected')
                 }
 
                 const executionContext: DepositExecutionContext = {
@@ -460,8 +447,6 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 signal.throwIfAborted()
                 setWorkflowState({ swapId: swapData.id, actions: activeDepositActions, swapData })
             }
-
-            throw new Error('The swap workflow has more actions than expected')
         }
         catch (e) {
             if (signal.aborted) return
@@ -508,50 +493,6 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             executionInFlight.current = false
             if (executionScope.current) setLoading(false)
         }
-    }
-
-    const waitForSwapActionTransition = async ({
-        swapId: activeSwapId,
-        sourceAddress,
-        previousAction,
-        signal,
-    }: {
-        swapId: string,
-        sourceAddress: string,
-        previousAction: DepositAction,
-        signal: AbortSignal,
-    }): Promise<DepositAction[]> => {
-        for (let attempt = 0; attempt < 69; attempt++) {
-            signal.throwIfAborted()
-            if (attempt > 0) await sleep(2000)
-            signal.throwIfAborted()
-            const response = await layerswapApiClient.GetSwapAsync(activeSwapId, sourceAddress)
-            signal.throwIfAborted()
-            if (response?.error) throw response.error
-
-            const latestActions = response?.data?.deposit_actions ?? []
-            const failedStep = latestActions.find(action => action.status === 'failed')
-            const nextAction = getActionableDepositAction(latestActions)
-            const workflowCompleted = latestActions.length > 0 && latestActions.every(action => action.status === 'completed')
-            const transitioned = workflowCompleted || (!!nextAction && nextAction.step !== previousAction.step)
-
-            if (failedStep || transitioned) {
-                await mutateCache(depositActionsKey(activeSwapId, sourceAddress), { data: latestActions }, false)
-                signal.throwIfAborted()
-                await mutateSwap(response, false)
-                signal.throwIfAborted()
-                setWorkflowState(previous => ({
-                    swapId: activeSwapId,
-                    actions: latestActions,
-                    swapData: previous?.swapId === activeSwapId ? previous.swapData : undefined,
-                }))
-            }
-
-            if (failedStep) throw new Error(failedStep.detail || 'The swap action failed')
-            if (transitioned) return latestActions
-        }
-
-        throw new Error('The transaction is still confirming. Please wait a moment and try again.')
     }
 
     const handleClick = () => {
