@@ -70,4 +70,4 @@ def build():
 
 
 if __name__=='__main__':
-    (ROOT/'faro-issue-alerts.paused.json').write_text(json.dumps(build(),indent=2)+'\n')
+    (trial.output_dir(sys.argv[1:])/'faro-issue-alerts.paused.json').write_text(json.dumps(build(),indent=2)+'\n')

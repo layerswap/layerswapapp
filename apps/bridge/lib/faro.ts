@@ -1,8 +1,22 @@
-import type { Faro } from '@grafana/faro-web-sdk'
-import type { createSwapContextWriter } from './faro-session-context'
+import { ReactIntegration } from '@grafana/faro-react'
+import {
+    getInternalFaroFromGlobalObject,
+    getWebInstrumentations,
+    initializeFaro,
+    InternalLoggerLevel,
+    PersistentSessionsManager,
+    type Faro,
+} from '@grafana/faro-web-sdk'
+import { TracingInstrumentation } from '@grafana/faro-web-tracing'
+import { beforeSend, flattenContext, serializeConsoleArgs } from './faro-sanitizer'
+import { createWalletContextWriter, createSwapContextWriter, SwapContextInstrumentation } from './faro-session-context'
+import { createRequestTelemetryFilter, getFaroVolumePolicy } from './faro-policy'
+import { getSessionTrackingConfig } from './faro-sampling'
 
 // Keep this identity aligned with the existing Grafana Faro app configuration.
 const FARO_APP_NAME = 'layerswap-frontend'
+// Same fallback the widget uses when NEXT_PUBLIC_LS_API is unset.
+const DEFAULT_API_URL = 'https://api.layerswap.io'
 
 let faroClient: Faro | undefined
 let initializationAttempted = false
@@ -65,6 +79,11 @@ export function initFaro(): Faro | undefined {
     const { getSessionTrackingConfig } = require('./faro-sampling') as typeof import('./faro-sampling')
     const tracePropagationUrls = getTracePropagationUrls()
     const volumePolicy = getFaroVolumePolicy(process.env.NODE_ENV)
+    const filterRequestTelemetry = createRequestTelemetryFilter([
+        window.location.origin,
+        process.env.NEXT_PUBLIC_LS_API || DEFAULT_API_URL,
+        ...(process.env.NEXT_PUBLIC_FARO_TRACE_PROPAGATION_URLS?.split(',').map(url => url.trim()) ?? []),
+    ])
 
     try {
         faroClient = initializeFaro({
@@ -77,8 +96,10 @@ export function initFaro(): Faro | undefined {
                 // Deployment identity is separate, immutable page metadata below.
                 environment: process.env.NEXT_PUBLIC_API_VERSION === 'testnet' ? 'testnet' : 'mainnet',
             },
-            // Also suppress signals if an already instrumented page navigates to the preview.
-            beforeSend: item => isTimelinePreview() ? null : beforeSend(item),
+            beforeSend: item => {
+                const kept = filterRequestTelemetry(item)
+                return kept && beforeSend(kept)
+            },
             ...volumePolicy,
             consoleInstrumentation: {
                 ...volumePolicy.consoleInstrumentation,

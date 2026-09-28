@@ -1,4 +1,14 @@
 {
+  "__inputs": [
+    {
+      "name": "DS_LOKI",
+      "label": "Loki",
+      "description": "Loki datasource containing Grafana Faro frontend events",
+      "type": "datasource",
+      "pluginId": "loki",
+      "pluginName": "Loki"
+    }
+  ],
   "id": null,
   "uid": "layerswap-faro-dev-slice",
   "title": "Faro Dev · Error & Session Investigation (Provisional)",
@@ -294,7 +304,7 @@
       },
       "datasource": {
         "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "uid": "${DS_LOKI}"
       },
       "fieldConfig": {
         "defaults": {
@@ -312,7 +322,7 @@
           "refId": "A",
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "${DS_LOKI}"
           },
           "editorMode": "code",
           "expr": "sum(count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=${application:doublequote} | app_environment=${environment:doublequote} | app_version=${release:doublequote} | kind=\"exception\" |= ${error_marker:doublequote} | label_format type=`{{ if .type }}{{ .type }}{{ else }}(unknown type){{ end }}` | type=${error_type:doublequote} | type!=\"__select_group__\" [$__range])) or vector(0)",
@@ -351,7 +361,7 @@
       },
       "datasource": {
         "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "uid": "${DS_LOKI}"
       },
       "fieldConfig": {
         "defaults": {
@@ -412,7 +422,7 @@
           "refId": "A",
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "${DS_LOKI}"
           },
           "editorMode": "code",
           "expr": "sum by (hash, value) (count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=${application:doublequote} | app_environment=${environment:doublequote} | app_version=${release:doublequote} | kind=\"exception\" |= ${error_marker:doublequote} | label_format type=`{{ if .type }}{{ .type }}{{ else }}(unknown type){{ end }}` | type=${error_type:doublequote} | type!=\"__select_group__\" | keep hash, value [$__range]))",
@@ -484,7 +494,7 @@
       },
       "datasource": {
         "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "uid": "${DS_LOKI}"
       },
       "fieldConfig": {
         "defaults": {
@@ -623,7 +633,7 @@
           "refId": "A",
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "${DS_LOKI}"
           },
           "editorMode": "code",
           "expr": "{source=\"faro\"} | logfmt | __error__=\"\" | app_name=${application:doublequote} | app_environment=${environment:doublequote} | app_version=${release:doublequote} | kind=\"exception\" |= ${error_marker:doublequote} | label_format type=`{{ if .type }}{{ .type }}{{ else }}(unknown type){{ end }}` | type=${error_type:doublequote} | type!=\"__select_group__\" | hash=~${error_hash:doublequote} | label_format stored_ns=`{{ __timestamp__ | unixEpochNanos }}` | label_format message_summary=`{{ if .value }}{{ .value }}{{ else if .message }}{{ .message }}{{ else if .event_data_reason }}{{ .event_data_reason }}{{ else if .event_data_step }}{{ .event_data_step }}{{ else if .event_name }}{{ .event_name }}{{ else }}{{ .type }}{{ end }}` | line_format `{\"timestamp\":{{ printf \"%q\" .timestamp }},\"kind\":{{ printf \"%q\" .kind }},\"type\":{{ printf \"%q\" .type }},\"message_summary\":{{ printf \"%q\" .message_summary }},\"session_id\":{{ printf \"%q\" .session_id }},\"stored_ns\":{{ printf \"%q\" .stored_ns }}}` | keep app_name, app_environment, app_version, session_id",
@@ -715,7 +725,7 @@
       },
       "datasource": {
         "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "uid": "${DS_LOKI}"
       },
       "fieldConfig": {
         "defaults": {
@@ -752,7 +762,7 @@
           "refId": "A",
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "${DS_LOKI}"
           },
           "editorMode": "code",
           "expr": "sum by (session_id) (count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=${application:doublequote} | app_environment=${environment:doublequote} | app_version=${release:doublequote} | kind=\"exception\" |= ${error_marker:doublequote} | label_format type=`{{ if .type }}{{ .type }}{{ else }}(unknown type){{ end }}` | type=${error_type:doublequote} | type!=\"__select_group__\" | hash=~${error_hash:doublequote} | session_id!=\"\" [$__range]))",
@@ -823,7 +833,7 @@
       },
       "datasource": {
         "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "uid": "${DS_LOKI}"
       },
       "fieldConfig": {
         "defaults": {
@@ -860,7 +870,7 @@
           "refId": "A",
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "${DS_LOKI}"
           },
           "editorMode": "code",
           "expr": "sum by (session_id) (count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=${application:doublequote} | app_environment=${environment:doublequote} | app_version=${release:doublequote} | session_id!=\"\" | session_attr_connected_wallets!=\"\" | label_format wallet_needle=${wallet_address:doublequote} | wallet_needle!=\"\" | label_format wallet_match=`{{ $found := false }}{{ $needle := .wallet_needle }}{{ range $wallet := fromJson .session_attr_connected_wallets }}{{ if eq $wallet.wallet_address $needle }}{{ $found = true }}{{ end }}{{ end }}{{ $found }}` | __error__=\"\" | wallet_match=\"true\" | keep session_id [$__range]))",
@@ -931,7 +941,7 @@
       },
       "datasource": {
         "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "uid": "${DS_LOKI}"
       },
       "fieldConfig": {
         "defaults": {
@@ -1222,7 +1232,7 @@
           "refId": "A",
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "${DS_LOKI}"
           },
           "editorMode": "code",
           "expr": "{source=\"faro\"} | logfmt | __error__=\"\" | app_name=${application:doublequote} | app_environment=${environment:doublequote} | app_version=${release:doublequote} | event_name=\"swap_lifecycle\" | session_id!=\"\" | label_format stored_ns=`{{ __timestamp__ | unixEpochNanos }}` | label_format message_summary=`{{ if .value }}{{ .value }}{{ else if .message }}{{ .message }}{{ else if .event_data_reason }}{{ .event_data_reason }}{{ else if .event_data_step }}{{ .event_data_step }}{{ else if .event_name }}{{ .event_name }}{{ else }}{{ .type }}{{ end }}` | line_format `{\"timestamp\":{{ printf \"%q\" .timestamp }},\"kind\":{{ printf \"%q\" .kind }},\"type\":{{ printf \"%q\" .type }},\"message_summary\":{{ printf \"%q\" .message_summary }},\"event_data_step\":{{ printf \"%q\" .event_data_step }},\"event_data_outcome\":{{ printf \"%q\" .event_data_outcome }},\"event_data_action\":{{ printf \"%q\" .event_data_action }},\"event_data_reason_code\":{{ printf \"%q\" .event_data_reason_code }},\"session_id\":{{ printf \"%q\" .session_id }},\"event_data_journey_id\":{{ printf \"%q\" .event_data_journey_id }},\"event_data_sequence\":{{ printf \"%q\" .event_data_sequence }},\"event_data_attempt\":{{ printf \"%q\" .event_data_attempt }},\"event_data_source_network\":{{ printf \"%q\" .event_data_source_network }},\"event_data_destination_network\":{{ printf \"%q\" .event_data_destination_network }},\"traceID\":{{ printf \"%q\" .traceID }},\"spanID\":{{ printf \"%q\" .spanID }},\"event_name\":{{ printf \"%q\" .event_name }},\"stored_ns\":{{ printf \"%q\" .stored_ns }}}` | keep app_name, app_environment, app_version, session_id",
@@ -1335,7 +1345,7 @@
       },
       "datasource": {
         "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "uid": "${DS_LOKI}"
       },
       "fieldConfig": {
         "defaults": {
@@ -1608,7 +1618,7 @@
           "refId": "A",
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "${DS_LOKI}"
           },
           "editorMode": "code",
           "expr": "{source=\"faro\"} | logfmt | __error__=\"\" | app_name=${application:doublequote} | app_environment=${environment:doublequote} | app_version=${release:doublequote} | session_id=${session_id:doublequote} | session_id!=\"\" | session_id!=\"__select_session__\" | label_format stored_ns=`{{ __timestamp__ | unixEpochNanos }}` | label_format message_summary=`{{ if .value }}{{ .value }}{{ else if .message }}{{ .message }}{{ else if .event_data_reason }}{{ .event_data_reason }}{{ else if .event_data_step }}{{ .event_data_step }}{{ else if .event_name }}{{ .event_name }}{{ else }}{{ .type }}{{ end }}` | line_format `{\"timestamp\":{{ printf \"%q\" .timestamp }},\"kind\":{{ printf \"%q\" .kind }},\"type\":{{ printf \"%q\" .type }},\"message_summary\":{{ printf \"%q\" .message_summary }},\"event_data_step\":{{ printf \"%q\" .event_data_step }},\"event_data_outcome\":{{ printf \"%q\" .event_data_outcome }},\"event_data_action\":{{ printf \"%q\" .event_data_action }},\"event_data_reason_code\":{{ printf \"%q\" .event_data_reason_code }},\"session_id\":{{ printf \"%q\" .session_id }},\"event_data_journey_id\":{{ printf \"%q\" .event_data_journey_id }},\"event_data_sequence\":{{ printf \"%q\" .event_data_sequence }},\"event_data_attempt\":{{ printf \"%q\" .event_data_attempt }},\"event_data_source_network\":{{ printf \"%q\" .event_data_source_network }},\"event_data_destination_network\":{{ printf \"%q\" .event_data_destination_network }},\"traceID\":{{ printf \"%q\" .traceID }},\"spanID\":{{ printf \"%q\" .spanID }},\"event_name\":{{ printf \"%q\" .event_name }},\"stored_ns\":{{ printf \"%q\" .stored_ns }}}` | keep app_name, app_environment, app_version, session_id",
@@ -1721,7 +1731,7 @@
       },
       "datasource": {
         "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "uid": "${DS_LOKI}"
       },
       "fieldConfig": {
         "defaults": {
@@ -1739,7 +1749,7 @@
           "refId": "A",
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "${DS_LOKI}"
           },
           "editorMode": "code",
           "expr": "{source=\"faro\"} | logfmt | __error__=\"\" | app_name=${application:doublequote} | app_environment=${environment:doublequote} | app_version=${release:doublequote} | session_id=${session_id:doublequote} | session_id!=\"\" | session_id!=\"__select_session__\" | timestamp=${event_time:doublequote} | kind=${event_kind:doublequote} | label_format stored_ns=`{{ __timestamp__ | unixEpochNanos }}` | stored_ns=${event_ns:doublequote} | stored_ns!=\"__select_event__\"",

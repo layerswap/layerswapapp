@@ -1,4 +1,14 @@
 {
+  "__inputs": [
+    {
+      "name": "DS_LOKI",
+      "label": "Loki",
+      "description": "Loki datasource containing Grafana Faro frontend events",
+      "type": "datasource",
+      "pluginId": "loki",
+      "pluginName": "Loki"
+    }
+  ],
   "id": null,
   "uid": "layerswap-faro-dev-errors",
   "title": "Faro Dev · Error Overview (Provisional)",
@@ -281,7 +291,7 @@
       },
       "datasource": {
         "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "uid": "${DS_LOKI}"
       },
       "fieldConfig": {
         "defaults": {
@@ -299,7 +309,7 @@
           "refId": "A",
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "${DS_LOKI}"
           },
           "editorMode": "code",
           "expr": "sum(count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=${application:doublequote} | app_environment=${environment:doublequote} | app_version=${release:doublequote} | kind=\"exception\" |= ${error_marker:doublequote} | label_format type=`{{ if .type }}{{ .type }}{{ else }}(unknown type){{ end }}` [$__range])) or vector(0)",
@@ -338,7 +348,7 @@
       },
       "datasource": {
         "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "uid": "${DS_LOKI}"
       },
       "fieldConfig": {
         "defaults": {
@@ -411,7 +421,7 @@
           "refId": "A",
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "${DS_LOKI}"
           },
           "editorMode": "code",
           "expr": "label_replace(sum by (type) (count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=${application:doublequote} | app_environment=${environment:doublequote} | app_version=${release:doublequote} | kind=\"exception\" |= ${error_marker:doublequote} | label_format type=`{{ if .type }}{{ .type }}{{ else }}(unknown type){{ end }}` | keep type [$__range])), \"statistic\", \"Error records\", \"type\", \".*\") or label_replace(count by (type) (sum by (type, session_id) (count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=${application:doublequote} | app_environment=${environment:doublequote} | app_version=${release:doublequote} | kind=\"exception\" |= ${error_marker:doublequote} | label_format type=`{{ if .type }}{{ .type }}{{ else }}(unknown type){{ end }}` | session_id!=\"\" | keep type, session_id [$__range]))), \"statistic\", \"Recorded sessions\", \"type\", \".*\") or label_replace(max by (type) (max_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=${application:doublequote} | app_environment=${environment:doublequote} | app_version=${release:doublequote} | kind=\"exception\" |= ${error_marker:doublequote} | label_format type=`{{ if .type }}{{ .type }}{{ else }}(unknown type){{ end }}` | label_format stored_ms=`{{ __timestamp__ | unixEpochMillis }}` | keep type, stored_ms | unwrap stored_ms | __error__=\"\" [$__range])), \"statistic\", \"Latest stored occurrence\", \"type\", \".*\")",
