@@ -24,6 +24,7 @@
     "@grafana/faro-web-tracing": "2.11.0",
     "@layerswap/wallet-core": "workspace:^",
     "@layerswap/utils": "workspace:^",
+    "@layerswap/wallet-core": "workspace:^",
     "@layerswap/wallet-evm": "workspace:^",
     "@layerswap/wallets": "workspace:^",
     "@layerswap/widget": "workspace:^",

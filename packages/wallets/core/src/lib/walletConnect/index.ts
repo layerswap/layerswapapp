@@ -20,3 +20,4 @@ export * from './findRegistryWallet'
 export * from "./walletDescriptorLoader"
 export * from "./descriptorStubStore"
 export * from './providerCapabilities'
+export * from './registryEntryIndex'
