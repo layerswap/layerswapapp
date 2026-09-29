@@ -15,7 +15,7 @@ const pages = resolve(dirname(fileURLToPath(import.meta.url)), '../pages');
 const pageFiles = readdirSync(pages, { recursive: true }).filter((file) => /\.(tsx?|jsx?|mjs)$/.test(file));
 const productionRoutes = [
     '/', '/404', '/_app', '/_document', '/_error',
-    '/api/flags', '/api/polymarket/relay', '/api/vercel/flags',
+    '/api/flags', '/api/local-telemetry', '/api/polymarket/relay', '/api/vercel/flags',
     '/campaigns', '/campaigns/[campaign]', '/imtblRedirect', '/nocookies',
     '/swap/[swapId]', '/transactions',
 ].sort();
