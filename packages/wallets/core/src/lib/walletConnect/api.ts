@@ -32,7 +32,11 @@ export type FetchWalletsParams = {
 }
 
 export function chainsForNamespace(namespace: string, registry: WalletConnectChainRegistry = defaultWalletConnectChainRegistry): string {
-    return registry.get(namespace)?.explorerChainIds.join(',') ?? ''
+    const definition = registry.get(namespace)
+    if (!definition) {
+        throw new Error(`WalletConnect namespace "${namespace}" is not registered`)
+    }
+    return definition.explorerChainIds.join(',')
 }
 
 const DANGEROUS_URL_PROTOCOLS = ['javascript:', 'data:', 'vbscript:', 'file:']
