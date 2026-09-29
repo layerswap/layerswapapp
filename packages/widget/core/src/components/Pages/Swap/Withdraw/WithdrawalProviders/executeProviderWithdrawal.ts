@@ -34,34 +34,45 @@ export async function executeProviderWithdrawal<T>({ swapId, sourceAddress, prep
         return hash
     }
 
-    if (store.pendingSubmissions[swapId] || transaction) {
-        const response = await api.GetSwapAsync(swapId, sourceAddress)
-        if (response.error) throw response.error
-        if (response.data?.swap?.id !== swapId) throw new Error('Could not check the withdrawal status. Please try again.')
-        const submitted = hasSwapExecutionProgress({
-            swapDetails: response.data.swap,
-            depositActions: response.data.deposit_actions,
-            storedWalletTransaction: undefined,
-            gaslessAuthorization: undefined,
-        })
-        if (submitted) {
-            const input = response.data.swap.transactions?.find(tx => tx.type === TransactionType.Input && tx.status !== BackendTransactionStatus.Failed)
-            const hash = recordSubmission(input?.transaction_hash ?? '')
-            await onReconcile(response)
-            return hash
-        }
-        await onReconcile(response)
-        // Backend indexing may lag the provider; absence of a deposit is not proof
-        // that it is safe to sign and submit another withdrawal.
-        throw Object.assign(new Error('Your withdrawal may already have been submitted. Try again to check its status.'), {
-            header: 'Withdrawal status unknown',
-        })
-    }
-
-    // Preparation locks this session without leaving a submission marker on reload.
+    // Reconciliation and preparation share the session lock, so concurrent retries
+    // cannot both confirm a failure and start a new withdrawal.
     activeWithdrawals.add(swapId)
-    let phase: Parameters<SubmissionCallback>[0] | undefined = 'preparing'
+    let phase: Parameters<SubmissionCallback>[0] | 'reconciling' | undefined = 'reconciling'
     try {
+        if (store.pendingSubmissions[swapId] || transaction) {
+            const response = await api.GetSwapAsync(swapId, sourceAddress)
+            if (response.error) throw response.error
+            if (response.data?.swap?.id !== swapId) throw new Error('Could not check the withdrawal status. Please try again.')
+            const submitted = hasSwapExecutionProgress({
+                swapDetails: response.data.swap,
+                depositActions: response.data.deposit_actions,
+                storedWalletTransaction: undefined,
+                gaslessAuthorization: undefined,
+            })
+            if (submitted) {
+                const input = response.data.swap.transactions?.find(tx => tx.type === TransactionType.Input && tx.status !== BackendTransactionStatus.Failed)
+                const hash = recordSubmission(input?.transaction_hash ?? '')
+                await onReconcile(response)
+                return hash
+            }
+            await onReconcile(response)
+            const inputs = response.data.swap.transactions?.filter(tx => tx.type === TransactionType.Input)
+            const confirmedFailure = transaction?.hash
+                && inputs?.some(tx => tx.transaction_hash === transaction.hash && tx.status === BackendTransactionStatus.Failed)
+                && inputs.every(tx => tx.status === BackendTransactionStatus.Failed)
+            // An absent deposit or an unrelated failed input cannot establish the
+            // outcome of this submission. Require failure of the recorded hash.
+            if (!confirmedFailure) {
+                throw Object.assign(new Error('Your withdrawal may already have been submitted. Try again to check its status.'), {
+                    header: 'Withdrawal status unknown',
+                })
+            }
+            store.removeSwapTransaction(swapId)
+            store.clearPendingSubmission(swapId)
+        }
+
+        // Preparation does not leave a submission marker on reload.
+        phase = 'preparing'
         const prepared = await prepare()
         // Providers that do not report submission progress remain conservative.
         phase = undefined

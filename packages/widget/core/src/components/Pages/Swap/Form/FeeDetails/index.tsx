@@ -132,6 +132,7 @@ export const DetailsButton: FC<QuoteComponentProps & { enabled?: boolean }> = ({
         destinationAddress || '',
         destination,
         reward?.nft_contract_address || '',
+        { enabled: enabled && !!shouldCheckNFT },
     );
 
     return (

@@ -69,6 +69,7 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({
             }
             details={
                 <DetailedEstimates
+                    enabled={!compact}
                     swapValues={values}
                     quote={quoteData?.quote}
                     reward={quoteData?.reward}

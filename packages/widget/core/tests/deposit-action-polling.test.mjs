@@ -109,6 +109,30 @@ test('one SWR request stream drives both the UI and a sign-to-publish wait longe
     assert.ok(requests.every(key => key === depositActionsKey('s1', 'source')))
 })
 
+test('legacy signing waits for a different action type and resolves when transfer becomes available', async t => {
+    t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 10000 })
+    const legacySign = { type: 'sign', typed_data: sign.typed_data }
+    const legacyTransfer = { type: 'transfer', to_address: '0x123', amount: 1 }
+    response = { data: [legacySign] }
+    await render()
+    const scope = new AbortController()
+    let transition
+    const pending = wait(scope.signal, { previousAction: legacySign }).then(value => { transition = value })
+    try {
+        for (let i = 0; i < 2; i++) await act(async () => { t.mock.timers.tick(2000) })
+        assert.equal(transition, undefined, 'unchanged legacy signing must keep waiting')
+        assert.ok(requests.includes('/swaps/s1/authorize'))
+        response = { data: [legacyTransfer] }
+        await act(async () => { t.mock.timers.tick(2000) })
+        assert.deepEqual(result.data, [legacyTransfer], 'polling receives the transfer-only payload')
+        assert.deepEqual(transition, { actions: [legacyTransfer] }, 'execution can continue without authorization submission')
+        await pending
+    } finally {
+        act(() => scope.abort())
+        await pending.catch(() => {})
+    }
+})
+
 test('idle polling continues after execution ends and uses the slower interval', async t => {
     t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 10000 })
     await render()

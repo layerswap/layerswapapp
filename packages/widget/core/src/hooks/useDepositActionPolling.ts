@@ -90,7 +90,7 @@ export function useDepositActionPolling(swapId: string | undefined, sourceAddres
                 const failed = actions.find(action => action.status === 'failed')
                 if (failed) return fail(new Error(failed.detail || 'The swap action failed'))
                 const next = getActionableDepositAction(actions)
-                if (isDepositWorkflowComplete(actions) || (next && (next.step !== previousAction.step
+                if (isDepositWorkflowComplete(actions) || (next && ((next.step ?? next.type) !== (previousAction.step ?? previousAction.type)
                     || (previousAction.status && previousAction.status !== 'action_required')))) {
                     cleanup()
                     resolve({ actions })

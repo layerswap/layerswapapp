@@ -108,3 +108,29 @@ test('cancelling a gasless limit adjustment preserves the requested amount', asy
   }), /User cancelled the operation/)
   assert.equal(swapValues.amount, '150')
 })
+
+for (const scenario of [
+  { name: 'wallet', depositMethod: 'wallet' },
+  { name: 'deposit address', depositMethod: 'deposit_address' },
+  { name: 'exchange', depositMethod: 'deposit_address', fromExchange: { name: 'exchange' } },
+  { name: 'extended', depositMethod: 'wallet', plan: { mapping: { real: { networkName: 'POLYGON_MAINNET', tokenSymbol: 'USDC' } } } },
+]) {
+  test(`route discovery requests frontend-swap support for ${scenario.name} routes without changing their deposit mode`, () => {
+    const { resolveNetworkRoutesURL } = loadSource('../src/helpers/routes.ts', {
+      '@/lib/AppSettings': { default: { AvailableSourceNetworkTypes: { all: true } } },
+      '@/lib/extendedRoutes/registry': { resolveExtendedRoutePlan: () => scenario.plan },
+      '@/helpers/swapFlow': loadSource('../src/helpers/swapFlow.ts'),
+    })
+    const values = { ...valuesFor('1', scenario.depositMethod), fromExchange: scenario.fromExchange }
+    for (const direction of ['from', 'to']) {
+      const params = new URL(resolveNetworkRoutesURL(direction, values), 'https://api.test').searchParams
+      assert.equal(params.get('use_frontend_swap'), 'true')
+      assert.equal(params.get('has_deposit_address'), scenario.depositMethod === 'deposit_address' ? 'true' : null)
+      if (direction === 'to' && scenario.fromExchange) assert.equal(params.get('include_swaps'), 'false')
+      if (direction === 'to' && scenario.plan) {
+        assert.equal(params.get('source_network'), scenario.plan.mapping.real.networkName)
+        assert.equal(params.get('include_swaps_via_deposit_address'), 'true')
+      }
+    }
+  })
+}

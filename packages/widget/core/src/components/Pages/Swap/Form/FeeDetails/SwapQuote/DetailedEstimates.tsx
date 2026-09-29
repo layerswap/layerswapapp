@@ -19,6 +19,7 @@ type DetailedEstimatesProps = {
     reward?: QuoteReward;
     swapValues: SwapValues;
     variant?: 'base' | 'extended';
+    enabled?: boolean;
 };
 
 export const DetailedEstimates: FC<DetailedEstimatesProps> = ({
@@ -26,6 +27,7 @@ export const DetailedEstimates: FC<DetailedEstimatesProps> = ({
     reward,
     swapValues: values,
     variant,
+    enabled = true,
 }) => {
     const shouldCheckNFT =
         reward?.campaign_type === 'for_nft_holders' &&
@@ -38,6 +40,7 @@ export const DetailedEstimates: FC<DetailedEstimatesProps> = ({
         values.destination_address || '',
         values.to,
         reward?.nft_contract_address || '',
+        { enabled: enabled && !!shouldCheckNFT },
     );
 
     const showReward = !(
@@ -53,7 +56,7 @@ export const DetailedEstimates: FC<DetailedEstimatesProps> = ({
             values={values}
             variant={variant}
             showReward={showReward}
-            gasFee={<GasFee values={values} quote={quote} />}
+            gasFee={<GasFee values={values} quote={quote} enabled={enabled} />}
             slippage={<Slippage quoteData={quote} values={values} />}
             tokenAddress={
                 values.fromAsset?.contract &&

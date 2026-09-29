@@ -385,14 +385,21 @@ test('live recipient visibility preserves disconnected destinations and respects
     }
 });
 
-test('compact quote controls retain their nodes and cached values without gas refreshes', async t => {
+test('compact quote controls retain their nodes and cached values without gas or NFT refreshes', async t => {
     t.mock.timers.enable({ apis: ['setTimeout', 'Date'] });
     const root = createRoot(container);
     const requests = [];
+    const nftRequests = [];
     const gasHook = loadSource('lib/gases/useSWRGas.tsx', {
         swr: { default: useSWR },
         '../resolvers/resolverService': { resolverService: { getGasResolver: () => ({
             getGas: async args => { requests.push(args); return { gas: 0.01, token: { asset: 'ETH' } }; },
+        }) } },
+    });
+    const nftHook = loadSource('lib/nft/useSWRNftBalance.tsx', {
+        swr: { default: useSWR },
+        '../resolvers/resolverService': { resolverService: { getNftResolver: () => ({
+            getBalance: async args => { nftRequests.push(args); return 1; },
         }) } },
     });
     const shared = {
@@ -400,7 +407,7 @@ test('compact quote controls retain their nodes and cached values without gas re
         '@/helpers/gasless': gasless,
         '@/helpers/tokenHelper': { resolveTokenUsdPrice: () => 100 },
         '@/lib/gases/useSWRGas': gasHook,
-        '@/lib/nft/useSWRNftBalance': { default: () => ({}) },
+        '@/lib/nft/useSWRNftBalance': nftHook,
         '@/stores/gaslessPreferenceStore': { useGaslessPreferenceStore },
         '@/components/Input/Address/AddressPicker/AddressWithIcon': { ExtendedAddress: empty },
         '@/lib/address/Address': { Address: { isValid: () => false } },
@@ -408,14 +415,18 @@ test('compact quote controls retain their nodes and cached values without gas re
     const gasFees = loadSource(`${fees}SwapQuote/DetailedEstimates.tsx`, {
         ...shared,
         './GasFeeView': { GasFeeView: ({ gas }) => React.createElement('span', { 'data-gas': true }, gas) },
-        './DetailedEstimatesView': { DetailedEstimatesView: empty },
+        './DetailedEstimatesView': {
+            DetailedEstimatesView: ({ showReward }) => React.createElement('span', { 'data-reward-details': showReward }),
+        },
         '../Slippage': { Slippage: empty },
     });
     const details = loadSource(`${fees}index.tsx`, {
         ...shared,
         '../../Withdraw/Presentation/ManualQuoteView': { ManualQuoteView: empty },
         '../../Withdraw/Presentation/QuoteDetailsSummary': {
-            QuoteDetailsSummary: ({ gasFeeInUsd }) => React.createElement('span', { 'data-details': true }, gasFeeInUsd),
+            QuoteDetailsSummary: ({ gasFeeInUsd, showReward }) => React.createElement('span', {
+                'data-details': true, 'data-reward-summary': showReward,
+            }, gasFeeInUsd),
         },
         './SwapQuote/DetailedEstimates': gasFees,
     });
@@ -436,6 +447,15 @@ test('compact quote controls retain their nodes and cached values without gas re
             'lucide-react': { ChevronDown: empty },
         }),
     });
+    const { default: SwapQuote } = loadSource(`${fees}SwapQuote/index.tsx`, {
+        ...shared,
+        './SummaryRow': { SummaryRow },
+        './DetailedEstimates': gasFees,
+        '../../../Withdraw/Presentation/QuoteView': {
+            // Keep the detail body mounted to cover the accordion's exit animation.
+            QuoteView: ({ summary, details }) => React.createElement(React.Fragment, null, summary, details),
+        },
+    });
     const cache = new Map();
     let onFocus;
     const config = {
@@ -444,33 +464,49 @@ test('compact quote controls retain their nodes and cached values without gas re
         focusThrottleInterval: 0,
         initFocus: callback => { onFocus = callback; return noop; },
     };
-    const view = compact => React.createElement(SWRConfig, { value: config }, React.createElement(SummaryRow, {
-        compact, isOpen: true,
-        values: { from: network, fromAsset: token, amount: '1' },
-        quoteData: { quote: { source_network: network } },
+    const view = compact => React.createElement(SWRConfig, { value: config }, React.createElement(SwapQuote, {
+        compact,
+        swapValues: { from: network, fromAsset: token, to: network, destination_address: '0xrecipient', amount: '1' },
+        quote: {
+            quote: { source_network: network },
+            reward: { campaign_type: 'for_nft_holders', nft_contract_address: '0xnft' },
+        },
     }));
     const tick = async ms => act(async () => { t.mock.timers.tick(ms); });
     try {
         await act(async () => root.render(view(true)));
         await tick(60_000);
         assert.equal(requests.length, 0, 'initially compact quotes do not request gas');
+        assert.equal(nftRequests.length, 0, 'initially compact quotes do not request NFT eligibility');
         await act(async () => root.render(view(false)));
+        await act(async () => container.querySelector('[data-page2-quote-disclosure]').click());
         assert.equal(requests.length, 2, 'both gas controller keys initially fetch');
+        assert.ok(nftRequests.length > 0, 'expanded quotes request NFT eligibility');
+        const nftRequestsBeforeCollapse = nftRequests.length;
         const gasNode = container.querySelector('[data-gas]');
         const detailsNode = container.querySelector('[data-details]');
+        const rewardNode = container.querySelector('[data-reward-details]');
         assert.equal(gasNode.textContent, '0.01');
+        assert.equal(detailsNode.dataset.rewardSummary, 'true');
+        assert.equal(rewardNode.dataset.rewardDetails, 'true');
         await act(async () => root.render(view(true)));
         await tick(120_000);
         await act(async () => onFocus());
         await tick(10);
         assert.equal(requests.length, 2, 'compact controls stop interval and focus revalidation');
+        assert.equal(nftRequests.length, nftRequestsBeforeCollapse, 'both hidden reward lookups stop interval and focus revalidation');
         assert.equal(container.querySelector('[data-gas]'), gasNode);
         assert.equal(container.querySelector('[data-details]'), detailsNode);
         assert.equal(gasNode.textContent, '0.01', 'cached content remains available during collapse');
+        assert.equal(container.querySelector('[data-reward-details]'), rewardNode);
+        assert.equal(detailsNode.dataset.rewardSummary, 'true', 'cached reward eligibility remains available during collapse');
+        assert.equal(rewardNode.dataset.rewardDetails, 'true');
         await act(async () => root.render(view(false)));
         const beforeRefresh = requests.length;
+        const beforeNftRefresh = nftRequests.length;
         await tick(60_000);
         assert.ok(requests.length > beforeRefresh, 'expanding restores gas refreshes');
+        assert.ok(nftRequests.length > beforeNftRefresh, 'expanding restores NFT eligibility refreshes');
     } finally {
         await act(() => root.unmount());
         t.mock.timers.reset();

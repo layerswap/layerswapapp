@@ -158,6 +158,49 @@ for (const stage of ['preparation', 'signing']) {
   })
 }
 
+test('concurrent retries cannot both reconcile a failed withdrawal and submit again', async () => {
+  const reconciliation = Promise.withResolvers()
+  useSwapTransactionStore.getState().setSwapTransaction('swap-1', 'failed', 'failed-withdrawal')
+  useSwapTransactionStore.getState().markSubmissionPending('swap-1')
+  state.getSwap = () => reconciliation.promise
+  let preparations = 0
+  let submissions = 0
+  const retry = {
+    swapId: 'swap-1', sourceAddress: 'source', onReconcile: async () => {},
+    prepare: async () => { preparations++; return 'fresh' },
+    execute: async () => { submissions++; return 'retry-hash' },
+  }
+  const pending = executeProviderWithdrawal(retry)
+  try {
+    await assert.rejects(executeProviderWithdrawal(retry), /already in progress/)
+    assert.equal(state.refreshes.length, 1)
+    assert.equal(preparations, 0)
+    assert.equal(submissions, 0)
+    reconciliation.resolve({ data: { swap: { id: 'swap-1', transactions: [
+      { type: 'input', status: 'failed', transaction_hash: 'failed-withdrawal' },
+    ] } } })
+    assert.equal(await pending, 'retry-hash')
+    assert.equal(preparations, 1)
+    assert.equal(submissions, 1)
+  } finally {
+    reconciliation.resolve({ data: { swap: { id: 'swap-1' } } })
+    await pending.catch(() => {})
+  }
+})
+
+test('an unrelated backend failure cannot clear a pending submission without a recorded transaction', async () => {
+  useSwapTransactionStore.getState().markSubmissionPending('swap-1')
+  state.getSwap = async id => ({ data: { swap: { id, transactions: [
+    { type: 'input', status: 'failed', transaction_hash: 'old-failed-withdrawal' },
+  ] } } })
+  await assert.rejects(executeProviderWithdrawal({
+    swapId: 'swap-1', sourceAddress: 'source', onReconcile: async () => {},
+    prepare: async () => assert.fail('the unknown submission must remain blocked'),
+    execute: async () => assert.fail('the unknown submission must remain blocked'),
+  }), { header: 'Withdrawal status unknown' })
+  assert.equal(useSwapTransactionStore.getState().pendingSubmissions['swap-1'], true)
+})
+
 test('recording a transaction clears its pending submission atomically and preserves other swaps', () => {
   const store = useSwapTransactionStore.getState()
   store.markSubmissionPending('swap-1')
@@ -400,6 +443,89 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
       assert.equal(state.creations, 0)
       assert.deepEqual(state.refreshes, [['swap-1', 'source']])
       assert.equal(mounted.result.error.header, 'Withdrawal status unknown')
+    } finally {
+      await mounted.unmount()
+    }
+  })
+
+  test(`${useWithdrawal.name} retries a backend-confirmed failed withdrawal on the existing swap`, async () => {
+    const store = useSwapTransactionStore.getState()
+    store.setSwapTransaction('swap-1', 'failed', 'failed-withdrawal')
+    store.markSubmissionPending('swap-1')
+    store.markSubmissionPending('swap-2')
+    await reloadTransactionStore()
+    state.getSwap = async id => ({ data: { swap: { id, transactions: [
+      { type: 'input', status: 'failed', transaction_hash: 'failed-withdrawal' },
+    ] }, deposit_actions: state.depositActions } })
+    state.getDepositActions = async () => {
+      const current = useSwapTransactionStore.getState()
+      assert.equal(current.swapTransactions['swap-1'], undefined, 'clear the confirmed failed transaction before preparation')
+      assert.equal(current.pendingSubmissions['swap-1'], undefined, 'clear its pending marker before preparation')
+      return { data: [{ type: 'transfer', to_address: 'fresh-deposit', call_data: '0xfresh', amount_in_base_units: '2000000' }] }
+    }
+    state.executeTransfer = async () => 'retry-hash'
+    const mounted = await mountWithdrawal(useWithdrawal)
+    try {
+      await act(async () => mounted.result.handleWithdraw())
+      assert.equal(mounted.result.error, undefined)
+      assert.deepEqual(state.refreshes, [['swap-1', 'source']])
+      assert.deepEqual(state.actionRefreshes, [['swap-1', 'source']])
+      assert.equal(state.reconciled.length, 1)
+      assert.equal(state.transfers.length, 1)
+      assert.equal(state.transfers[0][0].swapId, 'swap-1')
+      assert.equal(state.transfers[0][0].depositAddress, 'fresh-deposit')
+      assert.equal(state.creations, 0)
+      assert.equal(state.successes, 1)
+      assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].hash, 'retry-hash')
+      assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, { 'swap-2': true })
+    } finally {
+      await mounted.unmount()
+    }
+  })
+
+  for (const [label, hash, transactions] of [
+    ['an unrelated failed input', 'withdrawal-hash', [{ type: 'input', status: 'failed', transaction_hash: 'other-hash' }]],
+    ['a failed output', 'withdrawal-hash', [{ type: 'output', status: 'failed', transaction_hash: 'withdrawal-hash' }]],
+    ['a missing local hash', '', [{ type: 'input', status: 'failed', transaction_hash: 'withdrawal-hash' }]],
+    ['an unindexed active input', 'withdrawal-hash', [
+      { type: 'input', status: 'failed', transaction_hash: 'withdrawal-hash' },
+      { type: 'input', status: 'pending', transaction_hash: '' },
+    ]],
+  ]) {
+    test(`${useWithdrawal.name} preserves the retry block with ${label}`, async () => {
+      const store = useSwapTransactionStore.getState()
+      store.setSwapTransaction('swap-1', 'failed', hash)
+      store.markSubmissionPending('swap-1')
+      const transaction = useSwapTransactionStore.getState().swapTransactions['swap-1']
+      state.getSwap = async id => ({ data: { swap: { id, transactions }, deposit_actions: state.depositActions } })
+      const mounted = await mountWithdrawal(useWithdrawal)
+      try {
+        await act(async () => mounted.result.handleWithdraw())
+        assert.equal(mounted.result.error.header, 'Withdrawal status unknown')
+        assert.deepEqual(state.actionRefreshes, [])
+        assert.deepEqual(state.transfers, [])
+        assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'], transaction)
+        assert.equal(useSwapTransactionStore.getState().pendingSubmissions['swap-1'], true)
+      } finally {
+        await mounted.unmount()
+      }
+    })
+  }
+
+  test(`${useWithdrawal.name} does not retry a confirmed failed input while a deposit is active`, async () => {
+    useSwapTransactionStore.getState().setSwapTransaction('swap-1', 'failed', 'failed-withdrawal')
+    state.getSwap = async id => ({ data: {
+      swap: { id, transactions: [{ type: 'input', status: 'failed', transaction_hash: 'failed-withdrawal' }] },
+      deposit_actions: [{ type: 'transfer', step: 'deposit', status: 'pending' }],
+    } })
+    const mounted = await mountWithdrawal(useWithdrawal)
+    try {
+      await act(async () => mounted.result.handleWithdraw())
+      assert.equal(mounted.result.error, undefined)
+      assert.deepEqual(state.actionRefreshes, [])
+      assert.deepEqual(state.transfers, [])
+      assert.equal(state.successes, 1)
+      assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].status, 'pending')
     } finally {
       await mounted.unmount()
     }
