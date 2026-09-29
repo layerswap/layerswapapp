@@ -289,6 +289,45 @@ test('Hyperliquid does not withdraw the requested amount when the deposit action
   }
 })
 
+for (const reload of [false, true]) {
+  test(`Hyperliquid retries a definitive funding refusal on the same swap${reload ? ' after reload' : ''}`, async () => {
+    state.executeTransfer = async params => {
+      params.onSubmissionStateChange('preparing')
+      params.onSubmissionStateChange('submitting')
+      params.onSubmissionStateChange('not_submitted')
+      throw Object.assign(new Error('Insufficient balance'), { header: 'Insufficient balance' })
+    }
+    let mounted = await mountWithdrawal(useHyperliquidWithdrawal)
+    try {
+      await act(async () => mounted.result.handleWithdraw())
+      assert.equal(mounted.result.error.header, 'Insufficient balance')
+      assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, {})
+      assert.deepEqual(useSwapTransactionStore.getState().swapTransactions, {})
+      if (reload) {
+        await mounted.unmount()
+        await reloadTransactionStore()
+        mounted = await mountWithdrawal(useHyperliquidWithdrawal)
+      }
+
+      state.executeTransfer = async params => {
+        params.onSubmissionStateChange('preparing')
+        params.onSubmissionStateChange('submitting')
+        return ''
+      }
+      await act(async () => mounted.result.handleWithdraw())
+      assert.equal(mounted.result.error, undefined)
+      assert.deepEqual(state.transfers.map(([params]) => params.swapId), ['swap-1', 'swap-1'])
+      assert.equal(state.creations, 0)
+      assert.deepEqual(state.refreshes, [])
+      assert.equal(state.successes, 1)
+      assert.deepEqual(state.published, [['swap-1', 'pending', '']])
+      assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, {})
+    } finally {
+      await mounted.unmount()
+    }
+  })
+}
+
 for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal]) {
   for (const [label, error, rejected, outcome] of [
     ['legacy rejected UI label', Object.assign(new Error('Request declined'), { name: 'TransactionRejected' }), true, 'failed'],
@@ -353,6 +392,8 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
       state.executeTransfer = async params => {
         params.onSubmissionStateChange('preparing')
         params.onSubmissionStateChange('submitting')
+        // Late progress cannot downgrade an already submitted request.
+        params.onSubmissionStateChange('preparing')
         throw failure
       }
       let mounted = await mountWithdrawal(useWithdrawal)

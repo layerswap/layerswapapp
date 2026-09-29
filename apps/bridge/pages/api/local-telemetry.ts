@@ -1,8 +1,12 @@
+import { Buffer } from 'node:buffer'
 import { appendFile, mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 export const config = { api: { bodyParser: { sizeLimit: '5mb' } } }
+
+const MAX_BATCH_RECORDS = 1000
+const MAX_BATCH_BYTES = 5 * 1024 * 1024
 
 const signalTypes = {
     logs: 'log',
@@ -58,15 +62,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
     const receivedAt = new Date().toISOString()
     const records: string[] = []
+    let outputBytes = 0
+    // Metadata is repeated per record, so the request size does not bound output.
+    const addRecord = (type: string, payload: Record<string, unknown>): boolean => {
+        if (records.length >= MAX_BATCH_RECORDS) return false
+        const record = JSON.stringify({ receivedAt, type, payload, meta: body.meta })
+        outputBytes += Buffer.byteLength(record, 'utf8') + 1
+        if (outputBytes > MAX_BATCH_BYTES) return false
+        records.push(record)
+        return true
+    }
     for (const [key, type] of Object.entries(signalTypes)) {
         const signals = body[key]
         if (signals === undefined) continue
-        if (!Array.isArray(signals) || !signals.every(isRecord)) {
+        if (!Array.isArray(signals)) {
             res.status(400).end()
             return
         }
+        if (records.length + signals.length > MAX_BATCH_RECORDS) {
+            res.status(413).end()
+            return
+        }
         for (const payload of signals) {
-            records.push(JSON.stringify({ receivedAt, type, payload, meta: body.meta }))
+            if (!isRecord(payload)) {
+                res.status(400).end()
+                return
+            }
+            if (!addRecord(type, payload)) {
+                res.status(413).end()
+                return
+            }
         }
     }
     if (body.traces !== undefined) {
@@ -74,7 +99,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             res.status(400).end()
             return
         }
-        records.push(JSON.stringify({ receivedAt, type: 'trace', payload: body.traces, meta: body.meta }))
+        if (!addRecord('trace', body.traces)) {
+            res.status(413).end()
+            return
+        }
     }
     if (!records.length) {
         res.status(400).end()

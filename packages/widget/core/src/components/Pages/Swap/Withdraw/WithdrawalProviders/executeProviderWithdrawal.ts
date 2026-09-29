@@ -78,10 +78,10 @@ export async function executeProviderWithdrawal<T>({ swapId, sourceAddress, prep
         phase = undefined
         store.markSubmissionPending(swapId)
         const hash = await execute(prepared, state => {
-            // Once submission starts, later progress cannot make retry safe again.
-            if (phase === 'submitting') return
+            // Only a definitive refusal can reverse submission; late progress cannot.
+            if (phase === 'submitting' && state !== 'not_submitted') return
             phase = state
-            if (state === 'preparing') store.clearPendingSubmission(swapId)
+            if (state === 'preparing' || state === 'not_submitted') store.clearPendingSubmission(swapId)
             else store.markSubmissionPending(swapId)
         })
         // Record even if the screen closed, before any UI success callback can fail.

@@ -30,8 +30,9 @@ export type TransferProps = {
     sourceRoutes?: NetworkRoute[]
     /** Opt-in submission tracking for relayed withdrawals. Report `preparing` before
      *  setup/signing and `submitting` before sending the signed withdrawal to the
-     *  provider. Once submitting, an error does not prove funds were not sent. */
-    onSubmissionStateChange?: (state: 'preparing' | 'submitting') => void
+     *  provider. Report `not_submitted` only after a definitive provider refusal;
+     *  transport failures and ambiguous responses must remain `submitting`. */
+    onSubmissionStateChange?: (state: 'preparing' | 'submitting' | 'not_submitted') => void
 }
 
 /** Generic in-flight progress a provider may surface to the UI (e.g. a prerequisite signing step). */

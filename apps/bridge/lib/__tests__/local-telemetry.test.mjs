@@ -88,3 +88,31 @@ test('a failed disk write is reported and does not poison subsequent writes', as
     assert.equal((await h.post({ meta: {}, logs: [{ message: 'second' }] })).statusCode, 204)
     assert.equal((await h.read())[0].payload.message, 'second')
 })
+
+test('collector limits the total records across signal types, including traces', async t => {
+    const h = await harness(t)
+    for (const body of [
+        { meta: {}, events: Array.from({ length: 1001 }, () => ({})) },
+        { meta: {}, logs: Array.from({ length: 600 }, () => ({})), events: Array.from({ length: 401 }, () => ({})) },
+        { meta: {}, logs: Array.from({ length: 1000 }, () => ({})), traces: {} },
+    ]) {
+        assert.equal((await h.post(body)).statusCode, 413)
+        await assert.rejects(h.read(), { code: 'ENOENT' })
+    }
+    assert.equal((await h.post({ meta: {}, events: Array.from({ length: 1000 }, () => ({})) })).statusCode, 204)
+    assert.equal((await h.read()).length, 1000)
+})
+
+for (const [label, body] of [
+    ['repeated metadata', { meta: { padding: 'x'.repeat(8192) }, events: Array.from({ length: 800 }, () => ({})) }],
+    ['UTF-8 metadata shared by logs and traces', { meta: { padding: '🙂'.repeat(700000) }, logs: [{}], traces: {} }],
+]) {
+    test(`collector rejects excessive serialized output from ${label} without partial writes`, async t => {
+        const h = await harness(t)
+        assert(Buffer.byteLength(JSON.stringify(body)) < 5 * 1024 * 1024, 'input fits the request body limit')
+        assert.equal((await h.post(body)).statusCode, 413)
+        await assert.rejects(h.read(), { code: 'ENOENT' })
+        assert.equal((await h.post({ meta: {}, events: [{ name: 'next-batch' }] })).statusCode, 204)
+        assert.equal((await h.read())[0].payload.name, 'next-batch')
+    })
+}

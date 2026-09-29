@@ -1,7 +1,7 @@
 import { NetworkType } from '@layerswap/widget-types';
 import { TransferProvider, TransferProps, TransferProgress } from "@layerswap/widget-types";
 import { switchChain } from "@wagmi/core"
-import { formatUnits } from "viem"
+import { formatUnits, parseUnits } from "viem"
 import { getEvmConfig } from "../../service/getEvmConfig"
 import { HyperliquidClient } from "./hyperliquidClient"
 import { signSendToEvm, signUsdClassTransfer } from "./withdraw"
@@ -86,8 +86,10 @@ export function createHyperliquidTransfer(): TransferProvider {
             const amountInBaseUnits = BigInt(params.amountInBaseUnits)
             if (amountInBaseUnits <= 0n) throw fail('Invalid amount', 'Withdrawal amount must be greater than zero.')
             const decimals = sourceToken.decimals ?? 6
-            // Keep the backend amount exact through signing; only balance checks use Number.
-            const amount = formatUnits(amountInBaseUnits, decimals)
+            // The backend action is net of forwarding; HyperCore must send the gross amount.
+            // Keep both amounts in base units through signing; only balance checks use Number.
+            const forwardingFeeInBaseUnits = parseUnits(hlConfig.forwardingFee.toString(), decimals)
+            const amount = formatUnits(amountInBaseUnits + forwardingFeeInBaseUnits, decimals)
 
             // Both signatures use a fixed Ethereum (mainnet/Sepolia) typed-data domain, so the
             // wallet must be on that chain — wallets reject signing a foreign-domain payload.
@@ -175,6 +177,11 @@ export function createHyperliquidTransfer(): TransferProvider {
             params.onSubmissionStateChange?.('submitting')
             const response = await client.withdraw(signed.action, signed.signature, hlConfig.nodeUrl)
             if (response.status === 'err') {
+                // Only an explicit funding refusal makes retry safe. Nonce errors
+                // and transport failures can still refer to an accepted withdrawal.
+                if (/^insufficient (?:spot |withdrawable |perps? )?balance\b/i.test(response.response.trim())) {
+                    params.onSubmissionStateChange?.('not_submitted')
+                }
                 const { header, details } = resolveHyperliquidError(response.response)
                 throw fail(header, details)
             }
