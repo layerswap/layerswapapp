@@ -18,7 +18,7 @@ const fixtureUrl = moduleUrl(`
   export const state = { wallet: { id:'wallet', address:'source', isActive:true, providerName:'test-wallet', asSourceSupportedNetworks:['A'] } }
   export const useSelectedAccount = () => state.wallet
   export const useSwapDataState = () => state.swap
-  export const useSwapDataUpdate = () => ({ setSwapId() {}, setQuoteLoading() {}, createSwap() { throw new Error('unexpected creation') } })
+  export const useSwapDataUpdate = () => ({ setSwapId() {}, setQuoteLoading() {}, markWalletExecutionStarted() {}, createSwap() { throw new Error('unexpected creation') } })
   export const useInitialSettings = () => ({})
   export const useSettingsState = () => ({ networks: [] })
   export const useWalletWithdrawalState = () => ({ onWalletWithdrawalSuccess() { state.successes++ } })

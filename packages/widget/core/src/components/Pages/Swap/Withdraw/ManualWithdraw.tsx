@@ -174,6 +174,7 @@ const ManualWithdraw: FC<Props> = ({
 
             await handleLimitsUpdate({
                 swapValues: nextSwapValues,
+                useGasless: false,
                 network,
                 token,
                 getConfirmation,

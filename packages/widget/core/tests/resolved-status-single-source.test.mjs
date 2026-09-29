@@ -39,8 +39,9 @@ test('every useResolvedSwapStatus caller passes no inputs', () => {
   assert(filesContaining(/useResolvedSwapStatus\(\)/).length >= 5)
 })
 
-test('live status is resolved only by the provider; the isolated preview resolves synthetic snapshots', () => {
+test('live status is resolved only by the provider; isolated previews resolve synthetic snapshots', () => {
   assert.deepEqual(filesContaining(/\bresolveSwapPhase\(/), [
+    'components/Pages/Deposit/DepositPreview.tsx',
     'components/Pages/Swap/Withdraw/Presentation/Page2Preview.tsx',
     'components/utils/resolveSwapPhase.ts',
     'context/swap.tsx',

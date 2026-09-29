@@ -10,6 +10,7 @@ export { QuoteUpdated } from './Presentation/QuoteUpdatedView';
  */
 export async function handleLimitsUpdate(params: {
     swapValues: SwapFormValues;
+    useGasless: boolean;
     network?: { display_name: string };
     token?: { asset: string };
     getConfirmation: ReturnType<typeof useAsyncModal>['getConfirmation'];
@@ -22,6 +23,7 @@ export async function handleLimitsUpdate(params: {
         destinationNetwork: swapValues.to?.name,
         destinationToken: swapValues.toAsset?.symbol,
         useDepositAddress: swapValues.depositMethod == 'deposit_address',
+        useGasless: params.useGasless,
         useFrontendSwap: wantsFrontendSwap({
             depositMethod: swapValues.depositMethod,
             sourceNetwork: swapValues.from?.name,

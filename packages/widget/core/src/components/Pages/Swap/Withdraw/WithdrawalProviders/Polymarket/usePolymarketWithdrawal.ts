@@ -57,7 +57,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
     const { networks, sourceRoutes } = useSettingsState()
     const initialSettings = useInitialSettings()
     const { onWalletWithdrawalSuccess } = useWalletWithdrawalState()
-    const { swapDetails, depositActionsResponse } = useSwapDataState()
+    const { swapDetails } = useSwapDataState()
     const { createSwap, setSwapId, startFreshSwapAttempt, mutateSwap } = useSwapDataUpdate()
     const { executeTransfer } = useTransfer()
     const { onSwapLifecycle } = useCallbacks()
@@ -82,7 +82,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
     // Synchronous double-submit guard: covers the click→re-render gap that `loading` can't.
     const submittingRef = useRef(false)
     // Keep a lazily created swap even before its context state has caught up.
-    const preparedSwapRef = useRef<{ swapId: string; actions?: DepositAction[] } | undefined>(undefined)
+    const preparedSwapRef = useRef<{ swapId: string } | undefined>(undefined)
     // The flow widens the async window (deploy + sign + submit); avoid setting state after unmount.
     const mountedRef = useRef(true)
     useEffect(() => {
@@ -113,9 +113,9 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
         // Keep the swap identity even when its details or deposit actions are missing.
         const resolveSwap = async (amount: string): Promise<{ depositActions?: DepositAction[]; activeSwapId: string }> => {
             let activeSwapId = swapId ?? preparedSwapRef.current?.swapId
-            let depositActions = preparedSwapRef.current?.swapId === activeSwapId
-                ? preparedSwapRef.current?.actions ?? depositActionsResponse
-                : depositActionsResponse
+            // Only the creation response is fresh for this attempt. Existing swaps
+            // fetch current actions in prepare, after the submission guard.
+            let depositActions: DepositAction[] | undefined
             if (!activeSwapId) {
                 startFreshSwapAttempt()
                 const swapValues: SwapFormValues = {
@@ -132,7 +132,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
                 activeSwapId = newSwap?.swap?.id
                 if (!activeSwapId) throw new Error('Swap ID is undefined')
                 depositActions = newSwap.deposit_actions
-                preparedSwapRef.current = { swapId: activeSwapId, actions: depositActions }
+                preparedSwapRef.current = { swapId: activeSwapId }
                 setSwapId(activeSwapId)
             }
             if (!activeSwapId) throw new Error('Swap ID is undefined')
@@ -218,7 +218,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
             }
             submittingRef.current = false
         }
-    }, [sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, networks, sourceRoutes, depositActionsResponse, swapId, swapDetails, refuel, initialSettings, wallet, createSwap, setSwapId, startFreshSwapAttempt, mutateSwap, executeTransfer, onWalletWithdrawalSuccess, swapBasicData.requested_amount, error, rejected, onSwapLifecycle])
+    }, [sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, networks, sourceRoutes, swapId, swapDetails, refuel, initialSettings, wallet, createSwap, setSwapId, startFreshSwapAttempt, mutateSwap, executeTransfer, onWalletWithdrawalSuccess, swapBasicData.requested_amount, error, rejected, onSwapLifecycle])
 
     return {
         handleWithdraw,
