@@ -60,6 +60,6 @@
     "tailwindcss": "^4.0.15"
   },
   "engines": {
-    "node": ">=22.0"
+    "node": ">=24.0"
   }
 }

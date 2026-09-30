@@ -328,7 +328,7 @@ importers:
         version: 0.379.0(react@19.2.3)
       next:
         specifier: 15.5.22
-        version: 15.5.22(@opentelemetry/api@1.9.1)(@types/node@20.19.28)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+        version: 15.5.22(@opentelemetry/api@1.9.1)(@types/node@24.10.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       react:
         specifier: 'catalog:'
         version: 19.2.3
@@ -352,8 +352,8 @@ importers:
         specifier: ^4.0.15
         version: 4.0.15
       '@types/node':
-        specifier: ^20
-        version: 20.19.28
+        specifier: ^24
+        version: 24.10.7
       '@types/react':
         specifier: 'catalog:'
         version: 19.2.3
@@ -617,6 +617,9 @@ importers:
       color:
         specifier: 4.2.3
         version: 4.2.3
+      copy-to-clipboard:
+        specifier: ^3.3.3
+        version: 3.3.3
       framer-motion:
         specifier: 12.34.5
         version: 12.34.5(@emotion/is-prop-valid@0.8.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
