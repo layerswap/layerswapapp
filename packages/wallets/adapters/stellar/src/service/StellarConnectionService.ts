@@ -1,4 +1,4 @@
-import { NetworkType, type InternalConnector, type Wallet } from '@layerswap/widget-types'
+import { type InternalConnector, type Wallet } from '@layerswap/widget-types'
 import type {
     RequestAdditionalConnectorsParams,
     RequestAdditionalConnectorsResult,
@@ -20,7 +20,7 @@ import {
     type AppNetworkAdapter,
     type WalletConnectWalletBase,
 } from '@layerswap/wallet-core'
-import { id as PROVIDER_ID, name as PROVIDER_NAME } from '../constants'
+import { id as PROVIDER_ID, name as PROVIDER_NAME, stellarWalletConnectChain } from '../constants'
 import { STELLAR_APPKIT_WALLET_CONNECT_ID } from './StellarWalletConnectModule'
 import { stellarKitManager } from './stellarKitManager'
 import { stellarStore, type StellarWalletSnapshot } from './stellarStore'
@@ -124,7 +124,7 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
         try {
             if (isWalletConnect) {
                 setPendingMetadataForRegistry(
-                    PROVIDER_ID,
+                    stellarWalletConnectChain.namespace,
                     registryConnector ? { ...registryConnector, deepLink } : undefined,
                 )
                 const wantsQrModal = !useAppKit && (!isMobilePlatform || !resolveURI)
@@ -148,7 +148,7 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
 
             const { address } = await this.kitManager.connect(kitWallet.id)
             if (registryConnector) {
-                setDynamicWcMetadata(PROVIDER_ID, address, {
+                setDynamicWcMetadata(stellarWalletConnectChain.namespace, address, {
                     name: registryConnector.name,
                     icon: registryConnector.icon || '',
                     id: registryConnector.id,
@@ -158,7 +158,7 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
             return this.resolveWallet(kitWallet, address)
         } finally {
             unsubscribeDisplayUri?.()
-            if (isWalletConnect) clearPendingDynamicWcMetadata(PROVIDER_ID)
+            if (isWalletConnect) clearPendingDynamicWcMetadata(stellarWalletConnectChain.namespace)
         }
     }
 
@@ -208,7 +208,7 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
             id: PROVIDER_ID,
             capabilities: this.hasWalletConnectTransport() ? {
                 walletConnectRegistry: {
-                    networkTypes: [NetworkType.Stellar],
+                    networkTypes: [stellarWalletConnectChain.networkType],
                 },
             } : undefined,
             providerIcon: networkLogo,
@@ -220,7 +220,7 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
         const supportedNetworks = this.getSupportedNetworks()
         const isWalletConnect = snapshot.type === 'BRIDGE_WALLET'
         const dynamicMetadata = isWalletConnect
-            ? getDynamicWcMetadata(PROVIDER_ID, address) || getPendingDynamicWcMetadata(PROVIDER_ID)
+            ? getDynamicWcMetadata(stellarWalletConnectChain.namespace, address) || getPendingDynamicWcMetadata(stellarWalletConnectChain.namespace)
             : null
         const displayName = dynamicMetadata?.name || snapshot.name
         const walletId = dynamicMetadata?.id || snapshot.id
