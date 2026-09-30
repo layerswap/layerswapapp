@@ -84,7 +84,7 @@
     "dev": "pnpm --filter @layerswap/bridge dev",
     "dev:explorer": "pnpm --filter @layerswap/explorer dev",
     "lint": "pnpm lint:widget",
-    "lint:widget": "eslint --config eslint.widget.config.mjs --no-inline-config --max-warnings 0 packages apps/widget-cdn/src examples/widget-react-host/src",
+    "lint:widget": "eslint --config eslint.widget.config.mjs --no-inline-config --max-warnings 0 packages apps/widget-cdn/src apps/widget-cdn/rspack.config.mjs examples/widget-react-host/src",
     "test:lint": "pnpm --filter eslint-plugin-no-conditional-literals-in-jsx test && node --test scripts/widget-lint.test.mjs",
     "build": "pnpm lint:widget && pnpm -r run build",
     "build:packages": "pnpm lint:widget && pnpm --filter './packages/**' run build",
