@@ -92,9 +92,14 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     // id and, via SWR fallbackData below, the swap details — so consumers render
     // with data on first paint instead of a loading state.
     const [swapId, setSwapId] = useState<string | undefined>(initialSettings.swapId?.toString() ?? initialSwapData?.swap.id)
-    // Creation can still require quote confirmation before any wallet action starts.
-    const [walletExecutionSwapId, setWalletExecutionSwapId] = useState<string>()
-    const walletExecutionStarted = !!swapId && walletExecutionSwapId === swapId
+    // A rejected attempt must not compact the quote after the user changes modes.
+    const gaslessEnabled = useGaslessPreferenceStore(state => state.gaslessEnabled)
+    const [walletExecution, setWalletExecution] = useState<{ swapId: string, gaslessEnabled: boolean }>()
+    const walletExecutionStarted = !!swapId && walletExecution?.swapId === swapId
+        && walletExecution.gaslessEnabled === gaslessEnabled
+    const markWalletExecutionStarted = useCallback((swapId: string) => {
+        setWalletExecution({ swapId, gaslessEnabled: useGaslessPreferenceStore.getState().gaslessEnabled })
+    }, [])
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
     const { sourceRoutes, destinationRoutes, networks } = useSettingsState()
     const updateRecentTokens = useRecentNetworksStore(state => state.updateRecentNetworks)
@@ -182,7 +187,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         if (swapBasicData) setSwapBasicFormData(swapBasicData)
         setSwapTransaction(undefined)
         setSwapError(null)
-        setWalletExecutionSwapId(undefined)
+        setWalletExecution(undefined)
         setSwapId(undefined)
     }, [swapBasicData])
 
@@ -426,12 +431,12 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         setDepositAddressIsFromAccount,
         setWithdrawType,
         setSwapId: handleUpdateSwapid,
-        markWalletExecutionStarted: setWalletExecutionSwapId,
+        markWalletExecutionStarted,
         startFreshSwapAttempt,
         setSubmitedFormValues,
         setQuoteLoading,
         setSwapModalOpen
-    }), [createSwap, mutate, mutateDepositActions, handleUpdateSwapid, startFreshSwapAttempt, setSubmitedFormValues]);
+    }), [createSwap, mutate, mutateDepositActions, handleUpdateSwapid, markWalletExecutionStarted, startFreshSwapAttempt, setSubmitedFormValues]);
 
     const stateValue = useMemo(() => ({
         withdrawType,

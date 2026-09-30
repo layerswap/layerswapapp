@@ -73,7 +73,7 @@ const swapBasicData = {
 
 let unsubscribeStore
 beforeEach(() => {
-  useSwapTransactionStore.setState({ swapTransactions: {}, pendingSubmissions: {} })
+  useSwapTransactionStore.setState({ swapTransactions: {}, stepTransactions: {}, pendingSubmissions: {} })
   Object.assign(state, {
     events: [], errors: [], transfers: [], published: [], successes: 0, error: undefined,
     refreshes: [], actionRefreshes: [], reconciled: [], freshAttempts: 0, creations: 0, selectedSwapId: 'swap-1',
@@ -96,7 +96,7 @@ afterEach(() => unsubscribeStore())
 
 async function reloadTransactionStore() {
   const persisted = localStorage.getItem('swapTransactions')
-  useSwapTransactionStore.setState({ swapTransactions: {}, pendingSubmissions: {} })
+  useSwapTransactionStore.setState({ swapTransactions: {}, stepTransactions: {}, pendingSubmissions: {} })
   localStorage.setItem('swapTransactions', persisted)
   await useSwapTransactionStore.persist.rehydrate()
 }
@@ -218,6 +218,7 @@ test('recording a transaction clears its pending submission atomically and prese
     assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, { 'swap-2': true })
     assert.deepEqual(JSON.parse(localStorage.getItem('swapTransactions')).state, {
       swapTransactions: { 'swap-1': { hash: 'hash', status: 'pending', timestamp: transitions[0].transaction.timestamp } },
+      stepTransactions: {},
       pendingSubmissions: { 'swap-2': true },
     })
   } finally {

@@ -18,6 +18,13 @@ export const isSignAction = (action: DepositAction): action is SignDepositAction
 export const isTransferAction = (action: DepositAction): action is TransferDepositAction =>
     action.type === 'transfer' || action.type === 'manual_transfer'
 
+export const getCurrentDepositActionIndex = (actions: DepositAction[], includeWaiting = false): number => {
+    const current = actions.findIndex(action =>
+        action.status === 'action_required' || action.status === 'pending' || action.status === 'failed'
+    )
+    return current === -1 && includeWaiting ? actions.findIndex(action => action.status === 'waiting') : current
+}
+
 export const getActionableDepositAction = (actions: DepositAction[] | undefined): SignDepositAction | TransferDepositAction | undefined => {
     if (!actions?.length) return undefined
 

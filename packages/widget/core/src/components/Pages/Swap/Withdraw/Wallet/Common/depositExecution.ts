@@ -8,7 +8,8 @@ import LayerSwapApiClient, {
     SwapDetails,
     GaslessAuthorizationResult,
 } from "@/lib/apiClients/layerSwapApiClient";
-import { useDepositSignatureStore, useGaslessAuthorizationStore } from "@/stores/swapTransactionStore";
+import { useDepositSignatureStore, useGaslessAuthorizationStore, useSwapTransactionStore } from "@/stores/swapTransactionStore";
+import { getExplorerUrl } from '@/lib/address/explorerUrl';
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 import { isUserRejection } from "./isUserRejection";
 import { TransferProps } from "@layerswap/widget-types";
@@ -42,7 +43,7 @@ import { getActionableDepositAction, isTransferAction, isSignAction } from '@/he
 const isExpiredTransaction = (error: unknown) => (error as Error)?.name === ActionMessageType.TransactionExpired
 
 export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClick: WalletTransfer, action: DepositAction | undefined = getActionableDepositAction(ctx.depositActions)): Promise<string> => {
-    const { swapData, depositActions, swapBasicData, selectedWallet, sourceAddress, layerswapApiClient, setActionStateText, setSwapTransaction, onSuccess, onLifecycle, signal } = ctx
+    const { swapData, swapBasicData, selectedWallet, sourceAddress, layerswapApiClient, setActionStateText, setSwapTransaction, onSuccess, onLifecycle, signal } = ctx
 
     if (!action || !isTransferAction(action)) throw new Error('No transfer action')
     const transferProps = resolveTransactionData(swapData, action, swapBasicData, selectedWallet)
@@ -108,8 +109,17 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
         hash = await requestWallet(refreshedProps, { retriesExpiry: false })
     }
 
-    // Approval is only a prerequisite; the next server action still needs execution.
-    if (action.step === 'approve_permit2') return hash
+    // Save the approval receipt even if the screen closed during the wallet request.
+    // It must not replace the execution transaction or mark the swap as submitted.
+    if (action.step === 'approve_permit2') {
+        useSwapTransactionStore.getState().setStepTransaction(
+            swapData.id,
+            action.step,
+            hash,
+            getExplorerUrl(transferProps.network.transaction_explorer_template, hash),
+        )
+        return hash
+    }
 
     onSuccess()
     setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, hash)

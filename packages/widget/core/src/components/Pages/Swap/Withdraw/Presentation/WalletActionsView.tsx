@@ -10,6 +10,7 @@ import type {
 import {
     getActionableDepositAction,
     getDepositActionLabel,
+    getCurrentDepositActionIndex,
     isDepositWorkflowComplete,
 } from '@/helpers/depositActions';
 import { DepositWorkflowView } from './DepositWorkflowView';
@@ -21,8 +22,9 @@ import { type FC, type ReactNode } from 'react';
 import { ICON_CLASSES_WARNING } from '../../Form/SecondaryComponents/validationError/constants';
 import ErrorDismissButton from '../../Form/SecondaryComponents/validationError/ErrorDismissButton';
 import { ErrorDisplay } from '../../Form/SecondaryComponents/validationError/ErrorDisplay';
-import WalletMessage from '../messages/Message';
+import WalletMessage, { WalletMessageDetails } from '../messages/Message';
 import type { ActionData } from '../Wallet/Common/sharedTypes';
+import type { SwapStepTransactions } from '@/stores/swapTransactionStore';
 export const ChangeNetworkMessage: FC<{
     data: ActionData;
     network: string;
@@ -125,6 +127,8 @@ export type SendTransactionViewProps = SubmitButtonProps & {
     actionStateText?: string;
     actionButtonText?: string;
     depositActions?: DepositAction[];
+    stepTransactions?: SwapStepTransactions;
+    readOnly?: boolean;
     error?: boolean;
     swapError?: boolean;
     swapId?: string;
@@ -150,6 +154,8 @@ export function SendTransactionView({
     actionStateText,
     actionButtonText,
     depositActions,
+    stepTransactions,
+    readOnly,
     error,
     swapError,
     swapId,
@@ -168,25 +174,37 @@ export function SendTransactionView({
 }: SendTransactionViewProps) {
     const isMultiStepWorkflow =
         (depositActions?.filter((action) => !!action.step).length ?? 0) > 1 ||
+        (!!stepTransactions?.approve_permit2?.explorerUrl &&
+            !!depositActions?.some(action => action.step === 'approve_permit2')) ||
         (!!quote?.destination_token &&
             !!depositActions?.some((action) => action.step === 'publish'));
     const workflowCompleted = isDepositWorkflowComplete(depositActions ?? []);
+    const workflowFailed = depositActions?.some(action => action.status === 'failed');
     const actionableAction = getActionableDepositAction(depositActions);
     const primaryActionText = actionableAction
         ? getDepositActionLabel(actionableAction)
         : actionButtonText || 'Swap now';
+    const hasError = error || swapError || gaslessUnavailable;
+    const showStepError = isMultiStepWorkflow && !loading &&
+        getCurrentDepositActionIndex(depositActions?.filter(action => !!action.step) ?? [], true) !== -1;
+    const errorDescription = showStepError && hasError && errorMessage ? (
+        <WalletMessageDetails>{errorMessage}</WalletMessageDetails>
+    ) : undefined;
     const workflowProgress = isMultiStepWorkflow ? (
         <DepositWorkflowView
             actions={depositActions}
+            stepTransactions={stepTransactions}
+            readOnly={readOnly}
             loading={loading}
-            error={error || swapError}
+            error={hasError}
+            errorDescription={errorDescription}
             actionStateText={actionStateText}
             destinationToken={quote?.destination_token}
             receiveAmount={quote?.receive_amount}
         />
     ) : undefined;
     const message =
-        errorMessage && (error || swapError || gaslessUnavailable) ? (
+        !loading && !showStepError && errorMessage && hasError ? (
             <div
                 data-wallet-action-message
                 className={workflowProgress ? 'pt-2' : undefined}
@@ -333,7 +351,7 @@ export function SendTransactionView({
                                 workflowCompleted
                             }
                         >
-                            {error || swapError
+                            {error || swapError || workflowFailed
                                 ? 'Try again'
                                 : workflowCompleted
                                   ? 'Completed'

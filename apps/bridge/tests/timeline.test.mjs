@@ -1610,6 +1610,7 @@ const processingElement = (s) => {
     return React.createElement(ProcessingView, {
         swapBasicData: s.swap, swapDetails: s.details, refuel: s.refuel,
         resolved: phase(s), depositActions: s.depositActions, quote: s.quote,
+        stepTransactions: s.stepTransactions,
         isDepositFlow: s.isDepositFlow,
         transactionHash: input?.transaction_hash || s.storedWalletTransaction?.hash,
         inputConfirmations: input?.confirmations,
@@ -1622,7 +1623,8 @@ test('transaction icons belong to their steps and use the correct network and ha
     const cases = [
         ['wallet-success', 'publishing', [[0, 'input', 'source']]],
         ['wallet-success', 'completed', [[0, 'input', 'source'], [1, 'output', 'destination']]],
-        ['frontend-permit2', 'input', [[2, 'input', 'source']]],
+        ['frontend-permit2', 'input', []],
+        ['frontend-permit2', 'finalizing', [[3, 'input', 'destination']]],
         ['frontend-permit2', 'completed', [[2, 'input', 'source'], [3, 'output', 'destination']]],
         ['refuel', 'complete', [[0, 'input', 'source'], [1, 'output', 'destination'], [2, 'refuel', 'destination']]],
         ['refund', 'refunded', [[0, 'input', 'source'], [2, 'refund', 'source']]],
@@ -1669,6 +1671,184 @@ test('transaction icons belong to their steps and use the correct network and ha
         container.innerHTML = renderToStaticMarkup(processingElement(snapshot));
         assert.equal(container.querySelector('[data-step-transaction]'), null, 'no icon without both a hash and explorer URL');
     }
+});
+
+test('token swaps show a shared execution transaction only on the receive step', () => {
+    for (const scenario of ['frontend-permit2', 'frontend-approved', 'frontend-gasless-success']) {
+        const original = frontendMilestone(scenario, 'completed').snapshot;
+        for (const depositActions of [original.depositActions, undefined]) {
+            const snapshot = {
+                ...original,
+                depositActions,
+                details: { ...original.details, transactions: original.details.transactions.map(transaction => ({
+                    ...transaction, transaction_hash: 'shared-execution-hash',
+                })) },
+            };
+            const container = document.createElement('div');
+            container.innerHTML = renderToStaticMarkup(processingElement(snapshot));
+            const rows = [...container.querySelectorAll('li')];
+            const links = container.querySelectorAll('a[data-step-transaction]');
+            assert.equal(links.length, 1, scenario);
+            assert.equal(links[0].closest('li'), rows.at(-1), 'only the receive step links to the shared execution');
+            assert.equal(links[0].href, 'https://explorer.example.invalid/tx/shared-execution-hash');
+            if (scenario === 'frontend-permit2' && depositActions) {
+                assert.match(rows[0].textContent, /Approve token/);
+                assert.match(rows[1].textContent, /Sign to swap/);
+                assert.match(rows[2].textContent, /Confirm swap/);
+                assert.equal(rows.length, 4, 'the separate approval and signing steps remain');
+            }
+        }
+    }
+});
+
+test('execution links remain available for distinct transactions and incomplete receipts', () => {
+    const original = frontendMilestone('frontend-permit2', 'completed').snapshot;
+    const shared = {
+        ...original,
+        details: { ...original.details, transactions: original.details.transactions.map(transaction => ({
+            ...transaction, transaction_hash: 'shared-execution-hash',
+        })) },
+    };
+    const cases = [
+        ['distinct execution hashes', { ...shared, details: { ...shared.details, transactions: shared.details.transactions.map(transaction => ({
+            ...transaction, transaction_hash: `${transaction.type}-hash`,
+        })) } }, [true, true]],
+        ['different networks', { ...shared, swap: { ...shared.swap, destination_network: {
+            ...shared.swap.destination_network, name: 'OTHER_NETWORK',
+        } } }, [true, true]],
+        ['deposit flow', { ...shared, isDepositFlow: true }, [true, true]],
+        ['deposit address', { ...shared, swap: { ...shared.swap, use_deposit_address: true } }, [true, true]],
+        ['missing output hash', { ...shared, details: { ...shared.details, transactions: shared.details.transactions.map(transaction => ({
+            ...transaction, transaction_hash: transaction.type === 'output' ? '' : transaction.transaction_hash,
+        })) } }, [false, true]],
+        ['missing output explorer', { ...shared, swap: { ...shared.swap, destination_network: {
+            ...shared.swap.destination_network, transaction_explorer_template: '',
+        } } }, [false, true]],
+        ['pending execution', frontendMilestone('frontend-permit2', 'input').snapshot, [false, false]],
+        ['failed receive', { ...shared, details: { ...shared.details, status: 'failed', transactions: shared.details.transactions.filter(transaction => transaction.type === 'input') } }, [false, false]],
+    ];
+    for (const [label, snapshot, expected] of cases) {
+        const container = document.createElement('div');
+        container.innerHTML = renderToStaticMarkup(processingElement(snapshot));
+        const executionRows = [...container.querySelectorAll('li')].slice(-2);
+        assert.deepEqual(executionRows.map(row => !!row.querySelector('a[data-step-transaction]')), expected, label);
+    }
+});
+
+test('approval receipts stay on their own step during wallet execution, processing and completion', () => {
+    const approval = { hash: 'approval-hash', timestamp: 1, explorerUrl: 'https://approval.example.invalid/tx/approval-hash' };
+    for (const milestone of ['approval-pending', 'signing', 'publishing', 'input', 'completed']) {
+        const original = frontendMilestone('frontend-permit2', milestone);
+        const snapshot = { ...original.snapshot, stepTransactions: { approve_permit2: approval } };
+        const container = document.createElement('div');
+        container.innerHTML = renderToStaticMarkup(['input', 'completed'].includes(milestone)
+            ? processingElement(snapshot)
+            : React.createElement(SendTransactionView, {
+                depositActions: snapshot.depositActions, stepTransactions: snapshot.stepTransactions,
+                quote: snapshot.quote, loading: snapshot.wallet.pending, actionStateText: snapshot.wallet.label,
+            }));
+        const rows = container.querySelectorAll('li');
+        const approvalLink = rows[0].querySelector('a[data-step-transaction]');
+        assert.ok(approvalLink, milestone);
+        assert.match(rows[0].textContent, /Approve token/);
+        assert.equal(approvalLink.href, approval.explorerUrl);
+        assert.equal(rows[1].querySelector('a'), null, 'signatures are not transactions');
+        if (milestone === 'input' || milestone === 'completed') {
+            assert.equal(rows[2].querySelector('a'), null, 'shared execution is not linked twice');
+            assert.equal(!!rows[3].querySelector('a[data-step-transaction]'), milestone === 'completed', 'the upcoming receive step has no link');
+        }
+        container.innerHTML = renderToStaticMarkup(preview(snapshot, original.at));
+        const previewLink = container.querySelector('li a[data-step-transaction]');
+        assert.ok(previewLink, milestone);
+        assert.equal(previewLink.hasAttribute('href'), false, 'approval links are inert in previews too');
+    }
+});
+
+test('receive links appear when loading and stay mounted through completion', async () => {
+    const root = createRoot(document.getElementById('root'));
+    const approval = { hash: 'approval-hash', timestamp: 1, explorerUrl: 'https://approval.example.invalid/tx/approval-hash' };
+    try {
+        for (const scenario of ['frontend-permit2', 'frontend-gasless-success']) {
+            const completed = frontendMilestone(scenario, 'completed').snapshot;
+            const input = completed.details.transactions.find(transaction => transaction.type === 'input');
+            for (const depositActions of [completed.depositActions, undefined]) {
+                const snapshot = {
+                    ...completed, depositActions, stepTransactions: { approve_permit2: approval },
+                    storedWalletTransaction: { hash: input.transaction_hash, status: 'pending', timestamp: 1 },
+                };
+                let executionLink;
+                let receiveRow;
+                let approvalLink;
+                for (const [details, hasLink] of [
+                    [{ ...completed.details, status: 'user_transfer_pending', transactions: [] }, false],
+                    [{ ...completed.details, status: 'user_transfer_pending', transactions: [{ ...input, status: 'pending', confirmations: 0 }] }, false],
+                    [{ ...completed.details, transactions: [input] }, true],
+                    [completed.details, true],
+                ]) {
+                    await act(async () => root.render(processingElement({ ...snapshot, details })));
+                    const rows = [...document.querySelectorAll('li')];
+                    const link = rows.at(-1).querySelector('a[data-step-transaction]');
+                    assert.equal(rows.at(-2).querySelector('a[data-step-transaction]'), null, 'the execution step never duplicates the link');
+                    const currentApprovalLink = rows[0].querySelector('a[data-step-transaction]');
+                    assert.equal(currentApprovalLink.href, approval.explorerUrl);
+                    if (approvalLink) assert.equal(currentApprovalLink, approvalLink, 'the approval link remains mounted');
+                    else approvalLink = currentApprovalLink;
+                    if (!hasLink) {
+                        assert.equal(link, null, `${scenario}: the upcoming receive step has no link`);
+                        assert.equal(document.querySelectorAll('a[data-step-transaction]').length, 1, 'the approval link remains available');
+                        continue;
+                    }
+                    assert.ok(link, `${scenario}: the loading or completed receive step has the execution link`);
+                    assert.equal(link.href, `https://explorer.example.invalid/tx/${input.transaction_hash}`);
+                    assert.equal(document.querySelectorAll('a[data-step-transaction]').length, 2, 'approval and execution keep separate links');
+                    if (executionLink) {
+                        assert.equal(link, executionLink, 'the existing execution link stays mounted');
+                        assert.equal(link.closest('li'), receiveRow);
+                        assert.equal(rows[0].querySelector('a[data-step-transaction]'), approvalLink);
+                    } else {
+                        executionLink = link;
+                        receiveRow = rows.at(-1);
+                    }
+                }
+            }
+        }
+    } finally {
+        await act(async () => root.unmount());
+    }
+});
+
+test('saved approval receipts survive missing action history and sign-only processing', () => {
+    const original = frontendMilestone('frontend-permit2', 'completed').snapshot;
+    const approval = { hash: 'approval-hash', timestamp: 1, explorerUrl: 'https://approval.example.invalid/tx/approval-hash' };
+    for (const depositActions of [undefined, [], [{ step: 'sign', status: 'completed' }], [{ step: 'publish', status: 'completed' }]]) {
+        const container = document.createElement('div');
+        container.innerHTML = renderToStaticMarkup(processingElement({
+            ...original, depositActions, stepTransactions: { approve_permit2: approval },
+        }));
+        const rows = [...container.querySelectorAll('li')];
+        assert.equal(rows.length, 3, 'approval, execution and receipt remain visible');
+        assert.equal(rows[0].querySelector('a[data-step-transaction]').href, approval.explorerUrl);
+        assert.match(rows[0].textContent, /Approve token/);
+        assert.equal(rows[1].querySelector('a'), null);
+        assert.ok(rows[2].querySelector('a[data-step-transaction]'));
+        assert.equal(container.querySelectorAll('a[data-step-transaction]').length, 2);
+    }
+});
+
+test('a submitted approval has a step link before the API reveals the rest of the workflow', () => {
+    const original = frontendMilestone('frontend-permit2', 'approval-pending').snapshot;
+    const container = document.createElement('div');
+    container.innerHTML = renderToStaticMarkup(React.createElement(SendTransactionView, {
+        depositActions: original.depositActions.slice(0, 1), loading: true,
+        stepTransactions: { approve_permit2: { hash: 'approval', timestamp: 1, explorerUrl: 'https://approval.example.invalid/tx/approval' } },
+    }));
+    assert.equal(container.querySelectorAll('li').length, 1);
+    assert.equal(container.querySelector('a[data-step-transaction]').href, 'https://approval.example.invalid/tx/approval');
+    container.innerHTML = renderToStaticMarkup(React.createElement(SendTransactionView, {
+        depositActions: original.depositActions.slice(0, 1), loading: true, actionStateText: 'Confirming approval',
+        stepTransactions: { approve_permit2: { hash: 'approval', timestamp: 1, explorerUrl: '' } },
+    }));
+    assert.match(container.textContent, /Confirming approval/, 'a network without an explorer still shows wallet progress');
 });
 
 test('transaction icons expose the View transaction tooltip on keyboard focus', async () => {
@@ -1899,9 +2079,9 @@ test('live sign-only token swaps keep the deposit and delivery receipt through c
             assert.equal(steps.querySelectorAll('.lucide-check').length, 2);
             assert.doesNotMatch(panel.textContent, /Approve token|Sign to swap|Confirm swap/);
             const links = panel.querySelectorAll('a[data-step-transaction]');
-            assert.equal(links.length, 2);
-            assert.ok([...links].every(link => link.closest('li')), 'every transaction link belongs to its receipt row');
-            assert.ok([...links].every(link => link.hasAttribute('href')), 'live links remain usable');
+            assert.equal(links.length, 1);
+            assert.equal(links[0].closest('li'), rows[1], 'the shared transaction belongs to the final receipt row');
+            assert.ok(links[0].hasAttribute('href'), 'the live link remains usable');
         }
     } finally {
         await act(async () => root.unmount());
@@ -2205,21 +2385,25 @@ test('unknown failures keep the generic support message and working support acti
     }
 });
 
-test('frontend rejection and failed-step fixtures distinguish signature errors from transaction errors', () => {
-    for (const [step, message] of [['approve_permit2', 'Transaction rejected'], ['sign', 'Signing rejected'], ['publish', 'Transaction rejected']]) {
+test('frontend errors replace the affected step description and keep retry below the workflow', () => {
+    for (const [step, message] of [['approve_permit2', 'rejected the transaction'], ['sign', 'rejected the signing request'], ['publish', 'rejected the transaction']]) {
         const rejected = fixtureDOM(`frontend-${step}-retry`, 'rejected');
         assert.match(rejected.textContent, new RegExp(message));
         assert.equal(rejected.querySelectorAll('[aria-label="Swap progress"] .lucide-x').length, 1);
         const steps = rejected.querySelector('[data-steps-panel]');
-        const error = rejected.querySelector('[data-wallet-action-message]');
+        const failedStep = steps.querySelector('.lucide-x').closest('li');
+        const error = failedStep.querySelector('[role="alert"]');
         const retry = [...rejected.querySelectorAll('button')].find(button => button.textContent === 'Try again');
         assert.match(error.textContent, new RegExp(message));
-        assert.ok(steps.compareDocumentPosition(error) & dom.window.Node.DOCUMENT_POSITION_FOLLOWING, 'error appears after the steps');
+        assert.ok(failedStep.contains(error), 'error belongs to the failed step description');
+        assert.doesNotMatch(failedStep.textContent, /Allow USDC for this swap|Confirm the swap authorization|Submit the swap transaction/);
         assert.ok(error.compareDocumentPosition(retry) & dom.window.Node.DOCUMENT_POSITION_FOLLOWING, 'error appears before the retry button');
-        assert.equal(rejected.querySelectorAll('[data-wallet-action-message]').length, 1);
+        assert.equal(rejected.querySelectorAll('[data-wallet-action-message]').length, 0, 'no separate error card');
+        assert.equal(rejected.textContent.split(message).length - 1, 1, 'the error is shown once');
         const refresh = fixtureDOM(`frontend-${step}-retry`, 'refresh');
         assert.match(refresh.textContent, /Refreshing swap/);
         assert.equal(refresh.querySelectorAll('[aria-label="Swap progress"] .lucide-x').length, 0);
+        assert.doesNotMatch(refresh.textContent, /rejected the transaction|rejected the signing request/);
     }
     assert.match(fixtureDOM('frontend-errors', 'failed').textContent, /Token approval reverted/);
     const pending = fixtureDOM('frontend-errors', 'pending-error').querySelector('[aria-label="Swap progress"]');

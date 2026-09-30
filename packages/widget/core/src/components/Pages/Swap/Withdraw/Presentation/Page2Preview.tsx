@@ -184,6 +184,7 @@ export function Page2LoadedPreview({
                     swapBasicData={s.swap}
                     swapDetails={s.details}
                     depositActions={s.depositActions}
+                    stepTransactions={s.stepTransactions}
                     quote={s.quote}
                     refuel={s.refuel}
                     resolved={resolved}
@@ -526,6 +527,8 @@ function PreviewWallet({ snapshot: s }: { snapshot: Page2LoadedSnapshot }) {
                     }
                     swapId={s.swapId}
                     depositActions={s.depositActions}
+                    stepTransactions={s.stepTransactions}
+                    readOnly
                     quote={s.quote}
                     quoteIsLoading={s.quoteState.status === 'loading'}
                     quoteError={s.quoteState.status === 'error'}

@@ -52,6 +52,9 @@ const Processing: FC<Props> = ({
     const storedWalletTransaction = useSwapTransactionStore((state) =>
         swapDetails?.id ? state.swapTransactions[swapDetails.id] : undefined,
     );
+    const stepTransactions = useSwapTransactionStore((state) =>
+        swapDetails?.id ? state.stepTransactions[swapDetails.id] : undefined,
+    );
     // Gasless deposit broadcast tx (from the /authorize poll) — surfaces the hash + confirmations
     // before the swap's own input transaction appears.
     const gaslessAuthTx = useGaslessAuthorizationStore((state) =>
@@ -260,6 +263,7 @@ const Processing: FC<Props> = ({
             swapBasicData={swapBasicData}
             swapDetails={swapDetails}
             depositActions={depositActionsResponse}
+            stepTransactions={stepTransactions}
             quote={quote}
             refuel={refuel}
             resolved={resolved}

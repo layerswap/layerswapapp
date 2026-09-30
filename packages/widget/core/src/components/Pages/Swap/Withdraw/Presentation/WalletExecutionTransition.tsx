@@ -42,6 +42,7 @@ export function WalletExecutionTransition({
                 kind="controls"
                 reducedMotion={reducedMotion}
                 animate={animate}
+                className={workflow ? 'pt-1' : undefined}
             >
                 {controls}
             </ExecutionPanel>
@@ -66,11 +67,13 @@ function ExecutionPanel({
     kind,
     reducedMotion,
     animate,
+    className,
 }: {
     children: ReactNode;
     kind: 'overview' | 'workflow' | 'controls';
     reducedMotion: boolean;
     animate: boolean;
+    className?: string;
 }) {
     const isPresent = useIsPresent();
 
@@ -101,7 +104,7 @@ function ExecutionPanel({
             aria-hidden={!isPresent}
             inert={!isPresent}
         >
-            <div className="flex w-full flex-col gap-2">{children}</div>
+            <div className={`flex w-full flex-col gap-2 ${className ?? ''}`}>{children}</div>
         </motion.div>
     );
 }

@@ -6,8 +6,21 @@ import {
 } from '@/components/shadcn/accordion';
 import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
-import { FC } from 'react';
+import { createContext, useContext, type FC, type ReactNode } from 'react';
 import FailIcon from '../../../../Icons/FailIcon';
+
+const InlineWalletMessageContext = createContext(false);
+
+/** Render the existing message slot as a step description, without another card. */
+export function WalletMessageDetails({ children }: { children: ReactNode }) {
+    return (
+        <InlineWalletMessageContext.Provider value={true}>
+            <div role="alert" className="wrap-anywhere">
+                {children}
+            </div>
+        </InlineWalletMessageContext.Provider>
+    );
+}
 
 export type WalletMessageProps = {
     header: string;
@@ -15,6 +28,9 @@ export type WalletMessageProps = {
     status: 'pending' | 'error';
 };
 const WalletMessage: FC<WalletMessageProps> = ({ header, details, status }) => {
+    const inline = useContext(InlineWalletMessageContext);
+    if (inline) return <>{details || header}</>;
+
     return (
         <>
             <motion.div
@@ -54,6 +70,7 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status }) => {
 export const WalletUnknownError: FC<{ expanded?: boolean }> = ({
     expanded,
 }) => {
+    const inline = useContext(InlineWalletMessageContext);
     return (
         <div className="text-left space-y-1 w-full max-w-2xl rounded-2xl ">
             <Accordion
@@ -66,18 +83,22 @@ export const WalletUnknownError: FC<{ expanded?: boolean }> = ({
                 }
                 type="single"
                 collapsible
-                className="rounded-2xl bg-secondary-500 overflow-hidden"
+                className={inline ? undefined : 'rounded-2xl bg-secondary-500 overflow-hidden'}
             >
                 <AccordionItem value="wallet-message">
-                    <AccordionTrigger className="flex justify-between w-full gap-2 items-center px-2 py-3 bg-secondary-400 rounded-2xl group">
-                        <div className="shrink-0 p-0.5 self-start">
-                            <FailIcon className="h-5 w-5" />
-                        </div>
+                    <AccordionTrigger className={`flex justify-between w-full gap-2 items-center group ${inline ? 'text-xs leading-4' : 'px-2 py-3 bg-secondary-400 rounded-2xl'}`}>
+                        {!inline && (
+                            <div className="shrink-0 p-0.5 self-start">
+                                <FailIcon className="h-5 w-5" />
+                            </div>
+                        )}
                         <div className="flex flex-col gap-1 items-start">
-                            <p className="text-white font-medium leading-4 text-base">
-                                Wallet error
-                            </p>
-                            <p className="text-sm text-secondary-text text-left wrap-anywhere whitespace-pre-wrap">
+                            {!inline && (
+                                <p className="text-white font-medium leading-4 text-base">
+                                    Wallet error
+                                </p>
+                            )}
+                            <p className={`${inline ? 'text-xs' : 'text-sm'} text-secondary-text text-left wrap-anywhere whitespace-pre-wrap`}>
                                 An error occurred, the swap wasn’t initiated
                                 your assets were not moved.
                             </p>
@@ -85,8 +106,8 @@ export const WalletUnknownError: FC<{ expanded?: boolean }> = ({
                         <ChevronDown className="h-4 w-4 self-start shrink-0 text-primary-text transition-transform duration-200 group-aria-expanded:rotate-180" />
                     </AccordionTrigger>
                     <AccordionContent>
-                        <div className="text-left space-y-1 bg-secondary-500 px-10 py-3">
-                            <div className="text-sm text-secondary-text wrap-anywhere whitespace-pre-wrap">
+                        <div className={`text-left space-y-1 ${inline ? 'pt-2' : 'bg-secondary-500 px-10 py-3'}`}>
+                            <div className={`${inline ? 'text-xs' : 'text-sm'} text-secondary-text wrap-anywhere whitespace-pre-wrap`}>
                                 <span>Try one of the following:</span>
                                 <ul className="list-outside pl-6 list-disc">
                                     <li>Reconnect your wallet</li>

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { BackendTransactionStatus, GaslessAuthorizationStatus, GaslessAuthorizationTransaction, TransactionStatus } from '../lib/apiClients/layerSwapApiClient';
+import { BackendTransactionStatus, type DepositActionStep, GaslessAuthorizationStatus, GaslessAuthorizationTransaction, TransactionStatus } from '../lib/apiClients/layerSwapApiClient';
 
 export type SwapTransaction = {
     hash: string;
@@ -9,8 +9,18 @@ export type SwapTransaction = {
     timestamp: number;
 };
 
+export type SwapStepTransaction = Pick<SwapTransaction, 'hash' | 'timestamp'> & {
+    explorerUrl: string;
+};
+
+export type SwapStepTransactions = Partial<Record<DepositActionStep, SwapStepTransaction>>;
+
 type SwapTransactionStore = {
+    // Keep the execution record and persisted shape used by status, history and retry guards.
     swapTransactions: Record<string, SwapTransaction>;
+    // Prerequisite receipts are display history, never evidence of a submitted swap.
+    stepTransactions: Record<string, SwapStepTransactions>;
+    setStepTransaction: (id: string, step: DepositActionStep, hash: string, explorerUrl: string) => void;
     // Provider requests whose outcome is unknown; these must be reconciled before retrying.
     pendingSubmissions: Record<string, true>;
     markSubmissionPending: (Id: string) => void;
@@ -69,7 +79,20 @@ export const useSwapTransactionStore = create(
     persist<SwapTransactionStore>(
         (set) => ({
             swapTransactions: {},
+            stepTransactions: {},
             pendingSubmissions: {},
+            setStepTransaction: (id, step, hash, explorerUrl) => {
+                if (!hash) return;
+                set(state => ({
+                    stepTransactions: {
+                        ...state.stepTransactions,
+                        [id]: {
+                            ...state.stepTransactions[id],
+                            [step]: { hash, explorerUrl, timestamp: Date.now() },
+                        },
+                    },
+                }));
+            },
             markSubmissionPending: (Id) => {
                 set((state) => ({
                     pendingSubmissions: { ...state.pendingSubmissions, [Id]: true },

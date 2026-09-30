@@ -2100,7 +2100,7 @@ const frontendScenarios: TimelineScenario[] = [
                 }),
                 description:
                     milestone.id === 'completed'
-                        ? 'A sign-only gasless swap retains the same deposit and delivery steps through completion; each transaction link stays in its step.'
+                        ? 'A sign-only gasless swap retains the deposit and delivery steps through completion; the shared execution transaction links from the delivery step.'
                         : milestone.description,
             })),
         ],

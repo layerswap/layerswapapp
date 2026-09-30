@@ -83,7 +83,7 @@ export default class LayerSwapApiClient {
         let uri = LayerSwapApiClient.apiBaseEndpoint + "/api/v2" + endpoint;
         return await this._authInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
             .then(res => {
-                finishTelemetry(res?.data?.error ? 'failed' : 'succeeded', { http_status: res?.status })
+                finishTelemetry(res?.data?.error ? 'failed' : 'succeeded', { http_status: res?.status }, res?.data?.data)
                 return res?.data;
             })
             .catch(async reason => {

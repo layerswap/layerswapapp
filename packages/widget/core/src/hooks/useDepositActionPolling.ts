@@ -4,6 +4,7 @@ import type { ApiResponse } from '@/Models/ApiResponse'
 import LayerSwapApiClient, { type DepositAction, type GaslessAuthorizationResult } from '@/lib/apiClients/layerSwapApiClient'
 import { getActionableDepositAction, isDepositWorkflowComplete } from '@/helpers/depositActions'
 import { isGaslessAuthorizationSubmitted, isGaslessDepositWorkflow } from '@/helpers/gasless'
+import { useDepositSignatureStore, useGaslessAuthorizationStore } from '@/stores/swapTransactionStore'
 import { useClientLayoutEffect } from './useClientLayoutEffect'
 
 const client = new LayerSwapApiClient()
@@ -107,6 +108,29 @@ export function useDepositActionPolling(swapId: string | undefined, sourceAddres
                     resolve({ actions, authorization: result })
                 } else if (result && (['expired', 'insufficient', 'rejected'].includes(result.status)
                     || result.transaction?.status === 'failed')) {
+                    if (['expired', 'insufficient', 'rejected'].includes(result.status)) {
+                        const signatures = useDepositSignatureStore.getState()
+                        const signature = signatures.signatures[activeSwapId]
+                        // Classify the accepted signature before clearing it so the
+                        // resolved status and retry guard see the same terminal result.
+                        useGaslessAuthorizationStore.setState(state => {
+                            const current = state.authorizations[activeSwapId]
+                            return {
+                                authorizations: {
+                                    ...state.authorizations,
+                                    [activeSwapId]: {
+                                        ...current,
+                                        kind: 'gasless',
+                                        validBefore: current?.validBefore ?? signature?.validBefore ?? Math.floor(Date.now() / 1000),
+                                        status: result.status,
+                                        // Omitted transaction data cannot erase a known submission.
+                                        transaction: result.transaction ?? current?.transaction ?? null,
+                                    },
+                                },
+                            }
+                        })
+                        signatures.removeDepositSignature(activeSwapId)
+                    }
                     fail(new Error(`The swap authorization failed: ${result.status}`))
                 }
             }

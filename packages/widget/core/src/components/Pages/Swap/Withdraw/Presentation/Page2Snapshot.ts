@@ -10,7 +10,7 @@ import type {
     QuoteReward,
     TransactionStatus,
 } from '@/lib/apiClients/layerSwapApiClient';
-import type { SwapTransaction } from '@/stores/swapTransactionStore';
+import type { SwapStepTransactions, SwapTransaction } from '@/stores/swapTransactionStore';
 import type { RecipientPresentation } from '@/components/Common/RecipientAddressView';
 import type { ActionMessageType, Refuel } from '@layerswap/widget-types';
 
@@ -93,6 +93,7 @@ export type Page2LoadedSnapshot = {
         | { kind: 'gas' };
     rpc?: { pending: boolean; status: 'idle' | 'success' | 'error' };
     storedWalletTransaction?: SwapTransaction;
+    stepTransactions?: SwapStepTransactions;
     inputTxStatusFromApi?: TransactionStatus;
     gaslessAuthorization?: GaslessAuthorizationResult;
 };

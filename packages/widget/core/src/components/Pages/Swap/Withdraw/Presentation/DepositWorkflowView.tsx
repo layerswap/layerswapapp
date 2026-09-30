@@ -5,15 +5,19 @@ import { truncateDecimals } from '@/components/utils/RoundDecimals';
 import {
     getDepositActionDescription,
     getDepositActionLabel,
+    getCurrentDepositActionIndex,
 } from '@/helpers/depositActions';
 import Steps, { StepsPanel } from '../Processing/StepsComponent';
 import { ProgressStatus, type StatusStep } from '../Processing/types';
 import { TransferStatusHeader } from './TransferStatusHeader';
+import type { SwapStepTransactions } from '@/stores/swapTransactionStore';
 
 export function DepositWorkflowView({
     actions,
+    stepTransactions,
     loading,
     error,
+    errorDescription,
     actionStateText,
     destinationToken,
     receiveAmount,
@@ -22,8 +26,10 @@ export function DepositWorkflowView({
     readOnly,
 }: {
     actions?: DepositAction[];
+    stepTransactions?: SwapStepTransactions;
     loading?: boolean;
     error?: boolean;
+    errorDescription?: StatusStep['description'];
     actionStateText?: string;
     destinationToken?: Token;
     receiveAmount?: number;
@@ -44,22 +50,16 @@ export function DepositWorkflowView({
     };
 }) {
     const workflowActions = actions?.filter((action) => !!action.step) ?? [];
+    if ((processing || completed) && stepTransactions?.approve_permit2 &&
+        !workflowActions.some(action => action.step === 'approve_permit2')) {
+        workflowActions.unshift({ step: 'approve_permit2', status: 'completed' });
+    }
     const hasDeliveryStep =
         !!destinationToken &&
         workflowActions.some((action) => action.step === 'publish');
-    let currentStepIndex = workflowActions.findIndex(
-        (action) =>
-            action.status === 'action_required' ||
-            action.status === 'pending' ||
-            action.status === 'failed',
-    );
     // Between signing and publication the backend is preparing a waiting step.
     // Keep that status attached to the step when there is no wallet prompt yet.
-    if (currentStepIndex === -1 && loading) {
-        currentStepIndex = workflowActions.findIndex(
-            (action) => action.status === 'waiting',
-        );
-    }
+    const currentStepIndex = getCurrentDepositActionIndex(workflowActions, !!loading || !!error);
     const currentStepHasError =
         !loading &&
         error &&
@@ -80,12 +80,16 @@ export function DepositWorkflowView({
             (!!loading || action.status === 'pending'),
         description:
             action.status === 'failed'
-                ? action.detail
+                ? action.detail || errorDescription
                 : index === currentStepIndex
-                  ? (loading || action.status === 'pending'
+                  ? errorDescription || (loading || action.status === 'pending'
                         ? actionStateText
                         : undefined) || getDepositActionDescription(action)
                   : undefined,
+        explorerUrl: action.step === 'approve_permit2'
+            ? stepTransactions?.[action.step]?.explorerUrl
+            : undefined,
+        readOnly,
         index: index + 1,
     }));
     if (processing || completed) {
@@ -107,7 +111,7 @@ export function DepositWorkflowView({
                 explorerUrl:
                     action.step === 'publish'
                         ? processing?.inputExplorerUrl
-                        : undefined,
+                        : steps[index].explorerUrl,
                 readOnly,
             };
         });
@@ -125,7 +129,7 @@ export function DepositWorkflowView({
             index: steps.length + 1,
         });
     }
-    if (steps.length <= 1 && !completed) return null;
+    if (steps.length <= 1 && !completed && !steps.some(step => step.explorerUrl)) return null;
     const currentStep = steps.find(
         (step) =>
             step.status === ProgressStatus.Current ||

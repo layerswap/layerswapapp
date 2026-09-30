@@ -24,6 +24,8 @@ import {
 } from '../Processing/types';
 import { DepositWorkflowView } from './DepositWorkflowView';
 import shortenString from '@/components/utils/ShortenString';
+import type { SwapStepTransactions } from '@/stores/swapTransactionStore';
+import { getDepositActionLabel } from '@/helpers/depositActions';
 
 export function ProcessingView({
     swapBasicData,
@@ -40,6 +42,7 @@ export function ProcessingView({
     onGetHelp,
     readOnly,
     depositActions,
+    stepTransactions,
     quote,
 }: {
     swapBasicData: SwapBasicData;
@@ -56,6 +59,7 @@ export function ProcessingView({
     onGetHelp?: () => void;
     readOnly?: boolean;
     depositActions?: DepositAction[];
+    stepTransactions?: SwapStepTransactions;
     quote?: SwapQuote;
 }) {
     const { source_network, destination_network, destination_token } =
@@ -73,11 +77,27 @@ export function ProcessingView({
     const swapRefundTransaction = swapDetails.transactions.find(
         (t) => t.type === TransactionType.Refund,
     );
-    const inputExplorerUrl = getExplorerUrl(input_tx_explorer, transactionHash);
-    const outputExplorerUrl = getExplorerUrl(
-        output_tx_explorer,
-        swapOutputTransaction?.transaction_hash,
-    );
+    // Same-network swaps already have their execution hash while the output
+    // receipt is still being polled. Its link belongs only to the receive step.
+    const sharesExecutionTransaction =
+        !isDepositFlow &&
+        !swapBasicData.use_deposit_address &&
+        source_network.name === destination_network.name &&
+        (!swapOutputTransaction?.transaction_hash ||
+            transactionHash === swapOutputTransaction.transaction_hash);
+    const inputExplorerUrl = sharesExecutionTransaction
+        ? undefined
+        : getExplorerUrl(input_tx_explorer, transactionHash);
+    const showReceiveTransaction =
+        resolved.stepStatuses.output_transfer === ProgressStatus.Current ||
+        resolved.stepStatuses.output_transfer === ProgressStatus.Delayed ||
+        resolved.stepStatuses.output_transfer === ProgressStatus.Complete;
+    const outputExplorerUrl = showReceiveTransaction
+        ? getExplorerUrl(
+            output_tx_explorer || (sharesExecutionTransaction ? input_tx_explorer : undefined),
+            swapOutputTransaction?.transaction_hash || (sharesExecutionTransaction ? transactionHash : undefined),
+        )
+        : undefined;
     const refuelExplorerUrl = getExplorerUrl(
         output_tx_explorer,
         swapRefuelTransaction?.transaction_hash,
@@ -347,6 +367,21 @@ export function ProcessingView({
                 index: 4,
             },
         ];
+        const approval = stepTransactions?.approve_permit2;
+        if (approval) {
+            const approvalAction = depositActions?.find(action => action.step === 'approve_permit2');
+            allSteps.unshift({
+                name: getDepositActionLabel({ step: 'approve_permit2' }),
+                status: approvalAction?.status === 'failed'
+                    ? ProgressStatus.Failed
+                    : approvalAction?.status === 'completed' || transactionHash
+                      ? ProgressStatus.Complete
+                      : ProgressStatus.Current,
+                explorerUrl: approval.explorerUrl,
+                readOnly,
+                index: 0,
+            });
+        }
         const current = allSteps.filter(
             (s) => s.status && s.status !== ProgressStatus.Removed,
         );
@@ -364,6 +399,9 @@ export function ProcessingView({
         outputExplorerUrl,
         refuelExplorerUrl,
         refundExplorerUrl,
+        stepTransactions,
+        depositActions,
+        transactionHash,
         readOnly,
     ]);
 
@@ -400,6 +438,7 @@ export function ProcessingView({
         return (
             <DepositWorkflowView
                 actions={depositActions}
+                stepTransactions={stepTransactions}
                 readOnly={readOnly}
                 destinationToken={destination_token}
                 receiveAmount={

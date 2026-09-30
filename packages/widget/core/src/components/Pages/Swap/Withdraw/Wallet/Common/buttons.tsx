@@ -233,6 +233,9 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const storedWalletTransaction = useSwapTransactionStore(
         state => swapId ? state.swapTransactions[swapId] : undefined,
     )
+    const stepTransactions = useSwapTransactionStore(
+        state => swapId ? state.stepTransactions[swapId] : undefined,
+    )
     const gaslessAuthorization = useGaslessAuthorizationStore(
         state => swapId ? state.authorizations[swapId] : undefined,
     )
@@ -306,9 +309,18 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         const signal = executionScope.current?.signal
         if (!signal || signal.aborted || executionInFlight.current) return
         executionInFlight.current = true
-        // Explicit mode changes can start a new swap before execution has progressed.
-        // Ordinary wallet retries reuse the swap with freshly fetched deposit actions.
-        const forceNewSwap = (requestFreshSwap || flowPreferenceChanged) && !hasProgress
+        // A backend-failed workflow (including an expired quote) needs a new swap.
+        // Wallet rejections leave actions actionable and still retry the same swap.
+        // Read submission markers at click time; they may have arrived since render.
+        const workflowFailed = depositActions?.some(action => action.status === 'failed')
+        const forceNewSwap = (requestFreshSwap || flowPreferenceChanged || workflowFailed)
+            && !hasSwapExecutionProgress({
+                swapDetails,
+                depositActions,
+                storedWalletTransaction: swapId ? useSwapTransactionStore.getState().swapTransactions[swapId] : undefined,
+                gaslessAuthorization: swapId ? useGaslessAuthorizationStore.getState().authorizations[swapId] : undefined,
+                depositSignature: swapId ? useDepositSignatureStore.getState().signatures[swapId] : undefined,
+            })
         let executionSwapId = forceNewSwap ? undefined : swapId
         try {
             if (!selectedSourceAccount) {
@@ -598,6 +610,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             actionStateText={actionStateText}
             actionButtonText={actionButtonText}
             depositActions={depositActions}
+            stepTransactions={stepTransactions}
             error={error}
             swapError={!!swapError}
             swapId={swapId}
