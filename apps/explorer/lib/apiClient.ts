@@ -1,4 +1,4 @@
-import type { ApiResponse } from "@layerswap/widget/types";
+import type { ApiResponse } from "@layerswap/widget-types";
 
 const DEFAULT_API_URL = "https://api.layerswap.io";
 

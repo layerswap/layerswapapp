@@ -1,4 +1,4 @@
-import { ApiError } from "./ApiError";
+import type { ApiError } from "./ApiError";
 
 export class EmptyApiResponse {
     constructor(error?: ApiError) {

@@ -13,6 +13,8 @@ export type {
 export { NetworkType } from './network';
 export type { Refuel, AvailableSourceNetworkTypes } from './network';
 export { SwapStatus } from './SwapStatus';
+export { LSAPIKnownErrorCode, type ApiError } from './ApiError';
+export { ApiResponse, EmptyApiResponse } from './ApiResponse';
 export {
   SWAP_LIFECYCLE_PHASE_STEPS, SWAP_LIFECYCLE_TRANSACTION_STEPS, SWAP_LIFECYCLE_REPEATABLE_STEPS,
   SWAP_LIFECYCLE_ATTEMPT_START_STEPS, SWAP_LIFECYCLE_TRACKING_STEPS,
