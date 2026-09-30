@@ -1,6 +1,6 @@
 import React, { Context, useCallback, useState } from 'react'
 import type { JSX } from 'react'
-import { LSAPIKnownErrorCode } from '../Models/ApiError';
+import type { LSAPIKnownErrorCode } from '@layerswap/widget-types';
 import { Steps } from '../Models/Wizard';
 
 const FormWizardStateContext = React.createContext<WizardProvider<any> | null>(null);

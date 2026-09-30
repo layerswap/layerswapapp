@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import useSWR from 'swr'
 import LayerSwapApiClient, { Quote } from '../lib/apiClients/layerSwapApiClient'
-import { ApiResponse } from '../Models/ApiResponse'
+import type { ApiResponse } from '@layerswap/widget-types'
 import { buildQuoteUrl, validDestinationAddress } from './useFee'
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
 

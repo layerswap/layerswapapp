@@ -5,7 +5,7 @@ import { Clock } from "lucide-react"
 import LayerSwapApiClient, { Campaign, Reward, RewardPayout } from "@/lib/apiClients/layerSwapApiClient"
 import { RewardsComponentSceleton } from "@/components/Common/Sceletons"
 import useSWR from "swr"
-import { ApiResponse } from "@/Models/ApiResponse"
+import type { ApiResponse } from "@layerswap/widget-types"
 import ClickTooltip from "@/components/Common/ClickTooltip"
 import { Progress } from "@/components/shadcn/progressBar";
 import useWallet from "@/hooks/useWallet";
