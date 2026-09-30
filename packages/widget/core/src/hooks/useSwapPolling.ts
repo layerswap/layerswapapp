@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 import useSWR from 'swr'
 import LayerSwapApiClient, { type SwapResponse } from '@/lib/apiClients/layerSwapApiClient'
-import type { ApiResponse } from '@/Models/ApiResponse'
+import type { ApiResponse } from '@layerswap/widget-types'
 import { resolveSwapPollingInterval, SWAP_POLL_DEDUPE_MS } from '@/lib/swapPollingPolicy'
 
 const client = new LayerSwapApiClient()

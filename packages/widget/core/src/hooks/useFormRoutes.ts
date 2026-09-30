@@ -1,7 +1,7 @@
 'use client'
 import useSWR from "swr";
 import { useEffect, useMemo, useState } from "react";
-import { ApiResponse } from "../Models/ApiResponse";
+import type { ApiResponse } from "@layerswap/widget-types";
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import { useInitialSettings, useSettingsState } from "../context/settings";
 import { NetworkElement, RowElement, NetworkTokenElement, TitleElement, GroupedTokenElement, TokenSceletonElement } from "../Models/Route";

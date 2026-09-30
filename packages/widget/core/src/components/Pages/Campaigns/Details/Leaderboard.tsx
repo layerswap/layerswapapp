@@ -3,7 +3,7 @@ import { FC, useMemo, useState } from "react"
 import LayerSwapApiClient, { Campaign, Leaderboard, Reward } from "@/lib/apiClients/layerSwapApiClient"
 import { RewardsComponentLeaderboardSceleton } from "@/components/Common/Sceletons"
 import useSWR from "swr"
-import { ApiResponse } from "@/Models/ApiResponse"
+import type { ApiResponse } from "@layerswap/widget-types"
 import ClickTooltip from "@/components/Common/ClickTooltip"
 import { truncateDecimals } from "@layerswap/utils"
 import { AddressIcon } from "@layerswap/ui-kit";

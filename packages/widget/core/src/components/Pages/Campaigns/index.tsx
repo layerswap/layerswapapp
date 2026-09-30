@@ -1,7 +1,7 @@
 'use client'
 import { Gift } from "lucide-react";
 import { FC } from "react";
-import { ApiResponse } from "@/Models/ApiResponse";
+import type { ApiResponse } from "@layerswap/widget-types";
 import LayerSwapApiClient, { Campaign } from "@/lib/apiClients/layerSwapApiClient";
 import SpinIcon from "@/components/Icons/spinIcon";
 import useSWR from 'swr'

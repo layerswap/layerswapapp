@@ -1,7 +1,7 @@
 'use client'
 import useSWR from "swr";
 import { resolveExchangeHistoricalNetworksURL } from "@/helpers/routes";
-import { ApiResponse } from "@/Models/ApiResponse";
+import type { ApiResponse } from "@layerswap/widget-types";
 import { ExchangeNetwork } from "@/Models/Exchange";
 import { useMemo } from "react";
 import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";

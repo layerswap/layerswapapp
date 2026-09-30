@@ -3,7 +3,7 @@ import { ArrowDown, Fuel } from "lucide-react";
 import { FC, ReactNode } from "react";
 import { truncateDecimals } from "@layerswap/utils";
 import LayerSwapApiClient, { Quote, SwapBasicData, SwapResponse } from "@/lib/apiClients/layerSwapApiClient";
-import { ApiResponse } from "@/Models/ApiResponse";
+import type { ApiResponse } from "@layerswap/widget-types";
 import { Partner } from "@/Models/Partner";
 import useSWR from 'swr'
 import { useInitialSettings } from "@/context/settings";

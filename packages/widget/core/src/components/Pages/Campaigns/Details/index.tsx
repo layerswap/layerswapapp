@@ -3,7 +3,7 @@ import { FC, useCallback } from "react"
 import { Gift } from "lucide-react"
 import LayerSwapApiClient, { Campaign } from "@/lib/apiClients/layerSwapApiClient"
 import useSWR from "swr"
-import { ApiResponse } from "@/Models/ApiResponse"
+import type { ApiResponse } from "@layerswap/widget-types"
 import SubmitButton from "@/components/Buttons/submitButton";
 import { ImageWithFallback, WalletIcon } from "@layerswap/ui-kit";
 import LinkWrapper from "@/components/Common/LinkWrapper";

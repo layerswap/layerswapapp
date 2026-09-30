@@ -43,7 +43,8 @@
     "clsx": "^2.1.1",
     "cmdk": "^0.2.0",
     "color": "4.2.3",
-    "framer-motion": "^12.26.2",
+    "framer-motion": "12.34.5",
+    "copy-to-clipboard": "^3.3.3",
     "lucide-react": "^0.379.0",
     "radix-ui": "^1.4.3",
     "react-qrcode-logo": "4.1.0"

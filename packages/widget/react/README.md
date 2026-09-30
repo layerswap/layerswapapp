@@ -35,6 +35,11 @@ export function App() {
   from the fixed CDN source without redeploying your app. Exact build pinning is
   not supported.
 
+Internally, widget telemetry identifies the rendered form as `cross-chain`,
+`exchange`, `deposit-address`, `deposit-widget-address`, or
+`deposit-widget-wallet`. These values describe the active flow and are not
+configuration options for the React package.
+
 ## Deposit widget
 
 Use `LayerswapDepositWidget` to fund a fixed destination. You choose the network,
