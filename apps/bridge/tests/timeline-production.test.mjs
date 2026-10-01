@@ -36,13 +36,14 @@ function loadSource(path, imports = {}) {
     return module.exports;
 }
 
-function loadDepositActionPolling(api, stores) {
+function loadDepositActionPolling(api, stores, swapContext) {
     return loadSource('hooks/useDepositActionPolling.ts', {
         swr: { default: useSWR, useSWRConfig },
         '@/lib/apiClients/layerSwapApiClient': api,
         '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
         '@/helpers/gasless': gasless,
         '@/stores/swapTransactionStore': stores,
+        '@/context/swap': swapContext,
         './useClientLayoutEffect': { useClientLayoutEffect: React.useLayoutEffect },
     });
 }
@@ -112,7 +113,7 @@ test('switching gasless mode preserves the live execution lock while swap creati
         '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: noop }) },
         '@/lib/swapLifecycle': { lifecycleContextFromSwap: () => ({}) },
         '@/hooks/useTransferBlocked': { useTransferBlocked: noop },
-        '@/hooks/useDepositActionPolling': loadDepositActionPolling({ default: class {} }, stores),
+        '@/hooks/useDepositActionPolling': loadDepositActionPolling({ default: class {} }, stores, swapHooks),
         '@/hooks/useClientLayoutEffect': { useClientLayoutEffect: React.useLayoutEffect },
         '@/helpers/swapProgress': { hasSwapExecutionProgress: () => false },
         '@/helpers/gasless': gasless,
@@ -1155,7 +1156,7 @@ for (const failure of ['rejected', 'failed']) {
             ...controllerImports,
             '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: noop }) },
             '@/hooks/useClientLayoutEffect': { useClientLayoutEffect: React.useLayoutEffect },
-            '@/hooks/useDepositActionPolling': loadDepositActionPolling(harness.api, stores),
+            '@/hooks/useDepositActionPolling': loadDepositActionPolling(harness.api, stores, harness.context),
             '@/helpers/swapProgress': loadSource('helpers/swapProgress.ts', {
                 './gasless': gasless,
                 '@layerswap/widget-types': loadSource('../../types/src/SwapStatus.ts'),

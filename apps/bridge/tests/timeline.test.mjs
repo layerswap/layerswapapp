@@ -1908,8 +1908,8 @@ test('token swap timeline keeps wallet steps through confirmations and delivery'
     assert.equal(submitted.querySelectorAll('li').length, 4);
     assert.equal(submitted.querySelectorAll('.lucide-check').length, 2);
     assert.match(submitted.textContent, /Step 3 of 4: Confirm swap/);
-    assert.match(submitted.textContent, /Confirmations 3\/12/);
-    assert.doesNotMatch(submitted.textContent, /\[object Object\]/);
+    assert.match(submitted.textContent, /Confirming transaction/);
+    assert.doesNotMatch(submitted.textContent, /Confirmations|\[object Object\]/);
 
     const finalizing = fixtureDOM('frontend-permit2', 'finalizing');
     assert.equal(finalizing.querySelector('[role="progressbar"]').parentElement.textContent, 'Swap in progress');
