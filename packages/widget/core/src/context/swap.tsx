@@ -3,9 +3,9 @@ import { Context, useCallback, useEffect, useState, createContext, useContext, u
 import LayerSwapApiClient, { BackendTransactionStatus, CreateSwapParams, PublishedSwapTransactions, SwapTransaction, TransactionStatus, WithdrawType, SwapResponse, DepositAction, SwapBasicData, SwapQuote, SwapDetails, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
 import { InitialSettings } from '@/Models/InitialSettings';
 import useSWR, { KeyedMutator } from 'swr';
-import { ApiResponse } from '@/Models/ApiResponse';
+import type { ApiResponse } from '@layerswap/widget-types';
 import { Partner } from '@/Models/Partner';
-import { ApiError } from '@/Models/ApiError';
+import type { ApiError } from '@layerswap/widget-types';
 import useWallet from '@/hooks/useWallet';
 import { Network } from '@layerswap/widget-types';
 import { useSettingsState } from './settings';

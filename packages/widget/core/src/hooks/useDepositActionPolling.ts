@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
-import type { ApiResponse } from '@/Models/ApiResponse'
+import type { ApiResponse } from '@layerswap/widget-types'
 import LayerSwapApiClient, { type DepositAction, type GaslessAuthorizationResult } from '@/lib/apiClients/layerSwapApiClient'
 import { getActionableDepositAction, isDepositWorkflowComplete } from '@/helpers/depositActions'
 import { isGaslessAuthorizationSubmitted, isGaslessDepositWorkflow } from '@/helpers/gasless'

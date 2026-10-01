@@ -1,6 +1,5 @@
 import { isUserRejection } from '@layerswap/wallet-core/errors'
-import type { TransferProps } from '@layerswap/widget-types'
-import type { ApiResponse } from '@/Models/ApiResponse'
+import type { ApiResponse, TransferProps } from '@layerswap/widget-types'
 import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, type SwapResponse } from '@/lib/apiClients/layerSwapApiClient'
 import { hasSwapExecutionProgress } from '@/helpers/swapProgress'
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore'

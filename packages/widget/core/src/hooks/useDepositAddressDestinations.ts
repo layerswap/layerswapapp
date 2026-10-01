@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import useSWR from 'swr'
-import { ApiResponse } from '@/Models/ApiResponse'
+import type { ApiResponse } from '@layerswap/widget-types'
 import { NetworkRoute } from '@layerswap/widget-types';
 import LayerSwapApiClient from '@/lib/apiClients/layerSwapApiClient'
 import { resolveRoutesURLForSelectedToken } from '@/helpers/routes'

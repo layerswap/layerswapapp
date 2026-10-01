@@ -1,6 +1,6 @@
 import { useInitialSettings } from '@/context/settings';
 import LayerSwapApiClient from '@/lib/apiClients/layerSwapApiClient';
-import type { ApiResponse } from '@/Models/ApiResponse';
+import type { ApiResponse } from '@layerswap/widget-types';
 import type { Partner } from '@/Models/Partner';
 import { useUsdModeStore } from '@/stores/usdModeStore';
 import useSWR from 'swr';

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
 import { Quote, SwapBasicData, SwapQuote } from '../lib/apiClients/layerSwapApiClient'
-import { ApiResponse } from '../Models/ApiResponse'
+import type { ApiResponse } from '@layerswap/widget-types'
 import { create } from 'zustand';
 import { isDiffByPercent } from '@/components/utils/numbers'
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
