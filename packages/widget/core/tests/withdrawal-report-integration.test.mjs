@@ -57,7 +57,7 @@ const fixtures = ['/context/swap', '/context/swapAccounts', '/context/settings',
   '/validationError/ErrorDismissButton', '/validationError/constants', '/Icons/FailIcon', '/Icons/InfoIcon', '/messages/Message']
 const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
   if (specifier.endsWith('/AppSettings')) return { url: settingsUrl, shortCircuit: true }
-  if (specifier.endsWith('/context/swap') && ['/useSwapRetry.js', '/useResolvedSwapStatus.js'].some(path => context.parentURL?.endsWith(path))) {
+  if (specifier.endsWith('/context/swap') && ['/useSwapRetry.js', '/useResolvedSwapStatus.js', '/useDepositActionPolling.js'].some(path => context.parentURL?.endsWith(path))) {
     return { url: fixtureUrl, shortCircuit: true }
   }
   if (['/Wallet/Common/buttons.js', '/Presentation/WalletActionsView.js'].some(path => context.parentURL?.endsWith(path))) {

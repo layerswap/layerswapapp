@@ -375,8 +375,8 @@ export function ProcessingView({
                 status: approvalAction?.status === 'failed'
                     ? ProgressStatus.Failed
                     : approvalAction?.status === 'completed' || transactionHash
-                      ? ProgressStatus.Complete
-                      : ProgressStatus.Current,
+                        ? ProgressStatus.Complete
+                        : ProgressStatus.Current,
                 explorerUrl: approval.explorerUrl,
                 readOnly,
                 index: 0,
@@ -464,22 +464,7 @@ export function ProcessingView({
                     inputDescription:
                         stepStatuses.input_transfer ===
                             ProgressStatus.Current ? (
-                            <div className="space-y-1">
-                                <p>Confirming transaction · no action needed</p>
-                                <div>
-                                    {inputConfirmations != null &&
-                                        !!inputMaxConfirmations && (
-                                            <span>
-                                                Confirmations{' '}
-                                                {Math.min(
-                                                    inputConfirmations,
-                                                    inputMaxConfirmations,
-                                                )}
-                                                /{inputMaxConfirmations}
-                                            </span>
-                                        )}
-                                </div>
-                            </div>
+                            <p>Confirming transaction</p>
                         ) : undefined,
                     outputDescription:
                         stepStatuses.output_transfer === ProgressStatus.Current

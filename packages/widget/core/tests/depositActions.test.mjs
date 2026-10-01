@@ -6,6 +6,7 @@ import ts from 'typescript'
 import React, { act, createElement, Fragment } from 'react'
 import { createRoot } from 'react-dom/client'
 import { JSDOM } from 'jsdom'
+import { createSwapContext } from './helpers/swap-context.mjs'
 
 const require = createRequire(import.meta.url)
 const walletPath = '../src/components/Pages/Swap/Withdraw/Wallet/Common/'
@@ -45,9 +46,9 @@ const actionsFor = nonce => [
     { type: 'transfer', step: 'publish', status: 'waiting', amount: '1', to_address: '0x456' },
 ]
 
-function createWorkflow({ mounted = false } = {}) {
+function createWorkflow({ mounted = false, realPolling = false } = {}) {
     let view
-    const calls = { refresh: [], sign: [], authorize: [], transfer: [], executionStarts: [], storedTransactions: [], authorizations: [], signatures: [], errors: [], lifecycle: [], success: 0 }
+    const calls = { refresh: [], confirmations: [], sign: [], authorize: [], transfer: [], executionStarts: [], storedTransactions: [], authorizations: [], signatures: [], errors: [], lifecycle: [], success: 0 }
     const state = {
         apiActions: actionsFor('fresh'),
         refreshError: undefined,
@@ -97,6 +98,10 @@ function createWorkflow({ mounted = false } = {}) {
     let pollingKey
     const api = {
         fetcher: async () => ({ data: state.apiActions }),
+        GetTransactionStatus: async (network, hash) => {
+            calls.confirmations.push({ network, hash })
+            return { data: { status: state.receipts?.get(hash) ?? 'Pending' } }
+        },
         GetDepositActionsAsync: async (...args) => {
             calls.refresh.push(args)
             return state.refreshError ? { error: state.refreshError } : { data: state.apiActions }
@@ -106,6 +111,19 @@ function createWorkflow({ mounted = false } = {}) {
         SwapCatchup: async () => {},
     }
     const apiModule = { default: class { constructor() { return api } }, BackendTransactionStatus: { Pending: 'pending' } }
+    const swapContext = realPolling ? createSwapContext({
+        Client: apiModule.default, getSwapId: () => state.swapId, getAccount: () => wallet, stores,
+    }) : undefined
+    const realPollingHook = realPolling ? loadSource('../src/hooks/useDepositActionPolling.ts', {
+        react: React,
+        swr: require('swr'),
+        '@/lib/apiClients/layerSwapApiClient': apiModule,
+        '@/helpers/depositActions': depositActions,
+        '@/helpers/gasless': gasless,
+        '@/stores/swapTransactionStore': stores,
+        '@/context/swap': swapContext,
+        './useClientLayoutEffect': { useClientLayoutEffect: React.useLayoutEffect },
+    }) : undefined
     const lifecycle = { lifecycleContextFromSwap: () => ({}), lifecycleErrorDetails: () => ({}) }
     const { executeWalletOperation } = loadSource(`${walletPath}executeWalletOperation.ts`, {
         '@/lib/swapLifecycle': lifecycle, './isUserRejection': rejection,
@@ -176,7 +194,7 @@ function createWorkflow({ mounted = false } = {}) {
         '@/hooks/useClientLayoutEffect': { useClientLayoutEffect: mounted ? React.useLayoutEffect : useFakeLayoutEffect },
         // Script the hook's snapshots for execution tests. Its SWR requests,
         // timers, cache subscription and cancellation are covered in the polling integration tests.
-        '@/hooks/useDepositActionPolling': {
+        '@/hooks/useDepositActionPolling': realPollingHook ?? {
             depositActionsKey: (id, address) => `/swaps/${id}/deposit_actions?source_address=${address}`,
             useDepositActionPolling: (id, address) => {
                 pollingKey = id && address ? `/swaps/${id}/deposit_actions?source_address=${address}` : null
@@ -189,8 +207,9 @@ function createWorkflow({ mounted = false } = {}) {
                         cache.set(`/swaps/${id}/deposit_actions?source_address=${address}`, response)
                         return response.data
                     },
-                    waitForTransition: async ({ swapId: id, sourceAddress: address, previousAction, signal }) => {
+                    waitForTransition: async ({ swapId: id, sourceAddress: address, previousAction, approvalTransaction, signal }) => {
                         signal.throwIfAborted()
+                        if (approvalTransaction) calls.confirmations.push(approvalTransaction)
                         const nextActions = await state.onTransition?.(previousAction.step)
                         const completedIndex = state.apiActions.findIndex(action => action.step === previousAction.step)
                         state.apiActions = nextActions ?? state.apiActions.map((action, index) => ({
@@ -245,7 +264,7 @@ function createWorkflow({ mounted = false } = {}) {
         '@/helpers/swapProgress': swapProgress,
         '@/helpers/gasless': gasless,
         './isUserRejection': rejection,
-        swr: {
+        swr: realPolling ? require('swr') : {
             useSWRConfig: () => ({ mutate: async (key, result) => { const data = await result; cache.set(key, data); return data } }),
         },
     })
@@ -278,7 +297,7 @@ function createWorkflow({ mounted = false } = {}) {
                 const step = depositActions.getActionableDepositAction(state.apiActions).step
                 await state.onWalletPrompt?.(step)
                 state.completedStep = step
-                return step === 'approve_permit2' ? '0xapproval' : '0xtransaction'
+                return step === 'approve_permit2' ? state.approvalHash ?? '0xapproval' : '0xtransaction'
             },
         })
     const render = () => {
@@ -293,7 +312,9 @@ function createWorkflow({ mounted = false } = {}) {
     }
     return {
         state, calls, render, wallet, preferences, stores,
-        Component: () => createElement(SendTransactionButton, props()),
+        Component: () => realPolling
+            ? createElement(swapContext.SwapDataProvider, null, createElement(SendTransactionButton, props()))
+            : createElement(SendTransactionButton, props()),
         get view() { return view },
         poll: async () => {
             assert.ok(pollingKey, 'Polling remains enabled after rejection')
@@ -382,6 +403,53 @@ test('a swap created with only approval discovers and executes signing and publi
     assert.equal(flow.calls.success, 1)
     assert.deepEqual(flow.calls.errors, [])
 })
+
+for (const rejectRemainingApproval of [false, true]) {
+    test(`a refreshed partial approval ${rejectRemainingApproval ? 'can be declined without advancing' : 'runs again before signing and publication'}`, async () => {
+        const flow = createWorkflow()
+        const approval = { type: 'transfer', step: 'approve_permit2', status: 'action_required', amount: 0,
+            to_address: '0x456', call_data: '0xinitial' }
+        const remainingApproval = { ...approval }
+        flow.state.apiActions = [approval, ...actionsFor('fresh').map(action => ({ ...action, status: 'pending' }))]
+        flow.state.rejectSigning = false
+        let approvalPrompts = 0
+        const prompts = []
+        flow.state.onWalletPrompt = step => {
+            prompts.push(step)
+            if (step !== 'approve_permit2') return
+            approvalPrompts++
+            const { steps } = flow.render()
+            assert.equal(steps[0].status, 'current', 'a submitted approval does not complete an actionable step')
+            assert.ok(steps.slice(1).every(item => item.status === 'upcoming'))
+            assert.deepEqual(flow.calls.storedTransactions, [], 'neither approval submits the swap')
+            if (approvalPrompts === 2) {
+                assert.equal(flow.calls.transfer[1].callData, remainingApproval.call_data)
+                assert.equal(steps[0].explorerUrl, 'https://base.example.invalid/tx/0xapproval')
+                if (rejectRemainingApproval) throw { code: 4001 }
+                flow.state.approvalHash = '0xapproval2'
+            }
+        }
+        flow.state.onTransition = step => {
+            if (step === 'approve_permit2' && approvalPrompts === 1) {
+                return [remainingApproval, ...flow.state.apiActions.slice(1)]
+            }
+        }
+
+        await flow.render().button.props.onClick()
+
+        assert.deepEqual(prompts, rejectRemainingApproval
+            ? ['approve_permit2', 'approve_permit2']
+            : ['approve_permit2', 'approve_permit2', 'sign', 'publish'])
+        assert.deepEqual(flow.calls.transfer.map(props => props.callData), rejectRemainingApproval
+            ? ['0xinitial', '0xinitial'] : ['0xinitial', '0xinitial', ''])
+        assert.deepEqual(flow.calls.confirmations, rejectRemainingApproval
+            ? [{ network: 'BASE_MAINNET', hash: '0xapproval' }]
+            : [{ network: 'BASE_MAINNET', hash: '0xapproval' }, { network: 'BASE_MAINNET', hash: '0xapproval2' }])
+        assert.deepEqual(flow.calls.storedTransactions, rejectRemainingApproval ? [] : [[swapId, 'pending', '0xtransaction']])
+        assert.equal(flow.calls.success, rejectRemainingApproval ? 0 : 1)
+        assert.deepEqual(flow.calls.errors, [])
+    })
+}
 
 test('a rejected signature retains the approval receipt through retry without replacing the swap', async () => {
     const flow = createWorkflow()
@@ -886,4 +954,76 @@ test('a self-paid prerequisite cannot lock replacement but an unclassified accep
         depositActions: actions,
         gaslessAuthorization: { ...depositSignature, transaction: { transaction_hash: '0xsubmitted', status: 'pending' } },
     }), true, 'transaction evidence still locks replacement')
+})
+
+test('the mounted controller and real polling resume a mined partial approval with identical calldata', async t => {
+    const dom = new JSDOM('<div id="root"></div>', { url: 'https://widget.test' })
+    const previous = Object.getOwnPropertyDescriptors(globalThis)
+    Object.assign(globalThis, { window: dom.window, document: dom.window.document, localStorage: dom.window.localStorage, IS_REACT_ACT_ENVIRONMENT: true })
+    t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 10000 })
+    const flow = createWorkflow({ mounted: true, realPolling: true })
+    const { SWRConfig } = require('swr')
+    const approval = { type: 'transfer', step: 'approve_permit2', status: 'action_required', amount: 0,
+        to_address: '0x456', call_data: `0x095ea7b3${'123'.padStart(64, '0')}${(5841963).toString(16).padStart(64, '0')}` }
+    flow.state.apiActions = [approval, ...actionsFor('fresh').map(action => ({ ...action, status: 'pending' }))]
+    flow.state.rejectSigning = false
+    flow.state.receipts = new Map()
+    const firstApproval = Promise.withResolvers()
+    const secondApproval = Promise.withResolvers()
+    const prompts = []
+    flow.state.onWalletPrompt = step => {
+        prompts.push(step)
+        if (step === 'approve_permit2') return prompts.length === 1 ? firstApproval.promise : secondApproval.promise
+        if (step === 'sign') {
+            flow.state.apiActions = flow.state.apiActions.map(action => ({
+                ...action, status: action.step === 'publish' ? 'action_required' : 'completed',
+            }))
+        }
+    }
+    const root = createRoot(document.getElementById('root'))
+    let execution
+    try {
+        await act(async () => root.render(createElement(SWRConfig, { value: {
+            provider: () => new Map(), revalidateOnFocus: false, revalidateOnReconnect: false, isVisible: () => true,
+        } }, createElement(flow.Component))))
+        await act(async () => { execution = flow.view.handleClick() })
+        assert.deepEqual(prompts, ['approve_permit2'])
+
+        await act(async () => { firstApproval.resolve() })
+        for (let i = 0; i < 2; i++) await act(async () => { t.mock.timers.tick(2000) })
+        assert.equal(flow.view.actionStateText, 'Confirming approval…')
+        assert.equal(flow.calls.transfer.length, 1, 'pending receipt cannot trigger duplicate approval')
+
+        flow.state.receipts.set('0xapproval', 'Completed')
+        for (let i = 0; i < 2; i++) await act(async () => { t.mock.timers.tick(2000) })
+        assert.deepEqual(prompts, ['approve_permit2', 'approve_permit2'])
+        assert.equal(flow.view.actionStateText, 'Approve in your wallet')
+        assert.equal(flow.view.depositActions[0].status, 'action_required')
+        assert.equal(flow.calls.transfer[0].callData, flow.calls.transfer[1].callData)
+        assert.deepEqual(flow.calls.sign, [], 'the partial approval cannot advance to signing')
+
+        flow.state.approvalHash = '0xapproval2'
+        await act(async () => { secondApproval.resolve() })
+        for (let i = 0; i < 2; i++) await act(async () => { t.mock.timers.tick(2000) })
+        assert.equal(flow.calls.transfer.length, 2, 'the old receipt cannot confirm the new approval')
+
+        flow.state.receipts.set('0xapproval2', 'Completed')
+        flow.state.apiActions = [{ step: 'approve_permit2', status: 'completed' }, ...actionsFor('fresh')]
+        for (let i = 0; i < 4 && flow.calls.success === 0; i++) await act(async () => { t.mock.timers.tick(2000) })
+        assert.deepEqual(prompts, ['approve_permit2', 'approve_permit2', 'sign', 'publish'])
+        assert.deepEqual(flow.calls.storedTransactions, [[swapId, 'pending', '0xtransaction']])
+        assert.equal(flow.calls.success, 1)
+        assert.deepEqual(flow.calls.errors, [])
+        await execution
+    } finally {
+        await act(async () => root.unmount())
+        firstApproval.resolve()
+        secondApproval.resolve()
+        await execution
+        dom.window.close()
+        for (const key of ['window', 'document', 'localStorage', 'IS_REACT_ACT_ENVIRONMENT']) {
+            if (previous[key]) Object.defineProperty(globalThis, key, previous[key])
+            else delete globalThis[key]
+        }
+    }
 })

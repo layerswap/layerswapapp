@@ -458,11 +458,15 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     onLifecycle: onSwapLifecycle,
                 }
 
+                let approvalTransaction: { network: string; hash: string } | undefined
                 if (currentAction && isSignAction(currentAction)) {
                     if (!onSign) throw new Error('This wallet cannot sign the requested authorization')
                     authorizedValidBefore = await executeGaslessAuthorization(executionContext, onSign, currentAction)
                 } else if (currentAction && isTransferAction(currentAction)) {
-                    await executeWalletTransfer(executionContext, onClick, currentAction)
+                    const hash = await executeWalletTransfer(executionContext, onClick, currentAction)
+                    if (currentAction.step === 'approve_permit2') {
+                        approvalTransaction = { hash, network: (currentAction.network ?? swapBasicData.source_network).name }
+                    }
                 }
 
                 signal.throwIfAborted()
@@ -473,6 +477,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     swapId: swapData.id,
                     sourceAddress: selectedSourceAccount.address,
                     previousAction: currentAction ?? activeDepositActions.find(action => action.step === 'sign') ?? activeDepositActions[0],
+                    approvalTransaction,
                     signal,
                 })
                 signal.throwIfAborted()

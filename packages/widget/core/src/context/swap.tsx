@@ -40,6 +40,13 @@ export const SwapDataStateContext = createContext<SwapContextData | null>(null);
 
 export const SwapDataUpdateContext = createContext<UpdateSwapInterface | null>(null);
 
+export type ApprovalTransaction = {
+    swapId: string
+    sourceAddress: string
+    network: string
+    hash: string
+}
+
 export type UpdateSwapInterface = {
     createSwap: (values: SwapFormValues, query: InitialSettings, partner?: Partner) => Promise<SwapResponse>,
     setQuoteLoading: (value: boolean) => void;
@@ -50,6 +57,7 @@ export type UpdateSwapInterface = {
     setSwapId: (value: string | undefined) => void
     markWalletExecutionStarted: (swapId: string) => void
     startFreshSwapAttempt: () => void
+    watchApprovalTransaction: (transaction: ApprovalTransaction) => () => void
     setSwapDataFromQuery?: (swapData: SwapResponse | undefined) => void,
     setSubmitedFormValues: (values: NonNullable<SwapFormValues>) => void,
     setSwapModalOpen: (value: boolean) => void
@@ -61,6 +69,7 @@ export type SwapContextData = {
     depositAddressIsFromAccount?: boolean,
     depositActionsResponse?: DepositAction[],
     depositActionsError?: string,
+    approvalTransaction?: ApprovalTransaction & { status?: string },
     withdrawType: WithdrawType | undefined,
     swapTransaction: SwapTransaction | undefined,
     swapBasicData: SwapBasicData & { refuel: boolean } | undefined,
@@ -105,6 +114,12 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const updateRecentTokens = useRecentNetworksStore(state => state.updateRecentNetworks)
     const [swapModalOpen, setSwapModalOpen] = useState(false)
     const [swapError, setSwapError] = useState<string | null>(null)
+    const [approvalWait, setApprovalWait] = useState<ApprovalTransaction>()
+    const watchApprovalTransaction = useCallback((transaction: ApprovalTransaction) => {
+        setApprovalWait(transaction)
+        // Releasing an older wait must not stop a newer approval's receipt poll.
+        return () => setApprovalWait(current => current === transaction ? undefined : current)
+    }, [])
 
     const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapBasicFormData, !!swapBasicFormData?.refuel), [swapBasicFormData]);
 
@@ -284,6 +299,23 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     )
     const inputTxStatusFromApi = inputTxStatusData?.data?.status?.toLowerCase() as TransactionStatus | undefined
 
+    // Approval receipts are prerequisites, separate from the input transaction
+    // that determines the resolved swap status. Execution owns the wait lifetime.
+    const activeApproval = approvalWait?.swapId === swapId
+        && approvalWait?.sourceAddress === selectedSourceAccount?.address ? approvalWait : undefined
+    const { data: approvalReceipt } = useSWR<ApiResponse<{ status: string }>>(
+        activeApproval ? [activeApproval.network, activeApproval.hash] : null,
+        ([network, hash]: [string, string]) => layerswapApiClient.GetTransactionStatus(network, hash),
+        {
+            refreshInterval: 2000, dedupingInterval: 1000, refreshWhenHidden: true, keepPreviousData: false,
+            // A submitted transaction can return 404 until the node observes it.
+            shouldRetryOnError: true, errorRetryInterval: 2000,
+        },
+    )
+    const approvalStatus = approvalReceipt?.data?.status?.toLowerCase()
+    const approvalTransaction = useMemo(() => activeApproval
+        ? { ...activeApproval, status: approvalStatus } : undefined, [activeApproval, approvalStatus])
+
     const resolved = useMemo(
         () => resolveSwapPhase({ swapDetails, refuel, inputTxStatusFromApi, storedWalletTransaction, isDepositFlow, gaslessFailureStatus }),
         [swapDetails, refuel, inputTxStatusFromApi, storedWalletTransaction, isDepositFlow, gaslessFailureStatus],
@@ -433,10 +465,11 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         setSwapId: handleUpdateSwapid,
         markWalletExecutionStarted,
         startFreshSwapAttempt,
+        watchApprovalTransaction,
         setSubmitedFormValues,
         setQuoteLoading,
         setSwapModalOpen
-    }), [createSwap, mutate, mutateDepositActions, handleUpdateSwapid, markWalletExecutionStarted, startFreshSwapAttempt, setSubmitedFormValues]);
+    }), [createSwap, mutate, mutateDepositActions, handleUpdateSwapid, markWalletExecutionStarted, startFreshSwapAttempt, watchApprovalTransaction, setSubmitedFormValues]);
 
     const stateValue = useMemo(() => ({
         withdrawType,
@@ -446,6 +479,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         swapDetailsError,
         depositActionsResponse,
         depositActionsError,
+        approvalTransaction,
         quote,
         quoteIsLoading,
         quoteError,
@@ -458,7 +492,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         resolved,
         swapError,
         setSwapError
-    }), [withdrawType, swapTransaction, depositAddressIsFromAccount, error, swapDetailsError, depositActionsResponse, depositActionsError, quote, quoteIsLoading, quoteError, refuel, swapBasicData, swapDetails, swapId, walletExecutionStarted, swapModalOpen, resolved, swapError]);
+    }), [withdrawType, swapTransaction, depositAddressIsFromAccount, error, swapDetailsError, depositActionsResponse, depositActionsError, approvalTransaction, quote, quoteIsLoading, quoteError, refuel, swapBasicData, swapDetails, swapId, walletExecutionStarted, swapModalOpen, resolved, swapError]);
 
     return (
         <SwapDataStateContext.Provider value={stateValue}>
