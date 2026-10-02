@@ -203,18 +203,23 @@ export class FuelConnectionService<Network> implements WalletConnectionService<n
     }
 
     async resolveConnectedWallets(): Promise<Wallet[]> {
-        const connectors = useFuelStore.getState().connectors.filter(c => c.connected)
+        const { connectors, connectedWallets } = useFuelStore.getState()
+        const lastKnownWallets = new Map(connectedWallets.map(wallet => [wallet.id, wallet]))
         const wallets: Wallet[] = []
-        for (const connector of connectors) {
+        for (const connector of connectors.filter(c => c.connected)) {
             try {
                 const addresses = (await connector.accounts()).map(a => new Address(a).toB256())
                 if (connector.connected && addresses.length > 0) {
                     const w = await this.resolveFuelWallet(connector, addresses[0], addresses)
-                    wallets.push(w)
+                    if (connector.connected) wallets.push(w)
                 }
             } catch (e) {
                 const msg = e instanceof Error ? e.message : String(e)
                 console.error(`[Fuel] Failed to resolve connected wallet for ${connector.name}: ${msg}`)
+                // A failed query does not confirm revoked permissions or a
+                // disconnection. Keep the last snapshot while still connected.
+                const lastKnownWallet = lastKnownWallets.get(connector.name)
+                if (connector.connected && lastKnownWallet) wallets.push(lastKnownWallet)
             }
         }
         return wallets

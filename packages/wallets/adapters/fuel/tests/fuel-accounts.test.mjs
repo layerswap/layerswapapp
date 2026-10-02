@@ -84,6 +84,92 @@ test('account sync removes revoked and disconnected entries rather than accumula
     assert.deepEqual(useFuelStore.getState().connectedWallets, [])
 })
 
+for (const query of ['accounts', 'currentNetwork']) {
+    test(`a transient ${query} failure retains the connected wallet while refreshing other connectors`, async t => {
+        const fuelWallet = connector()
+        const fuelet = connector('Fuelet', [addressC])
+        useFuelStore.getState()._setConnectors([fuelWallet, fuelet])
+        const service = new FuelConnectionService()
+        await service.syncConnectedWallets()
+        const cachedWallet = useFuelStore.getState().connectedWallets[0]
+        const originalQuery = fuelWallet[query]
+        const failure = t.mock.method(fuelWallet, query, async () => { throw new Error('temporary query failure') })
+        t.mock.method(console, 'error', () => {})
+        fuelet.authorizedAccounts = [addressB]
+
+        await service.syncConnectedWallets()
+        assert.equal(useFuelStore.getState().connectedWallets[0], cachedWallet)
+        assert.equal(service.buildProvider().activeWallet, cachedWallet)
+        assert.deepEqual(useFuelStore.getState().connectedWallets.map(w => [w.id, w.address]), [
+            ['Fuel Wallet', addressA], ['Fuelet', addressB],
+        ])
+        assert.equal(failure.mock.callCount(), 1)
+
+        fuelWallet[query] = originalQuery
+        fuelWallet.authorizedAccounts = [addressB]
+        await service.syncConnectedWallets()
+        assert.equal(useFuelStore.getState().connectedWallets[0].address, addressB)
+        fuelWallet.authorizedAccounts = []
+        await service.syncConnectedWallets()
+        assert.deepEqual(useFuelStore.getState().connectedWallets.map(w => w.id), ['Fuelet'])
+    })
+}
+
+test('a failed query cannot create a wallet without a last known snapshot', async t => {
+    const fuelWallet = connector()
+    const fuelet = connector('Fuelet', [addressC])
+    t.mock.method(fuelWallet, 'accounts', async () => { throw new Error('temporary query failure') })
+    t.mock.method(console, 'error', () => {})
+    useFuelStore.getState()._setConnectors([fuelWallet, fuelet])
+    await new FuelConnectionService().syncConnectedWallets()
+    assert.deepEqual(useFuelStore.getState().connectedWallets.map(w => w.id), ['Fuelet'])
+})
+
+test('a disconnection during a failing query removes the last known wallet', async t => {
+    const fuelWallet = connector()
+    useFuelStore.getState()._setConnectors([fuelWallet])
+    const service = new FuelConnectionService()
+    await service.syncConnectedWallets()
+    let rejectAccounts
+    t.mock.method(fuelWallet, 'accounts', () => new Promise((_, reject) => { rejectAccounts = reject }))
+    t.mock.method(console, 'error', () => {})
+    const pending = service.syncConnectedWallets()
+    fuelWallet.connected = false
+    rejectAccounts(new Error('connection ended'))
+    await pending
+    assert.deepEqual(useFuelStore.getState().connectedWallets, [])
+})
+
+test('a disconnection during a successful network query removes the last known wallet', async t => {
+    const fuelWallet = connector()
+    useFuelStore.getState()._setConnectors([fuelWallet])
+    const service = new FuelConnectionService()
+    await service.syncConnectedWallets()
+    let resolveNetwork
+    t.mock.method(fuelWallet, 'currentNetwork', () => new Promise(resolve => { resolveNetwork = resolve }))
+    const pending = service.syncConnectedWallets()
+    await settle()
+    fuelWallet.connected = false
+    resolveNetwork({ chainId: 9889, url: 'https://mainnet.fuel.network' })
+    await pending
+    assert.deepEqual(useFuelStore.getState().connectedWallets, [])
+})
+
+test('an older failing sync cannot restore its cached account over a newer snapshot', async t => {
+    const fuelWallet = connector()
+    useFuelStore.getState()._setConnectors([fuelWallet])
+    await new FuelConnectionService().syncConnectedWallets()
+    let rejectOldAccounts
+    fuelWallet.accounts = () => new Promise((_, reject) => { rejectOldAccounts = reject })
+    t.mock.method(console, 'error', () => {})
+    const older = new FuelConnectionService().syncConnectedWallets()
+    fuelWallet.accounts = async () => [addressB]
+    await new FuelConnectionService().syncConnectedWallets()
+    rejectOldAccounts(new Error('temporary query failure'))
+    await older
+    assert.deepEqual(useFuelStore.getState().connectedWallets.map(w => w.address), [addressB])
+})
+
 test('an older sync from another service cannot restore a revoked account', async () => {
     const fuelWallet = connector()
     useFuelStore.getState()._setConnectors([fuelWallet])
