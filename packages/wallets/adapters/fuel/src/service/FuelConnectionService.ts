@@ -207,19 +207,29 @@ export class FuelConnectionService<Network> implements WalletConnectionService<n
         const lastKnownWallets = new Map(connectedWallets.map(wallet => [wallet.id, wallet]))
         const wallets: Wallet[] = []
         for (const connector of connectors.filter(c => c.connected)) {
+            const lastKnownWallet = lastKnownWallets.get(connector.name)
+            let addresses: string[]
             try {
-                const addresses = (await connector.accounts()).map(a => new Address(a).toB256())
-                if (connector.connected && addresses.length > 0) {
-                    const w = await this.resolveFuelWallet(connector, addresses[0], addresses)
-                    if (connector.connected) wallets.push(w)
-                }
+                addresses = (await connector.accounts()).map(a => new Address(a).toB256())
+            } catch (e) {
+                const msg = e instanceof Error ? e.message : String(e)
+                console.error(`[Fuel] Failed to query accounts for ${connector.name}: ${msg}`)
+                // Keep the full snapshot only when account permissions are unknown.
+                if (connector.connected && lastKnownWallet) wallets.push(lastKnownWallet)
+                continue
+            }
+            if (!connector.connected || addresses.length === 0) continue
+
+            try {
+                const w = await this.resolveFuelWallet(connector, addresses[0], addresses)
+                if (connector.connected) wallets.push(w)
             } catch (e) {
                 const msg = e instanceof Error ? e.message : String(e)
                 console.error(`[Fuel] Failed to resolve connected wallet for ${connector.name}: ${msg}`)
-                // A failed query does not confirm revoked permissions or a
-                // disconnection. Keep the last snapshot while still connected.
-                const lastKnownWallet = lastKnownWallets.get(connector.name)
-                if (connector.connected && lastKnownWallet) wallets.push(lastKnownWallet)
+                // Preserve cached network metadata, but always apply confirmed permissions.
+                if (connector.connected && lastKnownWallet) {
+                    wallets.push({ ...lastKnownWallet, address: addresses[0], addresses })
+                }
             }
         }
         return wallets

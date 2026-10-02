@@ -98,8 +98,10 @@ for (const query of ['accounts', 'currentNetwork']) {
         fuelet.authorizedAccounts = [addressB]
 
         await service.syncConnectedWallets()
-        assert.equal(useFuelStore.getState().connectedWallets[0], cachedWallet)
-        assert.equal(service.buildProvider().activeWallet, cachedWallet)
+        const refreshedWallet = useFuelStore.getState().connectedWallets[0]
+        if (query === 'accounts') assert.equal(refreshedWallet, cachedWallet)
+        else assert.deepEqual(refreshedWallet, cachedWallet)
+        assert.equal(service.buildProvider().activeWallet, refreshedWallet)
         assert.deepEqual(useFuelStore.getState().connectedWallets.map(w => [w.id, w.address]), [
             ['Fuel Wallet', addressA], ['Fuelet', addressB],
         ])
@@ -114,6 +116,32 @@ for (const query of ['accounts', 'currentNetwork']) {
         assert.deepEqual(useFuelStore.getState().connectedWallets.map(w => w.id), ['Fuelet'])
     })
 }
+
+test('a network query failure applies newly authorized accounts while preserving cached network metadata', async t => {
+    const fuelWallet = connector()
+    const fuelet = connector('Fuelet', [addressC])
+    useFuelStore.getState()._setConnectors([fuelWallet, fuelet])
+    const service = new FuelConnectionService()
+    await service.syncConnectedWallets()
+    const cachedWallet = useFuelStore.getState().connectedWallets[0]
+    fuelWallet.authorizedAccounts = [new Address(addressB).toChecksum(), addressC]
+    const networkQuery = t.mock.method(fuelWallet, 'currentNetwork', async () => { throw new Error('temporary network failure') })
+    t.mock.method(console, 'error', () => {})
+
+    await service.syncConnectedWallets()
+    const refreshedWallet = useFuelStore.getState().connectedWallets[0]
+    assert.equal(refreshedWallet.address, addressB)
+    assert.deepEqual(refreshedWallet.addresses, [addressB, addressC])
+    assert.deepEqual(refreshedWallet, { ...cachedWallet, address: addressB, addresses: [addressB, addressC] })
+    assert.equal(service.buildProvider().activeWallet.address, addressB)
+    assert.deepEqual(useFuelStore.getState().connectedWallets.map(w => w.id), ['Fuel Wallet', 'Fuelet'])
+    assert.equal(networkQuery.mock.callCount(), 1)
+
+    fuelWallet.authorizedAccounts = []
+    await service.syncConnectedWallets()
+    assert.deepEqual(useFuelStore.getState().connectedWallets.map(w => w.id), ['Fuelet'])
+    assert.equal(networkQuery.mock.callCount(), 1)
+})
 
 test('a failed query cannot create a wallet without a last known snapshot', async t => {
     const fuelWallet = connector()
