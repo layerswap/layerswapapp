@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "rspack serve --config rspack.config.mjs",
-    "build": "node scripts/prepare-build.mjs && rspack build --config rspack.config.mjs --mode production && node scripts/build-manifest.mjs && node scripts/check-bundle-budget.mjs",
+    "build": "pnpm -w lint:widget && node scripts/prepare-build.mjs && rspack build --config rspack.config.mjs --mode production && node scripts/build-manifest.mjs && node scripts/check-bundle-budget.mjs",
     "verify-manifest": "node scripts/verify-manifest.mjs",
     "deploy:azure": "node scripts/deploy-azure.mjs",
     "rollback:azure": "node scripts/rollback-azure.mjs",

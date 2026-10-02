@@ -27,6 +27,7 @@ import { ErrorProvider } from "./ErrorProvider";
 import { DescriptorHydrationBoundary } from "@layerswap/wallet-core";
 import { registerWidgetErrorLogger } from "@/lib/ErrorHandler";
 import { SwapPrerequisitesProvider } from './swapPrerequisites';
+import { captureWidgetInteraction } from '@/lib/widgetTelemetry';
 
 registerWidgetErrorLogger();
 
@@ -198,7 +199,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
         <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500} shouldInitialize={intercomReady}>
             <SettingsProvider initialLayerswapData={appSettings} initialSettings={config?.initialValues}>
                 <CallbackProvider callbacks={callbacks}>
-                    <ErrorProvider>
+                    <ErrorProvider onError={callbacks?.onError}>
                         <ErrorBoundary FallbackComponent={ErrorFallback} >
                             <DescriptorHydrationBoundary walletProviders={walletProviders}>
                                 {(resolvedProviders) => (
@@ -231,6 +232,8 @@ export const LayerswapProvider: typeof LayerswapProviderComponent = (props) => {
         <>
             <ColorSchema themeData={props.config?.theme} />
             <div
+                onClickCapture={captureWidgetInteraction}
+                onChangeCapture={captureWidgetInteraction}
                 style={{ backgroundColor: 'transparent', height: '100%', width: '100%' }}
                 className="layerswap-styles">
                 <LayerswapProviderComponent  {...props}>

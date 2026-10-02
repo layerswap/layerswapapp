@@ -1,9 +1,10 @@
-import { NetworkType, ActionMessageType } from '@layerswap/widget-types';
+import { NetworkType } from '@layerswap/widget-types';
 import { Network } from "@layerswap/widget-types";
 import { TransferProvider, TransferProps } from "@layerswap/widget-types";
 import { getAccount } from '@bigmi/client'
 import { JsonRpcClient, KnownInternalNames } from "@layerswap/utils";
 import { sendTransaction } from "./sendTransaction"
+import { toTransferError } from "./toTransferError"
 import { getBitcoinConfig } from "../service/getBitcoinConfig"
 
 export function createBitcoinTransfer(): TransferProvider {
@@ -44,20 +45,7 @@ export function createBitcoinTransfer(): TransferProvider {
 
                 return txHash
             } catch (error) {
-                const message = typeof error === 'string' ? error : error.message
-                const e = new Error(message)
-                e.message = message
-
-                if (message.includes('User rejected the request.')) {
-                    e.name = ActionMessageType.TransactionRejected
-                    throw e
-                } else if (message.includes('Insufficient balance.') || message.includes('Insufficient funds')) {
-                    e.name = ActionMessageType.InsufficientFunds
-                    throw e
-                } else {
-                    e.name = ActionMessageType.UnexpectedErrorMessage
-                    throw e
-                }
+                throw toTransferError(error)
             }
         }
     }

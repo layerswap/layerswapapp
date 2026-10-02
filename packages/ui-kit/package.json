@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/ui-kit",
-  "version": "2.1.0",
+  "version": "2.3.1",
   "description": "Presentational wallet connection UI: connect modal, connectors list, and shared components.",
   "type": "module",
   "main": "dist/esm/index.js",
@@ -53,7 +53,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "clsx": "^2.1.1",
     "copy-to-clipboard": "^3.3.3",
-    "framer-motion": "^12.26.2",
+    "framer-motion": "12.34.5",
     "lucide-react": "^0.379.0",
     "react-qrcode-logo": "4.1.0"
   },

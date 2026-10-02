@@ -92,6 +92,7 @@ export const GasFee = ({ values, quote }: { values: SwapValues, quote: SwapQuote
     const isGaslessCapable = isGaslessCapableRoute({
         depositMethod: values.depositMethod,
         supportsGaslessDeposit: values.fromAsset?.supports_gasless_deposit,
+        gaslessStandard: values.fromAsset?.gasless_standard,
         sourceIsSupported,
         sourceAddress: selectedSourceAccount?.address,
     })

@@ -5,8 +5,9 @@ import stream from 'stream-browserify';
 globalThis.Buffer = Buffer;
 globalThis.process = process;
 // Polyfill stream module
-if (typeof globalThis.stream === 'undefined') {
-  (globalThis as any).stream = stream;
+const globalWithStream = globalThis as typeof globalThis & { stream?: typeof stream };
+if (typeof globalWithStream.stream === 'undefined') {
+  globalWithStream.stream = stream;
 }
 
 import {

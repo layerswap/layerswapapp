@@ -111,6 +111,7 @@ export const DetailsButton: FC<QuoteComponentProps> = ({ quote, reward, isQuoteL
     const isGasless = isGaslessCapableRoute({
         depositMethod: values.depositMethod,
         supportsGaslessDeposit: values.fromAsset?.supports_gasless_deposit,
+        gaslessStandard: values.fromAsset?.gasless_standard,
         sourceIsSupported,
         sourceAddress: selectedSourceAccount?.address,
     }) && gaslessEnabled

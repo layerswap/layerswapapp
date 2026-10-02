@@ -78,6 +78,19 @@ For detailed setup instructions, configuration options, and usage examples, see 
 - Xverse
 - Cartridge Controller
 
+## RPC compatibility
+
+Balance queries, NFT queries, fee estimation, and connected wallet accounts use
+Starknet.js 10 through the `starknet-rpc` package alias, supporting RPC v0.10 and
+v0.9. The shared `starknet` catalog stays on v8 for Starknet React, StarknetKit,
+and Paradex. Paradex reuses the connected account's v10 RPC provider for
+Starknet authorization reads while retaining v8 for its own chain.
+
+RPC URLs come from the network configuration (`node_url`, or `getRpcUrls` for a
+custom network adapter). Configure an endpoint that serves RPC v0.10 to use that
+version. URLs are passed through unchanged, and the provider detects the RPC
+version. RPC v0.8 endpoints are no longer supported by this adapter.
+
 ## TypeScript
 
 This package includes TypeScript definitions. All types are exported from the main entry point.

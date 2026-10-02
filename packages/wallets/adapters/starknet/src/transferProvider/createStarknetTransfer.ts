@@ -1,7 +1,8 @@
-import { ActionMessageType, type Wallet } from '@layerswap/widget-types';
+import type { Wallet } from '@layerswap/widget-types';
 import { KnownInternalNames } from "@layerswap/utils";
 import { Network } from "@layerswap/widget-types";
 import { TransferProvider, TransferProps } from "@layerswap/widget-types";
+import { toTransferError } from "./toTransferError"
 
 const supportedNetworks = [
     KnownInternalNames.Networks.StarkNetMainnet,
@@ -33,19 +34,7 @@ export function createStarknetTransfer(): TransferProvider {
 
                 return transaction_hash
             } catch (error) {
-                const e = new Error(error)
-                e.message = error
-
-                if (error.message === "An error occurred (USER_REFUSED_OP)" || error.message === "Execute failed") {
-                    e.name = ActionMessageType.TransactionRejected
-                    throw e
-                } else if (error === "failedTransfer") {
-                    e.name = ActionMessageType.TransactionFailed
-                    throw e
-                } else {
-                    e.name = ActionMessageType.UnexpectedErrorMessage
-                    throw e
-                }
+                throw toTransferError(error)
             }
         }
     }

@@ -6,7 +6,7 @@ This example demonstrates how to integrate the [Layerswap Widget](https://github
 
 ### Prerequisites
 
-- Node.js >= 20.9.0
+- Node.js >= 22.12.0
 - pnpm 10 or later
 
 ### Installation

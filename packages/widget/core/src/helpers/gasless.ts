@@ -1,6 +1,7 @@
 export type GaslessCapabilityInput = {
     depositMethod: string | undefined
     supportsGaslessDeposit: boolean | undefined
+    gaslessStandard: string | null | undefined
     sourceIsSupported: boolean | undefined
     sourceAddress: string | undefined
 }
@@ -9,6 +10,7 @@ export type GaslessCapabilityInput = {
 export function isGaslessCapableRoute(input: GaslessCapabilityInput): boolean {
     return input.depositMethod === 'wallet'
         && !!input.supportsGaslessDeposit
+        && input.gaslessStandard !== 'erc2612'
         && !!input.sourceIsSupported
         && !!input.sourceAddress
 }

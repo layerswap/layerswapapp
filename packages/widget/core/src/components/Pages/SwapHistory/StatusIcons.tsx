@@ -9,8 +9,6 @@ export default function StatusIcon({ swap, withBg, short }: { swap: SwapItem, wi
       return <RedComponenet text="Failed" withBg={withBg} short={short} />
     case SwapStatus.Completed:
       return <GreenComponent text="Completed" withBg={withBg} short={short} />
-    case SwapStatus.Cancelled:
-      return <SecondaryComponent text="Cancelled" withBg={withBg} short={short} />
     case SwapStatus.Expired:
       return <SecondaryComponent text="Expired" withBg={withBg} short={short} />
     case SwapStatus.UserTransferPending:
@@ -24,8 +22,6 @@ export default function StatusIcon({ swap, withBg, short }: { swap: SwapItem, wi
       }
     case SwapStatus.LsTransferPending:
       return <PrimaryComponent text="In Progress" withBg={withBg} short={short} />
-    case SwapStatus.UserTransferDelayed:
-      return <YellowComponent text="Delayed" withBg={withBg} short={short} />
     case SwapStatus.Created:
       return <YellowComponent text="Incomplete" withBg={withBg} short={short} />
     case SwapStatus.PendingRefund:

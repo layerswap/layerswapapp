@@ -1,4 +1,4 @@
-import { ActionMessageType } from '@layerswap/widget-types';
+import { isUserRejection } from '@layerswap/wallet-core/errors';
 import { useCallback, useEffect, useRef, useState } from "react";
 import { WithdrawPageProps } from "../../Wallet/Common/sharedTypes";
 import { StepError } from "./resolveError";
@@ -8,13 +8,16 @@ import { useSelectedAccount } from "@/context/swapAccounts";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
 import useWallet from "@/hooks/useWallet";
 import { useTransfer } from "@/hooks/useTransfer";
-import { TransferProgress } from "@layerswap/widget-types";
+import { executeWalletOperation } from "@/components/Pages/Swap/Withdraw/Wallet/Common/executeWalletOperation";
+import { ActionMessageType, TransferProgress } from "@layerswap/widget-types";
 import { NetworkRoute } from "@layerswap/widget-types";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { BackendTransactionStatus, DepositAction } from "@/lib/apiClients/layerSwapApiClient";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 import { ErrorHandler } from "@/lib/ErrorHandler";
 import { truncateToDecimals } from "@/components/utils/RoundDecimals";
+import { useCallbacks } from "@/context/callbackProvider";
+import { lifecycleContextFromSwap } from "@/lib/swapLifecycle";
 
 /** Deposit-action kinds that carry the depository deposit (address + calldata). */
 const DEPOSIT_ACTION_TYPES = ['transfer', 'manual_transfer']
@@ -32,7 +35,7 @@ const logWithdrawalError = (error: unknown, ctx: { swapId?: string; fromAddress?
         message: e.message,
         name: e.name || 'PolymarketWithdrawalError',
         stack: e.stack,
-        cause: e.cause,
+        cause: e,
         swapId: ctx.swapId,
         fromAddress: ctx.fromAddress,
         toAddress: ctx.toAddress,
@@ -57,6 +60,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
     const { swapDetails, depositActionsResponse } = useSwapDataState()
     const { createSwap, setSwapId } = useSwapDataUpdate()
     const { executeTransfer } = useTransfer()
+    const { onSwapLifecycle } = useCallbacks()
 
     const selectedSourceAccount = useSelectedAccount("from", source_network?.name)
     const { wallets } = useWallet(source_network, "withdrawal")
@@ -73,6 +77,8 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
     const [progress, setProgress] = useState<TransferProgress | undefined>()
     const [error, setError] = useState<StepError | undefined>()
     const [rejected, setRejected] = useState(false)
+    // The rejected UI label alone does not establish a user cancellation.
+    const lastFailureWasUserRejection = useRef(false)
     // Synchronous double-submit guard: covers the click→re-render gap that `loading` can't.
     const submittingRef = useRef(false)
     // The flow widens the async window (deploy + sign + submit); avoid setting state after unmount.
@@ -84,6 +90,19 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
 
     const handleWithdraw = useCallback(async () => {
         if (submittingRef.current) return
+        if (rejected || error) {
+            onSwapLifecycle({
+                step: 'retry_requested',
+                stage: 'wallet_action',
+                outcome: 'started',
+                path: 'PolymarketWithdrawal',
+                reasonCode: lastFailureWasUserRejection.current ? 'user_rejected' : 'provider_withdrawal_failed',
+                action: 'polymarket_withdrawal',
+                provider: wallet?.providerName,
+                ...lifecycleContextFromSwap(swapBasicData, swapDetails),
+                swapId,
+            })
+        }
         submittingRef.current = true
         setError(undefined)
         setRejected(false)
@@ -118,6 +137,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
             return { ...action, activeSwapId }
         }
 
+        let lifecycleSwapId = swapId
         try {
             if (!sourceAddress) throw new Error('No connected Polymarket account')
             if (!source_network || !source_token || !destination_network || !destination_token) throw new Error('Unsupported Polymarket network')
@@ -131,9 +151,19 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
             if (!Number.isFinite(A) || A <= 0) throw new Error('Invalid amount')
 
             const { depository, depositCallData, activeSwapId } = await resolveSwapAndDepositAction(amount)
-
-            // Resolves with a (possibly empty) hash on success; throws on rejection/failure.
-            const txHash = await executeTransfer({
+            lifecycleSwapId = activeSwapId
+            const txHash = await executeWalletOperation({
+                context: {
+                    ...lifecycleContextFromSwap(swapBasicData, swapDetails),
+                    swapId: activeSwapId,
+                    path: 'PolymarketWithdrawal',
+                    action: 'polymarket_withdrawal',
+                    provider: wallet?.providerName,
+                },
+                onLifecycle: onSwapLifecycle,
+                allowEmptyHash: true,
+                isActive: () => mountedRef.current,
+            }, () => executeTransfer({
                 network: source_network,
                 token: source_token,
                 destinationNetwork: destination_network,
@@ -146,22 +176,28 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
                 amountExact: amount,
                 callData: depositCallData,
                 selectedWallet: wallet!,
-            }, wallet, (info) => { if (mountedRef.current) setProgress(info) })
+            }, wallet, (info) => { if (mountedRef.current) setProgress(info) }))
 
             if (!mountedRef.current) return
 
             // Success — hand off to the standard Processing screen by recording a pending input.
-            useSwapTransactionStore.getState().setSwapTransaction(activeSwapId, BackendTransactionStatus.Pending, txHash || '')
+            useSwapTransactionStore.getState().setSwapTransaction(activeSwapId, BackendTransactionStatus.Pending, txHash)
             onWalletWithdrawalSuccess?.()
         } catch (e) {
             if (!mountedRef.current) return
+            lastFailureWasUserRejection.current = isUserRejection(e)
             // A declined wallet prompt is a user action, not an error to log.
-            if ((e as Error)?.name === ActionMessageType.TransactionRejected) {
+            if (lastFailureWasUserRejection.current) {
                 setRejected(true)
                 return
             }
-            logWithdrawalError(e, { swapId, fromAddress: sourceAddress })
-            setError({ header: (e as any)?.header ?? 'Withdrawal failed', details: (e as Error)?.message || 'Unexpected error occurred.' })
+            logWithdrawalError(e, { swapId: lifecycleSwapId, fromAddress: sourceAddress })
+            // Preserve the provider's UI label even when it cannot establish a cancellation for telemetry.
+            if ((e as Error)?.name === ActionMessageType.TransactionRejected) {
+                setRejected(true)
+            } else {
+                setError({ header: (e as any)?.header ?? 'Withdrawal failed', details: (e as Error)?.message || 'Unexpected error occurred.' })
+            }
         } finally {
             if (mountedRef.current) {
                 setLoading(false)
@@ -169,7 +205,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
             }
             submittingRef.current = false
         }
-    }, [sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, networks, sourceRoutes, depositActionsResponse, swapId, swapDetails, refuel, initialSettings, wallet, createSwap, setSwapId, executeTransfer, onWalletWithdrawalSuccess, swapBasicData.requested_amount])
+    }, [sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, networks, sourceRoutes, depositActionsResponse, swapId, swapDetails, refuel, initialSettings, wallet, createSwap, setSwapId, executeTransfer, onWalletWithdrawalSuccess, swapBasicData, rejected, error, onSwapLifecycle])
 
     return {
         handleWithdraw,

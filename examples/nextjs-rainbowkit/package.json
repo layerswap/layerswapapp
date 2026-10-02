@@ -6,14 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "audit": "audit-ci --config audit-ci.json"
   },
   "dependencies": {
     "@layerswap/wallet-evm": "next",
     "@layerswap/widget": "next",
     "@rainbow-me/rainbowkit": "^2.2.9",
     "@tanstack/react-query": "^5.90.7",
-    "next": "^15.3.3",
+    "next": "^15.5.26",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "viem": "^2.38.6",
@@ -24,11 +25,32 @@
     "@tailwindcss/postcss": "^4.1.13",
     "@types/node": "^20.14.8",
     "@types/react": "^18.3.1",
-    "eslint-config-next": "^15.1.7",
+    "eslint-config-next": "^15.5.26",
     "tailwindcss": "^4.0.15",
-    "typescript": "5.5.4"
+    "typescript": "5.5.4",
+    "audit-ci": "7.1.0"
   },
   "engines": {
-    "node": ">=20.9.0"
+    "node": ">=22.12.0"
+  },
+  "packageManager": "yarn@1.22.22",
+  "resolutions": {
+    "elliptic": "6.6.1",
+    "@metamask/sdk": "0.33.1",
+    "@metamask/sdk-communication-layer": "0.33.1",
+    "lodash": "4.18.0",
+    "postcss": "8.5.23",
+    "uuid": "11.1.1",
+    "axios": "1.18.1",
+    "sharp": "0.35.4",
+    "@walletconnect/ethereum-provider": "2.25.0",
+    "@walletconnect/universal-provider": "2.25.0",
+    "@walletconnect/sign-client": "2.25.0",
+    "@walletconnect/utils": "2.25.0",
+    "@walletconnect/relay-auth": "1.1.0",
+    "**/@ethersproject/providers/ws": "7.5.11",
+    "@reown/appkit": "1.8.24",
+    "**/@walletconnect/jsonrpc-ws-connection/ws": "7.5.11",
+    "**/ws": "8.21.0"
   }
 }

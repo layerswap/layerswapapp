@@ -1,4 +1,4 @@
-import { ActionMessageType, NetworkType } from '@layerswap/widget-types';
+import { NetworkType } from '@layerswap/widget-types';
 import { TransferProvider, TransferProps, TransferProgress } from "@layerswap/widget-types";
 import { switchChain } from "@wagmi/core"
 import { getEvmConfig } from "../../service/getEvmConfig"
@@ -6,16 +6,18 @@ import { HyperliquidClient } from "./hyperliquidClient"
 import { signSendToEvm, signUsdClassTransfer } from "./withdraw"
 import { planWithdrawal } from "./planWithdrawal"
 import { resolveHyperliquidConfig, HyperliquidConfig, HYPERLIQUID_DEX_SPOT, HYPERLIQUID_WITHDRAW_HEADROOM, HYPERLIQUID_TRANSFER_POLL_INTERVAL_MS, HYPERLIQUID_TRANSFER_POLL_TIMEOUT_MS } from "./constants"
-import { resolveHyperliquidError, isUserRejection } from "./resolveError"
+import { resolveHyperliquidError } from "./resolveError"
+import { isEvmUserRejection } from "../../evmUtils/resolveError"
+import { userRejectedError } from "@layerswap/wallet-core/errors"
 
 const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
 
-/** Thrown for a user-declined wallet prompt; the widget maps this to a "rejected" UI. */
-const rejected = (): Error => {
-    const e = new Error('Transaction rejected')
-    e.name = ActionMessageType.TransactionRejected
-    return e
-}
+/**
+ * Thrown for a user-declined wallet prompt: rejected UI copy plus the
+ * `user_rejected` classification the host and telemetry read. Exported so the
+ * mapping is testable without a wallet.
+ */
+export const rejected = (cause: unknown): Error => userRejectedError({ cause })
 
 /** A surfaced failure: `message` is the user-facing detail, `header` the title. */
 const fail = (header: string, details: string): Error => {
@@ -85,7 +87,7 @@ export function createHyperliquidTransfer(): TransferProvider {
             try {
                 await switchChain(config, { chainId: hlConfig.signatureChainId })
             } catch (switchErr) {
-                if (isUserRejection(switchErr)) throw rejected()
+                if (isEvmUserRejection(switchErr)) throw rejected(switchErr)
                 throw fail('Wrong network', 'Switch your wallet to Ethereum to sign the withdrawal, then try again.')
             }
 
@@ -126,7 +128,7 @@ export function createHyperliquidTransfer(): TransferProvider {
                     })
                 } catch (signErr) {
                     onProgress?.(undefined)
-                    if (isUserRejection(signErr)) throw rejected()
+                    if (isEvmUserRejection(signErr)) throw rejected(signErr)
                     throw signErr
                 }
 
@@ -159,7 +161,7 @@ export function createHyperliquidTransfer(): TransferProvider {
                     sourceDex,
                 })
             } catch (signErr) {
-                if (isUserRejection(signErr)) throw rejected()
+                if (isEvmUserRejection(signErr)) throw rejected(signErr)
                 throw signErr
             }
 

@@ -1,12 +1,13 @@
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
-import { Formik, useFormikContext } from "formik";
+import { useFormikContext } from "formik";
 import { Partner } from "@/Models/Partner";
+import SwapForm from "@/components/Pages/Swap/Form/SwapForm";
 import DepositAddressForm from "@/components/Pages/Swap/Form/DepositAddressForm";
 import ReceivePicker from "@/components/Pages/Swap/Form/DepositAddressForm/ReceivePicker";
 import { ValidationProvider } from "@/context/validationContext";
 import { SwapDataProvider, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import { useInitialSettings } from "@/context/settings";
-import { ApiError, LSAPIKnownErrorCode } from "@/Models/ApiError";
+import { type ApiError, LSAPIKnownErrorCode } from "@layerswap/widget-types";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import { useDepositInitialValues, useDepositSelection } from "../depositSelectionContext";
@@ -91,6 +92,8 @@ const DepositAddressFlow: FC<Props & { initialSwapData?: SwapResponse }> = ({ pa
 
     // The seeded swap came from the prefetcher — report it as used so the
     // integrator's onSwapCreate fires and "Deposit more" creates a fresh one.
+    // DepositAddressForm never auto-submits while a swap id is set, so the
+    // prefetch provider synthesizes form_submitted for this hand-over.
     useEffect(() => {
         if (initialSwapData) markSwapUsed(initialSwapData);
     }, []);
@@ -128,7 +131,9 @@ const DepositAddressFlow: FC<Props & { initialSwapData?: SwapResponse }> = ({ pa
     );
 
     return (
-        <Formik initialValues={initialValues} validateOnMount onSubmit={handleSubmit}>
+        // Auto-submit (DepositAddressForm) goes through Formik submit, so SwapForm
+        // emits form_submitted per creation attempt, including after "Deposit more".
+        <SwapForm mode="deposit-widget-address" submitPath="DepositAddressFlow" submitAction="auto" initialValues={initialValues} validateOnMount onSubmit={handleSubmit}>
             <div className="flex flex-col gap-3">
                 <PinDestinationAddress destinationAddress={destinationAddress} />
                 <ReportDepositCloseLock />
@@ -144,7 +149,7 @@ const DepositAddressFlow: FC<Props & { initialSwapData?: SwapResponse }> = ({ pa
                     />
                 </ValidationProvider>
             </div>
-        </Formik>
+        </SwapForm>
     );
 };
 

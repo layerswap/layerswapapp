@@ -1,6 +1,3 @@
-import { BaseError } from "viem"
-import { resolveError } from "../../evmUtils/resolveError"
-
 export type StepError = { header: string; details: string }
 
 /**
@@ -16,12 +13,4 @@ export function resolveHyperliquidError(message: string): StepError {
     if (lower.includes('does not exist') || lower.includes('account') || lower.includes('user'))
         return { header: 'No Hyperliquid account', details: 'This wallet has no Hyperliquid account or balance.' }
     return { header: 'Withdrawal failed', details: message || 'Hyperliquid rejected the withdrawal.' }
-}
-
-/** Whether a signing error is the user declining the wallet prompt. */
-export function isUserRejection(err: unknown): boolean {
-    if (resolveError(err as BaseError) === 'transaction_rejected') return true
-    if (err instanceof Error && /user rejected|user denied|rejected the request/i.test(err.message)) return true
-    const code = (err as any)?.code ?? (err as any)?.cause?.code
-    return code === 4001
 }

@@ -24,6 +24,14 @@ export type WidgetProps = SharedWidgetProps<WagmiConfig, ReactNode>;
 export type DepositWidgetProps = SharedDepositWidgetProps<WagmiConfig, ReactNode>;
 export type {
   WidgetCallbacks,
+  ErrorEventType,
+  SwapStatusEvent,
+  SwapLifecycleEvent,
+  WidgetTelemetryEvent,
+  WidgetTelemetryHandler,
+  WidgetFlowStep,
+  WidgetOperation,
+  WidgetOperationOutcome,
   WalletDefaults,
   WalletProviderId,
   DepositConfig,

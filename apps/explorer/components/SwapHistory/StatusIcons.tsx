@@ -24,11 +24,6 @@ const STATUS_CONFIG: Record<string, StatusConfig> = {
     label: "Refunded",
     variant: "error",
   },
-  [SwapStatus.Cancelled]: {
-    label: "Cancelled",
-    variant: "error",
-    icon: GreyIcon,
-  },
   [SwapStatus.Expired]: {
     label: "Expired",
     variant: "error",
@@ -36,11 +31,6 @@ const STATUS_CONFIG: Record<string, StatusConfig> = {
   },
   [SwapStatus.UserTransferPending]: {
     label: "Deposit pending",
-    variant: "warning",
-    icon: PendingDot,
-  },
-  [SwapStatus.UserTransferDelayed]: {
-    label: "Delayed",
     variant: "warning",
     icon: PendingDot,
   },

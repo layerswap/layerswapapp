@@ -1,4 +1,4 @@
-import { FC, useEffect, useState, type ReactNode } from 'react'
+import { FC, useCallback, useEffect, useState, type ReactNode } from 'react'
 import type { JSX } from 'react';
 import { Widget } from '@/components/Widget/Index';
 import { useSwapDataState } from '@/context/swap';
@@ -16,6 +16,7 @@ import { useSwapPrerequisites } from '@/hooks/useSwapPrerequisites';
 import { prerequisitesFromSwap } from '@/lib/prerequisites/context';
 import { PrerequisiteNotice } from '@/components/SwapPrerequisites/PrerequisiteNotice';
 import SwapSummary from './Summary';
+import { lifecycleContextFromSwap } from '@/lib/swapLifecycle';
 
 type Props = {
     type: "widget" | "contained",
@@ -26,7 +27,7 @@ type Props = {
 
 const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, partner, onCancelWithdrawal }) => {
     const { swapBasicData, swapDetails, refuel, depositActionsResponse, quote, quoteIsLoading } = useSwapDataState()
-    const { onBackClick } = useCallbacks()
+    const { onBackClick, onSwapLifecycle } = useCallbacks()
 
     // Polls the gasless deposit (paymaster) authorization while it's in flight; self-gates on
     // the authorization marker, so it's a no-op for non-gasless swaps.
@@ -35,6 +36,34 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, partner, onCa
     const resolved = useResolvedSwapStatus()
     const prerequisites = useSwapPrerequisites(prerequisitesFromSwap(swapBasicData, quote?.receive_amount), resolved.showWithdrawScreen)
     const { failureReason, canRetry, retry, gaslessFailureMessage, canSwitchToStandard, switchToStandard } = useSwapRetry()
+
+    const handleRetry = useCallback(() => {
+        if (swapBasicData) {
+            onSwapLifecycle({
+                step: 'retry_requested',
+                stage: 'swap',
+                outcome: 'started',
+                path: 'SwapDetails',
+                reasonCode: failureReason || 'swap_retry',
+                ...lifecycleContextFromSwap(swapBasicData, swapDetails),
+            })
+        }
+        retry()
+    }, [failureReason, onSwapLifecycle, retry, swapBasicData, swapDetails])
+
+    const handleSwitchToStandard = useCallback(() => {
+        if (swapBasicData) {
+            onSwapLifecycle({
+                step: 'retry_requested',
+                stage: 'swap',
+                outcome: 'started',
+                path: 'SwapDetails',
+                reasonCode: 'switch_to_standard_transfer',
+                ...lifecycleContextFromSwap(swapBasicData, swapDetails),
+            })
+        }
+        switchToStandard()
+    }, [onSwapLifecycle, swapBasicData, swapDetails, switchToStandard])
 
     if (!swapBasicData) return <SwapDetailsSceleton />
 
@@ -52,18 +81,18 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, partner, onCa
                                 ? <ManualWithdraw swapBasicData={swapBasicData} depositActions={depositActionsResponse} refuel={refuel} partner={partner} type={type} quote={quote} isQuoteLoading={quoteIsLoading} />
                                 : <Withdraw type={type} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal} partner={partner} />
                             : <div className='space-y-3 w-full h-full'>
-                                <Processing failureReason={failureReason} />
+                                <Processing />
                                 {
                                     canRetry &&
                                     <div className='space-y-2'>
                                         {gaslessFailureMessage &&
                                             <p className='text-sm text-secondary-text px-1'>{gaslessFailureMessage}</p>
                                         }
-                                        <SubmitButton isDisabled={false} isSubmitting={false} onClick={retry}>
+                                        <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleRetry}>
                                             Try again
                                         </SubmitButton>
                                         {canSwitchToStandard &&
-                                            <SubmitButton buttonStyle='secondary' isDisabled={false} isSubmitting={false} onClick={switchToStandard}>
+                                            <SubmitButton buttonStyle='secondary' isDisabled={false} isSubmitting={false} onClick={handleSwitchToStandard}>
                                                 Switch to standard transfer
                                             </SubmitButton>
                                         }

@@ -2,8 +2,10 @@ import { NetworkType, ActionMessageType } from '@layerswap/widget-types';
 import { Network } from "@layerswap/widget-types";
 import { TransferProvider, TransferProps } from "@layerswap/widget-types";
 import { foregroundWalletApp } from "@layerswap/wallet-core"
+import { walletActionError } from "@layerswap/wallet-core/errors"
 import type { Connection, Transaction } from "@solana/web3.js"
 import { configureAndSendCurrentTransaction } from "./transactionSender"
+import { toTransferError } from "./toTransferError"
 import { svmAdapterManager } from "../service/svmAdapterManager"
 
 export function createSvmTransfer(): TransferProvider {
@@ -88,25 +90,8 @@ const validateTransferBalances = async (
     }
 
     if (insufficientTokens.length > 0) {
-        const error = new Error(`Insufficient balance for: ${insufficientTokens.join(', ')}`)
-        error.name = ActionMessageType.InsufficientFunds
-        throw error
+        throw walletActionError(ActionMessageType.InsufficientFunds, { message: `Insufficient balance for: ${insufficientTokens.join(', ')}` })
     }
-}
-
-const toTransferError = (error: unknown): Error => {
-    const message = error instanceof Error ? error.message : String(error)
-    const transferError = new Error(message)
-
-    if (error instanceof Error && error.name === ActionMessageType.InsufficientFunds) {
-        transferError.name = ActionMessageType.InsufficientFunds
-    } else if (message === "User rejected the request.") {
-        transferError.name = ActionMessageType.TransactionRejected
-    } else {
-        transferError.name = ActionMessageType.UnexpectedErrorMessage
-    }
-
-    return transferError
 }
 
 const deserializeTransaction = async (callData: string): Promise<Transaction> => {

@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Bundle the shared ESM packages, including their extensionless imports.
   transpilePackages: [
+    '@layerswap/wallet-core',
+    '@layerswap/ui-kit',
+    '@layerswap/widget-types',
     '@layerswap/widget',
     '@layerswap/wallet-evm',
     '@layerswap/wallet-bitcoin',

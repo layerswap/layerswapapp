@@ -1,4 +1,5 @@
 export * from "./api"
+export * from './chainRegistry'
 export * from './buildDeepLink'
 export * from "./createRegistryConnector"
 export * from "./connectorSource"

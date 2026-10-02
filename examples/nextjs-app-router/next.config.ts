@@ -7,7 +7,12 @@ const nextConfig: NextConfig = {
     config.externals.push('pino-pretty', 'lokijs', 'encoding')
     return config
   },
+  // Bundle the shared ESM packages, including their extensionless imports.
   transpilePackages: [
+    '@layerswap/utils',
+    '@layerswap/wallet-core',
+    '@layerswap/ui-kit',
+    '@layerswap/widget-types',
     '@layerswap/widget',
     '@layerswap/wallet-evm',
     '@layerswap/wallet-bitcoin',
@@ -19,7 +24,7 @@ const nextConfig: NextConfig = {
     '@layerswap/wallet-tron',
     '@layerswap/wallet-imtbl-passport',
     '@layerswap/wallet-module-loopring',
-    '@layerswap/wallets'
+    '@layerswap/wallets',
   ],
 };
 

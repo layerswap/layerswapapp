@@ -1,6 +1,6 @@
 import useSWR from 'swr'
 import LayerSwapApiClient from '@/lib/apiClients/layerSwapApiClient'
-import { ApiResponse } from '@/Models/ApiResponse'
+import type { ApiResponse } from '@layerswap/widget-types'
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
 
 export type DetailedQuoteRoute = {

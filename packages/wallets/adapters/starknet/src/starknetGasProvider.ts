@@ -1,6 +1,7 @@
 import { NetworkType } from '@layerswap/widget-types';
 import { formatUnits } from "@layerswap/utils";
-import { CallData, cairo, type Call, type EstimateFeeResponseOverhead } from "starknet";
+import { CallData, cairo, type Call } from "starknet";
+import type { EstimateFeeResponseOverhead } from "starknet-rpc";
 import { Network } from "@layerswap/widget-types";
 import { GasProvider, GasProps } from "@layerswap/widget-types";
 

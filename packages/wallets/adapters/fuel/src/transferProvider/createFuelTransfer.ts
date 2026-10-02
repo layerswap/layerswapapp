@@ -1,8 +1,8 @@
-import { ActionMessageType } from '@layerswap/widget-types';
 import { Network } from "@layerswap/widget-types";
 import { TransferProvider, TransferProps } from "@layerswap/widget-types";
 import { Provider } from '@fuel-ts/account'
 import { transactionBuilder } from "./transactionBuilder"
+import { toTransferError } from "./toTransferError"
 import { KnownInternalNames } from "@layerswap/utils";
 import { getFuelInstance, hasFuelInstance } from "../service/getFuel"
 
@@ -45,23 +45,7 @@ export function createFuelTransfer(): TransferProvider {
 
                 throw new Error("No transaction ID returned")
             } catch (error) {
-                const e = new Error()
-                e.message = error.message
-
-                if (error.message === "The account(s) sending the transaction don't have enough funds to cover the transaction."
-                    || error.message === "the target cannot be met due to no coins available or exceeding the 255 coin limit."
-                ) {
-                    e.name = ActionMessageType.InsufficientFunds
-                    throw e
-                } else if (error.message === "Request cancelled without user response!"
-                    || error.message === "User rejected the transaction!"
-                    || error.message === "User canceled sending transaction") {
-                    e.name = ActionMessageType.TransactionRejected
-                    throw e
-                } else {
-                    e.name = ActionMessageType.UnexpectedErrorMessage
-                    throw e
-                }
+                throw toTransferError(error)
             }
         }
     }

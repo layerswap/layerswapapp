@@ -1,0 +1,180 @@
+{
+  "$comment": [
+    "Cross-consumer contract for onSwapLifecycle observation dedupe. Each sequence is fed, in order, to the three",
+    "consumers: host = @layerswap/widget createCallbackObservations().lifecycle (the public onSwapLifecycle callback),",
+    "telemetry = @layerswap/widget createWidgetTelemetry().lifecycle with a mounted flow and an active onTelemetry",
+    "handler, faro = apps/bridge createSwapLifecycleTelemetry().record. `delivered` lists the indices each consumer",
+    "must emit. Invariants every consumer test asserts: delivered.host is a subset of delivered.faro, which is a subset",
+    "of all indices, and delivered.telemetry equals delivered.host for every index at or after the first",
+    "form_submitted. Telemetry legitimately differs before a form is submitted: it follows only a journey submitted",
+    "from its own form, so without form_submitted it ignores swap_created and every later event carrying that swap id,",
+    "and it never forwards flow_error (a diagnostic, not a funnel step). Harness defaults for omitted fields:",
+    "stage 'flow', outcome 'pending', path 'fixture'; `note` is documentation and stripped before delivery."
+  ],
+  "sequences": {
+    "polling_replay": {
+      "description": "Status polling re-renders the same phase and transaction; only real transitions are delivered.",
+      "events": [
+        { "step": "form_submitted" },
+        { "step": "swap_created", "swapId": "swap-a" },
+        { "step": "output_transfer_pending", "swapId": "swap-a", "phase": "output_pending", "status": "ls_transfer_pending" },
+        { "step": "output_transfer_pending", "swapId": "swap-a", "phase": "output_pending", "status": "ls_transfer_pending", "note": "poll replay" },
+        { "step": "output_transfer_pending", "swapId": "swap-a", "phase": "output_pending", "status": "ls_transfer_pending", "fromAddress": "0xlate", "note": "address enrichment" },
+        { "step": "output_transaction_detected", "swapId": "swap-a", "outcome": "succeeded", "outputTransactionHash": "out-1" },
+        { "step": "output_transaction_detected", "swapId": "swap-a", "outcome": "succeeded", "outputTransactionHash": "out-1", "confirmations": 2, "note": "confirmation update" },
+        { "step": "swap_completed", "swapId": "swap-a", "outcome": "succeeded", "phase": "completed", "status": "completed" },
+        { "step": "swap_completed", "swapId": "swap-a", "outcome": "succeeded", "phase": "completed", "status": "completed", "note": "poll replay" }
+      ],
+      "delivered": { "host": [0, 1, 2, 5, 7], "telemetry": [0, 1, 2, 5, 7], "faro": [0, 1, 2, 5, 7] }
+    },
+    "strict_mode_replay": {
+      "description": "React StrictMode replays Processing's interleaved effects; each milestone is delivered once and confirmation counts do not advance it.",
+      "events": [
+        { "step": "form_submitted" },
+        { "step": "swap_created", "swapId": "swap-a" },
+        { "step": "input_transaction_detected", "swapId": "swap-a", "transactionHash": "in-1" },
+        { "step": "input_transfer_confirmed", "swapId": "swap-a", "outcome": "succeeded", "transactionHash": "in-1", "confirmations": 10, "maxConfirmations": 10 },
+        { "step": "output_transaction_detected", "swapId": "swap-a", "outcome": "succeeded", "transactionHash": "out-1" },
+        { "step": "swap_completed", "swapId": "swap-a", "outcome": "succeeded", "phase": "completed" },
+        { "step": "input_transaction_detected", "swapId": "swap-a", "transactionHash": "in-1", "note": "replay" },
+        { "step": "input_transfer_confirmed", "swapId": "swap-a", "outcome": "succeeded", "transactionHash": "in-1", "confirmations": 10, "maxConfirmations": 10, "note": "replay" },
+        { "step": "output_transaction_detected", "swapId": "swap-a", "outcome": "succeeded", "transactionHash": "out-1", "note": "replay" },
+        { "step": "swap_completed", "swapId": "swap-a", "outcome": "succeeded", "phase": "completed", "note": "replay" },
+        { "step": "input_transfer_confirmed", "swapId": "swap-a", "outcome": "succeeded", "transactionHash": "in-1", "confirmations": 11, "maxConfirmations": 10, "note": "confirmation-only" }
+      ],
+      "delivered": { "host": [0, 1, 2, 3, 4, 5], "telemetry": [0, 1, 2, 3, 4, 5], "faro": [0, 1, 2, 3, 4, 5] }
+    },
+    "phase_recovery": {
+      "description": "A -> B -> A is a real recovery and is delivered; replaying A alone is not.",
+      "events": [
+        { "step": "form_submitted" },
+        { "step": "swap_created", "swapId": "swap-a" },
+        { "step": "output_transfer_pending", "swapId": "swap-a", "phase": "output_pending" },
+        { "step": "swap_delayed", "swapId": "swap-a", "outcome": "delayed", "phase": "delayed" },
+        { "step": "output_transfer_pending", "swapId": "swap-a", "phase": "output_pending", "note": "recovery" },
+        { "step": "output_transfer_pending", "swapId": "swap-a", "phase": "output_pending", "note": "replay" }
+      ],
+      "delivered": { "host": [0, 1, 2, 3, 4], "telemetry": [0, 1, 2, 3, 4], "faro": [0, 1, 2, 3, 4] }
+    },
+    "deposit_address_copied_twice": {
+      "description": "A user action is repeatable: the second copy click is a new observation for every consumer.",
+      "events": [
+        { "step": "form_submitted" },
+        { "step": "swap_created", "swapId": "swap-a" },
+        { "step": "awaiting_user_deposit", "swapId": "swap-a", "phase": "awaiting_deposit" },
+        { "step": "deposit_address_copied", "swapId": "swap-a", "outcome": "started", "note": "first click" },
+        { "step": "deposit_address_copied", "swapId": "swap-a", "outcome": "started", "note": "second click" },
+        { "step": "awaiting_user_deposit", "swapId": "swap-a", "phase": "awaiting_deposit", "note": "replay" }
+      ],
+      "delivered": { "host": [0, 1, 2, 3, 4], "telemetry": [0, 1, 2, 3, 4], "faro": [0, 1, 2, 3, 4] }
+    },
+    "retry_after_identical_failure": {
+      "description": "retry_requested starts a new attempt, so an identical swap_failed after it is a new observation.",
+      "events": [
+        { "step": "form_submitted" },
+        { "step": "swap_created", "swapId": "swap-a" },
+        { "step": "wallet_prompt_opened", "swapId": "swap-a", "outcome": "started" },
+        { "step": "wallet_action_failed", "swapId": "swap-a", "outcome": "failed", "reasonCode": "timeout", "occurrenceId": "o-1" },
+        { "step": "swap_failed", "swapId": "swap-a", "outcome": "failed", "phase": "failed", "reasonCode": "timeout" },
+        { "step": "swap_failed", "swapId": "swap-a", "outcome": "failed", "phase": "failed", "reasonCode": "timeout", "note": "replay" },
+        { "step": "retry_requested", "swapId": "swap-a", "outcome": "started" },
+        { "step": "swap_failed", "swapId": "swap-a", "outcome": "failed", "phase": "failed", "reasonCode": "timeout", "note": "same failure, new attempt" },
+        { "step": "swap_failed", "swapId": "swap-a", "outcome": "failed", "phase": "failed", "reasonCode": "timeout", "note": "replay" }
+      ],
+      "delivered": { "host": [0, 1, 2, 3, 4, 6, 7], "telemetry": [0, 1, 2, 3, 4, 6, 7], "faro": [0, 1, 2, 3, 4, 6, 7] }
+    },
+    "repeated_rejection_reports": {
+      "description": "Attempt results are unslotted: identical rejections, connection and network failures are delivered every time they are reported.",
+      "events": [
+        { "step": "form_submitted" },
+        { "step": "swap_created", "swapId": "swap-a" },
+        { "step": "wallet_prompt_opened", "swapId": "swap-a", "outcome": "started" },
+        { "step": "wallet_action_rejected", "swapId": "swap-a", "outcome": "rejected", "reasonCode": "user_rejected" },
+        { "step": "wallet_action_rejected", "swapId": "swap-a", "outcome": "rejected", "reasonCode": "user_rejected", "note": "reported again" },
+        { "step": "wallet_connection_started", "swapId": "swap-a", "outcome": "started" },
+        { "step": "wallet_connection_failed", "swapId": "swap-a", "outcome": "failed", "reasonCode": "same-reason" },
+        { "step": "wallet_connection_failed", "swapId": "swap-a", "outcome": "failed", "reasonCode": "same-reason", "note": "reported again" },
+        { "step": "network_switch_started", "swapId": "swap-a", "outcome": "started" },
+        { "step": "network_switch_failed", "swapId": "swap-a", "outcome": "failed", "reasonCode": "same-reason" },
+        { "step": "network_switch_failed", "swapId": "swap-a", "outcome": "failed", "reasonCode": "same-reason", "note": "reported again" }
+      ],
+      "delivered": { "host": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "telemetry": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "faro": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] }
+    },
+    "transfer_blocked_transitions": {
+      "description": "transfer_blocked is emitted once per reason transition by the widget and stays repeatable in every consumer.",
+      "events": [
+        { "step": "form_submitted" },
+        { "step": "swap_created", "swapId": "swap-a" },
+        { "step": "awaiting_wallet_action", "swapId": "swap-a", "phase": "awaiting_wallet" },
+        { "step": "transfer_blocked", "swapId": "swap-a", "outcome": "blocked", "reasonCode": "rpc_unhealthy" },
+        { "step": "transfer_blocked", "swapId": "swap-a", "outcome": "blocked", "reasonCode": "insufficient_gas" },
+        { "step": "transfer_blocked", "swapId": "swap-a", "outcome": "blocked", "reasonCode": "rpc_unhealthy", "note": "re-block after recovery" }
+      ],
+      "delivered": { "host": [0, 1, 2, 3, 4, 5], "telemetry": [0, 1, 2, 3, 4, 5], "faro": [0, 1, 2, 3, 4, 5] }
+    },
+    "wallet_connected_replay": {
+      "description": "wallet_connected is a wallet-connection result, not a phase: a replayed report is delivered.",
+      "events": [
+        { "step": "form_submitted" },
+        { "step": "swap_created", "swapId": "swap-a" },
+        { "step": "wallet_connection_started", "swapId": "swap-a", "outcome": "started" },
+        { "step": "wallet_connected", "swapId": "swap-a", "outcome": "succeeded", "provider": "test-wallet" },
+        { "step": "wallet_connected", "swapId": "swap-a", "outcome": "succeeded", "provider": "test-wallet", "note": "replay" },
+        { "step": "awaiting_wallet_action", "swapId": "swap-a", "phase": "awaiting_wallet" },
+        { "step": "awaiting_wallet_action", "swapId": "swap-a", "phase": "awaiting_wallet", "note": "replay" }
+      ],
+      "delivered": { "host": [0, 1, 2, 3, 4, 5], "telemetry": [0, 1, 2, 3, 4, 5], "faro": [0, 1, 2, 3, 4, 5] }
+    },
+    "flow_closed_replay": {
+      "description": "flow_closed is a user action: a replayed close after the terminal phase is delivered, the terminal phase replay is not.",
+      "events": [
+        { "step": "form_submitted" },
+        { "step": "swap_created", "swapId": "swap-a" },
+        { "step": "swap_completed", "swapId": "swap-a", "outcome": "succeeded", "phase": "completed" },
+        { "step": "swap_completed", "swapId": "swap-a", "outcome": "succeeded", "phase": "completed", "note": "replay" },
+        { "step": "flow_closed", "swapId": "swap-a", "outcome": "succeeded", "phase": "completed" },
+        { "step": "flow_closed", "swapId": "swap-a", "outcome": "succeeded", "phase": "completed", "note": "replay" }
+      ],
+      "delivered": { "host": [0, 1, 2, 4, 5], "telemetry": [0, 1, 2, 4, 5], "faro": [0, 1, 2, 4, 5] }
+    },
+    "deep_link_without_form": {
+      "description": "A swap opened from a link or history reports without form_submitted. Host and bridge deliver; telemetry follows only journeys submitted from its own form.",
+      "events": [
+        { "step": "swap_created", "swapId": "swap-a" },
+        { "step": "output_transfer_pending", "swapId": "swap-a", "phase": "output_pending" },
+        { "step": "output_transfer_pending", "swapId": "swap-a", "phase": "output_pending", "fromAddress": "0xlate", "note": "enrichment" },
+        { "step": "swap_completed", "swapId": "swap-a", "outcome": "succeeded", "phase": "completed" }
+      ],
+      "delivered": { "host": [0, 1, 3], "telemetry": [], "faro": [0, 1, 3] },
+      "telemetryNote": "No form_submitted: swap_created is ignored, so every later event for swap-a is a late unrelated swap to the mounted form."
+    },
+    "wallet_flow": {
+      "description": "Pre-creation wallet phase without a swap id, creation, prompt and submission. The phase reported again under the created swap id is a new per-swap observation.",
+      "events": [
+        { "step": "form_submitted" },
+        { "step": "awaiting_wallet_action", "phase": "awaiting_wallet" },
+        { "step": "awaiting_wallet_action", "phase": "awaiting_wallet", "note": "replay before creation" },
+        { "step": "swap_creation_started", "outcome": "started" },
+        { "step": "swap_created", "swapId": "swap-a" },
+        { "step": "awaiting_wallet_action", "swapId": "swap-a", "phase": "awaiting_wallet", "note": "same phase, now with swap id" },
+        { "step": "wallet_prompt_opened", "swapId": "swap-a", "outcome": "started" },
+        { "step": "transaction_submitted", "swapId": "swap-a", "outcome": "succeeded", "transactionHash": "in-1" },
+        { "step": "input_transfer_pending", "swapId": "swap-a", "phase": "input_pending", "inputTransactionHash": "in-1" },
+        { "step": "input_transfer_pending", "swapId": "swap-a", "phase": "input_pending", "inputTransactionHash": "in-1", "confirmations": 1, "note": "confirmation-only" }
+      ],
+      "delivered": { "host": [0, 1, 3, 4, 5, 6, 7, 8], "telemetry": [0, 1, 3, 4, 5, 6, 7, 8], "faro": [0, 1, 3, 4, 5, 6, 7, 8] }
+    },
+    "flow_error_diagnostics": {
+      "description": "flow_error is a diagnostic: the host and bridge deliver every report, telemetry never forwards it.",
+      "events": [
+        { "step": "form_submitted" },
+        { "step": "swap_created", "swapId": "swap-a" },
+        { "step": "flow_error", "swapId": "swap-a", "outcome": "failed", "reason": "rpc diagnostic" },
+        { "step": "flow_error", "swapId": "swap-a", "outcome": "failed", "reason": "rpc diagnostic", "note": "reported again" },
+        { "step": "output_transfer_pending", "swapId": "swap-a", "phase": "output_pending" }
+      ],
+      "delivered": { "host": [0, 1, 2, 3, 4], "telemetry": [0, 1, 4], "faro": [0, 1, 2, 3, 4] },
+      "telemetryNote": "flow_error is not a funnel step; onTelemetry consumers receive diagnostics through onError instead."
+    }
+  }
+}

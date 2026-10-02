@@ -1,7 +1,8 @@
 import KnownInternalNames from '@layerswap/utils/known-ids'
-import type { NetworkType, WalletConnectConfig } from '@layerswap/widget-types'
+import type { WalletConnectConfig } from '@layerswap/widget-types'
 import { LazySwapPrerequisiteProvider } from '@layerswap/widget-types'
 import type { WalletProviderDescriptor } from '@layerswap/wallet-core/types'
+import { stellarWalletConnectChain } from '@layerswap/wallet-stellar'
 import { defineWalletDescriptor, type DescriptorNetworkOptions } from './defineWalletDescriptor'
 import { readStorageJson } from './persistedSession'
 
@@ -29,7 +30,7 @@ export function createStellarDescriptor(
         ),
         capabilities: walletConnect?.projectId ? {
             walletConnectRegistry: {
-                networkTypes: ['stellar' as NetworkType],
+                networkTypes: [stellarWalletConnectChain.networkType],
             },
         } : undefined,
         autofillSupportedNetworks: supportedNetworks,
