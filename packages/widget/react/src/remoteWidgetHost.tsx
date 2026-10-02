@@ -14,6 +14,8 @@ import {
   ErrorInfo,
 } from 'react';
 import React from 'react';
+import * as ReactJSXRuntime from 'react/jsx-runtime';
+import * as ReactJSXDevRuntime from 'react/jsx-dev-runtime';
 import ReactDOM from 'react-dom';
 import {
   resolveSource,
@@ -70,6 +72,16 @@ function hostReactShare(): Record<string, SharedLib> {
     react: {
       version: (React as { version?: string }).version ?? '0.0.0',
       lib: () => React,
+      requiredVersion: '^18.0.0 || ^19.0.0',
+    },
+    'react/jsx-runtime': {
+      version: (React as { version?: string }).version ?? '0.0.0',
+      lib: () => ReactJSXRuntime,
+      requiredVersion: '^18.0.0 || ^19.0.0',
+    },
+    'react/jsx-dev-runtime': {
+      version: (React as { version?: string }).version ?? '0.0.0',
+      lib: () => ReactJSXDevRuntime,
       requiredVersion: '^18.0.0 || ^19.0.0',
     },
     'react-dom': {
