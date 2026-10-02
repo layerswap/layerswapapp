@@ -956,6 +956,70 @@ test('a self-paid prerequisite cannot lock replacement but an unclassified accep
     }), true, 'transaction evidence still locks replacement')
 })
 
+for (const [name, actions] of [
+    ['self-paid approval', [
+        { step: 'approve_permit2', status: 'action_required', type: 'transfer', amount: 0, to_address: '0x456' },
+        { step: 'sign', status: 'pending' },
+        { step: 'publish', status: 'pending' },
+    ]],
+    ['self-paid signing', [
+        { step: 'approve_permit2', status: 'completed' },
+        actionsFor('self-paid')[0],
+        { step: 'publish', status: 'pending' },
+    ]],
+    ['gasless approval', [
+        { step: 'approve_permit2', status: 'action_required', type: 'transfer', amount: 0, to_address: '0x456' },
+        { step: 'sign', status: 'pending' },
+    ]],
+]) {
+    test(`future pending steps behind ${name} do not lock replacement`, () => {
+        assert.equal(swapProgress.hasSwapExecutionProgress({ depositActions: actions }), false)
+    })
+}
+
+test('current pending work and completed execution still lock replacement', () => {
+    for (const step of ['sign', 'publish', 'deposit']) {
+        for (const status of ['pending', 'completed']) {
+            assert.equal(swapProgress.hasSwapExecutionProgress({ depositActions: [
+                { step: 'approve_permit2', status: 'completed' },
+                { step, status },
+            ] }), true, `${status} ${step} can still move funds`)
+        }
+    }
+})
+
+test('enabling gasless after rejecting self-paid signing creates a new swap with future pending steps', async () => {
+    const flow = createWorkflow()
+    flow.state.sourceToken = { contract: '0xtoken', supports_gasless_deposit: true, gasless_standard: 'eip3009' }
+    flow.state.apiActions = [
+        { step: 'approve_permit2', status: 'completed' },
+        actionsFor('self-paid')[0],
+        { step: 'publish', status: 'pending' },
+    ]
+    flow.render()
+    await flow.poll()
+    await flow.render().button.props.onClick()
+    assert.deepEqual(flow.calls.sign, ['self-paid'])
+    assert.deepEqual(flow.calls.storedTransactions, [], 'declining the prerequisite does not submit the swap')
+
+    flow.preferences.gaslessEnabled = true
+    let creates = 0
+    flow.state.createSwap = async () => {
+        creates++
+        assert.equal(flow.preferences.gaslessEnabled, true)
+        flow.state.apiActions = [{ ...actionsFor('gasless')[0], signing_standard: 'eip3009' }]
+        return { swap: { id: 'gasless-swap', metadata: {} }, quote: {}, deposit_actions: flow.state.apiActions }
+    }
+    await flow.render().button.props.onClick()
+
+    assert.equal(creates, 1, 'the changed preference replaces the unsubmitted self-paid swap')
+    assert.equal(flow.state.swapId, 'gasless-swap')
+    assert.deepEqual(flow.calls.sign, ['self-paid', 'gasless'], 'the old self-paid signature is never requested again')
+    assert.deepEqual(flow.calls.refresh, [[swapId, sourceAddress]], 'only the first attempt refreshes the old swap')
+    assert.deepEqual(flow.calls.transfer, [])
+    assert.deepEqual(flow.calls.errors, [])
+})
+
 test('the mounted controller and real polling resume a mined partial approval with identical calldata', async t => {
     const dom = new JSDOM('<div id="root"></div>', { url: 'https://widget.test' })
     const previous = Object.getOwnPropertyDescriptors(globalThis)

@@ -74,8 +74,12 @@ export function hasSwapExecutionProgress({
 
     if (!selfPaid && ((gaslessAuthorization && !authorizationFailed) || depositSignature)) return true
 
-    return depositActions?.some(action => {
+    const firstIncompleteIndex = depositActions?.findIndex(action => action.status !== 'completed') ?? -1
+
+    return depositActions?.some((action, index) => {
         if (action.status !== 'pending' && action.status !== 'completed') return false
+        // The backend also marks future steps pending; only the current step can have started.
+        if (action.status === 'pending' && index !== firstIncompleteIndex) return false
         if (action.step === 'publish' || action.step === 'deposit') return true
         return action.step === 'sign' && !selfPaid && !authorizationFailed
     }) ?? false

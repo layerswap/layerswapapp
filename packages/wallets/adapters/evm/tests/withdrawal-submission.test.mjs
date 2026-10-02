@@ -3,6 +3,8 @@ import { readFileSync } from 'node:fs'
 import test from 'node:test'
 import ts from 'typescript'
 import { formatUnits, parseUnits } from 'viem'
+import { create } from 'zustand'
+import { createJSONStorage, persist } from 'zustand/middleware'
 
 function loadProvider(path, imports) {
     const { outputText } = ts.transpileModule(readFileSync(new URL(path, import.meta.url), 'utf8'), {
@@ -15,6 +17,12 @@ function loadProvider(path, imports) {
     }, module, module.exports)
     return module.exports
 }
+
+const polymarketProtocol = loadProvider('../src/additionalProviders/polymarket/protocol.ts', {})
+const polymarketRelayer = loadProvider('../src/additionalProviders/polymarket/relayerClient.ts', {
+    './constants': { POLYMARKET_RELAYER_PROXY_URL: '/api/polymarket/relay' },
+    './protocol': polymarketProtocol,
+})
 
 const { default: KnownInternalNames } = loadProvider('../../../../utils/src/knownIds.ts', {})
 const widgetTypes = {
@@ -43,7 +51,7 @@ const registry = loadProvider('../../../../widget/core/src/lib/extendedRoutes/re
 })
 registry.setExtendedRouteProviders([hyperliquidProvider])
 
-function createWithdrawal(providerName, failure, split = { spot: 100_000_000_000, perps: 0, combined: 100_000_000_000 }) {
+function createWithdrawal(providerName, failure, split = { spot: 100_000_000_000, perps: 0, combined: 100_000_000_000 }, relayer = {}) {
     const events = []
     const signedAmounts = []
     const failed = new Error('Request timed out')
@@ -94,7 +102,7 @@ function createWithdrawal(providerName, failure, split = { spot: 100_000_000_000
             },
             './depositWithdraw': { buildPolymarketDepositCalls: () => [] },
             './safeWithdraw': { buildSafeBatchRequest: sign },
-            './relayerClient': { getRelayerNonce: async () => '1', isPolymarketDeployed: async () => true, submitRelayerTransaction: submit },
+            './relayerClient': { ...polymarketRelayer, getRelayerNonce: async () => '1', isPolymarketDeployed: async () => true, submitRelayerTransaction: submit, ...relayer },
             './constants': { resolvePolymarketConfig: () => ({}), POLYMARKET_USDC_E_ADDRESS: 'usdc' },
             './resolveError': { resolvePolymarketError: () => assert.fail('not a provider refusal') },
         })
@@ -107,9 +115,103 @@ function createWithdrawal(providerName, failure, split = { spot: 100_000_000_000
             token: { decimals: 6 }, amount: 1, amountInBaseUnits: '1000000',
             sourceAddress: 'source', depositAddress: 'deposit', callData: '0x12345678',
             ...params,
-            onSubmissionStateChange: phase => events.push(phase),
+            onSubmissionStateChange: phase => {
+                events.push(phase)
+                params.onSubmissionStateChange?.(phase)
+            },
         }),
     }
+}
+
+function createProviderExecution() {
+    const saved = new Map()
+    const storage = {
+        getItem: key => saved.get(key) ?? null,
+        setItem: (key, value) => saved.set(key, value),
+        removeItem: key => saved.delete(key),
+    }
+    const statuses = { Pending: 'pending', Failed: 'failed' }
+    const { useSwapTransactionStore: store } = loadProvider('../../../../widget/core/src/stores/swapTransactionStore.tsx', {
+        zustand: { create },
+        'zustand/middleware': { persist, createJSONStorage: () => createJSONStorage(() => storage) },
+        '../lib/apiClients/layerSwapApiClient': { BackendTransactionStatus: statuses },
+    })
+    const { executeProviderWithdrawal } = loadProvider('../../../../widget/core/src/components/Pages/Swap/Withdraw/WithdrawalProviders/executeProviderWithdrawal.ts', {
+        '@layerswap/wallet-core/errors': { isUserRejection: () => false },
+        '@/lib/apiClients/layerSwapApiClient': {
+            default: class {
+                GetSwapAsync = async id => ({ data: { swap: { id, status: 'user_transfer_pending', transactions: [] } } })
+            },
+            BackendTransactionStatus: statuses,
+            TransactionType: { Input: 'input' },
+        },
+        '@/helpers/swapProgress': { hasSwapExecutionProgress: () => false },
+        '@/stores/swapTransactionStore': { useSwapTransactionStore: store },
+    })
+    return {
+        store,
+        execute: flow => executeProviderWithdrawal({
+            swapId: 'swap-1', sourceAddress: 'source', prepare: async () => ({}), onReconcile: async () => {},
+            execute: (_, onSubmissionStateChange) => flow.execute({ onSubmissionStateChange }),
+        }),
+        reload: async () => {
+            const persisted = storage.getItem('swapTransactions')
+            store.setState({ swapTransactions: {}, stepTransactions: {}, pendingSubmissions: {} })
+            storage.setItem('swapTransactions', persisted)
+            await store.persist.rehydrate()
+        },
+    }
+}
+
+for (const reload of [false, true]) {
+    test(`Polymarket retries a disabled-provider refusal on the same swap${reload ? ' after reload' : ''}`, async t => {
+        const flow = createWithdrawal('Polymarket', undefined, undefined, { submitRelayerTransaction: polymarketRelayer.submitRelayerTransaction })
+        const execution = createProviderExecution()
+        let submissions = 0
+        t.mock.method(globalThis, 'fetch', async (_url, init) => {
+            assert.equal(init.method, 'POST')
+            submissions++
+            return submissions === 1
+                ? new Response(JSON.stringify({ error: polymarketProtocol.PROVIDER_DISABLED_CODE }), { status: 404 })
+                : new Response(JSON.stringify({ transactionID: 'accepted', state: 'STATE_NEW' }))
+        })
+
+        await assert.rejects(execution.execute(flow), {
+            header: 'Polymarket is unavailable',
+            message: 'Polymarket withdrawals are temporarily unavailable. Please try again later.',
+        })
+        assert.deepEqual(flow.events, ['preparing', 'sign', 'submitting', 'not_submitted'])
+        assert.deepEqual(execution.store.getState().pendingSubmissions, {})
+        assert.deepEqual(execution.store.getState().swapTransactions, {})
+        if (reload) await execution.reload()
+
+        assert.equal(await execution.execute(flow), '')
+        assert.equal(submissions, 2, 'the refused withdrawal can submit again')
+        assert.equal(execution.store.getState().swapTransactions['swap-1'].status, 'pending')
+        assert.equal(execution.store.getState().swapTransactions['swap-1'].hash, '')
+        assert.deepEqual(execution.store.getState().pendingSubmissions, {})
+    })
+}
+
+for (const [label, response] of [
+    ['transport failure', () => { throw new Error('provider_disabled') }],
+    ['unclassified proxy error', () => new Response(JSON.stringify({ error: 'Upstream unavailable' }), { status: 404 })],
+    ['malformed submit response', () => new Response(JSON.stringify({ state: 'STATE_NEW' }))],
+]) {
+    test(`Polymarket keeps ${label} blocked after reload`, async t => {
+        const flow = createWithdrawal('Polymarket', undefined, undefined, { submitRelayerTransaction: polymarketRelayer.submitRelayerTransaction })
+        const execution = createProviderExecution()
+        let submissions = 0
+        t.mock.method(globalThis, 'fetch', async () => { submissions++; return response() })
+
+        await assert.rejects(execution.execute(flow))
+        assert.deepEqual(flow.events, ['preparing', 'sign', 'submitting'])
+        assert.equal(execution.store.getState().pendingSubmissions['swap-1'], true)
+        await execution.reload()
+        await assert.rejects(execution.execute(flow), { header: 'Withdrawal status unknown' })
+        assert.equal(submissions, 1, 'an uncertain submission cannot send a second request')
+        assert.equal(execution.store.getState().pendingSubmissions['swap-1'], true)
+    })
 }
 
 for (const [baseUnits, decimals, expected] of [
