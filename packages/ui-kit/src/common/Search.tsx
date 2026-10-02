@@ -1,4 +1,4 @@
-import { useWindowDimensions } from "@layerswap/utils"
+import { useWindowDimensions } from "@layerswap/utils/react"
 import { DetailedHTMLProps, InputHTMLAttributes, useEffect, useRef, useState } from "react"
 import FilledX from "../icons/FilledX"
 import SearchIcon from "../icons/SearchIcon"

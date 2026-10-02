@@ -1,6 +1,6 @@
 import { type Refuel } from '@layerswap/widget-types';
 import { CopyButton, ImageWithFallback, StyledQRCode } from "@layerswap/ui-kit";
-import { useCopyClipboard } from "@layerswap/utils";
+import { useCopyClipboard } from "@layerswap/utils/react";
 import QRIcon from '@/components/Icons/QRIcon'
 import useWallet from '@/hooks/useWallet'
 import { DepositAction, SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient'

@@ -3,7 +3,8 @@ import { NetworkType, type Network } from '@layerswap/widget-types';
 import { FC, MouseEventHandler, ReactNode, SVGProps, useCallback, useMemo, useState } from "react"
 import { Copy, Check, ChevronDown, Unplug, Info, SquareArrowOutUpRight, Trash2, BookmarkPlus } from "lucide-react";
 import clsx from "clsx";
-import { Address, getExplorerUrl, getNetworkAdapter, shortenString, useCopyClipboard, useWindowDimensions } from "@layerswap/utils";
+import { Address, getExplorerUrl, getNetworkAdapter, shortenString } from "@layerswap/utils";
+import { useCopyClipboard, useWindowDimensions } from "@layerswap/utils/react";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
 import { ImageWithFallback } from "../common/ImageWithFallback";

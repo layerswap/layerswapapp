@@ -7,6 +7,7 @@ const adapterFamilyChecks: Partial<Record<NetworkType, keyof AppNetworkAdapter<u
     [NetworkType.Solana]: 'isSolanaNetwork',
     [NetworkType.Starknet]: 'isStarknetNetwork',
     [NetworkType.Tron]: 'isTronNetwork',
+    [NetworkType.Stellar]: 'isStellarNetwork',
     [NetworkType.Bitcoin]: 'isBitcoinNetwork',
     [NetworkType.TON]: 'isTonNetwork',
     [NetworkType.Fuel]: 'isFuelNetwork',

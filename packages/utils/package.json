@@ -18,6 +18,10 @@
     "./known-ids": {
       "types": "./dist/types/knownIds.d.ts",
       "default": "./dist/esm/knownIds.js"
+    },
+    "./react": {
+      "types": "./dist/types/react.d.ts",
+      "default": "./dist/esm/react.js"
     }
   },
   "sideEffects": false,

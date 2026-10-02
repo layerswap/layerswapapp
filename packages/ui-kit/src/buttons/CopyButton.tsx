@@ -2,7 +2,7 @@ import { Check } from "lucide-react"
 import { useEffect, useLayoutEffect, useState, type FC, type ReactNode, type RefObject } from "react"
 import clsx from "clsx"
 import CopyIcon from "../icons/CopyIcon"
-import { useCopyClipboard } from "@layerswap/utils"
+import { useCopyClipboard } from "@layerswap/utils/react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip"
 
 const useIsomorphicLayoutEffect = typeof document !== "undefined" ? useLayoutEffect : useEffect

@@ -72,7 +72,7 @@ function Tooltip(tooltipProps: TooltipProps) {
         <TooltipPrimitive.Root
           data-slot="tooltip"
           delayDuration={delayDuration}
-          {...(isClickable ? { open, onOpenChange: handleOpenChange } : { onOpenChange })}
+          {...(isClickable ? { open, onOpenChange: handleOpenChange } : { open: controlledOpen, onOpenChange })}
           {...props}
         />
       </TooltipClickContext.Provider>
