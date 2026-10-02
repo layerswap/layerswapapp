@@ -1,4 +1,4 @@
-import type { AppNetworkAdapter } from "@layerswap/wallet-core"
+import type { AppNetworkAdapter } from "@layerswap/utils"
 import { ethereumNames } from "../constants"
 
 export function findEthereumNetwork<Network>(

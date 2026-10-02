@@ -1,6 +1,6 @@
 import type { Config } from '@wagmi/core'
 import type { Chain, Transport } from 'viem'
-import type { AppNetworkAdapter } from "@layerswap/wallet-core"
+import type { AppNetworkAdapter } from "@layerswap/utils"
 import { getEvmChainsConfig } from '../evmUtils/chainConfigs'
 import { buildEVMConnectors } from './Connectors'
 import { getEvmConfig, hasEvmConfig, provideExternalEvmConfig, setEvmConfigInitParams, } from '../service/getEvmConfig'

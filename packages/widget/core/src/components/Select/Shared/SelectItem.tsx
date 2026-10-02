@@ -1,4 +1,4 @@
-import { ImageWithFallback } from "@layerswap/ui-kit/components";
+import { ImageWithFallback } from "@layerswap/ui-kit";
 import { ISelectMenuItem } from "./Props/selectMenuItem";
 
 export default function SelectItem({ item, underline }: { item: ISelectMenuItem, underline?: boolean }) {

@@ -1,5 +1,5 @@
 import NetworkSettings from "../NetworkSettings";
-import type { AppNetworkAdapter } from "@layerswap/wallet-core"
+import type { AppNetworkAdapter } from "@layerswap/utils"
 import { Chain, fallback, http } from 'viem';
 import { resolveAdapterChain } from "./resolveChain";
 

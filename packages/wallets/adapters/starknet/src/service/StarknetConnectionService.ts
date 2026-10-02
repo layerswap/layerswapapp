@@ -1,6 +1,7 @@
 import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
 import type { WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types";
-import { walletIconResolver, type AppNetworkAdapter } from "@layerswap/wallet-core";
+import { walletIconResolver } from "@layerswap/wallet-core";
+import type { AppNetworkAdapter } from "@layerswap/utils";
 import type { Connector } from '@starknet-react/core'
 import { name as PROVIDER_NAME, id as PROVIDER_ID } from '../constants'
 import { resolveStarknetWalletIcon } from '../utils'

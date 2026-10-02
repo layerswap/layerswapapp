@@ -2,6 +2,7 @@
 import { FC, ReactNode, createElement, useEffect, useMemo, createContext, useContext } from "react"
 import { WalletProvidersProvider } from "@/context/walletProviders";
 import { WalletModalProvider } from "../WalletModal";
+import { WidgetWalletListAdapters } from "../WalletComponents/walletListAdapters";
 import type { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@layerswap/wallet-core/types"
 import { isWalletProviderDescriptor } from "@layerswap/wallet-core/types"
 
@@ -72,9 +73,11 @@ const WalletsProviders: FC<{
                     providers={realProviders}
                     appName={appName}
                 >
-                    <WalletProvidersProvider walletProviders={walletProviders}>
-                        {children}
-                    </WalletProvidersProvider>
+                    <WidgetWalletListAdapters>
+                        <WalletProvidersProvider walletProviders={walletProviders}>
+                            {children}
+                        </WalletProvidersProvider>
+                    </WidgetWalletListAdapters>
                 </DynamicProviderWrapper>
             </WalletModalProvider>
         </WalletProvidersListContext.Provider>

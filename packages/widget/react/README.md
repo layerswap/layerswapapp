@@ -165,6 +165,18 @@ analytics. Recognized wallet rejections are lifecycle outcomes, not error report
 Callbacks are not awaited; handle rejected promises inside asynchronous logging
 code.
 
+Telemetry's `attributes.form_mode` identifies the form that started the journey:
+
+| Form mode | Surface |
+|---|---|
+| `cross-chain` | Swap widget's cross-chain form. |
+| `exchange` | Swap widget's exchange form. |
+| `deposit-address` | Swap widget's deposit-address form. |
+| `deposit-widget-address` | Deposit widget's deposit-address flow. |
+| `deposit-widget-wallet` | Deposit widget's connected-wallet flow. |
+
+These are telemetry values, separate from the deposit widget's display `mode` prop.
+
 ## Loading and troubleshooting
 
 The widget runs in your page's JavaScript context. Its manifest signature is

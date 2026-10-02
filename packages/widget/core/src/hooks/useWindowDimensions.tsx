@@ -1,5 +1,5 @@
 "use client";
-import { useWindowDimensions as useSharedWindowDimensions } from "@layerswap/ui-kit";
+import { useWindowDimensions as useSharedWindowDimensions } from "@layerswap/utils/react";
 import AppSettings from "../lib/AppSettings";
 
 export default function useWindowDimensions() {

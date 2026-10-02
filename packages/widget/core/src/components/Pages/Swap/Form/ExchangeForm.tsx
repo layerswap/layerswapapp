@@ -11,7 +11,7 @@ import ExchangeAmountField from "@/components/Input/Amount/ExchangeAmountField";
 import Address from "@/components/Input/Address";
 import { ChevronDown } from "lucide-react";
 import { Address as AddressClass } from "@/lib/address/Address";
-import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
+import { ExtendedAddress } from "@layerswap/ui-kit";
 import MinMax from "@/components/Input/Amount/MinMax";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";
@@ -24,9 +24,9 @@ import { useCallbacks } from "@/context/callbackProvider";
 import QuoteDetails from "./FeeDetails";
 import DepositMethodComponent from "./FeeDetails/DepositMethod";
 import { AddressGroup } from "@/components/Input/Address/AddressPicker";
-import { ImageWithFallback } from "@layerswap/ui-kit/components";
+import { ImageWithFallback } from "@layerswap/ui-kit";
 import { ExchangeReceiveAmount } from "@/components/Input/Amount/ExchangeReceiveAmount";
-import AddressIcon from "@/components/Common/AddressIcon";
+import { AddressIcon } from "@layerswap/ui-kit";
 
 type Props = {
     partner?: Partner;

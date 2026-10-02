@@ -30,7 +30,7 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
   // A server renderer in this browser component crashes hosts running a
   // different React patch version from the CDN build (React error #527).
   if (specifier.startsWith('react-dom/server')) throw new Error('Logo copying must not load a server renderer')
-  if (specifier === '@layerswap/ui-kit/components') return { url: clipboard, shortCircuit: true }
+  if (specifier === '@layerswap/ui-kit') return { url: clipboard, shortCircuit: true }
   if (specifier === '@radix-ui/react-context-menu') return { url: menu, shortCircuit: true }
   if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
     return nextResolve(`${specifier}.js`, context)

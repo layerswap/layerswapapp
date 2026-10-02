@@ -17,7 +17,6 @@ import {
     setPendingMetadataForRegistry,
     subscribeDisplayUri,
     walletIconResolver,
-    type AppNetworkAdapter,
     type WalletConnectWalletBase,
 } from '@layerswap/wallet-core'
 import { id as PROVIDER_ID, name as PROVIDER_NAME, stellarWalletConnectChain } from '../constants'
@@ -25,6 +24,7 @@ import { STELLAR_APPKIT_WALLET_CONNECT_ID } from './StellarWalletConnectModule'
 import { stellarKitManager } from './stellarKitManager'
 import { stellarStore, type StellarWalletSnapshot } from './stellarStore'
 import { toStellarConnector } from './stellarConnector'
+import { AppNetworkAdapter } from '@layerswap/utils'
 
 type RegistryRequestFn = (params?: RequestAdditionalConnectorsParams) => Promise<{
     connectors: WalletConnectWalletBase[]

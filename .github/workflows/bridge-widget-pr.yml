@@ -35,6 +35,7 @@ jobs:
       - run: pnpm build:packages
       - name: Validate telemetry and widget contracts
         run: |
+          pnpm --filter @layerswap/utils test
           pnpm --filter @layerswap/widget-types test
           pnpm --filter @layerswap/wallet-core test
           pnpm --filter @layerswap/wallet-evm test

@@ -2,7 +2,7 @@ import { type Wallet } from '@layerswap/widget-types';
 import { FC, useMemo } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { SwapValues } from '..'
-import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
+import { ExtendedAddress } from '@layerswap/ui-kit'
 import { DetailsButton } from '..'
 import { Quote } from '@/lib/apiClients/layerSwapApiClient'
 import clsx from 'clsx'
@@ -10,11 +10,11 @@ import { Slippage } from '../Slippage'
 import { GasFee } from './DetailedEstimates'
 import NumFlowWithFallback from '@/components/Common/NumFlowWithFallback'
 import { Partner } from '@/Models/Partner'
-import { ImageWithFallback } from "@layerswap/ui-kit/components";
+import { ImageWithFallback } from "@layerswap/ui-kit";
 import { useInitialSettings } from '@/context/settings'
 import { Address } from '@/lib/address/Address'
 import { useDepositSettings } from '@/context/depositSettings'
-import AddressIcon from '@/components/Common/AddressIcon'
+import { AddressIcon } from '@layerswap/ui-kit'
 
 export const SummaryRow: FC<{
     isQuoteLoading?: boolean

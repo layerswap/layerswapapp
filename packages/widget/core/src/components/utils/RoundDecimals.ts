@@ -1,23 +1,3 @@
-/** Display formatter: truncates to `decimals` and adds thousands separators (returns a
- * localized string, e.g. "1,234.56"). Use for UI text, not for amount math. */
-export function truncateDecimals(value: number, decimals = 0) {
-    if (value === 0) return '0';
-
-    const factor = Math.pow(10, decimals);
-    const truncated = Math.trunc(value * factor) / factor;
-
-    const formatted = isScientific(truncated)
-        ? (!isNaN(Number(truncated))
-            ? truncated.toFixed(decimals).replace(/\.?0+$/, '')
-            : '')
-        : truncated?.toString();
-
-    return Number(formatted).toLocaleString('en-US', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: decimals
-    });
-}
-
 /** Ceil to `decimals` (number in, number out). Values already representable at
  * `decimals` pass through unchanged — a raw `Math.ceil(value * factor)` would
  * bump them a full step up on float dust (0.1 * 1e6 === 100000.00000000001). */
@@ -53,17 +33,4 @@ export function truncateToDecimals(value: string, decimals: number): string {
 export function roundToDecimals(value: number, decimals: number | undefined) {
     if (!Number.isFinite(value)) return 0;
     return decimals !== undefined ? Number(value.toFixed(decimals)) : value;
-}
-
-export function isScientific(x) {
-    const s = String(x);
-
-    // 1) If it’s already a string that “looks like” sci-notation, catch it:
-    if (/^[+-]?\d+(?:\.\d+)?[eE][+-]?\d+$/.test(s)) {
-        return true;
-    }
-
-    // 2) Otherwise, convert to Number (in case it's a numeric string or other) 
-    //    and see if toString() uses 'e' (lowercased for consistency):
-    return Number(s).toString().toLowerCase().includes('e');
 }

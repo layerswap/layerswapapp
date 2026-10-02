@@ -1,7 +1,7 @@
 import { FC } from 'react'
 import clsx from 'clsx'
-import { ImageWithFallback } from "@layerswap/ui-kit/components";
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/shadcn/tooltip'
+import { ImageWithFallback } from "@layerswap/ui-kit";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@layerswap/ui-kit"
 import type { ScopeItem } from './useAddressScope'
 
 type Props = {
@@ -45,7 +45,7 @@ const NetworkLogoStack: FC<Props> = ({ items, summary, max = 3, ringClassName = 
                     )}
                 </div>
             </TooltipTrigger>
-            <TooltipContent side="top" align="end" className="max-w-[240px] p-2.5">
+            <TooltipContent side="top" align="end" className="max-w-[240px]">
                 {summary ? (
                     <span className="text-primary-text text-xs font-medium">{summary}</span>
                 ) : (
