@@ -50,7 +50,14 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
     if (specifier.endsWith('/lib/gases/useSWRGas')) return { url: moduleUrl('export default () => ({})'), shortCircuit: true }
     if (fixtures.some(s => specifier.endsWith(s)) || ['@layerswap/utils', '@layerswap/ui-kit/components', 'lucide-react'].includes(specifier)) return { url: fixtureUrl, shortCircuit: true }
   }
-  if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) return nextResolve(specifier + '.js', context)
+  if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
+    try {
+      return nextResolve(specifier + '.js', context)
+    } catch (error) {
+      if (error.code !== 'ERR_MODULE_NOT_FOUND') throw error
+      return nextResolve(specifier + '/index.js', context)
+    }
+  }
   return nextResolve(specifier, context)
 } })
 const oldAdapter = axios.defaults.adapter

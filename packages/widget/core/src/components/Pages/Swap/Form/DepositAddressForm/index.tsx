@@ -32,6 +32,10 @@ import ValidationError from "../SecondaryComponents/validationError";
 import { ErrorDisplay } from "../SecondaryComponents/validationError/ErrorDisplay";
 import FailIcon from "@/components/Icons/FailIcon";
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
+import { useSwapPrerequisites } from '@/hooks/useSwapPrerequisites';
+import { prerequisitesFromForm } from '@/lib/prerequisites/context';
+import { PrerequisitePanel } from '@/components/SwapPrerequisites/PrerequisitePanel';
+import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
 
 type Props = {
     partner?: Partner;
@@ -68,6 +72,8 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
     } = useFormikContext<SwapFormValues>();
 
     const { to: destination, destination_address, toAsset: toCurrency, from, fromAsset } = values || {};
+    const { showWithdrawScreen } = useResolvedSwapStatus();
+    const prerequisites = useSwapPrerequisites(prerequisitesFromForm(values), showWithdrawScreen);
 
     const { isAutoSourceUpdating } = useAutoSourceRoute();
 
@@ -117,14 +123,9 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
         setFieldValue('toAsset', defaults.toAsset, true);
     }, [hasWallet, destination, settings, initialSettings, connectedAutofillNetworks, setFieldValue]);
 
-    // Auto-fill `destination_address` from the current default wallet account
-    // for the chosen destination. The picker can override this by calling
-    // `selectDestinationAccount`, which updates `destinationAccount` and feeds
-    // back through this effect (so the picker's choice wins). Manually-added
-    // addresses (carried over from other flows via `selectedDestAccounts`) are
-    // intentionally ignored here — this flow expects a connected wallet.
-    const rawDestinationAccount = useSelectedAccount("to", destination?.name);
-    const destinationAccount = rawDestinationAccount?.id === 'manually_added' ? undefined : rawDestinationAccount;
+    // Respect an explicitly selected recipient while connecting an account for setup.
+    // A wallet connection must not replace that recipient with a different account.
+    const destinationAccount = useSelectedAccount("to", destination?.name);
     useEffect(() => {
         if (lockDestinationAddress) return;
         if (!destination) return;
@@ -187,12 +188,16 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
             attemptedKeyRef.current = null;
             return;
         }
+        if (!prerequisites.isReady) {
+            attemptedKeyRef.current = null;
+            return;
+        }
         if (swapId || isSubmitting || !isValid) return;
         if (isAutoSourceUpdating) return;
         if (attemptedKeyRef.current === fieldKey) return;
         attemptedKeyRef.current = fieldKey;
         submitForm();
-    }, [fieldKey, swapId, isSubmitting, isValid, submitForm, isAutoSourceUpdating]);
+    }, [fieldKey, swapId, isSubmitting, isValid, submitForm, isAutoSourceUpdating, prerequisites.isReady]);
 
     const depositAddress = resolveDepositAddress(from, depositActionsResponse);
 
@@ -306,8 +311,9 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
                                             address is integrator-locked, render this in skeleton
                                             mode while the swap is being created so the user sees
                                             the eventual layout instead of a blank gap. */}
+                                        <PrerequisitePanel state={prerequisites} />
                                         {
-                                            !depositError && (showDepositInfo || lockDestinationAddress) && (
+                                            prerequisites.isReady && !depositError && (showDepositInfo || lockDestinationAddress) && (
                                                 <DepositAddressInfo
                                                     sourceNetwork={from}
                                                     sourceToken={fromAsset}
@@ -339,11 +345,11 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
                 <Widget.Footer showPoweredBy={!hidePoweredBy}>
                     <DepositAddressFormButton
                         values={values}
-                        isValid={isValid}
-                        error={error}
+                        isValid={isValid && prerequisites.isReady}
+                        error={prerequisites.blockingMessage ?? error}
                         isSubmitting={isSubmitting || isRetrying}
-                        showDepositInfo={showDepositInfo}
-                        depositAddress={depositAddress}
+                        showDepositInfo={showDepositInfo && prerequisites.isReady}
+                        depositAddress={prerequisites.isReady ? depositAddress : undefined}
                         isProcessing={isProcessing}
                         isCompleted={isCompleted}
                         hasDepositError={!!depositError}

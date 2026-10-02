@@ -26,6 +26,7 @@ import { setExtendedRouteProviders } from "@/lib/extendedRoutes";
 import { ErrorProvider } from "./ErrorProvider";
 import { DescriptorHydrationBoundary } from "@layerswap/wallet-core";
 import { registerWidgetErrorLogger } from "@/lib/ErrorHandler";
+import { SwapPrerequisitesProvider } from './swapPrerequisites';
 import { captureWidgetInteraction } from '@/lib/widgetTelemetry';
 
 registerWidgetErrorLogger();
@@ -207,11 +208,13 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
                                         walletProviders={resolvedProviders}
                                     >
                                         <ResolverProviders walletProviders={resolvedProviders}>
-                                            <SwapAccountsProvider>
-                                                <AsyncModalProvider>
-                                                    {children}
-                                                </AsyncModalProvider>
-                                            </SwapAccountsProvider>
+                                            <SwapPrerequisitesProvider providers={walletProviders}>
+                                                <SwapAccountsProvider>
+                                                    <AsyncModalProvider>
+                                                        {children}
+                                                    </AsyncModalProvider>
+                                                </SwapAccountsProvider>
+                                            </SwapPrerequisitesProvider>
                                         </ResolverProviders>
                                     </WalletsProviders>
                                 )}

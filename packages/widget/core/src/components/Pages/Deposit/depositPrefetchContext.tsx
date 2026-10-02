@@ -17,6 +17,7 @@ import { useContractAddressStore } from "@/stores/contractAddressStore";
 import { Address } from "@/lib/address/Address";
 import { useDepositSelection } from "./depositSelectionContext";
 import { useDepositStep } from "./depositStepContext";
+import { useCheckSwapPrerequisites } from '@/hooks/useSwapPrerequisites';
 import { lifecycleContextFromForm } from "@/lib/swapLifecycle";
 
 export type PrefetchedSource = { network: NetworkRoute; token: NetworkRouteToken };
@@ -81,6 +82,7 @@ const keyFromValues = (values: SwapFormValues, sourceAddress?: string): string |
  * via SwapDataProvider's initialSwapData.
  */
 export function DepositPrefetchProvider({ children }: { children: ReactNode }) {
+    const checkPrerequisites = useCheckSwapPrerequisites();
     const { step } = useDepositStep();
     const { destination, destinationToken, destinationAddress } = useDepositSelection();
     const initialSettings = useInitialSettings();
@@ -145,6 +147,10 @@ export function DepositPrefetchProvider({ children }: { children: ReactNode }) {
 
         const key = currentKey;
         const promise = (async () => {
+            await checkPrerequisites({
+                source: { network: prefetchedSource.network, token: prefetchedSource.token, address: candidateSourceAddress },
+                destination: { network: destination, token: destinationToken, address: destinationAddress },
+            });
             const contractCheckResult = (selectedWallet && candidateSourceAddress)
                 ? await checkContractStatus(selectedWallet.address, prefetchedSource.network, destination)
                 : null;
@@ -181,7 +187,7 @@ export function DepositPrefetchProvider({ children }: { children: ReactNode }) {
         // swaps[currentKey] guard (read fresh whenever currentKey changes) handle
         // dedup. Listing it would re-run this effect after every setSwaps it
         // triggers — a redundant pass that only the guard saves from looping.
-    }, [active, currentKey, prefetchedSource, destination, destinationToken, destinationAddress, selectedWallet, candidateSourceAddress, checkContractStatus, initialSettings.externalId, apiClient]);
+    }, [active, currentKey, prefetchedSource, destination, destinationToken, destinationAddress, selectedWallet, candidateSourceAddress, checkContractStatus, initialSettings.externalId, apiClient, checkPrerequisites]);
 
     const prefetchedSwap = currentKey ? swaps[currentKey] : undefined;
 

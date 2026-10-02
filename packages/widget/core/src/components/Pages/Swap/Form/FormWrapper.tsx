@@ -28,6 +28,8 @@ import UrlAddressNote from "@/components/Input/Address/UrlAddressNote";
 import { Address } from "@/lib/address/Address";
 import ContractAddressValidationCache, { ContractSourceAddressValidationCache } from "./SecondaryComponents/validationError/ContractAddressValidationCache";
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
+import { useCheckSwapPrerequisites } from '@/hooks/useSwapPrerequisites';
+import { prerequisitesFromForm } from '@/lib/prerequisites/context';
 import { lifecycleContextFromForm, lifecycleContextFromSwap, resolveFlowClosedEvent } from "@/lib/swapLifecycle";
 import { useResolvedSwapStatus } from "@/hooks/useResolvedSwapStatus";
 import SwapForm, { type SwapFormMode } from './SwapForm';
@@ -42,6 +44,7 @@ type NetworkToConnect = {
 type SwapPageFormMode = Extract<SwapFormMode, 'cross-chain' | 'exchange' | 'deposit-address'>
 
 export default function FormWrapper({ children, type, partner }: { children?: React.ReactNode, type: SwapPageFormMode, partner?: Partner }) {
+    const checkPrerequisites = useCheckSwapPrerequisites()
 
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
     const [isAddressFromQueryConfirmed, setIsAddressFromQueryConfirmed] = useState(false);
@@ -83,6 +86,13 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
         useGaslessPreferenceStore.getState().clearGaslessUnavailable()
         const { destination_address, to } = values
         setWalletWihdrawDone(false)
+
+        try {
+            await checkPrerequisites(prerequisitesFromForm(values))
+        } catch (error) {
+            setSwapError?.(error instanceof Error ? error.message : 'Could not check account setup')
+            return
+        }
 
         if (
             to &&
@@ -171,7 +181,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
         catch (error) {
             setSwapError && setSwapError(error?.message || 'Could not create swap')
         }
-    }, [createSwap, initialSettings, partner, swapBasicData, getProvider, settings, type, setSwapError, onSwapLifecycle])
+    }, [createSwap, initialSettings, partner, swapBasicData, getProvider, settings, type, setSwapError, onSwapLifecycle, checkPrerequisites])
 
     // Formik has no `enableReinitialize`, so this is read once at mount — memoize
     // to keep post-mount re-renders (wallet events, balance revalidation) from
