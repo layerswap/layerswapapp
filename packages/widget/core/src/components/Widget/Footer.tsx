@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useMeasure } from "@uidotdev/usehooks";
 import AppSettings from "../../lib/AppSettings";
-import { ReactNode, SVGProps } from "react";
+import { CSSProperties, ReactNode, SVGProps } from "react";
 import clsx from "clsx";
 
 const variants = {
@@ -31,9 +31,10 @@ type FooterProps = {
     children?: ReactNode;
     sticky?: boolean
     showPoweredBy?: boolean
+    backgroundStyle?: CSSProperties
 }
 
-const Comp = ({ children, hidden, sticky = true, showPoweredBy }: FooterProps) => {
+export const WidgetFooterView = ({ children, hidden, sticky = true, backgroundStyle }: FooterProps) => {
     let [footerRef, { height }] = useMeasure();
 
     return (
@@ -48,7 +49,7 @@ const Comp = ({ children, hidden, sticky = true, showPoweredBy }: FooterProps) =
                                 duration: 0.15,
                             }}
                             custom={{ direction: -1, width: 100 }}
-                            style={AppSettings.ThemeData?.cardBackgroundStyle}
+                            style={backgroundStyle}
                             variants={variants}
                             className={`text-primary-text text-base
                                         max-sm:fixed
@@ -72,7 +73,7 @@ const Comp = ({ children, hidden, sticky = true, showPoweredBy }: FooterProps) =
                     </>
                     :
                     <div
-                        className={clsx('space-y-3')}
+                        className={clsx('space-y-3 w-full')}
                     >
                         {children}
                     </div>
@@ -86,7 +87,7 @@ const Footer = ({ children, hidden, sticky, showPoweredBy }: FooterProps) => {
     const isPoweredByVisible = !AppSettings.ThemeData?.hidePoweredBy && showPoweredBy
 
     return (
-        <Comp hidden={hidden} sticky={isFooterSticky ? sticky : false} showPoweredBy={isPoweredByVisible}>
+        <WidgetFooterView backgroundStyle={AppSettings.ThemeData?.cardBackgroundStyle} hidden={hidden} sticky={isFooterSticky ? sticky : false} showPoweredBy={isPoweredByVisible}>
             {children}
             {
                 isPoweredByVisible &&
@@ -95,7 +96,7 @@ const Footer = ({ children, hidden, sticky, showPoweredBy }: FooterProps) => {
                     'mb-3 sm:!mb-0': !isFooterSticky,
                 })} />
             }
-        </Comp>
+        </WidgetFooterView>
     )
 }
 

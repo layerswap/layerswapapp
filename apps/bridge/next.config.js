@@ -1,4 +1,4 @@
-const { PHASE_PRODUCTION_BUILD, PHASE_PRODUCTION_SERVER } = require('next/constants');
+const { PHASE_DEVELOPMENT_SERVER, PHASE_PRODUCTION_BUILD, PHASE_PRODUCTION_SERVER } = require('next/constants');
 
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
@@ -38,7 +38,7 @@ const REMOTE_PATTERNS = [
   },
 ];
 
-const buildNextConfig = (phase) => {
+const buildNextConfig = (phase, { defaultConfig = {} } = {}) => {
   const productionBuild = phase === PHASE_PRODUCTION_BUILD || phase === PHASE_PRODUCTION_SERVER;
   const faroRelease = resolveFaroRelease(process.env, productionBuild);
   const faroDeployment = resolveFaroDeployment(process.env, productionBuild);
@@ -46,10 +46,19 @@ const buildNextConfig = (phase) => {
    * @type {import('next').NextConfig}
    */
 
+  const vercelEnvironment = process.env.VERCEL_ENV;
+  const includeDevPages = vercelEnvironment
+    ? vercelEnvironment === 'preview' || vercelEnvironment === 'development'
+    : phase === PHASE_DEVELOPMENT_SERVER;
+  const pageExtensions = defaultConfig.pageExtensions || ['tsx', 'ts', 'jsx', 'js'];
+
   const nextConfig = {
+    // Preview deployments also use next build; VERCEL_ENV distinguishes them from production.
+    pageExtensions: includeDevPages ? ['dev.mjs', ...pageExtensions] : pageExtensions,
     env: {
       NEXT_PUBLIC_FARO_RELEASE: faroRelease,
       NEXT_PUBLIC_FARO_DEPLOYMENT: faroDeployment,
+      NEXT_PUBLIC_LOCAL_TELEMETRY_PATH: `${process.env.APP_BASE_PATH || ''}/api/local-telemetry`,
     },
     i18n: {
       locales: ["en"],

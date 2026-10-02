@@ -2,14 +2,13 @@ import { FC, useMemo, useState } from "react";
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import useWallet from "@/hooks/useWallet";
 import { Selector, SelectorContent, SelectorTrigger } from "@/components/Select/Selector/Index";
-import { SelectedRouteDisplay } from "@/components/Input/RoutePicker/Routes";
 import { Content } from "@/components/Input/RoutePicker/Content";
 import { groupRoutes } from "@/hooks/useFormRoutes";
 import { useRecentNetworksStore } from "@/stores/recentRoutesStore";
 import { useRouteSortingStore } from "@/stores/routeSortingStore";
 import useSuggestionsLimit from "@/hooks/useSuggestionsLimit";
 import useDepositAddressAvailableRoutes from "@/hooks/useDepositAddressAvailableRoutes";
-import PickerTriggerContent from "@/components/Pages/Deposit/_shared/PickerTriggerContent";
+import { PayFromTriggerContent, payFromTriggerClassName } from "./PayFromTriggerView";
 
 type PayFromPickerProps = {
     selectedSource: { network: NetworkRoute; token: NetworkRouteToken } | null;
@@ -53,22 +52,8 @@ const PayFromPicker: FC<PayFromPickerProps> = ({ selectedSource, onSourceChange,
             {!hideDestinationPicker && <span className="w-24 shrink-0 text-sm text-secondary-text tracking-wide">Send</span>}
             <div className="flex-1 min-w-0">
                 <Selector>
-                    <SelectorTrigger disabled={!hasOptions || !hasMultipleOptions} className={`bg-secondary-500 hover:bg-secondary-400/70 rounded-xl px-4 py-3 transition-colors ${hideDestinationPicker ? "pr-4 rounded-2xl!" : ""}`}>
-                        {
-                            hideDestinationPicker
-                                ? <PickerTriggerContent
-                                    label="You send"
-                                    token={selectedSource?.token}
-                                    network={selectedSource?.network}
-                                    placeholder="Select source"
-                                    showChevron={hasMultipleOptions}
-                                />
-                                : <SelectedRouteDisplay
-                                    route={selectedSource?.network}
-                                    token={selectedSource?.token}
-                                    placeholder="Select source"
-                                />
-                        }
+                    <SelectorTrigger disabled={!hasOptions || !hasMultipleOptions} className={payFromTriggerClassName(hideDestinationPicker)}>
+                        <PayFromTriggerContent selectedSource={selectedSource} hasMultipleOptions={hasMultipleOptions} hideDestinationPicker={hideDestinationPicker} />
                     </SelectorTrigger>
                     <SelectorContent isLoading={false}>
                         {({ closeModal }) => (

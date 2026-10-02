@@ -11,6 +11,7 @@ import { DepositMethodId } from "./depositMethods";
 import { DepositSelectionProvider } from "./depositSelectionContext";
 import { DepositPrefetchProvider } from "./depositPrefetchContext";
 import DepositHeader from "./DepositHeader";
+import { DepositLayoutView } from "./DepositLayoutView";
 import MethodPicker from "./Options/MethodPicker";
 import WalletFlow from "./Wallet";
 import TransferCrypto from "./TransferCrypto";
@@ -18,7 +19,6 @@ import { SupportedDestination } from "./DestinationTokenPicker";
 import { Widget } from "@/components/Widget/Index";
 import { PoweredByFooter } from "@/components/Widget/Footer";
 import AppSettings from "@/lib/AppSettings";
-import ResizablePanel from "@/components/Common/ResizablePanel";
 import { DepositSettingsProvider } from "@/context/depositSettings";
 import ThemeWrapper from "@/components/themeWrapper";
 import useAllWithdrawalBalances from "@/hooks/useAllWithdrawalBalances";
@@ -89,18 +89,13 @@ const DepositForm: FC<Pick<DepositProps, "partner" | "title"> & { onClose?: () =
     useAllWithdrawalBalances();
 
     return (
-        <div className="flex flex-col gap-3 w-full pt-4 max-sm:pb-4">
-            <DepositHeader title={headerTitle} onClose={onClose} onBack={headerBack} />
-            <div className="h-px w-full bg-secondary-400" />
-            {/* The panel tweens height only when this key changes (a step or
-                connect sub-view transition). In-step changes — accordion, quote
-                loading — snap to fit so the inner element owns its own animation
-                and nothing fights it. */}
-            <ResizablePanel transitionKey={`${step}:${selectedMultiChainConnector ? "eco" : ""}:${selectedConnector ? "conn" : ""}`}>
-                <StepRouter step={step} partner={partner} hasWalletMethods={hasWalletMethods} />
-            </ResizablePanel>
-            {!AppSettings.ThemeData?.hidePoweredBy && <PoweredByFooter />}
-        </div>
+        <DepositLayoutView
+            header={<DepositHeader title={headerTitle} onClose={onClose} onBack={headerBack} />}
+            footer={!AppSettings.ThemeData?.hidePoweredBy && <PoweredByFooter />}
+            transitionKey={`${step}:${selectedMultiChainConnector ? "eco" : ""}:${selectedConnector ? "conn" : ""}`}
+        >
+            <StepRouter step={step} partner={partner} hasWalletMethods={hasWalletMethods} />
+        </DepositLayoutView>
     );
 };
 

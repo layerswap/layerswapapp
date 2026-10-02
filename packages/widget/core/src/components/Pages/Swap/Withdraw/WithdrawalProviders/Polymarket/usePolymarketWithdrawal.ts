@@ -12,8 +12,8 @@ import { executeWalletOperation } from "@/components/Pages/Swap/Withdraw/Wallet/
 import { ActionMessageType, TransferProgress } from "@layerswap/widget-types";
 import { NetworkRoute } from "@layerswap/widget-types";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
-import { BackendTransactionStatus, DepositAction } from "@/lib/apiClients/layerSwapApiClient";
-import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
+import { DepositAction } from "@/lib/apiClients/layerSwapApiClient";
+import { executeProviderWithdrawal, getProviderDepositActions } from "../executeProviderWithdrawal";
 import { ErrorHandler } from "@/lib/ErrorHandler";
 import { truncateToDecimals } from "@/components/utils/RoundDecimals";
 import { useCallbacks } from "@/context/callbackProvider";
@@ -23,7 +23,7 @@ import { lifecycleContextFromSwap } from "@/lib/swapLifecycle";
 const DEPOSIT_ACTION_TYPES = ['transfer', 'manual_transfer']
 
 const getDepositAction = (actions: DepositAction[] | undefined): { depository: string; depositCallData: string } | undefined => {
-    const action = actions?.find(a => DEPOSIT_ACTION_TYPES.includes(a.type))
+    const action = actions?.find(a => !!a.type && DEPOSIT_ACTION_TYPES.includes(a.type))
     if (!action?.to_address || !action.call_data) return undefined
     return { depository: action.to_address, depositCallData: action.call_data }
 }
@@ -57,8 +57,8 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
     const { networks, sourceRoutes } = useSettingsState()
     const initialSettings = useInitialSettings()
     const { onWalletWithdrawalSuccess } = useWalletWithdrawalState()
-    const { swapDetails, depositActionsResponse } = useSwapDataState()
-    const { createSwap, setSwapId } = useSwapDataUpdate()
+    const { swapDetails } = useSwapDataState()
+    const { createSwap, setSwapId, startFreshSwapAttempt, mutateSwap } = useSwapDataUpdate()
     const { executeTransfer } = useTransfer()
     const { onSwapLifecycle } = useCallbacks()
 
@@ -81,6 +81,8 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
     const lastFailureWasUserRejection = useRef(false)
     // Synchronous double-submit guard: covers the click→re-render gap that `loading` can't.
     const submittingRef = useRef(false)
+    // Keep a lazily created swap even before its context state has caught up.
+    const preparedSwapRef = useRef<{ swapId: string } | undefined>(undefined)
     // The flow widens the async window (deploy + sign + submit); avoid setting state after unmount.
     const mountedRef = useRef(true)
     useEffect(() => {
@@ -100,7 +102,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
                 action: 'polymarket_withdrawal',
                 provider: wallet?.providerName,
                 ...lifecycleContextFromSwap(swapBasicData, swapDetails),
-                swapId,
+                swapId: swapId ?? preparedSwapRef.current?.swapId,
             })
         }
         submittingRef.current = true
@@ -108,13 +110,14 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
         setRejected(false)
         setLoading(true)
 
-        // Ensure the backend swap exists (created lazily on first click, with use_depository so
-        // its deposit action carries the Depository address + depositERC20 calldata) and resolve it.
-        const resolveSwapAndDepositAction = async (amount: string): Promise<{ depository: string; depositCallData: string; activeSwapId: string }> => {
-            let depositActions = depositActionsResponse
-            let activeSwapId = swapId
-            if (!swapId || !swapDetails) {
-                setSwapId(undefined)
+        // Keep the swap identity even when its details or deposit actions are missing.
+        const resolveSwap = async (amount: string): Promise<{ depositActions?: DepositAction[]; activeSwapId: string }> => {
+            let activeSwapId = swapId ?? preparedSwapRef.current?.swapId
+            // Only the creation response is fresh for this attempt. Existing swaps
+            // fetch current actions in prepare, after the submission guard.
+            let depositActions: DepositAction[] | undefined
+            if (!activeSwapId) {
+                startFreshSwapAttempt()
                 const swapValues: SwapFormValues = {
                     amount,
                     from: source_network as NetworkRoute,
@@ -128,16 +131,15 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
                 const newSwap = await createSwap(swapValues, initialSettings)
                 activeSwapId = newSwap?.swap?.id
                 if (!activeSwapId) throw new Error('Swap ID is undefined')
-                setSwapId(activeSwapId)
                 depositActions = newSwap.deposit_actions
+                preparedSwapRef.current = { swapId: activeSwapId }
+                setSwapId(activeSwapId)
             }
             if (!activeSwapId) throw new Error('Swap ID is undefined')
-            const action = getDepositAction(depositActions)
-            if (!action) throw new Error('No depository deposit action')
-            return { ...action, activeSwapId }
+            return { depositActions, activeSwapId }
         }
 
-        let lifecycleSwapId = swapId
+        let lifecycleSwapId = swapId ?? preparedSwapRef.current?.swapId
         try {
             if (!sourceAddress) throw new Error('No connected Polymarket account')
             if (!source_network || !source_token || !destination_network || !destination_token) throw new Error('Unsupported Polymarket network')
@@ -150,38 +152,49 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
             const A = Number(amount)
             if (!Number.isFinite(A) || A <= 0) throw new Error('Invalid amount')
 
-            const { depository, depositCallData, activeSwapId } = await resolveSwapAndDepositAction(amount)
+            const { depositActions, activeSwapId } = await resolveSwap(amount)
             lifecycleSwapId = activeSwapId
-            const txHash = await executeWalletOperation({
-                context: {
-                    ...lifecycleContextFromSwap(swapBasicData, swapDetails),
-                    swapId: activeSwapId,
-                    path: 'PolymarketWithdrawal',
-                    action: 'polymarket_withdrawal',
-                    provider: wallet?.providerName,
-                },
-                onLifecycle: onSwapLifecycle,
-                allowEmptyHash: true,
-                isActive: () => mountedRef.current,
-            }, () => executeTransfer({
-                network: source_network,
-                token: source_token,
-                destinationNetwork: destination_network,
-                destinationToken: destination_token,
-                networks,
-                sourceRoutes,
+            await executeProviderWithdrawal({
+                swapId: activeSwapId,
                 sourceAddress,
-                depositAddress: depository,
-                amount: A,
-                amountExact: amount,
-                callData: depositCallData,
-                selectedWallet: wallet!,
-            }, wallet, (info) => { if (mountedRef.current) setProgress(info) }))
+                onReconcile: response => mutateSwap(response, false),
+                prepare: async () => {
+                    const actions = depositActions?.length ? depositActions : await getProviderDepositActions(activeSwapId, sourceAddress)
+                    const action = getDepositAction(actions)
+                    if (!action) throw new Error('No depository deposit action')
+                    return action
+                },
+                execute: ({ depository, depositCallData }, onSubmissionStateChange) => executeWalletOperation({
+                    context: {
+                        ...lifecycleContextFromSwap(swapBasicData, swapDetails),
+                        swapId: activeSwapId,
+                        path: 'PolymarketWithdrawal',
+                        action: 'polymarket_withdrawal',
+                        provider: wallet?.providerName,
+                    },
+                    onLifecycle: onSwapLifecycle,
+                    allowEmptyHash: true,
+                    isActive: () => mountedRef.current,
+                }, () => executeTransfer({
+                    swapId: activeSwapId,
+                    onSubmissionStateChange,
+                    network: source_network,
+                    token: source_token,
+                    destinationNetwork: destination_network,
+                    destinationToken: destination_token,
+                    networks,
+                    sourceRoutes,
+                    sourceAddress,
+                    depositAddress: depository,
+                    amount: A,
+                    callData: depositCallData,
+                    selectedWallet: wallet!,
+                }, wallet, (info) => { if (mountedRef.current) setProgress(info) })),
+            })
 
             if (!mountedRef.current) return
 
-            // Success — hand off to the standard Processing screen by recording a pending input.
-            useSwapTransactionStore.getState().setSwapTransaction(activeSwapId, BackendTransactionStatus.Pending, txHash)
+            // Submission is already recorded before the UI hand-off.
             onWalletWithdrawalSuccess?.()
         } catch (e) {
             if (!mountedRef.current) return
@@ -205,7 +218,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
             }
             submittingRef.current = false
         }
-    }, [sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, networks, sourceRoutes, depositActionsResponse, swapId, swapDetails, refuel, initialSettings, wallet, createSwap, setSwapId, executeTransfer, onWalletWithdrawalSuccess, swapBasicData, rejected, error, onSwapLifecycle])
+    }, [sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, networks, sourceRoutes, swapId, swapDetails, refuel, initialSettings, wallet, createSwap, setSwapId, startFreshSwapAttempt, mutateSwap, executeTransfer, onWalletWithdrawalSuccess, swapBasicData.requested_amount, error, rejected, onSwapLifecycle])
 
     return {
         handleWithdraw,
