@@ -1,7 +1,7 @@
 "use client";
 
 import useSWRInfinite from "swr/infinite";
-import { ApiResponse } from '@layerswap/widget/types';
+import { ApiResponse } from '@layerswap/widget-types';
 import { SwapData, TransactionType } from "@/models/Swap";
 import LoadingBlocks from "@/components/LoadingBlocks";
 import NotFound from "@/components/notFound";

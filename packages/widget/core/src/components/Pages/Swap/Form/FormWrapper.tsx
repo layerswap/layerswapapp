@@ -5,7 +5,7 @@ import React from "react";
 import ConnectNetwork from "@/components/Pages/Swap/Form/SecondaryComponents/ConnectNetwork";
 import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "@/lib/generateSwapInitialValues";
 import { Partner } from "@/Models/Partner";
-import { ApiError, LSAPIKnownErrorCode } from "@/Models/ApiError";
+import { type ApiError, LSAPIKnownErrorCode } from "@layerswap/widget-types";
 import { useInitialSettings } from "@/context/settings";
 import useWallet from "@/hooks/useWallet";
 import { useAsyncModal } from "@/context/asyncModal";

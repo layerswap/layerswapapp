@@ -7,7 +7,7 @@ import ReceivePicker from "@/components/Pages/Swap/Form/DepositAddressForm/Recei
 import { ValidationProvider } from "@/context/validationContext";
 import { SwapDataProvider, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import { useInitialSettings } from "@/context/settings";
-import { ApiError, LSAPIKnownErrorCode } from "@/Models/ApiError";
+import { type ApiError, LSAPIKnownErrorCode } from "@layerswap/widget-types";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import { useDepositInitialValues, useDepositSelection } from "../depositSelectionContext";

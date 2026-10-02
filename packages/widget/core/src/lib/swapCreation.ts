@@ -1,6 +1,6 @@
 import type { SwapLifecycleEvent } from '@layerswap/widget-types'
 import { getErrorOccurrenceId } from '@layerswap/widget-types'
-import type { ApiResponse } from '@/Models/ApiResponse'
+import type { ApiResponse } from '@layerswap/widget-types'
 import type { SwapResponse } from '@/lib/apiClients/layerSwapApiClient'
 import { ErrorHandler } from '@/lib/ErrorHandler'
 import { lifecycleErrorDetails, type SwapLifecycleContext } from './swapLifecycle'
