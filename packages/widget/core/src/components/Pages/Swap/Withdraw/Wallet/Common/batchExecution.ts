@@ -11,8 +11,13 @@ export async function executeWalletBatch(ctx: DepositExecutionContext, provider:
     const { swapData, selectedWallet, signal, onLifecycle, setActionStateText } = ctx
     const store = useWalletBatchStore.getState()
     const transactions = useSwapTransactionStore.getState()
-    if (isBatchOutstanding(store.batches[swapData.id]) || transactions.pendingSubmissions[swapData.id]
-        || (transactions.swapTransactions[swapData.id] && transactions.swapTransactions[swapData.id].status !== 'failed'))
+    const hasSubmission = () => {
+        const current = useSwapTransactionStore.getState()
+        return isBatchOutstanding(useWalletBatchStore.getState().batches[swapData.id])
+            || !!current.pendingSubmissions[swapData.id]
+            || !!(current.swapTransactions[swapData.id] && current.swapTransactions[swapData.id].status !== 'failed')
+    }
+    if (hasSubmission())
         throw new Error('This swap already has an outstanding submission. Check your wallet.')
     const batch: WalletBatch = {
         walletId: selectedWallet.id,
@@ -37,14 +42,13 @@ export async function executeWalletBatch(ctx: DepositExecutionContext, provider:
     const context = { network: action.network, selectedWallet }
     const capability = await provider.getCapabilities(context).catch(() => 'unsupported')
     signal?.throwIfAborted()
+    // A late capability response must never overwrite another accepted submission.
+    if (hasSubmission())
+        throw new Error('This swap already has an outstanding submission.')
     if (capability !== 'supported') {
         store.setBatch(swapData.id, { ...batch, state: 'failed', standardNextAttempt: true })
         throw new Error('Atomic batching is no longer available. Try again to use the standard flow.')
     }
-    // Check again after capability lookup: another widget may have started this swap.
-    if (isBatchOutstanding(useWalletBatchStore.getState().batches[swapData.id])
-        || useSwapTransactionStore.getState().pendingSubmissions[swapData.id])
-        throw new Error('This swap already has an outstanding submission.')
     if (action.valid_before * 1000 <= Date.now()) {
         store.setBatch(swapData.id, { ...batch, state: 'failed', standardNextAttempt: true })
         throw new Error('The atomic swap calls expired. Refresh the swap.')

@@ -101,6 +101,22 @@ test('concurrent clicks can submit only once after their capability requests set
   assert.equal(h.submissions(), 1)
 })
 
+test('a late unsupported capability response cannot overwrite another accepted batch', async () => {
+  const h = harness()
+  const capabilities = []
+  h.provider.getCapabilities = () => new Promise(resolve => capabilities.push(resolve))
+  const first = h.executeWalletBatch(h.ctx, h.provider, h.action)
+  const second = h.executeWalletBatch(h.ctx, h.provider, h.action)
+  const refused = assert.rejects(second, /outstanding/)
+  capabilities[0]('supported')
+  await first
+  capabilities[1]('unsupported')
+  await refused
+  assert.equal(h.batches.batches.swap.id, 'batch-id')
+  assert.equal(h.batches.batches.swap.state, 'pending')
+  assert.equal(h.tx.pendingSubmissions.swap, true)
+})
+
 test('closing the screen while the prompt is open retains the late batch ID', async () => {
   const h = harness()
   const controller = new AbortController()
