@@ -21,6 +21,8 @@ export type ResolveSwapPhaseInput = {
     inputTxStatusFromApi?: TransactionStatus;
     storedWalletTransaction?: StoredWalletTransaction;
     isDepositFlow?: boolean;
+    batchPending?: boolean;
+    batchFailed?: boolean;
     // Terminal status of the gasless (paymaster) authorization; any value marks the input failed.
     gaslessFailureStatus?: GaslessAuthorizationStatus;
 };
@@ -65,7 +67,7 @@ export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStat
     const outputReady = !!(outputTx?.transaction_hash && outputTx?.amount);
     const refuelReady = !!(refuelTx?.transaction_hash && refuelTx?.amount);
     const refuelPending = !!refuel && !refuelReady;
-    const swapInputTxStatus = resolveSwapInputTxStatus(inputTx, inputTxStatusFromApi, gaslessFailureStatus, storedWalletTransaction);
+    const swapInputTxStatus = input.batchFailed && !inputTx ? TransactionStatus.Failed : resolveSwapInputTxStatus(inputTx, inputTxStatusFromApi, gaslessFailureStatus, storedWalletTransaction);
     // Only client-detected failures (no API input tx) are retryable: retry() re-opens the
     // withdraw screen, which requires no input tx to be listed.
     const failureReason: SwapFailureReason | undefined = gaslessFailureStatus
@@ -74,10 +76,10 @@ export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStat
 
     const showWithdrawScreen =
         (!swapStatus || swapStatus === SwapStatus.UserTransferPending || swapStatus === SwapStatus.Created)
-        && !(inputTx || storedWalletTransaction)
+        && !(inputTx || storedWalletTransaction || input.batchPending)
         && !failureReason;
 
-    const phase = resolvePhase({
+    const phase = input.batchPending ? SwapPhase.InputPending : resolvePhase({
         swapStatus,
         swapInputTxStatus,
         inputReady,
@@ -120,7 +122,8 @@ export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStat
     return {
         phase,
         stepStatuses,
-        generalStatus,
+        generalStatus: input.batchPending ? { title: 'Confirming wallet batch',
+            subTitle: 'Check your wallet for the status of your approval and swap.' } : generalStatus,
         isTerminal,
         inputReady,
         outputReady,

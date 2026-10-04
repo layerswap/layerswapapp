@@ -14,6 +14,7 @@ type SwapProgressOptions = {
     storedWalletTransaction: SwapTransaction | undefined
     gaslessAuthorization: GaslessAuthorization | undefined
     gaslessAuthorizationFailed?: boolean
+    pendingSubmission?: boolean
     depositSignature?: DepositSignature
 }
 
@@ -40,7 +41,9 @@ export function hasSwapExecutionProgress({
     gaslessAuthorization,
     gaslessAuthorizationFailed = false,
     depositSignature,
+    pendingSubmission,
 }: SwapProgressOptions): boolean {
+    if (pendingSubmission) return true
     if (swapDetails?.status && ADVANCED_SWAP_STATUSES.has(swapDetails.status)) return true
 
     const hasLiveInputTransaction = swapDetails?.transactions?.some(transaction =>

@@ -83,6 +83,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         }),
         useSwapTransactionStore: store({
             swapTransactions: {}, setSwapTransaction(id, status, hash) { stores.useSwapTransactionStore.getState().swapTransactions[id] = { status, hash }; calls.storedTransactions.push([id, status, hash]) },
+            pendingSubmissions: {},
             stepTransactions: {},
             setStepTransaction(id, step, hash, explorerUrl) {
                 const transactions = this.stepTransactions[id] ??= {}
@@ -188,6 +189,9 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
     }
     const { SendTransactionButton, ButtonWrapper } = loadSource(`${walletPath}buttons.tsx`, {
         '@/helpers/depositActions': depositActions,
+        '@/stores/walletBatchStore': { useWalletBatchStore: store({ batches: {} }), isBatchOutstanding: () => false },
+        './batchExecution': { executeWalletBatch: () => assert.fail('Standard workflow must not batch') },
+        '@/lib/resolvers/resolverService': {},
         '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: event => calls.lifecycle.push(event) }) },
         '@/lib/swapLifecycle': lifecycle,
         '@/hooks/useTransferBlocked': { useTransferBlocked: noop },

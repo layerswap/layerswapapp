@@ -1,3 +1,4 @@
+import { useWalletBatchStore, isBatchOutstanding } from '@/stores/walletBatchStore'
 import { useCallback } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '@/context/swap'
 import { useSwapTransactionStore, useGaslessAuthorizationStore, useDepositSignatureStore } from '@/stores/swapTransactionStore'
@@ -31,12 +32,15 @@ export function useSwapRetry(): UseSwapRetryResult {
         state => swapId ? state.authorizations[swapId] : undefined,
     )
     const depositSignature = useDepositSignatureStore(state => swapId ? state.signatures[swapId] : undefined)
+    const batch = useWalletBatchStore(state => swapId ? state.batches[swapId] : undefined)
+    const pendingSubmission = useSwapTransactionStore(state => swapId ? state.pendingSubmissions[swapId] : undefined)
     const { failureReason, gaslessFailureStatus } = useResolvedSwapStatus()
 
     const hasProgress = hasSwapExecutionProgress({
         swapDetails,
         depositActions: depositActionsResponse,
         storedWalletTransaction,
+        pendingSubmission: !!pendingSubmission || isBatchOutstanding(batch),
         gaslessAuthorization,
         depositSignature,
         gaslessAuthorizationFailed: !!gaslessFailureStatus,
@@ -57,6 +61,8 @@ export function useSwapRetry(): UseSwapRetryResult {
             swapDetails,
             depositActions: depositActionsResponse,
             storedWalletTransaction: transactions.swapTransactions[swapId],
+            pendingSubmission: !!transactions.pendingSubmissions[swapId]
+                || isBatchOutstanding(useWalletBatchStore.getState().batches[swapId]),
             gaslessAuthorization: currentAuthorization,
             depositSignature: useDepositSignatureStore.getState().signatures[swapId],
             // Timer expiry belongs to the authorization that produced this render.
@@ -70,6 +76,7 @@ export function useSwapRetry(): UseSwapRetryResult {
         if (standardTransfer) preferences.switchToStandardTransfer()
         else preferences.clearGaslessUnavailable()
         startFreshSwapAttempt()
+        useWalletBatchStore.getState().removeBatch(swapId)
     }, [swapId, failureReason, swapDetails, depositActionsResponse, gaslessAuthorization, gaslessFailureStatus, startFreshSwapAttempt])
 
     const retry = useCallback(() => restart(false), [restart])

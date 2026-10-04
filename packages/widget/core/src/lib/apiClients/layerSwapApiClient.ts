@@ -177,6 +177,7 @@ export type CreateSwapParams = {
     use_deposit_address: boolean
     use_depository?: boolean
     use_gasless: boolean
+    use_atomic_batch?: boolean
     use_frontend_swap: true
     app_name?: string,
 }
@@ -295,7 +296,16 @@ export type PendingDepositAction = Partial<DepositActionBase> & {
     type?: undefined,
 }
 
-export type DepositAction = TransferDepositAction | SignDepositAction | PendingDepositAction
+export type BatchDepositAction = DepositActionBase & {
+    type: 'batch_transfer',
+    network: Network,
+    from_address: string,
+    atomic_required: true,
+    calls: import('@layerswap/widget-types').AtomicBatchCall[],
+    valid_before: number,
+}
+
+export type DepositAction = TransferDepositAction | SignDepositAction | BatchDepositAction | PendingDepositAction
 
 export type Quote = {
     quote: SwapQuote,

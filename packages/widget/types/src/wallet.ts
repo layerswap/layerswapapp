@@ -42,6 +42,8 @@ export type Wallet = {
   providerName: string;
   icon?: string;
   metadata?: {
+    evmConnectorId?: string;
+    evmConnectorUid?: string;
     starknetAccount?: any;
     wallet?: any;
     l1Address?: string;

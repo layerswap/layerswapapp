@@ -8,17 +8,21 @@ const noop = () => {}
 
 // Run the real swap provider and its SWR receipt subscription, with unrelated
 // quote, route, wallet and whole-swap services held at deterministic boundaries.
-export function createSwapContext({ Client, getSwapId, getAccount, stores, swr = require('swr') }) {
+export function createSwapContext({ Client, getSwapId, getAccount, stores, swr = require('swr'), dependencies = {} }) {
     const network = { name: 'BASE_MAINNET' }
     const snapshots = new Map()
     const store = state => Object.assign(selector => selector(state), { getState: () => state })
     const emptyStores = {
-        useSwapTransactionStore: store({ swapTransactions: {}, setSwapTransaction: noop }),
+        useSwapTransactionStore: store({ swapTransactions: {}, pendingSubmissions: {}, setSwapTransaction: noop }),
         useGaslessAuthorizationStore: store({ authorizations: {} }),
         useDepositSignatureStore: store({ removeDepositSignature: noop }),
     }
     const resolved = {}
     const imports = {
+        '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
+        '@/hooks/useWalletBatchPolling': { useWalletBatchPolling: noop },
+        '@/hooks/useAtomicBatchCapability': { useAtomicBatchCapability: noop },
+        '@/stores/walletBatchStore': { useWalletBatchStore: store({ batches: {} }), isBatchOutstanding: () => false },
         react: React,
         'react/jsx-runtime': require('react/jsx-runtime'),
         swr,
@@ -64,6 +68,7 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swr =
         '@/lib/swapLifecycle': {},
         '@/lib/swapCreation': {},
         '@layerswap/utils': { KnownInternalNames: {} },
+        ...dependencies,
     }
     const { outputText } = ts.transpileModule(readFileSync(new URL('../../src/context/swap.tsx', import.meta.url), 'utf8'), {
         compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },

@@ -96,3 +96,4 @@ export type {
   RpcHealthCheckProvider,
 } from './resolvers/rpcHealth';
 export type { TransferProps, TransferProgress, TransferProvider } from './resolvers/transfer';
+export type { AtomicBatchProvider, AtomicBatchContext, AtomicBatchCall, AtomicBatchStatus } from './resolvers/transfer';

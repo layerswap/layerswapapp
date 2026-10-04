@@ -38,7 +38,22 @@ export type TransferProps = {
 /** Generic in-flight progress a provider may surface to the UI (e.g. a prerequisite signing step). */
 export type TransferProgress = { title: string; description?: string }
 
+export type AtomicBatchContext = { network: Network; selectedWallet: Wallet }
+export type AtomicBatchCall = { to_address: string; call_data: string; amount_in_base_units: string }
+export type AtomicBatchStatus = {
+    statusCode: number
+    atomic: boolean
+    chainId?: number
+    receipts: { transactionHash: string; status: 'success' | 'reverted' }[]
+}
+export interface AtomicBatchProvider {
+    getCapabilities(context: AtomicBatchContext): Promise<'supported' | 'ready' | 'unsupported'>
+    sendCalls(context: AtomicBatchContext & { calls: AtomicBatchCall[]; validBefore: number }): Promise<{ id: string }>
+    getCallsStatus(context: AtomicBatchContext & { id: string }): Promise<AtomicBatchStatus>
+}
+
 export interface TransferProvider {
+    atomicBatch?: AtomicBatchProvider
     supportsNetwork(network: Network): boolean
     executeTransfer(params: TransferProps, wallet?: Wallet, onProgress?: (info: TransferProgress | undefined) => void): Promise<string>
 }

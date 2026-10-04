@@ -1,5 +1,9 @@
+import { NetworkType } from '@layerswap/widget-types';
+import { useWalletBatchPolling } from '@/hooks/useWalletBatchPolling';
+import { useAtomicBatchCapability, getAtomicBatchCapability } from '@/hooks/useAtomicBatchCapability';
+import { isBatchOutstanding, useWalletBatchStore } from '@/stores/walletBatchStore';
 import { type Refuel, type Wallet } from '@layerswap/widget-types';
-import { Context, useCallback, useEffect, useState, createContext, useContext, useMemo } from 'react'
+import { Context, useCallback, useEffect, useState, useRef, createContext, useContext, useMemo } from 'react'
 import LayerSwapApiClient, { BackendTransactionStatus, CreateSwapParams, PublishedSwapTransactions, SwapTransaction, TransactionStatus, WithdrawType, SwapResponse, DepositAction, SwapBasicData, SwapQuote, SwapDetails, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
 import { InitialSettings } from '@/Models/InitialSettings';
 import useSWR, { KeyedMutator } from 'swr';
@@ -48,7 +52,7 @@ export type ApprovalTransaction = {
 }
 
 export type UpdateSwapInterface = {
-    createSwap: (values: SwapFormValues, query: InitialSettings, partner?: Partner) => Promise<SwapResponse>,
+    createSwap: (values: SwapFormValues, query: InitialSettings, partner?: Partner, options?: { useAtomicBatch?: boolean }) => Promise<SwapResponse>,
     setQuoteLoading: (value: boolean) => void;
     mutateSwap: KeyedMutator<ApiResponse<SwapResponse>>
     mutateDepositActions: KeyedMutator<ApiResponse<DepositAction[]>>
@@ -101,6 +105,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     // id and, via SWR fallbackData below, the swap details — so consumers render
     // with data on first paint instead of a loading state.
     const [swapId, setSwapId] = useState<string | undefined>(initialSettings.swapId?.toString() ?? initialSwapData?.swap.id)
+    const standardBatchRetry = useRef(false)
     // A rejected attempt must not compact the quote after the user changes modes.
     const gaslessEnabled = useGaslessPreferenceStore(state => state.gaslessEnabled)
     const [walletExecution, setWalletExecution] = useState<{ swapId: string, gaslessEnabled: boolean }>()
@@ -199,12 +204,16 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const startFreshSwapAttempt = useCallback(() => {
         // Preserve the displayed inputs before detaching the stale attempt. This also makes
         // retry-after-reload safe when swapBasicFormData was never populated locally.
+        if (swapId && (isBatchOutstanding(useWalletBatchStore.getState().batches[swapId])
+            || useSwapTransactionStore.getState().pendingSubmissions[swapId])) return
+        if (swapId && useWalletBatchStore.getState().batches[swapId]?.standardNextAttempt)
+            standardBatchRetry.current = true
         if (swapBasicData) setSwapBasicFormData(swapBasicData)
         setSwapTransaction(undefined)
         setSwapError(null)
         setWalletExecution(undefined)
         setSwapId(undefined)
-    }, [swapBasicData])
+    }, [swapBasicData, swapId])
 
     const swapDetails = useMemo(() => {
         if (swapId)
@@ -239,6 +248,9 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const selectedWallet = selectedSourceAccount?.address && sourceNetwork
         ? wallets.find(wallet => Address.equals(wallet.address, selectedSourceAccount.address, sourceNetwork))
         : undefined
+    useAtomicBatchCapability(sourceNetwork, selectedWallet,
+        !gaslessEnabled && !!swapBasicData?.source_token.contract && !swapBasicData.use_deposit_address)
+    const batch = useWalletBatchPolling(swapId, sourceNetwork, wallets, onSwapLifecycle)
     const { checkContractStatus } = useContractAddressStore();
 
     const sourceIsSupported = (swapBasicData && selectedWallet) && WalletIsSupportedForSource({
@@ -249,6 +261,15 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const use_deposit_address = swapBasicData?.use_deposit_address
     const deposit_actions_endpoint = swapId ? `/swaps/${swapId}/deposit_actions${(use_deposit_address || !selectedSourceAccount || !sourceIsSupported) ? "" : `?source_address=${selectedSourceAccount?.address}`}` : null
     const inputTransfer = swapDetails?.transactions.find(t => t.type === TransactionType.Input);
+    useEffect(() => {
+        if (!swapId || !isBatchOutstanding(batch) || !batch || !inputTransfer?.transaction_hash
+            || inputTransfer.status === BackendTransactionStatus.Failed
+            || swapDetails?.source_address?.toLowerCase() !== batch.account.toLowerCase()
+            || Number(sourceNetwork?.chain_id) !== batch.chainId) return
+        // An indexed input receipt reconciles even a lost wallet submission response.
+        useSwapTransactionStore.getState().setSwapTransaction(swapId, BackendTransactionStatus.Pending, inputTransfer.transaction_hash)
+        useWalletBatchStore.getState().setBatch(swapId, { ...batch, state: 'confirmed' })
+    }, [swapId, batch, inputTransfer?.transaction_hash, inputTransfer?.status, swapDetails?.source_address, sourceNetwork?.chain_id])
     // Load missing history even when reopening a swap that already has an input
     // transaction. Once cached, retain it without automatic refreshes after broadcast.
     const { data: depositActions, error: depositActionsSwrError, mutate: mutateDepositActions } = useSWR<ApiResponse<DepositAction[]>>(deposit_actions_endpoint, layerswapApiClient.fetcher, {
@@ -317,8 +338,9 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         ? { ...activeApproval, status: approvalStatus } : undefined, [activeApproval, approvalStatus])
 
     const resolved = useMemo(
-        () => resolveSwapPhase({ swapDetails, refuel, inputTxStatusFromApi, storedWalletTransaction, isDepositFlow, gaslessFailureStatus }),
-        [swapDetails, refuel, inputTxStatusFromApi, storedWalletTransaction, isDepositFlow, gaslessFailureStatus],
+        () => resolveSwapPhase({ swapDetails, refuel, inputTxStatusFromApi, storedWalletTransaction, isDepositFlow, gaslessFailureStatus,
+            batchPending: isBatchOutstanding(batch), batchFailed: batch?.state === 'failed' }),
+        [swapDetails, refuel, inputTxStatusFromApi, storedWalletTransaction, isDepositFlow, gaslessFailureStatus, batch],
     )
 
     // Observe every API status here, regardless of which screen is mounted.
@@ -340,7 +362,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         setSwapTransaction(txForSwap)
     }, [swapId])
 
-    const createSwap = useCallback(async (values: SwapFormValues, query: InitialSettings, partner: Partner) => {
+    const createSwap = useCallback(async (values: SwapFormValues, query: InitialSettings, partner?: Partner, options?: { useAtomicBatch?: boolean }) => {
         if (!values)
             throw new Error("No swap data")
 
@@ -371,6 +393,13 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
                 sourceIsSupported: !!sourceIsSupported,
                 sourceAddress: selectedSourceAccount?.address,
             }) && gaslessEnabled
+
+            const useAtomicBatch = options?.useAtomicBatch !== false && !standardBatchRetry.current && !useGasless
+                && depositMethod === 'wallet' && !fromExchange && from.type === NetworkType.EVM
+                && !!sourceIsSupported
+                && !!fromCurrency.contract && !!selectedWallet?.isActive
+                && selectedWallet.address.toLowerCase() === selectedSourceAccount?.address.toLowerCase()
+                && await getAtomicBatchCapability(from, selectedWallet) === 'supported'
 
             const extendedPlan = resolveExtendedRoutePlan({
                 sourceNetworkName: from.name,
@@ -412,6 +441,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
                 refund_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
                 use_frontend_swap: useFrontendSwap,
                 use_gasless: useGasless,
+                use_atomic_batch: useAtomicBatch,
                 ...(requiresDepository && { use_depository: true }),
             }
 
@@ -423,6 +453,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
                 request: () => layerswapApiClient.CreateSwapAsync(data),
                 useGasless,
                 onCreated: [
+                    { name: 'atomicBatchRetry.clear', run: () => { standardBatchRetry.current = false } },
                     { name: 'onSwapCreate', run: onSwapCreate },
                     // Persist the extended identity so the post-create UI and the withdraw step
                     // can keep showing the extended source and resume after a reload.

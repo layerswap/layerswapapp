@@ -1,4 +1,4 @@
-import type { DepositAction, SignDepositAction, TransferDepositAction } from "@/lib/apiClients/layerSwapApiClient";
+import type { DepositAction, SignDepositAction, TransferDepositAction, BatchDepositAction } from "@/lib/apiClients/layerSwapApiClient";
 
 export function resolveDepositAddress(
     network: { type?: string } | undefined,
@@ -15,6 +15,8 @@ export function resolveDepositAddress(
 
 export const isSignAction = (action: DepositAction): action is SignDepositAction => action.type === 'sign'
 
+export const isBatchAction = (action: DepositAction): action is BatchDepositAction => action.type === 'batch_transfer'
+
 export const isTransferAction = (action: DepositAction): action is TransferDepositAction =>
     action.type === 'transfer' || action.type === 'manual_transfer'
 
@@ -25,18 +27,18 @@ export const getCurrentDepositActionIndex = (actions: DepositAction[], includeWa
     return current === -1 && includeWaiting ? actions.findIndex(action => action.status === 'waiting') : current
 }
 
-export const getActionableDepositAction = (actions: DepositAction[] | undefined): SignDepositAction | TransferDepositAction | undefined => {
+export const getActionableDepositAction = (actions: DepositAction[] | undefined): SignDepositAction | TransferDepositAction | BatchDepositAction | undefined => {
     if (!actions?.length) return undefined
 
     const current = actions.find(action =>
-        action.status === 'action_required' && (isSignAction(action) || isTransferAction(action))
+        action.status === 'action_required' && (isSignAction(action) || isTransferAction(action) || isBatchAction(action))
     )
-    if (current && (isSignAction(current) || isTransferAction(current))) return current
+    if (current && (isSignAction(current) || isTransferAction(current) || isBatchAction(current))) return current
 
     const legacy = actions.find(action =>
-        !action.status && (isSignAction(action) || isTransferAction(action))
+        !action.status && (isSignAction(action) || isTransferAction(action) || isBatchAction(action))
     )
-    return legacy && (isSignAction(legacy) || isTransferAction(legacy)) ? legacy : undefined
+    return legacy && (isSignAction(legacy) || isTransferAction(legacy) || isBatchAction(legacy)) ? legacy : undefined
 }
 
 const DEPOSIT_ACTION_LABELS: Record<string, string> = {
@@ -47,7 +49,7 @@ const DEPOSIT_ACTION_LABELS: Record<string, string> = {
 }
 
 export const getDepositActionLabel = (action: DepositAction): string =>
-    action.step ? DEPOSIT_ACTION_LABELS[action.step] ?? 'Continue' : 'Continue'
+    isBatchAction(action) ? 'Approve and swap' : action.step ? DEPOSIT_ACTION_LABELS[action.step] ?? 'Continue' : 'Continue'
 
 export const getDepositActionDescription = (action: DepositAction): string | undefined => {
     switch (action.step) {

@@ -1,3 +1,7 @@
+import { useWalletBatchStore, isBatchOutstanding } from '@/stores/walletBatchStore';
+import { executeWalletBatch } from './batchExecution';
+import { isBatchAction } from '@/helpers/depositActions';
+import { resolverService } from '@/lib/resolvers/resolverService';
 import { useCallbacks } from '@/context/callbackProvider';
 import { lifecycleContextFromSwap, lifecycleErrorDetails } from '@/lib/swapLifecycle';
 import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect';
@@ -233,6 +237,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const storedWalletTransaction = useSwapTransactionStore(
         state => swapId ? state.swapTransactions[swapId] : undefined,
     )
+    const walletBatch = useWalletBatchStore(state => swapId ? state.batches[swapId] : undefined)
+    const pendingSubmission = useSwapTransactionStore(state => swapId ? state.pendingSubmissions[swapId] : undefined)
     const stepTransactions = useSwapTransactionStore(
         state => swapId ? state.stepTransactions[swapId] : undefined,
     )
@@ -284,9 +290,10 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         swapDetails,
         depositActions,
         storedWalletTransaction,
+        pendingSubmission: !!pendingSubmission || isBatchOutstanding(walletBatch),
         gaslessAuthorization,
         depositSignature,
-    }), [swapDetails, depositActions, storedWalletTransaction, gaslessAuthorization, depositSignature])
+    }), [swapDetails, depositActions, storedWalletTransaction, gaslessAuthorization, depositSignature, pendingSubmission, walletBatch])
     const desiredGasless = gaslessEnabled && isGaslessCapableRoute({
         depositMethod: swapBasicData.use_deposit_address ? 'deposit_address' : 'wallet',
         supportsGaslessDeposit: swapBasicData.source_token?.supports_gasless_deposit,
@@ -308,16 +315,20 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const executeWorkflow = async (requestFreshSwap = false) => {
         const signal = executionScope.current?.signal
         if (!signal || signal.aborted || executionInFlight.current) return
+        if (swapId && (isBatchOutstanding(useWalletBatchStore.getState().batches[swapId])
+            || useSwapTransactionStore.getState().pendingSubmissions[swapId])) return
         executionInFlight.current = true
         // A backend-failed workflow (including an expired quote) needs a new swap.
         // Wallet rejections leave actions actionable and still retry the same swap.
         // Read submission markers at click time; they may have arrived since render.
         const workflowFailed = depositActions?.some(action => action.status === 'failed')
-        const forceNewSwap = (requestFreshSwap || flowPreferenceChanged || workflowFailed)
+        const forceNewSwap = (requestFreshSwap || flowPreferenceChanged || workflowFailed || walletBatch?.state === 'failed')
             && !hasSwapExecutionProgress({
                 swapDetails,
                 depositActions,
                 storedWalletTransaction: swapId ? useSwapTransactionStore.getState().swapTransactions[swapId] : undefined,
+                pendingSubmission: !!swapId && (!!useSwapTransactionStore.getState().pendingSubmissions[swapId]
+                    || isBatchOutstanding(useWalletBatchStore.getState().batches[swapId])),
                 gaslessAuthorization: swapId ? useGaslessAuthorizationStore.getState().authorizations[swapId] : undefined,
                 depositSignature: swapId ? useDepositSignatureStore.getState().signatures[swapId] : undefined,
             })
@@ -358,7 +369,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     depositMethod: 'wallet',
                 }
 
-                const newSwapData = await createSwap(swapValues, initialSettings).catch((e: any) => {
+                const newSwapData = await createSwap(swapValues, initialSettings, undefined, { useAtomicBatch: walletBatch?.standardNextAttempt ? false : undefined }).catch((e: any) => {
                     signal.throwIfAborted()
                     // Failed gasless attempt is surfaced as the switch prompt, not a raw API error.
                     if (useGaslessPreferenceStore.getState().gaslessUnavailable) {
@@ -459,7 +470,11 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 }
 
                 let approvalTransaction: { network: string; hash: string } | undefined
-                if (currentAction && isSignAction(currentAction)) {
+                if (currentAction && isBatchAction(currentAction)) {
+                    await executeWalletBatch(executionContext,
+                        resolverService.getTransferResolver().getAtomicBatchProvider(currentAction.network), currentAction)
+                    return
+                } else if (currentAction && isSignAction(currentAction)) {
                     if (!onSign) throw new Error('This wallet cannot sign the requested authorization')
                     authorizedValidBefore = await executeGaslessAuthorization(executionContext, onSign, currentAction)
                 } else if (currentAction && isTransferAction(currentAction)) {
@@ -576,6 +591,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             swapDetails,
             depositActions,
             storedWalletTransaction: swapId ? useSwapTransactionStore.getState().swapTransactions[swapId] : undefined,
+                pendingSubmission: !!swapId && (!!useSwapTransactionStore.getState().pendingSubmissions[swapId]
+                    || isBatchOutstanding(useWalletBatchStore.getState().batches[swapId])),
             gaslessAuthorization: swapId ? useGaslessAuthorizationStore.getState().authorizations[swapId] : undefined,
             depositSignature: swapId ? useDepositSignatureStore.getState().signatures[swapId] : undefined,
         })) return

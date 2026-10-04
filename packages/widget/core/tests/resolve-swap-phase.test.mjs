@@ -32,6 +32,21 @@ const inputTx = (overrides = {}) => ({
 const pendingSwap = (overrides = {}) => ({ status: 'user_transfer_pending', transactions: [], ...overrides })
 const resolve = (swapDetails, extra = {}) => resolveSwapPhase({ swapDetails, refuel: undefined, ...extra })
 
+test('an outstanding wallet batch keeps progress visible without a transaction hash', () => {
+  const resolved = resolve(pendingSwap(), { batchPending: true })
+  assert.equal(resolved.phase, SwapPhase.InputPending)
+  assert.equal(resolved.showWithdrawScreen, false)
+  assert.equal(resolved.failureReason, undefined)
+  assert.equal(resolved.generalStatus.title, 'Confirming wallet batch')
+})
+
+test('a definitively failed batch enables explicit retry, while indexed input remains authoritative', () => {
+  assert.equal(resolve(pendingSwap(), { batchFailed: true }).failureReason, 'transfer_failed')
+  const resolved = resolve(pendingSwap({ transactions: [inputTx()] }), { batchFailed: true })
+  assert.equal(resolved.failureReason, undefined)
+  assert.equal(resolved.phase, SwapPhase.OutputPending)
+})
+
 test('a failed gasless authorization resolves the swap to failed, with the reason the retry UI needs', () => {
   const resolved = resolve(pendingSwap(), {
     storedWalletTransaction: { hash: '', status: 'pending' },
