@@ -16,6 +16,7 @@ for (const [lane, capability, expected] of [
   ['erc20', 'supported', true], ['erc20', 'ready', false], ['erc20', 'unsupported', false],
   ['rpc-error', 'supported', false], ['native', 'supported', false], ['gasless', 'supported', false],
   ['deposit-address', 'supported', false], ['inactive-wallet', 'supported', false], ['explicit-standard', 'supported', false],
+  ['failed-batch-retry', 'supported', false],
 ]) test(`swap creation negotiates batching for ${lane} / ${capability}`, async () => {
   const requests = [], queries = []
   const sourceToken = lane === 'native' ? { ...token, contract: null } : token
@@ -30,6 +31,8 @@ for (const [lane, capability, expected] of [
       '@/hooks/useWallet': { default: () => ({ wallets: [{ ...wallet, asSourceSupportedNetworks: [network.name] }] }) },
       '@/stores/contractAddressStore': { useContractAddressStore: () => ({ checkContractStatus: async () => ({ sourceIsContract: false }) }) },
       '@/hooks/useSwapPolling': { useSwapPolling: () => snapshot },
+      '@/stores/walletBatchStore': { useWalletBatchStore: store({ batches: lane === 'failed-batch-retry'
+        ? { seed: { state: 'failed', standardNextAttempt: true } } : {} }), isBatchOutstanding: () => false },
       '@/lib/swapCreation': { createSwapAttempt: async prepare => { const attempt = await prepare(); return (await attempt.request()).data } },
       '@/lib/swapLifecycle': { lifecycleContextFromForm: () => ({}) },
       '@/hooks/useAtomicBatchCapability': { useAtomicBatchCapability() {}, getAtomicBatchCapability: async (...args) => {
@@ -50,9 +53,12 @@ for (const [lane, capability, expected] of [
   const root = createRoot(container)
   try {
     await act(async () => root.render(createElement(context.SwapDataProvider, null, createElement(Capture))))
-    await act(async () => update.createSwap({ from: network, to: network, fromAsset: sourceToken, toAsset: { symbol: 'AAVE' },
+    await act(async () => {
+      if (lane === 'failed-batch-retry') update.startFreshSwapAttempt()
+      return update.createSwap({ from: network, to: network, fromAsset: sourceToken, toAsset: { symbol: 'AAVE' },
       amount: '1', destination_address: address, depositMethod: lane === 'deposit-address' ? 'deposit_address' : 'wallet' }, {}, undefined,
-    { useAtomicBatch: lane === 'explicit-standard' ? false : undefined }))
+      { useAtomicBatch: lane === 'explicit-standard' ? false : undefined })
+    })
     assert.equal(requests[0].use_atomic_batch, expected)
     assert.equal(requests[0].use_gasless, lane === 'gasless')
     assert.equal(queries.length, ['erc20', 'rpc-error'].includes(lane) ? 1 : 0)

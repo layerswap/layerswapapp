@@ -14,25 +14,27 @@ export async function executeWalletBatch(ctx: DepositExecutionContext, provider:
     if (isBatchOutstanding(store.batches[swapData.id]) || transactions.pendingSubmissions[swapData.id]
         || (transactions.swapTransactions[swapData.id] && transactions.swapTransactions[swapData.id].status !== 'failed'))
         throw new Error('This swap already has an outstanding submission. Check your wallet.')
-    if (!provider || action.atomic_required !== true || action.calls.length < 2
-        || action.from_address.toLowerCase() !== selectedWallet.address.toLowerCase()
-        || (swapData.source_address && swapData.source_address.toLowerCase() !== action.from_address.toLowerCase())
-        || Number(action.network.chain_id) !== Number(ctx.swapBasicData.source_network.chain_id)
-        || !Number.isFinite(action.valid_before) || action.valid_before * 1000 <= Date.now()
-        || action.calls.some(call => !/^0x[\da-f]{40}$/i.test(call.to_address)
-            || !/^0x(?:[\da-f]{2})+$/i.test(call.call_data) || call.amount_in_base_units !== '0'))
-        throw new Error('The atomic swap calls are invalid or expired. Refresh the swap.')
-
-    const context = { network: action.network, selectedWallet }
     const batch: WalletBatch = {
         walletId: selectedWallet.id,
         internalId: selectedWallet.internalId,
         providerName: selectedWallet.providerName,
         account: selectedWallet.address,
-        chainId: Number(action.network.chain_id),
-        networkName: action.network.name,
+        chainId: Number(ctx.swapBasicData.source_network.chain_id),
+        networkName: ctx.swapBasicData.source_network.name,
         state: 'submitting', timestamp: Date.now(),
     }
+    if (!provider || action.atomic_required !== true || !Array.isArray(action.calls) || action.calls.length < 2
+        || !action.from_address || action.from_address.toLowerCase() !== selectedWallet.address.toLowerCase()
+        || (swapData.source_address && swapData.source_address.toLowerCase() !== action.from_address.toLowerCase())
+        || !action.network || Number(action.network.chain_id) !== Number(ctx.swapBasicData.source_network.chain_id)
+        || !Number.isFinite(action.valid_before) || action.valid_before * 1000 <= Date.now()
+        || action.calls.some(call => !call || !/^0x[\da-f]{40}$/i.test(call.to_address)
+            || !/^0x(?:[\da-f]{2})+$/i.test(call.call_data) || call.amount_in_base_units !== '0')) {
+        store.setBatch(swapData.id, { ...batch, state: 'failed', standardNextAttempt: true })
+        throw new Error('The atomic swap calls are invalid or expired. Refresh the swap.')
+    }
+
+    const context = { network: action.network, selectedWallet }
     const capability = await provider.getCapabilities(context).catch(() => 'unsupported')
     signal?.throwIfAborted()
     if (capability !== 'supported') {
@@ -43,8 +45,10 @@ export async function executeWalletBatch(ctx: DepositExecutionContext, provider:
     if (isBatchOutstanding(useWalletBatchStore.getState().batches[swapData.id])
         || useSwapTransactionStore.getState().pendingSubmissions[swapData.id])
         throw new Error('This swap already has an outstanding submission.')
-    if (action.valid_before * 1000 <= Date.now())
+    if (action.valid_before * 1000 <= Date.now()) {
+        store.setBatch(swapData.id, { ...batch, state: 'failed', standardNextAttempt: true })
         throw new Error('The atomic swap calls expired. Refresh the swap.')
+    }
     store.setBatch(swapData.id, batch)
     transactions.markSubmissionPending(swapData.id)
     setActionStateText('Approve and swap in your wallet')

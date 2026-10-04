@@ -126,6 +126,9 @@ for (const invalid of ['account', 'chain', 'expiry', 'empty', 'native-value', 'c
   if (invalid === 'native-value') h.action.calls[0].amount_in_base_units = '1'
   if (invalid === 'calldata') h.action.calls[0].call_data = '0x1'
   await assert.rejects(h.executeWalletBatch(h.ctx, h.provider, h.action), /invalid or expired/)
+  assert.equal(h.batches.batches.swap.state, 'failed', 'invalid preflight permits a fresh explicit attempt')
+  assert.equal(h.batches.batches.swap.standardNextAttempt, true)
+  assert.equal(isBatchOutstanding(h.batches.batches.swap), false)
 })
 
 for (const receipts of [[{ transactionHash: hash, status: 'success' }],
