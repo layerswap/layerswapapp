@@ -1,5 +1,35 @@
 # @layerswap/widget
 
+## 2.4.0
+
+### Patch Changes
+
+- Reduce repeated balance requests and report API failures consistently.
+  - Keep failed EVM multicall results instead of immediately repeating each failed token balance request against the same RPC.
+  - Report balance failures once per fetch through the balance resolver instead of emitting an additional error for every failed token.
+  - Report unauthenticated API failures through the widget's `APIError` handler, matching authenticated requests. Expected transaction-status 404 responses and ignored API error codes remain excluded from reporting; request rejection and polling behavior are preserved.
+
+- Keep Fuel account permissions current and send transactions through the selected connector.
+  - Reconcile accounts on account, connection, and network changes; remove stale authorized addresses and prevent older synchronization results from overwriting newer wallet state.
+  - Preserve the last known wallet during transient account queries. When only network resolution fails, retain cached network metadata while applying the confirmed account permissions.
+  - Use the selected source address and connector, and check sender authorization before preparing and before sending the transaction.
+  - Classify unauthorized senders as account mismatches with `reasonCode: 'unauthorized'`, and display the supplied authorization details in the widget.
+
+- Expose shared Layerswap API contracts from `@layerswap/widget-types`.
+  - Export `ApiError`, `LSAPIKnownErrorCode`, `ApiResponse`, and `EmptyApiResponse` so consumers can use API contracts without importing the widget runtime.
+  - Update the widget to consume the shared contracts and retain its model re-exports.
+
+- Fix the backdrop flash after wallet drawer exit animations by pinning Framer Motion to `12.34.5` in the UI kit and widget.
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @layerswap/widget-types@2.4.0
+  - @layerswap/wallet-core@2.4.0
+  - @layerswap/ui-kit@2.4.0
+  - @layerswap/utils@2.4.0
+
 ## 2.3.1
 
 ### Patch Changes
