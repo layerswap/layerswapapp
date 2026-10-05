@@ -12,6 +12,7 @@ import { getEvmConfig, isExternalEvmConfig } from './getEvmConfig'
 import { computeEvmNetworkBuckets, type EvmAdditionalSupportedNetworks, type EvmNetworkBuckets } from './networkBuckets'
 import { resolveSupportedNetworks } from './resolveSupportedNetworks'
 import { resolveWallet } from './resolveWallet'
+import { resolveWalletConnector } from './resolveWalletConnector'
 import { attemptGetAccount, computeConfiguredConnectors, splitRegistryConnectors, supportsRegistryConnects, wagmiDisplayUriSource, } from './connectorsHelpers'
 import { useEvmStore } from './evmStore'
 
@@ -190,13 +191,7 @@ export class EvmConnectionService<Network> implements WalletConnectionService<Ru
     }
 
     private resolveWalletConnector(wallet: Wallet): Connector | undefined {
-        const config = getEvmConfig()
-        const connections = getConnections(config)
-        return connections.find(c => c.connector.name === wallet.id)?.connector
-            ?? connections.find(c =>
-                c.connector.id === HIDDEN_WALLETCONNECT_ID
-                && c.accounts.some(a => a.toLowerCase() === wallet.address.toLowerCase()),
-            )?.connector
+        return resolveWalletConnector(getEvmConfig(), wallet)
     }
 
     async switchAccount(wallet: Wallet, address: string): Promise<void> {
@@ -333,24 +328,19 @@ export class EvmConnectionService<Network> implements WalletConnectionService<Ru
 
             const activeAccount = await attemptGetAccount(config)
 
-            if (isRegistry && pendingMetadata && activeAccount.address) {
-                setDynamicWcMetadata(EIP155_NAMESPACE, activeAccount.address, pendingMetadata)
-            }
-            clearPendingDynamicWcMetadata(EIP155_NAMESPACE)
-
             const connections = getConnections(config)
-            let connection = connections.find(c => c.connector.id === connector?.id)
+            let connection = connections.find(c => c.connector.uid === actualConnector.uid)
 
             if (!connection) {
-                const accounts = await (connector as unknown as Connector).getAccounts()
+                const accounts = await (actualConnector as unknown as Connector).getAccounts()
                 if (!accounts?.length) {
                     throw new Error('No accounts returned from wallet')
                 }
-                const chainId = await (connector as unknown as Connector).getChainId()
+                const chainId = await (actualConnector as unknown as Connector).getChainId()
                 connection = {
                     accounts: accounts as readonly [`0x${string}`, ...`0x${string}`[]],
                     chainId: Number(chainId),
-                    connector: connector as unknown as Connector,
+                    connector: actualConnector as unknown as Connector,
                 }
             }
 
@@ -372,6 +362,13 @@ export class EvmConnectionService<Network> implements WalletConnectionService<Ru
                     )
                 }
             }
+
+            if (isRegistry && pendingMetadata) {
+                for (const address of connection.accounts) {
+                    setDynamicWcMetadata(EIP155_NAMESPACE, address, pendingMetadata)
+                }
+            }
+            clearPendingDynamicWcMetadata(EIP155_NAMESPACE)
 
             const wallet = resolveWallet({
                 activeConnection: (activeAccount.connector && activeAccount.address) ? {
