@@ -1,13 +1,13 @@
 import { FormSourceWalletButton } from "@/components/Input/SourceWalletPicker";
 import SubmitButton from "@/components/Buttons/submitButton";
 import { useInitialSettings } from "@/context/settings";
-import { useSwapDataState } from "@/context/swap";
 import Address from "@/components/Input/Address";
 import { SwapFormValues } from "../SwapFormValues";
 import { Partner } from "@/Models/Partner";
 
 type Props = {
     shouldConnectWallet: boolean,
+    prerequisiteLabel?: string,
     values: SwapFormValues,
     disabled: boolean,
     error: string,
@@ -18,6 +18,7 @@ type Props = {
 
 const FormButton = ({
     shouldConnectWallet,
+    prerequisiteLabel,
     values,
     disabled,
     error,
@@ -30,6 +31,10 @@ const FormButton = ({
     const preSubmitDisabled = isSubmitting || isQuoteLoading;
 
     const button = (() => {
+        if (prerequisiteLabel) {
+            return <SubmitButton type="button" isDisabled>{prerequisiteLabel}</SubmitButton>;
+        }
+
         if (shouldConnectWallet && (!error || !values.to || !values.amount)) {
             return <FormSourceWalletButton isDisabled={preSubmitDisabled} />;
         }

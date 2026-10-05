@@ -79,6 +79,7 @@ export function createStarknetProvider<Network = NetworkWithTokens>(
         balanceProvider: finalBalanceProviders,
         nftProvider: finalNftProviders,
         transferProvider: finalTransferProviders,
+        swapPrerequisiteProvider: config.swapPrerequisiteProviders,
     }
 }
 
