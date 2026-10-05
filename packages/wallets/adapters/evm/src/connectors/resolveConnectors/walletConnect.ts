@@ -1,4 +1,4 @@
-import { buildDeepLink } from "@layerswap/wallet-core"
+import { buildDeepLink, subscribeWalletRequests } from "@layerswap/wallet-core"
 import {
     ChainNotConfiguredError,
     type Connector,
@@ -85,7 +85,7 @@ type Params = {
     },
     icon: string,
 } & WalletConnectParameters
-walletConnect.type = 'metamask'
+walletConnect.type = 'walletConnect'
 export function walletConnect(parameters: Params) {
     const isNewChainsStale = parameters.isNewChainsStale ?? true
     const { id, name, rdns, type, mobile, icon } = parameters
@@ -266,7 +266,7 @@ export function walletConnect(parameters: Params) {
                 const { EthereumProvider } = await import(
                     '@walletconnect/ethereum-provider'
                 )
-                return await EthereumProvider.init({
+                const provider = await EthereumProvider.init({
                     ...parameters,
                     disableProviderPing: true,
                     optionalChains,
@@ -282,6 +282,8 @@ export function walletConnect(parameters: Params) {
                     ),
                     showQrModal: parameters.showQrModal ?? true,
                 })
+                subscribeWalletRequests(provider.signer.client, NAMESPACE)
+                return provider
             }
 
             if (!provider_) {
