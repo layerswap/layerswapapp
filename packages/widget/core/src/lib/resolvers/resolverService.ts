@@ -9,6 +9,7 @@ import { ContractAddressResolver } from "@/lib/address/contractAddressResolver";
 import { RpcHealthCheckResolver } from "../rpcHealth/rpcHealthCheckResolver";
 
 class UtilsResolverService {
+    private balanceRevision = 0;
     private balanceResolver: BalanceResolver | null = null;
     private gasResolver: GasResolver | null = null;
     private nftResolver: NftBalanceResolver | null = null;
@@ -16,6 +17,7 @@ class UtilsResolverService {
     private contractAddressResolver: ContractAddressResolver | null = null;
     private rpcHealthCheckResolver: RpcHealthCheckResolver | null = null;
     private gaslessResolver: GaslessResolver | null = null;
+    private providersListeners = new Set<() => void>();
 
     setProviders(
         balanceProviders: BalanceProvider[],
@@ -27,16 +29,28 @@ class UtilsResolverService {
         gaslessProviders: GaslessProvider[] = [],
     ) {
         this.balanceResolver = new BalanceResolver(balanceProviders);
+        this.balanceRevision++;
         this.gasResolver = new GasResolver(gasProviders);
         this.nftResolver = new NftBalanceResolver(nftProviders);
         this.transferResolver = new TransferResolver(transferProviders);
         this.contractAddressResolver = new ContractAddressResolver(contractAddressProviders);
         this.rpcHealthCheckResolver = new RpcHealthCheckResolver(rpcHealthCheckProviders);
         this.gaslessResolver = new GaslessResolver(gaslessProviders);
+        this.providersListeners.forEach(listener => listener());
+    }
+
+    // Fires on every setProviders; listeners decide what actually changed.
+    onProvidersChange(listener: () => void): () => void {
+        this.providersListeners.add(listener);
+        return () => { this.providersListeners.delete(listener); };
     }
 
     isInitialized(): boolean {
         return this.balanceResolver !== null;
+    }
+
+    getBalanceSnapshot() {
+        return { revision: this.balanceRevision, resolver: this.balanceResolver };
     }
 
     getBalanceResolver(): BalanceResolver {

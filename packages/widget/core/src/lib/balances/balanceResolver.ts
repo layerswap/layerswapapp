@@ -28,27 +28,41 @@ function formatErrorBalances(errorBalances: TokenBalance[]) {
     }));
 }
 
+export type BalanceFetchPolicy = { timeoutMs?: number; retryCount?: number }
+
+export type BalanceResult =
+    | { kind: 'resolved'; data: NetworkBalance }
+    | { kind: 'unavailable' }
+    | { kind: 'failed'; error: unknown }
+
 export class BalanceResolver {
 
-    private providers: BalanceProvider[];
+    private readonly providers: readonly BalanceProvider[];
 
     constructor(providers?: BalanceProvider[]) {
-        this.providers = providers || []
+        this.providers = [...(providers ?? [])]
     }
 
-    async getBalance(network: NetworkWithTokens, address?: string, options?: { timeoutMs?: number, retryCount?: number }): Promise<NetworkBalance> {
+    // Compatibility for consumers that only need balance data.
+    async getBalance(network: NetworkWithTokens, address?: string, options?: BalanceFetchPolicy): Promise<NetworkBalance> {
+        const result = await this.resolveBalance(network, address, options)
+        return result.kind === 'resolved' ? result.data : { balances: [] }
+    }
+
+    async resolveBalance(network: NetworkWithTokens, address?: string, options?: BalanceFetchPolicy): Promise<BalanceResult> {
         if (SKIP_BALANCE_NETWORKS.includes(network.name)) {
-            return { balances: [] }
+            return { kind: 'resolved', data: { balances: [] } }
         }
 
-        const finishTelemetry = widgetTelemetry.beginOperation('balance_fetch', { network: network.name })
+        let finishTelemetry: ReturnType<typeof widgetTelemetry.beginOperation> | undefined
         try {
             if (!address)
                 throw new Error(`No address provided for network ${network.name}`)
             const provider = this.providers.find(p => p.supportsNetwork(network))
-            //TODO: create interface for balance providers in case of empty state they shoudl throw error 
-            //never return undefined as SWR does not set loading state if undefined is returned
-            if (!provider) throw new Error(`No balance provider found for network ${network.name}`)
+            // Availability is not a failed RPC request. Provider predicates run
+            // once, inside the same error boundary as the fetch itself.
+            if (!provider) return { kind: 'unavailable' }
+            finishTelemetry = widgetTelemetry.beginOperation('balance_fetch', { network: network.name })
             const balances = await provider.fetchBalance(address, network, { timeoutMs: options?.timeoutMs, retryCount: options?.retryCount })
 
             const errorBalances = balances?.filter(b => b.error)
@@ -74,10 +88,10 @@ export class BalanceResolver {
             }
 
             finishTelemetry(errorBalances?.length ? 'partial' : 'succeeded')
-            return { balances };
+            return { kind: 'resolved', data: { balances } };
         }
         catch (e) {
-            finishTelemetry('failed')
+            finishTelemetry?.('failed')
             const errorDetails = extractErrorDetails(e);
             const errorCategory = classifyNodeError(e);
             const error = new Error(errorDetails.message);
@@ -100,7 +114,7 @@ export class BalanceResolver {
                 response_data: errorDetails.responseData,
                 request_url: errorDetails.requestUrl,
             });
-            return { balances: [] }
+            return { kind: 'failed', error }
         }
     }
 }

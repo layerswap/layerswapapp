@@ -119,7 +119,8 @@ export function createEVMProvider<TNetwork = NetworkWithTokens>(
         ? (Array.isArray(gaslessProviders) ? gaslessProviders : [gaslessProviders])
         : defaultGaslessProviders
 
-    // RPC health checking is off by default; hosts opt in via `rpcHealthCheckProviders`.
+    // RPC health checking is disabled for now; `EVMRpcHealthCheckProvider` is kept
+    // for re-enabling once its issues are fixed.
     const finalRPCHealthCheckProviders = rpcHealthCheckProviders !== undefined
         ? (Array.isArray(rpcHealthCheckProviders) ? rpcHealthCheckProviders : [rpcHealthCheckProviders])
         : []
