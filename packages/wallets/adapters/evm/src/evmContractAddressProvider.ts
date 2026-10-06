@@ -19,7 +19,7 @@ export class EVMContractAddressProvider implements ContractAddressCheckerProvide
             const chain = resolveChain(network)
             const publicClient = createPublicClient({
                 chain,
-                transport: resolveFallbackTransport(network.nodes)
+                transport: resolveFallbackTransport(network)
             })
             const bytecode = await publicClient.getCode({
                 address: address as `0x${string}`

@@ -27,7 +27,7 @@ export class EVMGasProvider implements GasProvider {
 
             const publicClient = createPublicClient({
                 chain: resolveChain(network),
-                transport: resolveFallbackTransport(network.nodes),
+                transport: resolveFallbackTransport(network),
             })
 
             const getGas = network?.metadata?.evm_oracle_contract ? getOptimismGas : getEthereumGas
@@ -256,7 +256,7 @@ export default class getOptimismGas extends getEVMGas {
 
     client: any = createPublicClient({
         chain: this.chain,
-        transport: resolveFallbackTransport(this.from.nodes),
+        transport: resolveFallbackTransport(this.from),
     }).extend(publicActionsL2())
 
     resolveGas = async () => {

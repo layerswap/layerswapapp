@@ -120,7 +120,7 @@ export function createPolymarketTransferProvider(
             if (!chain) throw fail('Network unavailable', 'Could not connect to Polygon for this withdrawal. Please try again.')
             const publicClient = createPublicClient({
                 chain,
-                transport: resolveFallbackTransport(network.nodes),
+                transport: resolveFallbackTransport(network),
             }) as PublicClient
 
             const holding = await resolvePolymarketHolding(sourceAddress, publicClient)

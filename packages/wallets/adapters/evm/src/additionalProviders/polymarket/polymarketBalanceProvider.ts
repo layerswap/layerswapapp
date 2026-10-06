@@ -28,7 +28,7 @@ export class PolymarketBalanceProvider extends BalanceProvider {
         const { createPublicClient } = await import("viem")
         const publicClient = createPublicClient({
             chain,
-            transport: resolveFallbackTransport(network.nodes, { retryCount: options?.retryCount, timeoutMs: options?.timeoutMs }),
+            transport: resolveFallbackTransport(network, { retryCount: options?.retryCount, timeoutMs: options?.timeoutMs }),
         }) as PublicClient
 
         const holding = await resolvePolymarketHolding(address, publicClient)

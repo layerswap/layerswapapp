@@ -2,6 +2,7 @@ import NetworkSettings from "../NetworkSettings";
 import { ErrorHandler, type Network } from "@layerswap/widget-types";
 import type { AppNetworkAdapter } from "@layerswap/wallet-core"
 import { defineChain } from "viem"
+import { resolveNetworkNodes } from "./resolveTransports"
 
 type ChainDefinitionInput = {
     id: number
@@ -80,7 +81,7 @@ export default function resolveChain(network: Network) {
         settingsId: network.name,
         displayName: network.display_name,
         nativeCurrency: network.token,
-        rpcUrls: network.nodes?.length > 0 ? network.nodes : [network.node_url],
+        rpcUrls: resolveNetworkNodes(network),
         transactionExplorerTemplate: network.transaction_explorer_template,
         multicallAddress: network.metadata?.evm_multicall_contract ?? undefined,
         source: network,

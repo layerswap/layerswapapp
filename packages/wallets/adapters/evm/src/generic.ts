@@ -6,7 +6,6 @@ import { createEvmConnection } from "./service/createEvmConnection"
 import { initEvmProvider } from "./EVMProvider/init"
 import { createEvmTransfer } from "./transferProvider/createEvmTransfer"
 import { EVMContractAddressProvider } from "./evmContractAddressProvider"
-import { EVMRpcHealthCheckProvider } from "./rpcHealthCheckProvider"
 import type { EVMProviderConfig, WalletConnectConfig } from "./types"
 import { getEvmConfig } from "./service/getEvmConfig"
 import type { Network, NetworkWithTokens } from "@layerswap/widget-types";
@@ -120,10 +119,10 @@ export function createEVMProvider<TNetwork = NetworkWithTokens>(
         ? (Array.isArray(gaslessProviders) ? gaslessProviders : [gaslessProviders])
         : defaultGaslessProviders
 
-    const defaultRPCHealthCheckProviders = [new EVMRpcHealthCheckProvider()]
+    // RPC health checking is off by default; hosts opt in via `rpcHealthCheckProviders`.
     const finalRPCHealthCheckProviders = rpcHealthCheckProviders !== undefined
         ? (Array.isArray(rpcHealthCheckProviders) ? rpcHealthCheckProviders : [rpcHealthCheckProviders])
-        : defaultRPCHealthCheckProviders
+        : []
 
     return {
         id,

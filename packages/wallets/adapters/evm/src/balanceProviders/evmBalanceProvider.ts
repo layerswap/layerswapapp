@@ -41,7 +41,7 @@ export class EVMBalanceProvider extends BalanceProvider {
             const { createPublicClient } = await import("viem")
             const publicClient = createPublicClient({
                 chain,
-                transport: resolveFallbackTransport(network.nodes, { retryCount: options?.retryCount, timeoutMs: options?.timeoutMs })
+                transport: resolveFallbackTransport(network, { retryCount: options?.retryCount, timeoutMs: options?.timeoutMs })
             })
 
             let erc20Balances: TokenBalance[] = []
@@ -88,7 +88,7 @@ export class EVMBalanceProvider extends BalanceProvider {
         const { createPublicClient } = await import("viem")
         const publicClient = createPublicClient({
             chain,
-            transport: resolveFallbackTransport(network.nodes, { retryCount: options?.retryCount, timeoutMs: options?.timeoutMs })
+            transport: resolveFallbackTransport(network, { retryCount: options?.retryCount, timeoutMs: options?.timeoutMs })
         })
 
         const contract = contracts.find(c => c.networks.includes(network.name))
@@ -230,7 +230,7 @@ export const getErc20Balances = async ({
             const config = createConfig({
                 chains: [chain],
                 transports: {
-                    [chain.id]: resolveFallbackTransport(network.nodes, { retryCount, timeoutMs })
+                    [chain.id]: resolveFallbackTransport(network, { retryCount, timeoutMs })
                 }
             })
 
@@ -292,7 +292,7 @@ export const getTokenBalance = async (address: `0x${string}`, network: Network, 
         const config = createConfig({
             chains: [chain],
             transports: {
-                [chain.id]: resolveFallbackTransport(network.nodes, { retryCount, timeoutMs })
+                [chain.id]: resolveFallbackTransport(network, { retryCount, timeoutMs })
             }
         })
 
