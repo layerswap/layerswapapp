@@ -9,6 +9,7 @@ import { NetworkWithTokens, Network, Token } from "@layerswap/widget-types";
 import { Exchange } from "../../Models/Exchange";
 import { ErrorHandler } from "@/lib/ErrorHandler";
 import { startApiOperation } from '../widgetTelemetry';
+import { resolveAtomicDepositActions } from '../atomicBatchActions';
 
 const IGNORED_API_ERROR_CODES = [
     'ROUTE_NOT_FOUND_ERROR',
@@ -69,8 +70,13 @@ export default class LayerSwapApiClient {
     }
 
     async GetDepositActionsAsync(swapId: string, sourceAddress?: string): Promise<ApiResponse<DepositAction[]>> {
-        const query = sourceAddress ? `?source_address=${sourceAddress}` : "";
+        const query = sourceAddress ? `?source_address=${encodeURIComponent(sourceAddress)}` : "";
         return await this.AuthenticatedRequest<ApiResponse<DepositAction[]>>("GET", `/swaps/${swapId}/deposit_actions${query}`);
+    }
+
+    async GetNextActionAsync(swapId: string, sourceAddress?: string): Promise<ApiResponse<NextActionResponse>> {
+        const query = sourceAddress ? `?source_address=${encodeURIComponent(sourceAddress)}` : '';
+        return this.AuthenticatedRequest('GET', `/swaps/${swapId}/next_action${query}`);
     }
 
     async GetSwapAsync(swapId: string, sourceAddress?: string): Promise<ApiResponse<SwapResponse>> {
@@ -82,9 +88,25 @@ export default class LayerSwapApiClient {
         const finishTelemetry = startApiOperation(method, endpoint)
         let uri = LayerSwapApiClient.apiBaseEndpoint + "/api/v2" + endpoint;
         return await this._authInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
-            .then(res => {
+            .then(async res => {
                 finishTelemetry(res?.data?.error ? 'failed' : 'succeeded', { http_status: res?.status }, res?.data?.data)
-                return res?.data;
+                const response = res?.data;
+                const match = endpoint.match(/^\/swaps\/([^/?]+)(\/deposit_actions)?(?:\?|$)/);
+                const isActions = method === 'GET' && !!match?.[2];
+                const isSwap = (method === 'POST' && endpoint === '/swaps')
+                    || (method === 'GET' && !!match && !endpoint.includes('/next_action') && !endpoint.includes('/authorize'));
+                const actions = isActions ? response?.data : isSwap ? response?.data?.deposit_actions : undefined;
+                const swapId = isActions ? match?.[1] : response?.data?.swap?.id;
+                if (!Array.isArray(actions) || !swapId) return response;
+                const sourceAddress = new URLSearchParams(endpoint.split('?')[1]).get('source_address') ?? response?.data?.swap?.source_address ?? data?.source_address;
+                const normalized = await resolveAtomicDepositActions(actions, async () => {
+                    const next = await this.GetNextActionAsync(swapId, sourceAddress);
+                    if (!next?.data || next.error) throw new Error(next?.error?.message || 'Could not load the atomic swap action');
+                    return next.data;
+                });
+                return isActions
+                    ? { ...response, data: normalized }
+                    : { ...response, data: { ...response.data, deposit_actions: normalized } };
             })
             .catch(async reason => {
                 finishTelemetry(reason?.code === 'ERR_CANCELED' ? 'cancelled' : 'failed', { http_status: reason?.response?.status })
@@ -178,6 +200,7 @@ export type CreateSwapParams = {
     use_depository?: boolean
     use_gasless: boolean
     use_frontend_swap: true
+    use_atomic_batch?: boolean
     app_name?: string,
 }
 
@@ -277,6 +300,9 @@ type DepositActionBase = DepositActionWorkflow & {
     to_address?: string,
     token?: Token,
     fee_token?: Token,
+    valid_after?: number,
+    valid_before?: number,
+    nonce?: string,
 }
 
 export type TransferDepositAction = DepositActionBase & {
@@ -295,7 +321,16 @@ export type PendingDepositAction = Partial<DepositActionBase> & {
     type?: undefined,
 }
 
-export type DepositAction = TransferDepositAction | SignDepositAction | PendingDepositAction
+export type BatchTransferDepositAction = DepositActionBase & {
+    type: 'send_calls',
+    calls: { to: string; data: string | null; value: string }[],
+}
+
+export type NextActionResponse = DepositActionWorkflow & {
+    action?: DepositAction,
+}
+
+export type DepositAction = TransferDepositAction | SignDepositAction | PendingDepositAction | BatchTransferDepositAction
 
 export type Quote = {
     quote: SwapQuote,

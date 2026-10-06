@@ -6,6 +6,7 @@ import { hasSwapExecutionProgress } from '@/helpers/swapProgress'
 import { gaslessFailureMessage } from './useGaslessAuthorization'
 import { useResolvedSwapStatus } from './useResolvedSwapStatus'
 import type { SwapFailureReason } from '@/components/utils/resolveSwapPhase'
+import { getOutstandingBatch } from '@/stores/atomicBatchStore'
 
 export type { SwapFailureReason } from '@/components/utils/resolveSwapPhase'
 
@@ -20,7 +21,7 @@ type UseSwapRetryResult = {
 
 // Clear failed deposit markers only when the existing attempt can no longer move funds.
 export function useSwapRetry(): UseSwapRetryResult {
-    const { swapDetails, depositActionsResponse } = useSwapDataState()
+    const { swapDetails, depositActionsResponse, outstandingBatch, atomicBatch } = useSwapDataState()
     const { startFreshSwapAttempt } = useSwapDataUpdate()
     const swapId = swapDetails?.id
 
@@ -34,6 +35,8 @@ export function useSwapRetry(): UseSwapRetryResult {
     const { failureReason, gaslessFailureStatus } = useResolvedSwapStatus()
 
     const hasProgress = hasSwapExecutionProgress({
+        atomicBatchOutstanding: !!outstandingBatch,
+        atomicBatchFailed: atomicBatch?.state === 'failed' || atomicBatch?.state === 'not_submitted',
         swapDetails,
         depositActions: depositActionsResponse,
         storedWalletTransaction,
@@ -45,6 +48,7 @@ export function useSwapRetry(): UseSwapRetryResult {
     const canRetry = !!swapId && !!failureReason && !hasProgress
 
     const restart = useCallback((standardTransfer: boolean) => {
+        if (getOutstandingBatch()) return
         if (!swapId || !failureReason) return
         if (standardTransfer && failureReason !== 'gasless_deposit_failed') return
 
@@ -54,6 +58,7 @@ export function useSwapRetry(): UseSwapRetryResult {
         const authorizations = useGaslessAuthorizationStore.getState()
         const currentAuthorization = authorizations.authorizations[swapId]
         if (hasSwapExecutionProgress({
+            atomicBatchFailed: atomicBatch?.state === 'failed' || atomicBatch?.state === 'not_submitted',
             swapDetails,
             depositActions: depositActionsResponse,
             storedWalletTransaction: transactions.swapTransactions[swapId],
@@ -70,7 +75,7 @@ export function useSwapRetry(): UseSwapRetryResult {
         if (standardTransfer) preferences.switchToStandardTransfer()
         else preferences.clearGaslessUnavailable()
         startFreshSwapAttempt()
-    }, [swapId, failureReason, swapDetails, depositActionsResponse, gaslessAuthorization, gaslessFailureStatus, startFreshSwapAttempt])
+    }, [swapId, failureReason, swapDetails, depositActionsResponse, gaslessAuthorization, gaslessFailureStatus, startFreshSwapAttempt, atomicBatch])
 
     const retry = useCallback(() => restart(false), [restart])
     const switchToStandard = useCallback(() => restart(true), [restart])

@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { getOutstandingBatch } from './atomicBatchStore'
 
 // 'create' → swap couldn't be created with use_gasless (offer switch only).
 // 'deposit' → authorize/poll failed after creation (offer retry + switch).
@@ -23,9 +24,9 @@ export const useGaslessPreferenceStore = create<GaslessPreferenceState>()((set) 
     gaslessUnavailable: false,
     gaslessFailureStage: null,
     gaslessErrorMessage: null,
-    setGaslessEnabled: (value) => set({ gaslessEnabled: value, gaslessUnavailable: false, gaslessFailureStage: null, gaslessErrorMessage: null }),
+    setGaslessEnabled: (value) => { if (!getOutstandingBatch()) set({ gaslessEnabled: value, gaslessUnavailable: false, gaslessFailureStage: null, gaslessErrorMessage: null }) },
     reportGaslessUnavailable: (stage, message) => set({ gaslessUnavailable: true, gaslessFailureStage: stage, gaslessErrorMessage: message ?? null }),
-    switchToStandardTransfer: () => set({ gaslessEnabled: false, gaslessUnavailable: false, gaslessFailureStage: null, gaslessErrorMessage: null }),
+    switchToStandardTransfer: () => { if (!getOutstandingBatch()) set({ gaslessEnabled: false, gaslessUnavailable: false, gaslessFailureStage: null, gaslessErrorMessage: null }) },
     clearGaslessUnavailable: () => set({ gaslessUnavailable: false, gaslessFailureStage: null, gaslessErrorMessage: null }),
-    resetGaslessPreference: () => set({ gaslessEnabled: true, gaslessUnavailable: false, gaslessFailureStage: null, gaslessErrorMessage: null }),
+    resetGaslessPreference: () => { if (!getOutstandingBatch()) set({ gaslessEnabled: true, gaslessUnavailable: false, gaslessFailureStage: null, gaslessErrorMessage: null }) },
 }))

@@ -1,0 +1,414 @@
+{
+  "account": "0x3333333333333333333333333333333333333333",
+  "network": {
+    "name": "ARBITRUM_MAINNET",
+    "type": "evm",
+    "chain_id": "42161",
+    "transaction_explorer_template": "https://arbiscan.io/tx/{0}"
+  },
+  "token": {
+    "symbol": "ARB",
+    "asset": "ARB",
+    "contract": "0x1111111111111111111111111111111111111111",
+    "decimals": 18
+  },
+  "split_intake": "0x2222222222222222222222222222222222222222",
+  "swap": {
+    "source_network": {
+      "name": "ARBITRUM_MAINNET",
+      "type": "evm",
+      "chain_id": "42161",
+      "transaction_explorer_template": "https://arbiscan.io/tx/{0}"
+    },
+    "source_token": {
+      "symbol": "ARB",
+      "asset": "ARB",
+      "contract": "0x1111111111111111111111111111111111111111",
+      "decimals": 18
+    },
+    "destination_network": {
+      "name": "ARBITRUM_MAINNET",
+      "type": "evm",
+      "chain_id": "42161",
+      "transaction_explorer_template": "https://arbiscan.io/tx/{0}"
+    },
+    "destination_token": {
+      "symbol": "AAVE",
+      "asset": "AAVE"
+    },
+    "destination_address": "0x3333333333333333333333333333333333333333",
+    "requested_amount": "1",
+    "use_deposit_address": false
+  },
+  "actions": {
+    "zero_allowance": {
+      "type": "send_calls",
+      "step": "publish",
+      "status": "action_required",
+      "network": {
+        "name": "ARBITRUM_MAINNET",
+        "type": "evm",
+        "chain_id": "42161",
+        "transaction_explorer_template": "https://arbiscan.io/tx/{0}"
+      },
+      "token": {
+        "symbol": "ARB",
+        "asset": "ARB",
+        "contract": "0x1111111111111111111111111111111111111111",
+        "decimals": 18
+      },
+      "expires_at": "2033-05-18T03:33:20Z",
+      "calls": [
+        {
+          "to": "0x1111111111111111111111111111111111111111",
+          "data": "0x095ea7b300000000000000000000000022222222222222222222222222222222222222220000000000000000000000000000000000000000000000000de0b6b3a7640000",
+          "value": "0x0"
+        },
+        {
+          "to": "0x2222222222222222222222222222222222222222",
+          "data": "0x123456780000000000000000000000000000000000000000000000000000000000000000",
+          "value": "0x0"
+        }
+      ],
+      "valid_before": 2000000000
+    },
+    "allowance_reset": {
+      "type": "send_calls",
+      "step": "publish",
+      "status": "action_required",
+      "network": {
+        "name": "ARBITRUM_MAINNET",
+        "type": "evm",
+        "chain_id": "42161",
+        "transaction_explorer_template": "https://arbiscan.io/tx/{0}"
+      },
+      "token": {
+        "symbol": "ARB",
+        "asset": "ARB",
+        "contract": "0x1111111111111111111111111111111111111111",
+        "decimals": 18
+      },
+      "expires_at": "2033-05-18T03:33:20Z",
+      "calls": [
+        {
+          "to": "0x1111111111111111111111111111111111111111",
+          "data": "0x095ea7b300000000000000000000000022222222222222222222222222222222222222220000000000000000000000000000000000000000000000000000000000000000",
+          "value": "0x0"
+        },
+        {
+          "to": "0x1111111111111111111111111111111111111111",
+          "data": "0x095ea7b300000000000000000000000022222222222222222222222222222222222222220000000000000000000000000000000000000000000000000de0b6b3a7640000",
+          "value": "0x0"
+        },
+        {
+          "to": "0x2222222222222222222222222222222222222222",
+          "data": "0x123456780000000000000000000000000000000000000000000000000000000000000000",
+          "value": "0x0"
+        }
+      ],
+      "valid_before": 2000000000
+    },
+    "sufficient_allowance": {
+      "type": "send_calls",
+      "step": "publish",
+      "status": "action_required",
+      "network": {
+        "name": "ARBITRUM_MAINNET",
+        "type": "evm",
+        "chain_id": "42161",
+        "transaction_explorer_template": "https://arbiscan.io/tx/{0}"
+      },
+      "token": {
+        "symbol": "ARB",
+        "asset": "ARB",
+        "contract": "0x1111111111111111111111111111111111111111",
+        "decimals": 18
+      },
+      "expires_at": "2033-05-18T03:33:20Z",
+      "calls": [
+        {
+          "to": "0x2222222222222222222222222222222222222222",
+          "data": "0x123456780000000000000000000000000000000000000000000000000000000000000000",
+          "value": "0x0"
+        }
+      ]
+    },
+    "precise_value": {
+      "type": "send_calls",
+      "step": "publish",
+      "status": "action_required",
+      "network": {
+        "name": "ARBITRUM_MAINNET",
+        "type": "evm",
+        "chain_id": "42161",
+        "transaction_explorer_template": "https://arbiscan.io/tx/{0}"
+      },
+      "token": {
+        "symbol": "ARB",
+        "asset": "ARB",
+        "contract": "0x1111111111111111111111111111111111111111",
+        "decimals": 18
+      },
+      "expires_at": "2033-05-18T03:33:20Z",
+      "calls": [
+        {
+          "to": "0x2222222222222222222222222222222222222222",
+          "data": "0x123456780000000000000000000000000000000000000000000000000000000000000000",
+          "value": "0x2e90edd0000001a28530435"
+        }
+      ]
+    }
+  },
+  "deposit_actions": {
+    "zero_allowance": [
+      {
+        "type": "transfer",
+        "step": "approve",
+        "status": "action_required",
+        "order": 0,
+        "network": {
+          "name": "ARBITRUM_MAINNET",
+          "type": "evm",
+          "chain_id": "42161",
+          "transaction_explorer_template": "https://arbiscan.io/tx/{0}"
+        },
+        "token": {
+          "symbol": "ARB",
+          "asset": "ARB",
+          "contract": "0x1111111111111111111111111111111111111111",
+          "decimals": 18
+        },
+        "to_address": "0x1111111111111111111111111111111111111111",
+        "call_data": "0x095ea7b300000000000000000000000022222222222222222222222222222222222222220000000000000000000000000000000000000000000000000de0b6b3a7640000",
+        "amount_in_base_units": "0",
+        "valid_before": 2000000000,
+        "expires_at": "2033-05-18T03:33:20Z"
+      },
+      {
+        "type": "transfer",
+        "step": "publish",
+        "status": "action_required",
+        "order": 1,
+        "network": {
+          "name": "ARBITRUM_MAINNET",
+          "type": "evm",
+          "chain_id": "42161",
+          "transaction_explorer_template": "https://arbiscan.io/tx/{0}"
+        },
+        "token": {
+          "symbol": "ARB",
+          "asset": "ARB",
+          "contract": "0x1111111111111111111111111111111111111111",
+          "decimals": 18
+        },
+        "to_address": "0x2222222222222222222222222222222222222222",
+        "call_data": "0x123456780000000000000000000000000000000000000000000000000000000000000000",
+        "amount_in_base_units": "0",
+        "valid_before": 2000000000,
+        "expires_at": "2033-05-18T03:33:20Z"
+      }
+    ],
+    "allowance_reset": [
+      {
+        "type": "transfer",
+        "step": "approve",
+        "status": "action_required",
+        "order": 0,
+        "network": {
+          "name": "ARBITRUM_MAINNET",
+          "type": "evm",
+          "chain_id": "42161",
+          "transaction_explorer_template": "https://arbiscan.io/tx/{0}"
+        },
+        "token": {
+          "symbol": "ARB",
+          "asset": "ARB",
+          "contract": "0x1111111111111111111111111111111111111111",
+          "decimals": 18
+        },
+        "to_address": "0x1111111111111111111111111111111111111111",
+        "call_data": "0x095ea7b300000000000000000000000022222222222222222222222222222222222222220000000000000000000000000000000000000000000000000000000000000000",
+        "amount_in_base_units": "0",
+        "valid_before": 2000000000,
+        "expires_at": "2033-05-18T03:33:20Z"
+      },
+      {
+        "type": "transfer",
+        "step": "approve",
+        "status": "action_required",
+        "order": 1,
+        "network": {
+          "name": "ARBITRUM_MAINNET",
+          "type": "evm",
+          "chain_id": "42161",
+          "transaction_explorer_template": "https://arbiscan.io/tx/{0}"
+        },
+        "token": {
+          "symbol": "ARB",
+          "asset": "ARB",
+          "contract": "0x1111111111111111111111111111111111111111",
+          "decimals": 18
+        },
+        "to_address": "0x1111111111111111111111111111111111111111",
+        "call_data": "0x095ea7b300000000000000000000000022222222222222222222222222222222222222220000000000000000000000000000000000000000000000000de0b6b3a7640000",
+        "amount_in_base_units": "0",
+        "valid_before": 2000000000,
+        "expires_at": "2033-05-18T03:33:20Z"
+      },
+      {
+        "type": "transfer",
+        "step": "publish",
+        "status": "action_required",
+        "order": 2,
+        "network": {
+          "name": "ARBITRUM_MAINNET",
+          "type": "evm",
+          "chain_id": "42161",
+          "transaction_explorer_template": "https://arbiscan.io/tx/{0}"
+        },
+        "token": {
+          "symbol": "ARB",
+          "asset": "ARB",
+          "contract": "0x1111111111111111111111111111111111111111",
+          "decimals": 18
+        },
+        "to_address": "0x2222222222222222222222222222222222222222",
+        "call_data": "0x123456780000000000000000000000000000000000000000000000000000000000000000",
+        "amount_in_base_units": "0",
+        "valid_before": 2000000000,
+        "expires_at": "2033-05-18T03:33:20Z"
+      }
+    ],
+    "sufficient_allowance": [
+      {
+        "type": "transfer",
+        "step": "publish",
+        "status": "action_required",
+        "order": 0,
+        "network": {
+          "name": "ARBITRUM_MAINNET",
+          "type": "evm",
+          "chain_id": "42161",
+          "transaction_explorer_template": "https://arbiscan.io/tx/{0}"
+        },
+        "token": {
+          "symbol": "ARB",
+          "asset": "ARB",
+          "contract": "0x1111111111111111111111111111111111111111",
+          "decimals": 18
+        },
+        "to_address": "0x2222222222222222222222222222222222222222",
+        "call_data": "0x123456780000000000000000000000000000000000000000000000000000000000000000",
+        "amount_in_base_units": "0",
+        "valid_before": 2000000000,
+        "expires_at": "2033-05-18T03:33:20Z"
+      }
+    ],
+    "precise_value": [
+      {
+        "type": "transfer",
+        "step": "publish",
+        "status": "action_required",
+        "order": 0,
+        "network": {
+          "name": "ARBITRUM_MAINNET",
+          "type": "evm",
+          "chain_id": "42161",
+          "transaction_explorer_template": "https://arbiscan.io/tx/{0}"
+        },
+        "token": {
+          "symbol": "ARB",
+          "asset": "ARB",
+          "contract": "0x1111111111111111111111111111111111111111",
+          "decimals": 18
+        },
+        "to_address": "0x2222222222222222222222222222222222222222",
+        "call_data": "0x123456780000000000000000000000000000000000000000000000000000000000000000",
+        "amount_in_base_units": "900719925474099312345678901",
+        "valid_before": 2000000000,
+        "expires_at": "2033-05-18T03:33:20Z"
+      }
+    ]
+  },
+  "next_actions": {
+    "zero_allowance": {
+      "step": "publish",
+      "status": "action_required",
+      "expires_at": "2033-05-18T03:33:20Z",
+      "action": {
+        "type": "send_calls",
+        "amount_in_base_units": "0",
+        "calls": [
+          {
+            "to": "0x1111111111111111111111111111111111111111",
+            "data": "0x095ea7b300000000000000000000000022222222222222222222222222222222222222220000000000000000000000000000000000000000000000000de0b6b3a7640000",
+            "value": "0x0"
+          },
+          {
+            "to": "0x2222222222222222222222222222222222222222",
+            "data": "0x123456780000000000000000000000000000000000000000000000000000000000000000",
+            "value": "0x0"
+          }
+        ]
+      }
+    },
+    "allowance_reset": {
+      "step": "publish",
+      "status": "action_required",
+      "expires_at": "2033-05-18T03:33:20Z",
+      "action": {
+        "type": "send_calls",
+        "amount_in_base_units": "0",
+        "calls": [
+          {
+            "to": "0x1111111111111111111111111111111111111111",
+            "data": "0x095ea7b300000000000000000000000022222222222222222222222222222222222222220000000000000000000000000000000000000000000000000000000000000000",
+            "value": "0x0"
+          },
+          {
+            "to": "0x1111111111111111111111111111111111111111",
+            "data": "0x095ea7b300000000000000000000000022222222222222222222222222222222222222220000000000000000000000000000000000000000000000000de0b6b3a7640000",
+            "value": "0x0"
+          },
+          {
+            "to": "0x2222222222222222222222222222222222222222",
+            "data": "0x123456780000000000000000000000000000000000000000000000000000000000000000",
+            "value": "0x0"
+          }
+        ]
+      }
+    },
+    "sufficient_allowance": {
+      "step": "publish",
+      "status": "action_required",
+      "expires_at": "2033-05-18T03:33:20Z",
+      "action": {
+        "type": "send_calls",
+        "amount_in_base_units": "0",
+        "calls": [
+          {
+            "to": "0x2222222222222222222222222222222222222222",
+            "data": "0x123456780000000000000000000000000000000000000000000000000000000000000000",
+            "value": "0x0"
+          }
+        ]
+      }
+    },
+    "precise_value": {
+      "step": "publish",
+      "status": "action_required",
+      "expires_at": "2033-05-18T03:33:20Z",
+      "action": {
+        "type": "send_calls",
+        "amount_in_base_units": "0",
+        "calls": [
+          {
+            "to": "0x2222222222222222222222222222222222222222",
+            "data": "0x123456780000000000000000000000000000000000000000000000000000000000000000",
+            "value": "0x2e90edd0000001a28530435"
+          }
+        ]
+      }
+    }
+  }
+}

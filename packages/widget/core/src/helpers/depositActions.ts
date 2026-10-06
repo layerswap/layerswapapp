@@ -1,4 +1,4 @@
-import type { DepositAction, SignDepositAction, TransferDepositAction } from "@/lib/apiClients/layerSwapApiClient";
+import type { BatchTransferDepositAction, DepositAction, SignDepositAction, TransferDepositAction } from "@/lib/apiClients/layerSwapApiClient";
 
 export function resolveDepositAddress(
     network: { type?: string } | undefined,
@@ -6,7 +6,7 @@ export function resolveDepositAddress(
 ): string | undefined {
     if (!depositActions || depositActions.length === 0) return undefined;
     const transfers = depositActions.filter(action =>
-        (action.type === 'transfer' || action.type === 'manual_transfer') && action.to_address
+        (action.type === 'transfer' || action.type === 'manual_transfer') && action.step !== 'approve' && action.to_address
     );
     if (!network) return transfers[0]?.to_address;
     const match = transfers.find(action => action.network?.type === network.type);
@@ -14,6 +14,7 @@ export function resolveDepositAddress(
 }
 
 export const isSignAction = (action: DepositAction): action is SignDepositAction => action.type === 'sign'
+export const isBatchTransferAction = (action: DepositAction): action is BatchTransferDepositAction => action.type === 'send_calls'
 
 export const isTransferAction = (action: DepositAction): action is TransferDepositAction =>
     action.type === 'transfer' || action.type === 'manual_transfer'
@@ -25,13 +26,15 @@ export const getCurrentDepositActionIndex = (actions: DepositAction[], includeWa
     return current === -1 && includeWaiting ? actions.findIndex(action => action.status === 'waiting') : current
 }
 
-export const getActionableDepositAction = (actions: DepositAction[] | undefined): SignDepositAction | TransferDepositAction | undefined => {
+export const getActionableDepositAction = (actions: DepositAction[] | undefined): SignDepositAction | TransferDepositAction | BatchTransferDepositAction | undefined => {
     if (!actions?.length) return undefined
+    // The allowance rail's flat items must first be grouped at the API boundary.
+    if (actions.some(action => action.step === 'approve')) return undefined
 
     const current = actions.find(action =>
-        action.status === 'action_required' && (isSignAction(action) || isTransferAction(action))
+        action.status === 'action_required' && (isSignAction(action) || isTransferAction(action) || isBatchTransferAction(action))
     )
-    if (current && (isSignAction(current) || isTransferAction(current))) return current
+    if (current && (isSignAction(current) || isTransferAction(current) || isBatchTransferAction(current))) return current
 
     const legacy = actions.find(action =>
         !action.status && (isSignAction(action) || isTransferAction(action))
@@ -40,6 +43,7 @@ export const getActionableDepositAction = (actions: DepositAction[] | undefined)
 }
 
 const DEPOSIT_ACTION_LABELS: Record<string, string> = {
+    approve: 'Approve and swap',
     approve_permit2: 'Approve token',
     sign: 'Sign to swap',
     publish: 'Confirm swap',
@@ -47,9 +51,10 @@ const DEPOSIT_ACTION_LABELS: Record<string, string> = {
 }
 
 export const getDepositActionLabel = (action: DepositAction): string =>
-    action.step ? DEPOSIT_ACTION_LABELS[action.step] ?? 'Continue' : 'Continue'
+    isBatchTransferAction(action) ? 'Approve and swap' : action.step ? DEPOSIT_ACTION_LABELS[action.step] ?? 'Continue' : 'Continue'
 
 export const getDepositActionDescription = (action: DepositAction): string | undefined => {
+    if (isBatchTransferAction(action)) return 'Approve the token and swap in one atomic batch'
     switch (action.step) {
         case 'approve_permit2':
             return action.token?.symbol

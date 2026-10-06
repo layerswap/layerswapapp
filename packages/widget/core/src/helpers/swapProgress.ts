@@ -15,6 +15,8 @@ type SwapProgressOptions = {
     gaslessAuthorization: GaslessAuthorization | undefined
     gaslessAuthorizationFailed?: boolean
     depositSignature?: DepositSignature
+    atomicBatchOutstanding?: boolean
+    atomicBatchFailed?: boolean
 }
 
 const FAILED_AUTHORIZATION_STATUSES: ReadonlySet<GaslessAuthorizationStatus> = new Set([
@@ -40,7 +42,10 @@ export function hasSwapExecutionProgress({
     gaslessAuthorization,
     gaslessAuthorizationFailed = false,
     depositSignature,
+    atomicBatchOutstanding,
+    atomicBatchFailed,
 }: SwapProgressOptions): boolean {
+    if (atomicBatchOutstanding) return true
     if (swapDetails?.status && ADVANCED_SWAP_STATUSES.has(swapDetails.status)) return true
 
     const hasLiveInputTransaction = swapDetails?.transactions?.some(transaction =>
@@ -77,6 +82,7 @@ export function hasSwapExecutionProgress({
     const firstIncompleteIndex = depositActions?.findIndex(action => action.status !== 'completed') ?? -1
 
     return depositActions?.some((action, index) => {
+        if ((action.type === 'send_calls' || depositActions?.some(item => item.step === 'approve')) && atomicBatchFailed) return false
         if (action.status !== 'pending' && action.status !== 'completed') return false
         // The backend also marks future steps pending; only the current step can have started.
         if (action.status === 'pending' && index !== firstIncompleteIndex) return false

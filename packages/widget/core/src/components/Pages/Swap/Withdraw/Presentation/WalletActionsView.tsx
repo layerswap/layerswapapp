@@ -181,7 +181,7 @@ export function SendTransactionView({
     const workflowCompleted = isDepositWorkflowComplete(depositActions ?? []);
     const workflowFailed = depositActions?.some(action => action.status === 'failed');
     const actionableAction = getActionableDepositAction(depositActions);
-    const primaryActionText = actionableAction
+    const primaryActionText = props.isDisabled && actionButtonText ? actionButtonText : actionableAction
         ? getDepositActionLabel(actionableAction)
         : actionButtonText || 'Swap now';
     const hasError = error || swapError || gaslessUnavailable;
@@ -346,6 +346,7 @@ export function SendTransactionView({
                             }
                             onClick={handleClick}
                             isDisabled={
+                                props.isDisabled ||
                                 quoteIsLoading ||
                                 !!quoteError ||
                                 workflowCompleted

@@ -17,7 +17,7 @@ import { useGaslessAuthorizationStatus } from '@/hooks/useGaslessAuthorizationSt
 import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
 import { useSwapRetry } from '@/hooks/useSwapRetry';
 import type { JSX } from 'react';
-import { FC, useCallback } from 'react';
+import { FC, useCallback, useEffect, useRef } from 'react';
 import { lifecycleContextFromSwap } from '@/lib/swapLifecycle';
 import ManualWithdraw from './ManualWithdraw';
 import { RetryView } from './Presentation/RetryView';
@@ -46,7 +46,17 @@ const SwapDetails: FC<Props> = ({
         quote,
         quoteIsLoading,
         quoteError,
+        atomicBatch,
     } = useSwapDataState();
+    const announcedBatches = useRef(new Set<string>())
+    useEffect(() => {
+        if (!atomicBatch || !onWalletWithdrawalSuccess || announcedBatches.current.has(atomicBatch.attempt)) return
+        if (atomicBatch.state !== 'confirmed' && atomicBatch.state !== 'reconciled') return
+        announcedBatches.current.add(atomicBatch.attempt)
+        // This owner remains mounted through processing; the withdrawal screen does
+        // not. Retain the usual form/balance cleanup after receipt or backend proof.
+        onWalletWithdrawalSuccess()
+    }, [atomicBatch, onWalletWithdrawalSuccess])
     const selectedSourceAccount = useSelectedAccount(
         'from',
         swapBasicData?.source_network.name,

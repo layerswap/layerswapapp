@@ -32,6 +32,25 @@ const inputTx = (overrides = {}) => ({
 const pendingSwap = (overrides = {}) => ({ status: 'user_transfer_pending', transactions: [], ...overrides })
 const resolve = (swapDetails, extra = {}) => resolveSwapPhase({ swapDetails, refuel: undefined, ...extra })
 
+test('an outstanding atomic ID drives processing without a transaction-hash placeholder', () => {
+  const pending = resolve(pendingSwap(), { atomicBatchPending: true })
+  assert.equal(pending.phase, SwapPhase.InputPending)
+  assert.equal(pending.showWithdrawScreen, false)
+  assert.equal(pending.failureReason, undefined)
+  assert.equal(pending.generalStatus.title, 'Confirming approve and swap')
+  const uncertain = resolve(pendingSwap(), { atomicBatchPending: true, atomicBatchUncertain: true })
+  assert.equal(uncertain.generalStatus.title, 'Checking swap submission')
+})
+
+test('a proven complete atomic failure offers explicit retry, then yields to backend input progress', () => {
+  const failed = resolve(pendingSwap(), { atomicBatchFailed: true })
+  assert.equal(failed.phase, SwapPhase.Failed)
+  assert.equal(failed.failureReason, 'transfer_failed')
+  const reconciled = resolve(pendingSwap({ transactions: [inputTx()] }), { atomicBatchFailed: true })
+  assert.equal(reconciled.phase, SwapPhase.OutputPending)
+  assert.equal(reconciled.failureReason, undefined)
+})
+
 test('a failed gasless authorization resolves the swap to failed, with the reason the retry UI needs', () => {
   const resolved = resolve(pendingSwap(), {
     storedWalletTransaction: { hash: '', status: 'pending' },

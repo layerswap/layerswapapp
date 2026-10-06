@@ -46,6 +46,7 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
     const { swapData, swapBasicData, selectedWallet, sourceAddress, layerswapApiClient, setActionStateText, setSwapTransaction, onSuccess, onLifecycle, signal } = ctx
 
     if (!action || !isTransferAction(action)) throw new Error('No transfer action')
+    if (action.step === 'approve' || ctx.depositActions.some(item => item.step === 'approve')) throw new Error('Atomic approvals must be submitted together with the swap')
     const transferProps = resolveTransactionData(swapData, action, swapBasicData, selectedWallet)
     const lifecycleContext = lifecycleContextFromSwap(swapBasicData, swapData)
     const confirmationText = action.step === 'approve_permit2' ? "Approve in your wallet" : "Confirm in your wallet"

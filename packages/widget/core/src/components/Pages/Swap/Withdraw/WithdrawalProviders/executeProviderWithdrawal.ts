@@ -3,6 +3,7 @@ import type { ApiResponse, TransferProps } from '@layerswap/widget-types'
 import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, type SwapResponse } from '@/lib/apiClients/layerSwapApiClient'
 import { hasSwapExecutionProgress } from '@/helpers/swapProgress'
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore'
+import { getOutstandingBatch } from '@/stores/atomicBatchStore'
 
 const api = new LayerSwapApiClient()
 const activeWithdrawals = new Set<string>()
@@ -22,6 +23,7 @@ export async function executeProviderWithdrawal<T>({ swapId, sourceAddress, prep
     execute: (prepared: T, onSubmissionStateChange: SubmissionCallback) => Promise<string>
     onReconcile: (response: ApiResponse<SwapResponse>) => Promise<unknown>
 }): Promise<string> {
+    if (getOutstandingBatch()) throw new Error('Reconcile the outstanding atomic swap before submitting another withdrawal.')
     if (activeWithdrawals.has(swapId)) throw new Error('This withdrawal is already in progress.')
 
     const store = useSwapTransactionStore.getState()

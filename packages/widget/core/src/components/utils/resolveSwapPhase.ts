@@ -16,6 +16,9 @@ import { SwapPhase, TERMINAL_PHASES } from './swapPhase';
 export { SwapPhase, TERMINAL_PHASES };
 
 export type ResolveSwapPhaseInput = {
+    atomicBatchPending?: boolean;
+    atomicBatchUncertain?: boolean;
+    atomicBatchFailed?: boolean;
     swapDetails: SwapDetails | undefined;
     refuel: Refuel | undefined;
     inputTxStatusFromApi?: TransactionStatus;
@@ -65,7 +68,8 @@ export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStat
     const outputReady = !!(outputTx?.transaction_hash && outputTx?.amount);
     const refuelReady = !!(refuelTx?.transaction_hash && refuelTx?.amount);
     const refuelPending = !!refuel && !refuelReady;
-    const swapInputTxStatus = resolveSwapInputTxStatus(inputTx, inputTxStatusFromApi, gaslessFailureStatus, storedWalletTransaction);
+    const swapInputTxStatus = !inputTx && input.atomicBatchFailed ? TransactionStatus.Failed
+        : resolveSwapInputTxStatus(inputTx, inputTxStatusFromApi, gaslessFailureStatus, storedWalletTransaction);
     // Only client-detected failures (no API input tx) are retryable: retry() re-opens the
     // withdraw screen, which requires no input tx to be listed.
     const failureReason: SwapFailureReason | undefined = gaslessFailureStatus
@@ -74,7 +78,7 @@ export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStat
 
     const showWithdrawScreen =
         (!swapStatus || swapStatus === SwapStatus.UserTransferPending || swapStatus === SwapStatus.Created)
-        && !(inputTx || storedWalletTransaction)
+        && !(inputTx || storedWalletTransaction || input.atomicBatchPending)
         && !failureReason;
 
     const phase = resolvePhase({
@@ -84,7 +88,7 @@ export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStat
         outputReady,
         refuelPending,
         hasInputTx: !!inputTx,
-        hasStoredWalletTx: !!storedWalletTransaction,
+        hasStoredWalletTx: !!storedWalletTransaction || !!input.atomicBatchPending,
         showWithdrawScreen,
     });
 
@@ -108,6 +112,13 @@ export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStat
         failReason: swapDetails?.fail_reason,
         isDepositFlow: input.isDepositFlow ?? false,
     });
+
+    if (input.atomicBatchPending && phase === SwapPhase.InputPending && !inputTx && !storedWalletTransaction) {
+        generalStatus.title = input.atomicBatchUncertain ? 'Checking swap submission' : 'Confirming approve and swap'
+        generalStatus.subTitle = input.atomicBatchUncertain
+            ? 'Reconnect the original wallet or wait for this swap to appear onchain before trying again.'
+            : 'Waiting for the original wallet. Reconnect it if tracking is unavailable.'
+    }
 
     const isTerminal = TERMINAL_PHASES.has(phase);
 

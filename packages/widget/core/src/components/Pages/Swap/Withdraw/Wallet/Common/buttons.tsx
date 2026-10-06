@@ -6,6 +6,11 @@ import { useTransferBlocked } from '@/hooks/useTransferBlocked';
 import { hasSwapExecutionProgress } from '@/helpers/swapProgress';
 import { isGaslessCapableRoute, isGaslessDepositWorkflow } from '@/helpers/gasless';
 import { isDepositWorkflowComplete } from '@/helpers/depositActions';
+import { isBatchTransferAction } from '@/helpers/depositActions';
+import { isAtomicBatchEligible } from '@/helpers/atomicBatch';
+import { acquireWalletExecution, getOutstandingBatch } from '@/stores/atomicBatchStore';
+import { executeAtomicBatch } from '@/lib/atomicBatchExecution';
+import { resolverService } from '@/lib/resolvers/resolverService';
 import { isUserRejection } from './isUserRejection';
 import { useSWRConfig } from 'swr';
 import { SubmitButtonProps } from '@/components/Buttons/submitButton';
@@ -221,7 +226,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     refuel,
     ...props
 }) => {
-    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, refuel: refuelData, swapError, setSwapError } = useSwapDataState()
+    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, refuel: refuelData, swapError, setSwapError, atomicBatchSupported, outstandingBatch, atomicBatch } = useSwapDataState()
     const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
     const gaslessFailureStage = useGaslessPreferenceStore(s => s.gaslessFailureStage)
     const gaslessEnabled = useGaslessPreferenceStore(s => s.gaslessEnabled)
@@ -250,7 +255,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const { balances } = useBalance(selectedSourceAccount?.address, networkWithTokens)
 
     const { wallets } = useWallet(swapBasicData.source_network, 'withdrawal')
-    const selectedWallet = wallets.find(wallet => wallet.id === selectedSourceAccount?.id)
+    const selectedWallet = (selectedSourceAccount?.provider?.connectedWallets ?? wallets).find(wallet => wallet.id === selectedSourceAccount?.id)
     const { gasData } = useSWRGas(selectedSourceAccount?.address, networkWithTokens, swapBasicData.source_token, swapBasicData.requested_amount)
     const [actionStateText, setActionStateText] = useState<string | undefined>()
     const [loading, setLoading] = useState(false)
@@ -267,7 +272,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             scope.abort()
             if (executionScope.current === scope) executionScope.current = null
         }
-    }, [selectedSourceAccount?.id, selectedSourceAccount?.address, swapBasicData.source_network.name])
+    }, [selectedSourceAccount?.id, selectedSourceAccount?.providerName, selectedSourceAccount?.address, selectedWallet?.chainId, swapBasicData.source_network.name])
     const { mutate: mutateCache } = useSWRConfig()
     const { data: polledDepositActions, refresh: refreshDepositActions, waitForTransition: waitForSwapActionTransition } =
         useDepositActionPolling(swapId, selectedSourceAccount?.address, loading)
@@ -281,12 +286,14 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const { actionButtonText } = useDepositSettings()
 
     const hasProgress = useMemo(() => hasSwapExecutionProgress({
+        atomicBatchOutstanding: !!outstandingBatch,
+        atomicBatchFailed: atomicBatch?.state === 'failed' || atomicBatch?.state === 'not_submitted',
         swapDetails,
         depositActions,
         storedWalletTransaction,
         gaslessAuthorization,
         depositSignature,
-    }), [swapDetails, depositActions, storedWalletTransaction, gaslessAuthorization, depositSignature])
+    }), [swapDetails, depositActions, storedWalletTransaction, gaslessAuthorization, depositSignature, outstandingBatch, atomicBatch])
     const desiredGasless = gaslessEnabled && isGaslessCapableRoute({
         depositMethod: swapBasicData.use_deposit_address ? 'deposit_address' : 'wallet',
         supportsGaslessDeposit: swapBasicData.source_token?.supports_gasless_deposit,
@@ -308,6 +315,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const executeWorkflow = async (requestFreshSwap = false) => {
         const signal = executionScope.current?.signal
         if (!signal || signal.aborted || executionInFlight.current) return
+        const releaseExecution = acquireWalletExecution()
+        if (!releaseExecution) return
         executionInFlight.current = true
         // A backend-failed workflow (including an expired quote) needs a new swap.
         // Wallet rejections leave actions actionable and still retry the same swap.
@@ -389,7 +398,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     return
                 }
 
-                if (isDiffByPercent(quote?.receive_amount, newSwapData.quote.receive_amount, 2)) {
+                if (!newSwapData.deposit_actions?.some(isBatchTransferAction)
+                    && isDiffByPercent(quote?.receive_amount, newSwapData.quote.receive_amount, 2)) {
                     setActionStateText("Updating quote…")
                     setQuoteLoading(true)
                     await sleep(3500)
@@ -416,6 +426,9 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             if (!swapData) {
                 throw new Error('No swap data')
             }
+            if (activeDepositActions.some(isBatchTransferAction) && activeDepositActions.length !== 1) {
+                throw new Error('Atomic workflow must contain all calls without a separate approval or permit prompt')
+            }
 
             signal.throwIfAborted()
             markWalletExecutionStarted(swapData.id)
@@ -431,6 +444,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     const failedStep = activeDepositActions.find(action => action.status === 'failed')
                     if (failedStep) throw new Error(failedStep.detail || 'The swap action failed')
                     if (isDepositWorkflowComplete(activeDepositActions)) {
+                        if (activeDepositActions.some(action => isBatchTransferAction(action) || action.step === 'approve')) throw new Error('Waiting for batch receipts or a backend input transaction before continuing.')
                         if (!useSwapTransactionStore.getState().swapTransactions[swapData.id]) {
                             setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, '')
                         }
@@ -459,7 +473,13 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 }
 
                 let approvalTransaction: { network: string; hash: string } | undefined
-                if (currentAction && isSignAction(currentAction)) {
+                if (currentAction && isBatchTransferAction(currentAction)) {
+                    if (desiredGasless || gaslessEnabled !== useGaslessPreferenceStore.getState().gaslessEnabled) throw new Error('Execution mode changed. Refresh the swap before submitting the atomic batch.')
+                    const provider = resolverService.getTransferResolver().getAtomicBatchProvider({ ...(currentAction.network ?? swapBasicData.source_network), token: swapBasicData.source_token })
+                    if (!provider) throw new Error('This wallet has no atomic batch provider')
+                    await executeAtomicBatch(executionContext, currentAction, provider)
+                    return
+                } else if (currentAction && isSignAction(currentAction)) {
                     if (!onSign) throw new Error('This wallet cannot sign the requested authorization')
                     authorizedValidBefore = await executeGaslessAuthorization(executionContext, onSign, currentAction)
                 } else if (currentAction && isTransferAction(currentAction)) {
@@ -532,6 +552,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         }
         finally {
             executionInFlight.current = false
+            releaseExecution()
             if (executionScope.current) setLoading(false)
         }
     }
@@ -572,7 +593,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const switchToStandard = () => {
         // A signature or submission can arrive after render but before this click.
         // Keep the preference and existing swap intact while either can move funds.
-        if (executionInFlight.current || hasSwapExecutionProgress({
+        if (executionInFlight.current || getOutstandingBatch() || hasSwapExecutionProgress({
             swapDetails,
             depositActions,
             storedWalletTransaction: swapId ? useSwapTransactionStore.getState().swapTransactions[swapId] : undefined,
@@ -612,8 +633,13 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             quoteIsLoading={quoteIsLoading}
             quoteError={!!quoteError}
             loading={loading}
+            isDisabled={!!outstandingBatch}
             actionStateText={actionStateText}
-            actionButtonText={actionButtonText}
+            actionButtonText={outstandingBatch ? 'Reconnect original wallet to track swap'
+                : atomicBatchSupported && isAtomicBatchEligible({ network: swapBasicData.source_network, token: swapBasicData.source_token,
+                    depositMethod: swapBasicData.use_deposit_address ? 'deposit_address' : 'wallet', useGasless: desiredGasless,
+                    sourceIsSupported: !!selectedWallet?.asSourceSupportedNetworks?.includes(swapBasicData.source_network.name),
+                    sourceAddress: selectedSourceAccount?.address, sourceExchange: swapBasicData.source_exchange }) ? 'Approve and swap' : actionButtonText}
             depositActions={depositActions}
             stepTransactions={stepTransactions}
             error={error}

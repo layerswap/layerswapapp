@@ -31,6 +31,17 @@ function loadSource(path, imports = {}) {
     new Function('require', 'module', 'exports', outputText)(name => {
         if (name === 'react' || name === 'react/jsx-runtime') return require(name);
         if (name in imports) return imports[name];
+        // Atomic services are separate from these legacy production/timeline regressions.
+        if (name === '@/stores/atomicBatchStore' || name === './atomicBatchStore') return {
+            useAtomicBatchStore: selector => selector({ batches: {} }), getOutstandingBatch: noop,
+            isBatchOutstanding: () => false, acquireWalletExecution: () => noop,
+        };
+        if (name === '@/helpers/atomicBatch') return { isAtomicBatchEligible: () => false };
+        if (name === '@/lib/atomicBatchExecution') return { executeAtomicBatch: () => assert.fail('legacy flow cannot submit an atomic batch') };
+        if (name === '@/lib/resolvers/resolverService') return {};
+        if (name === '@/hooks/useAtomicBatchTracking') return { useAtomicBatchTracking: noop };
+        if (name === '@/hooks/useAtomicBatchCapability') return { useAtomicBatchCapability: () => false };
+        if (name === '@/hooks/useClientLayoutEffect') return { useClientLayoutEffect: React.useLayoutEffect };
         throw new Error(`Unexpected dependency: ${name}`);
     }, module, module.exports);
     return module.exports;

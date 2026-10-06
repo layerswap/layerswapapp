@@ -146,6 +146,7 @@ function createProviderExecution() {
             TransactionType: { Input: 'input' },
         },
         '@/helpers/swapProgress': { hasSwapExecutionProgress: () => false },
+        '@/stores/atomicBatchStore': { getOutstandingBatch: () => undefined },
         '@/stores/swapTransactionStore': { useSwapTransactionStore: store },
     })
     return {

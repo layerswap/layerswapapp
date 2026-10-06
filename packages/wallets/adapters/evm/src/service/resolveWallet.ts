@@ -79,6 +79,8 @@ export function resolveWallet<Network>(props: ResolveWalletProps<Network>): Wall
         withdrawalSupportedNetworks: resolveSupportedNetworks(supportedNetworks.withdrawal, walletId),
         networkIcon: iconNetwork ? networkAdapter.getIcon(iconNetwork) : undefined,
         metadata: {
+            connectorId: connector.id,
+            connectorUid: connector.uid,
             deepLink: (connector as LSConnector).deepLink,
         },
     }
