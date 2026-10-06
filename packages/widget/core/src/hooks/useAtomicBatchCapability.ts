@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Network, Token, Wallet } from '@layerswap/widget-types'
 import { resolverService } from '@/lib/resolvers/resolverService'
+import { supportsWebLocks } from '@/stores/atomicBatchStore'
 
 export function useAtomicBatchCapability(network: Network | undefined, token: Token | undefined, wallet: Wallet | undefined, account: string | undefined) {
     const key = [network?.name, network?.chain_id, token?.contract, wallet?.id, wallet?.internalId, wallet?.providerName,
@@ -9,7 +10,7 @@ export function useAtomicBatchCapability(network: Network | undefined, token: To
     useEffect(() => {
         const controller = new AbortController()
         setCapability(undefined)
-        if (network?.type === 'evm' && token?.contract && wallet && account) {
+        if (supportsWebLocks() && network?.type === 'evm' && token?.contract && wallet && account) {
             const source = { ...network, token }
             // Resolver registration is a parent effect; discovery runs after it has settled.
             void Promise.resolve().then(() => {

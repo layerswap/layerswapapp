@@ -5,11 +5,12 @@ import { registerHooks } from 'node:module'
 import { extname } from 'node:path'
 import { JSDOM } from 'jsdom'
 import { act, createElement } from 'react'
+import { createLockManager } from './helpers/atomic-batch-locks.mjs'
 
 const dom = new JSDOM('<div id="root"></div>', { url: 'https://widget.example' })
 const previous = Object.getOwnPropertyDescriptors(globalThis)
 for (const [key, value] of Object.entries({ window: dom.window, document: dom.window.document,
-    localStorage: dom.window.localStorage, IS_REACT_ACT_ENVIRONMENT: true })) {
+    localStorage: dom.window.localStorage, navigator: { userAgent: dom.window.navigator.userAgent, locks: createLockManager() }, IS_REACT_ACT_ENVIRONMENT: true })) {
     Object.defineProperty(globalThis, key, { configurable: true, writable: true, value })
 }
 const apiUrl = `data:text/javascript,${encodeURIComponent(`
@@ -33,11 +34,11 @@ const hooks = registerHooks({
 const { harness } = await import(apiUrl)
 const { createRoot } = await import('react-dom/client')
 const { validateAtomicBatch, resolveAtomicBatchOutcome, isAtomicBatchEligible } = await import('../dist/esm/helpers/atomicBatch.js')
-const { getActionableDepositAction, getDepositActionLabel } = await import('../dist/esm/helpers/depositActions.js')
+const { getActionableDepositAction, getDepositActionLabel, getDepositActionDescription } = await import('../dist/esm/helpers/depositActions.js')
 const { executeAtomicBatch } = await import('../dist/esm/lib/atomicBatchExecution.js')
 const { trackAtomicBatch } = await import('../dist/esm/lib/atomicBatchTracking.js')
 const { useAtomicBatchTracking } = await import('../dist/esm/hooks/useAtomicBatchTracking.js')
-const { useAtomicBatchStore, getOutstandingBatch, acquireWalletExecution } = await import('../dist/esm/stores/atomicBatchStore.js')
+const { useAtomicBatchStore, getOutstandingBatch, acquireWalletExecution, reloadAtomicBatchStorage } = await import('../dist/esm/stores/atomicBatchStore.js')
 const { useSwapTransactionStore } = await import('../dist/esm/stores/swapTransactionStore.js')
 const { useGaslessPreferenceStore } = await import('../dist/esm/stores/gaslessPreferenceStore.js')
 const { hasSwapExecutionProgress } = await import('../dist/esm/helpers/swapProgress.js')
@@ -46,16 +47,17 @@ const hash = `0x${'a'.repeat(64)}`, finalHash = `0x${'b'.repeat(64)}`
 const batchId = 'wallet-batch-id-that-is-not-a-hash'
 const receipt = (transactionHash = hash, status = 'success') => ({ transactionHash, status })
 const status = (statusCode = 200, receipts = [receipt()]) => ({ id: batchId, chainId: 42161, atomic: true, statusCode, receipts })
-const flush = async () => { for (let i = 0; i < 10; i++) await Promise.resolve() }
+const flush = async () => { for (let i = 0; i < 40; i++) await Promise.resolve() }
 afterEach(() => {
     useAtomicBatchStore.setState({ batches: {} })
+    localStorage.removeItem('atomicBatches')
     useSwapTransactionStore.setState({ swapTransactions: {}, stepTransactions: {} })
     useGaslessPreferenceStore.getState().resetGaslessPreference()
     harness.catchups = []; harness.statuses = []; harness.catchupError = undefined
 })
 after(() => {
     hooks.deregister(); dom.window.close()
-    for (const key of ['window', 'document', 'localStorage', 'IS_REACT_ACT_ENVIRONMENT']) {
+    for (const key of ['window', 'document', 'localStorage', 'navigator', 'IS_REACT_ACT_ENVIRONMENT']) {
         if (previous[key]) Object.defineProperty(globalThis, key, previous[key]); else delete globalThis[key]
     }
 })
@@ -72,7 +74,12 @@ const submit = async (ctx = context(), implementation = async () => ({ id: batch
 
 for (const [name, action] of Object.entries(fixtures.actions)) test(`preserves backend call order: ${name}`, async () => {
     const ctx = context(action)
+    const needsApproval = ['zero_allowance', 'allowance_reset'].includes(name)
+    const expectedLabel = needsApproval ? 'Approve and swap' : 'Confirm swap'
+    const descriptions = []
+    ctx.setActionStateText = text => descriptions.push(text)
     await submit(ctx, async request => {
+        assert.deepEqual(descriptions, [`${expectedLabel} in your wallet`])
         assert.deepEqual(request.calls.map(call => call.to), action.calls.map(call => call.to))
         assert.deepEqual(request.calls.map(call => call.data), action.calls.map(call => call.data))
         assert.deepEqual(request.calls.map(call => call.value), action.calls.map(call => BigInt(call.value)))
@@ -82,7 +89,9 @@ for (const [name, action] of Object.entries(fixtures.actions)) test(`preserves b
     })
     assert.equal(getOutstandingBatch().id, batchId)
     assert.equal(getActionableDepositAction([action]), action)
-    assert.equal(getDepositActionLabel(action), 'Approve and swap')
+    assert.equal(getDepositActionLabel(action), expectedLabel)
+    assert.equal(getDepositActionDescription(action), needsApproval
+        ? 'Approve the token and swap in one atomic batch' : 'Submit the swap transaction')
     assert.deepEqual(useSwapTransactionStore.getState().swapTransactions, {})
 })
 
@@ -135,6 +144,7 @@ test('saving the returned ID survives screen closure and account changes', async
     const ctx = context(), controller = new AbortController(); ctx.signal = controller.signal
     let resolve
     const pending = submit(ctx, () => new Promise(done => { resolve = done }))
+    await flush()
     controller.abort(); ctx.selectedWallet = { address: 'another-account' }
     resolve({ id: batchId }); await pending
     assert.equal(getOutstandingBatch().wallet.id, 'Original')
@@ -146,8 +156,9 @@ test('late IDs cannot reverse backend reconciliation or enable another submissio
     const ctx = context()
     let resolve
     const pending = submit(ctx, () => new Promise(done => { resolve = done }))
+    await flush()
     const record = getOutstandingBatch()
-    useAtomicBatchStore.getState().update(record.swapId, record.attempt, { state: 'reconciled' })
+    await useAtomicBatchStore.getState().update(record.swapId, record.attempt, { state: 'reconciled' })
     resolve({ id: batchId }); await pending
     const saved = useAtomicBatchStore.getState().batches[record.swapId]
     assert.equal(saved.state, 'reconciled')
@@ -158,7 +169,7 @@ test('late IDs cannot reverse backend reconciliation or enable another submissio
 test('complete atomic failure permits explicit retry even when action polling still says pending', async () => {
     await submit()
     const record = getOutstandingBatch()
-    useAtomicBatchStore.getState().update(record.swapId, record.attempt, { state: 'failed' })
+    await useAtomicBatchStore.getState().update(record.swapId, record.attempt, { state: 'failed' })
     assert.equal(hasSwapExecutionProgress({ depositActions: [{ type: 'send_calls', step: 'publish', status: 'pending' }], atomicBatchFailed: true }), false)
     await submit()
     assert.notEqual(getOutstandingBatch().attempt, record.attempt)
@@ -179,7 +190,7 @@ test('malformed send result stays locked and batch record rehydrates on reload',
     assert.equal(getOutstandingBatch().state, 'uncertain')
     useAtomicBatchStore.setState({ batches: {} })
     localStorage.setItem('atomicBatches', saved)
-    await useAtomicBatchStore.persist.rehydrate()
+    await reloadAtomicBatchStorage()
     assert.equal(getOutstandingBatch().state, 'uncertain')
     assert.equal(acquireWalletExecution(), undefined)
 })
@@ -245,7 +256,7 @@ test('swap-provider tracking resumes after reload, ignores selected account chan
     await submit()
     const saved = localStorage.getItem('atomicBatches')
     useAtomicBatchStore.setState({ batches: {} }); localStorage.setItem('atomicBatches', saved)
-    await useAtomicBatchStore.persist.rehydrate()
+    await reloadAtomicBatchStorage()
     let completed = false
     harness.provider = { getStatus: async (ctx, id) => {
         harness.statuses.push({ ctx, id })

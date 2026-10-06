@@ -1,5 +1,4 @@
 import { create } from 'zustand'
-import { createJSONStorage, persist } from 'zustand/middleware'
 import type { Network, Wallet } from '@layerswap/widget-types'
 
 export type AtomicBatchRecord = {
@@ -19,34 +18,139 @@ export type AtomicBatchRecord = {
 export const isBatchOutstanding = (batch: AtomicBatchRecord | undefined): boolean =>
     !!batch && (batch.state === 'submitting' || batch.state === 'pending' || batch.state === 'uncertain')
 
+type Batches = Record<string, AtomicBatchRecord>
 type State = {
-    batches: Record<string, AtomicBatchRecord>
-    begin: (record: AtomicBatchRecord) => void
-    update: (swapId: string, attempt: string, update: Partial<AtomicBatchRecord>) => void
+    batches: Batches
+    begin: (record: AtomicBatchRecord) => Promise<void>
+    update: (swapId: string, attempt: string, update: Partial<AtomicBatchRecord>) => Promise<void>
 }
 
-export const useAtomicBatchStore = create(persist<State>(set => ({
-    batches: {},
-    begin: record => {
-        if (getOutstandingBatch()) throw new Error('An earlier batch must be reconciled before another submission.')
-        const previous = useAtomicBatchStore.getState().batches[record.swapId]
+const STORAGE_KEY = 'atomicBatches'
+const STORAGE_LOCK = 'layerswap-atomic-batch-storage'
+
+export const supportsWebLocks = (): boolean =>
+    typeof navigator !== 'undefined' && !!navigator.locks
+
+function readBatchStorage(): { value: string | null; batches: Batches } {
+    const value = localStorage.getItem(STORAGE_KEY)
+    if (value === null) return { value, batches: {} }
+    const batches = JSON.parse(value)?.state?.batches
+    if (!batches || typeof batches !== 'object' || Array.isArray(batches)) throw new Error('Invalid batch recovery records')
+    return { value, batches }
+}
+
+function mergeBatches(saved: Batches, current: Batches): Batches {
+    const batches = Object.fromEntries(Object.entries(saved).map(([swapId, record]) => {
+        const existing = current[swapId]
+        if (existing?.attempt === record.attempt) {
+            // Preserve IDs and terminal evidence retained in memory after a failed write.
+            const preserveLocalState = existing.state === 'reconciled'
+                || (existing.state === 'confirmed' && record.state !== 'reconciled')
+                || (!isBatchOutstanding(existing) && isBatchOutstanding(record))
+            record = { ...record, ...(existing.id && { id: existing.id }),
+                ...(existing.transactionHash && { transactionHash: existing.transactionHash }),
+                ...(existing.catchupComplete && { catchupComplete: true }),
+                ...(preserveLocalState && { state: existing.state }) }
+            if (JSON.stringify(record) === JSON.stringify(existing)) record = existing
+        }
+        return [swapId, record]
+    }))
+    return Object.keys(batches).length === Object.keys(current).length
+        && Object.entries(batches).every(([id, record]) => current[id] === record) ? current : batches
+}
+
+function publishBatches(batches: Batches): void {
+    if (batches !== useAtomicBatchStore.getState().batches) useAtomicBatchStore.setState({ batches })
+}
+
+function writeBatchStorage(batches: Batches): string {
+    // Keep the persisted shape used by existing clients and recovery records.
+    const value = JSON.stringify({ state: { batches }, version: 0 })
+    localStorage.setItem(STORAGE_KEY, value)
+    return value
+}
+
+function updateBatch(batches: Batches, swapId: string, attempt: string, update: Partial<AtomicBatchRecord>): Batches {
+    const current = batches[swapId]
+    if (!current || current.attempt !== attempt) return batches
+    // A delayed response must retain IDs without reversing terminal proof.
+    const next = !isBatchOutstanding(current) ? { ...update, state: current.state } : update
+    if (Object.entries(next).every(([key, value]) => Object.is(current[key as keyof AtomicBatchRecord], value))) return batches
+    return { ...batches, [swapId]: { ...current, ...next } }
+}
+
+// The durable submitting record owns the wallet request across tabs. Only hold
+// the mutex for state reads/writes, so backend reconciliation can finish while
+// a wallet prompt is still open.
+async function withBatchStorage(operation: (saved: ReturnType<typeof readBatchStorage>, batches: Batches) => Batches): Promise<void> {
+    if (!supportsWebLocks()) throw new Error('This browser cannot safely coordinate atomic swap submissions.')
+    await navigator.locks.request(STORAGE_LOCK, () => {
+        const saved = readBatchStorage()
+        const batches = mergeBatches(saved.batches, useAtomicBatchStore.getState().batches)
+        let next: Batches
+        try {
+            // The operation must finish its durable write before publishing new state.
+            next = operation(saved, batches)
+        } catch (error) {
+            // Still expose recovery records read from other tabs, without the failed change.
+            publishBatches(batches)
+            throw error
+        }
+        publishBatches(next)
+    })
+}
+
+export const useAtomicBatchStore = create<State>(() => ({
+    batches: (() => {
+        try { return readBatchStorage().batches } catch { return {} }
+    })(),
+    begin: record => withBatchStorage((saved, batches) => {
+        if (Object.values(batches).some(isBatchOutstanding)) throw new Error('An earlier batch must be reconciled before another submission.')
+        const previous = batches[record.swapId]
         if (previous?.state === 'confirmed' || previous?.state === 'reconciled') throw new Error('This atomic swap was already submitted.')
-        // Refuse to open the wallet when durable storage is unavailable. Zustand keeps
-        // the in-memory lock even if writing the record throws (e.g. quota exhausted).
-        if (typeof localStorage === 'undefined') throw new Error('Batch recovery storage is unavailable')
-        set(state => ({ batches: { ...state.batches, [record.swapId]: record } }))
-        const saved = JSON.parse(localStorage.getItem('atomicBatches') ?? '{}')
-        if (saved.state?.batches?.[record.swapId]?.attempt !== record.attempt) throw new Error('Could not persist batch recovery record')
-    },
-    update: (swapId, attempt, update) => set(state => {
-        const current = state.batches[swapId]
-        if (!current || current.attempt !== attempt) return state
-        // A delayed wallet response must retain IDs without reversing backend/receipt proof.
-        const next = current.state === 'confirmed' || current.state === 'reconciled'
-            ? { ...update, state: current.state } : update
-        return { batches: { ...state.batches, [swapId]: { ...current, ...next } } }
+        const next = { ...batches, [record.swapId]: record }
+        try {
+            const value = writeBatchStorage(next)
+            if (localStorage.getItem(STORAGE_KEY) !== value) throw new Error('Could not persist batch recovery record')
+        } catch (error) {
+            // No wallet request has started. Undo a write whose verification failed.
+            try {
+                if (saved.value === null) localStorage.removeItem(STORAGE_KEY)
+                else localStorage.setItem(STORAGE_KEY, saved.value)
+            } catch { /* A durable submitting record remains conservative if rollback also fails. */ }
+            throw error
+        }
+        return next
     }),
-}), { name: 'atomicBatches', storage: createJSONStorage(() => localStorage) }))
+    update: (swapId, attempt, update) => withBatchStorage((saved, batches) => {
+        const next = updateBatch(batches, swapId, attempt, update)
+        // Comparing against storage also flushes evidence retained after failed writes.
+        if (JSON.stringify(next) !== JSON.stringify(saved.batches)) writeBatchStorage(next)
+        return next
+    }).catch(error => {
+        // An accepted ID/receipt must survive in this tab even if storage is unavailable.
+        publishBatches(updateBatch(useAtomicBatchStore.getState().batches, swapId, attempt, update))
+        throw error
+    }),
+}))
+
+/** Reload recovery state under the same mutex, without writing it back. */
+export function reloadAtomicBatchStorage(): Promise<void> {
+    return withBatchStorage((_saved, batches) => batches)
+}
+
+let storageSubscribers = 0
+const refreshFromStorage = () => { void reloadAtomicBatchStorage().catch(() => {}) }
+const onStorage = (event: StorageEvent) => {
+    if (event.key === STORAGE_KEY || event.key === null) refreshFromStorage()
+}
+
+/** Keep mounted widgets aware of recovery state created or completed in another tab. */
+export function subscribeAtomicBatchStorage(): () => void {
+    if (storageSubscribers++ === 0) window.addEventListener('storage', onStorage)
+    refreshFromStorage()
+    return () => { if (--storageSubscribers === 0) window.removeEventListener('storage', onStorage) }
+}
 
 export function getOutstandingBatch(): AtomicBatchRecord | undefined {
     return Object.values(useAtomicBatchStore.getState().batches).find(isBatchOutstanding)

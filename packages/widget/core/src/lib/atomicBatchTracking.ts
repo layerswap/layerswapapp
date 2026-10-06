@@ -4,7 +4,7 @@ import { resolveAtomicBatchOutcome } from '@/helpers/atomicBatch'
 type TrackingHooks = {
     getStatus: (batch: AtomicBatchRecord) => Promise<unknown>
     getRecord: (swapId: string) => AtomicBatchRecord | undefined
-    update: (batch: AtomicBatchRecord, update: Partial<AtomicBatchRecord>) => void
+    update: (batch: AtomicBatchRecord, update: Partial<AtomicBatchRecord>) => void | Promise<void>
     onConfirmed: (batch: AtomicBatchRecord, hash: string) => Promise<void>
 }
 
@@ -35,8 +35,10 @@ export function trackAtomicBatch(initial: AtomicBatchRecord, hooks: TrackingHook
             const current = hooks.getRecord(initial.swapId)
             if (!current || current.attempt !== batch.attempt || current.state === 'reconciled') return
             const outcome = resolveAtomicBatchOutcome(result, Number(batch.network.chain_id), batch.id)
-            hooks.update(batch, outcome.state === 'confirmed'
+            await hooks.update(batch, outcome.state === 'confirmed'
                 ? { state: 'confirmed', transactionHash: outcome.hash } : { state: outcome.state })
+            const updated = hooks.getRecord(initial.swapId)
+            if (!updated || updated.attempt !== initial.attempt || updated.state === 'reconciled') return
             if (outcome.state === 'confirmed') {
                 await hooks.onConfirmed(batch, outcome.hash)
                 return
@@ -48,7 +50,11 @@ export function trackAtomicBatch(initial: AtomicBatchRecord, hooks: TrackingHook
             if (disposed) return
             errors++
             const current = hooks.getRecord(initial.swapId)
-            if (current?.attempt === initial.attempt && current.state !== 'confirmed' && current.state !== 'reconciled') hooks.update(current, { state: 'uncertain' })
+            if (current?.attempt === initial.attempt && current.state !== 'confirmed' && current.state !== 'reconciled') {
+                try { await hooks.update(current, { state: 'uncertain' }) } catch {
+                    // Recovery storage errors retain the existing submission lock.
+                }
+            }
         }
         if (!disposed) timer = setTimeout(poll, Math.min(30_000, 2000 * 2 ** Math.min(errors, 4)))
     }

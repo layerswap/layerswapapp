@@ -64,7 +64,7 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swr =
         '@/hooks/useAtomicBatchTracking': { useAtomicBatchTracking: noop },
         '@/hooks/useAtomicBatchCapability': { useAtomicBatchCapability: () => false },
         '@/hooks/useClientLayoutEffect': { useClientLayoutEffect: React.useLayoutEffect },
-        '@/stores/atomicBatchStore': { useAtomicBatchStore: store({ batches: {} }), getOutstandingBatch: noop, isBatchOutstanding: () => false },
+        '@/stores/atomicBatchStore': { useAtomicBatchStore: store({ batches: {} }), getOutstandingBatch: noop, isBatchOutstanding: () => false, supportsWebLocks: () => true },
         '@/helpers/atomicBatch': { isAtomicBatchEligible: () => false },
         '@/lib/resolvers/resolverService': {},
         '@/lib/swapLifecycle': {},

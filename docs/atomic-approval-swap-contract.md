@@ -6,6 +6,8 @@ BAB-386 uses the allowance-funded wallet-batch API introduced in [backend PR #54
 
 The optional `use_atomic_batch: true` flag is requested only after the selected wallet connector reports `atomic.status = "supported"` for the source account and chain. It is omitted for native tokens, gasless swaps, deposit-address swaps, exchanges, extended sources, unsupported wallets, and wallets reporting `"ready"`. Existing creation fields and quote confirmation remain in use. An existing swap keeps its original backend execution rail; testing the new rail requires a fresh eligible swap.
 
+New swaps also require the browser's Web Locks API to coordinate recovery records across tabs. Browsers without it keep the existing creation rail; an already-created atomic workflow cannot submit without coordination.
+
 ## Backend responses
 
 Creation, swap reads, and `GET /swaps/{id}/deposit_actions?source_address=...` expose the complete ordered calls as ordinary transfers:
@@ -29,7 +31,7 @@ Creation, swap reads, and `GET /swaps/{id}/deposit_actions?source_address=...` e
 
 The backend includes a zero-first reset before approval when necessary and omits both approval calls when allowance suffices. All calls are actionable together. The frontend groups this flat list into one internal `send_calls` action. Standalone `approve` items cannot enter ordinary transfer execution or transaction-hash tracking.
 
-A sufficient allowance leaves a single publish transfer, which resembles a legacy transaction. The frontend queries `GET /swaps/{id}/next_action?source_address=...` to identify its persisted execution rail, including after reload:
+A sufficient allowance leaves a single publish transfer, which resembles a legacy transaction. The frontend labels that batch “Confirm swap”; batches that include approval use “Approve and swap”. Wallet capabilities alone do not determine whether approval is needed. The frontend queries `GET /swaps/{id}/next_action?source_address=...` to identify its persisted execution rail, including after reload:
 
 ```typescript
 {
@@ -57,10 +59,12 @@ The EVM adapter uses viem `sendCalls` with `forceAtomic: true`, version `2.0.0`,
 
 The frontend persists a recovery record before opening the wallet and saves the returned batch ID even after screen closure or an account change. The swap provider polls the original wallet's ID every two seconds, with error backoff capped at thirty seconds. Batch IDs stay separate from transaction hashes. Only an atomic result on the expected chain with valid successful receipt hashes reaches transaction tracking, explorer links or `SwapCatchup`; the final receipt supplies the hash.
 
+Every recovery-state mutation reads the latest durable snapshot, merges retained evidence, persists the change, then publishes it to Zustand under the same [Web Locks mutex](https://www.w3.org/TR/web-locks/). The stored format remains compatible with existing recovery records. The persisted submitting record blocks competing tabs while the wallet prompt is open; the mutex itself is held only for reads and writes so reconciliation can continue. Storage events synchronize mounted widgets, and late updates preserve newer swaps and attempts. Unchanged polling outcomes do not write storage or broadcast state. Initial persistence failures never publish a new submitting record in memory; unverified writes are rolled back when storage permits. Storage failures after submission retain accepted IDs and receipt evidence in memory for recovery. The next successful mutation flushes that evidence to storage.
+
 Rejections and proven non-submission allow an explicit retry. Status 400 with no receipts proves non-submission; status 500 with only reverted receipts proves complete atomic failure. Pending, malformed, partial or non-atomic results, lost submission responses and status outages retain the lock. Reconnect the original wallet for ID tracking. A valid backend input transaction reconciles submission when the wallet response was lost; absence of an input transaction does not establish non-submission.
 
 ## Live acceptance checks
 
-Against a deployment containing PR #5400, verify ARB to AAVE on Arbitrum with MetaMask already reporting `supported`, and a second compatible EVM wallet. Check the zero-allowance, zero-first reset and sufficient-allowance cases; exact values; one approve-and-swap prompt; quote confirmation; rejection; account and chain changes before and during submission; concurrent clicks; screen closure and reload; disconnected original wallet; lost responses; status outages; multiple receipts; malformed status; partial execution; non-atomic execution; complete atomic failure; and explicit retry boundaries.
+Against a deployment containing PR #5400, verify ARB to AAVE on Arbitrum with MetaMask already reporting `supported`, and a second compatible EVM wallet. Check the zero-allowance, zero-first reset and sufficient-allowance cases; exact values; one wallet confirmation with approval wording only when approval is required; quote confirmation; rejection; account and chain changes before and during submission; concurrent clicks; screen closure and reload; disconnected original wallet; lost responses; status outages; multiple receipts; malformed status; partial execution; non-atomic execution; complete atomic failure; and explicit retry boundaries.
 
 Confirm that only the final successful receipt hash reaches backend transaction-status queries, the explorer link and `SwapCatchup`, then verify normal output-swap progress. Repeat the legacy, native-token, gasless and deposit-address flows. Live wallet acceptance has not been performed here; fixture tests cannot establish deployed contract or wallet behavior.

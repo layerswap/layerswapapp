@@ -34,7 +34,7 @@ function loadSource(path, imports = {}) {
         // Atomic services are separate from these legacy production/timeline regressions.
         if (name === '@/stores/atomicBatchStore' || name === './atomicBatchStore') return {
             useAtomicBatchStore: selector => selector({ batches: {} }), getOutstandingBatch: noop,
-            isBatchOutstanding: () => false, acquireWalletExecution: () => noop,
+            isBatchOutstanding: () => false, acquireWalletExecution: () => noop, supportsWebLocks: () => true,
         };
         if (name === '@/helpers/atomicBatch') return { isAtomicBatchEligible: () => false };
         if (name === '@/lib/atomicBatchExecution') return { executeAtomicBatch: () => assert.fail('legacy flow cannot submit an atomic batch') };

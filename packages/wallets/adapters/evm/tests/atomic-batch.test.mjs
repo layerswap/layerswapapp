@@ -22,13 +22,16 @@ const hash = `0x${'a'.repeat(64)}`
 
 function walletHarness() {
     const requests = []
+    const walletReads = { accounts: 0, chain: 0 }
     const state = { accounts: [account], chainId: 42161, atomic: 'supported', error: undefined, capabilitiesWait: undefined }
     const connector = {
         id: 'selected', name: 'Selected', uid: Math.random().toString(),
-        getAccounts: async () => state.accounts, getChainId: async () => state.chainId,
+        getAccounts: async () => { walletReads.accounts++; return state.walletAccounts ?? state.accounts },
+        getChainId: async () => { walletReads.chain++; return state.walletChainId ?? state.chainId },
         getProvider: async () => ({ request: async request => {
             requests.push(request)
             if (request.method === 'wallet_getCapabilities') {
+                if (state.onCapabilities) return state.onCapabilities()
                 if (state.capabilitiesWait) await state.capabilitiesWait
                 return { '0xa4b1': { atomic: { status: state.atomic } } }
             }
@@ -47,13 +50,13 @@ function walletHarness() {
     const config = {
         chains: [{ id: 42161 }], state: { status: 'connected', current: other.uid, connections: new Map([
             [other.uid, { connector: other, accounts: [account], chainId: 42161 }],
-            [connector.uid, { connector, accounts: [account], chainId: 42161 }],
+            [connector.uid, { connector, get accounts() { return state.accounts }, get chainId() { return state.chainId } }],
         ]) }, subscribe: (_selector, listener) => { state.changed = listener; return () => {} },
     }
     const context = { wallet: { id: 'Selected', internalId: 'selected', address: account, metadata: { connectorId: 'selected', connectorUid: connector.uid } },
         account, network: { chain_id: '42161' }, calls: [{ to: target, data: '0x1234', value: 900719925474099312345678901n }],
         validBefore: Math.floor(Date.now() / 1000) + 600 }
-    return { state, requests, config, context, provider: createAtomicBatchProvider(config) }
+    return { state, requests, walletReads, config, context, provider: createAtomicBatchProvider(config) }
 }
 
 test('uses the selected connector, exact wei, v2 atomicRequired and no fallback', async () => {
@@ -88,6 +91,80 @@ test('capabilities cache includes connector, account, source and current chain; 
     h.state.chainId = 42161; h.state.atomic = 'ready'
     await assert.rejects(h.provider.submit(h.context))
     assert.equal(h.requests.filter(r => r.method === 'wallet_getCapabilities').length, 3)
+})
+
+test('selection discovery and a cache hit avoid wallet account/chain round trips; submission still validates the live wallet', async () => {
+    const h = walletHarness()
+    assert.equal(await h.provider.getCapabilities(h.context), 'supported')
+    assert.equal(await h.provider.getCapabilities(h.context), 'supported')
+    assert.deepEqual(h.walletReads, { accounts: 0, chain: 0 })
+    assert.equal(h.requests.length, 1)
+    await h.provider.submit(h.context)
+    assert.deepEqual(h.walletReads, { accounts: 2, chain: 2 })
+    assert.equal(h.requests.filter(request => request.method === 'wallet_getCapabilities').length, 2)
+})
+
+test('selection discovery and swap creation share an in-flight capability request', async () => {
+    const h = walletHarness()
+    let release
+    h.state.capabilitiesWait = new Promise(resolve => { release = resolve })
+    const selectionCheck = h.provider.getCapabilities(h.context)
+    while (!h.requests.length) await new Promise(resolve => setImmediate(resolve))
+    const creationCheck = h.provider.getCapabilities(h.context)
+    assert.equal(h.requests.length, 1)
+    release()
+    assert.deepEqual(await Promise.all([selectionCheck, creationCheck]), ['supported', 'supported'])
+    assert.deepEqual(h.walletReads, { accounts: 0, chain: 0 })
+})
+
+test('a fresh check bypasses earlier discovery and its result cannot be overwritten by that older response', async () => {
+    const h = walletHarness()
+    let resolveOld, checks = 0
+    h.state.onCapabilities = () => ++checks === 1 ? new Promise(resolve => { resolveOld = resolve })
+        : { '0xa4b1': { atomic: { status: 'ready' } } }
+    const oldCheck = h.provider.getCapabilities(h.context)
+    while (!h.requests.length) await new Promise(resolve => setImmediate(resolve))
+    assert.equal(await h.provider.getCapabilities(h.context, { fresh: true }), 'ready')
+    resolveOld({ '0xa4b1': { atomic: { status: 'supported' } } })
+    assert.equal(await oldCheck, 'supported')
+    assert.equal(await h.provider.getCapabilities(h.context), 'ready')
+    assert.equal(h.requests.length, 2)
+})
+
+test('cancelling selection discovery does not cancel a shared creation lookup', async () => {
+    const h = walletHarness(), controller = new AbortController()
+    let release
+    h.state.capabilitiesWait = new Promise(resolve => { release = resolve })
+    const selectionCheck = h.provider.getCapabilities({ ...h.context, signal: controller.signal })
+    const cancelled = assert.rejects(selectionCheck, error => error.name === 'AbortError')
+    while (!h.requests.length) await new Promise(resolve => setImmediate(resolve))
+    const creationCheck = h.provider.getCapabilities(h.context)
+    controller.abort()
+    release()
+    await cancelled
+    assert.equal(await creationCheck, 'supported')
+    assert.equal(h.requests.length, 1)
+})
+
+for (const change of ['account', 'chain']) test(`submission refuses a live ${change} change before connector state catches up`, async () => {
+    const h = walletHarness()
+    await h.provider.getCapabilities(h.context)
+    if (change === 'account') h.state.walletAccounts = [`0x${'4'.repeat(40)}`]
+    else h.state.walletChainId = 1
+    await assert.rejects(h.provider.submit(h.context), error => error.atomicSubmission === 'not_submitted')
+    assert.equal(h.requests.some(request => request.method === 'wallet_sendCalls'), false)
+})
+
+test('a live account change during the fresh capability check is refused before opening the wallet', async () => {
+    const h = walletHarness(), prompts = []
+    h.context.onWalletPrompt = () => prompts.push('opened')
+    h.state.onCapabilities = () => {
+        h.state.walletAccounts = [`0x${'4'.repeat(40)}`]
+        return { '0xa4b1': { atomic: { status: 'supported' } } }
+    }
+    await assert.rejects(h.provider.submit(h.context), error => error.atomicSubmission === 'not_submitted')
+    assert.deepEqual(prompts, [])
+    assert.equal(h.requests.some(request => request.method === 'wallet_sendCalls'), false)
 })
 
 for (const change of ['account', 'chain', 'away-and-back']) test(`discards stale capability response after ${change} change`, async () => {

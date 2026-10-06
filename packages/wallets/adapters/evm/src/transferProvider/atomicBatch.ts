@@ -23,29 +23,46 @@ export function resolveSelectedConnector(config: Config, wallet: Wallet, account
 }
 
 const providers = new WeakMap<Config, AtomicBatchProvider>()
+type AtomicCapability = 'supported' | 'ready' | 'unsupported'
 
 export function createAtomicBatchProvider(config: Config): AtomicBatchProvider {
     const existing = providers.get(config)
     if (existing) return existing
-    const cache = new Map<string, { status: 'supported' | 'ready' | 'unsupported'; expires: number }>()
+    const cache = new Map<string, { status: AtomicCapability; expires: number }>()
+    const inFlight = new Map<string, { id: symbol; revision: number; promise: Promise<AtomicCapability> }>()
     let revision = 0
     config.subscribe(state => state.connections, () => { revision++; cache.clear() })
 
-    const snapshot = async (context: AtomicBatchContext) => {
+    const snapshot = (context: AtomicBatchContext) => {
         context.signal?.throwIfAborted()
         if (!isAddress(context.account)) throw new Error('Invalid batch sender')
         const connector = resolveSelectedConnector(config, context.wallet, context.account)
-        const [accounts, currentChain] = await Promise.all([connector.getAccounts(), connector.getChainId()])
+        const connection = config.state.connections.get(connector.uid)
+        if (!connection) throw new Error('Wallet disconnected')
+        const { accounts, chainId: currentChain } = connection
         if (!accounts.some(a => a.toLowerCase() === context.account.toLowerCase())) throw new Error('Batch account changed')
         const chainId = Number(context.network.chain_id)
         if (!Number.isSafeInteger(chainId) || chainId <= 0) throw new Error('Invalid batch chain')
         const key = [connector.uid, context.account.toLowerCase(), chainId, currentChain, accounts.join(',')].join(':')
         return { connector, currentChain, chainId, key, revision }
     }
-    const assertCurrent = async (context: AtomicBatchContext, before: Awaited<ReturnType<typeof snapshot>>) => {
-        const after = await snapshot(context)
+    const assertCurrent = (context: AtomicBatchContext, before: ReturnType<typeof snapshot>) => {
+        context.signal?.throwIfAborted()
+        let after: ReturnType<typeof snapshot>
+        try {
+            after = snapshot(context)
+        } catch (error) {
+            throw new Error('Wallet changed during the capability check', { cause: error })
+        }
         if (after.key !== before.key || after.revision !== before.revision) throw new Error('Wallet changed during the capability check')
         context.signal?.throwIfAborted()
+    }
+    const assertWalletCurrent = async (context: AtomicBatchContext, before: ReturnType<typeof snapshot>) => {
+        const [accounts, chainId] = await Promise.all([before.connector.getAccounts(), before.connector.getChainId()])
+        if (!accounts.some(account => account.toLowerCase() === context.account.toLowerCase()) || chainId !== before.currentChain) {
+            throw new Error('Wallet account or chain changed before submission')
+        }
+        assertCurrent(context, before)
     }
     const clientFor = async (connector: Connector) => {
         const provider = await connector.getProvider() as EIP1193Provider
@@ -54,30 +71,51 @@ export function createAtomicBatchProvider(config: Config): AtomicBatchProvider {
     }
     const provider: AtomicBatchProvider = {
         async getCapabilities(context, options) {
-            const before = await snapshot(context)
+            const before = snapshot(context)
             const cached = cache.get(before.key)
             if (!options?.fresh && cached && cached.expires > Date.now()) {
-                await assertCurrent(context, before)
+                assertCurrent(context, before)
                 return cached.status
             }
-            let status: 'supported' | 'ready' | 'unsupported' = 'unsupported'
-            try {
-                const client = await clientFor(before.connector)
-                // Query all chains so EIP-5792's global (0x0) capability is respected.
-                const capabilities = await getCapabilities(client, { account: context.account as `0x${string}` })
-                const atomic = (capabilities[before.chainId]?.atomic ?? capabilities[0]?.atomic)?.status
-                if (atomic === 'supported' || atomic === 'ready') status = atomic
-            } catch {
-                // Discovery errors use the existing workflow; they never trigger fallback submission.
+            const existing = inFlight.get(before.key)
+            if (!options?.fresh && existing?.revision === before.revision) {
+                const status = await existing.promise
+                assertCurrent(context, before)
+                return status
             }
-            await assertCurrent(context, before)
-            cache.set(before.key, { status, expires: Date.now() + 30_000 })
-            return status
+            // Selection discovery and swap creation share the same lookup. An aborted
+            // caller does not cancel another caller's lookup for the same wallet.
+            const discoveryContext = { ...context, signal: undefined }
+            const requestId = Symbol('wallet-capability')
+            const request = (async (): Promise<AtomicCapability> => {
+                let status: AtomicCapability = 'unsupported'
+                try {
+                    const client = await clientFor(before.connector)
+                    // Query all chains so EIP-5792's global (0x0) capability is respected.
+                    const capabilities = await getCapabilities(client, { account: context.account as `0x${string}` })
+                    const atomic = (capabilities[before.chainId]?.atomic ?? capabilities[0]?.atomic)?.status
+                    if (atomic === 'supported' || atomic === 'ready') status = atomic
+                } catch {
+                    // Discovery errors use the existing workflow; they never trigger fallback submission.
+                }
+                assertCurrent(discoveryContext, before)
+                if (inFlight.get(before.key)?.id === requestId) cache.set(before.key, { status, expires: Date.now() + 30_000 })
+                return status
+            })()
+            inFlight.set(before.key, { id: requestId, revision: before.revision, promise: request })
+            try {
+                const status = await request
+                assertCurrent(context, before)
+                return status
+            } finally {
+                if (inFlight.get(before.key)?.promise === request) inFlight.delete(before.key)
+            }
         },
         async submit(context) {
             let requested = false
             try {
-                const before = await snapshot(context)
+                const before = snapshot(context)
+                await assertWalletCurrent(context, before)
                 if (before.currentChain !== before.chainId) throw new Error('Switch to the batch source chain')
                 if (await provider.getCapabilities(context, { fresh: true }) !== 'supported') throw new Error('This wallet does not currently support atomic swaps')
                 const chain = config.chains.find(c => c.id === before.chainId)
@@ -89,7 +127,7 @@ export function createAtomicBatchProvider(config: Config): AtomicBatchProvider {
                 )) throw new Error('Invalid batch calls')
                 const client = await clientFor(before.connector)
                 await foregroundWalletApp(context.wallet.metadata?.deepLink)
-                await assertCurrent(context, before)
+                await assertWalletCurrent(context, before)
                 if (!Number.isSafeInteger(context.validBefore) || context.validBefore <= Math.floor(Date.now() / 1000)) throw new Error('Batch expired. Refresh the quote before retrying.')
                 context.onWalletPrompt?.()
                 requested = true

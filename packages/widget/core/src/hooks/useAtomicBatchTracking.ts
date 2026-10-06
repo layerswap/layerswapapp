@@ -4,7 +4,7 @@ import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, type Swa
 import { getExplorerUrl } from '@/lib/address/explorerUrl'
 import { resolverService } from '@/lib/resolvers/resolverService'
 import { trackAtomicBatch } from '@/lib/atomicBatchTracking'
-import { useAtomicBatchStore, isBatchOutstanding, type AtomicBatchRecord } from '@/stores/atomicBatchStore'
+import { useAtomicBatchStore, isBatchOutstanding, subscribeAtomicBatchStorage, type AtomicBatchRecord } from '@/stores/atomicBatchStore'
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore'
 import { isTransactionHash } from '@/helpers/atomicBatch'
 import { useClientLayoutEffect } from './useClientLayoutEffect'
@@ -26,7 +26,7 @@ export function useAtomicBatchTracking(swapDetails: SwapDetails | undefined, onL
                     transactionHash: hash, fromAddress: batch.account, sourceNetwork: batch.network.name, provider: batch.wallet.providerName })
             }
             await api.SwapCatchup(batch.swapId, hash)
-            useAtomicBatchStore.getState().update(batch.swapId, batch.attempt, { catchupComplete: true })
+            await useAtomicBatchStore.getState().update(batch.swapId, batch.attempt, { catchupComplete: true })
         }
         const synchronize = () => {
             const records = Object.values(useAtomicBatchStore.getState().batches)
@@ -56,8 +56,9 @@ export function useAtomicBatchTracking(swapDetails: SwapDetails | undefined, onL
             }
         }
         const unsubscribe = useAtomicBatchStore.subscribe(synchronize)
+        const unsubscribeStorage = subscribeAtomicBatchStorage()
         synchronize()
-        return () => { unsubscribe(); for (const stop of running.values()) stop() }
+        return () => { unsubscribe(); unsubscribeStorage(); for (const stop of running.values()) stop() }
     }, [])
 
     useEffect(() => {
@@ -68,6 +69,6 @@ export function useAtomicBatchTracking(swapDetails: SwapDetails | undefined, onL
         // was lost. Resume normal progress; this never authorizes another send for that swap.
         const input = swapDetails.transactions?.find(transaction => transaction.type === TransactionType.Input
             && isTransactionHash(transaction.transaction_hash))
-        if (input) useAtomicBatchStore.getState().update(batch.swapId, batch.attempt, { state: 'reconciled' })
+        if (input) void useAtomicBatchStore.getState().update(batch.swapId, batch.attempt, { state: 'reconciled' }).catch(() => {})
     }, [swapDetails])
 }

@@ -2,6 +2,7 @@ import type { AtomicBatchProvider } from '@layerswap/widget-types'
 import type { BatchTransferDepositAction } from '@/lib/apiClients/layerSwapApiClient'
 import type { DepositExecutionContext } from '@/components/Pages/Swap/Withdraw/Wallet/Common/depositExecution'
 import { getAtomicBatchExpiry, validateAtomicBatch } from '@/helpers/atomicBatch'
+import { getDepositActionLabel } from '@/helpers/depositActions'
 import { useAtomicBatchStore } from '@/stores/atomicBatchStore'
 import { isUserRejection } from '@/components/Pages/Swap/Withdraw/Wallet/Common/isUserRejection'
 import { lifecycleContextFromSwap, lifecycleErrorDetails } from './swapLifecycle'
@@ -24,20 +25,23 @@ export async function executeAtomicBatch(ctx: DepositExecutionContext, action: B
             deepLink: selectedWallet.metadata?.deepLink,
         },
     }
-    store.begin({ swapId: swapData.id, attempt, account, wallet, network: { ...network, token: swapBasicData.source_token },
+    await store.begin({ swapId: swapData.id, attempt, account, wallet, network: { ...network, token: swapBasicData.source_token },
         validBefore, createdAt: Date.now(), state: 'submitting' })
     const lifecycle = { ...lifecycleContextFromSwap(swapBasicData, swapData), path: 'AtomicBatch', action: 'approve_and_swap', provider: selectedWallet.providerName }
-    ctx.setActionStateText('Approve and swap in your wallet')
+    let submissionStarted = false
     try {
+        signal?.throwIfAborted()
+        ctx.setActionStateText(`${getDepositActionLabel(action)} in your wallet`)
+        submissionStarted = true
         const result = await provider.submit({ network, wallet, account, calls, validBefore, signal,
             onWalletPrompt: () => onLifecycle({ ...lifecycle, step: 'wallet_prompt_opened', stage: 'wallet_action', outcome: 'pending' }) })
         if (!result || typeof result.id !== 'string' || !result.id.trim()) throw new Error('Wallet returned no batch ID')
         // An open wallet request outlives the screen/account that started it.
-        store.update(swapData.id, attempt, { id: result.id, state: 'pending' })
+        await store.update(swapData.id, attempt, { id: result.id, state: 'pending' })
     } catch (error) {
         const rejected = isUserRejection(error)
-        const notSubmitted = (error as { atomicSubmission?: string })?.atomicSubmission === 'not_submitted'
-        store.update(swapData.id, attempt, { state: rejected ? 'rejected' : notSubmitted ? 'not_submitted' : 'uncertain' })
+        const notSubmitted = !submissionStarted || (error as { atomicSubmission?: string })?.atomicSubmission === 'not_submitted'
+        await store.update(swapData.id, attempt, { state: rejected ? 'rejected' : notSubmitted ? 'not_submitted' : 'uncertain' })
         onLifecycle({ ...lifecycle, ...lifecycleErrorDetails(error),
             step: rejected ? 'wallet_action_rejected' : 'wallet_action_failed', stage: 'wallet_action', outcome: rejected ? 'rejected' : 'failed' })
         throw error

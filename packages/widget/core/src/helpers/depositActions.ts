@@ -51,10 +51,12 @@ const DEPOSIT_ACTION_LABELS: Record<string, string> = {
 }
 
 export const getDepositActionLabel = (action: DepositAction): string =>
-    isBatchTransferAction(action) ? 'Approve and swap' : action.step ? DEPOSIT_ACTION_LABELS[action.step] ?? 'Continue' : 'Continue'
+    isBatchTransferAction(action) ? (action.calls?.length ?? 0) > 1 ? 'Approve and swap' : 'Confirm swap'
+        : action.step ? DEPOSIT_ACTION_LABELS[action.step] ?? 'Continue' : 'Continue'
 
 export const getDepositActionDescription = (action: DepositAction): string | undefined => {
-    if (isBatchTransferAction(action)) return 'Approve the token and swap in one atomic batch'
+    if (isBatchTransferAction(action)) return (action.calls?.length ?? 0) > 1
+        ? 'Approve the token and swap in one atomic batch' : 'Submit the swap transaction'
     switch (action.step) {
         case 'approve_permit2':
             return action.token?.symbol

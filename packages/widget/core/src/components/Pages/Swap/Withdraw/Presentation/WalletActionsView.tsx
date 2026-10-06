@@ -127,6 +127,7 @@ export type SendTransactionViewProps = SubmitButtonProps & {
     actionStateText?: string;
     actionButtonText?: string;
     depositActions?: DepositAction[];
+    showSwapProgress?: boolean;
     stepTransactions?: SwapStepTransactions;
     readOnly?: boolean;
     error?: boolean;
@@ -154,6 +155,7 @@ export function SendTransactionView({
     actionStateText,
     actionButtonText,
     depositActions,
+    showSwapProgress,
     stepTransactions,
     readOnly,
     error,
@@ -177,7 +179,7 @@ export function SendTransactionView({
         (!!stepTransactions?.approve_permit2?.explorerUrl &&
             !!depositActions?.some(action => action.step === 'approve_permit2')) ||
         (!!quote?.destination_token &&
-            !!depositActions?.some((action) => action.step === 'publish'));
+            !!depositActions?.some((action) => action.step === 'publish' || (showSwapProgress && action.step === 'deposit')));
     const workflowCompleted = isDepositWorkflowComplete(depositActions ?? []);
     const workflowFailed = depositActions?.some(action => action.status === 'failed');
     const actionableAction = getActionableDepositAction(depositActions);
@@ -201,6 +203,7 @@ export function SendTransactionView({
             actionStateText={actionStateText}
             destinationToken={quote?.destination_token}
             receiveAmount={quote?.receive_amount}
+            showDeliveryStep={showSwapProgress}
         />
     ) : undefined;
     const message =

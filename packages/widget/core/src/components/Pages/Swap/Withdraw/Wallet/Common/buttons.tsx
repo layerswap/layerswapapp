@@ -7,7 +7,6 @@ import { hasSwapExecutionProgress } from '@/helpers/swapProgress';
 import { isGaslessCapableRoute, isGaslessDepositWorkflow } from '@/helpers/gasless';
 import { isDepositWorkflowComplete } from '@/helpers/depositActions';
 import { isBatchTransferAction } from '@/helpers/depositActions';
-import { isAtomicBatchEligible } from '@/helpers/atomicBatch';
 import { acquireWalletExecution, getOutstandingBatch } from '@/stores/atomicBatchStore';
 import { executeAtomicBatch } from '@/lib/atomicBatchExecution';
 import { resolverService } from '@/lib/resolvers/resolverService';
@@ -226,7 +225,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     refuel,
     ...props
 }) => {
-    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, refuel: refuelData, swapError, setSwapError, atomicBatchSupported, outstandingBatch, atomicBatch } = useSwapDataState()
+    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, refuel: refuelData, swapError, setSwapError, outstandingBatch, atomicBatch } = useSwapDataState()
     const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
     const gaslessFailureStage = useGaslessPreferenceStore(s => s.gaslessFailureStage)
     const gaslessEnabled = useGaslessPreferenceStore(s => s.gaslessEnabled)
@@ -636,10 +635,10 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             isDisabled={!!outstandingBatch}
             actionStateText={actionStateText}
             actionButtonText={outstandingBatch ? 'Reconnect original wallet to track swap'
-                : atomicBatchSupported && isAtomicBatchEligible({ network: swapBasicData.source_network, token: swapBasicData.source_token,
-                    depositMethod: swapBasicData.use_deposit_address ? 'deposit_address' : 'wallet', useGasless: desiredGasless,
-                    sourceIsSupported: !!selectedWallet?.asSourceSupportedNetworks?.includes(swapBasicData.source_network.name),
-                    sourceAddress: selectedSourceAccount?.address, sourceExchange: swapBasicData.source_exchange }) ? 'Approve and swap' : actionButtonText}
+                : actionButtonText}
+            showSwapProgress={!swapBasicData.use_deposit_address && !desiredGasless
+                && swapBasicData.source_network.type === 'evm' && !!swapBasicData.source_token.contract
+                && swapBasicData.source_network.name === swapBasicData.destination_network?.name}
             depositActions={depositActions}
             stepTransactions={stepTransactions}
             error={error}

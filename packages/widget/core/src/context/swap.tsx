@@ -36,7 +36,7 @@ import { lifecycleContextFromForm } from '@/lib/swapLifecycle';
 import { createSwapAttempt } from '@/lib/swapCreation';
 import { KnownInternalNames } from '@layerswap/utils';
 import { useAtomicBatchTracking } from '@/hooks/useAtomicBatchTracking';
-import { useAtomicBatchStore, getOutstandingBatch, isBatchOutstanding, type AtomicBatchRecord } from '@/stores/atomicBatchStore';
+import { useAtomicBatchStore, getOutstandingBatch, isBatchOutstanding, supportsWebLocks, type AtomicBatchRecord } from '@/stores/atomicBatchStore';
 import { isAtomicBatchEligible } from '@/helpers/atomicBatch';
 import { resolverService } from '@/lib/resolvers/resolverService';
 import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect';
@@ -420,7 +420,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             const requiresDepository = from.name == KnownInternalNames.Networks.StellarTestnet || from.name == KnownInternalNames.Networks.StellarMainnet
 
             let useAtomicBatch = false
-            if (selectedWallet && selectedSourceAccount && isAtomicBatchEligible({
+            if (supportsWebLocks() && selectedWallet && selectedSourceAccount && isAtomicBatchEligible({
                 network: from, token: fromCurrency, depositMethod, useGasless, sourceIsSupported: !!sourceIsSupported,
                 sourceAddress: selectedSourceAccount.address, sourceExchange: fromExchange, extended: isExtendedBridge,
             })) {
@@ -500,7 +500,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             onLifecycle: onSwapLifecycle,
             onGaslessUnavailable: () => useGaslessPreferenceStore.getState().reportGaslessUnavailable('create'),
         })
-    }, [selectedSourceAccount, selectedWallet, onSwapCreate, onSwapLifecycle, updateRecentTokens, swapDetails?.id, networks, sourceRoutes])
+    }, [selectedSourceAccount, selectedWallet, selectionKey, onSwapCreate, onSwapLifecycle, updateRecentTokens, swapDetails?.id, networks, sourceRoutes])
 
     const updateFns = useMemo<UpdateSwapInterface>(() => ({
         createSwap,

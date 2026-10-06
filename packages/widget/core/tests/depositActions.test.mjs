@@ -265,12 +265,12 @@ function createWorkflow({ mounted = false, realPolling = false, atomic = false }
         '../../Processing/StepsComponent': { default: Steps },
         '../../Processing/types': progressTypes,
         '@/helpers/swapProgress': swapProgress,
-        '@/helpers/atomicBatch': { isAtomicBatchEligible: () => false },
+        '@/helpers/atomicBatch': { isAtomicBatchEligible: () => state.atomicBatchEligible ?? false },
         '@/stores/atomicBatchStore': { acquireWalletExecution: () => () => {}, getOutstandingBatch: noop },
         '@/lib/atomicBatchExecution': { executeAtomicBatch: async (ctx, action) => {
             if (!atomic) assert.fail('legacy workflow cannot execute a batch')
             calls.batches.push(action)
-            ctx.setActionStateText('Approve and swap in your wallet')
+            ctx.setActionStateText(`${depositActions.getDepositActionLabel(action)} in your wallet`)
             await state.onWalletPrompt?.('approve_and_swap')
             if (state.batchError) throw state.batchError
         } },
@@ -291,7 +291,7 @@ function createWorkflow({ mounted = false, realPolling = false, atomic = false }
         }
     }
     const props = () => ({
-            swapData: { source_network: network, source_token: state.sourceToken ?? {}, requested_amount: '1' },
+            swapData: { source_network: network, source_token: state.sourceToken ?? {}, requested_amount: '1', ...state.swapBasicData },
             refuel: false,
             error: state.rejected,
             clearError: () => { state.rejected = false },
@@ -341,10 +341,12 @@ for (const name of ['zero_allowance', 'allowance_reset', 'sufficient_allowance']
     const actions = await atomicActions.resolveAtomicDepositActions(atomicFixtures.deposit_actions[name], async () => atomicFixtures.next_actions[name])
     flow.state.apiActions = actions
     flow.state.depositActionsResponse = actions
+    flow.state.quote = { receive_amount: 1, destination_token: atomicFixtures.swap.destination_token }
     flow.render()
     await flow.poll()
     const rendered = flow.render()
-    assert.equal(rendered.button.props.children, 'Approve and swap')
+    assert.equal(rendered.button.props.children, name === 'sufficient_allowance' ? 'Confirm swap' : 'Approve and swap')
+    assert.equal(rendered.steps[0].name, name === 'sufficient_allowance' ? 'Confirm swap' : 'Approve and swap')
     assert.equal(rendered.viewProps.depositActions.length, 1)
     await rendered.button.props.onClick()
     assert.equal(flow.calls.batches.length, 1)
@@ -367,6 +369,53 @@ test('new backend batch rejection never falls back to signing or an ordinary tra
     assert.deepEqual(flow.calls.sign, [])
     assert.deepEqual(flow.calls.storedTransactions, [])
 })
+
+test('wallet capabilities alone never promise an approval before the server provides the calls', () => {
+    const flow = createWorkflow()
+    flow.state.swapId = undefined
+    flow.state.swapDetails = undefined
+    flow.state.depositActionsResponse = undefined
+    flow.state.atomicBatchSupported = true
+    flow.state.atomicBatchEligible = true
+    assert.equal(flow.render().button.props.children, 'Swap now')
+})
+
+for (const route of ['same-network token swap', 'bridge', 'native token', 'manual deposit']) {
+    test(`a single deposit transfer ${route === 'same-network token swap' ? 'keeps swap progress visible' : `keeps the existing ${route} presentation`}`, async () => {
+        const flow = createWorkflow()
+        const network = { name: 'BASE_MAINNET', type: 'evm' }
+        flow.state.swapBasicData = {
+            source_network: network,
+            destination_network: route === 'bridge' ? { name: 'ARBITRUM_MAINNET', type: 'evm' } : network,
+            source_token: route === 'native token' ? { symbol: 'ETH' } : { symbol: 'USDT', contract: atomicFixtures.token.contract },
+            destination_token: { symbol: 'USDC', asset: 'USDC', decimals: 6 },
+            use_deposit_address: route === 'manual deposit',
+        }
+        flow.state.quote = { receive_amount: 2.836322, destination_token: flow.state.swapBasicData.destination_token }
+        flow.state.apiActions = [{ type: 'transfer', step: 'deposit', status: 'action_required', amount: '2.896498', to_address: '0x456' }]
+        flow.render()
+        await flow.poll()
+        flow.state.onWalletPrompt = () => {
+            const rendered = flow.render()
+            if (route === 'same-network token swap') {
+                assert.equal(rendered.button, undefined, 'the wallet prompt uses the progress panel')
+                assert.deepEqual(rendered.steps.map(step => step.name), ['Send from wallet', 'Receive 2.836322 USDC'])
+                assert.equal(rendered.steps[0].description, 'Confirm in your wallet')
+                assert.equal(rendered.steps[0].isLoading, true)
+            } else {
+                assert.equal(rendered.steps, undefined)
+                assert.equal(rendered.button.props.children, 'Confirm in your wallet')
+            }
+        }
+
+        await flow.render().button.props.onClick()
+
+        assert.equal(flow.calls.transfer.length, 1)
+        assert.deepEqual(flow.calls.batches, [])
+        assert.deepEqual(flow.calls.sign, [])
+        assert.deepEqual(flow.calls.errors, [])
+    })
+}
 
 for (const atomic of [true, false]) test(`a changed creation quote ${atomic ? 'enters atomic wallet progress directly' : 'keeps the legacy quote-update pause'}`, async () => {
     const flow = createWorkflow({ atomic })
