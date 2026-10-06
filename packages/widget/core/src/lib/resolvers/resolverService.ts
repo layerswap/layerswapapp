@@ -35,6 +35,10 @@ class UtilsResolverService {
         this.gaslessResolver = new GaslessResolver(gaslessProviders);
     }
 
+    isInitialized(): boolean {
+        return this.balanceResolver !== null;
+    }
+
     getBalanceResolver(): BalanceResolver {
         if (!this.balanceResolver) {
             throw new Error('ResolverService not initialized. Make sure to call setProviders first.');

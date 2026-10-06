@@ -77,6 +77,13 @@ export const ResolverProviders: React.FC<React.PropsWithChildren<{
             .filter((provider): provider is NftProvider => Boolean(provider)),
             [realProviders]);
 
+        // Children read the resolvers in their first render and mount effects, and
+        // React runs child effects before this component's, so the first set
+        // happens during render. Later provider changes go through the effect.
+        if (!resolverService.isInitialized()) {
+            resolverService.setProviders(balanceProviders, gasProviders, nftProviders, transferProviders, contractAddressProviders, rpcHealthCheckProviders, gaslessProviders)
+        }
+
         // No ready-signal here: components gating on provider availability use
         // `useWalletProvidersReady()`, which tracks the wallet-connection
         // registry they actually read (see `WalletProvidersProvider`).

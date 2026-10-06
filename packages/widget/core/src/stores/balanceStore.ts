@@ -92,10 +92,15 @@ export const useBalanceStore = create<BalanceStore>()(
       const last = get().lastFetchMap[key] ?? 0
 
       if (entry?.promise) return entry.promise
-      if (!options?.ignoreCache && entry && now - last < dedupeInterval) return Promise.resolve(entry.data!)
+      // A cached failure stays a failure; the timestamp doubles as retry backoff.
+      if (!options?.ignoreCache && entry && now - last < dedupeInterval)
+        return entry.status === 'error' ? Promise.reject(entry.error) : Promise.resolve(entry.data!)
       const queuedPromise = new Promise<NetworkBalance>((resolve, reject) => {
         const job = () => {
-          resolverService.getBalanceResolver().getBalance(network, address, { timeoutMs: options?.timeoutMs, retryCount: options?.retryCount })
+          // Deferred so a synchronous throw takes the same error path and still
+          // releases its queue slot.
+          Promise.resolve()
+            .then(() => resolverService.getBalanceResolver().getBalance(network, address, { timeoutMs: options?.timeoutMs, retryCount: options?.retryCount }))
             .then(data => {
               set(state => ({
                 balances: {
@@ -113,7 +118,8 @@ export const useBalanceStore = create<BalanceStore>()(
               set(state => ({
                 balances: {
                   ...state.balances,
-                  [key]: { ...state.balances[key], error, status: 'error' },
+                  // Drop the settled promise, or every later fetch returns this failure.
+                  [key]: { data: state.balances[key]?.data, error, status: 'error' },
                 },
                 lastFetchMap: {
                   ...state.lastFetchMap,
@@ -154,7 +160,8 @@ export const useBalanceStore = create<BalanceStore>()(
         }, {})
       const sortedpairs = pairs.sort((a, b) => Number(a.network.source_rank) - Number(b.network.source_rank))
       sortedpairs.forEach(({ address, network }) => {
-        get().fetchBalance(address, network, { dedupeInterval: 120_000, ignoreCache: false, retryCount: 0 })
+        // Failures surface through the entry's `error`.
+        get().fetchBalance(address, network, { dedupeInterval: 120_000, ignoreCache: false, retryCount: 0 }).catch(() => { })
       })
 
       set({ sortingDataIsLoading: true })

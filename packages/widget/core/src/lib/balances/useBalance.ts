@@ -29,7 +29,8 @@ export function useBalance(
         if (!address || !network) return
         if (!refreshWhenHidden && document.hidden) return
         if (!refreshWhenOffline && navigator.onLine === false) return
-        fetchBalance(address, network, { dedupeInterval: interval })
+        // Failures surface through `entry.error`.
+        fetchBalance(address, network, { dedupeInterval: interval }).catch(() => { })
     }
 
     useEffect(() => {
