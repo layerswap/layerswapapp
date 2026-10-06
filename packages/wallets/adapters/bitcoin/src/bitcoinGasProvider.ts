@@ -1,49 +1,22 @@
-import { buildPsbt } from "./transferProvider/transactionBuilder/buildPsbt";
-import { JsonRpcClient, KnownInternalNames, formatUnits } from "@layerswap/utils";
-import { ErrorHandler } from "@layerswap/widget-types";
-import { Network } from "@layerswap/widget-types";
-import { GasProps, GasWithToken, GasProvider } from "@layerswap/widget-types";
+import { fetchUtxos } from "./transferProvider/transactionBuilder/buildPsbt";
+import { estimateConservativeFee } from "./transferProvider/transactionBuilder/estimateFee";
+import { KnownInternalNames, formatUnits } from "@layerswap/utils";
+import { GasProps, GasWithToken, GasProvider, Network } from "@layerswap/widget-types";
 
 export class BitcoinGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
         return KnownInternalNames.Networks.BitcoinMainnet.includes(network.name) || KnownInternalNames.Networks.BitcoinTestnet.includes(network.name)
     }
 
-    async getGas({ address, network, recipientAddress, amount }: GasProps): Promise<GasWithToken | undefined> {
-        if (!network?.token) throw new Error("No native token provided")
-        if (!address) throw new Error("No address provided")
-        if (!amount) throw new Error("No amount provided")
+    async getGas({ address, network }: GasProps): Promise<GasWithToken | undefined> {
+        if (!network.token) throw new Error("No native token provided");
+        if (!address) throw new Error("No address provided");
 
         const version = KnownInternalNames.Networks.BitcoinMainnet.includes(network.name) ? 'mainnet' : 'testnet';
-        const bitcoinAddress = recipientAddress || version == 'testnet' ? 'tb1q5dc7f552h57tfepls66tgkta8wwjpha3ktw45s': 'bc1plxa9q77gz9r33g8pd4c2ygzezchjffuedtzdrkclyceseyw8v80qasmquf'
-        const rpcClient = new JsonRpcClient(network.node_url);
-
-        const amountInSatoshi = Math.floor(amount * 1e8);
-        const hexMemo = Number('69420').toString(16);
-
-        try {
-            const { fee } = await buildPsbt({
-                userAddress: address,
-                depositAddress: bitcoinAddress,
-                version: version,
-                memo: hexMemo,
-                amount: amountInSatoshi,
-                rpcClient: rpcClient
-            })
-            const formattedGas = Number(formatUnits(BigInt(fee), network.token.decimals))
-            if (formattedGas) {
-                return { gas: formattedGas, token: network.token }
-            }
-
-        } catch (e) {
-            const error = e as Error;
-            ErrorHandler({
-                type: "GasProviderError",
-                message: error.message,
-                name: error.name,
-                stack: error.stack,
-                cause: error.cause
-            });
-        }
+        const utxos = await fetchUtxos(address, version);
+        // No spendable inputs is unavailable, not a known zero fee.
+        if (!utxos.length) return;
+        const fee = await estimateConservativeFee(utxos.length, version);
+        return { gas: Number(formatUnits(fee, network.token.decimals)), token: network.token };
     }
 }
