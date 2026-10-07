@@ -11,7 +11,8 @@
     "lint": "next lint",
     "check:types": "tsc --noEmit",
     "test": "node --experimental-strip-types --test lib/__tests__/*.test.mjs",
-    "test:faro": "pnpm test"
+    "test:faro": "pnpm test",
+    "test:timeline": "node --test tests/timeline*.test.mjs"
   },
   "packageManager": "pnpm@10.20.0",
   "dependencies": {
@@ -57,6 +58,8 @@
     "@types/crypto-js": "^4.1.1",
     "@types/react": "catalog:",
     "chromatic": "^6.24.1",
+    "esbuild": "0.25.3",
+    "jsdom": "26.1.0",
     "tailwindcss": "^4.0.15"
   },
   "engines": {

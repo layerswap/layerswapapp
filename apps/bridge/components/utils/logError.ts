@@ -32,13 +32,17 @@ export const logError = (event: ErrorEventType) => {
     const { message, stack, name, cause, type, occurrenceId, reasonCode, ...details } = event
     const impact = widgetErrorImpact(event)
     if (impact !== 'user') {
+        const localLogging = process.env.NODE_ENV === 'development'
         const summary = summarize(message)
         // Addresses and amounts vary per wallet, not per failure.
         const group = summary?.replace(/0x[0-9a-f]+/gi, '0x').replace(/\d+/g, 'N')
-        if (isRepeatedDiagnostic(JSON.stringify([type, name, reasonCode, group]))) return
+        if (!localLogging && isRepeatedDiagnostic(JSON.stringify([type, name, reasonCode, group]))) return
         const captured = captureEvent('widget_diagnostic', {
             ...details, source: 'layerswap-widget', impact, error_category: type,
-            error_type: name || type, message: summary, cause: summarizeCause(cause),
+            error_type: name || type,
+            message: localLogging ? message : summary,
+            cause: localLogging ? cause : summarizeCause(cause),
+            ...(localLogging ? { stack } : {}),
             occurrence_id: occurrenceId, reason_code: reasonCode,
         })
         if (!captured) console.info('[layerswap/widget diagnostic]', event)

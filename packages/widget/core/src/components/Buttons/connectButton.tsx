@@ -1,3 +1,4 @@
+import { ConnectButtonView } from '../Widget/WidgetNavigationView';
 import { ReactNode } from "react";
 import useWallet from "../../hooks/useWallet";
 import { useConnectModal } from "../Wallet/WalletModal";
@@ -14,16 +15,7 @@ const ConnectButton = ({
     const { connect } = useConnectModal()
 
     return (
-        <button
-            onClick={async () => { await connect() }}
-            data-attr="connect-wallet"
-            type="button"
-            aria-label="Connect wallet"
-            disabled={filteredProviders.length == 0}
-            className={`${className} disabled:opacity-50 disabled:cursor-not-allowed enabled:active:animate-press-down`}
-        >
-            {children}
-        </button>
+        <ConnectButtonView onClick={async () => { await connect() }} disabled={filteredProviders.length == 0} className={className}>{children}</ConnectButtonView>
     )
 };
 
