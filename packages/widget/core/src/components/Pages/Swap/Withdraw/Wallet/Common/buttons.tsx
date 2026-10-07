@@ -438,6 +438,9 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
     if (showCriticalMarketPriceImpactButtons) {
         return (<>
+            {networkSwitch.isError ? (
+                <ChangeNetworkMessage data={networkSwitch} network={swapBasicData.source_network.display_name} />
+            ) : null}
             {quote && priceImpactValues && (
                 <ErrorDisplay
                     icon={<InfoIcon className={ICON_CLASSES_WARNING} />}
