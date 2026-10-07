@@ -1,4 +1,4 @@
-import { type Config, type Connector } from '@wagmi/core'
+import { type Config, type Connection, type Connector } from '@wagmi/core'
 import { createWalletClient, custom, isAddress, type EIP1193Provider } from 'viem'
 import { getCapabilities, sendCalls, getCallsStatus } from 'viem/actions'
 import type { AtomicBatchCall, AtomicBatchContext, AtomicBatchProvider, Wallet } from '@layerswap/widget-types'
@@ -12,18 +12,21 @@ type WalletSnapshot = {
     connector: Connector
     currentChainId: number
     sourceChainId: number
+    accountsKey: string
     cacheKey: string
-    connectionsVersion: number
+    connectionVersion: number
 }
 
 type CachedCapability = {
     status: AtomicCapability
     expiresAt: number
+    connectorUid: string
+    connectionVersion: number
 }
 
 type PendingCapabilityCheck = {
     requestId: symbol
-    connectionsVersion: number
+    connectionVersion: number
     promise: Promise<AtomicCapability>
 }
 
@@ -57,13 +60,37 @@ export function createAtomicBatchProvider(config: Config): AtomicBatchProvider {
 
     const capabilityCache = new Map<string, CachedCapability>()
     const pendingCapabilityChecks = new Map<string, PendingCapabilityCheck>()
-    let connectionsVersion = 0
+    const connectionVersions = new Map<string, number>()
+    let nextConnectionVersion = 0
 
-    config.subscribe(state => state.connections, () => {
-        // The version also detects a wallet switching away and back during a request.
-        connectionsVersion++
-        capabilityCache.clear()
+    config.subscribe(state => state.connections, (connections, previousConnections) => {
+        // MetaMask emits the target chain again when switchChain finishes. A new
+        // map or an unrelated wallet update does not mean this wallet changed.
+        const connectorUids = new Set([...connections.keys(), ...previousConnections.keys()])
+        for (const uid of connectorUids) {
+            const connection = connections.get(uid)
+            if (!connection) {
+                connectionVersions.delete(uid)
+            } else if (hasConnectionChanged(connection, previousConnections.get(uid))) {
+                // Never reuse a revision, even after forgetting a disconnected UID.
+                // Older discovery and submission snapshots must still fail if the
+                // same connector reconnects with the same account and chain.
+                connectionVersions.set(uid, ++nextConnectionVersion)
+            }
+        }
+        pruneCapabilityCache()
     })
+
+    function pruneCapabilityCache(): void {
+        const now = Date.now()
+        for (const [key, cached] of capabilityCache) {
+            const isConnected = config.state.connections.has(cached.connectorUid)
+            const connectionVersion = connectionVersions.get(cached.connectorUid) ?? 0
+            if (!isConnected || cached.connectionVersion !== connectionVersion || cached.expiresAt <= now) {
+                capabilityCache.delete(key)
+            }
+        }
+    }
 
     function readWalletSnapshot(context: AtomicBatchContext): WalletSnapshot {
         context.signal?.throwIfAborted()
@@ -86,15 +113,17 @@ export function createAtomicBatchProvider(config: Config): AtomicBatchProvider {
         }
 
         const currentChainId = connection.chainId
+        const accountsKey = accountListKey(connection.accounts)
         const cacheKey = [
             connector.uid,
             context.account.toLowerCase(),
             sourceChainId,
             currentChainId,
-            connection.accounts.join(','),
+            accountsKey,
         ].join(':')
 
-        return { connector, currentChainId, sourceChainId, cacheKey, connectionsVersion }
+        const connectionVersion = connectionVersions.get(connector.uid) ?? 0
+        return { connector, currentChainId, sourceChainId, accountsKey, cacheKey, connectionVersion }
     }
 
     function assertWalletUnchanged(context: AtomicBatchContext, original: WalletSnapshot): void {
@@ -107,10 +136,21 @@ export function createAtomicBatchProvider(config: Config): AtomicBatchProvider {
             throw new Error('Wallet changed during the capability check', { cause: error })
         }
 
-        const connectionChanged = current.cacheKey !== original.cacheKey
-        const connectionsChangedDuringRequest = current.connectionsVersion !== original.connectionsVersion
-        if (connectionChanged || connectionsChangedDuringRequest) {
-            throw new Error('Wallet changed during the capability check')
+        const connectorChanged = current.connector !== original.connector
+        const connectionChanged = connectorChanged || current.cacheKey !== original.cacheKey
+        const connectionChangedDuringRequest = current.connectionVersion !== original.connectionVersion
+        if (connectionChanged || connectionChangedDuringRequest) {
+            // Keep the user-facing error stable while exposing the failed comparisons
+            // in its cause, without logging wallet addresses or provider objects.
+            const details = [
+                `connectorChanged=${connectorChanged}`,
+                `chainId=${original.currentChainId}->${current.currentChainId}`,
+                `accountsChanged=${original.accountsKey !== current.accountsKey}`,
+                `connectionVersion=${original.connectionVersion}->${current.connectionVersion}`,
+            ].join(', ')
+            throw new Error('Wallet changed during the capability check', {
+                cause: new Error(`Selected wallet state changed: ${details}`),
+            })
         }
         context.signal?.throwIfAborted()
     }
@@ -153,9 +193,13 @@ export function createAtomicBatchProvider(config: Config): AtomicBatchProvider {
         // A fresh request can replace this one. Only the newest request may fill the cache.
         const latestRequest = pendingCapabilityChecks.get(walletSnapshot.cacheKey)
         if (latestRequest?.requestId === requestId) {
+            // A slow response may outlive entries that were fresh when it started.
+            pruneCapabilityCache()
             capabilityCache.set(walletSnapshot.cacheKey, {
                 status,
                 expiresAt: Date.now() + CAPABILITY_CACHE_DURATION_MS,
+                connectorUid: walletSnapshot.connector.uid,
+                connectionVersion: walletSnapshot.connectionVersion,
             })
         }
         return status
@@ -163,17 +207,18 @@ export function createAtomicBatchProvider(config: Config): AtomicBatchProvider {
 
     const provider: AtomicBatchProvider = {
         async getCapabilities(context, options) {
+            pruneCapabilityCache()
             const walletSnapshot = readWalletSnapshot(context)
 
             if (!options?.fresh) {
                 const cached = capabilityCache.get(walletSnapshot.cacheKey)
-                if (cached && cached.expiresAt > Date.now()) {
+                if (cached && cached.expiresAt > Date.now() && cached.connectionVersion === walletSnapshot.connectionVersion) {
                     assertWalletUnchanged(context, walletSnapshot)
                     return cached.status
                 }
 
                 const pending = pendingCapabilityChecks.get(walletSnapshot.cacheKey)
-                if (pending?.connectionsVersion === walletSnapshot.connectionsVersion) {
+                if (pending?.connectionVersion === walletSnapshot.connectionVersion) {
                     const status = await pending.promise
                     assertWalletUnchanged(context, walletSnapshot)
                     return status
@@ -187,7 +232,7 @@ export function createAtomicBatchProvider(config: Config): AtomicBatchProvider {
             const promise = checkWalletCapability(sharedContext, walletSnapshot, requestId)
             pendingCapabilityChecks.set(walletSnapshot.cacheKey, {
                 requestId,
-                connectionsVersion: walletSnapshot.connectionsVersion,
+                connectionVersion: walletSnapshot.connectionVersion,
                 promise,
             })
 
@@ -301,6 +346,20 @@ export function resolveSelectedConnector(config: Config, wallet: Wallet, account
 
 function includesAccount(accounts: readonly string[], account: string): boolean {
     return accounts.some(connectedAccount => connectedAccount.toLowerCase() === account.toLowerCase())
+}
+
+function accountListKey(accounts: readonly string[]): string {
+    // Address casing is cosmetic; account order still matters to wallet selection.
+    return accounts.map(account => account.toLowerCase()).join(',')
+}
+
+function hasConnectionChanged(current: Connection | undefined, previous: Connection | undefined): boolean {
+    if (!current || !previous) {
+        return current !== previous
+    }
+    return current.connector !== previous.connector
+        || current.chainId !== previous.chainId
+        || accountListKey(current.accounts) !== accountListKey(previous.accounts)
 }
 
 async function createClientForConnector(connector: Connector) {
