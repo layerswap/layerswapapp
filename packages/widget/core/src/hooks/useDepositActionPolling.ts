@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
 import type { ApiResponse } from '@layerswap/widget-types'
 import LayerSwapApiClient, { type DepositAction, type GaslessAuthorizationResult } from '@/lib/apiClients/layerSwapApiClient'
@@ -13,14 +13,12 @@ const TRANSITION_TIMEOUT_MS = 140_000
 export const depositActionsKey = (swapId: string, sourceAddress: string) =>
     `/swaps/${swapId}/deposit_actions?source_address=${sourceAddress}`
 
-/** SWR owns the requests; execution only observes the same snapshots the UI renders. */
+/** The swap provider schedules the requests; execution only observes the same snapshots the UI renders. */
 export function useDepositActionPolling(swapId: string | undefined, sourceAddress: string | undefined, executing: boolean) {
     const key = swapId && sourceAddress ? depositActionsKey(swapId, sourceAddress) : null
     const { mutate, cache } = useSWRConfig()
     const { data, error } = useSWR<ApiResponse<DepositAction[]>>(key, client.fetcher, {
-        refreshInterval: executing ? 2000 : 5000,
         dedupingInterval: 1000,
-        refreshWhenHidden: executing,
         keepPreviousData: false,
     })
     // A sign-only payload cannot distinguish self-paid from gasless execution.
@@ -38,7 +36,11 @@ export function useDepositActionPolling(swapId: string | undefined, sourceAddres
         keepPreviousData: false,
     })
     const { approvalTransaction } = useSwapDataState()
-    const { watchApprovalTransaction } = useSwapDataUpdate()
+    const { watchApprovalTransaction, setWalletActionExecuting } = useSwapDataUpdate()
+    useEffect(() => {
+        setWalletActionExecuting(executing)
+        return () => setWalletActionExecuting(false)
+    }, [executing, setWalletActionExecuting])
     const activeApproval = executing && approvalTransaction?.swapId === swapId
         && approvalTransaction?.sourceAddress === sourceAddress ? approvalTransaction : undefined
     const approvalHash = activeApproval?.hash

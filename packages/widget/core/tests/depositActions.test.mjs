@@ -124,6 +124,11 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         '@/context/swap': swapContext,
         './useClientLayoutEffect': { useClientLayoutEffect: React.useLayoutEffect },
     }) : undefined
+    const SwapView = ({ children }) => {
+        const { setSwapViewMounted } = swapContext.useSwapDataUpdate()
+        React.useLayoutEffect(() => { setSwapViewMounted(true) }, [])
+        return children
+    }
     const lifecycle = { lifecycleContextFromSwap: () => ({}), lifecycleErrorDetails: () => ({}) }
     const { executeWalletOperation } = loadSource(`${walletPath}executeWalletOperation.ts`, {
         '@/lib/swapLifecycle': lifecycle, './isUserRejection': rejection,
@@ -313,7 +318,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
     return {
         state, calls, render, wallet, preferences, stores,
         Component: () => realPolling
-            ? createElement(swapContext.SwapDataProvider, null, createElement(SendTransactionButton, props()))
+            ? createElement(swapContext.SwapDataProvider, null, createElement(SwapView, null, createElement(SendTransactionButton, props())))
             : createElement(SendTransactionButton, props()),
         get view() { return view },
         poll: async () => {

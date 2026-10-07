@@ -20,6 +20,7 @@ const fixtureUrl = moduleUrl(`
   export const useSwapDataState = () => state.swap
   export const useSwapDataUpdate = () => ({
     setSwapId(id) { state.swap.swapId = id }, setQuoteLoading() {}, markWalletExecutionStarted() {},
+    setWalletActionExecuting() {},
     startFreshSwapAttempt() {
       state.freshAttempts++
       state.swap = { ...state.swap, swapId: undefined, swapDetails: undefined, depositActionsResponse: undefined }
@@ -103,7 +104,15 @@ const { useSwapTransactionStore, useDepositSignatureStore, useGaslessAuthorizati
 const { useGaslessAuthorization } = await import('../dist/esm/hooks/useGaslessAuthorization.js')
 const { useSwapRetry } = await import('../dist/esm/hooks/useSwapRetry.js')
 const { resolveSwapPhase } = await import('../dist/esm/components/utils/resolveSwapPhase.js')
-const { SWRConfig } = await import('swr')
+const { SWRConfig, default: useSWR } = await import('swr')
+const { default: LayerSwapApiClient } = await import('../dist/esm/lib/apiClients/layerSwapApiClient.js')
+
+// Stands in for the swap provider, which schedules deposit-action refreshes for every reader of the key.
+const depositActionsClient = new LayerSwapApiClient()
+function DepositActionsSchedule() {
+  useSWR('/swaps/swap-1/deposit_actions?source_address=source', depositActionsClient.fetcher, { refreshInterval: 2000, dedupingInterval: 1000 })
+  return null
+}
 
 const basic = { requested_amount: '1', source_network: { name: 'A' }, destination_network: { name: 'B' },
   source_token: { symbol: 'X', contract: '0xtoken', supports_gasless_deposit: true, gasless_standard: 'eip3009' }, destination_token: { symbol: 'Y' }, destination_address: 'destination', use_deposit_address: false }
@@ -137,6 +146,7 @@ after(() => {
 async function clickTransfer(onSign, { onClick = () => assert.fail('gasless should sign, not send a transaction'), waitForCompletion = true, label = 'Sign to swap' } = {}) {
   await act(async () => root.render(createElement(StrictMode, null,
     createElement(SWRConfig, { value: swrConfig },
+    createElement(DepositActionsSchedule),
     createElement(CallbackProvider, { callbacks: { onSwapLifecycle: e => lifecycle.push(e) } },
       createElement(ErrorProvider, { onError: e => errors.push(e) },
         createElement(SendTransactionButton, { swapData: basic, refuel: false, onSign,

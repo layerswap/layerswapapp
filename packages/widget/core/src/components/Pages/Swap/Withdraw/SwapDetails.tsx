@@ -11,13 +11,13 @@ import { Partner } from '@/Models';
 import { SwapDetailsSceleton } from '@/components/Common/Sceletons';
 import { Widget } from '@/components/Widget/Index';
 import { useCallbacks } from '@/context/callbackProvider';
-import { useSwapDataState } from '@/context/swap';
+import { useSwapDataState, useSwapDataUpdate } from '@/context/swap';
 import { useSelectedAccount } from '@/context/swapAccounts';
 import { useGaslessAuthorizationStatus } from '@/hooks/useGaslessAuthorizationStatus';
 import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
 import { useSwapRetry } from '@/hooks/useSwapRetry';
 import type { JSX } from 'react';
-import { FC, useCallback } from 'react';
+import { FC, useCallback, useEffect } from 'react';
 import { lifecycleContextFromSwap } from '@/lib/swapLifecycle';
 import ManualWithdraw from './ManualWithdraw';
 import { RetryView } from './Presentation/RetryView';
@@ -52,6 +52,12 @@ const SwapDetails: FC<Props> = ({
         swapBasicData?.source_network.name,
     );
     const { onBackClick, onSwapLifecycle } = useCallbacks();
+    const { setSwapViewMounted } = useSwapDataUpdate();
+    // The provider refreshes deposit actions only while this view is on screen.
+    useEffect(() => {
+        setSwapViewMounted(true);
+        return () => setSwapViewMounted(false);
+    }, [setSwapViewMounted]);
     const isGaslessActive = useIsGaslessActive(swapBasicData);
 
     // Polls the gasless deposit (paymaster) authorization while it's in flight; self-gates on

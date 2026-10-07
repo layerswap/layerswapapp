@@ -8,12 +8,12 @@ const noop = () => {}
 
 // Run the real swap provider and its SWR receipt subscription, with unrelated
 // quote, route, wallet and whole-swap services held at deterministic boundaries.
-export function createSwapContext({ Client, getSwapId, getAccount, stores, swr = require('swr') }) {
+export function createSwapContext({ Client, getSwapId, getAccount, stores, swapTransactions = {}, swr = require('swr') }) {
     const network = { name: 'BASE_MAINNET' }
     const snapshots = new Map()
     const store = state => Object.assign(selector => selector(state), { getState: () => state })
     const emptyStores = {
-        useSwapTransactionStore: store({ swapTransactions: {}, setSwapTransaction: noop }),
+        useSwapTransactionStore: store({ swapTransactions, setSwapTransaction: noop }),
         useGaslessAuthorizationStore: store({ authorizations: {} }),
         useDepositSignatureStore: store({ removeDepositSignature: noop }),
     }
@@ -22,6 +22,7 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swr =
         react: React,
         'react/jsx-runtime': require('react/jsx-runtime'),
         swr,
+        '@layerswap/widget-types': { SwapStatus: { Created: 'created', UserTransferPending: 'user_transfer_pending' } },
         '@/lib/apiClients/layerSwapApiClient': {
             default: Client,
             BackendTransactionStatus: { Completed: 'completed', Pending: 'pending' },

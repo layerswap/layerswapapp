@@ -1,4 +1,4 @@
-import { type Refuel, type Wallet } from '@layerswap/widget-types';
+import { SwapStatus, type Refuel, type Wallet } from '@layerswap/widget-types';
 import { Context, useCallback, useEffect, useState, createContext, useContext, useMemo } from 'react'
 import LayerSwapApiClient, { BackendTransactionStatus, CreateSwapParams, PublishedSwapTransactions, SwapTransaction, TransactionStatus, WithdrawType, SwapResponse, DepositAction, SwapBasicData, SwapQuote, SwapDetails, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
 import { InitialSettings } from '@/Models/InitialSettings';
@@ -52,6 +52,8 @@ export type UpdateSwapInterface = {
     setQuoteLoading: (value: boolean) => void;
     mutateSwap: KeyedMutator<ApiResponse<SwapResponse>>
     mutateDepositActions: KeyedMutator<ApiResponse<DepositAction[]>>
+    setWalletActionExecuting: (value: boolean) => void
+    setSwapViewMounted: (value: boolean) => void
     setDepositAddressIsFromAccount: (value: boolean) => void,
     setWithdrawType: (value: WithdrawType) => void
     setSwapId: (value: string | undefined) => void
@@ -115,6 +117,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const [swapModalOpen, setSwapModalOpen] = useState(false)
     const [swapError, setSwapError] = useState<string | null>(null)
     const [approvalWait, setApprovalWait] = useState<ApprovalTransaction>()
+    const [walletActionExecuting, setWalletActionExecuting] = useState(false)
+    const [swapViewMounted, setSwapViewMounted] = useState(false)
     const watchApprovalTransaction = useCallback((transaction: ApprovalTransaction) => {
         setApprovalWait(transaction)
         // Releasing an older wait must not stop a newer approval's receipt poll.
@@ -247,10 +251,15 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     })
 
     const use_deposit_address = swapBasicData?.use_deposit_address
-    const isWalletDepositComplete = (actions: DepositAction[] | undefined) =>
-        use_deposit_address === false && isDepositWorkflowComplete(actions ?? [])
     const deposit_actions_endpoint = swapId ? `/swaps/${swapId}/deposit_actions${(use_deposit_address || !selectedSourceAccount || !sourceIsSupported) ? "" : `?source_address=${selectedSourceAccount?.address}`}` : null
     const inputTransfer = swapDetails?.transactions.find(t => t.type === TransactionType.Input);
+    // Deposit actions decide what a wallet swap shows until its input is listed or this
+    // client has broadcast it. Every refresh in that window is scheduled here, whichever
+    // screen of the swap view is showing; other readers of this key only subscribe.
+    const swapStatus = swapDetails?.status
+    const awaitsWalletDeposit = swapViewMounted && use_deposit_address === false
+        && !inputTransfer && !storedWalletTransaction
+        && (!swapStatus || swapStatus === SwapStatus.Created || swapStatus === SwapStatus.UserTransferPending)
     // Load missing history even when reopening a swap that already has an input
     // transaction. Once cached, retain it without automatic refreshes after broadcast.
     const { data: depositActions, error: depositActionsSwrError, mutate: mutateDepositActions } = useSWR<ApiResponse<DepositAction[]>>(deposit_actions_endpoint, layerswapApiClient.fetcher, {
@@ -258,9 +267,9 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         revalidateIfStale: !inputTransfer,
         revalidateOnFocus: !inputTransfer,
         revalidateOnReconnect: !inputTransfer,
-        // A completed workflow hides the wallet controls on the server's word alone. Keep
-        // asking until the input is listed or the server asks for an action again.
-        refreshInterval: latest => !inputTransfer && isWalletDepositComplete(latest?.data) ? 5000 : 0,
+        refreshInterval: awaitsWalletDeposit ? (walletActionExecuting ? 2000 : 5000) : 0,
+        refreshWhenHidden: walletActionExecuting,
+        dedupingInterval: 1000,
     })
 
     // The create-swap response may already carry deposit actions — use them as
@@ -275,7 +284,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
 
     // Server-reported completion is read from the latest response on every render. The
     // transaction store only records what this client broadcast itself.
-    const depositCompleted = isWalletDepositComplete(depositActionsResponse)
+    const depositCompleted = use_deposit_address === false && isDepositWorkflowComplete(depositActionsResponse ?? [])
     useEffect(() => {
         if (!swapId) return
         if (depositCompleted || inputTransfer || storedWalletTransaction) {
@@ -461,6 +470,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         createSwap,
         mutateSwap: mutate,
         mutateDepositActions,
+        setWalletActionExecuting,
+        setSwapViewMounted,
         setDepositAddressIsFromAccount,
         setWithdrawType,
         setSwapId: handleUpdateSwapid,
