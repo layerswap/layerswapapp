@@ -73,6 +73,24 @@ function walletHarness() {
     return { state, requests, walletReads, config, context, provider: createAtomicBatchProvider(config) }
 }
 
+function walletHarnessWithTrackedMaps() {
+    // Observe retained storage for cleanup regressions without exposing production
+    // debug APIs. Restore Map before any asynchronous wallet work starts.
+    const OriginalMap = globalThis.Map
+    const maps = []
+    globalThis.Map = class extends OriginalMap {
+        constructor(...args) {
+            super(...args)
+            maps.push(this)
+        }
+    }
+    try {
+        return { ...walletHarness(), maps }
+    } finally {
+        globalThis.Map = OriginalMap
+    }
+}
+
 test('uses the selected connector, exact wei, v2 atomicRequired and no fallback', async () => {
     const h = walletHarness()
     assert.deepEqual(await h.provider.submit(h.context), { id: 'batch-original-wallet' })
@@ -314,6 +332,127 @@ test('retry after a real wallet change does not share or cache the stale in-flig
     await rejected
     assert.equal(await h.provider.getCapabilities(h.context), 'ready')
     assert.equal(h.requests.length, 2)
+})
+
+test('account and chain churn evicts obsolete capability entries immediately', async () => {
+    const h = walletHarnessWithTrackedMaps()
+    await h.provider.getCapabilities(h.context)
+    const cache = h.maps.find(map => [...map.values()].some(value => value?.expiresAt))
+    assert.ok(cache)
+
+    for (let index = 1; index <= 26; index++) {
+        const nextAccount = `0x${index.toString(16).padStart(40, '0')}`
+        h.state.accounts = [nextAccount]
+        h.state.chainId = index % 2 ? 1 : 42161
+        h.context.account = nextAccount
+        h.state.changed()
+        assert.equal(cache.size, 0, 'the previous wallet snapshot must be removed')
+        await h.provider.getCapabilities(h.context)
+        assert.equal(cache.size, 1)
+    }
+})
+
+for (const activity of ['lookup', 'connection update', 'response']) test(`expired capabilities are removed on the next ${activity}`, async t => {
+    const h = walletHarnessWithTrackedMaps()
+    let now = Date.now()
+    t.mock.method(Date, 'now', () => now)
+    await h.provider.getCapabilities(h.context)
+    const cache = h.maps.find(map => [...map.values()].some(value => value?.expiresAt))
+    assert.ok(cache)
+    const oldKeys = [...cache.keys()]
+    let pending, release
+
+    if (activity === 'response') {
+        h.state.capabilitiesWait = new Promise(resolve => { release = resolve })
+        pending = h.provider.getCapabilities({ ...h.context, network: { chain_id: '1' } })
+        while (h.requests.length < 2) await new Promise(resolve => setImmediate(resolve))
+    }
+    now += 30_001
+    if (activity === 'connection update') {
+        h.state.changed()
+    } else if (activity === 'response') {
+        release()
+        await pending
+    } else {
+        await h.provider.getCapabilities({ ...h.context, network: { chain_id: '1' } })
+    }
+    for (const key of oldKeys) {
+        assert.equal(cache.has(key), false, 'expired entries must be deleted, not just ignored')
+    }
+})
+
+test('disconnected connector UIDs and their capabilities do not accumulate', async () => {
+    const h = walletHarnessWithTrackedMaps()
+    h.state.accounts = [account, target]
+    h.state.changed()
+    let uid = h.context.wallet.metadata.connectorUid
+    const originalConnection = h.config.state.connections.get(uid)
+    const versions = h.maps.find(map => typeof map.get(uid) === 'number')
+    assert.ok(versions)
+    await h.provider.getCapabilities(h.context)
+    const cache = h.maps.find(map => [...map.values()].some(value => value?.expiresAt))
+    assert.ok(cache)
+
+    for (let index = 0; index < 26; index++) {
+        h.config.state.connections.delete(uid)
+        h.state.changed()
+        assert.equal(versions.size, 0, 'disconnected connector revisions must be released')
+        assert.equal(cache.size, 0)
+
+        uid = `reconnected-${index}`
+        h.config.state.connections.set(uid, { ...originalConnection, connector: { ...originalConnection.connector, uid } })
+        h.context.wallet.metadata.connectorUid = uid
+        h.state.changed()
+        await h.provider.getCapabilities(h.context)
+        assert.equal(versions.size, 1)
+        assert.equal(cache.size, 1)
+    }
+})
+
+test('reconnecting a cleaned-up UID still rejects an older check replaced by a fresh request', async () => {
+    const h = walletHarness()
+    h.state.accounts = [account, target]
+    h.state.changed()
+    const responses = []
+    h.state.onCapabilities = () => new Promise(resolve => responses.push(resolve))
+    const oldCheck = h.provider.getCapabilities(h.context)
+    const oldRejected = assert.rejects(oldCheck, /Wallet changed/)
+    while (responses.length < 1) await new Promise(resolve => setImmediate(resolve))
+    const freshCheck = h.provider.getCapabilities(h.context, { fresh: true })
+    const freshRejected = assert.rejects(freshCheck, /Wallet changed/)
+    while (responses.length < 2) await new Promise(resolve => setImmediate(resolve))
+
+    const uid = h.context.wallet.metadata.connectorUid
+    const connection = h.config.state.connections.get(uid)
+    h.config.state.connections.delete(uid)
+    h.state.changed()
+    responses[1]({ '0xa4b1': { atomic: { status: 'supported' } } })
+    await freshRejected
+
+    h.config.state.connections.set(uid, connection)
+    h.state.changed()
+    responses[0]({ '0xa4b1': { atomic: { status: 'supported' } } })
+    await oldRejected
+})
+
+test('reconnecting a cleaned-up UID during live validation cannot resume an old submission', async () => {
+    const h = walletHarness()
+    h.state.accounts = [account, target]
+    h.state.changed()
+    const uid = h.context.wallet.metadata.connectorUid
+    const connection = h.config.state.connections.get(uid)
+    let release
+    connection.connector.getAccounts = () => new Promise(resolve => { release = () => resolve(h.state.accounts) })
+    const pending = h.provider.submit(h.context)
+    const rejected = assert.rejects(pending, error => error.atomicSubmission === 'not_submitted')
+    assert.ok(release)
+    h.config.state.connections.delete(uid)
+    h.state.changed()
+    h.config.state.connections.set(uid, connection)
+    h.state.changed()
+    release()
+    await rejected
+    assert.equal(h.requests.length, 0, 'the stale submission must fail before requesting capabilities or sending calls')
 })
 
 for (const code of [4001, -32601, 5760, -32603, 5720]) test(`RPC ${code} sends once and never falls back`, async () => {

@@ -20,6 +20,7 @@ type WalletSnapshot = {
 type CachedCapability = {
     status: AtomicCapability
     expiresAt: number
+    connectorUid: string
     connectionVersion: number
 }
 
@@ -60,19 +61,36 @@ export function createAtomicBatchProvider(config: Config): AtomicBatchProvider {
     const capabilityCache = new Map<string, CachedCapability>()
     const pendingCapabilityChecks = new Map<string, PendingCapabilityCheck>()
     const connectionVersions = new Map<string, number>()
+    let nextConnectionVersion = 0
 
     config.subscribe(state => state.connections, (connections, previousConnections) => {
         // MetaMask emits the target chain again when switchChain finishes. A new
         // map or an unrelated wallet update does not mean this wallet changed.
         const connectorUids = new Set([...connections.keys(), ...previousConnections.keys()])
         for (const uid of connectorUids) {
-            if (hasConnectionChanged(connections.get(uid), previousConnections.get(uid))) {
-                // Retain the revision on disconnect to detect switching away and
-                // back, even when the final account and chain match the snapshot.
-                connectionVersions.set(uid, (connectionVersions.get(uid) ?? 0) + 1)
+            const connection = connections.get(uid)
+            if (!connection) {
+                connectionVersions.delete(uid)
+            } else if (hasConnectionChanged(connection, previousConnections.get(uid))) {
+                // Never reuse a revision, even after forgetting a disconnected UID.
+                // Older discovery and submission snapshots must still fail if the
+                // same connector reconnects with the same account and chain.
+                connectionVersions.set(uid, ++nextConnectionVersion)
             }
         }
+        pruneCapabilityCache()
     })
+
+    function pruneCapabilityCache(): void {
+        const now = Date.now()
+        for (const [key, cached] of capabilityCache) {
+            const isConnected = config.state.connections.has(cached.connectorUid)
+            const connectionVersion = connectionVersions.get(cached.connectorUid) ?? 0
+            if (!isConnected || cached.connectionVersion !== connectionVersion || cached.expiresAt <= now) {
+                capabilityCache.delete(key)
+            }
+        }
+    }
 
     function readWalletSnapshot(context: AtomicBatchContext): WalletSnapshot {
         context.signal?.throwIfAborted()
@@ -175,9 +193,12 @@ export function createAtomicBatchProvider(config: Config): AtomicBatchProvider {
         // A fresh request can replace this one. Only the newest request may fill the cache.
         const latestRequest = pendingCapabilityChecks.get(walletSnapshot.cacheKey)
         if (latestRequest?.requestId === requestId) {
+            // A slow response may outlive entries that were fresh when it started.
+            pruneCapabilityCache()
             capabilityCache.set(walletSnapshot.cacheKey, {
                 status,
                 expiresAt: Date.now() + CAPABILITY_CACHE_DURATION_MS,
+                connectorUid: walletSnapshot.connector.uid,
                 connectionVersion: walletSnapshot.connectionVersion,
             })
         }
@@ -186,6 +207,7 @@ export function createAtomicBatchProvider(config: Config): AtomicBatchProvider {
 
     const provider: AtomicBatchProvider = {
         async getCapabilities(context, options) {
+            pruneCapabilityCache()
             const walletSnapshot = readWalletSnapshot(context)
 
             if (!options?.fresh) {
