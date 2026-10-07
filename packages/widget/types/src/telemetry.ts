@@ -6,7 +6,7 @@ export type WidgetTelemetryAttributes = Record<string, string | number | boolean
 export type WidgetOperation =
     | 'quote_request' | 'detailed_quote_request' | 'limits_request' | 'swap_creation'
     | 'deposit_actions' | 'balance_fetch' | 'gas_estimation' | 'wallet_connection'
-    | 'wallet_transfer' | 'gasless_authorization';
+    | 'wallet_transfer' | 'gasless_authorization' | 'gasless_authorization_status';
 
 export type WidgetOperationOutcome = 'succeeded' | 'failed' | 'cancelled' | 'rejected' | 'partial' | 'unavailable';
 export type WidgetFlowStep = SwapLifecycleStep | 'form_viewed' | 'form_started' | 'validation_shown';

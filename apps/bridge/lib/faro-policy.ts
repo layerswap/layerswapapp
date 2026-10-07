@@ -4,7 +4,7 @@ import { LogLevel, TransportItemType, type EventEvent, type TraceEvent, type Tra
 export function getFaroVolumePolicy(nodeEnv: string | undefined) {
     const deployedBuild = nodeEnv === 'production'
     return {
-        dedupe: true,
+        dedupe: nodeEnv !== 'development',
         trackResources: !deployedBuild,
         consoleInstrumentation: {
             // Deployed builds keep console errors only; third-party libraries warn on every page.
@@ -85,7 +85,11 @@ export function createRequestTelemetryFilter(firstPartyUrls: (string | undefined
 }
 
 /** Successful balance reads are a third of all events; failures and partial reads are kept. */
-export function shouldCaptureWidgetTelemetry(event: { name: string; attributes: Record<string, unknown> }): boolean {
+export function shouldCaptureWidgetTelemetry(
+    event: { name: string; attributes: Record<string, unknown> },
+    nodeEnv = process.env.NODE_ENV,
+): boolean {
+    if (nodeEnv === 'development') return true
     return !(event.name === 'widget_operation'
         && event.attributes.operation === 'balance_fetch'
         && event.attributes.outcome === 'succeeded')

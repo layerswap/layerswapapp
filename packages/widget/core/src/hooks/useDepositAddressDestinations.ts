@@ -26,6 +26,7 @@ export default function useDepositAddressDestinations({ enabled = true }: Args =
             includes: { unmatched: false, unavailable: false, swaps: true },
             hasDepositAddress: true,
             useDepositAddressSwaps: true,
+            useFrontendSwap: true,
         })
     }, [enabled])
 

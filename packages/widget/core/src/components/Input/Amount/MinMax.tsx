@@ -70,11 +70,11 @@ const MinMax = (props: MinMaxProps) => {
 
     const handleSetValue = (value: string, usdValue?: string) => {
         mutateBalances()
-        const rounded = roundToDecimals(Number(value), fromCurrency?.decimals)
-        const sanitizedValue = value !== '' && !isNaN(Number(value))
-            ? (isScientific(rounded)
-                ? rounded.toFixed(fromCurrency?.decimals ?? 0).replace(/\.?0+$/, '')
-                : rounded.toString())
+        const truncatedValue = truncateToDecimals(value, fromCurrency.decimals)
+        const sanitizedValue = value !== '' && Number.isFinite(Number(value))
+            ? (isScientific(truncatedValue)
+                ? Number(truncatedValue).toFixed(fromCurrency.decimals).replace(/\.?0+$/, '')
+                : truncatedValue)
             : value
         if (isUsdMode && usdValue) {
             // Only skip sync if the amount will actually change,
@@ -98,7 +98,7 @@ const MinMax = (props: MinMaxProps) => {
     const minValue = minIsFromLimits
         ? ceilToDecimals(minAmount, fromCurrency.decimals)
         : Number(truncateToDecimals(String(minAmount), fromCurrency.decimals));
-    const maxValue = Number(truncateToDecimals(String(maxAllowedAmount), fromCurrency.decimals));
+    const maxValue = truncateToDecimals(String(maxAllowedAmount), fromCurrency.decimals);
 
     const minUsdFormatted = minIsFromLimits && limitsMinAmountInUsd != undefined ? ceilUsd(limitsMinAmountInUsd) : undefined;
     const maxUsdFormatted = maxIsFromLimits && limitsMaxAmountInUsd != undefined ? floorUsd(limitsMaxAmountInUsd) : undefined;
@@ -118,7 +118,7 @@ const MinMax = (props: MinMaxProps) => {
     const handleSetMaxAmount = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
         e.stopPropagation()
-        handleSetValue(maxValue.toString(), maxUsdFormatted)
+        handleSetValue(maxValue, maxUsdFormatted)
     }
 
     const showMaxTooltip = !!(depositMethod === 'wallet' && walletBalance?.amount && shouldPayGasWithTheToken && (!limitsMaxAmount || walletBalance.amount < limitsMaxAmount))
@@ -145,7 +145,7 @@ const MinMax = (props: MinMaxProps) => {
                     <ActionButton
                         data-attr="max-amount"
                         label="Max"
-                        onMouseEnter={() => onActionHover(maxValue, maxUsdFormatted)}
+                        onMouseEnter={() => onActionHover(Number(maxValue), maxUsdFormatted)}
                         onClick={handleSetMaxAmount}
                     />
                 </TooltipTrigger>

@@ -5,7 +5,11 @@ offline regression tests.
 
 ## Browser configuration
 
-Set `NEXT_PUBLIC_FARO_COLLECTOR_URL` and restart/rebuild the app. It is the
+Local `pnpm dev` sessions write to a [local JSONL file](../README.md#local-browser-logs)
+instead of the remote collector, including all sessions, request traces, console
+levels, repeated diagnostics and successful balance reads. Redaction still applies.
+
+For production builds, set `NEXT_PUBLIC_FARO_COLLECTOR_URL` and restart/rebuild the app. It is the
 only required Faro runtime variable.
 
 ```yaml
