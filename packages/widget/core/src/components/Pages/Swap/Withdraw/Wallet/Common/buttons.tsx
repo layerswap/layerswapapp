@@ -18,7 +18,6 @@ import { useSelectedAccount } from '@/context/swapAccounts';
 import { useWalletWithdrawalState } from '@/context/withdrawalContext';
 import useWallet from '@/hooks/useWallet';
 import LayerSwapApiClient, {
-    BackendTransactionStatus,
     DepositAction,
     SwapBasicData,
     SwapDetails,
@@ -431,9 +430,6 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     const failedStep = activeDepositActions.find(action => action.status === 'failed')
                     if (failedStep) throw new Error(failedStep.detail || 'The swap action failed')
                     if (isDepositWorkflowComplete(activeDepositActions)) {
-                        if (!useSwapTransactionStore.getState().swapTransactions[swapData.id]) {
-                            setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, '')
-                        }
                         useDepositSignatureStore.getState().removeDepositSignature(swapData.id)
                         onWalletWithdrawalSuccess?.()
                         return

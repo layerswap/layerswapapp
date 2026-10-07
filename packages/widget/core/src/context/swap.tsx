@@ -247,6 +247,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     })
 
     const use_deposit_address = swapBasicData?.use_deposit_address
+    const isWalletDepositComplete = (actions: DepositAction[] | undefined) =>
+        use_deposit_address === false && isDepositWorkflowComplete(actions ?? [])
     const deposit_actions_endpoint = swapId ? `/swaps/${swapId}/deposit_actions${(use_deposit_address || !selectedSourceAccount || !sourceIsSupported) ? "" : `?source_address=${selectedSourceAccount?.address}`}` : null
     const inputTransfer = swapDetails?.transactions.find(t => t.type === TransactionType.Input);
     // Load missing history even when reopening a swap that already has an input
@@ -256,6 +258,9 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         revalidateIfStale: !inputTransfer,
         revalidateOnFocus: !inputTransfer,
         revalidateOnReconnect: !inputTransfer,
+        // A completed workflow hides the wallet controls on the server's word alone. Keep
+        // asking until the input is listed or the server asks for an action again.
+        refreshInterval: latest => !inputTransfer && isWalletDepositComplete(latest?.data) ? 5000 : 0,
     })
 
     // The create-swap response may already carry deposit actions — use them as
@@ -268,15 +273,11 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         ? (depositActionsSwrError?.response?.data?.error?.message || depositActionsSwrError?.message || depositActions?.error?.message || 'Could not generate deposit address.')
         : undefined
 
-    const depositCompleted = use_deposit_address === false && isDepositWorkflowComplete(depositActionsResponse ?? [])
+    // Server-reported completion is read from the latest response on every render. The
+    // transaction store only records what this client broadcast itself.
+    const depositCompleted = isWalletDepositComplete(depositActionsResponse)
     useEffect(() => {
         if (!swapId) return
-        // Completed server publication also needs a handoff after reload, with no
-        // wallet button click. Preserve a real hash/status if one is already known.
-        const transactions = useSwapTransactionStore.getState()
-        if (depositCompleted && !inputTransfer && !transactions.swapTransactions[swapId]) {
-            transactions.setSwapTransaction(swapId, BackendTransactionStatus.Pending, '')
-        }
         if (depositCompleted || inputTransfer || storedWalletTransaction) {
             useDepositSignatureStore.getState().removeDepositSignature(swapId)
         }
@@ -317,8 +318,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         ? { ...activeApproval, status: approvalStatus } : undefined, [activeApproval, approvalStatus])
 
     const resolved = useMemo(
-        () => resolveSwapPhase({ swapDetails, refuel, inputTxStatusFromApi, storedWalletTransaction, isDepositFlow, gaslessFailureStatus }),
-        [swapDetails, refuel, inputTxStatusFromApi, storedWalletTransaction, isDepositFlow, gaslessFailureStatus],
+        () => resolveSwapPhase({ swapDetails, refuel, inputTxStatusFromApi, storedWalletTransaction, depositCompleted, isDepositFlow, gaslessFailureStatus }),
+        [swapDetails, refuel, inputTxStatusFromApi, storedWalletTransaction, depositCompleted, isDepositFlow, gaslessFailureStatus],
     )
 
     // Observe every API status here, regardless of which screen is mounted.
