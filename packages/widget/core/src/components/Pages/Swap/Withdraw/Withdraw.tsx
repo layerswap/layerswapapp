@@ -109,9 +109,9 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
         minAllowedAmount,
         maxAllowedAmount
     })
+    // The gas warning keeps WalletTransferButton available, so it is not a block.
     useTransferBlocked(
         swapBasicData?.use_deposit_address === false && showInsufficientBalanceWarning ? 'insufficient_balance'
-        : swapBasicData?.use_deposit_address === false && outOfGas ? 'insufficient_gas'
         : undefined,
         lifecycleContext, 'Withdraw')
 
