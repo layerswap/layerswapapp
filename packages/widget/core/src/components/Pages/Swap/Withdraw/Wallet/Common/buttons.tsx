@@ -11,7 +11,7 @@ import ErrorDismissButton from "@/components/Pages/Swap/Form/SecondaryComponents
 import FailIcon from "@/components/Icons/FailIcon";
 import WalletMessage from "../../messages/Message";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
-import { Network, NetworkRoute } from "@layerswap/widget-types";
+import { NetworkRoute } from "@layerswap/widget-types";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
@@ -34,8 +34,11 @@ import { useCallbacks } from "@/context/callbackProvider";
 import { lifecycleContextFromSwap, lifecycleErrorDetails } from "@/lib/swapLifecycle";
 import { isUserRejection } from "./isUserRejection";
 import { useTransferBlocked } from "@/hooks/useTransferBlocked";
+import { NetworkSwitchError, ensureSourceChain, networkSwitchFailureReason } from "./ensureSourceChain";
 
 const layerswapApiClient = new LayerSwapApiClient()
+const NO_NETWORK_SWITCH: ActionData = { isPending: false, isError: false, error: null }
+const SWITCH_PROMPT_DELAY_MS = 1000
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData, swapDetails } = useSwapDataState()
@@ -120,109 +123,34 @@ export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = (
     if (data.isPending) {
         return <WalletMessage
             status="pending"
-            header='Network switch required'
-            details="Confirm switching the network with your wallet"
+            header='Switch network'
+            details={`Confirm switching to ${network} in your wallet`}
         />
     }
-    else if (data.isError) {
-        const error = data.error as (Error & { shortMessage?: string, cause?: { shortMessage?: string } }) | null
-        const reason = error?.cause?.shortMessage ?? error?.shortMessage
+    if (!data.isError) return null
+    const kind = data.error instanceof NetworkSwitchError ? data.error.kind : 'failed'
+    if (kind === 'pending') {
+        return <WalletMessage
+            status="pending"
+            header='Network switch still waiting'
+            details={`Your wallet is still asking to switch to ${network}. Confirm it there, then try again`}
+        />
+    }
+    if (kind === 'timeout') {
         return <WalletMessage
             status="error"
-            header='Network switch failed'
-            details={reason
-                ? `${reason} Please try again or switch your wallet network manually to ${network}.`
-                : `Please try again or switch your wallet network manually to ${network}`}
+            header='Network switch timed out'
+            details={`Your wallet didn't respond. Try again or switch your wallet network manually to ${network}`}
         />
     }
-}
-
-type ChangeNetworkProps = {
-    chainId: number | string,
-    network: Network,
-}
-
-export const ChangeNetworkButton: FC<ChangeNetworkProps> = (props) => {
-    const { chainId, network } = props
-    const [error, setError] = useState<Error | null>(null)
-    const [isPending, setIsPending] = useState(false)
-
-    const selectedSourceAccount = useSelectedAccount("from", network?.name);
-    const { wallets } = useWallet(network, 'withdrawal')
-    const { swapBasicData, swapDetails } = useSwapDataState()
-    const { onSwapLifecycle } = useCallbacks()
-
-    const clickHandler = useCallback(async () => {
-        const lifecycleContext = swapBasicData ? lifecycleContextFromSwap(swapBasicData, swapDetails) : {}
-        const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id)
-        onSwapLifecycle({
-            step: 'network_switch_started',
-            stage: 'network_switch',
-            outcome: 'started',
-            path: 'ChangeNetworkButton',
-            action: `switch_to_${chainId}`,
-            provider: selectedWallet?.providerName,
-            ...lifecycleContext,
-        })
-        try {
-            setIsPending(true)
-            if (!selectedWallet) throw new Error(`No selectedWallet for ${network?.name}`)
-            if (!selectedSourceAccount) throw new Error(`No selectedSourceAccount for ${network?.name}`)
-            if (!selectedSourceAccount.provider.switchChain) throw new Error(`No switchChain from ${network?.name}`)
-
-            await selectedSourceAccount.provider.switchChain(selectedWallet, chainId)
-            onSwapLifecycle({
-                step: 'network_switched',
-                stage: 'network_switch',
-                outcome: 'succeeded',
-                path: 'ChangeNetworkButton',
-                action: `switch_to_${chainId}`,
-                provider: selectedWallet.providerName,
-                ...lifecycleContext,
-            })
-        } catch (e) {
-            setError(e)
-            const rejected = isUserRejection(e)
-            const errorDetails = lifecycleErrorDetails(e)
-            onSwapLifecycle({
-                step: rejected ? 'network_switch_rejected' : 'network_switch_failed',
-                stage: 'network_switch',
-                outcome: rejected ? 'rejected' : 'failed',
-                path: 'ChangeNetworkButton',
-                action: `switch_to_${chainId}`,
-                provider: selectedWallet?.providerName,
-                ...errorDetails,
-                reasonCode: rejected ? 'user_rejected' : errorDetails.reasonCode,
-                ...lifecycleContext,
-            })
-        } finally {
-            setIsPending(false)
-        }
-
-    }, [chainId, network?.name, onSwapLifecycle, selectedSourceAccount, swapBasicData, swapDetails, wallets])
-
-    return <>
-        <ChangeNetworkMessage
-            data={{
-                isPending: isPending,
-                isError: !!error,
-                error
-            }}
-            network={network.display_name}
-        />
-        {
-            !isPending &&
-            <ButtonWrapper
-                onClick={clickHandler}
-                icon={<WalletIcon className="stroke-2 w-6 h-6" />}
-            >
-                {
-                    error ? <span>Try again</span>
-                        : <span>Switch network</span>
-                }
-            </ButtonWrapper>
-        }
-    </>
+    const reason = networkSwitchFailureReason(data.error)
+    return <WalletMessage
+        status="error"
+        header='Network switch failed'
+        details={reason
+            ? `${reason} Please try again or switch your wallet network manually to ${network}.`
+            : `Please try again or switch your wallet network manually to ${network}`}
+    />
 }
 
 export const ButtonWrapper: FC<SubmitButtonProps> = ({
@@ -281,6 +209,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const [actionStateText, setActionStateText] = useState<string | undefined>()
     const [loading, setLoading] = useState(false)
     const [showCriticalMarketPriceImpactButtons, setShowCriticalMarketPriceImpactButtons] = useState(false)
+    const [networkSwitch, setNetworkSwitch] = useState<ActionData>(NO_NETWORK_SWITCH)
 
     const { actionButtonText } = useDepositSettings()
 
@@ -311,8 +240,35 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             }
 
             setLoading(true)
+            setActionStateText(undefined)
             clearError?.()
             setSwapError?.("")
+
+            // Every wallet request below needs the wallet on the source chain: wagmi refuses to
+            // send on another chain and wallets reject typed-data domains for one.
+            // Wallets often switch an already-approved chain without asking, within moments, so
+            // the "confirm in your wallet" state only shows once a prompt is clearly open.
+            let switchPrompt: ReturnType<typeof setTimeout> | undefined
+            try {
+                await ensureSourceChain({
+                    wallet: selectedWallet,
+                    network: swapBasicData.source_network,
+                    switchChain: selectedSourceAccount.provider.switchChain,
+                    context: lifecycleContextFromSwap(swapBasicData, swapDetails),
+                    path: 'SendTransactionButton',
+                    onLifecycle: onSwapLifecycle,
+                    onSwitchStart: () => {
+                        switchPrompt = setTimeout(() => {
+                            setActionStateText("Switching network")
+                            setNetworkSwitch({ isPending: true, isError: false, error: null })
+                        }, SWITCH_PROMPT_DELAY_MS)
+                    },
+                })
+            } finally {
+                clearTimeout(switchPrompt)
+                setNetworkSwitch(NO_NETWORK_SWITCH)
+            }
+
             let swapData: SwapDetails | undefined = swapDetails
             let depositActions = depositActionsResponse;
 
@@ -392,6 +348,12 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             }
         }
         catch (e) {
+            if (e instanceof NetworkSwitchError) {
+                // Nothing was sent and any created swap is still valid: "Try again" only re-asks
+                // the wallet to switch. The attempt is already reported through the lifecycle.
+                setNetworkSwitch({ isPending: false, isError: true, error: e })
+                return
+            }
             setSwapId(undefined)
             const error = e as Error;
             const rejected = isUserRejection(e)
@@ -462,7 +424,9 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     }
 
     if (quoteIsLoading || loading)
-        return (
+        return (<>
+            {networkSwitch.isPending &&
+                <ChangeNetworkMessage data={networkSwitch} network={swapBasicData.source_network.display_name} />}
             <ButtonWrapper
                 {...props}
                 isSubmitting={true}
@@ -470,7 +434,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             >
                 {actionStateText || "Preparing"}
             </ButtonWrapper>
-        )
+        </>)
 
     if (showCriticalMarketPriceImpactButtons) {
         return (<>
@@ -522,6 +486,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     message={`The “receive at least” amount is affected by high price impact. You will receive at least ${quote.min_receive_amount} ${quote.destination_token.asset} ($ ${priceImpactValues.minReceiveAmountUSD})`}
                 />
             )}
+            {networkSwitch.isError &&
+                <ChangeNetworkMessage data={networkSwitch} network={swapBasicData.source_network.display_name} />}
             {gaslessUnavailable ? (
                 <div className="space-y-2">
                     {gaslessFailureStage === 'deposit' &&
@@ -551,7 +517,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     onClick={handleClick}
                     isDisabled={quoteIsLoading || !!quoteError}
                 >
-                    {(error || swapError) ? 'Try again' : actionButtonText || 'Swap now'}
+                    {(error || swapError || networkSwitch.isError) ? 'Try again' : actionButtonText || 'Swap now'}
                 </ButtonWrapper>
             )}
         </>

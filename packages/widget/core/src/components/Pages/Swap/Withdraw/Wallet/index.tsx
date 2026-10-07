@@ -6,7 +6,7 @@ import useWallet from "@/hooks/useWallet";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import { useSwapDataState } from "@/context/swap";
 import { WithdrawPageProps } from "./Common/sharedTypes";
-import { ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from "./Common/buttons";
+import { ConnectWalletButton, SendTransactionButton } from "./Common/buttons";
 import { GaslessSigner } from "./Common/depositExecution";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
 import { WalletIcon } from "@layerswap/ui-kit/components";
@@ -202,20 +202,13 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
     if (!wallet) {
         return <ConnectWalletButton />
     }
-    else if (wallet.chainId && wallet.chainId != networkChainId && source_network) {
-        return <ChangeNetworkButton
-            chainId={Number(networkChainId)}
-            network={source_network}
-        />
-    }
-    else {
-        return <TransferTokenButton
-            swapData={swapBasicData}
-            refuel={refuel}
-            chainId={Number(networkChainId)}
-            savedTransactionHash={savedTransactionHash as `0x${string}`}
-        />
-    }
+    // A wallet on another chain is switched by the send button itself (see ensureSourceChain).
+    return <TransferTokenButton
+        swapData={swapBasicData}
+        refuel={refuel}
+        chainId={Number(networkChainId)}
+        savedTransactionHash={savedTransactionHash as `0x${string}`}
+    />
 }
 
 

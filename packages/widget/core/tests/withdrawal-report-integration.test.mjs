@@ -14,7 +14,7 @@ for (const [key, value] of Object.entries({ window: dom.window, document: dom.wi
 }
 const moduleUrl = source => 'data:text/javascript,' + encodeURIComponent(source)
 const fixtureUrl = moduleUrl(`
-  export const state = { wallet: { id:'wallet', address:'source', isActive:true, providerName:'test-wallet' } }
+  export const state = { wallet: { id:'wallet', address:'source', isActive:true, providerName:'test-wallet', provider:{} } }
   export const useSelectedAccount = () => state.wallet
   export const useSwapDataState = () => state.swap
   export const useSwapDataUpdate = () => ({ setSwapId() {}, setQuoteLoading() {}, createSwap() { throw new Error('unexpected creation') } })
