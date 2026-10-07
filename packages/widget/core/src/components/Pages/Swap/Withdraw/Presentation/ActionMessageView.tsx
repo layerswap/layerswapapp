@@ -48,6 +48,7 @@ export function ActionMessageView({
             <ActionMessages.WalletMismatchMessage
                 address={selectedSourceAddress}
                 network={sourceNetwork}
+                details={error.message || undefined}
             />
         );
     } else if (

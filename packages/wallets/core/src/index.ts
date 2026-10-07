@@ -5,6 +5,7 @@ export {
     createReactHookConnectionAdapter,
     findRegistryWalletByName,
     subscribeDisplayUri,
+    subscribeWalletRequests,
     isWalletConnectRegistryConnector,
     chainsToNetworkTypes,
     getProvidersForWalletConnectNetworkType,

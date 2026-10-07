@@ -1,5 +1,25 @@
 # @layerswap/wallet-stellar
 
+## 2.4.0
+
+### Minor Changes
+
+- Register WalletConnect chains during provider initialization instead of hardcoding them in wallet-core.
+  - `@layerswap/wallet-core` exports `WalletConnectChainRegistry`, `defaultWalletConnectChainRegistry`, and `WalletConnectChainDefinition` for namespace, network type, and wallet explorer chain definitions.
+  - EVM, Solana, and Stellar adapters export their chain definitions and registration helpers, and register their chains when their connection providers initialize.
+  - `@layerswap/wallets` exports `registerDefaultWalletConnectChains`, which is also called by `getDefaultProviders`.
+  - Custom integrations that query wallet explorer chains before initializing providers must register their namespace first. An unregistered namespace now throws an explicit error.
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @layerswap/widget-types@2.4.0
+  - @layerswap/wallet-core@2.4.0
+  - @layerswap/utils@2.4.0
+
 ## 2.3.1
 
 ### Patch Changes

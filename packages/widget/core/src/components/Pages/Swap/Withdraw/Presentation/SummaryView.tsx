@@ -17,6 +17,8 @@ export type SwapInfoProps = Omit<SwapResponse, 'quote' | 'swap'> & {
     swap: SwapBasicData;
     quote: Quote;
     sourceAccountAddress: string;
+    sentAmountInUsd?: number;
+    receivedAmountInUsd?: number;
     receiveAmount?: number;
     source?: { logo: string; display_name: string };
     destination?: { logo: string; display_name: string };
@@ -25,7 +27,7 @@ export type SwapInfoProps = Omit<SwapResponse, 'quote' | 'swap'> & {
 };
 
 const Summary: FC<SwapInfoProps> = (props) => {
-    const { swap, quote, receiveAmount } = props;
+    const { swap, quote, receiveAmount, sentAmountInUsd, receivedAmountInUsd } = props;
     const { refuel, quote: swapQuote } = quote;
     const {
         source_token: sourceCurrency,
@@ -44,14 +46,17 @@ const Summary: FC<SwapInfoProps> = (props) => {
     const destinationPriceInUsd =
         swapQuote?.destination_token?.price_in_usd ??
         destinationCurrency?.price_in_usd;
-    const requestedAmountInUsd =
+    // Use each transaction's recorded value once available instead of repricing it on quote refreshes.
+    const requestedAmountInUsd = sentAmountInUsd?.toFixed(2) ?? (
         requestedAmount && sourcePriceInUsd
             ? (sourcePriceInUsd * Number(requestedAmount)).toFixed(2)
-            : undefined;
-    const receiveAmountInUsd =
+            : undefined
+    );
+    const receiveAmountInUsd = receivedAmountInUsd?.toFixed(2) ?? (
         receiveAmount && destinationPriceInUsd
             ? (destinationPriceInUsd * receiveAmount).toFixed(2)
-            : undefined;
+            : undefined
+    );
     const nativeCurrency = refuel?.token;
 
     const truncatedRefuelAmount =
