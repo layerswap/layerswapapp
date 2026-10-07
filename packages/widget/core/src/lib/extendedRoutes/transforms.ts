@@ -79,6 +79,7 @@ export type ExtendedCreateSwapParamsArgs = {
     referenceId?: string
     refuel?: boolean
     sourceAddress?: string
+    useFrontendSwap: true
 }
 
 export function buildCreateSwapParamsForExtendedRoute({
@@ -89,6 +90,7 @@ export function buildCreateSwapParamsForExtendedRoute({
     referenceId,
     refuel,
     sourceAddress,
+    useFrontendSwap,
 }: ExtendedCreateSwapParamsArgs): CreateSwapParams {
     if (!plan.realAmount) throw new Error('Extended route amount is missing')
     if (!isPositiveDecimal(plan.realAmount)) throw new Error('Extended route amount is invalid')
@@ -106,6 +108,8 @@ export function buildCreateSwapParamsForExtendedRoute({
         reference_id: referenceId,
         refuel: !!refuel,
         use_deposit_address: !depository,
+        use_frontend_swap: useFrontendSwap,
+        use_gasless: false,
         use_depository: depository || undefined,
         source_address: undefined,
         refund_address: provider.requiresRefundAddress ? sourceAddress : undefined,

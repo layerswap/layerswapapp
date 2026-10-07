@@ -8,11 +8,11 @@ const compiled = ts.transpileModule(readFileSync(new URL('../../components/utils
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText
 
-function loadLogError(impact) {
+function loadLogError(impact, nodeEnv = 'production') {
     const records = []
     const exports = {}
     vm.runInNewContext(compiled, {
-        exports, console, Error,
+        exports, console, Error, process: { env: { NODE_ENV: nodeEnv } },
         require: name => ({
             '../../lib/faro': {
                 captureEvent: (name, attributes) => records.push({ kind: 'event', name, attributes }),
@@ -82,4 +82,17 @@ test('user-impact exceptions are never deduplicated by the diagnostic policy', (
     const { logError, records } = loadLogError('user')
     logError(event); logError(event)
     assert.equal(records.length, 2)
+})
+
+test('local diagnostics retain repeated occurrences, multiline details and stacks', () => {
+    const { logError, records } = loadLogError('diagnostic', 'development')
+    const diagnostic = { ...event, message: 'failed\ncall details', stack: 'at widget.ts:10', cause: { message: 'cause\ndetails', stack: 'at rpc.ts:20' } }
+    logError(diagnostic)
+    logError(diagnostic)
+    assert.equal(records.length, 2)
+    for (const { attributes } of records) {
+        assert.equal(attributes.message, diagnostic.message)
+        assert.equal(attributes.stack, diagnostic.stack)
+        assert.deepEqual(attributes.cause, diagnostic.cause)
+    }
 })

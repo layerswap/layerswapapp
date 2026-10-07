@@ -4,15 +4,21 @@ import { FC } from 'react';
 interface LinkWithIconProps {
     name: string;
     url: string;
+    disabled?: boolean;
 }
 
-const LinkWithIcon: FC<LinkWithIconProps> = ({ name, url }) => {
+const LinkWithIcon: FC<LinkWithIconProps> = ({ name, url, disabled }) => {
     return (
-        <span className='underline hover:no-underline inline-flex items-center gap-x-1'>
-            <a target={"_blank"} href={url} rel="noopener noreferrer">
+        <span className="underline hover:no-underline inline-flex items-center gap-x-1">
+            <a
+                aria-disabled={disabled || undefined}
+                target={disabled ? undefined : '_blank'}
+                href={disabled ? undefined : url}
+                rel="noopener noreferrer"
+            >
                 {name}
             </a>
-            <ExternalLink className='h-4' />
+            <ExternalLink className="h-4" />
         </span>
     );
 };

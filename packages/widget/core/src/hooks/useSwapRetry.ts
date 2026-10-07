@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
-import { useSwapDataState } from '@/context/swap'
-import { useSwapTransactionStore, useGaslessAuthorizationStore } from '@/stores/swapTransactionStore'
+import { useSwapDataState, useSwapDataUpdate } from '@/context/swap'
+import { useSwapTransactionStore, useGaslessAuthorizationStore, useDepositSignatureStore } from '@/stores/swapTransactionStore'
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore'
+import { hasSwapExecutionProgress } from '@/helpers/swapProgress'
 import { gaslessFailureMessage } from './useGaslessAuthorization'
 import { useResolvedSwapStatus } from './useResolvedSwapStatus'
 import type { SwapFailureReason } from '@/components/utils/resolveSwapPhase'
@@ -17,31 +18,69 @@ type UseSwapRetryResult = {
     switchToStandard: () => void
 }
 
-// Recovers from the retryable deposit failures the resolved status reports by clearing the
-// local deposit markers.
+// Clear failed deposit markers only when the existing attempt can no longer move funds.
 export function useSwapRetry(): UseSwapRetryResult {
-    const { swapDetails } = useSwapDataState()
+    const { swapDetails, depositActionsResponse } = useSwapDataState()
+    const { startFreshSwapAttempt } = useSwapDataUpdate()
     const swapId = swapDetails?.id
+
+    const storedWalletTransaction = useSwapTransactionStore(
+        state => swapId ? state.swapTransactions[swapId] : undefined,
+    )
+    const gaslessAuthorization = useGaslessAuthorizationStore(
+        state => swapId ? state.authorizations[swapId] : undefined,
+    )
+    const depositSignature = useDepositSignatureStore(state => swapId ? state.signatures[swapId] : undefined)
     const { failureReason, gaslessFailureStatus } = useResolvedSwapStatus()
 
-    const retry = useCallback(() => {
-        if (!swapId) return
-        useGaslessAuthorizationStore.getState().removeGaslessAuthorization(swapId)
-        useSwapTransactionStore.getState().removeSwapTransaction(swapId)
-        useGaslessPreferenceStore.getState().clearGaslessUnavailable()
-    }, [swapId])
+    const hasProgress = hasSwapExecutionProgress({
+        swapDetails,
+        depositActions: depositActionsResponse,
+        storedWalletTransaction,
+        gaslessAuthorization,
+        depositSignature,
+        gaslessAuthorizationFailed: !!gaslessFailureStatus,
+    })
 
-    const switchToStandard = useCallback(() => {
-        useGaslessPreferenceStore.getState().switchToStandardTransfer()
-        retry()
-    }, [retry])
+    const canRetry = !!swapId && !!failureReason && !hasProgress
+
+    const restart = useCallback((standardTransfer: boolean) => {
+        if (!swapId || !failureReason) return
+        if (standardTransfer && failureReason !== 'gasless_deposit_failed') return
+
+        // A submission can arrive after render but before the click. Check the stores
+        // again before removing evidence or changing the execution preference.
+        const transactions = useSwapTransactionStore.getState()
+        const authorizations = useGaslessAuthorizationStore.getState()
+        const currentAuthorization = authorizations.authorizations[swapId]
+        if (hasSwapExecutionProgress({
+            swapDetails,
+            depositActions: depositActionsResponse,
+            storedWalletTransaction: transactions.swapTransactions[swapId],
+            gaslessAuthorization: currentAuthorization,
+            depositSignature: useDepositSignatureStore.getState().signatures[swapId],
+            // Timer expiry belongs to the authorization that produced this render.
+            gaslessAuthorizationFailed: currentAuthorization === gaslessAuthorization && !!gaslessFailureStatus,
+        })) return
+
+        authorizations.removeGaslessAuthorization(swapId)
+        useDepositSignatureStore.getState().removeDepositSignature(swapId)
+        transactions.removeSwapTransaction(swapId)
+        const preferences = useGaslessPreferenceStore.getState()
+        if (standardTransfer) preferences.switchToStandardTransfer()
+        else preferences.clearGaslessUnavailable()
+        startFreshSwapAttempt()
+    }, [swapId, failureReason, swapDetails, depositActionsResponse, gaslessAuthorization, gaslessFailureStatus, startFreshSwapAttempt])
+
+    const retry = useCallback(() => restart(false), [restart])
+    const switchToStandard = useCallback(() => restart(true), [restart])
 
     return {
         failureReason,
-        canRetry: !!failureReason,
+        canRetry,
         retry,
         gaslessFailureMessage: failureReason === 'gasless_deposit_failed' ? gaslessFailureMessage(gaslessFailureStatus) : undefined,
-        canSwitchToStandard: failureReason === 'gasless_deposit_failed',
+        canSwitchToStandard: canRetry && failureReason === 'gasless_deposit_failed',
         switchToStandard,
     }
 }

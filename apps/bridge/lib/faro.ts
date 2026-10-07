@@ -1,17 +1,7 @@
-import { ReactIntegration } from '@grafana/faro-react'
 import {
-    getInternalFaroFromGlobalObject,
-    getWebInstrumentations,
-    initializeFaro,
-    InternalLoggerLevel,
-    PersistentSessionsManager,
     type Faro,
 } from '@grafana/faro-web-sdk'
-import { TracingInstrumentation } from '@grafana/faro-web-tracing'
-import { beforeSend, flattenContext, serializeConsoleArgs } from './faro-sanitizer'
-import { createWalletContextWriter, createSwapContextWriter, SwapContextInstrumentation } from './faro-session-context'
-import { createRequestTelemetryFilter, getFaroVolumePolicy } from './faro-policy'
-import { getSessionTrackingConfig } from './faro-sampling'
+import type { createSwapContextWriter } from './faro-session-context'
 
 // Keep this identity aligned with the existing Grafana Faro app configuration.
 const FARO_APP_NAME = 'layerswap-frontend'
@@ -22,6 +12,11 @@ let faroClient: Faro | undefined
 let initializationAttempted = false
 const walletContextWriters = new WeakMap<Faro, (attributes: Record<string, string>) => boolean>()
 let writeSwapContext: ReturnType<typeof createSwapContextWriter> | undefined
+
+// The provider-free timeline renders synthetic swaps and must never start a telemetry session.
+function isTimelinePreview(): boolean {
+    return typeof window !== 'undefined' && /(?:^|\/)timeline\/?$/.test(window.location?.pathname || '')
+}
 
 function getTracePropagationUrls(): RegExp[] | undefined {
     const configuredUrls = process.env.NEXT_PUBLIC_FARO_TRACE_PROPAGATION_URLS
@@ -43,9 +38,12 @@ function getTracePropagationUrls(): RegExp[] | undefined {
  * errors and console output are captured too.
  */
 export function initFaro(): Faro | undefined {
-    if (typeof window === 'undefined') return undefined
+    if (typeof window === 'undefined' || isTimelinePreview()) return undefined
     if (faroClient) return faroClient
 
+    // The SDK probes storage during module evaluation. Load it only after the preview
+    // guard, while keeping instrumentation-client initialization synchronous.
+    const { getInternalFaroFromGlobalObject, getWebInstrumentations, initializeFaro, InternalLoggerLevel, PersistentSessionsManager } = require('@grafana/faro-web-sdk') as typeof import('@grafana/faro-web-sdk')
     const existingClient = getInternalFaroFromGlobalObject()
     if (existingClient) {
         faroClient = existingClient
@@ -55,7 +53,10 @@ export function initFaro(): Faro | undefined {
     if (initializationAttempted) return undefined
     initializationAttempted = true
 
-    const collectorUrl = process.env.NEXT_PUBLIC_FARO_COLLECTOR_URL
+    const localLogging = process.env.NODE_ENV === 'development'
+    const collectorUrl = localLogging
+        ? `${window.location.origin}${process.env.NEXT_PUBLIC_LOCAL_TELEMETRY_PATH || '/api/local-telemetry'}`
+        : process.env.NEXT_PUBLIC_FARO_COLLECTOR_URL
     if (!collectorUrl) {
         if (process.env.NODE_ENV !== 'production') {
             console.warn('[Faro] NEXT_PUBLIC_FARO_COLLECTOR_URL is not set; browser telemetry is disabled.')
@@ -63,6 +64,12 @@ export function initFaro(): Faro | undefined {
         return undefined
     }
 
+    const { ReactIntegration } = require('@grafana/faro-react') as typeof import('@grafana/faro-react')
+    const { TracingInstrumentation } = require('@grafana/faro-web-tracing') as typeof import('@grafana/faro-web-tracing')
+    const { beforeSend, serializeConsoleArgs } = require('./faro-sanitizer') as typeof import('./faro-sanitizer')
+    const { SwapContextInstrumentation } = require('./faro-session-context') as typeof import('./faro-session-context')
+    const { getFaroVolumePolicy, createRequestTelemetryFilter } = require('./faro-policy') as typeof import('./faro-policy')
+    const { getSessionTrackingConfig } = require('./faro-sampling') as typeof import('./faro-sampling')
     const tracePropagationUrls = getTracePropagationUrls()
     const volumePolicy = getFaroVolumePolicy(process.env.NODE_ENV)
     const filterRequestTelemetry = createRequestTelemetryFilter([
@@ -83,10 +90,13 @@ export function initFaro(): Faro | undefined {
                 environment: process.env.NEXT_PUBLIC_API_VERSION === 'testnet' ? 'testnet' : 'mainnet',
             },
             beforeSend: item => {
-                const kept = filterRequestTelemetry(item)
+                if (isTimelinePreview()) return null
+                const kept = localLogging ? item : filterRequestTelemetry(item)
                 return kept && beforeSend(kept)
             },
             ...volumePolicy,
+            // Flush promptly for tail -f while retaining SDK batching and unload handling.
+            ...(localLogging ? { batching: { sendTimeout: 1_000 }, logArgsSerializer: serializeConsoleArgs } : {}),
             consoleInstrumentation: {
                 ...volumePolicy.consoleInstrumentation,
                 // console.error objects are redacted by key before Faro flattens
@@ -104,7 +114,10 @@ export function initFaro(): Faro | undefined {
                     },
                 },
             },
-            sessionTracking: getSessionTrackingConfig(process.env.NEXT_PUBLIC_FARO_SAMPLE_RATE, () => PersistentSessionsManager.fetchUserSession()),
+            sessionTracking: localLogging
+                // A stored unsampled session must not suppress local debugging either.
+                ? { enabled: true, persistent: true, sampler: () => 1 }
+                : getSessionTrackingConfig(process.env.NEXT_PUBLIC_FARO_SAMPLE_RATE, () => PersistentSessionsManager.fetchUserSession()),
             experimental: {
                 trackNavigation: true,
             },
@@ -125,7 +138,10 @@ export function initFaro(): Faro | undefined {
             ],
         })
 
-        if (process.env.NEXT_PUBLIC_FARO_DEBUG === 'true') {
+        if (localLogging) {
+            faroClient?.unpatchedConsole.info('[Telemetry] Writing browser logs to apps/bridge/.next/local-logs/browser.jsonl')
+        }
+        else if (process.env.NEXT_PUBLIC_FARO_DEBUG === 'true') {
             faroClient?.unpatchedConsole.info('[Faro] Browser telemetry initialized.')
         }
     }
@@ -138,7 +154,10 @@ export function initFaro(): Faro | undefined {
 }
 
 export function getFaro(): Faro | undefined {
-    return faroClient ?? getInternalFaroFromGlobalObject()
+    if (typeof window === 'undefined' || isTimelinePreview()) return undefined
+    if (faroClient) return faroClient
+    const { getInternalFaroFromGlobalObject } = require('@grafana/faro-web-sdk') as typeof import('@grafana/faro-web-sdk')
+    return getInternalFaroFromGlobalObject()
 }
 
 /** Returns true when the exception was accepted by Faro. */
@@ -147,6 +166,7 @@ export function captureException(error: unknown, context?: Record<string, unknow
     if (!client) return false
 
     try {
+        const { flattenContext } = require('./faro-sanitizer') as typeof import('./faro-sanitizer')
         client.api.pushError(error instanceof Error ? error : new Error(String(error)), {
             context: context ? flattenContext(context) : undefined,
         })
@@ -164,6 +184,7 @@ export function captureEvent(name: string, attributes?: Record<string, unknown>)
     if (!client) return false
 
     try {
+        const { flattenContext } = require('./faro-sanitizer') as typeof import('./faro-sanitizer')
         client.api.pushEvent(name, attributes ? flattenContext(attributes) : undefined)
         return true
     }
@@ -182,6 +203,8 @@ export function setSwapContext(
     if (!client) return false
 
     try {
+        const { flattenContext } = require('./faro-sanitizer') as typeof import('./faro-sanitizer')
+        const { createSwapContextWriter } = require('./faro-session-context') as typeof import('./faro-session-context')
         writeSwapContext ??= createSwapContextWriter(client.api, listener => client.metas.addListener(listener))
         return writeSwapContext(flattenContext(attributes), options.replaceAttributes ?? false)
     }
@@ -196,6 +219,8 @@ export function setWalletContext(attributes: Record<string, string>): boolean {
     const client = getFaro() ?? initFaro()
     if (!client) return false
     try {
+        const { flattenContext } = require('./faro-sanitizer') as typeof import('./faro-sanitizer')
+        const { createWalletContextWriter } = require('./faro-session-context') as typeof import('./faro-session-context')
         let write = walletContextWriters.get(client)
         if (!write) {
             write = createWalletContextWriter(client.api, listener => client.metas.addListener(listener))
