@@ -125,6 +125,9 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         './useClientLayoutEffect': { useClientLayoutEffect: React.useLayoutEffect },
     }) : undefined
     const lifecycle = { lifecycleContextFromSwap: () => ({}), lifecycleErrorDetails: () => ({}) }
+    const sourceChain = loadSource(`${walletPath}ensureSourceChain.ts`, {
+        '@/lib/swapLifecycle': lifecycle, './isUserRejection': rejection,
+    })
     const { executeWalletOperation } = loadSource(`${walletPath}executeWalletOperation.ts`, {
         '@/lib/swapLifecycle': lifecycle, './isUserRejection': rejection,
     })
@@ -181,6 +184,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         '../../Form/SecondaryComponents/validationError/ErrorDismissButton': { default: noop },
         '../../Form/SecondaryComponents/validationError/ErrorDisplay': { ErrorDisplay },
         '../messages/Message': { default: noop },
+        '../Wallet/Common/ensureSourceChain': sourceChain,
     })
     const useFakeLayoutEffect = callback => {
         const [scope] = useState({ initialized: false })
@@ -249,7 +253,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         '@layerswap/utils': { sleep: async () => {} },
         '@/components/utils/numbers': { isDiffByPercent: () => false },
         '@/context/withdrawalContext': { useWalletWithdrawalState: () => ({ onWalletWithdrawalSuccess: () => calls.success++ }) },
-        '@/context/swapAccounts': { useSelectedAccount: () => ({ id: wallet.id, address: wallet.address }) },
+        '@/context/swapAccounts': { useSelectedAccount: () => ({ id: wallet.id, address: wallet.address, provider: { switchChain: state.switchChain } }) },
         '@/lib/ErrorHandler': { ErrorHandler: error => calls.errors.push(error) },
         '@/lib/fees': loadSource('../src/lib/fees.ts'),
         '@/components/Icons/InfoIcon': { default: noop },
@@ -258,6 +262,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         '@/lib/gases/useSWRGas': { default: () => ({}) },
         '@/context/depositSettings': { useDepositSettings: () => ({}) },
         './depositExecution': execution,
+        './ensureSourceChain': sourceChain,
         '../../Presentation/WalletActionsView': mounted ? { ...walletViews, SendTransactionView: props => { view = props; return null } } : walletViews,
         '../../Processing/StepsComponent': { default: Steps },
         '../../Processing/types': progressTypes,
@@ -311,7 +316,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         }
     }
     return {
-        state, calls, render, wallet, preferences, stores,
+        state, calls, render, wallet, network, preferences, stores,
         Component: () => realPolling
             ? createElement(swapContext.SwapDataProvider, null, createElement(SendTransactionButton, props()))
             : createElement(SendTransactionButton, props()),
@@ -394,6 +399,7 @@ test('a swap created with only approval discovers and executes signing and publi
 
     const execution = flow.render().button.props.onClick()
     assert.deepEqual(flow.calls.executionStarts, [], 'keep the full quote while preparing the swap')
+    await Promise.resolve() // Source-chain readiness is checked before swap creation.
     resolveCreation(created)
     await execution
 
@@ -1086,6 +1092,90 @@ test('the mounted controller and real polling resume a mined partial approval wi
         await execution
         dom.window.close()
         for (const key of ['window', 'document', 'localStorage', 'IS_REACT_ACT_ENVIRONMENT']) {
+            if (previous[key]) Object.defineProperty(globalThis, key, previous[key])
+            else delete globalThis[key]
+        }
+    }
+})
+
+
+test('network switching finishes before deposit actions refresh and execute', async t => {
+    t.mock.timers.enable({ apis: ['setTimeout'] })
+    const flow = createWorkflow()
+    flow.network.chain_id = '10'
+    flow.wallet.chainId = 1
+    flow.state.rejectSigning = false
+    const switched = Promise.withResolvers()
+    flow.state.switchChain = async (wallet, chainId) => {
+        assert.equal(wallet, flow.wallet)
+        assert.equal(chainId, '10')
+        await switched.promise
+        wallet.chainId = 10
+    }
+    const execution = flow.render().button.props.onClick()
+    assert.deepEqual(flow.calls.refresh, [])
+    assert.deepEqual(flow.calls.sign, [])
+    assert.equal(flow.render().viewProps.networkSwitch.isPending, false)
+    t.mock.timers.tick(1000)
+    assert.equal(flow.render().viewProps.networkSwitch.isPending, true)
+    assert.equal(flow.render().viewProps.actionStateText, 'Switching network')
+    switched.resolve()
+    await execution
+    assert.equal(flow.render().viewProps.networkSwitch.isPending, false)
+    assert.equal(flow.calls.success, 1)
+    assert.deepEqual(flow.calls.lifecycle.slice(0, 2).map(event => event.step), ['network_switch_started', 'network_switched'])
+})
+
+test('a rejected network switch preserves the workflow and retries before signing', async () => {
+    const flow = createWorkflow()
+    flow.network.chain_id = '10'
+    flow.wallet.chainId = 1
+    flow.state.switchChain = async () => { throw { code: 4001 } }
+    await flow.render().button.props.onClick()
+    assert.equal(flow.state.swapId, swapId)
+    assert.deepEqual(flow.calls.refresh, [])
+    assert.deepEqual(flow.calls.sign, [])
+    assert.deepEqual(flow.calls.errors, [])
+    assert.equal(flow.render().viewProps.networkSwitch.error.kind, 'rejected')
+    assert.equal(flow.render().button.props.children, 'Try again')
+    flow.state.switchChain = async () => { flow.wallet.chainId = 10 }
+    flow.state.rejectSigning = false
+    await flow.render().button.props.onClick()
+    assert.equal(flow.calls.success, 1)
+    assert.equal(flow.state.swapId, swapId)
+    assert.equal(flow.render().viewProps.networkSwitch.isError, false)
+})
+
+
+test('a network switch completing after unmount cannot start a deposit', async () => {
+    const dom = new JSDOM('<div id="root"></div>')
+    const previous = Object.getOwnPropertyDescriptors(globalThis)
+    Object.assign(globalThis, { window: dom.window, document: dom.window.document, IS_REACT_ACT_ENVIRONMENT: true })
+    const flow = createWorkflow({ mounted: true })
+    flow.network.chain_id = '10'
+    flow.wallet.chainId = 1
+    const switched = Promise.withResolvers()
+    flow.state.switchChain = () => switched.promise
+    const root = createRoot(document.getElementById('root'))
+    let pending
+    let unmounted = false
+    try {
+        await act(async () => root.render(createElement(flow.Component)))
+        await act(async () => { pending = flow.view.handleClick() })
+        await act(async () => root.unmount())
+        unmounted = true
+        await act(async () => { switched.resolve(); await pending })
+        assert.deepEqual(flow.calls.refresh, [])
+        assert.deepEqual(flow.calls.sign, [])
+        assert.deepEqual(flow.calls.transfer, [])
+        assert.deepEqual(flow.calls.errors, [])
+        assert.equal(flow.calls.success, 0)
+    } finally {
+        switched.resolve()
+        if (pending) await act(async () => pending)
+        if (!unmounted) await act(async () => root.unmount())
+        dom.window.close()
+        for (const key of ['window', 'document', 'IS_REACT_ACT_ENVIRONMENT']) {
             if (previous[key]) Object.defineProperty(globalThis, key, previous[key])
             else delete globalThis[key]
         }

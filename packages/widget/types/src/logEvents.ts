@@ -186,6 +186,8 @@ export type WalletErrorReasonCode =
   | 'internal_rpc_error'
   | 'network_error'
   | 'timeout'
+  /** The wallet is still showing an earlier prompt of the same kind (EIP-1193 -32002). */
+  | 'request_pending'
   | 'unknown_error';
 
 /**

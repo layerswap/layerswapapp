@@ -35,6 +35,19 @@ test('authorization and node failures must not become user cancellations', () =>
     assert.equal(normalizeWalletErrorCode({ code: 4100 }), 'unauthorized')
 })
 
+test('a prompt the wallet is still showing is request_pending, never a cancellation', () => {
+    for (const error of [
+        { code: -32002, message: "Request of type 'wallet_switchEthereumChain' already pending for origin https://layerswap.io. Please wait." },
+        { code: '-32002' },
+        new Error('Already processing eth_requestAccounts. Please wait.'),
+        new Error('wrapper', { cause: { code: -32002 } }),
+    ]) {
+        assert.equal(normalizeWalletErrorCode(error), 'request_pending')
+        assert.equal(isUserRejection(error), false)
+    }
+    assert.equal(isWalletErrorReasonCode('request_pending'), true)
+})
+
 test('the rejected UI label never classifies on its own', () => {
     for (const error of [
         { name: 'TransactionRejected', message: 'Execute failed' },
