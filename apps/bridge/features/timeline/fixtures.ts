@@ -1596,13 +1596,13 @@ const frontendMilestone = (
         }),
         expectedPhase,
     );
-const frontendCompleted = (inputAt = 20) =>
+const frontendCompleted = (inputAt = 20, actions = workflowComplete) =>
     frontendMilestone(
         90,
         'completed',
         'Swap completed',
         'The shared inline header keeps the small gauge and Transfer complete without a duration. Completed steps remain visible, with the explorer link on the receive step. The compact quote stays attached to the summary; full quote controls and action buttons are hidden.',
-        workflowComplete,
+        actions,
         { kind: 'send' },
         {
             details: details({
@@ -1802,30 +1802,53 @@ const frontendScenarios: TimelineScenario[] = [
                 },
             ),
             frontendMilestone(
+                20,
+                'checking',
+                'Checking publication',
+                'The wallet returned a hash, but the backend still requests publication. Signing remains checked while the transaction status is unresolved; no new wallet action or retry is offered.',
+                publishRequired.slice(1),
+                { kind: 'send' },
+                {
+                    storedWalletTransaction: { ...stored, timestamp: EPOCH + 20_000 },
+                    statusChecking: true,
+                },
+                SwapPhase.CheckingStatus,
+            ),
+            frontendMilestone(
+                23,
+                'publication-observed',
+                'Publication observed',
+                'The backend reports publication pending before the receipt or input transaction is available. The existing workflow moves to confirmation.',
+                workflow([['sign', 'completed'], ['publish', 'pending']]),
+                { kind: 'send' },
+                { storedWalletTransaction: { ...stored, timestamp: EPOCH + 20_000 } },
+                SwapPhase.InputPending,
+            ),
+            frontendMilestone(
                 25,
                 'input',
                 'Confirming swap transaction',
-                'Publication stores the transaction hash and moves directly to processing.',
+                'The backend now lists the input transaction; confirmation continues in the same workflow.',
                 workflowComplete.slice(1),
                 { kind: 'send' },
                 {
                     storedWalletTransaction: {
                         ...stored,
-                        timestamp: EPOCH + 25_000,
+                        timestamp: EPOCH + 20_000,
                     },
                     details: details({
                         transactions: [
                             transaction(TransactionType.Input, {
                                 confirmations: 3,
-                                timestamp: date(25),
-                                created_date: date(25),
+                                timestamp: date(20),
+                                created_date: date(20),
                             }),
                         ],
                     }),
                 },
                 SwapPhase.InputPending,
             ),
-            frontendCompleted(25),
+            frontendCompleted(20, workflowComplete.slice(1)),
         ],
     },
     {

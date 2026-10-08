@@ -355,10 +355,14 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         && (swapStatus === SwapStatus.Created || swapStatus === SwapStatus.UserTransferPending)
     const liveReceipt = inputTxStatusFromApi === TransactionStatus.Pending || inputTxStatusFromApi === TransactionStatus.Completed
     const statusChecking = awaitsBackendInput && !liveReceipt && (
-        !depositActionsResponse || !!depositActionsError
+        ((!depositActionsResponse || !!depositActionsError) && !backendProgress)
         || (signingWorkflow && (!authorizationResponse || !!authorizationError) && !authorizationNotIssuedBeforeSigning)
-        || (inputTransactionHashes.length > 0 && !inputTxStatusFromApi && !gaslessSubmissionObserved)
-        || (pendingSubmission && !signingWorkflow && inputTransactionHashes.length === 0)
+        // A receipt is supplementary once the backend reports accepted publication.
+        // Local evidence alone still requires a current backend observation.
+        || (!backendProgress && (
+            (inputTransactionHashes.length > 0 && !inputTxStatusFromApi)
+            || (pendingSubmission && !signingWorkflow && inputTransactionHashes.length === 0)
+        ))
     )
 
     // Approval receipts are prerequisites, separate from the input transaction

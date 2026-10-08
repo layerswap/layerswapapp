@@ -705,6 +705,55 @@ test('backend acceptance overrides an older actionable sign snapshot and legacy 
   assert.equal(state.receiptCalls.length, 0)
 })
 
+for (const status of ['pending', 'completed']) {
+  for (const evidence of ['hash', 'hashless_marker']) {
+    test(`backend publication ${status} retains progress while the ${evidence} receipt is unavailable`, async () => {
+      state.snapshot.data.deposit_actions = [
+        { step: 'sign', type: 'sign', signing_standard: 'permit2_witness', status: 'completed' },
+        { step: 'publish', type: 'transfer', status },
+      ]
+      if (evidence === 'hash') transactions.getState().setSwapTransaction('A', 'failed', '0xwallet')
+      else transactions.getState().markSubmissionPending('A')
+      state.receiptRead = async () => { throw new Error('Receipt unavailable') }
+      await render(createElement(SwapDetails, { type: 'contained' }))
+      assert.equal(observed.inputTransactionStatus, undefined)
+      assert.equal(observed.authorizationResponse, undefined, 'self-paid swaps need no paymaster observation')
+      assert.equal(observed.resolved.phase, 'input_pending', 'publication comes from current backend actions')
+      assert.equal(observed.resolved.failureReason, undefined)
+      assert.equal(observed.resolved.showWithdrawScreen, false)
+      assert.ok(container.querySelector('#processing'))
+      assert.equal(container.querySelector('button'), null, 'receipt outages cannot reopen submission or retry')
+      assert.equal((await reconcileSwap('A', 'source', {}, new Client())).canRestart, false)
+    })
+  }
+}
+
+test('a self-paid wallet hash stays unresolved until the backend observes publication', async () => {
+  state.snapshot.data.deposit_actions = [
+    { step: 'sign', type: 'sign', signing_standard: 'permit2_witness', status: 'completed' },
+    { step: 'publish', type: 'transfer', status: 'action_required' },
+  ]
+  transactions.getState().setSwapTransaction('A', 'completed', '0xwallet')
+  const receipt = Promise.withResolvers()
+  state.receiptRead = () => receipt.promise
+  await render(createElement(SwapDetails, { type: 'contained' }))
+  assert.equal(observed.resolved.phase, 'checking_transfer_status')
+  assert.equal(observed.resolved.failureReason, undefined)
+  assert.equal(container.querySelector('button'), null)
+  await act(async () => receipt.resolve({ data: { status: 'pending' } }))
+  assert.equal(observed.resolved.phase, 'input_pending')
+  assert.equal(container.querySelector('button'), null)
+})
+
+test('backend gasless publication remains authoritative with an empty workflow response', async () => {
+  state.snapshot.data.deposit_actions = []
+  state.read = async () => ({ data: { status: 'published' } })
+  await render(createElement(SwapDetails, { type: 'contained' }))
+  assert.equal(observed.resolved.phase, 'input_pending')
+  assert.equal(observed.resolved.showWithdrawScreen, false)
+  assert.equal(container.querySelector('button'), null)
+})
+
 test('every retained hash needs a backend receipt before the screen can leave checking or offer retry', async () => {
   transactions.getState().setSwapTransaction('A', 'failed', '0xwallet')
   authorizations.getState().recordGaslessTransactionHash('A', '0xgasless')

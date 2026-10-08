@@ -429,7 +429,8 @@ export function ProcessingView({
         !swapBasicData.use_deposit_address &&
         hasSwapWorkflow &&
         !refuel &&
-        (phase === SwapPhase.InputPending ||
+        (phase === SwapPhase.CheckingStatus ||
+            phase === SwapPhase.InputPending ||
             phase === SwapPhase.OutputPending ||
             phase === SwapPhase.SettlingOutput ||
             phase === SwapPhase.Completed);
@@ -440,6 +441,7 @@ export function ProcessingView({
                 actions={depositActions}
                 stepTransactions={stepTransactions}
                 readOnly={readOnly}
+                statusChecking={phase === SwapPhase.CheckingStatus}
                 destinationToken={destination_token}
                 receiveAmount={
                     phase === SwapPhase.Completed
@@ -454,7 +456,9 @@ export function ProcessingView({
                         }
                         : undefined
                 }
-                processing={{
+                // While receipts are unresolved, retain only the step statuses
+                // reported by the backend; a saved hash does not complete signing.
+                processing={phase === SwapPhase.CheckingStatus ? undefined : {
                     title: statusTitle,
                     inputExplorerUrl,
                     outputExplorerUrl,

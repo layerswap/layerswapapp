@@ -2515,6 +2515,39 @@ test('restored transfers wait for backend observations and retain recovered expl
     }
 });
 
+test('publication checks retain backend workflow steps through receipt and completion handoff', async () => {
+    const root = createRoot(document.getElementById('root'));
+    try {
+        for (const mode of ['component', 'modal']) {
+            const checking = frontendMilestone('frontend-approved', 'checking');
+            assert.equal(phase(checking.snapshot).phase, SwapPhase.CheckingStatus);
+            await act(async () => root.render(preview(checking.snapshot, checking.at, mode)));
+            const panel = document.querySelector('[data-steps-panel]');
+            assert.match(panel.textContent, /Checking transfer status/);
+            assert.match(panel.textContent, /Checking transaction status/);
+            assert.match(panel.textContent, /Sign to swap/);
+            assert.match(panel.textContent, /Confirm swap/);
+            assert.match(panel.textContent, /Receive .*ETH/);
+            assert.equal(panel.querySelectorAll('nav .lucide-check').length, 1, 'only the backend-completed signature is checked');
+            assert.equal(document.querySelector('[data-processing-actions]'), null);
+            assert.doesNotMatch(panel.textContent, /Submit the swap transaction|Confirm in your wallet|Preparing transaction/);
+
+            for (const milestone of ['publication-observed', 'input', 'completed']) {
+                const current = frontendMilestone('frontend-approved', milestone);
+                await act(async () => root.render(preview(current.snapshot, current.at, mode)));
+                const progress = document.querySelector('[data-steps-panel]');
+                assert.match(progress.textContent, /Sign to swap/);
+                assert.match(progress.textContent, /Confirm swap/);
+                assert.doesNotMatch(progress.textContent, /Checking transfer status/);
+                assert.equal(progress.querySelectorAll('nav .lucide-check').length, milestone === 'completed' ? 3 : 1);
+                assert.equal(document.querySelector('[data-processing-actions]'), null);
+            }
+        }
+    } finally {
+        await act(async () => root.unmount());
+    }
+});
+
 test('retry previews disable recovery while checking and use the shared transaction message for errors', async () => {
     const root = createRoot(document.getElementById('root'));
     try {
