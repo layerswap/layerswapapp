@@ -26,7 +26,7 @@ import { useContractAddressStore } from '@/stores/contractAddressStore';
 import { useExtendedSwapData } from '@/hooks/useExtendedSwapDisplay';
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore';
 import { isGaslessCapableRoute } from '@/helpers/gasless';
-import { getDepositorySettings } from '@/helpers/depository';
+import { shouldUseDepository } from '@/helpers/depository';
 import { resolveExtendedRoutePlan } from '@/lib/extendedRoutes/registry';
 import { buildCreateSwapParamsForExtendedRoute } from '@/lib/extendedRoutes/transforms';
 import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
@@ -363,7 +363,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             const slippage = useSlippageStore.getState().slippage
             const gaslessEnabled = useGaslessPreferenceStore.getState().gaslessEnabled
 
-            const { useDepository, disableGasless } = getDepositorySettings(values, !!sourceIsSupported, selectedSourceAccount?.address)
+            const useDepository = shouldUseDepository(values, !!sourceIsSupported, selectedSourceAccount?.address)
             const useGasless = isGaslessCapableRoute({
                 depositMethod,
                 supportsGaslessDeposit: fromCurrency.supports_gasless_deposit,
@@ -371,7 +371,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
                 gaslessStandard: fromCurrency.gasless_standard,
                 sourceIsSupported: !!sourceIsSupported,
                 sourceAddress: selectedSourceAccount?.address,
-            }) && gaslessEnabled && !disableGasless
+            }) && gaslessEnabled
 
             const extendedPlan = resolveExtendedRoutePlan({
                 sourceNetworkName: from.name,

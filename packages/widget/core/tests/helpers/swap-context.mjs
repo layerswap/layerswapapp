@@ -19,7 +19,7 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swr =
     }
     const resolved = {}
     const imports = {
-        '@/helpers/depository': { getDepositorySettings: () => ({ useDepository: false, disableGasless: false }) },
+        '@/helpers/depository': { shouldUseDepository: () => false },
         react: React,
         'react/jsx-runtime': require('react/jsx-runtime'),
         swr,
