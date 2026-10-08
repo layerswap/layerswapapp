@@ -7,7 +7,7 @@ import type { ApiResponse } from '@layerswap/widget-types';
 import { Partner } from '@/Models/Partner';
 import type { ApiError } from '@layerswap/widget-types';
 import useWallet from '@/hooks/useWallet';
-import { Network } from '@layerswap/widget-types';
+import { Network, NetworkType } from '@layerswap/widget-types';
 import { useSettingsState } from './settings';
 import { QuoteError, transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { useRecentNetworksStore } from '@/stores/recentRoutesStore';
@@ -35,6 +35,7 @@ import { useSwapStatusNotification } from '@/hooks/useSwapStatusNotification';
 import { lifecycleContextFromForm } from '@/lib/swapLifecycle';
 import { createSwapAttempt } from '@/lib/swapCreation';
 import { KnownInternalNames } from '@layerswap/utils';
+import { detectPocketUniverse } from '@/lib/pocketUniverse';
 
 export const SwapDataStateContext = createContext<SwapContextData | null>(null);
 
@@ -363,6 +364,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             const slippage = useSlippageStore.getState().slippage
             const gaslessEnabled = useGaslessPreferenceStore.getState().gaslessEnabled
 
+            const usePocketUniverseDepository = depositMethod === 'wallet' && !fromExchange && !!sourceIsSupported && !!selectedSourceAccount?.address
+                && from.type === NetworkType.EVM && fromCurrency.symbol === from.token?.symbol && !fromCurrency.contract && detectPocketUniverse()
             const useGasless = isGaslessCapableRoute({
                 depositMethod,
                 supportsGaslessDeposit: fromCurrency.supports_gasless_deposit,
@@ -370,7 +373,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
                 gaslessStandard: fromCurrency.gasless_standard,
                 sourceIsSupported: !!sourceIsSupported,
                 sourceAddress: selectedSourceAccount?.address,
-            }) && gaslessEnabled
+            }) && gaslessEnabled && !usePocketUniverseDepository
 
             const extendedPlan = resolveExtendedRoutePlan({
                 sourceNetworkName: from.name,
@@ -412,7 +415,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
                 refund_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
                 use_frontend_swap: useFrontendSwap,
                 use_gasless: useGasless,
-                ...(requiresDepository && { use_depository: true }),
+                ...((requiresDepository || usePocketUniverseDepository) && { use_depository: true }),
             }
 
             if (!isExtendedBridge && depositMethod === 'wallet' && slippage && slippage > 0 && slippage < 0.8) {
