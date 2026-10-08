@@ -19,7 +19,7 @@ const fixtureUrl = moduleUrl(`
   const listeners = new Set()
   let version = 0
   export const notify = () => { version++; for (const listener of listeners) listener() }
-  export const state = { wallet: { id:'wallet', address:'source', isActive:true, providerName:'test-wallet', asSourceSupportedNetworks:['A'] } }
+  export const state = { wallet: { id:'wallet', address:'source', isActive:true, providerName:'test-wallet', provider:{}, asSourceSupportedNetworks:['A'] } }
   export const useSelectedAccount = () => state.wallet
   export const useSwapDataState = () => {
     useSyncExternalStore(listener => { listeners.add(listener); return () => listeners.delete(listener) }, () => version)

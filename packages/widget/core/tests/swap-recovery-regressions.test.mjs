@@ -62,10 +62,11 @@ const { useInputTransactionStatus } = await import('../dist/esm/hooks/useInputTr
 const { reconcileSwap } = await import('../dist/esm/lib/swapReconciliation.js')
 const { executeProviderWithdrawal, getProviderDepositActions } = await import('../dist/esm/components/Pages/Swap/Withdraw/WithdrawalProviders/executeProviderWithdrawal.js')
 const { executeWalletOperation } = await import('../dist/esm/components/Pages/Swap/Withdraw/Wallet/Common/executeWalletOperation.js')
+const sourceChain = await import('../dist/esm/components/Pages/Swap/Withdraw/Wallet/Common/ensureSourceChain.js')
 const lifecycle = await import('../dist/esm/lib/swapLifecycle.js')
 const { truncateToDecimals } = await import('../dist/esm/components/utils/RoundDecimals.js')
 const noop = () => {}
-const account = { id: 'wallet', address: 'source', providerName: 'test-wallet', isActive: true,
+const account = { id: 'wallet', address: 'source', providerName: 'test-wallet', isActive: true, provider: {},
   asSourceSupportedNetworks: ['BASE_MAINNET'] }
 const context = createSwapContext({ Client, getSwapId: () => 'A', getAccount: () => account,
   stores, swr, authorizationHook: useGaslessAuthorizationStatus, getSwapData: () => state.snapshot,
@@ -317,6 +318,7 @@ const walletActionsView = loadSource('components/Pages/Swap/Withdraw/Presentatio
   '../../Form/SecondaryComponents/validationError/ErrorDismissButton': { default: () => null },
   '../../Form/SecondaryComponents/validationError/ErrorDisplay': { ErrorDisplay: () => null },
   '../messages/Message': walletMessages,
+  '../Wallet/Common/ensureSourceChain': sourceChain,
 })
 const { SendTransactionButton } = loadSource(walletPath + 'buttons.tsx', {
   react: React, swr: await import('swr'), '@/context/swap': context,
@@ -331,6 +333,7 @@ const { SendTransactionButton } = loadSource(walletPath + 'buttons.tsx', {
   '@/lib/swapReconciliation': { reconcileSwap, withSwapReconciliation: async (_, fn) => fn() },
   '@/helpers/gasless': gasless, '@/helpers/depositActions': depositActions,
   './isUserRejection': await import('@layerswap/wallet-core/errors'),
+  './ensureSourceChain': sourceChain,
   '@/components/utils/numbers': { isDiffByPercent: () => false },
   '@/components/Wallet/WalletModal': { useConnectModal: () => ({}) },
   '@/context/depositSettings': { useDepositSettings: () => ({}) },

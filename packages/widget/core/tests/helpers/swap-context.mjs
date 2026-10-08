@@ -19,6 +19,7 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
     }
     const resolved = {}
     const imports = {
+        '@/helpers/depository': { shouldUseDepository: () => false },
         react: React,
         'react/jsx-runtime': require('react/jsx-runtime'),
         swr,
@@ -69,7 +70,6 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
         '@/hooks/useSwapStatusNotification': { useSwapStatusNotification: noop },
         '@/lib/swapLifecycle': {},
         '@/lib/swapCreation': {},
-        '@layerswap/utils': { KnownInternalNames: {} },
         ...dependencies,
     }
     const loadSource = path => {

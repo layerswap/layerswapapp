@@ -31,6 +31,14 @@ function loadSource(path, imports = {}) {
     new Function('require', 'module', 'exports', outputText)(name => {
         if (name === 'react' || name === 'react/jsx-runtime') return require(name);
         if (name in imports) return imports[name];
+        // The send button's chain-switch helper is real logic, not presentation: load it
+        // with the button's own lifecycle and rejection stubs instead of stubbing it away.
+        if (name === './ensureSourceChain') {
+            return loadSource('components/Pages/Swap/Withdraw/Wallet/Common/ensureSourceChain.ts', {
+                '@/lib/swapLifecycle': imports['@/lib/swapLifecycle'],
+                './isUserRejection': imports['./isUserRejection'],
+            });
+        }
         throw new Error(`Unexpected dependency: ${name}`);
     }, module, module.exports);
     return module.exports;
@@ -72,7 +80,7 @@ const sections = loadSource(`${withdraw}Presentation/Page2Sections.tsx`, {
 const network = { name: 'BASE_MAINNET', type: 'evm' };
 const token = { symbol: 'USDC', contract: '0xtoken', supports_gasless_deposit: true, gasless_standard: 'eip3009' };
 const wallet = { id: 'wallet', address: '0xsource', isActive: true, asSourceSupportedNetworks: [network.name] };
-const account = { id: wallet.id, address: wallet.address };
+const account = { id: wallet.id, address: wallet.address, provider: {} };
 const walletHooks = {
     '@/hooks/useWallet': { default: () => ({ wallets: [wallet], provider: { connectedWallets: [wallet] } }) },
     '@/context/swapAccounts': { useSelectedAccount: () => account },
@@ -586,6 +594,7 @@ function createSwapHistoryHarness(fetcher, { onCreate, selectedAccount } = {}) {
     stores.useGaslessAuthorizationStore.setState({ authorizations: {} });
     stores.useDepositSignatureStore.setState({ signatures: {} });
     const context = loadSource('context/swap.tsx', {
+        '@/helpers/depository': { shouldUseDepository: () => false },
         '@/hooks/useSwapPolling': polling,
         '@/hooks/useSwapStatusNotification': { useSwapStatusNotification: noop },
         '@/hooks/useGaslessAuthorization': { useGaslessAuthorization: () => ({}) },
@@ -618,7 +627,6 @@ function createSwapHistoryHarness(fetcher, { onCreate, selectedAccount } = {}) {
         '@/stores/extendedRoutesStore': {},
         '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
         '@/lib/swapPollingPolicy': pollingPolicy,
-        '@layerswap/utils': { KnownInternalNames: { Networks: {} } },
     });
     const harness = { Provider: context.SwapDataProvider, context, api, stores };
     harness.Completion = function Completion() {

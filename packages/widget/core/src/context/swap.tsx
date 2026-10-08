@@ -30,6 +30,7 @@ import { useExtendedSwapData } from '@/hooks/useExtendedSwapDisplay';
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore';
 import { isGaslessCapableRoute, isGaslessAuthorizationSubmitted, isGaslessDepositWorkflow } from '@/helpers/gasless';
 import { hasSwapExecutionProgress } from '@/helpers/swapProgress';
+import { shouldUseDepository } from '@/helpers/depository';
 import { resolveExtendedRoutePlan } from '@/lib/extendedRoutes/registry';
 import { buildCreateSwapParamsForExtendedRoute } from '@/lib/extendedRoutes/transforms';
 import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
@@ -38,7 +39,6 @@ import { useSwapPolling } from '@/hooks/useSwapPolling';
 import { useSwapStatusNotification } from '@/hooks/useSwapStatusNotification';
 import { lifecycleContextFromForm } from '@/lib/swapLifecycle';
 import { createSwapAttempt } from '@/lib/swapCreation';
-import { KnownInternalNames } from '@layerswap/utils';
 
 export const SwapDataStateContext = createContext<SwapContextData | null>(null);
 
@@ -418,6 +418,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             const slippage = useSlippageStore.getState().slippage
             const gaslessEnabled = useGaslessPreferenceStore.getState().gaslessEnabled
 
+            const useDepository = shouldUseDepository(values, !!sourceIsSupported, selectedSourceAccount?.address)
             const useGasless = isGaslessCapableRoute({
                 depositMethod,
                 supportsGaslessDeposit: fromCurrency.supports_gasless_deposit,
@@ -441,7 +442,6 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
                 sourceNetwork: from.name,
                 destinationNetwork: to.name,
             })
-            const requiresDepository = from.name == KnownInternalNames.Networks.StellarTestnet || from.name == KnownInternalNames.Networks.StellarMainnet
 
             const data: CreateSwapParams = extendedPlan ? buildCreateSwapParamsForExtendedRoute({
                 plan: extendedPlan,
@@ -467,7 +467,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
                 refund_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
                 use_frontend_swap: useFrontendSwap,
                 use_gasless: useGasless,
-                ...(requiresDepository && { use_depository: true }),
+                ...(useDepository && { use_depository: true }),
             }
 
             if (!isExtendedBridge && depositMethod === 'wallet' && slippage && slippage > 0 && slippage < 0.8) {

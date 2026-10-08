@@ -38,7 +38,7 @@ import { FailedView } from './FailedView';
 import { ManualInstructionsView } from './ManualInstructionsView';
 import { ManualQuoteView } from './ManualQuoteView';
 import { NotFoundView } from './NotFoundView';
-import type { Page2LoadedSnapshot, Page2Snapshot } from './Page2Snapshot';
+import type { Page2LoadedSnapshot, Page2Snapshot, Page2WalletState } from './Page2Snapshot';
 import { ProcessingView } from './ProcessingView';
 import { QuoteDetailsSummary } from './QuoteDetailsSummary';
 import { QuoteSummaryView } from './QuoteSummaryView';
@@ -50,10 +50,12 @@ import { WalletActionTransition } from './WalletActionTransition';
 import { SpecializedWithdrawalView } from './SpecializedWithdrawalView';
 import SummaryView from './SummaryView';
 import {
-    ChangeNetworkView,
     ConnectWalletView,
     SendTransactionView,
 } from './WalletActionsView';
+import { NetworkSwitchError } from '../Wallet/Common/ensureSourceChain';
+import type { ActionData } from '../Wallet/Common/sharedTypes';
+import type { Network } from '@layerswap/widget-types';
 
 /** Maps synthetic state to the same presenters used by the live controllers. */
 export function Page2Preview({
@@ -462,20 +464,6 @@ function PreviewWallet({ snapshot: s }: { snapshot: Page2LoadedSnapshot }) {
                 connectError={state.error}
             />
         );
-    if (state.kind === 'network')
-        return (
-            <ChangeNetworkView
-                network={s.swap.source_network.display_name}
-                isPending={state.pending}
-                error={
-                    state.error
-                        ? Object.assign(new Error(state.error), {
-                              shortMessage: state.error,
-                          })
-                        : undefined
-                }
-            />
-        );
     if (state.kind === 'account-mismatch')
         return (
             <ActionMessages.DifferentAccountsNotAllowedError
@@ -532,6 +520,8 @@ function PreviewWallet({ snapshot: s }: { snapshot: Page2LoadedSnapshot }) {
                     quoteIsLoading={s.quoteState.status === 'loading'}
                     quoteError={s.quoteState.status === 'error'}
                     loading={state.pending}
+                    networkSwitch={previewNetworkSwitch(state.networkSwitch, s.swap.source_network)}
+                    sourceNetworkName={s.swap.source_network.display_name}
                     actionStateText={state.label}
                     actionButtonText={s.actionButtonText}
                     error={!!state.error}
@@ -551,4 +541,16 @@ function PreviewWallet({ snapshot: s }: { snapshot: Page2LoadedSnapshot }) {
             </WalletSubmissionView>
         </>
     );
+}
+
+type PreviewNetworkSwitch = Extract<Page2WalletState, { kind: 'send' }>['networkSwitch'];
+
+/** The same switch state the live send button holds while `ensureSourceChain` runs or fails. */
+function previewNetworkSwitch(state: PreviewNetworkSwitch, network: Network): ActionData | undefined {
+    if (!state) return undefined;
+    if (state === 'pending') return { isPending: true, isError: false, error: null };
+    const error = state === 'rejected'
+        ? new NetworkSwitchError(network, 'rejected', { shortMessage: 'The request was rejected.' })
+        : new NetworkSwitchError(network, state === 'still-waiting' ? 'pending' : 'timeout', null);
+    return { isPending: false, isError: true, error };
 }

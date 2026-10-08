@@ -8,6 +8,8 @@ import { reconcileSwap, withSwapReconciliation } from '@/lib/swapReconciliation'
 import { isGaslessCapableRoute, isGaslessDepositWorkflow } from '@/helpers/gasless';
 import { isDepositWorkflowComplete } from '@/helpers/depositActions';
 import { isUserRejection } from './isUserRejection';
+import { NetworkSwitchError, ensureSourceChain } from './ensureSourceChain';
+import type { ActionData } from './sharedTypes';
 import { useSWRConfig } from 'swr';
 import { SubmitButtonProps } from '@/components/Buttons/submitButton';
 import { isDiffByPercent } from '@/components/utils/numbers';
@@ -31,12 +33,11 @@ import useSWRGas from '@/lib/gases/useSWRGas';
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore';
 import { useDepositSignatureStore, useGaslessAuthorizationStore, useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import { sleep } from '@layerswap/utils';
-import { Network, NetworkRoute } from '@layerswap/widget-types';
+import { NetworkRoute } from '@layerswap/widget-types';
 import { ComponentProps, FC, type ReactNode, useCallback, useMemo, useRef, useState } from 'react';
 import { SwapFormValues } from '../../../Form/SwapFormValues';
 import {
     ButtonWrapper,
-    ChangeNetworkView,
     ConnectWalletView,
     SendTransactionView,
 } from '../../Presentation/WalletActionsView';
@@ -59,6 +60,8 @@ export {
 
 const layerswapApiClient = new LayerSwapApiClient();
 const MAX_DEPOSIT_WORKFLOW_ACTIONS = 10;
+const NO_NETWORK_SWITCH: ActionData = { isPending: false, isError: false, error: null };
+const SWITCH_PROMPT_DELAY_MS = 1000;
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData, swapDetails } = useSwapDataState()
@@ -127,80 +130,6 @@ export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     );
 };
 
-type ChangeNetworkProps = {
-    chainId: number | string;
-    network: Network;
-};
-
-export const ChangeNetworkButton: FC<ChangeNetworkProps> = (props) => {
-    const { chainId, network } = props
-    const [error, setError] = useState<Error | null>(null)
-    const [isPending, setIsPending] = useState(false)
-
-    const selectedSourceAccount = useSelectedAccount("from", network?.name);
-    const { wallets } = useWallet(network, 'withdrawal')
-    const { swapBasicData, swapDetails } = useSwapDataState()
-    const { onSwapLifecycle } = useCallbacks()
-
-    const clickHandler = useCallback(async () => {
-        const lifecycleContext = swapBasicData ? lifecycleContextFromSwap(swapBasicData, swapDetails) : {}
-        const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id)
-        onSwapLifecycle({
-            step: 'network_switch_started',
-            stage: 'network_switch',
-            outcome: 'started',
-            path: 'ChangeNetworkButton',
-            action: `switch_to_${chainId}`,
-            provider: selectedWallet?.providerName,
-            ...lifecycleContext,
-        })
-        try {
-            setIsPending(true)
-            if (!selectedWallet) throw new Error(`No selectedWallet for ${network?.name}`)
-            if (!selectedSourceAccount) throw new Error(`No selectedSourceAccount for ${network?.name}`)
-            if (!selectedSourceAccount.provider.switchChain) throw new Error(`No switchChain from ${network?.name}`)
-
-            await selectedSourceAccount.provider.switchChain(selectedWallet, chainId)
-            onSwapLifecycle({
-                step: 'network_switched',
-                stage: 'network_switch',
-                outcome: 'succeeded',
-                path: 'ChangeNetworkButton',
-                action: `switch_to_${chainId}`,
-                provider: selectedWallet.providerName,
-                ...lifecycleContext,
-            })
-        } catch (e) {
-            setError(e)
-            const rejected = isUserRejection(e)
-            const errorDetails = lifecycleErrorDetails(e)
-            onSwapLifecycle({
-                step: rejected ? 'network_switch_rejected' : 'network_switch_failed',
-                stage: 'network_switch',
-                outcome: rejected ? 'rejected' : 'failed',
-                path: 'ChangeNetworkButton',
-                action: `switch_to_${chainId}`,
-                provider: selectedWallet?.providerName,
-                ...errorDetails,
-                reasonCode: rejected ? 'user_rejected' : errorDetails.reasonCode,
-                ...lifecycleContext,
-            })
-        } finally {
-            setIsPending(false)
-        }
-
-    }, [chainId, network?.name, onSwapLifecycle, selectedSourceAccount, swapBasicData, swapDetails, wallets])
-
-    return (
-        <ChangeNetworkView
-            network={network.display_name}
-            isPending={isPending}
-            error={error}
-            onSwitch={clickHandler}
-        />
-    );
-};
-
 type ButtonWrapperProps = ComponentProps<typeof ButtonWrapper>;
 type SendFromWalletButtonProps = Omit<ButtonWrapperProps, 'onClick'> & {
     errorMessage?: ReactNode;
@@ -247,6 +176,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const { gasData } = useSWRGas(selectedSourceAccount?.address, networkWithTokens, swapBasicData.source_token, swapBasicData.requested_amount)
     const [actionStateText, setActionStateText] = useState<string | undefined>()
     const [loading, setLoading] = useState(false)
+    const [networkSwitch, setNetworkSwitch] = useState<ActionData>(NO_NETWORK_SWITCH)
     const [criticalConfirmation, setCriticalConfirmation] = useState<SwapResponse>()
     const [workflowState, setWorkflowState] = useState<{ swapId: string, actions: DepositAction[], swapData?: SwapDetails }>()
     const executionInFlight = useRef(false)
@@ -327,8 +257,38 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             }
 
             setLoading(true)
+            setActionStateText(undefined)
+            setNetworkSwitch(NO_NETWORK_SWITCH)
             clearError?.()
             setSwapError?.("")
+            // Every wallet request below needs the wallet on the source chain: wagmi refuses to
+            // send on another chain and wallets reject typed-data domains for one.
+            // Wallets often switch an already-approved chain without asking, within moments, so
+            // the "confirm in your wallet" state only shows once a prompt is clearly open.
+            let switchPrompt: ReturnType<typeof setTimeout> | undefined
+            try {
+                await ensureSourceChain({
+                    wallet: selectedWallet,
+                    network: swapBasicData.source_network,
+                    switchChain: selectedSourceAccount.provider.switchChain,
+                    context: lifecycleContextFromSwap(swapBasicData, swapDetails),
+                    path: 'SendTransactionButton',
+                    onLifecycle: onSwapLifecycle,
+                    onSwitchStart: () => {
+                        switchPrompt = setTimeout(() => {
+                            if (signal.aborted) return
+                            setActionStateText("Switching network")
+                            setNetworkSwitch({ isPending: true, isError: false, error: null })
+                        }, SWITCH_PROMPT_DELAY_MS)
+                    },
+                })
+            } finally {
+                clearTimeout(switchPrompt)
+                if (!signal.aborted) setNetworkSwitch(NO_NETWORK_SWITCH)
+            }
+
+            signal.throwIfAborted()
+
             if (needsNewSwap && swapId) {
                 forceNewSwap = await withSwapReconciliation(swapId, async () => {
                     const transactions = useSwapTransactionStore.getState()
@@ -516,6 +476,11 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         }
         catch (e) {
             if (signal.aborted) return
+            if (e instanceof NetworkSwitchError) {
+                // Keep the swap intact: retry only re-asks the wallet to switch.
+                setNetworkSwitch({ isPending: false, isError: true, error: e })
+                return
+            }
             if (isUserRejection(e)) {
                 setSwapError?.(null)
                 return
@@ -567,7 +532,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     }
 
     const handleClick = () => {
-        if (error || swapError) {
+        if (error || swapError || networkSwitch.isError) {
             onSwapLifecycle({
                 step: 'retry_requested',
                 stage: 'wallet_action',
@@ -633,6 +598,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             quoteIsLoading={quoteIsLoading}
             quoteError={!!quoteError}
             loading={loading}
+            networkSwitch={networkSwitch}
+            sourceNetworkName={swapBasicData.source_network.display_name}
             actionStateText={actionStateText}
             actionButtonText={actionButtonText}
             depositActions={depositActions}

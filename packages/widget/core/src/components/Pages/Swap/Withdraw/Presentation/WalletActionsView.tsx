@@ -23,41 +23,42 @@ import { ICON_CLASSES_WARNING } from '../../Form/SecondaryComponents/validationE
 import ErrorDismissButton from '../../Form/SecondaryComponents/validationError/ErrorDismissButton';
 import { ErrorDisplay } from '../../Form/SecondaryComponents/validationError/ErrorDisplay';
 import WalletMessage, { WalletMessageDetails } from '../messages/Message';
+import { NetworkSwitchError, networkSwitchFailureReason } from '../Wallet/Common/ensureSourceChain';
 import type { ActionData } from '../Wallet/Common/sharedTypes';
 import type { SwapStepTransactions } from '@/stores/swapTransactionStore';
-export const ChangeNetworkMessage: FC<{
-    data: ActionData;
-    network: string;
-}> = ({ data, network }) => {
+export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = ({ data, network }) => {
     if (data.isPending) {
-        return (
-            <WalletMessage
-                status="pending"
-                header="Network switch required"
-                details="Confirm switching the network with your wallet"
-            />
-        );
-    } else if (data.isError) {
-        const error = data.error as
-            | (Error & {
-                  shortMessage?: string;
-                  cause?: { shortMessage?: string };
-              })
-            | null;
-        const reason = error?.cause?.shortMessage ?? error?.shortMessage;
-        return (
-            <WalletMessage
-                status="error"
-                header="Network switch failed"
-                details={
-                    reason
-                        ? `${reason} Please try again or switch your wallet network manually to ${network}.`
-                        : `Please try again or switch your wallet network manually to ${network}`
-                }
-            />
-        );
+        return <WalletMessage
+            status="pending"
+            header='Switch network'
+            details={`Confirm switching to ${network} in your wallet`}
+        />
     }
-};
+    if (!data.isError) return null
+    const kind = data.error instanceof NetworkSwitchError ? data.error.kind : 'failed'
+    if (kind === 'pending') {
+        return <WalletMessage
+            status="pending"
+            header='Network switch still waiting'
+            details={`Your wallet is still asking to switch to ${network}. Confirm it there, then try again`}
+        />
+    }
+    if (kind === 'timeout') {
+        return <WalletMessage
+            status="error"
+            header='Network switch timed out'
+            details={`Your wallet didn't respond. Try again or switch your wallet network manually to ${network}`}
+        />
+    }
+    const reason = networkSwitchFailureReason(data.error)
+    return <WalletMessage
+        status="error"
+        header='Network switch failed'
+        details={reason
+            ? `${reason} Please try again or switch your wallet network manually to ${network}.`
+            : `Please try again or switch your wallet network manually to ${network}`}
+    />
+}
 
 export const ButtonWrapper: FC<SubmitButtonProps> = ({ ...props }) => {
     return (
@@ -124,6 +125,8 @@ export type SendTransactionViewProps = SubmitButtonProps & {
     quoteIsLoading?: boolean;
     quoteError?: boolean;
     loading?: boolean;
+    networkSwitch?: ActionData;
+    sourceNetworkName?: string;
     actionStateText?: string;
     actionButtonText?: string;
     depositActions?: DepositAction[];
@@ -152,6 +155,8 @@ export function SendTransactionView({
     quoteIsLoading,
     quoteError,
     loading,
+    networkSwitch,
+    sourceNetworkName,
     actionStateText,
     actionButtonText,
     depositActions,
@@ -205,7 +210,10 @@ export function SendTransactionView({
             receiveAmount={quote?.receive_amount}
         />
     ) : undefined;
-    const message =
+    const networkSwitchMessage = networkSwitch && (networkSwitch.isPending || networkSwitch.isError)
+        ? <ChangeNetworkMessage data={networkSwitch} network={sourceNetworkName ?? ''} />
+        : undefined;
+    const message = networkSwitchMessage ?? (
         !loading && !showStepError && errorMessage && hasError ? (
             <div
                 data-wallet-action-message
@@ -213,7 +221,7 @@ export function SendTransactionView({
             >
                 {errorMessage}
             </div>
-        ) : undefined;
+        ) : undefined);
     const statusMessage = statusChecking ? (
         <p role="status" className="text-sm text-secondary-text">Checking transfer status</p>
     ) : undefined;
@@ -359,7 +367,7 @@ export function SendTransactionView({
                                 workflowCompleted
                             }
                         >
-                            {error || swapError || workflowFailed
+                            {error || swapError || networkSwitch?.isError || workflowFailed
                                 ? 'Try again'
                                 : workflowCompleted
                                   ? 'Completed'
@@ -369,42 +377,5 @@ export function SendTransactionView({
                 </>
             }
         />
-    );
-}
-
-export function ChangeNetworkView({
-    network,
-    isPending,
-    error,
-    onSwitch,
-}: {
-    network: string;
-    isPending?: boolean;
-    error?: Error | null;
-    onSwitch?: () => void;
-}) {
-    return (
-        <>
-            <ChangeNetworkMessage
-                data={{
-                    isPending: !!isPending,
-                    isError: !!error,
-                    error: error ?? null,
-                }}
-                network={network}
-            />
-            {!isPending && (
-                <ButtonWrapper
-                    onClick={onSwitch}
-                    icon={<WalletIcon className="stroke-2 w-6 h-6" />}
-                >
-                    {error ? (
-                        <span>Try again</span>
-                    ) : (
-                        <span>Switch network</span>
-                    )}
-                </ButtonWrapper>
-            )}
-        </>
     );
 }
