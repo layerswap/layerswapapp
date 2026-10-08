@@ -21,6 +21,7 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
         url: 'data:text/javascript,' + encodeURIComponent(`
             export default class Client {
                 fetcher = key => globalThis.__depositTransport(key)
+                GetGaslessAuthorizationAsync(id) { return globalThis.__depositTransport('/swaps/' + id + '/authorize') }
                 GetTransactionStatus() { throw new Error('Receipt polling belongs to swap context') }
                 GetSwapAsync() { throw new Error('Deposit polling must not request the whole swap') }
             }
@@ -35,8 +36,11 @@ const { createRoot } = await import('react-dom/client')
 const swr = await import('swr')
 const { SWRConfig } = swr
 let providerProps = {}
+let backendSnapshot
 const swapTransactions = {}
+const { useGaslessAuthorizationStatus } = await import('../dist/esm/hooks/useGaslessAuthorizationStatus.js')
 const swapContext = createSwapContext({
+    authorizationHook: useGaslessAuthorizationStatus,
     swr,
     swapTransactions,
     Client: class {
@@ -45,6 +49,7 @@ const swapContext = createSwapContext({
     },
     getSwapId: () => providerProps.id,
     getAccount: () => ({ id: 'wallet', address: providerProps.address }),
+    getSwapData: () => backendSnapshot,
 })
 globalThis.__depositSwapContext = swapContext
 const { useDepositActionPolling, depositActionsKey } = await import('../dist/esm/hooks/useDepositActionPolling.js')
@@ -56,7 +61,7 @@ const approval = { type: 'transfer', step: 'approve_permit2', status: 'action_re
     to_address: '0x456', call_data: approvalCallData(5841963) }
 const waiting = () => ({ data: [{ ...sign, status: 'completed' }, publish] })
 const ready = () => ({ data: [{ ...sign, status: 'completed' }, { ...publish, status: 'action_required' }] })
-let root, container, result, config, requests, response, failure, authorization, receipts, receiptFailure, onReceipt
+let root, container, result, providerState, config, requests, response, failure, authorization, receipts, receiptFailure, onReceipt
 function SwapView({ id, children }) {
     const { setSwapId, setSwapViewMounted } = swapContext.useSwapDataUpdate()
     useLayoutEffect(() => { setSwapId(id) }, [id])
@@ -67,6 +72,7 @@ function SwapView({ id, children }) {
     return children
 }
 function Withdrawal({ id, address, executing }) {
+    providerState = swapContext.useSwapDataState()
     result = useDepositActionPolling(id, address, executing)
     return createElement('output', null, result.data?.find(action => action.status === 'action_required')?.step ?? 'waiting')
 }
@@ -84,6 +90,9 @@ const wait = (signal, extra = {}) => {
 }
 
 beforeEach(() => {
+    backendSnapshot = { data: { swap: { id: 's1', status: 'user_transfer_pending', transactions: [],
+        source_network: { name: 'BASE_MAINNET' }, source_token: {}, destination_network: { name: 'BASE_MAINNET' },
+        destination_token: {}, requested_amount: '1', use_deposit_address: false } } }
     for (const id of Object.keys(swapTransactions)) delete swapTransactions[id]
     container = document.createElement('div')
     document.body.append(container)
@@ -373,7 +382,7 @@ test('the provider keeps refreshing after the wallet controls unmount, until the
     assert.equal(requests.length, closed)
 })
 
-test('refreshing stops once this client has broadcast the deposit', async t => {
+test('refreshing continues after a local broadcast and stops once the backend lists its input', async t => {
     t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 10000 })
     await render({ executing: false })
     const idle = requests.length
@@ -383,7 +392,14 @@ test('refreshing stops once this client has broadcast the deposit', async t => {
     await render({ executing: false })
     const broadcast = requests.length
     await act(async () => { t.mock.timers.tick(10000) })
-    assert.equal(requests.length, broadcast)
+    assert.ok(requests.filter(key => typeof key === 'string').length > requests.slice(0, broadcast).filter(key => typeof key === 'string').length,
+        'a local hash cannot stop backend workflow observations')
+    backendSnapshot = { data: { swap: { ...backendSnapshot.data.swap,
+        transactions: [{ type: 'input', status: 'pending', transaction_hash: '0xbroadcast' }] } } }
+    await render({ executing: false })
+    const listed = requests.filter(key => typeof key === 'string').length
+    await act(async () => { t.mock.timers.tick(10000) })
+    assert.equal(requests.filter(key => typeof key === 'string').length, listed)
 })
 
 test('retry revalidates through SWR and never returns stale data after a failed or empty refresh', async () => {
@@ -569,4 +585,21 @@ test('a failed authorization transaction cannot complete the deposit', async () 
     let rejected
     await act(async () => { rejected = assert.rejects(wait(new AbortController().signal), /The swap authorization failed/) })
     await rejected
+})
+
+
+test('the provider refreshes a pending input receipt and observes failure without persisting that status', async t => {
+    t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 10000 })
+    swapTransactions.s1 = { hash: '0xinput', status: 'pending' }
+    await render({ executing: false })
+    assert.equal(providerState.inputTransactionStatus, 'pending')
+    const initial = requests.filter(key => Array.isArray(key)).length
+    receipts.set('0xinput', 'Failed')
+    await act(async () => t.mock.timers.tick(2000))
+    assert.equal(requests.filter(key => Array.isArray(key)).length, initial + 1)
+    assert.equal(providerState.inputTransactionStatus, 'failed')
+    assert.equal(swapTransactions.s1.status, 'pending', 'only the real hash is recovery evidence')
+    const failed = requests.filter(key => Array.isArray(key)).length
+    await act(async () => t.mock.timers.tick(10000))
+    assert.equal(requests.filter(key => Array.isArray(key)).length, failed)
 })

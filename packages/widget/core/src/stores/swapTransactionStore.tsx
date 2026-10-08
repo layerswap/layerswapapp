@@ -16,7 +16,7 @@ export type SwapStepTransaction = Pick<SwapTransaction, 'hash' | 'timestamp'> & 
 export type SwapStepTransactions = Partial<Record<DepositActionStep, SwapStepTransaction>>;
 
 type SwapTransactionStore = {
-    // Keep the execution record and persisted shape used by status, history and retry guards.
+    // Keep wallet hashes for recovery; historical status fields do not determine lifecycle outcomes.
     swapTransactions: Record<string, SwapTransaction>;
     // Prerequisite receipts are display history, never evidence of a submitted swap.
     stepTransactions: Record<string, SwapStepTransactions>;
@@ -37,10 +37,11 @@ type SwapDepositHintClickedStore = {
 export type GaslessAuthorization = {
     // Absent on older clients, which also stored self-paid prerequisites here.
     kind?: 'gasless';
-    // Signature expiry (unix seconds); fallback deadline when the authorize poll is unreachable.
+    // Historical signature deadline; retained for recovery, never used to infer failure.
     validBefore: number;
     status?: GaslessAuthorizationStatus;
-    transaction?: GaslessAuthorizationTransaction | null;
+    // New recovery records retain only the hash; older records may include receipt fields.
+    transaction?: Pick<GaslessAuthorizationTransaction, 'transaction_hash'> & Partial<GaslessAuthorizationTransaction> | null;
 };
 
 export type DepositSignature = { validBefore: number };
@@ -69,6 +70,7 @@ export const useDepositSignatureStore = create(persist<DepositSignatureStore>(
 
 type GaslessAuthorizationStore = {
     authorizations: Record<string, GaslessAuthorization>;
+    recordGaslessTransactionHash: (id: string, hash: string) => void;
     setGaslessAuthorization: (Id: string, validBefore: number) => void;
     setGaslessAuthorizationStatus: (Id: string, status: GaslessAuthorizationStatus, transaction?: GaslessAuthorizationTransaction | null) => void;
     removeGaslessAuthorization: (Id: string) => void;
@@ -106,6 +108,9 @@ export const useSwapTransactionStore = create(
             },
             setSwapTransaction: (Id, status, txHash, failReason) => {
                 set((state) => {
+                    // A provider may finish without a source-chain hash. Preserve
+                    // uncertainty without inventing a transaction or its outcome.
+                    if (!txHash) return { pendingSubmissions: { ...state.pendingSubmissions, [Id]: true } };
                     const { [Id]: _removed, ...pendingSubmissions } = state.pendingSubmissions;
                     const txForSwap = {
                         ...state.swapTransactions,
@@ -129,14 +134,42 @@ export const useSwapTransactionStore = create(
         {
             name: 'swapTransactions',
             storage: createJSONStorage(() => localStorage),
+            merge: (persisted, current) => {
+                const saved = persisted as Partial<SwapTransactionStore> | undefined;
+                if (!saved) return current;
+                const swapTransactions = { ...saved?.swapTransactions };
+                const pendingSubmissions = { ...saved?.pendingSubmissions };
+                for (const [id, transaction] of Object.entries(swapTransactions)) {
+                    if (!transaction?.hash) {
+                        delete swapTransactions[id];
+                        pendingSubmissions[id] = true;
+                    }
+                }
+                return { ...current, ...saved, swapTransactions, pendingSubmissions };
+            },
         }
     ),
 )
 
+// Retain hash evidence across refreshes and reloads using the older recovery format.
+// Current authorization statuses and confirmations stay in the API cache.
 export const useGaslessAuthorizationStore = create(
     persist<GaslessAuthorizationStore>(
         (set) => ({
             authorizations: {},
+            recordGaslessTransactionHash: (id, hash) => {
+                if (!hash) return;
+                set(state => {
+                    const current = state.authorizations[id];
+                    if (current?.transaction?.transaction_hash === hash) return state;
+                    return {
+                        authorizations: {
+                            ...state.authorizations,
+                            [id]: { kind: 'gasless', validBefore: current?.validBefore ?? 0, transaction: { transaction_hash: hash } },
+                        },
+                    };
+                });
+            },
             setGaslessAuthorization: (Id, validBefore) => {
                 set((state) => ({
                     authorizations: {

@@ -65,7 +65,7 @@ export default class LayerSwapApiClient {
     }
 
     async GetGaslessAuthorizationAsync(swapId: string): Promise<ApiResponse<GaslessAuthorizationResult>> {
-        return await this.AuthenticatedRequest<ApiResponse<GaslessAuthorizationResult>>("GET", `/swaps/${swapId}/authorize`);
+        return await this.AuthenticatedRequest<ApiResponse<GaslessAuthorizationResult>>("GET", `/swaps/${swapId}/authorize`, undefined, undefined, { expectedStatuses: [404] });
     }
 
     async GetDepositActionsAsync(swapId: string, sourceAddress?: string): Promise<ApiResponse<DepositAction[]>> {
@@ -78,7 +78,7 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("GET", `/swaps/${swapId}${query}`);
     }
 
-    private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
+    private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}, options?: RequestOptions): Promise<T> {
         const finishTelemetry = startApiOperation(method, endpoint)
         let uri = LayerSwapApiClient.apiBaseEndpoint + "/api/v2" + endpoint;
         return await this._authInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
@@ -92,7 +92,7 @@ export default class LayerSwapApiClient {
                     return Promise.resolve(new EmptyApiResponse());
                 }
                 else {
-                    reportApiError(endpoint, reason);
+                    reportApiError(endpoint, reason, options);
                     return Promise.reject(reason);
                 }
             });
@@ -201,6 +201,7 @@ export type SwapBasicData = {
 
 export type SwapDetails = {
     id: string,
+    quote_revision?: number,
     created_date: string,
     source_address?: string,
     status: SwapStatus,
@@ -218,6 +219,7 @@ export type SwapDetails = {
 
 export type SwapItem = {
     id: string,
+    quote_revision?: number,
     created_date: string,
 
     source_network: Network,

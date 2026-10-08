@@ -89,6 +89,9 @@ const { createRoot, hydrateRoot } = await import('react-dom/client');
 const result = await build({
     stdin: {
         contents: `export { Page2Preview, resolveSwapPhase, SwapPhase } from '@layerswap/widget/internal';
+        export { hasSwapExecutionProgress } from '../../packages/widget/core/dist/esm/helpers/swapProgress.js';
+        export { isDepositWorkflowComplete } from '../../packages/widget/core/dist/esm/helpers/depositActions.js';
+        export { useGaslessAuthorization } from '../../packages/widget/core/dist/esm/hooks/useGaslessAuthorization.js';
         export { TimelinePreview } from './features/timeline/TimelinePreview';
         export { scenarios, scenarioGroups, scenarioWidgets, EPOCH } from './features/timeline/fixtures';
         export { selectTime, selectScenario } from './features/timeline/model';
@@ -164,6 +167,9 @@ const {
     DepositHeaderView,
     DepositAddressFormButtonView,
     resolveSwapPhase,
+    hasSwapExecutionProgress,
+    isDepositWorkflowComplete,
+    useGaslessAuthorization,
     SwapPhase,
     scenarios,
     scenarioGroups,
@@ -215,13 +221,12 @@ const phase = (s) =>
     resolveSwapPhase({
         swapDetails: s.details,
         refuel: s.refuel,
-        storedWalletTransaction: s.storedWalletTransaction,
+        depositCompleted: hasSwapExecutionProgress({ swapDetails: s.details, depositActions: s.depositActions,
+            authorization: s.gaslessAuthorization, inputTransactionStatus: s.inputTxStatusFromApi })
+            || (!s.swap.use_deposit_address && isDepositWorkflowComplete(s.depositActions ?? [])),
+        statusChecking: s.statusChecking,
         inputTxStatusFromApi: s.inputTxStatusFromApi,
-        gaslessFailureStatus: [
-            'expired',
-            'insufficient',
-            'rejected',
-        ].includes(s.gaslessAuthorization?.status) ? s.gaslessAuthorization.status : undefined,
+        gaslessFailureStatus: useGaslessAuthorization(s.details, s.depositActions, s.gaslessAuthorization).failureStatus,
         isDepositFlow: s.isDepositFlow,
     });
 
@@ -2238,6 +2243,8 @@ test('frontend quotes match the real full-to-compact lifecycle and sign-only/nat
     assert.equal(fixtureDOM('frontend-approved', 'signing').querySelector('[data-quote-layout]').dataset.quoteLayout, 'attached');
     const critical = fixtureDOM('frontend-critical', 'critical');
     assert.match(critical.textContent, /receive as low as 0.03 ETH/);
+    assert.equal(critical.querySelector('[aria-label="Swap progress"]'), null, 'confirmation precedes the execution timeline');
+    assert.doesNotMatch(critical.textContent, /Swap in progress|Approve token|Sign to swap|Confirm swap/);
     assert.equal(critical.querySelector('[data-quote-layout]').dataset.quoteLayout, 'separate');
     assert.equal(critical.querySelector('[aria-label="See details"]').closest('[aria-hidden="true"], [inert]'), null);
     assert.equal(fixtureDOM('frontend-critical', 'continue').querySelector('[data-quote-layout]').dataset.quoteLayout, 'attached');
@@ -2440,8 +2447,141 @@ test('production critical-amount confirmation resumes through its dedicated call
             handleCriticalContinue: () => calls.push('continue'),
         })));
         const button = [...document.querySelectorAll('button')].find(b => b.textContent === 'Continue anyway');
+        assert.equal(document.querySelector('[aria-label="Swap progress"]'), null);
         await act(async () => button.click());
         assert.deepEqual(calls, ['continue']);
+    } finally {
+        await act(async () => root.unmount());
+    }
+});
+
+test('changed-quote confirmation hides prepared wallet steps until the amount is accepted', () => {
+    const milestone = frontendMilestone('frontend-critical', 'critical');
+    for (const mode of ['component', 'modal']) {
+        const confirmation = fixtureDOM('frontend-critical', 'critical', mode);
+        assert.match(confirmation.textContent, /Critical receiving amount/);
+        assert.match(confirmation.textContent, /Continue anyway/);
+        assert.match(confirmation.textContent, /Cancel & try another route/);
+        assert.equal(confirmation.querySelector('[data-wallet-execution-panel="workflow"]'), null);
+        const accepted = fixtureDOM('frontend-critical', 'continue', mode);
+        assert.match(accepted.textContent, /Swap in progress/);
+        assert.match(accepted.textContent, /Approve token/);
+        assert.doesNotMatch(accepted.textContent, /Continue anyway|Cancel & try another route/);
+    }
+    for (const loadingProps of [{}, { loading: true }, { quoteIsLoading: true }]) {
+        const container = document.createElement('div');
+        container.innerHTML = renderToStaticMarkup(React.createElement(SendTransactionView, {
+            depositActions: milestone.snapshot.depositActions,
+            showCriticalMarketPriceImpactButtons: true,
+            ...loadingProps,
+        }));
+        assert.equal(container.querySelector('[data-wallet-execution-panel="workflow"]'), null);
+        assert.doesNotMatch(container.textContent, /Swap in progress|Approve token|Sign to swap|Confirm swap/);
+        assert.ok(container.querySelector('button'), 'loading during confirmation retains its control');
+    }
+});
+
+test('restored transfers wait for backend observations and retain recovered explorer links', async () => {
+    const root = createRoot(document.getElementById('root'));
+    try {
+        for (const mode of ['component', 'modal']) {
+            for (const scenarioId of ['wallet-recovery', 'gasless-recovery']) {
+                const scenario = scenarios.find(s => s.id === scenarioId);
+                const checking = scenario.milestones.find(m => m.id === 'checking');
+                await act(async () => root.render(preview(checking.snapshot, checking.at, mode)));
+                assert.match(document.getElementById('root').textContent, /Checking transfer status/);
+                assert.equal(document.querySelector('[data-processing-actions]'), null);
+                assert.doesNotMatch(document.getElementById('root').textContent, /Transfer complete|Transfer failed|Swap now/);
+            }
+            const receipt = frontendMilestone('gasless-recovery', 'receipt');
+            await act(async () => root.render(preview(receipt.snapshot, receipt.at, mode)));
+            assert.ok(fixtureDOM('gasless-recovery', 'receipt', mode).querySelector('[data-step-transaction]'),
+                'a backend receipt restores the saved hash link without authorization polling');
+            const production = document.createElement('div');
+            production.innerHTML = renderToStaticMarkup(processingElement(receipt.snapshot));
+            assert.equal(production.querySelector('[data-step-transaction]').href,
+                `https://explorer.example.invalid/tx/${receipt.snapshot.storedWalletTransaction.hash}`);
+            const pending = frontendMilestone('gasless-recovery', 'stale-failure');
+            for (const status of ['pending', 'completed', 'failed']) {
+                const snapshot = { ...pending.snapshot, storedWalletTransaction: { ...pending.snapshot.storedWalletTransaction, status, timestamp: 0 } };
+                assert.equal(phase(snapshot).phase, SwapPhase.InputPending, 'a live backend receipt outranks local status and authorization expiry');
+                await act(async () => root.render(preview(snapshot, pending.at, mode)));
+                assert.equal(document.querySelector('[data-processing-actions]'), null);
+                assert.doesNotMatch(document.getElementById('root').textContent, /authorization expired|Transfer failed/);
+            }
+        }
+    } finally {
+        await act(async () => root.unmount());
+    }
+});
+
+test('publication checks retain backend workflow steps through receipt and completion handoff', async () => {
+    const root = createRoot(document.getElementById('root'));
+    try {
+        for (const mode of ['component', 'modal']) {
+            const checking = frontendMilestone('frontend-approved', 'checking');
+            assert.equal(phase(checking.snapshot).phase, SwapPhase.CheckingStatus);
+            await act(async () => root.render(preview(checking.snapshot, checking.at, mode)));
+            const panel = document.querySelector('[data-steps-panel]');
+            assert.match(panel.textContent, /Checking transfer status/);
+            assert.match(panel.textContent, /Checking transaction status/);
+            assert.match(panel.textContent, /Sign to swap/);
+            assert.match(panel.textContent, /Confirm swap/);
+            assert.match(panel.textContent, /Receive .*ETH/);
+            assert.equal(panel.querySelectorAll('nav .lucide-check').length, 1, 'only the backend-completed signature is checked');
+            assert.equal(document.querySelector('[data-processing-actions]'), null);
+            assert.doesNotMatch(panel.textContent, /Submit the swap transaction|Confirm in your wallet|Preparing transaction/);
+
+            for (const milestone of ['publication-observed', 'input', 'completed']) {
+                const current = frontendMilestone('frontend-approved', milestone);
+                await act(async () => root.render(preview(current.snapshot, current.at, mode)));
+                const progress = document.querySelector('[data-steps-panel]');
+                assert.match(progress.textContent, /Sign to swap/);
+                assert.match(progress.textContent, /Confirm swap/);
+                assert.doesNotMatch(progress.textContent, /Checking transfer status/);
+                assert.equal(progress.querySelectorAll('nav .lucide-check').length, milestone === 'completed' ? 3 : 1);
+                assert.equal(document.querySelector('[data-processing-actions]'), null);
+            }
+        }
+    } finally {
+        await act(async () => root.unmount());
+    }
+});
+
+test('retry previews disable recovery while checking and use the shared transaction message for errors', async () => {
+    const root = createRoot(document.getElementById('root'));
+    try {
+        for (const mode of ['component', 'modal']) {
+            const checking = frontendMilestone('gasless-retry-check', 'checking');
+            await act(async () => root.render(preview(checking.snapshot, checking.at, mode)));
+            const buttons = [...document.querySelectorAll('[data-processing-actions] button')];
+            assert.equal(buttons.length, 2);
+            assert.ok(buttons.every(button => button.disabled), 'both recovery actions wait for reconciliation');
+            const error = frontendMilestone('gasless-retry-check', 'error');
+            await act(async () => root.render(preview(error.snapshot, error.at, mode)));
+            const alert = document.querySelector('[role="alert"]');
+            assert.match(alert.textContent, /Could not check the transfer status\. Please try again\./);
+            assert.equal(document.getElementById('root').textContent.split(error.snapshot.retryError).length - 1, 1);
+            assert.ok([...document.querySelectorAll('[data-processing-actions] button')].every(button => !button.disabled));
+        }
+    } finally {
+        await act(async () => root.unmount());
+    }
+});
+
+test('wallet previews preserve the active submission view until the success handoff finishes', async () => {
+    const root = createRoot(document.getElementById('root'));
+    try {
+        for (const mode of ['component', 'modal']) {
+            const handoff = frontendMilestone('wallet-handoff', 'handoff');
+            assert.equal(phase(handoff.snapshot).phase, SwapPhase.InputPending);
+            await act(async () => root.render(preview(handoff.snapshot, handoff.at, mode)));
+            assert.match(document.getElementById('root').textContent, /Confirm in your wallet/);
+            const processing = frontendMilestone('wallet-handoff', 'processing');
+            await act(async () => root.render(preview(processing.snapshot, processing.at, mode)));
+            assert.doesNotMatch(document.getElementById('root').textContent, /Confirm in your wallet/);
+            assert.match(document.getElementById('root').textContent, /Transfer in progress/);
+        }
     } finally {
         await act(async () => root.unmount());
     }

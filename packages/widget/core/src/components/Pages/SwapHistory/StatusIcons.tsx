@@ -1,8 +1,23 @@
 import { SwapStatus } from '@layerswap/widget-types';
 import CircleCheckIcon from "@/components/Icons/CircleCheckIcon";
-import { PublishedSwapTransactions, SwapItem, TransactionType } from "@/lib/apiClients/layerSwapApiClient"
+import { SwapItem, TransactionType, TransactionStatus } from "@/lib/apiClients/layerSwapApiClient"
+import { useGaslessAuthorizationStatus } from '@/hooks/useGaslessAuthorizationStatus';
+import { useInputTransactionStatus } from '@/hooks/useInputTransactionStatus';
+import { isGaslessAuthorizationSubmitted } from '@/helpers/gasless';
+import { useSwapTransactionStore, useGaslessAuthorizationStore } from '@/stores/swapTransactionStore';
 
 export default function StatusIcon({ swap, withBg, short }: { swap: SwapItem, withBg?: boolean, short?: boolean }) {
+  const hasInput = swap.transactions.some(t => t.type === TransactionType.Input)
+  const observeAuthorization = swap.status === SwapStatus.UserTransferPending && !swap.use_deposit_address && !hasInput
+  const { data, error } = useGaslessAuthorizationStatus(observeAuthorization ? swap.id : undefined, undefined, true, swap.quote_revision, true)
+  const authorization = data?.data
+  const missingAuthorization = (error as { response?: { status?: number } })?.response?.status === 404
+  const sourceHash = useSwapTransactionStore(state => state.swapTransactions[swap.id]?.hash)
+  const retainedGaslessHash = useGaslessAuthorizationStore(state => state.authorizations[swap.id]?.transaction?.transaction_hash)
+  const { hashes, status: receiptStatus } = useInputTransactionStatus(swap.source_network.name, [
+    sourceHash, retainedGaslessHash, authorization?.transaction?.transaction_hash,
+  ], observeAuthorization)
+  const liveReceipt = receiptStatus === TransactionStatus.Pending || receiptStatus === TransactionStatus.Completed
   const status = swap.status;
   switch (status) {
     case SwapStatus.Failed:
@@ -12,10 +27,20 @@ export default function StatusIcon({ swap, withBg, short }: { swap: SwapItem, wi
     case SwapStatus.Expired:
       return <SecondaryComponent text="Expired" withBg={withBg} short={short} />
     case SwapStatus.UserTransferPending:
-      const data: PublishedSwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
-      const txForSwap = data?.state?.swapTransactions?.[swap.id];
-      if (txForSwap || swap.transactions.find(t => t.type === TransactionType.Input)) {
+      if (hasInput || authorization?.status === 'initiated' || isGaslessAuthorizationSubmitted(authorization) || liveReceipt) {
         return <PrimaryComponent text="In Progress" withBg={withBg} short={short} />
+      }
+      else if (hashes.length > 0 && !receiptStatus) {
+        return <SecondaryComponent text="Checking transfer status" withBg={withBg} short={short} />
+      }
+      else if (receiptStatus === TransactionStatus.Failed) {
+        return <RedComponenet text="Failed" withBg={withBg} short={short} />
+      }
+      else if (observeAuthorization && !missingAuthorization && (error || !authorization)) {
+        return <SecondaryComponent text="Checking transfer status" withBg={withBg} short={short} />
+      }
+      else if (authorization && ['expired', 'insufficient', 'rejected'].includes(authorization.status)) {
+        return <RedComponenet text="Failed" withBg={withBg} short={short} />
       }
       else {
         return <YellowComponent text="Incomplete" withBg={withBg} short={short} />

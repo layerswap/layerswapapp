@@ -40,8 +40,8 @@ const logWithdrawalError = (error: unknown, ctx: { swapId?: string; fromAddress?
  * Ethereum signing chain, read the spot/perps split, consolidate, sign + submit) lives in the
  * wallet package's Hyperliquid `TransferProvider`, resolved here via `useTransfer()` — the widget
  * keeps only what needs its contexts: lazy swap creation + deposit-address resolution, amount
- * validation, UI state, and the success hand-off. On success it records a pending input
- * transaction so the standard Processing screen takes over (no real source hash: the backend
+ * validation, UI state, and the success hand-off. On success it records an unresolved
+ * submission so the standard Processing screen takes over (no real source hash: the backend
  * detects the CCTP deposit on the destination chain).
  *
  * Safe pre-submission retries refresh deposit actions and re-read the balance split.
@@ -55,7 +55,7 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
     const initialSettings = useInitialSettings()
     const { onWalletWithdrawalSuccess } = useWalletWithdrawalState()
     const { swapDetails } = useSwapDataState()
-    const { createSwap, setSwapId, startFreshSwapAttempt, mutateSwap } = useSwapDataUpdate()
+    const { createSwap, setSwapId, startFreshSwapAttempt, mutateSwap, beginWalletWithdrawal } = useSwapDataUpdate()
     const { executeTransfer } = useTransfer()
     const { onSwapLifecycle } = useCallbacks()
 
@@ -83,9 +83,13 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
     const preparedSwapRef = useRef<{ swapId: string } | undefined>(undefined)
     // The flow widens the async window (sign + submit + poll); avoid setting state after unmount.
     const mountedRef = useRef(true)
+    const finishWithdrawalRef = useRef<(() => void) | undefined>(undefined)
     useEffect(() => {
         mountedRef.current = true
-        return () => { mountedRef.current = false }
+        return () => {
+            mountedRef.current = false
+            finishWithdrawalRef.current?.()
+        }
     }, [])
 
     const handleWithdraw = useCallback(async () => {
@@ -104,6 +108,8 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
             })
         }
         submittingRef.current = true
+        const finishWithdrawal = beginWalletWithdrawal()
+        finishWithdrawalRef.current = finishWithdrawal
         setError(undefined)
         setRejected(false)
         setLoading(true)
@@ -215,8 +221,10 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
                 setProgress(undefined)
             }
             submittingRef.current = false
+            finishWithdrawal()
+            if (finishWithdrawalRef.current === finishWithdrawal) finishWithdrawalRef.current = undefined
         }
-    }, [sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, networks, sourceRoutes, swapId, swapDetails, refuel, initialSettings, wallet, createSwap, setSwapId, startFreshSwapAttempt, mutateSwap, executeTransfer, onWalletWithdrawalSuccess, swapBasicData.requested_amount, error, rejected, onSwapLifecycle])
+    }, [sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, networks, sourceRoutes, swapId, swapDetails, refuel, initialSettings, wallet, createSwap, setSwapId, startFreshSwapAttempt, mutateSwap, beginWalletWithdrawal, executeTransfer, onWalletWithdrawalSuccess, swapBasicData.requested_amount, error, rejected, onSwapLifecycle])
 
     return {
         handleWithdraw,

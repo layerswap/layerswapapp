@@ -7,11 +7,13 @@ export function WalletExecutionTransition({
     overview,
     workflow,
     controls,
+    content,
     animate = true,
 }: {
     overview?: ReactNode;
     workflow?: ReactNode;
     controls?: ReactNode;
+    content?: ReactNode;
     animate?: boolean;
 }) {
     const reducedMotion = useHydratedReducedMotion();
@@ -24,6 +26,16 @@ export function WalletExecutionTransition({
                 animate={animate}
             >
                 <div className="pb-2">{overview}</div>
+            </ExecutionPanel>
+        ),
+        content && (
+            <ExecutionPanel
+                key="content"
+                kind="content"
+                reducedMotion={reducedMotion}
+                animate={animate}
+            >
+                {content}
             </ExecutionPanel>
         ),
         workflow && (
@@ -70,7 +82,7 @@ function ExecutionPanel({
     className,
 }: {
     children: ReactNode;
-    kind: 'overview' | 'workflow' | 'controls';
+    kind: 'overview' | 'workflow' | 'controls' | 'content';
     reducedMotion: boolean;
     animate: boolean;
     className?: string;
@@ -79,7 +91,9 @@ function ExecutionPanel({
 
     // The shared steps panel owns its height animation in every flow.
     // Animate the overview and controls here; steps keep their own animation.
-    if (kind === 'workflow') {
+    // Exclusive withdrawal/processing controllers share one stable slot. They
+    // are replaced directly, so AnimatePresence cannot retain a stale workflow.
+    if (kind === 'workflow' || kind === 'content') {
         return (
             <div
                 data-wallet-execution-panel={animate ? kind : undefined}

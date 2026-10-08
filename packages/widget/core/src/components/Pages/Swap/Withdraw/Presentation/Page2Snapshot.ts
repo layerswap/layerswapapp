@@ -50,6 +50,11 @@ export type Page2LoadedSnapshot = {
     details: SwapDetails;
     swapId?: string;
     walletExecutionStarted?: boolean;
+    walletWithdrawalExecuting?: boolean;
+    /** The provider is waiting for required backend observations. */
+    statusChecking?: boolean;
+    retryChecking?: boolean;
+    retryError?: string;
     depositActions?: DepositAction[];
     quote?: SwapQuote;
     refuel?: Refuel;

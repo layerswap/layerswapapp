@@ -2,6 +2,7 @@
 // paths and their headless tests) can key its phase table on the enum without pulling the
 // API client graph behind resolveSwapPhase.
 export enum SwapPhase {
+    CheckingStatus = 'checking_transfer_status',
     AwaitingUserDeposit = 'awaiting_user_deposit',
     InputPending = 'input_pending',
     OutputPending = 'output_pending',

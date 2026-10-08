@@ -23,6 +23,7 @@ export function DepositWorkflowView({
     receiveAmount,
     processing,
     completed,
+    statusChecking = false,
     readOnly,
 }: {
     actions?: DepositAction[];
@@ -33,6 +34,7 @@ export function DepositWorkflowView({
     actionStateText?: string;
     destinationToken?: Token;
     receiveAmount?: number;
+    statusChecking?: boolean;
     readOnly?: boolean;
     processing?: {
         title?: string;
@@ -59,7 +61,7 @@ export function DepositWorkflowView({
         workflowActions.some((action) => action.step === 'publish');
     // Between signing and publication the backend is preparing a waiting step.
     // Keep that status attached to the step when there is no wallet prompt yet.
-    const currentStepIndex = getCurrentDepositActionIndex(workflowActions, !!loading || !!error);
+    const currentStepIndex = getCurrentDepositActionIndex(workflowActions, !!loading || !!error || statusChecking);
     const currentStepHasError =
         !loading &&
         error &&
@@ -77,9 +79,11 @@ export function DepositWorkflowView({
                     : ProgressStatus.Upcoming,
         isLoading:
             index === currentStepIndex &&
-            (!!loading || action.status === 'pending'),
+            (statusChecking || !!loading || action.status === 'pending'),
         description:
-            action.status === 'failed'
+            statusChecking && index === currentStepIndex
+                ? 'Checking transaction status'
+                : action.status === 'failed'
                 ? action.detail || errorDescription
                 : index === currentStepIndex
                   ? errorDescription || (loading || action.status === 'pending'
@@ -143,7 +147,9 @@ export function DepositWorkflowView({
           100;
     const title = completed
         ? 'Transfer complete'
-        : (processing?.title ?? 'Swap in progress');
+        : statusChecking
+          ? 'Checking transfer status'
+          : (processing?.title ?? 'Swap in progress');
     const description = completed
         ? completed.completionTime
         : processing?.elapsedTime;

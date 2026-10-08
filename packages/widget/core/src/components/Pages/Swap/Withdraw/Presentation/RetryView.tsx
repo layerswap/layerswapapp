@@ -4,16 +4,18 @@ export function RetryView({
     canSwitchToStandard,
     onRetry,
     onSwitchToStandard,
+    isChecking,
 }: {
     canSwitchToStandard?: boolean;
     onRetry?: () => void;
     onSwitchToStandard?: () => void;
+    isChecking?: boolean;
 }) {
     return (
         <div className="space-y-2">
             <SubmitButton
-                isDisabled={false}
-                isSubmitting={false}
+                isDisabled={!!isChecking}
+                isSubmitting={!!isChecking}
                 onClick={onRetry}
             >
                 Try again
@@ -21,8 +23,8 @@ export function RetryView({
             {canSwitchToStandard && (
                 <SubmitButton
                     buttonStyle="secondary"
-                    isDisabled={false}
-                    isSubmitting={false}
+                    isDisabled={!!isChecking}
+                    isSubmitting={!!isChecking}
                     onClick={onSwitchToStandard}
                 >
                     Switch to standard transfer

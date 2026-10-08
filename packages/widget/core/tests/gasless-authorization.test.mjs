@@ -19,10 +19,11 @@ for (const [key, value] of Object.entries(globals)) {
 const apiModule = 'data:text/javascript,' + encodeURIComponent(`
   export const TransactionType = { Input: 'input' };
   export const requests = [];
+  export const state = { read: async () => ({ data: { status: 'initiated' } }) };
   export default class Client {
     async GetGaslessAuthorizationAsync(id) {
       requests.push(id);
-      return { data: { status: 'initiated' } };
+      return state.read(id);
     }
   }
 `)
@@ -37,15 +38,16 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
 } })
 const { createRoot } = await import('react-dom/client')
 const { SWRConfig } = await import('swr')
-const { requests } = await import(apiModule)
+const { requests, state } = await import(apiModule)
 const { useGaslessAuthorization } = await import('../dist/esm/hooks/useGaslessAuthorization.js')
 const { useGaslessAuthorizationStatus } = await import('../dist/esm/hooks/useGaslessAuthorizationStatus.js')
 const { useGaslessAuthorizationStore: store, useDepositSignatureStore: signatures } = await import('../dist/esm/stores/swapTransactionStore.js')
-let root, container, observations, config
+let root, container, observations, config, statusResult
 beforeEach(() => {
   store.setState({ authorizations: {} })
   signatures.setState({ signatures: {} })
   requests.length = 0
+  state.read = async () => ({ data: { status: 'initiated' } })
   config = { provider: () => new Map(), revalidateOnFocus: false, revalidateOnReconnect: false }
   container = document.createElement('div')
   document.body.append(container)
@@ -66,131 +68,114 @@ after(() => {
 })
 
 const swap = (id = 'A', extra = {}) => ({ id, status: 'user_transfer_pending', transactions: [], ...extra })
-function Probe({ details, actions, poll }) {
-  const result = useGaslessAuthorization(details, actions)
-  useGaslessAuthorizationStatus(poll ? details?.id : undefined, actions)
-  // Observe every commit: checking only the settled result misses the stale failure.
-  useEffect(() => { observations.push({ id: details?.id, ...result }) })
+const gaslessActions = [{ step: 'sign', type: 'sign', signing_standard: 'permit2', status: 'completed' }]
+const selfPaidActions = [{ step: 'sign', status: 'completed' }, { step: 'publish', status: 'waiting' }]
+function Probe({ details, actions }) {
+  statusResult = useGaslessAuthorizationStatus(details?.id, actions, true, details?.quote_revision)
+  const result = useGaslessAuthorization(details, actions, statusResult.data?.data)
+  useEffect(() => { observations.push({ id: details?.id, ...result, authorization: statusResult.data?.data }) })
   return null
 }
-const render = (details, actions, poll = false) => act(async () => root.render(createElement(StrictMode, null,
-  createElement(SWRConfig, { value: config }, createElement(Probe, { details, actions, poll })))))
-const authorize = (id, validBefore) => store.getState().setGaslessAuthorization(id, validBefore)
-const setStatus = status => store.getState().setGaslessAuthorizationStatus('A', status)
+const render = (details = swap(), actions = gaslessActions) => act(async () => root.render(createElement(StrictMode, null,
+  createElement(SWRConfig, { value: config }, createElement(Probe, { details, actions })))))
 
-async function expire(t) {
-  t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 100_000 })
-  authorize('A', 101)
-  await render(swap())
-  assert.equal(observations.at(-1).failed, false)
-  await act(async () => t.mock.timers.tick(30_999))
-  assert.equal(observations.at(-1).failed, false, 'preserve the 30-second grace period')
-  await act(async () => t.mock.timers.tick(1))
-  assert.equal(observations.at(-1).failureStatus, 'expired')
-  observations = []
-}
-
-const transitions = [
-  ['switch to a swap without authorization', () => render(swap('B'))],
-  ['clear the active swap', () => render(undefined)],
-  ['remove authorization for retry', () => act(async () => store.getState().removeGaslessAuthorization('A'))],
-  ['renew the authorization deadline', () => act(async () => authorize('A', 300))],
-  ...['initiated', 'published', 'completed'].map(status => [
-    `receive authoritative ${status} status`, () => act(async () => setStatus(status)),
-  ]),
-  ['receive an input transaction', () => render(swap('A', { transactions: [{ type: 'input' }] }))],
-  ['leave the user-transfer-pending stage', () => render(swap('A', { status: 'ls_transfer_pending' }))],
-]
-for (const [name, transition] of transitions) {
-  test(`expired timer cannot leak a failure when we ${name}`, async t => {
-    await expire(t)
-    await transition()
-    assert.ok(observations.length > 0)
-    assert.ok(observations.every(result => !result.failed), JSON.stringify(observations))
+for (const legacyStatus of [undefined, 'expired', 'published', 'completed']) {
+  test(`backend authorization is read with ${legacyStatus ?? 'no'} local authorization after reload`, async () => {
+    if (legacyStatus) {
+      localStorage.setItem('gaslessAuthorizations', JSON.stringify({
+        state: { authorizations: { A: { validBefore: 1, status: legacyStatus } } }, version: 0,
+      }))
+      await store.persist.rehydrate()
+    }
+    await render()
+    assert.deepEqual(requests, ['A'])
+    assert.equal(observations.at(-1).authorization.status, 'initiated')
+    assert.equal(observations.at(-1).failed, false)
+    assert.equal(store.getState().authorizations.A?.status, legacyStatus, 'the backend result stays in SWR')
   })
 }
 
-test('switching swaps with the same deadline still expires the active swap', async t => {
-  t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 100_000 })
-  authorize('A', 101)
-  authorize('B', 101)
-  await render(swap())
-  await render(swap('B'))
-  await act(async () => t.mock.timers.tick(31_000))
-  assert.equal(observations.at(-1).id, 'B')
-  assert.equal(observations.at(-1).failureStatus, 'expired')
-})
-
-test('polled failures remain authoritative after timer expiry', async t => {
-  await expire(t)
-  for (const status of ['rejected', 'insufficient', 'expired']) {
-    await act(async () => setStatus(status))
-    assert.equal(observations.at(-1).failed, true)
-    assert.equal(observations.at(-1).failureStatus, status)
-  }
-})
-
-const selfPaidActions = [
-  { step: 'sign', status: 'completed' },
-  { step: 'publish', status: 'waiting' },
-]
-
-test('a persisted prerequisite signature never starts gasless polling or expiry after reload', async t => {
+test('a browser deadline never fails an authorization during a backend outage', async t => {
   t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 100_000 })
   signatures.getState().setDepositSignature('A', 101)
-  const saved = localStorage.getItem('depositSignatures')
-  signatures.setState({ signatures: {} })
-  localStorage.setItem('depositSignatures', saved)
-  await signatures.persist.rehydrate()
-  assert.deepEqual(signatures.getState().signatures.A, { validBefore: 101 })
-  await render(swap(), undefined, true)
-  await render(swap(), selfPaidActions, true)
+  store.setState({ authorizations: { A: { validBefore: 101 } } })
+  state.read = async () => { throw new Error('Status unavailable') }
+  await render()
   await act(async () => t.mock.timers.tick(60_000))
-  assert.deepEqual(requests, [])
-  assert.equal(store.getState().authorizations.A, undefined)
   assert.ok(observations.every(result => !result.failed))
 })
 
-for (const status of [undefined, 'expired']) {
-  test(`a legacy ${status ?? 'unpolled'} self-paid marker cannot fail while restored actions load`, async t => {
-    t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 100_000 })
-    localStorage.setItem('gaslessAuthorizations', JSON.stringify({
-      state: { authorizations: { A: { validBefore: 1, status } } }, version: 0,
-    }))
-    await store.persist.rehydrate()
-    await render(swap(), undefined, true)
-    await act(async () => t.mock.timers.tick(60_000))
-    await render(swap(), selfPaidActions, true)
-    assert.ok(observations.every(result => !result.failed))
-    assert.deepEqual(requests, [])
-    assert.equal(store.getState().authorizations.A, undefined, 'discard the obsolete prerequisite marker')
+for (const status of ['expired', 'insufficient', 'rejected']) {
+  test(`a current backend ${status} response fails and a later correction is observed`, async t => {
+    t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 10_000 })
+    state.read = async () => ({ data: { status } })
+    await render()
+    assert.equal(observations.at(-1).failureStatus, status)
+    state.read = async () => ({ data: { status: 'published', transaction: { transaction_hash: '0xinput', status: 'pending' } } })
+    await act(async () => t.mock.timers.tick(4000))
+    assert.equal(requests.length, 2, 'terminal responses do not stop observation')
+    assert.equal(observations.at(-1).failed, false)
+    assert.equal(observations.at(-1).authorization.status, 'published')
   })
 }
 
-test('discovering self-paid publication cancels a prior gasless expiry immediately', async t => {
-  await expire(t)
-  await render(swap(), selfPaidActions, true)
-  assert.ok(observations.every(result => !result.failed))
-  assert.deepEqual(requests, [])
+test('published authorization keeps polling until the swap backend takes over', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 10_000 })
+  state.read = async () => ({ data: { status: 'published' } })
+  await render()
+  state.read = async () => ({ data: { status: 'insufficient' } })
+  await act(async () => t.mock.timers.tick(4000))
+  assert.equal(observations.at(-1).failureStatus, 'insufficient')
 })
 
-test('an actual transaction on an old self-paid marker is preserved without gasless failure', async () => {
-  const transaction = { transaction_hash: '0xinput', status: 'pending' }
-  store.setState({ authorizations: { A: { validBefore: 1, status: 'expired', transaction } } })
-  await render(swap(), selfPaidActions, true)
-  assert.equal(store.getState().authorizations.A.transaction, transaction)
-  assert.ok(observations.every(result => !result.failed))
-  assert.deepEqual(requests, [])
+test('404 is unresolved and a later authorization can be discovered', async () => {
+  state.read = async () => { throw Object.assign(new Error('Not found'), { response: { status: 404 } }) }
+  await render()
+  assert.equal(observations.at(-1).failed, false)
+  state.read = async () => ({ data: { status: 'expired' } })
+  await act(async () => statusResult.mutate())
+  assert.equal(observations.at(-1).failureStatus, 'expired')
 })
 
-for (const legacy of [false, true]) {
-  test(`${legacy ? 'legacy' : 'new'} gasless authorization still polls when its workflow is established`, async () => {
-    if (legacy) store.setState({ authorizations: { A: { validBefore: Date.now() / 1000 + 60 } } })
-    else authorize('A', Date.now() / 1000 + 60)
-    const actions = legacy ? [{ step: 'sign', signing_standard: 'permit2', status: 'completed' }] : undefined
-    await render(swap(), actions, true)
-    assert.deepEqual(requests, ['A'])
-    assert.equal(store.getState().authorizations.A.status, 'initiated')
+test('an explicit self-paid workflow never polls authorize or trusts a legacy failure', async () => {
+  store.setState({ authorizations: { A: { validBefore: 1, status: 'expired' } } })
+  await render(swap(), selfPaidActions)
+  assert.deepEqual(requests, [])
+  assert.ok(observations.every(result => !result.failed))
+})
+
+test('authorization starts once signing actions are restored, without local evidence', async () => {
+  await render(swap(), [])
+  assert.deepEqual(requests, [])
+  await render()
+  assert.deepEqual(requests, ['A'])
+})
+
+for (const transaction of [undefined, { type: 'input', transaction_hash: '0xinput', status: 'pending' }]) {
+  test(`advanced backend state${transaction ? ' with input' : ''} overrides authorization failure`, async () => {
+    state.read = async () => ({ data: { status: 'expired' } })
+    await render(swap('A', transaction ? { transactions: [transaction] } : { status: 'ls_transfer_pending' }))
     assert.ok(observations.every(result => !result.failed))
+  })
+}
+
+test('a live authorization transaction overrides its failure label', async () => {
+  state.read = async () => ({ data: { status: 'expired', transaction: { transaction_hash: '0xinput', status: 'pending' } } })
+  await render()
+  assert.equal(observations.at(-1).failed, false)
+})
+
+for (const changed of ['swap', 'quote']) {
+  test(`a late failure for the previous ${changed} cannot leak into the active observation`, async () => {
+    const delayed = Promise.withResolvers()
+    let reads = 0
+    state.read = async () => ++reads === 1 ? delayed.promise : { data: { status: 'published' } }
+    await render(swap('A', { quote_revision: 1 }))
+    await render(swap(changed === 'swap' ? 'B' : 'A', { quote_revision: 2 }))
+    assert.equal(observations.at(-1).authorization.status, 'published')
+    observations = []
+    await act(async () => delayed.resolve({ data: { status: 'expired' } }))
+    assert.ok(observations.every(result => !result.failed))
+    assert.equal(statusResult.data.data.status, 'published')
   })
 }

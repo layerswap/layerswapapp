@@ -75,12 +75,14 @@ export function SwapContentView({
     quote,
     compactQuote = false,
     transferStage,
+    walletFlow = false,
     children,
 }: {
     summary: ReactNode;
     quote?: ReactNode;
     compactQuote?: boolean;
     transferStage?: 'withdraw' | 'processing';
+    walletFlow?: boolean;
     children?: ReactNode;
 }) {
     const overview = summary ? (
@@ -97,12 +99,9 @@ export function SwapContentView({
                 <WalletExecutionTransition
                     animate={!!transferStage}
                     overview={overview}
-                    workflow={
-                        transferStage === 'processing' ? children : undefined
-                    }
-                    controls={
-                        transferStage !== 'processing' ? children : undefined
-                    }
+                    content={walletFlow ? children : undefined}
+                    workflow={!walletFlow && transferStage === 'processing' ? children : undefined}
+                    controls={!walletFlow && transferStage !== 'processing' ? children : undefined}
                 />
             </div>
         </StepsPanelProvider>
@@ -125,15 +124,18 @@ export function WalletTransferView({
 export function ProcessingSectionView({
     children,
     actions,
+    message,
 }: {
     children: ReactNode;
     actions?: ReactNode;
+    message?: ReactNode;
 }) {
     const reducedMotion = useHydratedReducedMotion();
     const isPresent = useIsPresent();
 
     return (
         <div className="w-full">
+            {message && <div role="alert" className="mb-2">{message}</div>}
             {children}
             {actions && (
                 <motion.div

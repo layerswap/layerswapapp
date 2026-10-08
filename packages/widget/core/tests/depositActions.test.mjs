@@ -33,7 +33,7 @@ const swapProgress = loadSource('../src/helpers/swapProgress.ts', {
     './gasless': gasless,
     '@layerswap/widget-types': loadSource('../../types/src/SwapStatus.ts'),
     '@/lib/apiClients/layerSwapApiClient': {
-        BackendTransactionStatus: { Failed: 'failed' }, TransactionType: { Input: 'input' },
+        BackendTransactionStatus: { Failed: 'failed' }, TransactionType: { Input: 'input' }, TransactionStatus: { Pending: 'pending', Completed: 'completed', Failed: 'failed' },
     },
 })
 const progressTypes = loadSource('../src/components/Pages/Swap/Withdraw/Processing/types.ts')
@@ -48,14 +48,14 @@ const actionsFor = nonce => [
 
 function createWorkflow({ mounted = false, realPolling = false } = {}) {
     let view
-    const calls = { refresh: [], confirmations: [], sign: [], authorize: [], transfer: [], executionStarts: [], storedTransactions: [], authorizations: [], signatures: [], errors: [], lifecycle: [], success: 0 }
+    const calls = { reconciliations: [], refresh: [], confirmations: [], sign: [], authorize: [], transfer: [], executionStarts: [], storedTransactions: [], authorizations: [], signatures: [], errors: [], lifecycle: [], success: 0, controllerActive: false }
     const state = {
         apiActions: actionsFor('fresh'),
         refreshError: undefined,
         rejectSigning: true,
         rejected: false,
         swapId,
-        swapDetails: { id: swapId, metadata: {} },
+        swapDetails: { id: swapId, metadata: {}, source_network: { name: 'BASE_MAINNET' }, use_deposit_address: false },
         depositActionsResponse: actionsFor('expired'),
         onWalletPrompt: undefined,
         onTransition: undefined,
@@ -77,12 +77,16 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         }),
         useGaslessAuthorizationStore: store({
             authorizations: {},
+            recordGaslessTransactionHash(id, hash) { this.authorizations[id] = { kind: 'gasless', validBefore: 0, transaction: { transaction_hash: hash } } },
             setGaslessAuthorization(id, validBefore) { this.authorizations[id] = { kind: 'gasless', validBefore }; calls.authorizations.push([id, validBefore]) },
             setGaslessAuthorizationStatus: (...args) => calls.authorizations.push(args),
             removeGaslessAuthorization(id) { delete this.authorizations[id] },
         }),
         useSwapTransactionStore: store({
             swapTransactions: {}, setSwapTransaction(id, status, hash) { stores.useSwapTransactionStore.getState().swapTransactions[id] = { status, hash }; calls.storedTransactions.push([id, status, hash]) },
+            pendingSubmissions: {},
+            markSubmissionPending(id) { this.pendingSubmissions[id] = true },
+            clearPendingSubmission(id) { delete this.pendingSubmissions[id] },
             stepTransactions: {},
             setStepTransaction(id, step, hash, explorerUrl) {
                 const transactions = this.stepTransactions[id] ??= {}
@@ -107,10 +111,18 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
             return state.refreshError ? { error: state.refreshError } : { data: state.apiActions }
         },
         AuthorizeSwapAsync: async (...args) => { calls.authorize.push(args) },
-        GetSwapAsync: () => assert.fail('Workflow execution must not poll whole swaps'),
+        GetSwapAsync: async (...args) => {
+            calls.reconciliations.push(args)
+            return state.getSwap ? state.getSwap(...args) : { data: { swap: state.swapDetails, deposit_actions: state.apiActions } }
+        },
+        GetGaslessAuthorizationAsync: async () => ({ data: state.authorization ?? { status: 'initiated' } }),
         SwapCatchup: async () => {},
     }
-    const apiModule = { default: class { constructor() { return api } }, BackendTransactionStatus: { Pending: 'pending' } }
+    const apiModule = { default: class { constructor() { return api } }, BackendTransactionStatus: { Pending: 'pending' }, TransactionStatus: { Pending: 'pending', Failed: 'failed', Completed: 'completed' } }
+    const swapKeys = loadSource('../src/helpers/swapKeys.ts')
+    const reconciliation = loadSource('../src/lib/swapReconciliation.ts', {
+        './apiClients/layerSwapApiClient': apiModule, '../helpers/gasless': gasless, '../helpers/swapProgress': swapProgress,
+    })
     const swapContext = realPolling ? createSwapContext({
         Client: apiModule.default, getSwapId: () => state.swapId, getAccount: () => wallet, stores,
     }) : undefined
@@ -120,6 +132,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         '@/lib/apiClients/layerSwapApiClient': apiModule,
         '@/helpers/depositActions': depositActions,
         '@/helpers/gasless': gasless,
+        '@/helpers/swapKeys': swapKeys,
         '@/stores/swapTransactionStore': stores,
         '@/context/swap': swapContext,
         './useClientLayoutEffect': { useClientLayoutEffect: React.useLayoutEffect },
@@ -238,9 +251,17 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         '@/context/swap': {
             useSwapDataState: () => state,
             useSwapDataUpdate: () => ({
+                beginWalletWithdrawal: () => {
+                    const token = Symbol('controller')
+                    state.controllerToken = token
+                    calls.controllerActive = true
+                    return () => { if (state.controllerToken === token) calls.controllerActive = false }
+                },
                 createSwap: (...args) => state.createSwap ? state.createSwap(...args) : assert.fail('Retry must keep the existing swap'),
                 startFreshSwapAttempt: noop,
                 mutateSwap: async () => {},
+                mutateDepositActions: async () => {},
+                mutateAuthorization: async () => {},
                 setSwapId: id => { state.swapId = id },
                 markWalletExecutionStarted: id => calls.executionStarts.push(id),
             }),
@@ -272,6 +293,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         '../../Processing/StepsComponent': { default: Steps },
         '../../Processing/types': progressTypes,
         '@/helpers/swapProgress': swapProgress,
+        '@/lib/swapReconciliation': reconciliation,
         '@/helpers/gasless': gasless,
         './isUserRejection': rejection,
         swr: realPolling ? require('swr') : {
@@ -599,10 +621,11 @@ for (const progress of ['transaction', 'authorization', 'signature']) {
         await retry.props.onClick()
 
         assert.equal(flow.state.swapId, swapId)
-        assert.deepEqual(flow.calls.refresh, [[swapId, sourceAddress]], 'resume the existing attempt')
+        assert.deepEqual(flow.calls.reconciliations, [[swapId, sourceAddress]], 'check current backend facts before replacement')
+        assert.deepEqual(flow.calls.refresh, [], 'do not reopen an unresolved wallet request')
         assert.deepEqual(flow.calls.sign, [])
         assert.deepEqual(flow.calls.transfer, [])
-        assert.equal(flow.calls.errors[0]?.message, "The swap's quote expired; create a new swap.")
+        assert.deepEqual(flow.calls.errors, [])
     })
 }
 
@@ -769,8 +792,8 @@ test('gasless execution records success only after a confirmed server submission
         return [{ ...sign, status: 'completed' }]
     }
     await flow.render().button.props.onClick()
-    assert.deepEqual(flow.calls.storedTransactions, [[swapId, 'pending', '0xrelayed']])
-    assert.deepEqual(flow.calls.authorizations, [[swapId, 12345], [swapId, 'published', flow.state.authorization.transaction]])
+    assert.deepEqual(flow.calls.storedTransactions, [])
+    assert.deepEqual(flow.calls.authorizations, [])
     assert.equal(flow.calls.transfer.length, 0)
     assert.equal(flow.calls.success, 1)
     assert.equal(flow.calls.lifecycle.at(-1).step, 'gasless_authorization_submitted')
@@ -845,18 +868,27 @@ for (const includesActions of [true, false]) {
         assert.equal(confirmation.button.props.children, 'Continue anyway')
         assert.equal(flow.calls.transfer.length, 0, 'confirmation precedes wallet execution')
         assert.deepEqual(flow.calls.executionStarts, [], 'keep the full quote until the changed amount is accepted')
+        assert.equal(flow.calls.controllerActive, true, 'confirmation keeps its controller across backend checks')
+        flow.state.resolved = { phase: 'checking_transfer_status' }
+        const checking = flow.render()
+        assert.equal(checking.button.props.isDisabled, true)
+        await checking.button.props.onClick()
+        assert.equal(flow.calls.transfer.length, 0, 'confirmation cannot submit during an unresolved check')
+        assert.equal(flow.render().warning, confirmation.warning, 'a blocked click preserves the confirmation')
+        flow.state.resolved = { phase: 'awaiting_user_deposit' }
 
         await confirmation.button.props.onClick()
         assert.equal(creates, 1, 'continuing never replaces the confirmed swap')
         assert.deepEqual(flow.calls.refresh, [['quoted-swap', sourceAddress]])
         assert.equal(flow.calls.transfer.length, 1)
         assert.equal(flow.calls.transfer[0].swapId, 'quoted-swap')
+        assert.equal(flow.calls.controllerActive, false)
         assert.deepEqual(flow.calls.executionStarts, ['quoted-swap'])
         assert.deepEqual(flow.calls.errors, [])
     })
 }
 
-test('a failed gasless re-sign keeps the live swap resumable without offering a standard transfer', async () => {
+test('an uncertain authorization prevents fallback and fresh retry until the backend settles it', async () => {
     const flow = createWorkflow()
     flow.preferences.gaslessEnabled = true
     flow.state.sourceToken = { contract: '0xtoken', supports_gasless_deposit: true, gasless_standard: 'eip3009' }
@@ -867,29 +899,28 @@ test('a failed gasless re-sign keeps the live swap resumable without offering a 
     flow.render()
     await flow.poll()
     await flow.render().button.props.onClick()
-    assert.ok(flow.stores.useGaslessAuthorizationStore.getState().authorizations[swapId])
+    assert.ok(flow.stores.useDepositSignatureStore.getState().signatures[swapId])
 
-    flow.state.onWalletPrompt = () => { throw new Error('Wallet provider unavailable') }
-    await flow.render().button.props.onClick()
+    flow.state.resolved = { phase: 'checking_transfer_status' }
+    flow.preferences.reportGaslessUnavailable('deposit')
     const unavailable = flow.render()
     assert.equal(flow.preferences.gaslessUnavailable, true)
     assert.equal(unavailable.buttonByText('Switch to standard transfer'), undefined)
-    assert.equal(unavailable.buttonByText('Try again').props.isDisabled, false)
+    assert.equal(unavailable.buttonByText('Try again').props.isDisabled, true)
     const signaturesBeforeSwitch = flow.calls.sign.length
     await unavailable.viewProps.switchToStandard()
+    await unavailable.viewProps.retryGasless()
     assert.equal(flow.preferences.gaslessEnabled, true)
     assert.equal(flow.calls.sign.length, signaturesBeforeSwitch, 'a guarded switch cannot request the old signature')
 
     flow.state.onWalletPrompt = undefined
-    flow.state.onTransition = () => {
-        flow.state.authorization = { status: 'published', transaction: { transaction_hash: '0xrelayed', status: 'pending' } }
-        return [{ ...sign, status: 'completed' }]
-    }
-    unavailable.buttonByText('Try again').props.onClick()
-    await new Promise(resolve => setImmediate(resolve))
+    flow.state.authorization = { status: 'published', transaction: { transaction_hash: '0xrelayed', status: 'pending' } }
+    flow.state.resolved = { phase: 'input_pending' }
+    await flow.render().viewProps.retryGasless()
     assert.equal(flow.state.swapId, swapId)
-    assert.equal(flow.calls.success, 1, 'the existing authorization can still be resumed')
-    assert.deepEqual(flow.calls.storedTransactions, [[swapId, 'pending', '0xrelayed']])
+    assert.equal(flow.calls.sign.length, signaturesBeforeSwitch, 'fresh backend progress cannot reopen a wallet prompt')
+    assert.equal(flow.calls.success, 0)
+    assert.deepEqual(flow.calls.storedTransactions, [], 'publication stays in backend state')
 })
 
 for (const progress of ['authorization', 'signature', 'transaction']) {
@@ -925,6 +956,7 @@ test('a terminal authorization with no submission can switch to a new standard s
     flow.preferences.reportGaslessUnavailable('deposit')
     const authorizations = flow.stores.useGaslessAuthorizationStore.getState().authorizations
     authorizations[swapId] = { status: 'rejected' }
+    flow.state.authorization = { status: 'rejected' }
     let creates = 0
     flow.state.createSwap = async () => {
         creates++
@@ -964,7 +996,9 @@ test('a self-paid prerequisite cannot lock replacement but an unclassified accep
     assert.equal(swapProgress.hasSwapExecutionProgress({
         depositActions: actions,
         gaslessAuthorization: { ...depositSignature, transaction: { transaction_hash: '0xsubmitted', status: 'pending' } },
-    }), true, 'transaction evidence still locks replacement')
+    }), false, 'a stored hash only supplies a receipt lookup, not backend progress')
+    assert.equal(swapProgress.hasSwapExecutionProgress({ depositActions: actions, inputTransactionStatus: 'pending' }), true,
+        'a backend receipt establishes live transaction progress')
 })
 
 for (const [name, actions] of [

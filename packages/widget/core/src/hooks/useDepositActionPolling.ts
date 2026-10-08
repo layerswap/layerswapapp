@@ -1,17 +1,16 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
 import type { ApiResponse } from '@layerswap/widget-types'
 import LayerSwapApiClient, { type DepositAction, type GaslessAuthorizationResult } from '@/lib/apiClients/layerSwapApiClient'
 import { getActionableDepositAction, isDepositWorkflowComplete } from '@/helpers/depositActions'
 import { isGaslessAuthorizationSubmitted, isGaslessDepositWorkflow } from '@/helpers/gasless'
-import { useDepositSignatureStore, useGaslessAuthorizationStore } from '@/stores/swapTransactionStore'
 import { useSwapDataState, useSwapDataUpdate, type ApprovalTransaction } from '@/context/swap'
 import { useClientLayoutEffect } from './useClientLayoutEffect'
+import { depositActionsKey } from '@/helpers/swapKeys'
+export { depositActionsKey } from '@/helpers/swapKeys'
 
 const client = new LayerSwapApiClient()
 const TRANSITION_TIMEOUT_MS = 140_000
-export const depositActionsKey = (swapId: string, sourceAddress: string) =>
-    `/swaps/${swapId}/deposit_actions?source_address=${sourceAddress}`
 
 /** The swap provider schedules the requests; execution only observes the same snapshots the UI renders. */
 export function useDepositActionPolling(swapId: string | undefined, sourceAddress: string | undefined, executing: boolean) {
@@ -21,21 +20,9 @@ export function useDepositActionPolling(swapId: string | undefined, sourceAddres
         dedupingInterval: 1000,
         keepPreviousData: false,
     })
-    // A sign-only payload cannot distinguish self-paid from gasless execution.
-    // Observe the authorization endpoint until publication is known, sharing its
-    // SWR key with processing rather than starting a separate request loop.
-    const [authorizationWaitKey, setAuthorizationWaitKey] = useState<string | null>(null)
-    const authorizationKey = executing && swapId && key === authorizationWaitKey
-        && data?.data?.some(action => action.step === 'sign' || action.type === 'sign')
-        && isGaslessDepositWorkflow(data.data) !== false
-        ? `/swaps/${swapId}/authorize` : null
-    const { data: authorization, error: authorizationError } = useSWR<ApiResponse<GaslessAuthorizationResult>>(authorizationKey, client.fetcher, {
-        refreshInterval: 2000,
-        dedupingInterval: 1000,
-        refreshWhenHidden: true,
-        keepPreviousData: false,
-    })
-    const { approvalTransaction } = useSwapDataState()
+    const { approvalTransaction, authorizationResponse, authorizationError, swapId: observedSwapId } = useSwapDataState()
+    const authorizationKey = executing && swapId === observedSwapId ? `/swaps/${swapId}/authorize` : null
+    const authorization = authorizationResponse ? { data: authorizationResponse } : undefined
     const { watchApprovalTransaction, setWalletActionExecuting } = useSwapDataUpdate()
     useEffect(() => {
         setWalletActionExecuting(executing)
@@ -75,9 +62,6 @@ export function useDepositActionPolling(swapId: string | undefined, sourceAddres
                 settled = true
                 clearTimeout(timeout)
                 listeners.current.delete(check)
-                if (listeners.current.size === 0) {
-                    setAuthorizationWaitKey(null)
-                }
                 signal.removeEventListener('abort', abort)
             }
             const fail = (reason: unknown) => {
@@ -124,10 +108,6 @@ export function useDepositActionPolling(swapId: string | undefined, sourceAddres
         const stopApprovalPolling = previousAction.step === 'approve_permit2' && approvalTransaction
             ? watchApprovalTransaction({ ...approvalTransaction, swapId: activeSwapId, sourceAddress: address })
             : undefined
-        if (previousAction.step === 'sign' || previousAction.type === 'sign') {
-            setAuthorizationWaitKey(expectedKey)
-        }
-
         const checkTransition = createTransitionCheck(options, () => refresh(activeSwapId, address))
         return observeTransition(expectedKey, signal, checkTransition).finally(() => stopApprovalPolling?.())
     }, [observeTransition, refresh, watchApprovalTransaction])
@@ -206,34 +186,9 @@ function getAuthorizationTransition(
     if (!result) return
 
     const authorizationFailed = ['expired', 'insufficient', 'rejected'].includes(result.status)
-    if (authorizationFailed) recordAuthorizationFailure(swapId, result)
     if (authorizationFailed || result.transaction?.status === 'failed') {
         throw new Error(`The swap authorization failed: ${result.status}`)
     }
-}
-
-function recordAuthorizationFailure(swapId: string, result: GaslessAuthorizationResult): void {
-    const signatures = useDepositSignatureStore.getState()
-    const signature = signatures.signatures[swapId]
-    // Classify the accepted signature before clearing it so the resolved
-    // status and retry guard see the same terminal result.
-    useGaslessAuthorizationStore.setState(state => {
-        const current = state.authorizations[swapId]
-        return {
-            authorizations: {
-                ...state.authorizations,
-                [swapId]: {
-                    ...current,
-                    kind: 'gasless',
-                    validBefore: current?.validBefore ?? signature?.validBefore ?? Math.floor(Date.now() / 1000),
-                    status: result.status,
-                    // Omitted transaction data cannot erase a known submission.
-                    transaction: result.transaction ?? current?.transaction ?? null,
-                },
-            },
-        }
-    })
-    signatures.removeDepositSignature(swapId)
 }
 
 export type DepositActionTransition = {

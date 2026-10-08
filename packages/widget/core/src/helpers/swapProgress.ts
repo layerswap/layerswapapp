@@ -1,27 +1,19 @@
 import { SwapStatus } from '@layerswap/widget-types'
 import type {
     DepositAction,
-    GaslessAuthorizationStatus,
+    GaslessAuthorizationResult,
     SwapDetails,
 } from '@/lib/apiClients/layerSwapApiClient'
-import { BackendTransactionStatus, TransactionType } from '@/lib/apiClients/layerSwapApiClient'
-import type { DepositSignature, GaslessAuthorization, SwapTransaction } from '@/stores/swapTransactionStore'
-import { isGaslessDepositWorkflow } from './gasless'
+import { BackendTransactionStatus, TransactionStatus, TransactionType } from '@/lib/apiClients/layerSwapApiClient'
+import { isGaslessAuthorizationSubmitted, isGaslessDepositWorkflow } from './gasless'
 
 type SwapProgressOptions = {
     swapDetails: SwapDetails | undefined
     depositActions: DepositAction[] | undefined
-    storedWalletTransaction: SwapTransaction | undefined
-    gaslessAuthorization: GaslessAuthorization | undefined
     gaslessAuthorizationFailed?: boolean
-    depositSignature?: DepositSignature
+    authorization?: GaslessAuthorizationResult
+    inputTransactionStatus?: TransactionStatus
 }
-
-const FAILED_AUTHORIZATION_STATUSES: ReadonlySet<GaslessAuthorizationStatus> = new Set([
-    'expired',
-    'insufficient',
-    'rejected',
-])
 
 const ADVANCED_SWAP_STATUSES: ReadonlySet<SwapStatus> = new Set([
     SwapStatus.LsTransferPending,
@@ -30,49 +22,35 @@ const ADVANCED_SWAP_STATUSES: ReadonlySet<SwapStatus> = new Set([
     SwapStatus.Refunded,
 ])
 
-// Progress means the old swap can still move funds or has already moved beyond user setup.
-// Merely creating it, rejecting a wallet prompt, or completing Permit2 approval is safe to
-// abandon and must not pin a retry to stale execution preferences.
+// Only backend observations establish progress. Local recovery records are lookup
+// inputs; missing observations must be handled as unresolved by the caller.
 export function hasSwapExecutionProgress({
     swapDetails,
     depositActions,
-    storedWalletTransaction,
-    gaslessAuthorization,
     gaslessAuthorizationFailed = false,
-    depositSignature,
+    authorization,
+    inputTransactionStatus,
 }: SwapProgressOptions): boolean {
     if (swapDetails?.status && ADVANCED_SWAP_STATUSES.has(swapDetails.status)) return true
 
     const hasLiveInputTransaction = swapDetails?.transactions?.some(transaction =>
         transaction.type === TransactionType.Input
         && transaction.status !== BackendTransactionStatus.Failed
-        && !!transaction.transaction_hash
     )
     if (hasLiveInputTransaction) return true
 
     const selfPaid = isGaslessDepositWorkflow(depositActions) === false
     const authorizationFailed = !selfPaid && (gaslessAuthorizationFailed
-        || (!!gaslessAuthorization?.status
-            && FAILED_AUTHORIZATION_STATUSES.has(gaslessAuthorization.status)))
+        || (!!authorization && ['expired', 'insufficient', 'rejected'].includes(authorization.status)))
 
-    const authorizationTransaction = gaslessAuthorization?.transaction
+    const authorizationTransaction = authorization?.transaction
     if (authorizationTransaction?.transaction_hash
         && authorizationTransaction.status !== BackendTransactionStatus.Failed) return true
+    // Initiated means the backend accepted the signature and can still publish it,
+    // even when the separately fetched action snapshot still asks for signing.
+    if (!selfPaid && (authorization?.status === 'initiated' || isGaslessAuthorizationSubmitted(authorization))) return true
 
-    // Older clients could persist an authorization failure as the transaction's status.
-    // That failure does not establish that a broadcast transaction failed on chain.
-    if (storedWalletTransaction?.hash && authorizationFailed) return true
-
-    // Gasless authorization creates a pending local marker before a transaction hash
-    // exists. A terminal authorization must invalidate that placeholder, while a real
-    // transaction hash still means the swap can move funds and must be resumed.
-    if (storedWalletTransaction
-        && storedWalletTransaction.status !== BackendTransactionStatus.Failed
-        && (!!storedWalletTransaction.hash || !authorizationFailed)) {
-        return true
-    }
-
-    if (!selfPaid && ((gaslessAuthorization && !authorizationFailed) || depositSignature)) return true
+    if (inputTransactionStatus && (inputTransactionStatus === TransactionStatus.Pending || inputTransactionStatus === TransactionStatus.Completed)) return true
 
     const firstIncompleteIndex = depositActions?.findIndex(action => action.status !== 'completed') ?? -1
 

@@ -14,8 +14,8 @@ import {
 } from '@/lib/apiClients/layerSwapApiClient';
 import { ErrorHandler } from '@/lib/ErrorHandler';
 import {
-    useGaslessAuthorizationStore,
     useSwapTransactionStore,
+    useGaslessAuthorizationStore,
 } from '@/stores/swapTransactionStore';
 import { type Refuel } from '@layerswap/widget-types';
 import { FC, useCallback, useEffect, useMemo, useRef } from 'react';
@@ -44,11 +44,8 @@ const Processing: FC<Props> = ({
 }) => {
     const { boot, show, update } = useIntercom();
     const { onSwapLifecycle } = useCallbacks();
-    const { depositActionsResponse } = useSwapDataState();
+    const { depositActionsResponse, authorizationResponse } = useSwapDataState();
     const { isDepositFlow } = useDepositSettings();
-    const setSwapTransaction = useSwapTransactionStore(
-        (state) => state.setSwapTransaction,
-    );
     const storedWalletTransaction = useSwapTransactionStore((state) =>
         swapDetails?.id ? state.swapTransactions[swapDetails.id] : undefined,
     );
@@ -57,10 +54,9 @@ const Processing: FC<Props> = ({
     );
     // Gasless deposit broadcast tx (from the /authorize poll) — surfaces the hash + confirmations
     // before the swap's own input transaction appears.
-    const gaslessAuthTx = useGaslessAuthorizationStore((state) =>
-        swapDetails?.id
-            ? state.authorizations[swapDetails.id]?.transaction
-            : undefined,
+    const gaslessAuthTx = authorizationResponse?.transaction;
+    const retainedGaslessHash = useGaslessAuthorizationStore(state =>
+        state.authorizations[swapDetails.id]?.transaction?.transaction_hash,
     );
 
     const { source_network, source_token, destination_network, destination_token } = swapBasicData;
@@ -78,7 +74,8 @@ const Processing: FC<Props> = ({
     const transactionHash =
         swapInputTransaction?.transaction_hash ||
         gaslessAuthTx?.transaction_hash ||
-        storedWalletTransaction?.hash;
+        storedWalletTransaction?.hash ||
+        retainedGaslessHash;
     const inputConfirmations =
         swapInputTransaction?.confirmations ?? gaslessAuthTx?.confirmations;
     const inputMaxConfirmations =
@@ -146,28 +143,6 @@ const Processing: FC<Props> = ({
         source_network,
         swapInputTxStatus,
         transactionHash,
-    ]);
-
-    useEffect(() => {
-        if (!swapDetails?.id) return;
-        if (!storedWalletTransaction?.hash) return;
-        // An authorization can expire while its transaction is still settling. Only
-        // transaction evidence may overwrite the status of an already broadcast hash.
-        if (resolved.gaslessFailureStatus && !swapInputTransaction) return;
-        if (storedWalletTransaction.status !== swapInputTxStatus) {
-            setSwapTransaction(
-                swapDetails.id,
-                swapInputTxStatus,
-                storedWalletTransaction.hash,
-            );
-        }
-    }, [
-        swapInputTxStatus,
-        storedWalletTransaction,
-        swapDetails?.id,
-        setSwapTransaction,
-        resolved.gaslessFailureStatus,
-        swapInputTransaction,
     ]);
 
     useEffect(() => {
@@ -250,13 +225,14 @@ const Processing: FC<Props> = ({
         maxConfirmations: swapOutputTransaction.max_confirmations,
     } : undefined, lifecycleContext)
 
-    useLifecycleObservation({
-        ...PHASE_LIFECYCLE_EVENTS[phase],
+    const phaseEvent = PHASE_LIFECYCLE_EVENTS[phase]
+    useLifecycleObservation(phaseEvent ? {
+        ...phaseEvent,
         path: 'Processing',
         status: swapDetails.status,
         phase,
         reasonCode: swapDetails.fail_reason || failureReason,
-    }, lifecycleContext)
+    } : undefined, lifecycleContext)
 
     return (
         <ProcessingView
