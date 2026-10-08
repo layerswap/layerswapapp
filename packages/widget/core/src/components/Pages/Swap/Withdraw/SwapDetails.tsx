@@ -170,6 +170,14 @@ const SwapDetails: FC<Props> = ({
                     )
                 ) : (
                     <ProcessingSectionView
+                        message={swapError && (
+                            <ActionMessageView
+                                swapError
+                                swapErrorMessage={swapError}
+                                selectedSourceAddress={sourceAddress || ''}
+                                sourceNetwork={swapBasicData.source_network}
+                            />
+                        )}
                         actions={
                             canRetry && (
                                 <RetryView
@@ -181,16 +189,6 @@ const SwapDetails: FC<Props> = ({
                             )
                         }
                     >
-                        {swapError && (
-                            <div role="alert" className="mb-2">
-                                <ActionMessageView
-                                    swapError
-                                    swapErrorMessage={swapError}
-                                    selectedSourceAddress={sourceAddress || ''}
-                                    sourceNetwork={swapBasicData.source_network}
-                                />
-                            </div>
-                        )}
                         <Processing
                             inputFailureMessage={gaslessFailureMessage}
                         />

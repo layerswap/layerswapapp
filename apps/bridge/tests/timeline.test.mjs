@@ -89,6 +89,9 @@ const { createRoot, hydrateRoot } = await import('react-dom/client');
 const result = await build({
     stdin: {
         contents: `export { Page2Preview, resolveSwapPhase, SwapPhase } from '@layerswap/widget/internal';
+        export { hasSwapExecutionProgress } from '../../packages/widget/core/dist/esm/helpers/swapProgress.js';
+        export { isDepositWorkflowComplete } from '../../packages/widget/core/dist/esm/helpers/depositActions.js';
+        export { useGaslessAuthorization } from '../../packages/widget/core/dist/esm/hooks/useGaslessAuthorization.js';
         export { TimelinePreview } from './features/timeline/TimelinePreview';
         export { scenarios, scenarioGroups, scenarioWidgets, EPOCH } from './features/timeline/fixtures';
         export { selectTime, selectScenario } from './features/timeline/model';
@@ -164,6 +167,9 @@ const {
     DepositHeaderView,
     DepositAddressFormButtonView,
     resolveSwapPhase,
+    hasSwapExecutionProgress,
+    isDepositWorkflowComplete,
+    useGaslessAuthorization,
     SwapPhase,
     scenarios,
     scenarioGroups,
@@ -215,13 +221,12 @@ const phase = (s) =>
     resolveSwapPhase({
         swapDetails: s.details,
         refuel: s.refuel,
-        storedWalletTransaction: s.storedWalletTransaction,
+        depositCompleted: hasSwapExecutionProgress({ swapDetails: s.details, depositActions: s.depositActions,
+            authorization: s.gaslessAuthorization, inputTransactionStatus: s.inputTxStatusFromApi })
+            || (!s.swap.use_deposit_address && isDepositWorkflowComplete(s.depositActions ?? [])),
+        statusChecking: s.statusChecking,
         inputTxStatusFromApi: s.inputTxStatusFromApi,
-        gaslessFailureStatus: [
-            'expired',
-            'insufficient',
-            'rejected',
-        ].includes(s.gaslessAuthorization?.status) ? s.gaslessAuthorization.status : undefined,
+        gaslessFailureStatus: useGaslessAuthorization(s.details, s.depositActions, s.gaslessAuthorization).failureStatus,
         isDepositFlow: s.isDepositFlow,
     });
 
@@ -2442,6 +2447,79 @@ test('production critical-amount confirmation resumes through its dedicated call
         const button = [...document.querySelectorAll('button')].find(b => b.textContent === 'Continue anyway');
         await act(async () => button.click());
         assert.deepEqual(calls, ['continue']);
+    } finally {
+        await act(async () => root.unmount());
+    }
+});
+
+test('restored transfers wait for backend observations and retain recovered explorer links', async () => {
+    const root = createRoot(document.getElementById('root'));
+    try {
+        for (const mode of ['component', 'modal']) {
+            for (const scenarioId of ['wallet-recovery', 'gasless-recovery']) {
+                const scenario = scenarios.find(s => s.id === scenarioId);
+                const checking = scenario.milestones.find(m => m.id === 'checking');
+                await act(async () => root.render(preview(checking.snapshot, checking.at, mode)));
+                assert.match(document.getElementById('root').textContent, /Checking transfer status/);
+                assert.equal(document.querySelector('[data-processing-actions]'), null);
+                assert.doesNotMatch(document.getElementById('root').textContent, /Transfer complete|Transfer failed|Swap now/);
+            }
+            const receipt = frontendMilestone('gasless-recovery', 'receipt');
+            await act(async () => root.render(preview(receipt.snapshot, receipt.at, mode)));
+            assert.ok(fixtureDOM('gasless-recovery', 'receipt', mode).querySelector('[data-step-transaction]'),
+                'a backend receipt restores the saved hash link without authorization polling');
+            const production = document.createElement('div');
+            production.innerHTML = renderToStaticMarkup(processingElement(receipt.snapshot));
+            assert.equal(production.querySelector('[data-step-transaction]').href,
+                `https://explorer.example.invalid/tx/${receipt.snapshot.storedWalletTransaction.hash}`);
+            const pending = frontendMilestone('gasless-recovery', 'stale-failure');
+            for (const status of ['pending', 'completed', 'failed']) {
+                const snapshot = { ...pending.snapshot, storedWalletTransaction: { ...pending.snapshot.storedWalletTransaction, status, timestamp: 0 } };
+                assert.equal(phase(snapshot).phase, SwapPhase.InputPending, 'a live backend receipt outranks local status and authorization expiry');
+                await act(async () => root.render(preview(snapshot, pending.at, mode)));
+                assert.equal(document.querySelector('[data-processing-actions]'), null);
+                assert.doesNotMatch(document.getElementById('root').textContent, /authorization expired|Transfer failed/);
+            }
+        }
+    } finally {
+        await act(async () => root.unmount());
+    }
+});
+
+test('retry previews disable recovery while checking and use the shared transaction message for errors', async () => {
+    const root = createRoot(document.getElementById('root'));
+    try {
+        for (const mode of ['component', 'modal']) {
+            const checking = frontendMilestone('gasless-retry-check', 'checking');
+            await act(async () => root.render(preview(checking.snapshot, checking.at, mode)));
+            const buttons = [...document.querySelectorAll('[data-processing-actions] button')];
+            assert.equal(buttons.length, 2);
+            assert.ok(buttons.every(button => button.disabled), 'both recovery actions wait for reconciliation');
+            const error = frontendMilestone('gasless-retry-check', 'error');
+            await act(async () => root.render(preview(error.snapshot, error.at, mode)));
+            const alert = document.querySelector('[role="alert"]');
+            assert.match(alert.textContent, /Could not check the transfer status\. Please try again\./);
+            assert.equal(document.getElementById('root').textContent.split(error.snapshot.retryError).length - 1, 1);
+            assert.ok([...document.querySelectorAll('[data-processing-actions] button')].every(button => !button.disabled));
+        }
+    } finally {
+        await act(async () => root.unmount());
+    }
+});
+
+test('wallet previews preserve the active submission view until the success handoff finishes', async () => {
+    const root = createRoot(document.getElementById('root'));
+    try {
+        for (const mode of ['component', 'modal']) {
+            const handoff = frontendMilestone('wallet-handoff', 'handoff');
+            assert.equal(phase(handoff.snapshot).phase, SwapPhase.InputPending);
+            await act(async () => root.render(preview(handoff.snapshot, handoff.at, mode)));
+            assert.match(document.getElementById('root').textContent, /Confirm in your wallet/);
+            const processing = frontendMilestone('wallet-handoff', 'processing');
+            await act(async () => root.render(preview(processing.snapshot, processing.at, mode)));
+            assert.doesNotMatch(document.getElementById('root').textContent, /Confirm in your wallet/);
+            assert.match(document.getElementById('root').textContent, /Transfer in progress/);
+        }
     } finally {
         await act(async () => root.unmount());
     }

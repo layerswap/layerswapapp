@@ -21,10 +21,10 @@ import { SwapDetailsSceleton } from '@/components/Common/Sceletons';
 import { resolveSwapPhase } from '@/components/utils/resolveSwapPhase';
 import { shouldShowCompactSwapQuote } from '@/helpers/swapFlow';
 import { gaslessFailureMessage } from '@/helpers/gaslessFailureMessage';
-import {
-    TransactionStatus,
-    TransactionType,
-} from '@/lib/apiClients/layerSwapApiClient';
+import { hasSwapExecutionProgress } from '@/helpers/swapProgress';
+import { isDepositWorkflowComplete } from '@/helpers/depositActions';
+import { useGaslessAuthorization } from '@/hooks/useGaslessAuthorization';
+import { TransactionType } from '@/lib/apiClients/layerSwapApiClient';
 import { resolvePriceImpactValues } from '@/lib/fees';
 import { ReadOnlyPreview } from './ReadOnlyPreview';
 import { ActionMessages } from '../messages/TransactionMessages';
@@ -133,20 +133,26 @@ export function Page2LoadedPreview({
     const output = s.details.transactions.find(
         (t) => t.type === TransactionType.Output,
     );
-    const gaslessFailed =
-        s.gaslessAuthorization &&
-        ['expired', 'insufficient', 'rejected'].includes(
-            s.gaslessAuthorization.status,
-        );
+    const { failureStatus: gaslessFailureStatus } = useGaslessAuthorization(
+        s.details, s.depositActions, s.gaslessAuthorization,
+    );
+    const backendProgress = hasSwapExecutionProgress({
+        swapDetails: s.details,
+        depositActions: s.depositActions,
+        authorization: s.gaslessAuthorization,
+        inputTransactionStatus: s.inputTxStatusFromApi,
+    });
     const resolved = resolveSwapPhase({
         swapDetails: s.details,
         refuel: s.refuel,
         inputTxStatusFromApi: s.inputTxStatusFromApi,
-        gaslessFailureStatus: gaslessFailed
-            ? s.gaslessAuthorization?.status as 'expired' | 'insufficient' | 'rejected'
-            : undefined,
+        depositCompleted: backendProgress || (!s.swap.use_deposit_address
+            && isDepositWorkflowComplete(s.depositActions ?? [])),
+        statusChecking: s.statusChecking,
+        gaslessFailureStatus,
         isDepositFlow: s.isDepositFlow,
     });
+    const showWithdrawal = resolved.showWithdrawScreen || s.walletWithdrawalExecuting;
     const compactsDuringWalletExecution = shouldShowCompactSwapQuote({
         swapData: s.swap,
         isGaslessActive: !!s.quoteState.gasless,
@@ -171,13 +177,24 @@ export function Page2LoadedPreview({
         />
     );
     let content;
-    if (!resolved.showWithdrawScreen) {
+    if (!showWithdrawal) {
         const authTx = s.gaslessAuthorization?.transaction;
         content = (
             <ProcessingSectionView
+                message={s.retryError && (
+                    <ActionMessageView
+                        swapError
+                        swapErrorMessage={s.retryError}
+                        selectedSourceAddress={s.sourceAddress}
+                        sourceNetwork={s.swap.source_network}
+                    />
+                )}
                 actions={
-                    resolved.failureReason && (
-                        <RetryView canSwitchToStandard={resolved.failureReason === 'gasless_deposit_failed'} />
+                    resolved.failureReason && !backendProgress && (
+                        <RetryView
+                            isChecking={s.retryChecking}
+                            canSwitchToStandard={resolved.failureReason === 'gasless_deposit_failed'}
+                        />
                     )
                 }
             >
@@ -190,9 +207,9 @@ export function Page2LoadedPreview({
                     refuel={s.refuel}
                     resolved={resolved}
                     inputFailureMessage={
-                        gaslessFailed
+                        resolved.gaslessFailureStatus
                             ? gaslessFailureMessage(
-                                  s.gaslessAuthorization?.status,
+                                  resolved.gaslessFailureStatus,
                               )
                             : undefined
                     }
@@ -306,7 +323,7 @@ export function Page2LoadedPreview({
         <SwapContentView
             transferStage={
                 !compactsDuringWalletExecution
-                    ? resolved.showWithdrawScreen
+                    ? showWithdrawal
                         ? 'withdraw'
                         : 'processing'
                     : undefined
@@ -520,6 +537,7 @@ function PreviewWallet({ snapshot: s }: { snapshot: Page2LoadedSnapshot }) {
                     quoteIsLoading={s.quoteState.status === 'loading'}
                     quoteError={s.quoteState.status === 'error'}
                     loading={state.pending}
+                    statusChecking={s.statusChecking}
                     networkSwitch={previewNetworkSwitch(state.networkSwitch, s.swap.source_network)}
                     sourceNetworkName={s.swap.source_network.display_name}
                     actionStateText={state.label}

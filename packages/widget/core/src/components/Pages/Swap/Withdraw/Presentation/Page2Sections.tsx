@@ -125,15 +125,18 @@ export function WalletTransferView({
 export function ProcessingSectionView({
     children,
     actions,
+    message,
 }: {
     children: ReactNode;
     actions?: ReactNode;
+    message?: ReactNode;
 }) {
     const reducedMotion = useHydratedReducedMotion();
     const isPresent = useIsPresent();
 
     return (
         <div className="w-full">
+            {message && <div role="alert" className="mb-2">{message}</div>}
             {children}
             {actions && (
                 <motion.div

@@ -55,8 +55,14 @@ test('input receipts use a shared observer and are checked fresh before retry', 
   ])
 })
 
-test('the gasless authorization outcome is observed once, in SwapDataProvider', () => {
-  assert.deepEqual(filesContaining(/\buseGaslessAuthorization\(/), ['context/swap.tsx', 'hooks/useGaslessAuthorization.ts'])
+test('live gasless outcomes are resolved by the provider; isolated previews resolve synthetic snapshots', () => {
+  assert.deepEqual(filesContaining(/\buseGaslessAuthorization\(/), [
+    'components/Pages/Swap/Withdraw/Presentation/Page2Preview.tsx',
+    'context/swap.tsx', 'hooks/useGaslessAuthorization.ts',
+  ])
+  const preview = sources.find(({ path }) => path.endsWith('/Page2Preview.tsx')).text
+  assert.doesNotMatch(preview, /\b(?:useGaslessAuthorizationStatus|useInputTransactionStatus)\(/,
+    'previews must not mount backend observers')
 })
 
 test('flow_closed is built only by resolveFlowClosedEvent', () => {
