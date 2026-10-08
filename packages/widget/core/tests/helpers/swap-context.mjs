@@ -19,6 +19,8 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swr =
     }
     const resolved = {}
     const imports = {
+        '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
+        '@/lib/pocketUniverse': { detectPocketUniverse: () => false },
         react: React,
         'react/jsx-runtime': require('react/jsx-runtime'),
         swr,
