@@ -328,7 +328,9 @@ export function walletConnect(parameters: Params) {
             if (!chain) throw new SwitchChainError(new ChainNotConfiguredError())
 
             let removeChainChangedListener = () => { }
-            try {
+            // Resolves once the wallet has both accepted the request and reported the new chain.
+            const requestSwitch = async () => {
+                removeChainChangedListener()
                 await Promise.all([
                     new Promise<void>((resolve) => {
                         const listener = ({
@@ -347,6 +349,9 @@ export function walletConnect(parameters: Params) {
                         params: [{ chainId: numberToHex(chainId) }],
                     }),
                 ])
+            }
+            try {
+                await requestSwitch()
 
                 const requestedChains = await this.getRequestedChainsIds()
                 this.setRequestedChainsIds([...requestedChains, chainId])
@@ -389,6 +394,9 @@ export function walletConnect(parameters: Params) {
                         method: 'wallet_addEthereumChain',
                         params: [addEthereumChain],
                     })
+                    // EIP-3085: adding a chain does not select it, and callers treat a resolved
+                    // switch as "the wallet is on this chain", so ask again unless it already moved.
+                    if (await this.getChainId() !== chainId) await requestSwitch()
 
                     const requestedChains = await this.getRequestedChainsIds()
                     this.setRequestedChainsIds([...requestedChains, chainId])

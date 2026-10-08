@@ -106,7 +106,6 @@ const result = await build({
         export { SlippageView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Form/FeeDetails/SlippageView.js';
         export { Slippage as ProductionSlippage } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Form/FeeDetails/Slippage.js';
         export { GasFeeView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Form/FeeDetails/SwapQuote/GasFeeView.js';
-        export { ChangeNetworkView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/WalletActionsView.js';
         export { ManualDepositButtonView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/ManualDepositButtonView.js';
         export { ConfirmationContent } from '../../packages/widget/core/dist/esm/components/Modal/ConfirmationContent.js';
         export { CopyButtonView } from '@layerswap/ui-kit/components';
@@ -184,7 +183,6 @@ const {
     SlippageView,
     ProductionSlippage,
     GasFeeView,
-    ChangeNetworkView,
     ManualDepositButtonView,
     ConfirmationContent,
     CopyButtonView,
@@ -547,6 +545,29 @@ test('standard transfers keep elapsed time through finalizing while token swaps 
         container.innerHTML = renderToStaticMarkup(preview(completed.snapshot, completed.at));
         assert.equal(container.querySelector('[role="timer"]'), null, scenarioId);
     }
+});
+
+test('network switch previews render the send button\'s own switch states', () => {
+    const scenario = scenarios.find(s => s.id === 'wallet-network');
+    const container = document.createElement('div');
+    for (const [milestoneId, header, button] of [
+        ['required', null, null],
+        ['pending', 'Switch network', 'Switching network'],
+        ['still-waiting', 'Network switch still waiting', 'Try again'],
+        ['timeout', 'Network switch timed out', 'Try again'],
+        ['error', 'Network switch failed', 'Try again'],
+        ['correct', null, null],
+    ]) {
+        const milestone = scenario.milestones.find(m => m.id === milestoneId);
+        container.innerHTML = renderToStaticMarkup(preview(milestone.snapshot, milestone.at));
+        const text = container.textContent;
+        assert.doesNotMatch(text, /Network switch required/, milestoneId);
+        if (header) assert.match(text, new RegExp(header), milestoneId);
+        else assert.doesNotMatch(text, /Network switch|Switch network/, milestoneId);
+        if (button) assert.match(text, new RegExp(button), milestoneId);
+    }
+    container.innerHTML = renderToStaticMarkup(preview(scenario.milestones.find(m => m.id === 'error').snapshot, 12));
+    assert.match(container.textContent, /The request was rejected\. Please try again or switch your wallet network manually to /);
 });
 
 test('reduced-motion hydration matches the server markup in both modes', async () => {
@@ -1557,9 +1578,6 @@ test('shared gas, slippage, copy, network and confirmation controls retain produ
         assert.ok(container.textContent.includes('1.00'));
         await click('Auto');
 
-        await act(async () => root.render(React.createElement(ChangeNetworkView, { network: 'Ethereum', onSwitch: () => calls.push(['network']) })));
-        assert.ok(container.querySelector('button svg'));
-        await click('Switch network');
         await act(async () => root.render(React.createElement(ManualDepositButtonView, { onCopy: () => calls.push(['deposit-copy']) })));
         await click('Copy deposit address');
         await act(async () => root.render(React.createElement(CopyButtonView, { handleCopyClick: () => calls.push(['inline-copy']) })));
@@ -1567,7 +1585,7 @@ test('shared gas, slippage, copy, network and confirmation controls retain produ
         await act(async () => root.render(React.createElement(ConfirmationContent, { submitText: 'Continue', dismissText: 'Cancel', onConfirm: () => calls.push(['confirm']), onDismiss: () => calls.push(['cancel']) })));
         await click('Continue');
         await click('Cancel');
-        assert.deepEqual(calls, [['gasless', true], ['slippage', 0.01], ['slippage', undefined], ['network'], ['deposit-copy'], ['inline-copy'], ['confirm'], ['cancel']]);
+        assert.deepEqual(calls, [['gasless', true], ['slippage', 0.01], ['slippage', undefined], ['deposit-copy'], ['inline-copy'], ['confirm'], ['cancel']]);
         assert.deepEqual(forbidden, []);
     } finally {
         await act(async () => root.unmount());

@@ -372,39 +372,3 @@ export function SendTransactionView({
     );
 }
 
-export function ChangeNetworkView({
-    network,
-    isPending,
-    error,
-    onSwitch,
-}: {
-    network: string;
-    isPending?: boolean;
-    error?: Error | null;
-    onSwitch?: () => void;
-}) {
-    return (
-        <>
-            <ChangeNetworkMessage
-                data={{
-                    isPending: !!isPending,
-                    isError: !!error,
-                    error: error ?? null,
-                }}
-                network={network}
-            />
-            {!isPending && (
-                <ButtonWrapper
-                    onClick={onSwitch}
-                    icon={<WalletIcon className="stroke-2 w-6 h-6" />}
-                >
-                    {error ? (
-                        <span>Try again</span>
-                    ) : (
-                        <span>Switch network</span>
-                    )}
-                </ButtonWrapper>
-            )}
-        </>
-    );
-}
