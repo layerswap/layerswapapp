@@ -586,6 +586,7 @@ function createSwapHistoryHarness(fetcher, { onCreate, selectedAccount } = {}) {
     stores.useGaslessAuthorizationStore.setState({ authorizations: {} });
     stores.useDepositSignatureStore.setState({ signatures: {} });
     const context = loadSource('context/swap.tsx', {
+        '@/helpers/depository': { shouldUseDepository: () => false },
         '@/hooks/useSwapPolling': polling,
         '@/hooks/useSwapStatusNotification': { useSwapStatusNotification: noop },
         '@/hooks/useGaslessAuthorization': { useGaslessAuthorization: () => ({}) },
@@ -618,7 +619,6 @@ function createSwapHistoryHarness(fetcher, { onCreate, selectedAccount } = {}) {
         '@/stores/extendedRoutesStore': {},
         '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
         '@/lib/swapPollingPolicy': pollingPolicy,
-        '@layerswap/utils': { KnownInternalNames: { Networks: {} } },
     });
     const harness = { Provider: context.SwapDataProvider, context, api, stores };
     harness.Completion = function Completion() {
