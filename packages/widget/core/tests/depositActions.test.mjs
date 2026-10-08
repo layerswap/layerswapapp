@@ -516,7 +516,8 @@ for (const completes of [false, true]) {
         assert.equal(flow.calls.transfer.length + flow.calls.sign.length, 10)
         assert.equal(transitions, 10)
         assert.deepEqual(flow.calls.storedTransactions, [], 'server-reported completion is not recorded as a broadcast')
-        assert.equal(flow.calls.success, completes ? 1 : 0)
+        assert.equal(flow.calls.success, 0, 'server completion without wallet submission must not clear the form')
+        assert.ok(flow.stores.useDepositSignatureStore.getState().signatures[swapId], 'retain the signature until submission')
         assert.deepEqual(flow.calls.errors.map(error => error.message), completes ? [] : ['The swap workflow has more actions than expected'])
     })
 }

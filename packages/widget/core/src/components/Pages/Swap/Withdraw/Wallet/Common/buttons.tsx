@@ -390,8 +390,9 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     const failedStep = activeDepositActions.find(action => action.status === 'failed')
                     if (failedStep) throw new Error(failedStep.detail || 'The swap action failed')
                     if (isDepositWorkflowComplete(activeDepositActions)) {
-                        useDepositSignatureStore.getState().removeDepositSignature(swapData.id)
-                        onWalletWithdrawalSuccess?.()
+                        // Server action completion can revert before funds are submitted.
+                        // Only wallet transfer or confirmed gasless submission may clear
+                        // the containing form and the signature needed to resume.
                         return
                     }
                 }
