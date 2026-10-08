@@ -11,6 +11,7 @@ export type ActionMessageViewProps = {
     gaslessUnavailable?: boolean;
     gaslessErrorMessage?: string;
     swapError?: boolean;
+    swapErrorMessage?: string;
     expanded?: boolean;
 };
 export function ActionMessageView({
@@ -22,6 +23,7 @@ export function ActionMessageView({
     gaslessUnavailable,
     gaslessErrorMessage,
     swapError,
+    swapErrorMessage,
     expanded,
 }: ActionMessageViewProps) {
     if (gaslessUnavailable) {
@@ -60,7 +62,7 @@ export function ActionMessageView({
             />
         );
     } else if (swapError) {
-        return <ActionMessages.SwapErrorMessage />;
+        return <ActionMessages.SwapErrorMessage message={swapErrorMessage} />;
     } else if (error) {
         if (!error.message) return <WalletUnknownError expanded={expanded} />;
         return <WalletUnknownError expanded={expanded} />;

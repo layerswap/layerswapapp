@@ -71,6 +71,17 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
             // Keep one timing operation across the Stellar refresh and both wallet requests.
             onSettled: finishTelemetry,
             reportsSubmission: action.step !== 'approve_permit2',
+            onSubmitted: hash => {
+                if (action.step === 'approve_permit2') {
+                    useSwapTransactionStore.getState().setStepTransaction(
+                        swapData.id, action.step, hash,
+                        getExplorerUrl(props.network.transaction_explorer_template, hash),
+                    )
+                } else {
+                    setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, hash)
+                    useDepositSignatureStore.getState().removeDepositSignature(swapData.id)
+                }
+            },
             shouldReportError: error => !(retriesExpiry && isExpiredTransaction(error)),
         }, () => onClick(props))
     }
@@ -109,24 +120,9 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
         hash = await requestWallet(refreshedProps, { retriesExpiry: false })
     }
 
-    // Save the approval receipt even if the screen closed during the wallet request.
-    // It must not replace the execution transaction or mark the swap as submitted.
-    if (action.step === 'approve_permit2') {
-        useSwapTransactionStore.getState().setStepTransaction(
-            swapData.id,
-            action.step,
-            hash,
-            getExplorerUrl(transferProps.network.transaction_explorer_template, hash),
-        )
-        return hash
-    }
-
-    onSuccess()
-    setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, hash)
-    useDepositSignatureStore.getState().removeDepositSignature(swapData.id)
-    try {
-        await layerswapApiClient.SwapCatchup(swapData.id, hash)
-    } catch (e) {
+    if (action.step === 'approve_permit2') return hash
+    // Catchup is optional; a delayed response must not hold the wallet handoff open.
+    void layerswapApiClient.SwapCatchup(swapData.id, hash).catch(e => {
         ErrorHandler({
             type: 'SwapCatchupError',
             message: (e as Error)?.message || 'Swap catchup failed',
@@ -138,7 +134,8 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
             fromAddress: sourceAddress,
             toAddress: swapBasicData?.destination_address,
         })
-    }
+    })
+    onSuccess()
     return hash
 }
 
@@ -221,22 +218,20 @@ export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, 
     }
 
     finishTelemetry('succeeded')
-    // Retain accepted signatures after closing, but only confirmed gasless workflows
-    // may activate authorization polling/expiry. Sign-only payloads can reveal publish later.
+    // Retain an accepted-signature hint after closing. Its deadline is advisory;
+    // workflow observations and failure decisions belong to the backend.
     const validBefore = authorizedValidBefore ?? fallbackGaslessValidBefore()
-    if (isGaslessDepositWorkflow(depositActions) === true) {
-        useGaslessAuthorizationStore.getState().setGaslessAuthorization(swapData.id, validBefore)
-        useDepositSignatureStore.getState().removeDepositSignature(swapData.id)
-    } else {
-        useDepositSignatureStore.getState().setDepositSignature(swapData.id, validBefore)
-    }
+    useDepositSignatureStore.getState().setDepositSignature(swapData.id, validBefore)
     return authorizedValidBefore
 }
 
-export const completeGaslessSubmission = (ctx: DepositExecutionContext, authorization: GaslessAuthorizationResult, validBefore?: number): void => {
+export const completeGaslessSubmission = (ctx: DepositExecutionContext, authorization: GaslessAuthorizationResult): void => {
     if (!isGaslessAuthorizationSubmitted(authorization)) throw new Error('The gasless deposit has not been submitted')
-    const { swapData, swapBasicData, selectedWallet, setSwapTransaction, onSuccess, onLifecycle } = ctx
-
+    const { swapData, swapBasicData, selectedWallet, onSuccess, onLifecycle } = ctx
+    // Preserve publication evidence before host callbacks can close the widget.
+    if (authorization.transaction?.transaction_hash) {
+        useGaslessAuthorizationStore.getState().recordGaslessTransactionHash(swapData.id, authorization.transaction.transaction_hash)
+    }
     onLifecycle({
         step: 'gasless_authorization_submitted',
         stage: 'input_transfer',
@@ -247,13 +242,7 @@ export const completeGaslessSubmission = (ctx: DepositExecutionContext, authoriz
         ...lifecycleContextFromSwap(swapBasicData, swapData),
     })
 
-    const store = useGaslessAuthorizationStore.getState()
-    if (!store.authorizations[swapData.id]) {
-        store.setGaslessAuthorization(swapData.id, validBefore ?? fallbackGaslessValidBefore())
-    }
-    store.setGaslessAuthorizationStatus(swapData.id, authorization.status, authorization.transaction)
     useDepositSignatureStore.getState().removeDepositSignature(swapData.id)
-    setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, authorization.transaction?.transaction_hash ?? '')
     onSuccess()
 }
 

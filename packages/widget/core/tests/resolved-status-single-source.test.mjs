@@ -48,8 +48,11 @@ test('live status is resolved only by the provider; isolated previews resolve sy
   ])
 })
 
-test('the input tx-status poll lives only in SwapDataProvider', () => {
-  assert.deepEqual(filesContaining(/\bGetTransactionStatus\(/), ['context/swap.tsx', 'lib/apiClients/layerSwapApiClient.ts'])
+test('input receipts use a shared observer and are checked fresh before retry', () => {
+  assert.deepEqual(filesContaining(/\bGetTransactionStatus\(/), [
+    'context/swap.tsx', 'hooks/useInputTransactionStatus.ts',
+    'lib/apiClients/layerSwapApiClient.ts', 'lib/swapReconciliation.ts',
+  ])
 })
 
 test('the gasless authorization outcome is observed once, in SwapDataProvider', () => {

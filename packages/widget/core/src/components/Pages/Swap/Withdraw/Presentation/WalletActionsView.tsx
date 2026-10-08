@@ -138,6 +138,7 @@ export type SendTransactionViewProps = SubmitButtonProps & {
     gaslessUnavailable?: boolean;
     gaslessFailureStage?: 'create' | 'deposit' | null;
     canSwitchToStandard?: boolean;
+    statusChecking?: boolean;
     handleClick?: () => void;
     handleCriticalContinue?: () => void;
     retryGasless?: () => void;
@@ -165,6 +166,7 @@ export function SendTransactionView({
     gaslessUnavailable,
     gaslessFailureStage,
     canSwitchToStandard = true,
+    statusChecking,
     handleClick,
     handleCriticalContinue,
     retryGasless,
@@ -212,6 +214,9 @@ export function SendTransactionView({
                 {errorMessage}
             </div>
         ) : undefined;
+    const statusMessage = statusChecking ? (
+        <p role="status" className="text-sm text-secondary-text">Checking transfer status</p>
+    ) : undefined;
     if (quoteIsLoading || loading)
         return (
             <WalletExecutionTransition
@@ -243,6 +248,7 @@ export function SendTransactionView({
                 controls={
                     <>
                         {message}
+                        {statusMessage}
                         {quote && priceImpactValues && (
                             <ErrorDisplay
                                 icon={
@@ -261,7 +267,7 @@ export function SendTransactionView({
                             buttonStyle="secondary"
                             size="small"
                             isSubmitting={false}
-                            isDisabled={false}
+                            isDisabled={statusChecking}
                         >
                             Continue anyway
                         </ButtonWrapper>
@@ -299,6 +305,7 @@ export function SendTransactionView({
                             message={`The “receive at least” amount is affected by high price impact. You will receive at least ${quote.min_receive_amount} ${quote.destination_token.asset} ($ ${priceImpactValues.minReceiveAmountUSD})`}
                         />
                     )}
+                    {statusMessage}
                     {gaslessUnavailable ? (
                         <div className="space-y-2">
                             {gaslessFailureStage === 'deposit' && (
@@ -311,7 +318,7 @@ export function SendTransactionView({
                                         quoteIsLoading
                                     }
                                     onClick={retryGasless}
-                                    isDisabled={quoteIsLoading || !!quoteError}
+                                    isDisabled={statusChecking || quoteIsLoading || !!quoteError}
                                 >
                                     Try again
                                 </ButtonWrapper>
@@ -331,7 +338,7 @@ export function SendTransactionView({
                                         quoteIsLoading
                                     }
                                     onClick={switchToStandard}
-                                    isDisabled={quoteIsLoading || !!quoteError}
+                                    isDisabled={statusChecking || quoteIsLoading || !!quoteError}
                                 >
                                     Switch to standard transfer
                                 </ButtonWrapper>
@@ -346,6 +353,7 @@ export function SendTransactionView({
                             }
                             onClick={handleClick}
                             isDisabled={
+                                statusChecking ||
                                 quoteIsLoading ||
                                 !!quoteError ||
                                 workflowCompleted

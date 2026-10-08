@@ -1,86 +1,96 @@
-import { useCallback } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '@/context/swap'
 import { useSwapTransactionStore, useGaslessAuthorizationStore, useDepositSignatureStore } from '@/stores/swapTransactionStore'
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore'
 import { hasSwapExecutionProgress } from '@/helpers/swapProgress'
 import { gaslessFailureMessage } from './useGaslessAuthorization'
 import { useResolvedSwapStatus } from './useResolvedSwapStatus'
-import type { SwapFailureReason } from '@/components/utils/resolveSwapPhase'
+import { reconcileSwap, withSwapReconciliation } from '@/lib/swapReconciliation'
+import { useSelectedAccount } from '@/context/swapAccounts'
+import { useClientLayoutEffect } from './useClientLayoutEffect'
 
 export type { SwapFailureReason } from '@/components/utils/resolveSwapPhase'
 
-type UseSwapRetryResult = {
-    failureReason: SwapFailureReason | undefined
-    canRetry: boolean
-    retry: () => void
-    gaslessFailureMessage?: string
-    canSwitchToStandard: boolean
-    switchToStandard: () => void
-}
-
-// Clear failed deposit markers only when the existing attempt can no longer move funds.
-export function useSwapRetry(): UseSwapRetryResult {
-    const { swapDetails, depositActionsResponse } = useSwapDataState()
-    const { startFreshSwapAttempt } = useSwapDataUpdate()
+export function useSwapRetry() {
+    const { swapDetails, swapBasicData, depositActionsResponse, authorizationResponse, inputTransactionStatus, setSwapError } = useSwapDataState()
+    const { startFreshSwapAttempt, mutateSwap, mutateDepositActions, mutateAuthorization } = useSwapDataUpdate()
     const swapId = swapDetails?.id
-
-    const storedWalletTransaction = useSwapTransactionStore(
-        state => swapId ? state.swapTransactions[swapId] : undefined,
-    )
-    const gaslessAuthorization = useGaslessAuthorizationStore(
-        state => swapId ? state.authorizations[swapId] : undefined,
-    )
-    const depositSignature = useDepositSignatureStore(state => swapId ? state.signatures[swapId] : undefined)
+    const account = useSelectedAccount('from', swapBasicData?.source_network.name)
+    const scope = `${swapId}:${account?.id}:${account?.address}:${swapDetails?.quote_revision}`
+    const currentScope = useRef(scope)
+    currentScope.current = scope
+    useClientLayoutEffect(() => {
+        currentScope.current = scope
+        return () => { currentScope.current = '' }
+    }, [scope])
+    const checking = useRef(false)
+    const [isChecking, setChecking] = useState(false)
     const { failureReason, gaslessFailureStatus } = useResolvedSwapStatus()
-
     const hasProgress = hasSwapExecutionProgress({
-        swapDetails,
-        depositActions: depositActionsResponse,
-        storedWalletTransaction,
-        gaslessAuthorization,
-        depositSignature,
+        swapDetails, depositActions: depositActionsResponse, authorization: authorizationResponse,
+        inputTransactionStatus,
         gaslessAuthorizationFailed: !!gaslessFailureStatus,
     })
-
     const canRetry = !!swapId && !!failureReason && !hasProgress
 
-    const restart = useCallback((standardTransfer: boolean) => {
-        if (!swapId || !failureReason) return
+    const restart = useCallback(async (standardTransfer: boolean) => {
+        if (!swapId || !failureReason || checking.current) return
         if (standardTransfer && failureReason !== 'gasless_deposit_failed') return
-
-        // A submission can arrive after render but before the click. Check the stores
-        // again before removing evidence or changing the execution preference.
-        const transactions = useSwapTransactionStore.getState()
-        const authorizations = useGaslessAuthorizationStore.getState()
-        const currentAuthorization = authorizations.authorizations[swapId]
-        if (hasSwapExecutionProgress({
-            swapDetails,
-            depositActions: depositActionsResponse,
-            storedWalletTransaction: transactions.swapTransactions[swapId],
-            gaslessAuthorization: currentAuthorization,
-            depositSignature: useDepositSignatureStore.getState().signatures[swapId],
-            // Timer expiry belongs to the authorization that produced this render.
-            gaslessAuthorizationFailed: currentAuthorization === gaslessAuthorization && !!gaslessFailureStatus,
-        })) return
-
-        authorizations.removeGaslessAuthorization(swapId)
-        useDepositSignatureStore.getState().removeDepositSignature(swapId)
-        transactions.removeSwapTransaction(swapId)
-        const preferences = useGaslessPreferenceStore.getState()
-        if (standardTransfer) preferences.switchToStandardTransfer()
-        else preferences.clearGaslessUnavailable()
-        startFreshSwapAttempt()
-    }, [swapId, failureReason, swapDetails, depositActionsResponse, gaslessAuthorization, gaslessFailureStatus, startFreshSwapAttempt])
+        checking.current = true
+        setChecking(true)
+        setSwapError?.(null)
+        try {
+            await withSwapReconciliation(swapId, async () => {
+                const transactions = useSwapTransactionStore.getState()
+                const authorizations = useGaslessAuthorizationStore.getState()
+                const signatures = useDepositSignatureStore.getState()
+                const evidence = {
+                    transaction: transactions.swapTransactions[swapId],
+                    authorization: authorizations.authorizations[swapId],
+                    signature: signatures.signatures[swapId],
+                    submissionPending: !!transactions.pendingSubmissions[swapId],
+                }
+                const result = await reconcileSwap(swapId, swapDetails?.source_address ?? account?.address, evidence)
+                if (currentScope.current !== scope) return
+                // Wallet submission can finish while the network check is in flight.
+                const latest = useSwapTransactionStore.getState()
+                if (latest.swapTransactions[swapId] !== evidence.transaction
+                    || !!latest.pendingSubmissions[swapId] !== evidence.submissionPending
+                    || useGaslessAuthorizationStore.getState().authorizations[swapId] !== evidence.authorization
+                    || useDepositSignatureStore.getState().signatures[swapId] !== evidence.signature) return
+                await Promise.all([
+                    mutateSwap(result.response, false),
+                    mutateDepositActions({ data: result.response.data!.deposit_actions }, false),
+                    mutateAuthorization(result.authorization ? { data: result.authorization } : undefined, false),
+                ])
+                if (!result.canRestart || currentScope.current !== scope) return
+                // Re-read after cache updates; do not remove evidence of a concurrent send.
+                if (useSwapTransactionStore.getState().swapTransactions[swapId] !== evidence.transaction
+                    || !!useSwapTransactionStore.getState().pendingSubmissions[swapId] !== evidence.submissionPending
+                    || useGaslessAuthorizationStore.getState().authorizations[swapId] !== evidence.authorization
+                    || useDepositSignatureStore.getState().signatures[swapId] !== evidence.signature) return
+                authorizations.removeGaslessAuthorization(swapId)
+                signatures.removeDepositSignature(swapId)
+                transactions.removeSwapTransaction(swapId)
+                transactions.clearPendingSubmission(swapId)
+                const preferences = useGaslessPreferenceStore.getState()
+                if (standardTransfer) preferences.switchToStandardTransfer()
+                else preferences.clearGaslessUnavailable()
+                startFreshSwapAttempt()
+            })
+        } catch (error) {
+            if (currentScope.current === scope) setSwapError?.((error as Error)?.message || 'Could not check the transfer status. Please try again.')
+        } finally {
+            checking.current = false
+            if (currentScope.current) setChecking(false)
+        }
+    }, [swapId, failureReason, swapDetails?.source_address, account?.address, scope, mutateSwap, mutateDepositActions, mutateAuthorization, startFreshSwapAttempt, setSwapError])
 
     const retry = useCallback(() => restart(false), [restart])
     const switchToStandard = useCallback(() => restart(true), [restart])
-
     return {
-        failureReason,
-        canRetry,
-        retry,
+        failureReason, canRetry, isChecking, retry,
         gaslessFailureMessage: failureReason === 'gasless_deposit_failed' ? gaslessFailureMessage(gaslessFailureStatus) : undefined,
-        canSwitchToStandard: canRetry && failureReason === 'gasless_deposit_failed',
-        switchToStandard,
+        canSwitchToStandard: canRetry && failureReason === 'gasless_deposit_failed', switchToStandard,
     }
 }

@@ -8,7 +8,9 @@ import type { ResolvedSwapStatus } from '@/components/utils/resolveSwapPhase'
 
 export type PhaseLifecycleEvent = Pick<SwapLifecycleEvent, 'step' | 'stage' | 'outcome'>
 
-export const PHASE_LIFECYCLE_EVENTS: Record<SwapPhase, PhaseLifecycleEvent> = {
+export const PHASE_LIFECYCLE_EVENTS: Record<SwapPhase, PhaseLifecycleEvent | undefined> = {
+    // Missing observations are a UI state, not a swap lifecycle transition.
+    [SwapPhase.CheckingStatus]: undefined,
     [SwapPhase.AwaitingUserDeposit]: {
         step: 'awaiting_user_deposit',
         stage: 'input_transfer',
@@ -65,7 +67,7 @@ export function resolveFlowClosedEvent(
 ): Pick<SwapLifecycleEvent, 'step' | 'stage' | 'outcome' | 'reasonCode' | 'phase'> {
     const { phase } = resolved
     const terminal = TERMINAL_PHASES.has(phase)
-    const phaseOutcome = PHASE_LIFECYCLE_EVENTS[phase].outcome
+    const phaseOutcome = PHASE_LIFECYCLE_EVENTS[phase]?.outcome
     // A completed refund is the refund succeeding, not the swap: the swap did not deliver.
     const outcome = !terminal ? 'abandoned'
         : phase === SwapPhase.Refunded ? 'refunded'

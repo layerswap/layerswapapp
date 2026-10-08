@@ -4,7 +4,7 @@ import { registerHooks } from 'node:module'
 import { extname } from 'node:path'
 import { existsSync } from 'node:fs'
 import { JSDOM } from 'jsdom'
-import { act, createElement, StrictMode } from 'react'
+import { act, createElement, StrictMode, useLayoutEffect } from 'react'
 import axios, { AxiosError } from 'axios'
 
 const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://widget.test' })
@@ -15,15 +15,26 @@ for (const [key, value] of Object.entries({ window: dom.window, document: dom.wi
 }
 const moduleUrl = source => 'data:text/javascript,' + encodeURIComponent(source)
 const fixtureUrl = moduleUrl(`
+  import { useSyncExternalStore } from ${JSON.stringify(import.meta.resolve('react'))}
+  const listeners = new Set()
+  let version = 0
+  export const notify = () => { version++; for (const listener of listeners) listener() }
   export const state = { wallet: { id:'wallet', address:'source', isActive:true, providerName:'test-wallet', asSourceSupportedNetworks:['A'] } }
   export const useSelectedAccount = () => state.wallet
-  export const useSwapDataState = () => state.swap
+  export const useSwapDataState = () => {
+    useSyncExternalStore(listener => { listeners.add(listener); return () => listeners.delete(listener) }, () => version)
+    return state.swap
+  }
   export const useSwapDataUpdate = () => ({
     setSwapId(id) { state.swap.swapId = id }, setQuoteLoading() {}, markWalletExecutionStarted() {},
     setWalletActionExecuting() {},
+    beginWalletWithdrawal: () => () => {},
+    async mutateSwap(response) { state.swap.swapDetails = response.data.swap; notify() },
+    async mutateDepositActions(response) { state.swap.depositActionsResponse = response.data; notify() },
+    async mutateAuthorization(response) { state.swap.authorizationResponse = response?.data; notify() },
     startFreshSwapAttempt() {
       state.freshAttempts++
-      state.swap = { ...state.swap, swapId: undefined, swapDetails: undefined, depositActionsResponse: undefined }
+      state.swap = { ...state.swap, swapId: undefined, swapDetails: undefined, depositActionsResponse: undefined, swapError: null }
     },
     async createSwap() {
       if (!state.newSwap) throw new Error('unexpected creation')
@@ -58,6 +69,9 @@ const fixtures = ['/context/swap', '/context/swapAccounts', '/context/settings',
   '/validationError/ErrorDismissButton', '/validationError/constants', '/Icons/FailIcon', '/Icons/InfoIcon', '/messages/Message']
 const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
   if (specifier.endsWith('/AppSettings')) return { url: settingsUrl, shortCircuit: true }
+  if (specifier.endsWith('/context/swapAccounts') && context.parentURL?.endsWith('/useSwapRetry.js')) {
+    return { url: fixtureUrl, shortCircuit: true }
+  }
   if (specifier.endsWith('/context/swap') && ['/useSwapRetry.js', '/useResolvedSwapStatus.js', '/useDepositActionPolling.js'].some(path => context.parentURL?.endsWith(path))) {
     return { url: fixtureUrl, shortCircuit: true }
   }
@@ -83,6 +97,14 @@ axios.defaults.adapter = async config => {
   if (config.method === 'get' && config.url.endsWith('/authorize')) {
     return { status: 200, statusText: 'OK', headers: {}, config, data: { data: state.authorization } }
   }
+  if (config.method === 'get' && /\/swaps\/[^/]+$/.test(config.url)) {
+    if (state.reconciliationPause) await state.reconciliationPause.promise
+    if (state.reconciliationError) throw state.reconciliationError
+    return { status: 200, statusText: 'OK', headers: {}, config, data: { data: { swap: state.swap.swapDetails, deposit_actions: state.swap.depositActionsResponse } } }
+  }
+  if (config.method === 'get' && config.url.includes('transaction_status')) {
+    return { status: 200, statusText: 'OK', headers: {}, config, data: { data: { status: 'pending' } } }
+  }
   requests++
   if (state.authorizeSucceeds && config.method === 'post' && (config.url.endsWith('/authorize') || config.url.endsWith('/deposit_speedup'))) {
     return { status: 200, statusText: 'OK', headers: {}, config, data: {} }
@@ -93,7 +115,7 @@ axios.defaults.adapter = async config => {
   })
   throw originalError
 }
-const { state } = await import(fixtureUrl)
+const { state, notify } = await import(fixtureUrl)
 const { createRoot } = await import('react-dom/client')
 const { CallbackProvider } = await import('../dist/esm/context/callbackProvider.js')
 const { ErrorProvider } = await import('../dist/esm/context/ErrorProvider.js')
@@ -101,6 +123,7 @@ const { registerWidgetErrorLogger } = await import('../dist/esm/lib/ErrorHandler
 const { SendTransactionButton } = await import('../dist/esm/components/Pages/Swap/Withdraw/Wallet/Common/buttons.js')
 const { useGaslessPreferenceStore } = await import('../dist/esm/stores/gaslessPreferenceStore.js')
 const { useSwapTransactionStore, useDepositSignatureStore, useGaslessAuthorizationStore } = await import('../dist/esm/stores/swapTransactionStore.js')
+const { useGaslessAuthorizationStatus } = await import('../dist/esm/hooks/useGaslessAuthorizationStatus.js')
 const { useGaslessAuthorization } = await import('../dist/esm/hooks/useGaslessAuthorization.js')
 const { useSwapRetry } = await import('../dist/esm/hooks/useSwapRetry.js')
 const { resolveSwapPhase } = await import('../dist/esm/components/utils/resolveSwapPhase.js')
@@ -111,6 +134,12 @@ const { default: LayerSwapApiClient } = await import('../dist/esm/lib/apiClients
 const depositActionsClient = new LayerSwapApiClient()
 function DepositActionsSchedule() {
   useSWR('/swaps/swap-1/deposit_actions?source_address=source', depositActionsClient.fetcher, { refreshInterval: 2000, dedupingInterval: 1000 })
+  const authorization = useGaslessAuthorizationStatus(state.swap.swapId, state.swap.depositActionsResponse, 2000)
+  useLayoutEffect(() => {
+    state.swap.authorizationResponse = authorization.data?.data
+    state.swap.authorizationError = authorization.error
+    notify()
+  }, [authorization.data, authorization.error])
   return null
 }
 
@@ -121,15 +150,17 @@ beforeEach(() => {
   container = document.createElement('div'); document.body.append(container); root = createRoot(container)
   requests = 0; errors = []; lifecycle = []; state.successes = 0
   state.apiCalls = []; state.authorizeSucceeds = false
+  state.reconciliationPause = undefined; state.reconciliationError = undefined
+  state.wallet = { ...state.wallet, id: 'wallet', address: 'source' }
   state.authorization = { status: 'initiated' }
   state.freshAttempts = 0; state.creations = 0; state.newSwap = undefined
   localStorage.clear()
-  useSwapTransactionStore.setState({ swapTransactions: {} })
+  useSwapTransactionStore.setState({ swapTransactions: {}, pendingSubmissions: {} })
   useDepositSignatureStore.setState({ signatures: {} })
   useGaslessAuthorizationStore.setState({ authorizations: {} })
   swrConfig = { provider: () => new Map(), revalidateOnFocus: false, revalidateOnReconnect: false, isVisible: () => true }
   state.swap = { swapId: 'swap-1', swapDetails: { ...basic, id: 'swap-1', status: 'user_transfer_pending', transactions: [] },
-    depositActionsResponse: [{ type: 'sign', step: 'sign', status: 'action_required', typed_data: { message: { validBefore: '9999999999' } } }], setSwapError() {} }
+    depositActionsResponse: [{ type: 'sign', step: 'sign', status: 'action_required', typed_data: { message: { validBefore: '9999999999' } } }], setSwapError(message) { state.swap.swapError = message } }
   registerWidgetErrorLogger()
 })
 afterEach(async () => {
@@ -157,7 +188,7 @@ async function clickTransfer(onSign, { onClick = () => assert.fail('gasless shou
 
 let retryActions
 function RetryControls() {
-  const { failureStatus } = useGaslessAuthorization(state.swap.swapDetails, state.swap.depositActionsResponse)
+  const { failureStatus } = useGaslessAuthorization(state.swap.swapDetails, state.swap.depositActionsResponse, state.swap.authorizationResponse)
   const storedWalletTransaction = useSwapTransactionStore(s => s.swapTransactions[state.swap.swapId])
   state.swap.resolved = resolveSwapPhase({
     swapDetails: state.swap.swapDetails, storedWalletTransaction, gaslessFailureStatus: failureStatus,
@@ -199,7 +230,7 @@ for (const status of ['expired', 'insufficient', 'rejected']) {
       await act(async () => root.render(createElement(RetryControls)))
       const retry = container.querySelector(reload ? '#standard' : '#retry')
       assert.equal(retry.disabled, false, 'a definitive authorization failure must allow recovery')
-      await act(async () => retry.click())
+      await act(async () => { await (reload ? retryActions.switchToStandard() : retryActions.retry()) })
       assert.equal(state.freshAttempts, 1)
       assert.equal(state.swap.swapId, undefined)
       assert.equal(useDepositSignatureStore.getState().signatures['swap-1'], undefined)
@@ -232,10 +263,11 @@ test('a terminal authorization response preserves an existing transaction and ke
     store.setGaslessAuthorizationStatus('swap-1', 'initiated', transaction)
   })
   assert.deepEqual(useGaslessAuthorizationStore.getState().authorizations['swap-1'].transaction, transaction)
+  state.swap.inputTransactionStatus = 'pending'
   await act(async () => root.render(createElement(RetryControls)))
   assert.equal(container.querySelector('#retry').disabled, true)
   assert.equal(container.querySelector('#standard').disabled, true)
-  await act(async () => { retryActions.retry(); retryActions.switchToStandard() })
+  await act(async () => { await retryActions.retry(); await retryActions.switchToStandard() })
   assert.equal(state.freshAttempts, 0)
   assert.equal(state.swap.swapId, 'swap-1')
 })
@@ -247,7 +279,7 @@ test('a transaction arriving after a terminal failure render still prevents retr
   const retry = retryActions.retry
   await act(async () => {
     useSwapTransactionStore.getState().setSwapTransaction('swap-1', 'pending', 'late-hash')
-    retry()
+    await retry()
   })
   assert.equal(state.freshAttempts, 0)
   assert.equal(state.swap.swapId, 'swap-1')
@@ -267,7 +299,8 @@ test('real transfer button, gasless execution, API client and host logger share 
   assert.equal(errors[1].cause.status, 503)
   assert.ok(originalError.config.data.includes('test-secret-authorization'), 'recovery still has the original failure')
   assert.equal(state.successes, 0)
-  assert.match(container.textContent, /Switch to standard transfer/)
+  assert.doesNotMatch(container.textContent, /Switch to standard transfer/,
+    'backend acceptance still prevents a mode switch when the POST response fails')
 })
 
 test('wallet declines keep their classification and never become host errors or authorize requests', async () => {
@@ -311,4 +344,52 @@ test(`the real button resumes ${initialPublish ? 'known' : 'late'} publication f
   assert.ok(state.apiCalls.filter(([method]) => method === 'get').every(([, url]) => (url.includes('/deposit_actions') || (!initialPublish && url.endsWith('/authorize')))), 'execution never requests a whole swap')
   assert.deepEqual(errors, [])
 })
+}
+
+
+test('a fresh published backend authorization cancels a retry from a stale failure screen', async t => {
+  await failSignOnlyAuthorization(t, 'expired')
+  await act(async () => root.render(createElement(RetryControls)))
+  assert.equal(retryActions.canRetry, true)
+  state.authorization = { status: 'published' }
+  await act(async () => retryActions.switchToStandard())
+  assert.equal(state.freshAttempts, 0)
+  assert.equal(state.swap.swapId, 'swap-1')
+  assert.equal(useGaslessPreferenceStore.getState().gaslessEnabled, true)
+  assert.ok(useDepositSignatureStore.getState().signatures['swap-1'])
+})
+
+test('a failed reconciliation leaves retry evidence and transfer preferences unchanged', async t => {
+  await failSignOnlyAuthorization(t, 'rejected')
+  await act(async () => root.render(createElement(RetryControls)))
+  state.reconciliationError = new Error('Status unavailable')
+  await act(async () => retryActions.switchToStandard())
+  assert.equal(state.freshAttempts, 0)
+  assert.equal(useGaslessPreferenceStore.getState().gaslessEnabled, true)
+  assert.ok(useDepositSignatureStore.getState().signatures['swap-1'])
+  assert.equal(state.swap.swapError, 'Status unavailable')
+})
+
+for (const changed of ['account', 'quote', 'unmount', 'submitted hash', 'signature']) {
+  test(`a ${changed} change while checking prevents stale retry cleanup`, async t => {
+    await failSignOnlyAuthorization(t, 'expired')
+    await act(async () => root.render(createElement(RetryControls)))
+    state.reconciliationPause = Promise.withResolvers()
+    let pending
+    await act(async () => { pending = retryActions.switchToStandard() })
+    if (changed === 'account') state.wallet = { ...state.wallet, id: 'other-wallet', address: 'other-source' }
+    if (changed === 'quote') state.swap.swapDetails = { ...state.swap.swapDetails, quote_revision: 2 }
+    if (changed === 'submitted hash') await act(async () => useSwapTransactionStore.getState().setSwapTransaction('swap-1', 'pending', 'late-hash'))
+    if (changed === 'signature') await act(async () => useDepositSignatureStore.getState().setDepositSignature('swap-1', 12345))
+    if (changed === 'unmount') {
+      await act(async () => root.unmount())
+      root = createRoot(container)
+    } else await act(async () => root.render(createElement(RetryControls)))
+    await act(async () => { state.reconciliationPause.resolve(); await pending })
+    assert.equal(state.freshAttempts, 0)
+    assert.equal(state.swap.swapId, 'swap-1')
+    assert.equal(useGaslessPreferenceStore.getState().gaslessEnabled, true)
+    assert.ok(useDepositSignatureStore.getState().signatures['swap-1'])
+    if (changed === 'submitted hash') assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].hash, 'late-hash')
+  })
 }

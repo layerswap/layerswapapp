@@ -139,7 +139,6 @@ export function Page2LoadedPreview({
     const resolved = resolveSwapPhase({
         swapDetails: s.details,
         refuel: s.refuel,
-        storedWalletTransaction: s.storedWalletTransaction,
         inputTxStatusFromApi: s.inputTxStatusFromApi,
         gaslessFailureStatus: gaslessFailed
             ? s.gaslessAuthorization?.status as 'expired' | 'insufficient' | 'rejected'

@@ -57,7 +57,8 @@ function Observe({ id = 's1', localStatus = 'pending', gaslessFailureStatus, sho
   const swapDetails = data?.data?.swap
   useSwapStatusNotification(swapDetails?.id, swapDetails?.status, { path: 'SwapDataProvider' })
   const resolved = resolveSwapPhase({ swapDetails, refuel: data?.data?.refuel,
-    storedWalletTransaction: { hash: 'tx-in', status: localStatus, timestamp: 100 }, gaslessFailureStatus })
+    storedWalletTransaction: { hash: 'tx-in', status: localStatus, timestamp: 100 }, gaslessFailureStatus,
+    statusChecking: swapDetails?.status === 'user_transfer_pending' && !swapDetails.transactions.length && !gaslessFailureStatus })
   return showPanel ? createElement('output', null, resolved.phase) : null
 }
 
@@ -78,9 +79,9 @@ test('local failure and wallet retries do not stop backend polling or replay sta
   globalThis.__swapTransport = async () => { requests++; return response }
   const { render, events } = harness()
   await render()
-  assert.equal(container.textContent, 'input_pending')
+  assert.equal(container.textContent, 'checking_transfer_status')
   await render({ localStatus: 'failed' })
-  assert.equal(container.textContent, 'failed')
+  assert.equal(container.textContent, 'checking_transfer_status', 'persisted failure is not authoritative')
   const before = requests
   for (let i = 0; i < 3; i++) await act(async () => { t.mock.timers.tick(500) })
   assert.ok(requests > before, 'polling survives the terminal UI phase')

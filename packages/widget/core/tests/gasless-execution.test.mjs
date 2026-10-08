@@ -18,14 +18,15 @@ const hooks = registerHooks({
 })
 after(() => hooks.deregister())
 
-const { executeGaslessAuthorization, completeGaslessSubmission } = await import('../dist/esm/components/Pages/Swap/Withdraw/Wallet/Common/depositExecution.js')
-const { useDepositSignatureStore, useGaslessAuthorizationStore } = await import('../dist/esm/stores/swapTransactionStore.js')
+const { executeGaslessAuthorization, completeGaslessSubmission, executeWalletTransfer } = await import('../dist/esm/components/Pages/Swap/Withdraw/Wallet/Common/depositExecution.js')
+const { useDepositSignatureStore, useGaslessAuthorizationStore, useSwapTransactionStore } = await import('../dist/esm/stores/swapTransactionStore.js')
 const { useGaslessPreferenceStore } = await import('../dist/esm/stores/gaslessPreferenceStore.js')
 const { widgetTelemetry } = await import('../dist/esm/lib/widgetTelemetry.js')
 afterEach(() => {
   useGaslessPreferenceStore.getState().resetGaslessPreference()
   useGaslessAuthorizationStore.setState({ authorizations: {} })
   useDepositSignatureStore.setState({ signatures: {} })
+  useSwapTransactionStore.setState({ swapTransactions: {}, pendingSubmissions: {} })
 })
 
 for (const [code, rejected, message = 'Wallet request failed'] of [[4001, true], ['4001', true], ['ACTION_REJECTED', true], [-32603, false], [undefined, true, 'User has rejected the request.']]) {
@@ -131,7 +132,7 @@ test('the re-sign after an expired authorization opens a second wallet prompt', 
   assert.equal(validBefore, 456)
   assert.deepEqual(submitted, [], 'a signature is not evidence of submission')
   completeGaslessSubmission(ctx, { status: 'published', transaction: { transaction_hash: '0xgasless', status: 'pending' } }, validBefore)
-  assert.deepEqual(submitted, [['swap-gasless-api', 'pending', '0xgasless']])
+  assert.deepEqual(submitted, [], 'backend authorization results are not copied to transaction storage')
   assert.equal(lifecycle.at(-1).step, 'gasless_authorization_submitted')
 })
 
@@ -203,7 +204,8 @@ test('closing during authorization retains the accepted signature without a tran
   authorized.resolve()
   await signing
   assert.deepEqual(submitted, [])
-  assert.deepEqual(useGaslessAuthorizationStore.getState().authorizations[ctx.swapData.id], { kind: 'gasless', validBefore: 123 })
+  assert.equal(useGaslessAuthorizationStore.getState().authorizations[ctx.swapData.id], undefined)
+  assert.deepEqual(useDepositSignatureStore.getState().signatures[ctx.swapData.id], { validBefore: 123 })
 })
 
 test('an ambiguous EIP-3009 signature becomes gasless only after authoritative submission', async () => {
@@ -215,7 +217,51 @@ test('an ambiguous EIP-3009 signature becomes gasless only after authoritative s
   assert.deepEqual(useDepositSignatureStore.getState().signatures[ctx.swapData.id], { validBefore: 123 })
   assert.deepEqual(submitted, [])
   completeGaslessSubmission(ctx, { status: 'published', transaction: { transaction_hash: '0xgasless', status: 'pending' } }, 123)
-  assert.deepEqual(submitted, [[ctx.swapData.id, 'pending', '0xgasless']])
-  assert.equal(useGaslessAuthorizationStore.getState().authorizations[ctx.swapData.id].kind, 'gasless')
+  assert.deepEqual(submitted, [])
+  assert.deepEqual(useGaslessAuthorizationStore.getState().authorizations[ctx.swapData.id], {
+    kind: 'gasless', validBefore: 0, transaction: { transaction_hash: '0xgasless' },
+  })
   assert.equal(useDepositSignatureStore.getState().signatures[ctx.swapData.id], undefined)
 })
+
+
+for (const failsAt of ['lifecycle callback', 'success callback']) {
+  test(`the published gasless hash survives a throwing ${failsAt}`, () => {
+    const { ctx } = gaslessContext({ lifecycle: [], submitted: [] })
+    ctx.onLifecycle = () => {
+      assert.equal(useGaslessAuthorizationStore.getState().authorizations[ctx.swapData.id].transaction.transaction_hash, '0xgasless')
+      if (failsAt === 'lifecycle callback') throw new Error('Callback failed')
+    }
+    ctx.onSuccess = () => { throw new Error('Callback failed') }
+    assert.throws(() => completeGaslessSubmission(ctx, {
+      status: 'published', transaction: { transaction_hash: '0xgasless', status: 'pending' },
+    }), /Callback failed/)
+    assert.deepEqual(useGaslessAuthorizationStore.getState().authorizations[ctx.swapData.id].transaction, { transaction_hash: '0xgasless' })
+  })
+}
+
+for (const failsAt of ['submission callback', 'success callback']) {
+  test(`the real wallet hash survives a throwing ${failsAt}`, async () => {
+    const submitted = []
+    const { ctx } = gaslessContext({ lifecycle: [], submitted })
+    ctx.swapData.metadata = {}
+    ctx.swapBasicData.source_network = { name: 'BASE' }
+    ctx.swapBasicData.source_token = {}
+    ctx.layerswapApiClient.SwapCatchup = async () => {
+      assert.deepEqual(submitted, [[ctx.swapData.id, 'pending', '0xinput']])
+    }
+    ctx.onLifecycle = event => {
+      if (event.step === 'transaction_submitted') {
+        assert.deepEqual(submitted, [[ctx.swapData.id, 'pending', '0xinput']])
+        if (failsAt === 'submission callback') throw new Error('Callback failed')
+      }
+    }
+    ctx.onSuccess = () => {
+      assert.deepEqual(submitted, [[ctx.swapData.id, 'pending', '0xinput']])
+      if (failsAt === 'success callback') throw new Error('Callback failed')
+    }
+    const action = { type: 'transfer', step: 'publish', status: 'action_required', amount: 1, to_address: 'deposit' }
+    await assert.rejects(executeWalletTransfer(ctx, async () => '0xinput', action), /Callback failed/)
+    assert.deepEqual(submitted, [[ctx.swapData.id, 'pending', '0xinput']])
+  })
+}

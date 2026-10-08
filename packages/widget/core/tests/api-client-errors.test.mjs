@@ -103,3 +103,18 @@ test('the onError occurrence id matches the swap_creation_failed lifecycle event
   assert.equal(reported.length, 1)
   assert.equal(reported[0].occurrenceId, failed.occurrenceId)
 })
+
+test('an authorization not issued yet remains a rejected read without a host error', async () => {
+  const reported = []
+  setErrorLogger(event => reported.push(event))
+  const client = failingClient()
+  client._authInterceptor.defaults.adapter = async config => {
+    throw new AxiosError('Not found', 'ERR_BAD_RESPONSE', config, {}, {
+      status: 404, statusText: 'Not Found', headers: {}, config, data: {},
+    })
+  }
+  await assert.rejects(client.GetGaslessAuthorizationAsync('swap-1'), error => error.response.status === 404)
+  assert.deepEqual(reported, [])
+  await assert.rejects(client.AuthorizeSwapAsync('swap-1', 'signature', SOURCE_ADDRESS))
+  assert.equal(reported.length, 1, 'authorization writes still report failures')
+})

@@ -13,13 +13,11 @@ import { useSettingsState } from "@/context/settings";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/shadcn/accordion";
 import { useSwapHistoryData } from "@/hooks/useSwapHistoryData";
 import { SwapDataProvider, SwapDataStateContext } from '@/context/swap';
-import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import { useHistoryFilters } from '@/hooks/useHistoryFilters';
 import { useSwapByTransactionHash } from '@/hooks/useSwapByTransactionHash';
 import { FilterNetworkOption } from './Filters/types';
 import { SwapResponse } from '@/lib/apiClients/layerSwapApiClient';
 import Filters from './Filters';
-import { shouldDisplay } from './Filters/filterSwaps';
 import NoMatches from './Filters/NoMatches';
 import SearchResult from './Filters/SearchResult';
 import AppSettings from '@/lib/AppSettings';
@@ -146,7 +144,6 @@ const SwapsList: FC<SwapsListProps> = ({
     const [isScrolling, setIsScrolling] = useState(false)
     const parentRef = useRef<HTMLDivElement>(null)
     const scrollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
-    const swapTransactions = useSwapTransactionStore(s => s.swapTransactions)
 
     const handleScroll = useCallback(() => {
         if (!isScrolling) setIsScrolling(true)
@@ -160,14 +157,8 @@ const SwapsList: FC<SwapsListProps> = ({
         }
     }, [])
 
-    const pendingSwaps = useMemo(
-        () => pendingDeposit.swaps.filter(s => shouldDisplay(s, swapTransactions)),
-        [pendingDeposit.swaps, swapTransactions]
-    )
-    const filteredCompleted = useMemo(
-        () => completed.swaps.filter(s => shouldDisplay(s, swapTransactions)),
-        [completed.swaps, swapTransactions]
-    )
+    const pendingSwaps = pendingDeposit.swaps
+    const filteredCompleted = completed.swaps
 
     const grouppedSwaps = useMemo(() => Object
         .entries(groupBy(filteredCompleted, ({ swap }) => new Date(swap.created_date).toLocaleDateString()))

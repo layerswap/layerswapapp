@@ -45,7 +45,7 @@ test('a failed gasless authorization resolves the swap to failed, with the reaso
 })
 
 test('a pending gasless deposit without a failure stays input-pending with no failure reason', () => {
-  const resolved = resolve(pendingSwap(), { storedWalletTransaction: { hash: '', status: 'pending' } })
+  const resolved = resolve(pendingSwap(), { depositCompleted: true })
   assert.equal(resolved.phase, SwapPhase.InputPending)
   assert.equal(resolved.failureReason, undefined)
   assert.equal(resolved.gaslessFailureStatus, undefined)
@@ -70,11 +70,23 @@ test('a failed status from the tx-status poll resolves a client-detected transfe
   assert.equal(resolved.failureReason, 'transfer_failed')
 })
 
-test('a stored failed wallet transaction (reload after the poll) resolves the same transfer failure', () => {
+test('a persisted hash and status cannot establish any lifecycle phase after reload', () => {
   const resolved = resolve(pendingSwap(), { storedWalletTransaction: { hash: '0x1', status: 'failed' } })
-  assert.equal(resolved.phase, SwapPhase.Failed)
-  assert.equal(resolved.isTerminal, true)
-  assert.equal(resolved.failureReason, 'transfer_failed')
+  assert.equal(resolved.phase, SwapPhase.AwaitingUserDeposit)
+  assert.equal(resolved.isTerminal, false)
+  assert.equal(resolved.failureReason, undefined)
+})
+
+test('missing backend observations show a neutral checking state without enabling submission or retry', () => {
+  const resolved = resolve(pendingSwap(), { statusChecking: true, gaslessFailureStatus: 'expired' })
+  assert.equal(resolved.phase, SwapPhase.CheckingStatus)
+  assert.equal(resolved.generalStatus.title, 'Checking transfer status')
+  assert.equal(resolved.swapInputTxStatus, undefined)
+  assert.equal(resolved.showWithdrawScreen, false)
+  assert.equal(resolved.failureReason, undefined)
+  assert.equal(resolved.isTerminal, false)
+  assert.equal(resolved.hidesSteps, true)
+  assert.equal(resolved.showsEstimatedTime, false)
 })
 
 test('an input transaction the API lists as failed is failed but not retryable from the widget', () => {
@@ -102,7 +114,7 @@ test('a transient stored failure yields to the input status the API reports afte
     assert.equal(polled.phase, SwapPhase.InputPending)
     assert.equal(polled.failureReason, undefined)
   }
-  // The API lists the input transaction: Processing writes this status back over the stored failure.
+  // The API lists the input transaction: the current observation determines the phase.
   const listedPending = resolve(pendingSwap({ transactions: [inputTx({ status: 'pending', confirmations: 0 })] }), { storedWalletTransaction })
   assert.equal(listedPending.swapInputTxStatus, 'pending')
   assert.equal(listedPending.phase, SwapPhase.InputPending)
@@ -165,4 +177,14 @@ test('missing or inconsistent timestamps do not produce a fabricated completion 
     })
     assert.equal(resolved.generalStatus.subTitle, null)
   }
+})
+
+test('a fresh pending receipt overrides an authorization failure until the swap lists its input', () => {
+  const resolved = resolve(pendingSwap(), {
+    storedWalletTransaction: { hash: '0xinput', status: 'failed' },
+    gaslessFailureStatus: 'expired', inputTxStatusFromApi: 'pending',
+  })
+  assert.equal(resolved.phase, SwapPhase.InputPending)
+  assert.equal(resolved.failureReason, undefined)
+  assert.equal(resolved.gaslessFailureStatus, undefined)
 })

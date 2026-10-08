@@ -18,7 +18,7 @@ after(() => {
     else delete globalThis.localStorage
 })
 
-test('legacy execution transactions hydrate unchanged and gain an empty step map', async () => {
+test('legacy hashes survive hydration while empty placeholders become uncertain submissions', async () => {
     const swapTransactions = {
         pending: { hash: 'pending-hash', status: 'pending', timestamp: 10 },
         failed: { hash: 'failed-hash', status: 'failed', failReason: 'reverted', timestamp: 20 },
@@ -27,15 +27,16 @@ test('legacy execution transactions hydrate unchanged and gain an empty step map
     const legacy = { state: { swapTransactions, pendingSubmissions: { uncertain: true } }, version: 0 }
     storage.set('swapTransactions', JSON.stringify(legacy))
     await store.persist.rehydrate()
-    assert.deepEqual(store.getState().swapTransactions, swapTransactions)
-    assert.deepEqual(store.getState().pendingSubmissions, { uncertain: true })
+    const { gasless, ...realTransactions } = swapTransactions
+    assert.deepEqual(store.getState().swapTransactions, realTransactions)
+    assert.deepEqual(store.getState().pendingSubmissions, { uncertain: true, gasless: true })
     assert.deepEqual(store.getState().stepTransactions, {})
 
     store.getState().setStepTransaction('pending', 'approve_permit2', 'approval', 'https://explorer.test/tx/approval')
     const persisted = JSON.parse(storage.get('swapTransactions'))
     assert.equal(persisted.version, 0, 'older clients can still read their execution records')
-    assert.deepEqual(persisted.state.swapTransactions, swapTransactions)
-    assert.deepEqual(persisted.state.pendingSubmissions, legacy.state.pendingSubmissions)
+    assert.deepEqual(persisted.state.swapTransactions, realTransactions)
+    assert.deepEqual(persisted.state.pendingSubmissions, { uncertain: true, gasless: true })
 })
 
 test('approvals persist independently without submitting the swap or clearing unknown submissions', async () => {
@@ -88,4 +89,10 @@ test('replacing an approval affects only that swap and step, and empty hashes ar
     const current = store.getState().stepTransactions
     store.getState().setStepTransaction('swap-1', 'approve_permit2', '', '')
     assert.equal(store.getState().stepTransactions, current)
+})
+
+test('a provider without a hash retains uncertainty without inventing a transaction', () => {
+    store.getState().setSwapTransaction('unknown', 'pending', '')
+    assert.deepEqual(store.getState().swapTransactions, {})
+    assert.deepEqual(store.getState().pendingSubmissions, { unknown: true })
 })

@@ -11,6 +11,8 @@ type WalletOperationOptions = {
     allowEmptyHash?: boolean
     /** Approval transactions do not submit the swap input transfer. */
     reportsSubmission?: boolean
+    /** Save recovery evidence before telemetry and external submission callbacks. */
+    onSubmitted?: (hash: string) => void
     /** A recoverable error (such as the first expired Stellar transaction) has no terminal event. */
     shouldReportError?: (error: unknown) => boolean
     /** Preserve flows that stop reporting outcomes after their UI unmounts. */
@@ -19,7 +21,7 @@ type WalletOperationOptions = {
 
 /** Reports only the wallet request; preparation and success hand-off belong to the caller. */
 export async function executeWalletOperation(
-    { context, onLifecycle, onSettled, allowEmptyHash = false, reportsSubmission = true, shouldReportError, isActive }: WalletOperationOptions,
+    { context, onLifecycle, onSettled, allowEmptyHash = false, reportsSubmission = true, onSubmitted, shouldReportError, isActive }: WalletOperationOptions,
     execute: () => Promise<string | undefined>,
 ): Promise<string> {
     const active = () => isActive?.() ?? true
@@ -60,6 +62,7 @@ export async function executeWalletOperation(
         throw error
     }
 
+    onSubmitted?.(hash || '')
     if (active()) {
         onSettled?.('succeeded')
         if (reportsSubmission) onLifecycle({

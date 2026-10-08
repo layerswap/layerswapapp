@@ -13,7 +13,6 @@ import { Widget } from '@/components/Widget/Index';
 import { useCallbacks } from '@/context/callbackProvider';
 import { useSwapDataState, useSwapDataUpdate } from '@/context/swap';
 import { useSelectedAccount } from '@/context/swapAccounts';
-import { useGaslessAuthorizationStatus } from '@/hooks/useGaslessAuthorizationStatus';
 import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
 import { useSwapRetry } from '@/hooks/useSwapRetry';
 import type { JSX } from 'react';
@@ -21,6 +20,7 @@ import { FC, useCallback, useEffect } from 'react';
 import { lifecycleContextFromSwap } from '@/lib/swapLifecycle';
 import ManualWithdraw from './ManualWithdraw';
 import { RetryView } from './Presentation/RetryView';
+import { ActionMessageView } from './Presentation/ActionMessageView';
 import Processing from './Processing';
 import Withdraw from './Withdraw';
 
@@ -41,11 +41,13 @@ const SwapDetails: FC<Props> = ({
         swapBasicData,
         swapDetails,
         walletExecutionStarted,
+        walletWithdrawalExecuting,
         refuel,
         depositActionsResponse,
         quote,
         quoteIsLoading,
         quoteError,
+        swapError,
     } = useSwapDataState();
     const selectedSourceAccount = useSelectedAccount(
         'from',
@@ -60,14 +62,13 @@ const SwapDetails: FC<Props> = ({
     }, [setSwapViewMounted]);
     const isGaslessActive = useIsGaslessActive(swapBasicData);
 
-    // Polls the gasless deposit (paymaster) authorization while it's in flight; self-gates on
-    // the authorization marker, so it's a no-op for non-gasless swaps.
-    useGaslessAuthorizationStatus(swapDetails?.id, depositActionsResponse);
-
     const resolved = useResolvedSwapStatus();
+    // Submission can be observed before the wallet request completes its handoff.
+    const showWithdrawal = resolved.showWithdrawScreen || walletWithdrawalExecuting;
     const {
         failureReason,
         canRetry,
+        isChecking,
         retry,
         gaslessFailureMessage,
         canSwitchToStandard,
@@ -120,7 +121,7 @@ const SwapDetails: FC<Props> = ({
             <SwapContentView
                 transferStage={
                     !compactsDuringWalletExecution
-                        ? resolved.showWithdrawScreen
+                        ? showWithdrawal
                             ? 'withdraw'
                             : 'processing'
                         : undefined
@@ -147,7 +148,7 @@ const SwapDetails: FC<Props> = ({
                     )
                 }
             >
-                {resolved.showWithdrawScreen ? (
+                {showWithdrawal ? (
                     swapBasicData?.use_deposit_address === true ? (
                         <ManualWithdraw
                             swapBasicData={swapBasicData}
@@ -172,6 +173,7 @@ const SwapDetails: FC<Props> = ({
                         actions={
                             canRetry && (
                                 <RetryView
+                                    isChecking={isChecking}
                                     canSwitchToStandard={canSwitchToStandard}
                                     onRetry={handleRetry}
                                     onSwitchToStandard={handleSwitchToStandard}
@@ -179,6 +181,16 @@ const SwapDetails: FC<Props> = ({
                             )
                         }
                     >
+                        {swapError && (
+                            <div role="alert" className="mb-2">
+                                <ActionMessageView
+                                    swapError
+                                    swapErrorMessage={swapError}
+                                    selectedSourceAddress={sourceAddress || ''}
+                                    sourceNetwork={swapBasicData.source_network}
+                                />
+                            </div>
+                        )}
                         <Processing
                             inputFailureMessage={gaslessFailureMessage}
                         />
