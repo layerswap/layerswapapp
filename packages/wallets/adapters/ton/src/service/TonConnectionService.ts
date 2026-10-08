@@ -1,3 +1,4 @@
+import { NetworkType } from '@layerswap/widget-types';
 import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
 import type { WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types";
 import type { WalletModalConnector } from "@layerswap/wallet-core/types"
@@ -34,13 +35,13 @@ export class TonConnectionService<Network> implements WalletConnectionService<Ru
     }
 
     getNetworkIcon(): string | undefined {
-        const network = this._networks.find(item => this._networkAdapter?.isTonNetwork(item))
+        const network = this._networks.find(item => this._networkAdapter?.getNetworkType(item) === NetworkType.TON)
         return network && this._networkAdapter ? this._networkAdapter.getIcon(network) : undefined
     }
 
     private getSupportedNetworks(): string[] {
         return this._networks
-            .filter(network => this._networkAdapter?.isTonNetwork(network))
+            .filter(network => this._networkAdapter?.getNetworkType(network) === NetworkType.TON)
             .map(network => this._networkAdapter?.getId(network))
             .filter((id): id is string => !!id)
     }

@@ -60,6 +60,7 @@ export function createSvmConnection<Network>(
                 browseConnectors: additional.browseConnectors,
                 recentConnectors: additional.recentConnectors,
                 networks,
+                networkAdapter,
             }
         },
         buildSnapshot: inputs => {

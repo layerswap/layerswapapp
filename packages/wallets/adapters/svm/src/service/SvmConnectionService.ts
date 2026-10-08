@@ -1,3 +1,4 @@
+import { NetworkType } from '@layerswap/widget-types';
 import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
 import type { RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types";
 import type { WalletModalConnector } from "@layerswap/wallet-core/types"
@@ -56,7 +57,7 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
         if (this._networksKey === key) return
         this._networks = networks
         this._networkAdapter = networkAdapter
-        this._supported = networks.filter(network => networkAdapter.isSolanaNetwork(network)).map(network => networkAdapter.getId(network))
+        this._supported = networks.filter(network => networkAdapter.getNetworkType(network) === NetworkType.Solana).map(network => networkAdapter.getId(network))
         this._networksKey = key
     }
 
@@ -69,7 +70,7 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
     }
 
     getProviderIcon(): string | undefined {
-        const network = this._networks.find(item => this._networkAdapter?.isSolanaNetwork(item))
+        const network = this._networks.find(item => this._networkAdapter?.getNetworkType(item) === NetworkType.Solana)
         return network && this._networkAdapter ? this._networkAdapter.getIcon(network) : undefined
     }
 

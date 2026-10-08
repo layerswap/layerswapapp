@@ -133,6 +133,8 @@ For the common case, use the lazy descriptor via `getDefaultProviders({ immutabl
 
 ## TypeScript
 
+Network checks use the shared `NetworkType` returned by the app adapter. See [host network types](../core/README.md#host-network-types).
+
 All providers ship type definitions. You can import types either from specific packages or via this aggregator if they are re-exported by the providers.
 
 ## Versioning and updates

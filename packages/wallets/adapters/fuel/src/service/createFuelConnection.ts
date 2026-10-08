@@ -39,6 +39,7 @@ export function createFuelConnection<Network>(
                 ready: fuelState.ready,
                 connectedWallets: fuelState.connectedWallets,
                 networks,
+                networkAdapter,
             }
         },
         buildSnapshot: () => ({

@@ -35,6 +35,7 @@ export function createTronConnection<Network>(
                 activeAddress: state.activeAddress,
                 ready: state.ready,
                 networks,
+                networkAdapter,
                 eip6963Providers: getEip6963Providers(),
             }
         },

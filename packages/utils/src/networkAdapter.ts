@@ -1,3 +1,5 @@
+import type { NetworkType } from '@layerswap/widget-types'
+
 export type WalletNativeCurrency = {
     symbol: string
     decimals: number
@@ -5,6 +7,7 @@ export type WalletNativeCurrency = {
 
 export type AppNetworkAdapter<Network> = {
     getId(network: Network): string
+    getNetworkType(network: Network): NetworkType | undefined
     getDisplayName(network: Network): string
     getChainId(network: Network): string | number | null | undefined
     getRpcUrls(network: Network): readonly string[]
@@ -13,14 +16,6 @@ export type AppNetworkAdapter<Network> = {
     getAccountExplorerUrl(network: Network): string | undefined
     getNativeCurrency(network: Network): WalletNativeCurrency | undefined
     getMulticallAddress?(network: Network): string | undefined
-    isEvmNetwork(network: Network): boolean
-    isSolanaNetwork(network: Network): boolean
-    isStarknetNetwork(network: Network): boolean
-    isTronNetwork(network: Network): boolean
-    isStellarNetwork(network: Network): boolean
-    isBitcoinNetwork(network: Network): boolean
-    isTonNetwork(network: Network): boolean
-    isFuelNetwork(network: Network): boolean
     validateAddress?(network: Network, address: string): boolean | undefined
     formatAddress?(network: Network, address: string): string | undefined
 }

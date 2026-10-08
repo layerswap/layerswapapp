@@ -1,3 +1,4 @@
+import { NetworkType } from '@layerswap/widget-types';
 import type { AppNetworkAdapter } from '@layerswap/utils'
 
 export type EvmNetworkBuckets = {
@@ -25,7 +26,7 @@ export function computeEvmNetworkBuckets<Network>(
 ): EvmNetworkBuckets {
     const asSource = [
         ...networks
-            .filter(network => networkAdapter.isEvmNetwork(network))
+            .filter(network => networkAdapter.getNetworkType(network) === NetworkType.EVM)
             .map(network => networkAdapter.getId(network)),
         ...additionalSupportedNetworks.asSource,
     ]

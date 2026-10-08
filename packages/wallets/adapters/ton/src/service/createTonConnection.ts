@@ -40,6 +40,7 @@ export function createTonConnection<Network>(
                 wallets: state.wallets,
                 ready: state.ready,
                 networks,
+                networkAdapter,
             }
         },
         buildSnapshot: inputs => ({

@@ -1,3 +1,4 @@
+import { NetworkType } from '@layerswap/widget-types';
 import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
 import type { WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types";
 import { walletIconResolver } from "@layerswap/wallet-core";
@@ -151,7 +152,7 @@ export class StarknetConnectionService<Network> implements WalletConnectionServi
     }
 
     getStarknetNetwork(): StarknetNetwork | undefined {
-        const network = this._networks.find(item => this._networkAdapter?.isStarknetNetwork(item))
+        const network = this._networks.find(item => this._networkAdapter?.getNetworkType(item) === NetworkType.Starknet)
         if (!network || !this._networkAdapter) return undefined
         return {
             id: this._networkAdapter.getId(network),
@@ -406,7 +407,7 @@ export class StarknetConnectionService<Network> implements WalletConnectionServi
 
     private getSupportedNetworks(): string[] {
         return this._networkAdapter
-            ? this._networks.filter(network => this._networkAdapter?.isStarknetNetwork(network)).map(network => this._networkAdapter!.getId(network))
+            ? this._networks.filter(network => this._networkAdapter?.getNetworkType(network) === NetworkType.Starknet).map(network => this._networkAdapter!.getId(network))
             : []
     }
 }

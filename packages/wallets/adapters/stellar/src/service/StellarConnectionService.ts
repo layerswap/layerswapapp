@@ -1,3 +1,4 @@
+import { NetworkType } from '@layerswap/widget-types';
 import { type InternalConnector, type Wallet } from '@layerswap/widget-types'
 import type {
     RequestAdditionalConnectorsParams,
@@ -247,14 +248,14 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
     }
 
     private getNetworkLogo(): string | undefined {
-        const network = this.networks.find(item => this.networkAdapter?.isStellarNetwork(item))
+        const network = this.networks.find(item => this.networkAdapter?.getNetworkType(item) === NetworkType.Stellar)
         return network && this.networkAdapter ? this.networkAdapter.getIcon(network) : undefined
     }
 
     private getSupportedNetworks(): string[] {
         if (!this.networkAdapter) return []
         return this.networks
-            .filter(network => this.networkAdapter?.isStellarNetwork(network))
+            .filter(network => this.networkAdapter?.getNetworkType(network) === NetworkType.Stellar)
             .map(network => this.networkAdapter!.getId(network))
     }
 }

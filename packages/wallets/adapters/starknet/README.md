@@ -93,6 +93,8 @@ version. RPC v0.8 endpoints are no longer supported by this adapter.
 
 ## TypeScript
 
+Network checks use the shared `NetworkType` returned by the app adapter. See [host network types](../../core/README.md#host-network-types).
+
 This package includes TypeScript definitions. All types are exported from the main entry point.
 
 ## License

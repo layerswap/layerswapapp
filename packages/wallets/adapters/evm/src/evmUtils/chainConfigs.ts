@@ -1,3 +1,4 @@
+import { NetworkType } from '@layerswap/widget-types';
 import NetworkSettings from "../NetworkSettings";
 import type { AppNetworkAdapter } from "@layerswap/utils"
 import { Chain, fallback, http } from 'viem';
@@ -16,7 +17,7 @@ export function getEvmChainsConfig<Network>(networks: Network[], networkAdapter:
     const settingsChains = networks
         .slice()
         .sort((a, b) => (NetworkSettings.KnownSettings[networkAdapter.getId(a)]?.ChainOrder || Number(networkAdapter.getChainId(a))) - (NetworkSettings.KnownSettings[networkAdapter.getId(b)]?.ChainOrder || Number(networkAdapter.getChainId(b))))
-        .filter(network => networkAdapter.isEvmNetwork(network)
+        .filter(network => networkAdapter.getNetworkType(network) === NetworkType.EVM
             && networkAdapter.getRpcUrls(network).length > 0
             && networkAdapter.getNativeCurrency(network)
             && networkAdapter.getChainId(network) && !chainsToFilter.includes(Number(networkAdapter.getChainId(network)))

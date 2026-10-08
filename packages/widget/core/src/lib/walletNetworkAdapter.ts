@@ -1,8 +1,8 @@
-import { NetworkType } from '@layerswap/widget-types';
 import { defineNetworkAdapter } from "@layerswap/utils";
 import { type NetworkWithTokens } from "@layerswap/widget-types";
 
 export const walletNetworkAdapter = defineNetworkAdapter<NetworkWithTokens>({
+    getNetworkType: network => network.type,
     getId: network => network.name,
     getDisplayName: network => network.display_name,
     getChainId: network => network.chain_id,
@@ -15,12 +15,4 @@ export const walletNetworkAdapter = defineNetworkAdapter<NetworkWithTokens>({
         decimals: network.token.decimals,
     },
     getMulticallAddress: network => network.metadata?.evm_multicall_contract ?? undefined,
-    isEvmNetwork: network => network.type === NetworkType.EVM,
-    isSolanaNetwork: network => network.type === NetworkType.Solana,
-    isStarknetNetwork: network => network.type === NetworkType.Starknet,
-    isTronNetwork: network => network.type === NetworkType.Tron,
-    isStellarNetwork: network => network.type === NetworkType.Stellar,
-    isBitcoinNetwork: network => network.type === NetworkType.Bitcoin,
-    isTonNetwork: network => network.type === NetworkType.TON,
-    isFuelNetwork: network => network.type === NetworkType.Fuel,
 });

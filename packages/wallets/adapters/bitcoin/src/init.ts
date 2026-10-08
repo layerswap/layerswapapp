@@ -1,3 +1,4 @@
+import { NetworkType } from '@layerswap/widget-types';
 import type { AppNetworkAdapter } from "@layerswap/utils"
 import { ensureBitcoinConfig, hasBitcoinConfig, resetBitcoinConfig } from './service/getBitcoinConfig'
 import { attachBitcoinSync } from './service/syncBitcoin'
@@ -12,7 +13,7 @@ type InitOptions<Network> = {
 export function initBitcoinProvider<Network>(opts: InitOptions<Network>): void {
     if (typeof window === 'undefined') return
 
-    const network = opts.networks.find(item => opts.networkAdapter.isBitcoinNetwork(item))
+    const network = opts.networks.find(item => opts.networkAdapter.getNetworkType(item) === NetworkType.Bitcoin)
     const config = ensureBitcoinConfig(network ? {
         id: opts.networkAdapter.getId(network),
         rpcUrl: opts.networkAdapter.getRpcUrls(network)[0],

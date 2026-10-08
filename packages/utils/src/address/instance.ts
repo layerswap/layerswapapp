@@ -1,6 +1,6 @@
 import { NetworkType } from '@layerswap/widget-types';
 import { AddressUtilsResolver } from "@/address/addressUtilsResolver";
-import { AppNetworkAdapter } from "@/networkAdapter";
+import type { AppNetworkAdapter } from "@/networkAdapter";
 import { EVMAddressUtilsProvider } from "@/address/providers/evm";
 import { BitcoinAddressUtilsProvider } from "@/address/providers/bitcoin";
 import { SolanaAddressUtilsProvider } from "@/address/providers/solana";

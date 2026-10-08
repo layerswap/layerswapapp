@@ -56,6 +56,8 @@ For detailed setup instructions, configuration options, and usage examples, see 
 
 ## TypeScript
 
+Network checks use the shared `NetworkType` returned by the app adapter. See [host network types](../../core/README.md#host-network-types).
+
 This package includes TypeScript definitions. All types are exported from the main entry point.
 
 ## License

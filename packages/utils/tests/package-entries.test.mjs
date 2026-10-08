@@ -50,7 +50,7 @@ test('the React entry point exports the shared hooks', async () => {
 test('custom Stellar networks validate and normalize addresses through their adapter', async () => {
     const { AddressUtilsResolver, StellarAddressUtilsProvider } = await import('@layerswap/utils')
     const resolver = new AddressUtilsResolver([new StellarAddressUtilsProvider()])
-    resolver.setNetworkAdapter({ isStellarNetwork: network => network.family === 'stellar' })
+    resolver.setNetworkAdapter({ getNetworkType: network => network.family })
     const network = { name: 'custom-stellar', family: 'stellar' }
     const address = 'GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF'
 

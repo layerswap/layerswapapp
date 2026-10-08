@@ -1,3 +1,4 @@
+import { NetworkType } from '@layerswap/widget-types';
 import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
 import type { WalletConnectionProvider, WalletConnectionService, WalletModalConnector } from "@layerswap/wallet-core/types";
 import { walletIconResolver } from "@layerswap/wallet-core";
@@ -39,7 +40,7 @@ export class BitcoinConnectionService<Network> implements WalletConnectionServic
 
     getCommonSupportedNetworks(): string[] {
         return this._networks
-            .filter(network => this._networkAdapter?.isBitcoinNetwork(network))
+            .filter(network => this._networkAdapter?.getNetworkType(network) === NetworkType.Bitcoin)
             .map(network => this._networkAdapter?.getId(network))
             .filter((id): id is string => !!id)
     }

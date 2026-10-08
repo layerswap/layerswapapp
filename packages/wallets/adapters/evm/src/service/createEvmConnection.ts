@@ -68,6 +68,7 @@ export function createEvmConnection<Network>(
                 browseConnectors: additionalState.browseConnectors,
                 recentConnectors: additionalState.recentConnectors,
                 networks,
+                networkAdapter,
             }
         },
         buildSnapshot: inputs => {

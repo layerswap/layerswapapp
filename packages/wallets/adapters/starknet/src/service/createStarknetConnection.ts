@@ -35,6 +35,7 @@ export function createStarknetConnection<Network>(
                 connectors: state.connectors,
                 ready: state.ready,
                 networks,
+                networkAdapter,
             }
         },
         buildSnapshot: () => ({
