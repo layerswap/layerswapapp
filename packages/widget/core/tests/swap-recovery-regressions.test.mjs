@@ -53,6 +53,7 @@ const api = await import(apiModule)
 const { default: Client, state } = api
 const stores = await import('../dist/esm/stores/swapTransactionStore.js')
 const gasless = await import('../dist/esm/helpers/gasless.js')
+const depositActions = await import('../dist/esm/helpers/depositActions.js')
 const swapProgress = await import('../dist/esm/helpers/swapProgress.js')
 const { authorizationKey } = await import('../dist/esm/helpers/swapKeys.js')
 const failure = await import('../dist/esm/hooks/useGaslessAuthorization.js')
@@ -90,7 +91,7 @@ function loadSource(path, imports) {
   }, module, module.exports)
   return module.exports
 }
-let root, container, config, observed, presented, withdrawal, withdrawalHook, sendView, commonWithdrawal
+let root, container, config, observed, presented, withdrawal, withdrawalHook, sendView, commonWithdrawal, realWorkflow
 const { useGaslessAuthorizationStore: authorizations, useSwapTransactionStore: transactions,
   useDepositSignatureStore: signatures } = stores
 beforeEach(() => {
@@ -99,7 +100,7 @@ beforeEach(() => {
     receiptCalls: [], receiptStatus: 'pending', receiptRead: undefined, authorizationReads: 0,
     read: async () => ({ data: { status: 'initiated' } }),
     events: [], observations: [], errors: [], successes: 0, executeTransfer: undefined, swapReads: [], reconcile: undefined,
-    mounts: 0, unmounts: 0, reducedMotion: true,
+    mounts: 0, unmounts: 0, reducedMotion: true, walletResult: undefined,
     catchup: async () => {},
     historySwaps: [], terminalHistorySwaps: [],
     snapshot: { data: { swap: {
@@ -115,18 +116,11 @@ beforeEach(() => {
   observed = undefined
   presented = undefined
   commonWithdrawal = false
+  realWorkflow = false
 })
 afterEach(async () => {
   await act(async () => root.unmount())
   container.remove()
-})
-after(() => {
-  hooks.deregister()
-  dom.window.close()
-  for (const key of Object.keys(globals)) {
-    if (previous[key]) Object.defineProperty(globalThis, key, previous[key])
-    else delete globalThis[key]
-  }
 })
 function Probe() {
   observed = context.useSwapDataState()
@@ -177,6 +171,7 @@ const Processing = loadSource('components/Pages/Swap/Withdraw/Processing/Process
   '../Failed': { default: () => null }, '@/lib/swapLifecycle': lifecycle,
   '../Presentation/ProcessingView': { ProcessingView: props => {
     presented = props
+    if (realWorkflow) return createElement(processingView.ProcessingView, props)
     return createElement('div', { id: 'processing' }, props.inputFailureMessage)
   } },
   '@/hooks/useLifecycleObservation': { useLifecycleObservation: event => { if (event) state.observations.push(event) } },
@@ -226,10 +221,44 @@ const transitions = loadSource('components/Pages/Swap/Withdraw/Presentation/Wall
   react: React, 'framer-motion': motion, '@/hooks/useHydratedReducedMotion': reducedMotion,
   './swapFlowAnimation': animation,
 })
+const icons = await import('lucide-react')
+const numbers = await import('../dist/esm/components/utils/RoundDecimals.js')
+const progressTypes = await import('../dist/esm/components/Pages/Swap/Withdraw/Processing/types.js')
+const swapPhases = await import('../dist/esm/components/utils/swapPhase.js')
+const step = loadSource('components/Pages/Swap/Withdraw/Processing/Step.tsx', {
+  react: React, 'lucide-react': icons, clsx: { default: require('clsx') },
+  './types': progressTypes,
+  './StepTransactionLink': { StepTransactionLink: () => null },
+})
+const steps = loadSource('components/Pages/Swap/Withdraw/Processing/StepsComponent.tsx', {
+  react: React, 'framer-motion': motion, '@/hooks/useHydratedReducedMotion': reducedMotion,
+  '../Presentation/swapFlowAnimation': animation, './Step': step,
+})
+const header = loadSource('components/Pages/Swap/Withdraw/Presentation/TransferStatusHeader.tsx', {
+  '../Processing/gauge': loadSource('components/Pages/Swap/Withdraw/Processing/gauge.tsx', { 'lucide-react': icons }),
+})
+const workflowView = loadSource('components/Pages/Swap/Withdraw/Presentation/DepositWorkflowView.tsx', {
+  '@/components/utils/RoundDecimals': numbers, '@/helpers/depositActions': depositActions,
+  '../Processing/StepsComponent': steps,
+  '../Processing/types': progressTypes,
+  './TransferStatusHeader': header,
+})
+const processingView = loadSource('components/Pages/Swap/Withdraw/Presentation/ProcessingView.tsx', {
+  react: React, '@/components/utils/resolveSwapPhase': { resolveSwapPhase, SwapPhase: swapPhases.SwapPhase },
+  '@/components/utils/RoundDecimals': numbers, '@/lib/address/explorerUrl': { getExplorerUrl: () => undefined },
+  '@/lib/apiClients/layerSwapApiClient': api,
+  '@/Models/RangeError': await import('../dist/esm/Models/RangeError.js'),
+  '@layerswap/widget-types': await import('@layerswap/widget-types'), 'lucide-react': icons,
+  './TransferStatusHeader': header, '../Processing/StepsComponent': steps,
+  '../Processing/types': progressTypes,
+  './DepositWorkflowView': workflowView,
+  '@/components/utils/ShortenString': { default: value => value },
+  '@/helpers/depositActions': depositActions,
+})
 const sections = loadSource('components/Pages/Swap/Withdraw/Presentation/Page2Sections.tsx', {
   react: React, 'framer-motion': motion, '@/hooks/useHydratedReducedMotion': reducedMotion,
   './swapFlowAnimation': animation, './WalletExecutionTransition': transitions,
-  '../Processing/StepsComponent': { StepsPanelProvider: passthrough },
+  '../Processing/StepsComponent': steps,
 })
 const walletMessages = loadSource('components/Pages/Swap/Withdraw/messages/Message.tsx', {
   react: React, 'framer-motion': motion, 'lucide-react': { ChevronDown: () => null },
@@ -285,7 +314,7 @@ const SwapDetails = loadSource('components/Pages/Swap/Withdraw/SwapDetails.tsx',
     useEffect(() => { state.mounts++; return () => { state.unmounts++ } }, [])
     if (commonWithdrawal) return createElement(SendTransactionButton, {
       swapData: swapBasicData, refuel: false, onSign: async () => 'signature',
-      onClick: async () => '0xwallet',
+      onClick: async () => state.walletResult ? state.walletResult.promise : '0xwallet',
     })
     withdrawal = withdrawalHook({ swapBasicData, swapId, refuel: false })
     return createElement('div', { id: 'withdrawal' }, withdrawal.error?.details)
@@ -293,7 +322,6 @@ const SwapDetails = loadSource('components/Pages/Swap/Withdraw/SwapDetails.tsx',
 }).default
 
 const walletPath = 'components/Pages/Swap/Withdraw/Wallet/Common/'
-const depositActions = await import('../dist/esm/helpers/depositActions.js')
 const gaslessPreferences = await import('../dist/esm/stores/gaslessPreferenceStore.js')
 const { executeGaslessAuthorization, completeGaslessSubmission, executeWalletTransfer } = loadSource(walletPath + 'depositExecution.ts', {
   '@layerswap/widget-types': await import('@layerswap/widget-types'),
@@ -311,7 +339,8 @@ const walletActionsView = loadSource('components/Pages/Swap/Withdraw/Presentatio
   react: React, '@/components/Buttons/submitButton': { default: ({ children, onClick, isDisabled }) =>
     createElement('button', { onClick, disabled: isDisabled }, children) },
   '@/components/Icons/FailIcon': { default: () => null }, '@/components/Icons/InfoIcon': { default: () => null },
-  '@/helpers/depositActions': depositActions, './DepositWorkflowView': { DepositWorkflowView: () => null },
+  '@/helpers/depositActions': depositActions, './DepositWorkflowView': { DepositWorkflowView: props =>
+    realWorkflow ? createElement(workflowView.DepositWorkflowView, props) : null },
   './WalletExecutionTransition': transitions,
   '@layerswap/ui-kit/components': { WalletIcon: () => null }, 'lucide-react': { Loader2: () => null },
   '../../Form/SecondaryComponents/validationError/constants': {},
@@ -351,9 +380,58 @@ const { SendTransactionButton } = loadSource(walletPath + 'buttons.tsx', {
   '@layerswap/utils': { sleep: async () => {} },
   '../../Presentation/WalletActionsView': { ButtonWrapper: () => null, ChangeNetworkMessage: () => null,
     ChangeNetworkView: () => null, ConnectWalletView: () => null,
-    SendTransactionView: props => { sendView = props; return createElement('div', { id: 'wallet' }) } },
+    SendTransactionView: props => {
+      sendView = props
+      return realWorkflow ? createElement(walletActionsView.SendTransactionView, props) : createElement('div', { id: 'wallet' })
+    } },
   './depositExecution': { ...depositActions, executeGaslessAuthorization, completeGaslessSubmission, executeWalletTransfer },
 })
+
+for (const prefersReducedMotion of [false, true]) {
+  test(`wallet-to-processing handoff renders one workflow with reduced motion ${prefersReducedMotion}`, async () => {
+    commonWithdrawal = true
+    realWorkflow = true
+    state.reducedMotion = prefersReducedMotion
+    state.snapshot.data.swap.metadata = {}
+    state.snapshot.data.swap.destination_token = { asset: 'LDO', decimals: 18, precision: 6 }
+    state.snapshot.data.quote = { receive_amount: 7.734021591200018, destination_token: state.snapshot.data.swap.destination_token }
+    state.snapshot.data.deposit_actions = [
+      { step: 'sign', type: 'sign', status: 'completed', signing_standard: 'eip2612' },
+      { step: 'publish', type: 'transfer', status: 'action_required', to_address: 'deposit', amount: 0, amount_in_base_units: '0' },
+    ]
+    gaslessPreferences.useGaslessPreferenceStore.getState().setGaslessEnabled(false)
+    state.walletResult = Promise.withResolvers()
+    const receipt = Promise.withResolvers()
+    state.receiptRead = () => receipt.promise
+    let pending
+    try {
+      await render(createElement(SwapDetails, { type: 'contained' }))
+      await act(async () => { pending = sendView.handleClick() })
+      assert.equal(container.querySelectorAll('[data-steps-panel]').length, 1)
+      assert.match(container.textContent, /Confirm in your wallet/)
+      assert.equal(state.mounts, 1)
+      assert.equal(state.unmounts, 0, 'the controller survives until the wallet responds')
+      await act(async () => { state.walletResult.resolve('0xwallet'); await pending })
+      assert.equal(state.successes, 1)
+      assert.equal(observed.walletWithdrawalExecuting, false)
+      assert.equal(observed.resolved.phase, 'checking_transfer_status')
+      assert.equal(container.querySelectorAll('[data-steps-panel]').length, 1, 'outgoing wallet steps cannot coexist with processing steps')
+      assert.match(container.textContent, /Checking transaction status/)
+      assert.doesNotMatch(container.textContent, /Submit the swap transaction|Confirm in your wallet/)
+      assert.equal(state.unmounts, 1, 'the completed controller is removed at handoff')
+      await act(async () => receipt.resolve({ data: { status: 'pending' } }))
+      assert.equal(observed.resolved.phase, 'input_pending')
+      assert.equal(container.querySelectorAll('[data-steps-panel]').length, 1)
+      assert.match(container.textContent, /Confirming transaction/)
+      assert.equal(state.events.filter(event => event.step === 'transaction_submitted').length, 1)
+    } finally {
+      state.walletResult.resolve('0xwallet')
+      receipt.resolve({ data: { status: 'pending' } })
+      await pending
+      gaslessPreferences.useGaslessPreferenceStore.getState().resetGaslessPreference()
+    }
+  })
+}
 
 for (const prefersReducedMotion of [true, false]) {
 test(`gasless publication preserves the real layout controller with reduced motion ${prefersReducedMotion}`, async t => {
@@ -917,4 +995,14 @@ test('history keeps polling after an initial authorization 404 and discovers pub
   for (let i = 0; i < 4; i++) await act(async () => t.mock.timers.tick(4000))
   assert.ok(state.authorizationReads > 1)
   assert.match(container.querySelector('[data-swap="A"]').textContent, /In Progress/)
+})
+
+// Register cleanup after the async presenter imports and all test declarations.
+after(() => {
+  hooks.deregister()
+  dom.window.close()
+  for (const key of Object.keys(globals)) {
+    if (previous[key]) Object.defineProperty(globalThis, key, previous[key])
+    else delete globalThis[key]
+  }
 })

@@ -321,6 +321,7 @@ export function Page2LoadedPreview({
     }
     return (
         <SwapContentView
+            walletFlow={!s.swap.use_deposit_address}
             transferStage={
                 !compactsDuringWalletExecution
                     ? showWithdrawal

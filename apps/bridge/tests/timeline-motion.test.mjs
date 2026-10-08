@@ -10,7 +10,7 @@ import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 
 // Exercise presence with motion enabled. The main timeline suite verifies
-// reduced motion; it cannot catch controls unmounting before their exit ends.
+// reduced motion; it cannot catch stale controllers retained by exit animations.
 const dom = new JSDOM('<div id="root"></div>', { pretendToBeVisual: true });
 for (const name of ['window', 'document', 'HTMLElement', 'Element', 'SVGElement', 'Node', 'getComputedStyle']) {
     globalThis[name] = dom.window[name];
@@ -63,30 +63,30 @@ const view = (processing, manual = false) => React.createElement(SwapContentView
     quote: !manual && React.createElement('div', null, 'Quote'),
     compactQuote: !manual && processing,
     transferStage: processing ? 'processing' : 'withdraw',
+    walletFlow: !manual,
 }, processing
     ? React.createElement(StepsPanel, null, 'Processing deposit')
     : React.createElement('button', null, 'Confirm in your wallet'));
 
-test('standard transfer retains inert controls until their exit finishes alongside entering steps', async () => {
+test('wallet transfers replace obsolete controls immediately when processing starts', async () => {
     const root = createRoot(container);
     try {
         await act(() => root.render(view(false)));
         const quote = container.querySelector('[data-quote-transition]');
-        const controls = container.querySelector('[data-wallet-execution-panel="controls"]');
+        const content = container.querySelector('[data-wallet-execution-panel="content"]');
         await act(() => root.render(view(true)));
         assert.equal(container.querySelector('[data-quote-transition]'), quote);
-        assert.equal(container.querySelector('[data-wallet-execution-panel="controls"]'), controls);
-        assert.ok(controls.hasAttribute('inert'));
-        assert.equal(controls.getAttribute('aria-hidden'), 'true');
+        assert.equal(container.querySelector('[data-wallet-execution-panel="content"]'), content);
+        assert.equal(container.querySelector('button'), null, 'no outgoing confirmation prompt remains beside processing');
         const steps = container.querySelector('[data-steps-panel]');
         assert.ok(steps);
         await settle();
-        assert.equal(container.querySelector('[data-wallet-execution-panel="controls"]'), null);
+        assert.equal(container.querySelectorAll('[data-steps-panel]').length, 1);
         assert.equal(container.querySelector('[data-steps-panel]'), steps);
         assert.equal(steps.style.opacity, '1');
         await act(() => root.render(view(false)));
-        assert.equal(container.querySelector('[data-steps-panel]'), steps);
-        assert.ok(steps.closest('[inert]'));
+        assert.equal(container.querySelector('[data-steps-panel]'), null, 'a fresh attempt removes the old processing workflow immediately');
+        assert.equal(container.querySelector('[data-wallet-execution-panel="content"]'), content);
         await settle();
         assert.equal(container.querySelector('[data-steps-panel]'), null);
         assert.equal(container.querySelector('[data-quote-transition]'), quote);
@@ -113,13 +113,14 @@ test('reversing an unfinished standard transfer transition settles on the latest
     }
 });
 
-test('retry collapses failed-state actions with the steps and gives Swap now one entrance animation', async () => {
+test('retry replaces the failed workflow and controls before a new wallet action enters', async () => {
     const root = createRoot(container);
     const scene = (failed) => React.createElement(SwapContentView, {
         summary: React.createElement('div', null, 'Summary'),
         quote: React.createElement('div', null, 'Quote'),
         compactQuote: failed,
         transferStage: failed ? 'processing' : 'withdraw',
+        walletFlow: true,
     }, failed
         ? React.createElement(ProcessingSectionView, { actions: React.createElement(RetryView) },
             React.createElement(StepsPanel, null, 'The transfer failed'))
@@ -130,23 +131,18 @@ test('retry collapses failed-state actions with the steps and gives Swap now one
         const actions = container.querySelector('[data-processing-actions]');
         assert.ok(actions, 'retry controls have their own collapsible region');
         const quote = container.querySelector('[data-quote-transition]');
-        const retryButton = actions.querySelector('button');
 
         await act(() => {
             flushSync(() => root.render(scene(false)));
             const controls = container.querySelector('[data-wallet-execution-panel="controls"]');
-            assert.equal(controls.style.opacity, '0', 'the outer controls own the entrance');
-            const walletAction = controls.querySelector('[style*="transform"]');
+            assert.equal(controls.style.opacity, '1', 'the handoff shows one active set of wallet controls');
+            const walletAction = container.querySelector('[data-wallet-execution-panel="content"] > [style*="transform"]');
             assert.equal(walletAction.style.transform, 'none', 'no second slide under the height animation');
             assert.equal(walletAction.style.opacity, '1');
         });
-        assert.equal(actions.querySelector('button'), retryButton, 'outgoing retry remains mounted for its exit');
-        assert.ok(actions.hasAttribute('inert'));
-        assert.equal(actions.getAttribute('aria-hidden'), 'true');
+        assert.equal(container.querySelector('[data-processing-actions]'), null, 'stale retry controls are removed at the handoff');
+        assert.equal(container.querySelector('[data-steps-panel]'), null);
         assert.equal(container.querySelector('[data-quote-transition]'), quote);
-        await act(() => new Promise(resolve => setTimeout(resolve, 100)));
-        assert.ok(Number(actions.style.opacity) < 1, 'retry controls fade out with the steps');
-        assert.notEqual(actions.style.height, 'auto', 'retry controls collapse rather than leaving their height until unmount');
 
         await settle();
         assert.equal(container.querySelector('[data-processing-actions]'), null);

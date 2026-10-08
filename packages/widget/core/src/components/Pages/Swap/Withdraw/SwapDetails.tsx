@@ -119,6 +119,7 @@ const SwapDetails: FC<Props> = ({
     return (
         <Container type={type} goBack={onBackClick}>
             <SwapContentView
+                walletFlow={!swapBasicData.use_deposit_address}
                 transferStage={
                     !compactsDuringWalletExecution
                         ? showWithdrawal
