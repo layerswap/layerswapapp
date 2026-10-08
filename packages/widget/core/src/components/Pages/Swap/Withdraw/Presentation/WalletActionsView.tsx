@@ -191,13 +191,15 @@ export function SendTransactionView({
     const primaryActionText = actionableAction
         ? getDepositActionLabel(actionableAction)
         : actionButtonText || 'Swap now';
+    // Prepared actions are not execution progress while the changed quote awaits consent.
+    const showWorkflow = isMultiStepWorkflow && !showCriticalMarketPriceImpactButtons;
     const hasError = error || swapError || gaslessUnavailable;
-    const showStepError = isMultiStepWorkflow && !loading &&
+    const showStepError = showWorkflow && !loading &&
         getCurrentDepositActionIndex(depositActions?.filter(action => !!action.step) ?? [], true) !== -1;
     const errorDescription = showStepError && hasError && errorMessage ? (
         <WalletMessageDetails>{errorMessage}</WalletMessageDetails>
     ) : undefined;
-    const workflowProgress = isMultiStepWorkflow ? (
+    const workflowProgress = showWorkflow ? (
         <DepositWorkflowView
             actions={depositActions}
             stepTransactions={stepTransactions}
@@ -230,7 +232,7 @@ export function SendTransactionView({
             <WalletExecutionTransition
                 workflow={workflowProgress}
                 controls={
-                    isMultiStepWorkflow && loading ? (
+                    showWorkflow && loading ? (
                         message
                     ) : (
                         <>

@@ -2243,6 +2243,8 @@ test('frontend quotes match the real full-to-compact lifecycle and sign-only/nat
     assert.equal(fixtureDOM('frontend-approved', 'signing').querySelector('[data-quote-layout]').dataset.quoteLayout, 'attached');
     const critical = fixtureDOM('frontend-critical', 'critical');
     assert.match(critical.textContent, /receive as low as 0.03 ETH/);
+    assert.equal(critical.querySelector('[aria-label="Swap progress"]'), null, 'confirmation precedes the execution timeline');
+    assert.doesNotMatch(critical.textContent, /Swap in progress|Approve token|Sign to swap|Confirm swap/);
     assert.equal(critical.querySelector('[data-quote-layout]').dataset.quoteLayout, 'separate');
     assert.equal(critical.querySelector('[aria-label="See details"]').closest('[aria-hidden="true"], [inert]'), null);
     assert.equal(fixtureDOM('frontend-critical', 'continue').querySelector('[data-quote-layout]').dataset.quoteLayout, 'attached');
@@ -2445,10 +2447,37 @@ test('production critical-amount confirmation resumes through its dedicated call
             handleCriticalContinue: () => calls.push('continue'),
         })));
         const button = [...document.querySelectorAll('button')].find(b => b.textContent === 'Continue anyway');
+        assert.equal(document.querySelector('[aria-label="Swap progress"]'), null);
         await act(async () => button.click());
         assert.deepEqual(calls, ['continue']);
     } finally {
         await act(async () => root.unmount());
+    }
+});
+
+test('changed-quote confirmation hides prepared wallet steps until the amount is accepted', () => {
+    const milestone = frontendMilestone('frontend-critical', 'critical');
+    for (const mode of ['component', 'modal']) {
+        const confirmation = fixtureDOM('frontend-critical', 'critical', mode);
+        assert.match(confirmation.textContent, /Critical receiving amount/);
+        assert.match(confirmation.textContent, /Continue anyway/);
+        assert.match(confirmation.textContent, /Cancel & try another route/);
+        assert.equal(confirmation.querySelector('[data-wallet-execution-panel="workflow"]'), null);
+        const accepted = fixtureDOM('frontend-critical', 'continue', mode);
+        assert.match(accepted.textContent, /Swap in progress/);
+        assert.match(accepted.textContent, /Approve token/);
+        assert.doesNotMatch(accepted.textContent, /Continue anyway|Cancel & try another route/);
+    }
+    for (const loadingProps of [{}, { loading: true }, { quoteIsLoading: true }]) {
+        const container = document.createElement('div');
+        container.innerHTML = renderToStaticMarkup(React.createElement(SendTransactionView, {
+            depositActions: milestone.snapshot.depositActions,
+            showCriticalMarketPriceImpactButtons: true,
+            ...loadingProps,
+        }));
+        assert.equal(container.querySelector('[data-wallet-execution-panel="workflow"]'), null);
+        assert.doesNotMatch(container.textContent, /Swap in progress|Approve token|Sign to swap|Confirm swap/);
+        assert.ok(container.querySelector('button'), 'loading during confirmation retains its control');
     }
 });
 
