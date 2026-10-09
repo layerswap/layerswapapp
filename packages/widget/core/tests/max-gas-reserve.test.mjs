@@ -18,7 +18,7 @@ for (const [key, value] of Object.entries(globals)) {
 const mockUrl = `data:text/javascript,${encodeURIComponent(`
   export const state = {}
   export const useSelectedAccount = () => state.account
-  export default () => ({ wallets: [] })
+  export default () => ({ wallets: state.wallets })
   export const useBalance = () => ({ balances: state.balances, mutate: () => {} })
   export const Tooltip = ({ children }) => children
   export const TooltipTrigger = ({ children }) => children
@@ -34,7 +34,7 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
   if (parent.endsWith('/components/Input/Amount/MinMax.js') && [
     '/context/swapAccounts', '/hooks/useWallet', '/lib/balances/useBalance', '/components/shadcn/tooltip',
   ].some(path => specifier.endsWith(path))) return { url: mockUrl, shortCircuit: true }
-  if (parent.endsWith('/lib/gases/useSWRGas.js') && specifier.endsWith('/resolvers/resolverService')) {
+  if (parent.includes('/dist/esm/') && specifier.endsWith('/resolvers/resolverService')) {
     return { url: mockUrl, shortCircuit: true }
   }
   if (specifier.startsWith('.') && !extname(specifier) && parent.includes('/dist/esm/')) return nextResolve(`${specifier}.js`, context)
@@ -70,6 +70,7 @@ beforeEach(() => {
   root = createRoot(container)
   Object.assign(state, {
     account: { id: 'wallet', address: 'source' },
+    wallets: [{ id: 'wallet', address: 'source' }],
     balances: [{ network: network.name, token: token.symbol, amount: 1 }],
     requests: [],
   })
@@ -156,6 +157,45 @@ test('tokens paid with another gas asset can still use Max before gas loads', as
 
 test('deposit-address Max still uses route limits without a gas estimate', async () => {
   props.depositMethod = 'deposit_address'
+  await render()
+  assert.equal(maxButton().disabled, false)
+  await act(() => maxButton().click())
+  assert.equal(formik.values.amount, '10')
+})
+
+test('Max uses the route maximum when no wallet is connected', async () => {
+  state.account = undefined
+  state.wallets = []
+  await render()
+  assert.equal(state.requests.length, 0)
+  assert.equal(maxButton().disabled, false)
+  await act(() => maxButton().click())
+  assert.equal(formik.values.amount, '10')
+})
+
+test('without a wallet Max stays enabled before route limits are available and uses them when loaded', async () => {
+  state.account = undefined
+  state.wallets = []
+  props.limitsMaxAmount = undefined
+  await render()
+  assert.equal(maxButton().disabled, false)
+  await act(() => maxButton().click())
+  assert.equal(formik.values.amount, '0.5')
+
+  props.limitsMaxAmount = 10
+  await render()
+  assert.equal(maxButton().disabled, false)
+  await act(() => maxButton().click())
+  assert.equal(formik.values.amount, '10')
+  assert.equal(state.requests.length, 0)
+})
+
+test('disconnecting the source wallet makes Max use route limits despite a cached balance', async () => {
+  await render()
+  assert.equal(maxButton().disabled, true)
+
+  // The selected account and its balance may still be cached during disconnect.
+  state.wallets = []
   await render()
   assert.equal(maxButton().disabled, false)
   await act(() => maxButton().click())

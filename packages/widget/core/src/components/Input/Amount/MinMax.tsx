@@ -33,12 +33,13 @@ const MinMax = (props: MinMaxProps) => {
     const selectedSourceAccount = useSelectedAccount("from", from?.name);
     const { wallets } = useWallet(from, 'withdrawal')
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
+    const isWalletConnected = !!wallet
     const { gasData, gasError } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency, values.amount, wallet)
     const { balances, mutate: mutateBalances } = useBalance(selectedSourceAccount?.address, from)
 
     const walletBalance = useMemo(() => {
-        return selectedSourceAccount?.address ? balances?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol) : undefined
-    }, [selectedSourceAccount?.address, balances, from?.name, fromCurrency?.symbol])
+        return isWalletConnected && selectedSourceAccount?.address ? balances?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol) : undefined
+    }, [isWalletConnected, selectedSourceAccount?.address, balances, from?.name, fromCurrency?.symbol])
 
     const gasAmount = gasError ? undefined : gasData?.gas;
 
@@ -146,7 +147,7 @@ const MinMax = (props: MinMaxProps) => {
                     <ActionButton
                         data-attr="max-amount"
                         label="Max"
-                        disabled={maxValue === undefined}
+                        disabled={isWalletConnected && maxValue === undefined}
                         onMouseEnter={() => onActionHover(maxValue, maxUsdFormatted)}
                         onClick={handleSetMaxAmount}
                     />

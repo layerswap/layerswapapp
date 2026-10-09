@@ -77,7 +77,7 @@ export const GasFee = ({ values, quote }: { values: SwapValues, quote: SwapQuote
     const selectedSourceAccount = useSelectedAccount("from", values.from?.name);
     const wallet = useMemo(() => provider?.connectedWallets?.find(w => w.id === selectedSourceAccount?.id), [provider?.connectedWallets, selectedSourceAccount])
 
-    const { gasData, isGasLoading } = useSWRGas(wallet?.address, values.from, values.fromAsset)
+    const { gasData, isGasLoading } = useSWRGas(selectedSourceAccount?.address, values.from, values.fromAsset, values.amount, wallet)
     const gasTokenPriceInUsd = resolveTokenUsdPrice(gasData?.token, quote)
     const gasFeeInUsd = gasData?.gas && gasTokenPriceInUsd ? gasData.gas * gasTokenPriceInUsd : null
     const displayGasFeeInUsd = gasFeeInUsd != null ? (gasFeeInUsd < 0.01 ? '<$0.01' : `$${gasFeeInUsd.toFixed(2)}`) : null
