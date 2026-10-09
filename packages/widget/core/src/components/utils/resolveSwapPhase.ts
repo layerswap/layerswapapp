@@ -8,7 +8,6 @@ import {
 } from '../../lib/apiClients/layerSwapApiClient';
 import type { GaslessAuthorizationStatus } from '../../lib/apiClients/layerSwapApiClient';
 import { SwapFailReasons } from '../../Models/RangeError';
-import type { SwapTransaction as StoredWalletTransaction } from '../../stores/swapTransactionStore';
 import { Progress, ProgressStatus } from '../Pages/Swap/Withdraw/Processing/types';
 import { formatElapsedHms, msToParts } from './formatTime';
 import { SwapPhase, TERMINAL_PHASES } from './swapPhase';
@@ -16,13 +15,9 @@ import { SwapPhase, TERMINAL_PHASES } from './swapPhase';
 export { SwapPhase, TERMINAL_PHASES };
 
 export type ResolveSwapPhaseInput = {
-    atomicBatchPending?: boolean;
-    atomicBatchUncertain?: boolean;
-    atomicBatchFailed?: boolean;
     swapDetails: SwapDetails | undefined;
     refuel: Refuel | undefined;
     inputTxStatusFromApi?: TransactionStatus;
-    storedWalletTransaction?: StoredWalletTransaction;
     // The server reports every wallet deposit step completed. It holds only while the latest
     // deposit-actions response says so, unlike a stored transaction this client broadcast.
     depositCompleted?: boolean;
@@ -60,8 +55,10 @@ export type ResolvedSwapStatus = {
 };
 
 export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStatus {
-    const { swapDetails, refuel, inputTxStatusFromApi, storedWalletTransaction, gaslessFailureStatus } = input;
-    const depositSubmitted = !!storedWalletTransaction || !!input.depositCompleted || !!input.atomicBatchPending;
+    const { swapDetails, refuel, inputTxStatusFromApi, gaslessFailureStatus } = input;
+    const depositSubmitted = !!input.depositCompleted
+        || inputTxStatusFromApi === TransactionStatus.Pending
+        || inputTxStatusFromApi === TransactionStatus.Completed;
 
     const inputTx = swapDetails?.transactions?.find(t => t.type === TransactionType.Input);
     const outputTx = swapDetails?.transactions?.find(t => t.type === TransactionType.Output);
@@ -72,8 +69,7 @@ export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStat
     const outputReady = !!(outputTx?.transaction_hash && outputTx?.amount);
     const refuelReady = !!(refuelTx?.transaction_hash && refuelTx?.amount);
     const refuelPending = !!refuel && !refuelReady;
-    const swapInputTxStatus = !inputTx && input.atomicBatchFailed ? TransactionStatus.Failed
-        : resolveSwapInputTxStatus(inputTx, inputTxStatusFromApi, gaslessFailureStatus, storedWalletTransaction);
+    const swapInputTxStatus = resolveSwapInputTxStatus(inputTx, inputTxStatusFromApi, gaslessFailureStatus);
     // Only client-detected failures (no API input tx) are retryable: retry() re-opens the
     // withdraw screen, which requires no input tx to be listed.
     const failureReason: SwapFailureReason | undefined = gaslessFailureStatus
@@ -116,13 +112,6 @@ export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStat
         failReason: swapDetails?.fail_reason,
         isDepositFlow: input.isDepositFlow ?? false,
     });
-
-    if (input.atomicBatchPending && phase === SwapPhase.InputPending && !inputTx && !storedWalletTransaction) {
-        generalStatus.title = input.atomicBatchUncertain ? 'Checking swap submission' : 'Confirming approve and swap'
-        generalStatus.subTitle = input.atomicBatchUncertain
-            ? 'Reconnect the original wallet or wait for this swap to appear onchain before trying again.'
-            : 'Waiting for the original wallet. Reconnect it if tracking is unavailable.'
-    }
 
     const isTerminal = TERMINAL_PHASES.has(phase);
 
@@ -169,13 +158,13 @@ function resolvePhase(args: {
     if (swapStatus === SwapStatus.Refunded) return SwapPhase.Refunded;
     if (swapStatus === SwapStatus.PendingRefund) return SwapPhase.PendingRefund;
     if (swapStatus === SwapStatus.Failed) return SwapPhase.Failed;
-    if (swapInputTxStatus === TransactionStatus.Failed) return SwapPhase.Failed;
 
     if (swapStatus === SwapStatus.Completed) {
         return outputReady && !refuelPending ? SwapPhase.Completed : SwapPhase.SettlingOutput;
     }
 
     if (outputReady) return refuelPending ? SwapPhase.SettlingOutput : SwapPhase.Completed;
+    if (swapInputTxStatus === TransactionStatus.Failed) return SwapPhase.Failed;
 
     if (showWithdrawScreen) return SwapPhase.AwaitingUserDeposit;
 
@@ -301,7 +290,6 @@ function resolveSwapInputTxStatus(
     swapInputTransaction: Transaction | undefined,
     inputTxStatusFromApi: TransactionStatus | undefined,
     gaslessFailureStatus: GaslessAuthorizationStatus | undefined,
-    storedWalletTransaction: StoredWalletTransaction | undefined,
 ): TransactionStatus {
     if (swapInputTransaction) {
         if (
@@ -315,11 +303,6 @@ function resolveSwapInputTxStatus(
     if (inputTxStatusFromApi === TransactionStatus.Failed) return inputTxStatusFromApi;
     // Gasless deposit failed terminally with no input tx published.
     if (gaslessFailureStatus) return TransactionStatus.Failed;
-    // A failure observed in a previous session (Processing persists the polled status);
-    // the enums share the string value 'failed'. Only while the API has nothing newer:
-    // once the tx-status poll (or the listed input tx, above) reports the transaction,
-    // that status wins, and Processing writes it back over the stored failure.
-    if (storedWalletTransaction?.status === BackendTransactionStatus.Failed && !inputTxStatusFromApi) return TransactionStatus.Failed;
     return TransactionStatus.Pending;
 }
 

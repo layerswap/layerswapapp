@@ -54,7 +54,7 @@ async function setup({ capability = async () => 'supported', gasless = false, na
             '@/helpers/swapFlow': pure('../src/helpers/swapFlow.ts'),
             '@/stores/contractAddressStore': { useContractAddressStore: () => ({ checkContractStatus: async () => ({ sourceIsContract: false }) }) },
             '@/stores/gaslessPreferenceStore': { useGaslessPreferenceStore: store(preferences) },
-            '@/stores/atomicBatchStore': { useAtomicBatchStore: store({ batches: {} }), getOutstandingBatch: () => outstanding, isBatchOutstanding: () => false, supportsWebLocks: () => coordination },
+            '@/stores/atomicBatchStore': { useAtomicBatchStore: store({ batches: {} }), getAtomicBatch: id => outstanding?.swapId === id ? outstanding : undefined, supportsWebLocks: () => coordination },
             '@/lib/extendedRoutes/registry': { resolveExtendedRoutePlan: () => undefined },
             '@/lib/resolvers/resolverService': { resolverService: { getTransferResolver: () => ({ getAtomicBatchProvider: () => ({
                 getCapabilities: async ctx => { checks.push(ctx); return capability(ctx) },
@@ -114,13 +114,13 @@ for (const change of ['account', 'chain', 'mode', 'away-and-back']) test(`stale 
     } finally { await act(() => h.root.unmount()) }
 })
 
-test('an outstanding batch blocks fresh creation and prevents detaching the old attempt', async () => {
+test('an unrelated wallet request does not block fresh swap creation', async () => {
     const h = await setup()
     try {
         h.block()
-        await assert.rejects(h.update.createSwap(h.values, {}), /outstanding batch/)
+        await h.update.createSwap(h.values, {})
         await act(() => h.update.startFreshSwapAttempt())
-        assert.equal(h.requests.length, 0)
+        assert.equal(h.requests.length, 1)
     } finally { await act(() => h.root.unmount()) }
 })
 

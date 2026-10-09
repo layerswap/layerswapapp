@@ -3,7 +3,7 @@ import type { ApiResponse, TransferProps } from '@layerswap/widget-types'
 import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, type SwapResponse } from '@/lib/apiClients/layerSwapApiClient'
 import { hasSwapExecutionProgress } from '@/helpers/swapProgress'
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore'
-import { getOutstandingBatch } from '@/stores/atomicBatchStore'
+import { getAtomicBatch } from '@/stores/atomicBatchStore'
 
 const api = new LayerSwapApiClient()
 const activeWithdrawals = new Set<string>()
@@ -23,15 +23,15 @@ export async function executeProviderWithdrawal<T>({ swapId, sourceAddress, prep
     execute: (prepared: T, onSubmissionStateChange: SubmissionCallback) => Promise<string>
     onReconcile: (response: ApiResponse<SwapResponse>) => Promise<unknown>
 }): Promise<string> {
-    if (getOutstandingBatch()) throw new Error('Reconcile the outstanding atomic swap before submitting another withdrawal.')
+    if (getAtomicBatch(swapId)) throw new Error('Reconcile the outstanding atomic swap before submitting another withdrawal.')
     if (activeWithdrawals.has(swapId)) throw new Error('This withdrawal is already in progress.')
 
     const store = useSwapTransactionStore.getState()
     const transaction = store.swapTransactions[swapId]
-    if (transaction && transaction.status !== BackendTransactionStatus.Failed) return transaction.hash
 
     const recordSubmission = (hash: string) => {
-        store.setSwapTransaction(swapId, BackendTransactionStatus.Pending, hash)
+        if (hash) store.setSwapTransaction(swapId, hash)
+        else store.markSubmissionPending(swapId)
         return hash
     }
 
@@ -47,7 +47,6 @@ export async function executeProviderWithdrawal<T>({ swapId, sourceAddress, prep
             const submitted = hasSwapExecutionProgress({
                 swapDetails: response.data.swap,
                 depositActions: response.data.deposit_actions,
-                storedWalletTransaction: undefined,
                 gaslessAuthorization: undefined,
             })
             if (submitted) {

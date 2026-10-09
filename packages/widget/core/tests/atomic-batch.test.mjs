@@ -38,7 +38,7 @@ const { getActionableDepositAction, getDepositActionLabel, getDepositActionDescr
 const { executeAtomicBatch } = await import('../dist/esm/lib/atomicBatchExecution.js')
 const { trackAtomicBatch } = await import('../dist/esm/lib/atomicBatchTracking.js')
 const { useAtomicBatchTracking } = await import('../dist/esm/hooks/useAtomicBatchTracking.js')
-const { useAtomicBatchStore, getOutstandingBatch, acquireWalletExecution, reloadAtomicBatchStorage } = await import('../dist/esm/stores/atomicBatchStore.js')
+const { useAtomicBatchStore, getAtomicBatch, acquireWalletExecution, reloadAtomicBatchStorage } = await import('../dist/esm/stores/atomicBatchStore.js')
 const { useSwapTransactionStore } = await import('../dist/esm/stores/swapTransactionStore.js')
 const { useGaslessPreferenceStore } = await import('../dist/esm/stores/gaslessPreferenceStore.js')
 const { hasSwapExecutionProgress } = await import('../dist/esm/helpers/swapProgress.js')
@@ -83,11 +83,11 @@ for (const [name, action] of Object.entries(fixtures.actions)) test(`preserves b
         assert.deepEqual(request.calls.map(call => call.to), action.calls.map(call => call.to))
         assert.deepEqual(request.calls.map(call => call.data), action.calls.map(call => call.data))
         assert.deepEqual(request.calls.map(call => call.value), action.calls.map(call => BigInt(call.value)))
-        assert.ok(getOutstandingBatch(), 'persisted before submission')
-        assert.equal(JSON.parse(localStorage.getItem('atomicBatches')).state.batches['atomic-swap'].state, 'submitting')
+        assert.ok(getAtomicBatch('atomic-swap'), 'persisted before submission')
+        assert.equal(JSON.parse(localStorage.getItem('atomicBatches')).state.batches['atomic-swap'].state, undefined)
         return { id: batchId }
     })
-    assert.equal(getOutstandingBatch().id, batchId)
+    assert.equal(getAtomicBatch('atomic-swap').id, batchId)
     assert.equal(getActionableDepositAction([action]), action)
     assert.equal(getDepositActionLabel(action), expectedLabel)
     assert.equal(getDepositActionDescription(action), needsApproval
@@ -128,16 +128,12 @@ test('native, gasless, deposit-address and extended sources keep their existing 
     assert.equal(getDepositActionLabel(legacy), 'Confirm swap')
 })
 
-test('concurrent instances share a lock, and an unresolved batch blocks fresh swaps and mode changes', async () => {
+test('wallet prompt mutex ends with the request and is independent of retained IDs', async () => {
     const release = acquireWalletExecution()
     assert.ok(release); assert.equal(acquireWalletExecution(), undefined)
-    await submit()
-    release()
-    assert.equal(acquireWalletExecution(), undefined)
-    assert.equal(hasSwapExecutionProgress({ atomicBatchOutstanding: true }), true)
-    useGaslessPreferenceStore.getState().switchToStandardTransfer()
-    assert.equal(useGaslessPreferenceStore.getState().gaslessEnabled, true)
-    await assert.rejects(submit(context()), /earlier batch/)
+    await submit(); release()
+    const next = acquireWalletExecution(); assert.ok(next); next()
+    await assert.rejects(submit(), /original wallet request/)
 })
 
 test('saving the returned ID survives screen closure and account changes', async () => {
@@ -147,52 +143,26 @@ test('saving the returned ID survives screen closure and account changes', async
     await flush()
     controller.abort(); ctx.selectedWallet = { address: 'another-account' }
     resolve({ id: batchId }); await pending
-    assert.equal(getOutstandingBatch().wallet.id, 'Original')
-    assert.equal(getOutstandingBatch().account, fixtures.account)
-    assert.equal(getOutstandingBatch().id, batchId)
+    assert.equal(getAtomicBatch('atomic-swap').wallet.id, 'Original')
+    assert.equal(getAtomicBatch('atomic-swap').account, fixtures.account)
+    assert.equal(getAtomicBatch('atomic-swap').id, batchId)
 })
 
-test('late IDs cannot reverse backend reconciliation or enable another submission of the same swap', async () => {
-    const ctx = context()
-    let resolve
-    const pending = submit(ctx, () => new Promise(done => { resolve = done }))
-    await flush()
-    const record = getOutstandingBatch()
-    await useAtomicBatchStore.getState().update(record.swapId, record.attempt, { state: 'reconciled' })
-    resolve({ id: batchId }); await pending
-    const saved = useAtomicBatchStore.getState().batches[record.swapId]
-    assert.equal(saved.state, 'reconciled')
-    assert.equal(saved.id, batchId)
-    await assert.rejects(submit(ctx), /already submitted/)
-})
-
-test('complete atomic failure permits explicit retry even when action polling still says pending', async () => {
-    await submit()
-    const record = getOutstandingBatch()
-    await useAtomicBatchStore.getState().update(record.swapId, record.attempt, { state: 'failed' })
-    assert.equal(hasSwapExecutionProgress({ depositActions: [{ type: 'send_calls', step: 'publish', status: 'pending' }], atomicBatchFailed: true }), false)
-    await submit()
-    assert.notEqual(getOutstandingBatch().attempt, record.attempt)
-})
-
-for (const [name, error, expected] of [
-    ['rejection', { code: 4001 }, 'rejected'], ['proven non-submission', { atomicSubmission: 'not_submitted' }, 'not_submitted'],
-    ['lost response', new Error('Connection lost'), 'uncertain'],
-]) test(`${name} has the correct retry boundary`, async () => {
+for (const [name, error, retained] of [
+    ['rejection', { code: 4001 }, false], ['proven non-submission', { atomicSubmission: 'not_submitted' }, false],
+    ['lost response', new Error('Connection lost'), true],
+]) test(`${name} retains only an unresolved request, never a saved outcome`, async () => {
     await assert.rejects(submit(context(), async () => { throw error }))
-    assert.equal(useAtomicBatchStore.getState().batches['atomic-swap'].state, expected)
-    assert.equal(!!getOutstandingBatch(), expected === 'uncertain')
+    assert.equal(!!getAtomicBatch('atomic-swap'), retained)
+    if (retained) assert.equal(getAtomicBatch('atomic-swap').state, undefined)
 })
 
-test('malformed send result stays locked and batch record rehydrates on reload', async () => {
+test('malformed result recovers its request after reload without a stored lifecycle', async () => {
     await assert.rejects(submit(context(), async () => ({})))
-    const saved = localStorage.getItem('atomicBatches')
-    assert.equal(getOutstandingBatch().state, 'uncertain')
     useAtomicBatchStore.setState({ batches: {} })
-    localStorage.setItem('atomicBatches', saved)
     await reloadAtomicBatchStorage()
-    assert.equal(getOutstandingBatch().state, 'uncertain')
-    assert.equal(acquireWalletExecution(), undefined)
+    assert.ok(getAtomicBatch('atomic-swap'))
+    assert.equal(getAtomicBatch('atomic-swap').state, undefined)
 })
 
 test('accepts only atomic successful receipts on the source chain and uses the final hash', () => {
@@ -212,10 +182,10 @@ test('status outages back off to 30 seconds and keep the lock; recovery yields o
     t.mock.timers.enable({ apis: ['setTimeout'] })
     await submit()
     let calls = 0, recovered = false, confirmed
-    const batch = getOutstandingBatch()
+    const batch = getAtomicBatch('atomic-swap')
     const stop = trackAtomicBatch(batch, {
         getRecord: id => useAtomicBatchStore.getState().batches[id],
-        update: (record, update) => useAtomicBatchStore.getState().update(record.swapId, record.attempt, update),
+        onOutcome: () => {},
         getStatus: async record => { assert.equal(record.id, batchId); calls++; if (!recovered) throw new Error('outage'); return status(200, [receipt(), receipt(finalHash)]) },
         onConfirmed: async (_record, hash) => { confirmed = hash },
     })
@@ -224,10 +194,10 @@ test('status outages back off to 30 seconds and keep the lock; recovery yields o
         const before = calls
         t.mock.timers.tick(delay - 1); await flush(); assert.equal(calls, before)
         t.mock.timers.tick(1); await flush(); assert.equal(calls, before + 1)
-        assert.ok(getOutstandingBatch())
+        assert.ok(getAtomicBatch('atomic-swap'))
     }
     recovered = true; t.mock.timers.tick(30000); await flush()
-    assert.equal(confirmed, finalHash); assert.equal(getOutstandingBatch(), undefined)
+    assert.equal(confirmed, finalHash); assert.equal(getAtomicBatch('atomic-swap').id, batchId)
     stop()
 })
 
@@ -235,19 +205,19 @@ test('a hung status request times out without allowing its late receipt to confi
     t.mock.timers.enable({ apis: ['setTimeout'] })
     await submit()
     let resolveFirst, calls = 0
-    const stop = trackAtomicBatch(getOutstandingBatch(), {
+    const stop = trackAtomicBatch(getAtomicBatch('atomic-swap'), {
         getRecord: id => useAtomicBatchStore.getState().batches[id],
-        update: (record, update) => useAtomicBatchStore.getState().update(record.swapId, record.attempt, update),
+        onOutcome: () => {},
         getStatus: async () => ++calls === 1 ? new Promise(resolve => { resolveFirst = resolve }) : status(100, []),
         onConfirmed: () => assert.fail('an expired request cannot confirm execution'),
     })
     await flush()
     t.mock.timers.tick(30000); await flush()
-    assert.equal(getOutstandingBatch().state, 'uncertain')
+    assert.equal(getAtomicBatch('atomic-swap').state, undefined)
     t.mock.timers.tick(4000); await flush()
     assert.equal(calls, 2)
     resolveFirst(status()); await flush()
-    assert.equal(getOutstandingBatch().state, 'pending')
+    assert.equal(getAtomicBatch('atomic-swap').state, undefined)
     stop()
 })
 

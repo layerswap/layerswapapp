@@ -149,7 +149,6 @@ const output = transaction(TransactionType.Output, {
 });
 const stored = {
     hash,
-    status: TransactionStatus.Pending,
     timestamp: EPOCH + 10_000,
 };
 const processing = (
@@ -252,8 +251,11 @@ const standard: TimelineScenario = {
             10,
             'publishing',
             'Publishing deposit',
-            'The wallet returned a hash; the backend has not detected the input yet.',
-            snapshot({ storedWalletTransaction: stored }),
+            'The wallet returned a hash and the source-chain lookup reports pending; the swap has not detected the input yet.',
+            snapshot({
+                storedWalletTransaction: stored,
+                inputTxStatusFromApi: TransactionStatus.Pending,
+            }),
             SwapPhase.InputPending,
         ),
         pendingInput,
@@ -311,10 +313,8 @@ const failures: TimelineScenario[] = [
                         ],
                     },
                     {
-                        storedWalletTransaction: {
-                            ...stored,
-                            status: TransactionStatus.Failed,
-                        },
+                        storedWalletTransaction: stored,
+                        inputTxStatusFromApi: TransactionStatus.Failed,
                     },
                 ),
                 SwapPhase.Failed,
@@ -973,7 +973,6 @@ const gaslessScenarios: TimelineScenario[] = [
                 'Authorization is accepted; the input has not been broadcast.',
                 gaslessBase({
                     gaslessAuthorization: { status: 'initiated' },
-                    storedWalletTransaction: { ...stored, hash: '' },
                 }),
                 SwapPhase.InputPending,
             ),
@@ -992,7 +991,6 @@ const gaslessScenarios: TimelineScenario[] = [
                             max_confirmations: 12,
                         },
                     },
-                    storedWalletTransaction: { ...stored, hash: '' },
                 }),
                 SwapPhase.InputPending,
             ),
@@ -1042,7 +1040,6 @@ const gaslessScenarios: TimelineScenario[] = [
                     'The signed deposit is waiting to be published.',
                     gaslessBase({
                         gaslessAuthorization: { status: 'initiated' },
-                        storedWalletTransaction: { ...stored, hash: '' },
                     }),
                     SwapPhase.InputPending,
                 ),
@@ -1053,7 +1050,6 @@ const gaslessScenarios: TimelineScenario[] = [
                     'Authorization failed without publishing an input transaction. Retry and standard transfer are available.',
                     gaslessBase({
                         gaslessAuthorization: { status },
-                        storedWalletTransaction: { ...stored, hash: '' },
                     }),
                     SwapPhase.Failed,
                 ),
@@ -1061,7 +1057,7 @@ const gaslessScenarios: TimelineScenario[] = [
                     55,
                     'retry',
                     'Retry gasless deposit',
-                    'Retry removed the authorization and deposit markers.',
+                    'A fresh swap attempt returns to the wallet action; the original signing receipt remains as history.',
                     gaslessBase(),
                 ),
                 m(
@@ -1266,10 +1262,11 @@ const specializedScenarios = (['Hyperliquid', 'Polymarket'] as const).flatMap(
                     50,
                     'published',
                     'Withdrawal published',
-                    'The withdrawal hash was returned and the swap is processing.',
+                    'The withdrawal hash was returned and the source-chain lookup reports pending.',
                     {
                         ...specialized(provider),
                         storedWalletTransaction: stored,
+                        inputTxStatusFromApi: TransactionStatus.Pending,
                     },
                     SwapPhase.InputPending,
                 ),
@@ -2205,6 +2202,342 @@ const frontendScenarios: TimelineScenario[] = [
     },
 ];
 
+type AtomicAllowance = 'approval-required' | 'reset-required' | 'sufficient';
+const atomicActions = (
+    allowance: AtomicAllowance,
+    status: WorkflowStatus = 'action_required',
+    detail?: string,
+): DepositAction[] => {
+    const approve = (amount: bigint) => ({
+        to: usdc.contract!,
+        data: `0x095ea7b3${deposit.slice(2).padStart(64, '0')}${amount.toString(16).padStart(64, '0')}`,
+        value: '0x0',
+    });
+    const calls: Extract<DepositAction, { type: 'send_calls' }>['calls'] = [];
+    if (allowance === 'reset-required') {
+        calls.push(approve(0n));
+    }
+    if (allowance !== 'sufficient') {
+        calls.push(approve(100_000_000n));
+    }
+    calls.push({ to: deposit, data: '0x12345678', value: '0x0' });
+    return [
+        {
+            type: 'send_calls',
+            step: 'publish',
+            status,
+            detail,
+            network: base,
+            token: frontendToken,
+            from_address: account,
+            valid_before: Math.floor(EPOCH / 1000) + 600,
+            expires_at: date(600),
+            calls,
+        },
+    ];
+};
+const atomic = (
+    allowance: AtomicAllowance,
+    patch: Partial<Page2LoadedSnapshot> = {},
+    status: WorkflowStatus = 'action_required',
+) =>
+    frontend({
+        depositActions: atomicActions(allowance, status),
+        walletExecutionStarted: true,
+        ...patch,
+    });
+const atomicReceipt = { hash, timestamp: EPOCH + 20_000 };
+const atomicInput = transaction(TransactionType.Input, {
+    timestamp: date(30),
+    created_date: date(30),
+});
+const atomicSettlement = (
+    allowance: AtomicAllowance,
+): [TimelineMilestone, ...TimelineMilestone[]] => [
+    m(
+        30,
+        'input',
+        'Confirming swap transaction',
+        'The API lists the input transaction. Approval and swap remain one step while the input confirms.',
+        atomic(
+            allowance,
+            {
+                storedWalletTransaction: atomicReceipt,
+                details: details({
+                    transactions: [{ ...atomicInput, confirmations: 3 }],
+                }),
+            },
+            'pending',
+        ),
+        SwapPhase.InputPending,
+    ),
+    m(
+        50,
+        'finalizing',
+        'Finalizing swap',
+        'The fetched input is confirmed. The receive step waits for the output record.',
+        atomic(
+            allowance,
+            {
+                storedWalletTransaction: atomicReceipt,
+                details: details({
+                    status: SwapStatus.LsTransferPending,
+                    transactions: [atomicInput],
+                }),
+            },
+            'completed',
+        ),
+        SwapPhase.OutputPending,
+    ),
+    m(
+        70,
+        'completed',
+        'Swap completed',
+        'The API reports completion and both transactions. The batch and receive receipts remain visible.',
+        atomic(
+            allowance,
+            {
+                storedWalletTransaction: atomicReceipt,
+                details: details({
+                    status: SwapStatus.Completed,
+                    transactions: [
+                        atomicInput,
+                        transaction(TransactionType.Output, {
+                            amount: frontendQuote.receive_amount,
+                            timestamp: date(70),
+                            created_date: date(70),
+                        }),
+                    ],
+                }),
+            },
+            'completed',
+        ),
+        SwapPhase.Completed,
+    ),
+];
+const atomicBatchScenarios: TimelineScenario[] = [
+    ...(
+        [
+            [
+                'approval-required',
+                'atomic-batch-success',
+                'Atomic batch: approve and swap',
+                'Approve the token and swap in one wallet confirmation.',
+            ],
+            [
+                'reset-required',
+                'atomic-batch-reset',
+                'Atomic batch: reset allowance',
+                'Reset allowance, approve the token and swap in one wallet confirmation.',
+            ],
+            [
+                'sufficient',
+                'atomic-batch-approved',
+                'Atomic batch: sufficient allowance',
+                'Existing allowance leaves only the swap call, with one wallet confirmation.',
+            ],
+        ] as const
+    ).map(
+        ([allowance, id, label, description]): TimelineScenario => ({
+            id,
+            label,
+            group: 'token-swap',
+            section: 'main-flow',
+            milestones: [
+                m(
+                    0,
+                    'ready',
+                    'Quote ready',
+                    'Review the quote before preparing the atomic swap.',
+                    frontend({ swapId: undefined }),
+                    SwapPhase.AwaitingUserDeposit,
+                ),
+                m(
+                    5,
+                    'prepared',
+                    'Atomic swap prepared',
+                    description,
+                    atomic(allowance, { walletExecutionStarted: false }),
+                    SwapPhase.AwaitingUserDeposit,
+                ),
+                m(
+                    10,
+                    'confirming',
+                    'Confirm batch in wallet',
+                    description,
+                    atomic(allowance, {
+                        wallet: {
+                            kind: 'send',
+                            pending: true,
+                            label: 'Confirm in your wallet',
+                        },
+                    }),
+                    SwapPhase.AwaitingUserDeposit,
+                ),
+                m(
+                    20,
+                    'submitted',
+                    'Confirming swap transaction',
+                    'The wallet accepted the batch. Approval and swap stay in one confirmation step while the input is detected.',
+                    atomic(allowance, {
+                        wallet: { kind: 'send', disabled: true, submissionAccepted: true },
+                    }),
+                    SwapPhase.AwaitingUserDeposit,
+                ),
+                ...atomicSettlement(allowance),
+            ],
+        }),
+    ),
+    {
+        id: 'atomic-batch-recovery',
+        label: 'Atomic batch: recover submission',
+        group: 'token-swap',
+        section: 'errors-and-retries',
+        milestones: [
+            m(
+                0,
+                'restored',
+                'Confirming original transaction',
+                'The page reopened with the original batch ID. Its confirmation continues without requesting another transaction.',
+                atomic('approval-required', {
+                    wallet: { kind: 'send', disabled: true, submissionAccepted: true },
+                }),
+                SwapPhase.AwaitingUserDeposit,
+            ),
+            m(
+                20,
+                'receipt',
+                'Transaction receipt recovered',
+                'The transaction hash is recovered as a helper. Without fetched input evidence it cannot advance the swap phase or permit another submission.',
+                atomic('approval-required', {
+                    storedWalletTransaction: atomicReceipt,
+                    wallet: { kind: 'send', disabled: true, submissionAccepted: true },
+                }),
+                SwapPhase.AwaitingUserDeposit,
+            ),
+            ...atomicSettlement('approval-required'),
+        ],
+    },
+    {
+        id: 'atomic-batch-rejected',
+        label: 'Atomic batch: rejection and retry',
+        group: 'token-swap',
+        section: 'errors-and-retries',
+        milestones: [
+            m(
+                0,
+                'confirming',
+                'Confirm batch in wallet',
+                'One prompt includes approval and swap.',
+                atomic('approval-required', {
+                    wallet: {
+                        kind: 'send',
+                        pending: true,
+                        label: 'Confirm in your wallet',
+                    },
+                }),
+                SwapPhase.AwaitingUserDeposit,
+            ),
+            m(
+                10,
+                'rejected',
+                'Wallet request rejected',
+                'The user declined before submission. The swap has no input and can retry after refreshing its actions.',
+                atomic('approval-required', {
+                    wallet: {
+                        kind: 'send',
+                        error: ActionMessageType.TransactionRejected,
+                    },
+                }),
+                SwapPhase.AwaitingUserDeposit,
+            ),
+            m(
+                20,
+                'retry',
+                'Retry batch in wallet',
+                'Fresh actions open one approval-and-swap prompt again.',
+                atomic('approval-required', {
+                    wallet: {
+                        kind: 'send',
+                        pending: true,
+                        label: 'Confirm in your wallet',
+                    },
+                }),
+                SwapPhase.AwaitingUserDeposit,
+            ),
+            ...atomicSettlement('approval-required'),
+        ],
+    },
+    {
+        id: 'atomic-batch-reverted',
+        label: 'Atomic batch: reverted transaction',
+        group: 'token-swap',
+        section: 'errors-and-retries',
+        milestones: [
+            m(
+                0,
+                'confirming',
+                'Confirm batch in wallet',
+                'Approval and swap are submitted atomically.',
+                atomic('approval-required', {
+                    wallet: {
+                        kind: 'send',
+                        pending: true,
+                        label: 'Confirm in your wallet',
+                    },
+                }),
+                SwapPhase.AwaitingUserDeposit,
+            ),
+            m(
+                10,
+                'submitted',
+                'Confirming swap transaction',
+                'Approval and swap stay in one confirmation step while the transaction is checked.',
+                atomic('approval-required', {
+                    wallet: { kind: 'send', disabled: true, submissionAccepted: true },
+                }),
+                SwapPhase.AwaitingUserDeposit,
+            ),
+            m(
+                20,
+                'failed',
+                'Atomic transaction failed',
+                'The API reports a failed input and swap. The atomic transaction reverted, so approval and swap did not move funds.',
+                atomic(
+                    'approval-required',
+                    {
+                        details: details({
+                            status: SwapStatus.Failed,
+                            transactions: [
+                                transaction(TransactionType.Input, {
+                                    status: BackendTransactionStatus.Failed,
+                                    confirmations: 0,
+                                }),
+                            ],
+                        }),
+                    },
+                    'failed',
+                ),
+                SwapPhase.Failed,
+            ),
+            m(
+                35,
+                'new-swap',
+                'New swap prepared',
+                'Returning to the form prepares a new swap with a fresh atomic action.',
+                atomic('approval-required', {
+                    swapId: '00000000-0000-4000-8000-000000000366',
+                    details: details({
+                        id: '00000000-0000-4000-8000-000000000366',
+                    }),
+                    walletExecutionStarted: false,
+                }),
+                SwapPhase.AwaitingUserDeposit,
+            ),
+        ],
+    },
+];
+
 const depositDestinations = [
     usdc,
     { ...usdc, symbol: 'USDT', asset: 'USDT', logo: icon('$', '#26a17b') },
@@ -2439,6 +2772,7 @@ const depositScenarios: TimelineScenario[] = [
 export const scenarios: readonly TimelineScenario[] = [
     standard,
     ...frontendScenarios,
+    ...atomicBatchScenarios,
     ...failures,
     {
         id: 'refuel',

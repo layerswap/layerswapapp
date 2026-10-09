@@ -21,6 +21,9 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
         url: 'data:text/javascript,' + encodeURIComponent(`
             export default class Client {
                 fetcher = key => globalThis.__depositTransport(key)
+                GetDepositActionsAsync(id, address) {
+                    return this.fetcher('/swaps/' + id + '/deposit_actions?source_address=' + address)
+                }
                 GetTransactionStatus() { throw new Error('Receipt polling belongs to swap context') }
                 GetSwapAsync() { throw new Error('Deposit polling must not request the whole swap') }
             }
@@ -41,6 +44,7 @@ const swapContext = createSwapContext({
     swapTransactions,
     Client: class {
         fetcher = key => globalThis.__depositTransport(key)
+        GetDepositActionsAsync(id, address) { return this.fetcher(`/swaps/${id}/deposit_actions?source_address=${address}`) }
         GetTransactionStatus(network, hash) { return globalThis.__depositTransport(['receipt', network, hash]) }
     },
     getSwapId: () => providerProps.id,
@@ -373,7 +377,7 @@ test('the provider keeps refreshing after the wallet controls unmount, until the
     assert.equal(requests.length, closed)
 })
 
-test('refreshing stops once this client has broadcast the deposit', async t => {
+test('refreshing continues after a local receipt until the swap API acknowledges the deposit', async t => {
     t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 10000 })
     await render({ executing: false })
     const idle = requests.length
@@ -383,7 +387,7 @@ test('refreshing stops once this client has broadcast the deposit', async t => {
     await render({ executing: false })
     const broadcast = requests.length
     await act(async () => { t.mock.timers.tick(10000) })
-    assert.equal(requests.length, broadcast)
+    assert.ok(requests.length > broadcast)
 })
 
 test('retry revalidates through SWR and never returns stale data after a failed or empty refresh', async () => {

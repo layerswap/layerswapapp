@@ -13,7 +13,6 @@ import { Widget } from '@/components/Widget/Index';
 import { useCallbacks } from '@/context/callbackProvider';
 import { useSwapDataState, useSwapDataUpdate } from '@/context/swap';
 import { useSelectedAccount } from '@/context/swapAccounts';
-import { useGaslessAuthorizationStatus } from '@/hooks/useGaslessAuthorizationStatus';
 import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
 import { useSwapRetry } from '@/hooks/useSwapRetry';
 import type { JSX } from 'react';
@@ -49,14 +48,12 @@ const SwapDetails: FC<Props> = ({
         atomicBatch,
     } = useSwapDataState();
     const announcedBatches = useRef(new Set<string>())
+    const inputHash = swapDetails?.transactions?.find(tx => tx.type === 'input')?.transaction_hash
     useEffect(() => {
-        if (!atomicBatch || !onWalletWithdrawalSuccess || announcedBatches.current.has(atomicBatch.attempt)) return
-        if (atomicBatch.state !== 'confirmed' && atomicBatch.state !== 'reconciled') return
+        if (!atomicBatch || !inputHash || !onWalletWithdrawalSuccess || announcedBatches.current.has(atomicBatch.attempt)) return
         announcedBatches.current.add(atomicBatch.attempt)
-        // This owner remains mounted through processing; the withdrawal screen does
-        // not. Retain the usual form/balance cleanup after receipt or backend proof.
         onWalletWithdrawalSuccess()
-    }, [atomicBatch, onWalletWithdrawalSuccess])
+    }, [atomicBatch, inputHash, onWalletWithdrawalSuccess])
     const selectedSourceAccount = useSelectedAccount(
         'from',
         swapBasicData?.source_network.name,
@@ -69,10 +66,6 @@ const SwapDetails: FC<Props> = ({
         return () => setSwapViewMounted(false);
     }, [setSwapViewMounted]);
     const isGaslessActive = useIsGaslessActive(swapBasicData);
-
-    // Polls the gasless deposit (paymaster) authorization while it's in flight; self-gates on
-    // the authorization marker, so it's a no-op for non-gasless swaps.
-    useGaslessAuthorizationStatus(swapDetails?.id, depositActionsResponse);
 
     const resolved = useResolvedSwapStatus();
     const {

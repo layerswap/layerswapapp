@@ -1,6 +1,6 @@
 import { SwapStatus } from '@layerswap/widget-types';
 import CircleCheckIcon from "@/components/Icons/CircleCheckIcon";
-import { PublishedSwapTransactions, SwapItem, TransactionType } from "@/lib/apiClients/layerSwapApiClient"
+import { SwapItem, TransactionType } from "@/lib/apiClients/layerSwapApiClient"
 
 export default function StatusIcon({ swap, withBg, short }: { swap: SwapItem, withBg?: boolean, short?: boolean }) {
   const status = swap.status;
@@ -12,9 +12,7 @@ export default function StatusIcon({ swap, withBg, short }: { swap: SwapItem, wi
     case SwapStatus.Expired:
       return <SecondaryComponent text="Expired" withBg={withBg} short={short} />
     case SwapStatus.UserTransferPending:
-      const data: PublishedSwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
-      const txForSwap = data?.state?.swapTransactions?.[swap.id];
-      if (txForSwap || swap.transactions.find(t => t.type === TransactionType.Input)) {
+      if (swap.transactions.find(t => t.type === TransactionType.Input)) {
         return <PrimaryComponent text="In Progress" withBg={withBg} short={short} />
       }
       else {

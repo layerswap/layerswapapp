@@ -80,11 +80,10 @@ function createWorkflow({ mounted = false, realPolling = false, atomic = false }
         useGaslessAuthorizationStore: store({
             authorizations: {},
             setGaslessAuthorization(id, validBefore) { this.authorizations[id] = { kind: 'gasless', validBefore }; calls.authorizations.push([id, validBefore]) },
-            setGaslessAuthorizationStatus: (...args) => calls.authorizations.push(args),
-            removeGaslessAuthorization(id) { delete this.authorizations[id] },
+                        removeGaslessAuthorization(id) { delete this.authorizations[id] },
         }),
         useSwapTransactionStore: store({
-            swapTransactions: {}, setSwapTransaction(id, status, hash) { stores.useSwapTransactionStore.getState().swapTransactions[id] = { status, hash }; calls.storedTransactions.push([id, status, hash]) },
+            swapTransactions: {}, setSwapTransaction(id, hash) { stores.useSwapTransactionStore.getState().swapTransactions[id] = { hash }; calls.storedTransactions.push([id, hash]) },
             stepTransactions: {},
             setStepTransaction(id, step, hash, explorerUrl) {
                 const transactions = this.stepTransactions[id] ??= {}
@@ -281,7 +280,7 @@ function createWorkflow({ mounted = false, realPolling = false, atomic = false }
         '../../Processing/types': progressTypes,
         '@/helpers/swapProgress': swapProgress,
         '@/helpers/atomicBatch': { isAtomicBatchEligible: () => state.atomicBatchEligible ?? false },
-        '@/stores/atomicBatchStore': { acquireWalletExecution: () => () => {}, getOutstandingBatch: noop },
+        '@/stores/atomicBatchStore': { acquireWalletExecution: () => () => {}, getAtomicBatch: noop },
         '@/lib/atomicBatchExecution': { executeAtomicBatch: async (ctx, action) => {
             if (!atomic) assert.fail('legacy workflow cannot execute a batch')
             calls.batches.push(action)
@@ -372,6 +371,25 @@ for (const name of ['zero_allowance', 'allowance_reset', 'sufficient_allowance']
     assert.deepEqual(flow.calls.storedTransactions, [], 'receipt polling supplies the hash later')
     assert.equal(flow.calls.success, 0)
     assert.deepEqual(flow.calls.errors, [])
+})
+
+test('wallet acceptance keeps the confirmation view without permitting another submission', () => {
+    const flow = createWorkflow({ atomic: true })
+    flow.state.depositActionsResponse = [atomicFixtures.actions.zero_allowance]
+    flow.state.atomicBatch = { swapId }
+    assert.equal(flow.render().viewProps.isDisabled, true)
+    assert.equal(flow.render().viewProps.submissionAccepted, false, 'an unresolved wallet prompt has no acceptance receipt')
+
+    flow.state.atomicBatch = { swapId, id: 'wallet-batch-id' }
+    assert.equal(flow.render().viewProps.submissionAccepted, true)
+    assert.equal(flow.render().viewProps.isDisabled, true)
+
+    flow.state.atomicBatch = undefined
+    flow.stores.useSwapTransactionStore.getState().swapTransactions[swapId] = { hash: '0xtransaction' }
+    assert.equal(flow.render().viewProps.submissionAccepted, true)
+    assert.equal(flow.render().viewProps.isDisabled, true)
+    assert.deepEqual(flow.calls.batches, [])
+    assert.deepEqual(flow.calls.transfer, [])
 })
 
 test('new backend batch rejection never falls back to signing or an ordinary transfer', async () => {
@@ -505,7 +523,7 @@ test('one click runs approval, signing and publication without intermediate acti
 
     assert.deepEqual(prompts, ['approve_permit2', 'sign', 'publish'])
     assert.deepEqual(transitions, ['approve_permit2', 'sign'])
-    assert.deepEqual(flow.calls.storedTransactions, [[swapId, 'pending', '0xtransaction']])
+    assert.deepEqual(flow.calls.storedTransactions, [[swapId, '0xtransaction']])
     assert.equal(flow.stores.useSwapTransactionStore.getState().stepTransactions[swapId].approve_permit2.hash, '0xapproval')
     assert.equal(flow.calls.success, 1)
     assert.deepEqual(flow.calls.errors, [])
@@ -547,7 +565,7 @@ test('a swap created with only approval discovers and executes signing and publi
 
     assert.deepEqual(prompts, ['approve_permit2', 'sign', 'publish'])
     assert.deepEqual(transitions, ['approve_permit2', 'sign'])
-    assert.deepEqual(flow.calls.storedTransactions, [[swapId, 'pending', '0xtransaction']])
+    assert.deepEqual(flow.calls.storedTransactions, [[swapId, '0xtransaction']])
     assert.equal(flow.calls.success, 1)
     assert.deepEqual(flow.calls.errors, [])
 })
@@ -593,7 +611,7 @@ for (const rejectRemainingApproval of [false, true]) {
         assert.deepEqual(flow.calls.confirmations, rejectRemainingApproval
             ? [{ network: 'BASE_MAINNET', hash: '0xapproval' }]
             : [{ network: 'BASE_MAINNET', hash: '0xapproval' }, { network: 'BASE_MAINNET', hash: '0xapproval2' }])
-        assert.deepEqual(flow.calls.storedTransactions, rejectRemainingApproval ? [] : [[swapId, 'pending', '0xtransaction']])
+        assert.deepEqual(flow.calls.storedTransactions, rejectRemainingApproval ? [] : [[swapId, '0xtransaction']])
         assert.equal(flow.calls.success, rejectRemainingApproval ? 0 : 1)
         assert.deepEqual(flow.calls.errors, [])
     })
@@ -615,7 +633,7 @@ test('a rejected signature retains the approval receipt through retry without re
     await flow.render().button.props.onClick()
     assert.equal(flow.calls.transfer.length, 2, 'approval runs once, followed by execution after retry')
     assert.equal(flow.stores.useSwapTransactionStore.getState().stepTransactions[swapId].approve_permit2, approval)
-    assert.deepEqual(flow.calls.storedTransactions, [[swapId, 'pending', '0xtransaction']])
+    assert.deepEqual(flow.calls.storedTransactions, [[swapId, '0xtransaction']])
     assert.equal(flow.state.swapId, swapId)
 })
 
@@ -709,7 +727,7 @@ for (const hasSigned of [false, true]) {
         assert.equal(flow.calls.transfer.length, 1)
         assert.equal(flow.calls.transfer[0].swapId, 'fresh-swap')
         assert.equal(flow.calls.transfer[0].depositAddress, '0xnew-deposit')
-        assert.deepEqual(flow.calls.storedTransactions, [['fresh-swap', 'pending', '0xtransaction']])
+        assert.deepEqual(flow.calls.storedTransactions, [['fresh-swap', '0xtransaction']])
         assert.deepEqual(flow.calls.errors, [])
     })
 }
@@ -727,9 +745,8 @@ for (const progress of ['transaction', 'authorization', 'signature']) {
         if (progress === 'transaction') {
             flow.stores.useSwapTransactionStore.getState().swapTransactions[swapId] = { status: 'pending', hash: '0xsubmitted' }
         } else if (progress === 'authorization') {
-            flow.stores.useGaslessAuthorizationStore.getState().authorizations[swapId] = {
-                transaction: { transaction_hash: '0xsubmitted', status: 'pending' },
-            }
+            flow.stores.useGaslessAuthorizationStore.getState().authorizations[swapId] = { validBefore: Date.now() / 1000 + 60 }
+            flow.stores.useSwapTransactionStore.getState().swapTransactions[swapId] = { hash: '0xsubmitted' }
         } else {
             flow.stores.useDepositSignatureStore.getState().signatures[swapId] = { validBefore: Date.now() / 1000 + 60 }
         }
@@ -737,10 +754,10 @@ for (const progress of ['transaction', 'authorization', 'signature']) {
         await retry.props.onClick()
 
         assert.equal(flow.state.swapId, swapId)
-        assert.deepEqual(flow.calls.refresh, [[swapId, sourceAddress]], 'resume the existing attempt')
+        assert.deepEqual(flow.calls.refresh, progress === 'signature' ? [[swapId, sourceAddress]] : [], 'submitted receipts prevent another wallet request')
         assert.deepEqual(flow.calls.sign, [])
         assert.deepEqual(flow.calls.transfer, [])
-        assert.equal(flow.calls.errors[0]?.message, "The swap's quote expired; create a new swap.")
+        assert.equal(flow.calls.errors[0]?.message, progress === 'signature' ? "The swap's quote expired; create a new swap." : undefined)
     })
 }
 
@@ -853,7 +870,7 @@ test(`closing while ${step} is in flight retains its transaction without a stale
         await act(async () => root.unmount())
         publication.resolve()
         await pending
-        assert.deepEqual(flow.calls.storedTransactions, step === 'publish' ? [[swapId, 'pending', '0xtransaction']] : [])
+        assert.deepEqual(flow.calls.storedTransactions, step === 'publish' ? [[swapId, '0xtransaction']] : [])
         if (step === 'approve_permit2') {
             assert.equal(flow.stores.useSwapTransactionStore.getState().stepTransactions[swapId].approve_permit2.hash, '0xapproval')
         }
@@ -890,7 +907,7 @@ for (const resuming of [false, true]) {
         await flow.render().button.props.onClick()
         assert.deepEqual(transitions, ['sign'])
         assert.deepEqual(flow.calls.sign, resuming ? [] : ['late-publish'])
-        assert.deepEqual(flow.calls.storedTransactions, [[swapId, 'pending', '0xtransaction']])
+        assert.deepEqual(flow.calls.storedTransactions, [[swapId, '0xtransaction']])
         assert.equal(flow.calls.transfer.length, 1)
         assert.equal(flow.calls.success, 1)
         assert.deepEqual(flow.calls.errors, [])
@@ -911,8 +928,8 @@ test('gasless execution records success only after a confirmed server submission
         return [{ ...sign, status: 'completed' }]
     }
     await flow.render().button.props.onClick()
-    assert.deepEqual(flow.calls.storedTransactions, [[swapId, 'pending', '0xrelayed']])
-    assert.deepEqual(flow.calls.authorizations, [[swapId, 12345], [swapId, 'published', flow.state.authorization.transaction]])
+    assert.deepEqual(flow.calls.storedTransactions, [[swapId, '0xrelayed']])
+    assert.deepEqual(flow.calls.authorizations, [[swapId, 12345]])
     assert.equal(flow.calls.transfer.length, 0)
     assert.equal(flow.calls.success, 1)
     assert.equal(flow.calls.lifecycle.at(-1).step, 'gasless_authorization_submitted')
@@ -1034,7 +1051,7 @@ test('a failed gasless re-sign keeps the live swap resumable without offering a 
     await new Promise(resolve => setImmediate(resolve))
     assert.equal(flow.state.swapId, swapId)
     assert.equal(flow.calls.success, 1, 'the existing authorization can still be resumed')
-    assert.deepEqual(flow.calls.storedTransactions, [[swapId, 'pending', '0xrelayed']])
+    assert.deepEqual(flow.calls.storedTransactions, [[swapId, '0xrelayed']])
 })
 
 for (const progress of ['authorization', 'signature', 'transaction']) {
@@ -1069,7 +1086,8 @@ test('a terminal authorization with no submission can switch to a new standard s
     flow.preferences.gaslessEnabled = true
     flow.preferences.reportGaslessUnavailable('deposit')
     const authorizations = flow.stores.useGaslessAuthorizationStore.getState().authorizations
-    authorizations[swapId] = { status: 'rejected' }
+    authorizations[swapId] = { validBefore: 100 }
+    flow.state.gaslessAuthorization = { status: 'rejected' }
     let creates = 0
     flow.state.createSwap = async () => {
         creates++
@@ -1104,11 +1122,11 @@ test('a self-paid prerequisite cannot lock replacement but an unclassified accep
     actions[0].status = 'completed'
     assert.equal(swapProgress.hasSwapExecutionProgress({ depositActions: [actions[0]], depositSignature }), true)
     assert.equal(swapProgress.hasSwapExecutionProgress({ depositActions: actions, depositSignature }), false)
-    assert.equal(swapProgress.hasSwapExecutionProgress({ depositActions: actions, gaslessAuthorization: depositSignature }), false,
+    assert.equal(swapProgress.hasSwapExecutionProgress({ depositActions: actions, gaslessAuthorization: undefined }), false,
         'legacy self-paid markers do not count as live authorizations')
     assert.equal(swapProgress.hasSwapExecutionProgress({
         depositActions: actions,
-        gaslessAuthorization: { ...depositSignature, transaction: { transaction_hash: '0xsubmitted', status: 'pending' } },
+        gaslessAuthorization: { status: 'published', transaction: { transaction_hash: '0xsubmitted', status: 'pending' } },
     }), true, 'transaction evidence still locks replacement')
 })
 
@@ -1231,7 +1249,7 @@ test('the mounted controller and real polling resume a mined partial approval wi
         flow.state.apiActions = [{ step: 'approve_permit2', status: 'completed' }, ...actionsFor('fresh')]
         for (let i = 0; i < 4 && flow.calls.success === 0; i++) await act(async () => { t.mock.timers.tick(2000) })
         assert.deepEqual(prompts, ['approve_permit2', 'approve_permit2', 'sign', 'publish'])
-        assert.deepEqual(flow.calls.storedTransactions, [[swapId, 'pending', '0xtransaction']])
+        assert.deepEqual(flow.calls.storedTransactions, [[swapId, '0xtransaction']])
         assert.equal(flow.calls.success, 1)
         assert.deepEqual(flow.calls.errors, [])
         await execution

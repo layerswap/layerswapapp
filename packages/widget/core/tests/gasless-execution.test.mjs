@@ -65,7 +65,7 @@ for (const [code, rejected, message = 'Wallet request failed'] of [[4001, true],
   })
 }
 
-function gaslessContext({ authorize, refresh, lifecycle, submitted = [] }) {
+function gaslessContext({ authorize, refresh, lifecycle, submitted = [], cached = [] }) {
   const signAction = { type: 'sign', signing_standard: 'permit2', typed_data: { message: { validBefore: '123' } } }
   return {
     signAction,
@@ -78,6 +78,8 @@ function gaslessContext({ authorize, refresh, lifecycle, submitted = [] }) {
       layerswapApiClient: { AuthorizeSwapAsync: authorize, GetDepositActionsAsync: refresh },
       setActionStateText() {},
       setSwapTransaction: (...args) => submitted.push(args),
+      cacheGaslessAuthorization: authorization => cached.push(authorization),
+      invalidateGaslessAuthorization: async () => {},
       onSuccess() {},
       onLifecycle: event => lifecycle.push(event),
     },
@@ -131,7 +133,7 @@ test('the re-sign after an expired authorization opens a second wallet prompt', 
   assert.equal(validBefore, 456)
   assert.deepEqual(submitted, [], 'a signature is not evidence of submission')
   completeGaslessSubmission(ctx, { status: 'published', transaction: { transaction_hash: '0xgasless', status: 'pending' } }, validBefore)
-  assert.deepEqual(submitted, [['swap-gasless-api', 'pending', '0xgasless']])
+  assert.deepEqual(submitted, [['swap-gasless-api', '0xgasless']])
   assert.equal(lifecycle.at(-1).step, 'gasless_authorization_submitted')
 })
 
@@ -215,7 +217,54 @@ test('an ambiguous EIP-3009 signature becomes gasless only after authoritative s
   assert.deepEqual(useDepositSignatureStore.getState().signatures[ctx.swapData.id], { validBefore: 123 })
   assert.deepEqual(submitted, [])
   completeGaslessSubmission(ctx, { status: 'published', transaction: { transaction_hash: '0xgasless', status: 'pending' } }, 123)
-  assert.deepEqual(submitted, [[ctx.swapData.id, 'pending', '0xgasless']])
+  assert.deepEqual(submitted, [[ctx.swapData.id, '0xgasless']])
   assert.equal(useGaslessAuthorizationStore.getState().authorizations[ctx.swapData.id].kind, 'gasless')
   assert.equal(useDepositSignatureStore.getState().signatures[ctx.swapData.id], undefined)
+})
+
+test('authoritative gasless submission seeds the API cache without persisting its outcome', () => {
+  const submitted = []
+  const cached = []
+  const { ctx } = gaslessContext({ authorize: async () => {}, lifecycle: [], submitted, cached })
+  const authorization = { status: 'published', transaction: { transaction_hash: '0xgasless', status: 'pending' } }
+  completeGaslessSubmission(ctx, authorization, 123)
+  assert.deepEqual(cached, [authorization])
+  assert.deepEqual(submitted, [[ctx.swapData.id, '0xgasless']])
+  assert.deepEqual(useGaslessAuthorizationStore.getState().authorizations[ctx.swapData.id], { kind: 'gasless', validBefore: 123 })
+})
+
+test('a published authorization without a transaction hash never creates an execution placeholder', () => {
+  const submitted = []
+  const cached = []
+  const { ctx } = gaslessContext({ authorize: async () => {}, lifecycle: [], submitted, cached })
+  const authorization = { status: 'published', transaction: null }
+  completeGaslessSubmission(ctx, authorization, 123)
+  assert.deepEqual(cached, [authorization])
+  assert.deepEqual(submitted, [])
+  assert.deepEqual(useGaslessAuthorizationStore.getState().authorizations[ctx.swapData.id], { kind: 'gasless', validBefore: 123 })
+})
+
+test('renewing an accepted authorization awaits old-cache invalidation before returning a fresh receipt', async () => {
+  const invalidation = Promise.withResolvers()
+  const invalidating = Promise.withResolvers()
+  const { ctx } = gaslessContext({ authorize: async () => {}, lifecycle: [] })
+  useGaslessAuthorizationStore.getState().setGaslessAuthorization(ctx.swapData.id, 1)
+  let invalidations = 0
+  ctx.invalidateGaslessAuthorization = async () => {
+    invalidations++
+    invalidating.resolve()
+    await invalidation.promise
+  }
+  let completed = false
+  const signing = executeGaslessAuthorization(ctx, async () => '0xsig').then(result => {
+    completed = true
+    return result
+  })
+  await invalidating.promise
+  assert.equal(completed, false, 'transition observation cannot start with an old terminal snapshot')
+  assert.equal(useGaslessAuthorizationStore.getState().authorizations[ctx.swapData.id].validBefore, 1)
+  invalidation.resolve()
+  assert.equal(await signing, 123)
+  assert.equal(invalidations, 1)
+  assert.deepEqual(useGaslessAuthorizationStore.getState().authorizations[ctx.swapData.id], { kind: 'gasless', validBefore: 123 })
 })

@@ -8,17 +8,18 @@ Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
     setItem: (key, value) => storage.set(key, value),
     removeItem: key => storage.delete(key),
 } })
-const { useSwapTransactionStore: store } = await import('../dist/esm/stores/swapTransactionStore.js')
+const { useSwapTransactionStore: store, useGaslessAuthorizationStore: gasless } = await import('../dist/esm/stores/swapTransactionStore.js')
 beforeEach(() => {
     storage.clear()
     store.setState(store.getInitialState(), true)
+    gasless.setState(gasless.getInitialState(), true)
 })
 after(() => {
     if (previousStorage) Object.defineProperty(globalThis, 'localStorage', previousStorage)
     else delete globalThis.localStorage
 })
 
-test('legacy execution transactions hydrate unchanged and gain an empty step map', async () => {
+test('legacy transaction outcomes are stripped and empty execution placeholders are discarded', async () => {
     const swapTransactions = {
         pending: { hash: 'pending-hash', status: 'pending', timestamp: 10 },
         failed: { hash: 'failed-hash', status: 'failed', failReason: 'reverted', timestamp: 20 },
@@ -27,14 +28,17 @@ test('legacy execution transactions hydrate unchanged and gain an empty step map
     const legacy = { state: { swapTransactions, pendingSubmissions: { uncertain: true } }, version: 0 }
     storage.set('swapTransactions', JSON.stringify(legacy))
     await store.persist.rehydrate()
-    assert.deepEqual(store.getState().swapTransactions, swapTransactions)
+    const receipts = {
+        pending: { hash: 'pending-hash', timestamp: 10 },
+        failed: { hash: 'failed-hash', timestamp: 20 },
+    }
+    assert.deepEqual(store.getState().swapTransactions, receipts)
     assert.deepEqual(store.getState().pendingSubmissions, { uncertain: true })
     assert.deepEqual(store.getState().stepTransactions, {})
 
     store.getState().setStepTransaction('pending', 'approve_permit2', 'approval', 'https://explorer.test/tx/approval')
     const persisted = JSON.parse(storage.get('swapTransactions'))
-    assert.equal(persisted.version, 0, 'older clients can still read their execution records')
-    assert.deepEqual(persisted.state.swapTransactions, swapTransactions)
+    assert.deepEqual(persisted.state.swapTransactions, receipts)
     assert.deepEqual(persisted.state.pendingSubmissions, legacy.state.pendingSubmissions)
 })
 
@@ -57,8 +61,8 @@ test('approvals persist independently without submitting the swap or clearing un
     assert.deepEqual(store.getState().pendingSubmissions, { 'swap-1': true })
 })
 
-test('execution updates and removals retain approval receipts and their timestamps', () => {
-    store.getState().setSwapTransaction('swap-1', 'pending', 'execution')
+test('repeated execution receipts retain their original timestamp and preserve approval receipts', () => {
+    store.getState().setSwapTransaction('swap-1', 'execution')
     const execution = store.getState().swapTransactions['swap-1']
     store.getState().markSubmissionPending('swap-1')
     store.getState().markSubmissionPending('swap-2')
@@ -66,14 +70,42 @@ test('execution updates and removals retain approval receipts and their timestam
     assert.equal(store.getState().swapTransactions['swap-1'], execution, 'approval cannot replace or retimestamp execution')
     const approvals = store.getState().stepTransactions
 
-    store.getState().setSwapTransaction('swap-1', 'failed', 'execution', 'reverted')
+    store.getState().setSwapTransaction('swap-1', 'execution')
     assert.deepEqual(store.getState().pendingSubmissions, { 'swap-2': true }, 'execution still clears only its own submission marker')
-    assert.equal(store.getState().swapTransactions['swap-1'].failReason, 'reverted')
+    assert.deepEqual(store.getState().swapTransactions['swap-1'], execution)
+    assert.deepEqual(Object.keys(store.getState().swapTransactions['swap-1']), ['hash', 'timestamp'])
     assert.equal(store.getState().stepTransactions, approvals)
     store.getState().removeSwapTransaction('swap-1')
     assert.deepEqual(store.getState().swapTransactions, {})
     assert.equal(store.getState().stepTransactions, approvals, 'retrying execution preserves prerequisite receipts')
     assert.deepEqual(store.getState().pendingSubmissions, { 'swap-2': true })
+})
+
+test('empty transaction hashes cannot submit a swap or resolve an unknown wallet request', () => {
+    store.getState().markSubmissionPending('swap-1')
+    store.getState().setSwapTransaction('swap-1', '')
+    store.getState().setSwapTransaction('swap-1', '   ')
+    assert.deepEqual(store.getState().swapTransactions, {})
+    assert.deepEqual(store.getState().pendingSubmissions, { 'swap-1': true })
+})
+
+test('legacy gasless outcomes hydrate and persist only their signed-action receipt', async () => {
+    storage.set('gaslessAuthorizations', JSON.stringify({ state: { authorizations: {
+        gasless: { kind: 'gasless', validBefore: 123, status: 'expired', transaction: { transaction_hash: '0xold', status: 'failed' } },
+        unclassified: { validBefore: 456, status: 'completed' },
+        invalid: { status: 'expired' },
+    } }, version: 0 }))
+    await gasless.persist.rehydrate()
+    const receipts = {
+        gasless: { kind: 'gasless', validBefore: 123 },
+        unclassified: { validBefore: 456 },
+    }
+    assert.deepEqual(gasless.getState().authorizations, receipts)
+    gasless.getState().setGaslessAuthorization('new', 789)
+    assert.deepEqual(JSON.parse(storage.get('gaslessAuthorizations')).state.authorizations, {
+        ...receipts, new: { kind: 'gasless', validBefore: 789 },
+    })
+    assert.equal(gasless.getState().setGaslessAuthorizationStatus, undefined)
 })
 
 test('replacing an approval affects only that swap and step, and empty hashes are ignored', () => {

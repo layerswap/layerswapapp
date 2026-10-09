@@ -26,7 +26,7 @@ export async function executeAtomicBatch(ctx: DepositExecutionContext, action: B
         },
     }
     await store.begin({ swapId: swapData.id, attempt, account, wallet, network: { ...network, token: swapBasicData.source_token },
-        validBefore, createdAt: Date.now(), state: 'submitting' })
+        createdAt: Date.now() })
     const lifecycle = { ...lifecycleContextFromSwap(swapBasicData, swapData), path: 'AtomicBatch', action: 'approve_and_swap', provider: selectedWallet.providerName }
     let submissionStarted = false
     try {
@@ -37,11 +37,11 @@ export async function executeAtomicBatch(ctx: DepositExecutionContext, action: B
             onWalletPrompt: () => onLifecycle({ ...lifecycle, step: 'wallet_prompt_opened', stage: 'wallet_action', outcome: 'pending' }) })
         if (!result || typeof result.id !== 'string' || !result.id.trim()) throw new Error('Wallet returned no batch ID')
         // An open wallet request outlives the screen/account that started it.
-        await store.update(swapData.id, attempt, { id: result.id, state: 'pending' })
+        await store.update(swapData.id, attempt, { id: result.id })
     } catch (error) {
         const rejected = isUserRejection(error)
         const notSubmitted = !submissionStarted || (error as { atomicSubmission?: string })?.atomicSubmission === 'not_submitted'
-        await store.update(swapData.id, attempt, { state: rejected ? 'rejected' : notSubmitted ? 'not_submitted' : 'uncertain' })
+        if (rejected || notSubmitted) await store.remove(swapData.id, attempt)
         onLifecycle({ ...lifecycle, ...lifecycleErrorDetails(error),
             step: rejected ? 'wallet_action_rejected' : 'wallet_action_failed', stage: 'wallet_action', outcome: rejected ? 'rejected' : 'failed' })
         throw error

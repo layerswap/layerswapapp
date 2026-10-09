@@ -32,23 +32,20 @@ const inputTx = (overrides = {}) => ({
 const pendingSwap = (overrides = {}) => ({ status: 'user_transfer_pending', transactions: [], ...overrides })
 const resolve = (swapDetails, extra = {}) => resolveSwapPhase({ swapDetails, refuel: undefined, ...extra })
 
-test('an outstanding atomic ID drives processing without a transaction-hash placeholder', () => {
-  const pending = resolve(pendingSwap(), { atomicBatchPending: true })
-  assert.equal(pending.phase, SwapPhase.InputPending)
-  assert.equal(pending.showWithdrawScreen, false)
-  assert.equal(pending.failureReason, undefined)
-  assert.equal(pending.generalStatus.title, 'Confirming approve and swap')
-  const uncertain = resolve(pendingSwap(), { atomicBatchPending: true, atomicBatchUncertain: true })
-  assert.equal(uncertain.generalStatus.title, 'Checking swap submission')
-})
-
-test('a proven complete atomic failure offers explicit retry, then yields to backend input progress', () => {
-  const failed = resolve(pendingSwap(), { atomicBatchFailed: true })
-  assert.equal(failed.phase, SwapPhase.Failed)
-  assert.equal(failed.failureReason, 'transfer_failed')
-  const reconciled = resolve(pendingSwap({ transactions: [inputTx()] }), { atomicBatchFailed: true })
-  assert.equal(reconciled.phase, SwapPhase.OutputPending)
-  assert.equal(reconciled.failureReason, undefined)
+test('saved batch outcomes and user receipts cannot decide swap phase', () => {
+  for (const saved of [
+    { atomicBatchPending: true }, { atomicBatchUncertain: true }, { atomicBatchFailed: true },
+    { storedWalletTransaction: { hash: '0x1', status: 'failed' } },
+    { storedWalletTransaction: { hash: '0x1', status: 'pending' } },
+  ]) {
+    const awaiting = resolve(pendingSwap(), saved)
+    assert.equal(awaiting.phase, SwapPhase.AwaitingUserDeposit)
+    assert.equal(awaiting.failureReason, undefined)
+    const completed = resolve(pendingSwap({ status: 'completed', transactions: [
+      { type: 'output', status: 'completed', transaction_hash: '0x2', amount: 1 },
+    ] }), saved)
+    assert.equal(completed.phase, SwapPhase.Completed)
+  }
 })
 
 test('a failed gasless authorization resolves the swap to failed, with the reason the retry UI needs', () => {
@@ -63,8 +60,8 @@ test('a failed gasless authorization resolves the swap to failed, with the reaso
   assert.equal(resolved.generalStatus.title, 'Transfer failed')
 })
 
-test('a pending gasless deposit without a failure stays input-pending with no failure reason', () => {
-  const resolved = resolve(pendingSwap(), { storedWalletTransaction: { hash: '', status: 'pending' } })
+test('a fetched pending authorization shows processing without a saved placeholder', () => {
+  const resolved = resolve(pendingSwap(), { depositCompleted: true })
   assert.equal(resolved.phase, SwapPhase.InputPending)
   assert.equal(resolved.failureReason, undefined)
   assert.equal(resolved.gaslessFailureStatus, undefined)
@@ -89,11 +86,11 @@ test('a failed status from the tx-status poll resolves a client-detected transfe
   assert.equal(resolved.failureReason, 'transfer_failed')
 })
 
-test('a stored failed wallet transaction (reload after the poll) resolves the same transfer failure', () => {
+test('reload cannot restore a failed phase from a saved transaction', () => {
   const resolved = resolve(pendingSwap(), { storedWalletTransaction: { hash: '0x1', status: 'failed' } })
-  assert.equal(resolved.phase, SwapPhase.Failed)
-  assert.equal(resolved.isTerminal, true)
-  assert.equal(resolved.failureReason, 'transfer_failed')
+  assert.equal(resolved.phase, SwapPhase.AwaitingUserDeposit)
+  assert.equal(resolved.isTerminal, false)
+  assert.equal(resolved.failureReason, undefined)
 })
 
 test('an input transaction the API lists as failed is failed but not retryable from the widget', () => {

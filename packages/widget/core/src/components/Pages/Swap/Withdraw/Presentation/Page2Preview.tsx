@@ -141,8 +141,8 @@ export function Page2LoadedPreview({
     const resolved = resolveSwapPhase({
         swapDetails: s.details,
         refuel: s.refuel,
-        storedWalletTransaction: s.storedWalletTransaction,
         inputTxStatusFromApi: s.inputTxStatusFromApi,
+        depositCompleted: ['initiated', 'published', 'completed'].includes(s.gaslessAuthorization?.status ?? ''),
         gaslessFailureStatus: gaslessFailed
             ? s.gaslessAuthorization?.status as 'expired' | 'insufficient' | 'rejected'
             : undefined,
@@ -521,6 +521,8 @@ function PreviewWallet({ snapshot: s }: { snapshot: Page2LoadedSnapshot }) {
                     quoteIsLoading={s.quoteState.status === 'loading'}
                     quoteError={s.quoteState.status === 'error'}
                     loading={state.pending}
+                    submissionAccepted={state.submissionAccepted}
+                    isDisabled={state.disabled}
                     networkSwitch={previewNetworkSwitch(state.networkSwitch, s.swap.source_network)}
                     sourceNetworkName={s.swap.source_network.display_name}
                     actionStateText={state.label}

@@ -35,6 +35,17 @@ function clientFor(actions, next = fixture.next_actions.sufficient_allowance) {
     return { client, requests }
 }
 
+for (const endpoint of ['/swaps/atomic-swap', '/swaps/atomic-swap/deposit_actions', '/internal/apps']) {
+    test(`generic authenticated fetcher returns ${endpoint} unchanged without action lookups`, async () => {
+        const actions = fixture.deposit_actions.sufficient_allowance
+        const { client, requests } = clientFor(actions, new Error('generic requests must not load next_action'))
+        const response = await client.fetcher(endpoint)
+        const returnedActions = endpoint.endsWith('/deposit_actions') ? response.data : response.data.deposit_actions
+        assert.deepEqual(returnedActions, actions)
+        assert.equal(requests.length, 1, 'transport performs only the requested HTTP call')
+    })
+}
+
 for (const name of ['zero_allowance', 'allowance_reset']) test(`${name}: flat backend actions become one complete atomic action`, async () => {
     const { client, requests } = clientFor(fixture.deposit_actions[name])
     const response = await client.GetDepositActionsAsync('atomic-swap', fixture.account)
@@ -141,4 +152,15 @@ test('an unavailable or malformed next_action cannot silently select an ordinary
     const response = await client.GetDepositActionsAsync('atomic-swap', fixture.account)
     assert.equal(response.data[0].type, 'send_calls')
     assert.throws(() => validateAtomicBatch(response.data[0], fixture.swap, fixture.account, fixture.account), /no calls/)
+})
+
+for (const route of ['create', 'swap']) test(`${route} preserves authoritative swap data when the subsequent action lookup fails`, async () => {
+    const { client } = clientFor(fixture.deposit_actions.sufficient_allowance, new Error('status outage'))
+    const response = route === 'create'
+        ? await client.CreateSwapAsync({ source_address: fixture.account, use_atomic_batch: true })
+        : await client.GetSwapAsync('atomic-swap', fixture.account)
+    assert.equal(response.data.swap.id, 'atomic-swap')
+    assert.equal(response.data.swap.source_address, fixture.account)
+    assert.equal(response.data.deposit_actions, undefined, 'unverified actions cannot open the wallet')
+    await assert.rejects(client.GetDepositActionsAsync('atomic-swap', fixture.account), /outage/)
 })

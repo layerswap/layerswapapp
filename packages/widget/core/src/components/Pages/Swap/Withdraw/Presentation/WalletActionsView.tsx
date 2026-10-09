@@ -125,6 +125,8 @@ export type SendTransactionViewProps = SubmitButtonProps & {
     quoteIsLoading?: boolean;
     quoteError?: boolean;
     loading?: boolean;
+    /** A wallet receipt keeps confirmation visible without advancing the API swap phase. */
+    submissionAccepted?: boolean;
     networkSwitch?: ActionData;
     sourceNetworkName?: string;
     actionStateText?: string;
@@ -155,6 +157,7 @@ export function SendTransactionView({
     quoteIsLoading,
     quoteError,
     loading,
+    submissionAccepted,
     networkSwitch,
     sourceNetworkName,
     actionStateText,
@@ -192,6 +195,7 @@ export function SendTransactionView({
         ? getDepositActionLabel(actionableAction)
         : actionButtonText || 'Swap now';
     const hasError = error || swapError || gaslessUnavailable;
+    const confirmingSubmission = isMultiStepWorkflow && submissionAccepted && !hasError && !workflowFailed;
     const showStepError = isMultiStepWorkflow && !loading &&
         getCurrentDepositActionIndex(depositActions?.filter(action => !!action.step) ?? [], true) !== -1;
     const errorDescription = showStepError && hasError && errorMessage ? (
@@ -202,10 +206,10 @@ export function SendTransactionView({
             actions={depositActions}
             stepTransactions={stepTransactions}
             readOnly={readOnly}
-            loading={loading}
+            loading={loading || confirmingSubmission}
             error={hasError}
             errorDescription={errorDescription}
-            actionStateText={actionStateText}
+            actionStateText={confirmingSubmission ? 'Confirming transaction' : actionStateText}
             destinationToken={quote?.destination_token}
             receiveAmount={quote?.receive_amount}
             showDeliveryStep={showSwapProgress}
@@ -223,12 +227,12 @@ export function SendTransactionView({
                 {errorMessage}
             </div>
         ) : undefined);
-    if (quoteIsLoading || loading)
+    if (quoteIsLoading || loading || confirmingSubmission)
         return (
             <WalletExecutionTransition
                 workflow={workflowProgress}
                 controls={
-                    isMultiStepWorkflow && loading ? (
+                    isMultiStepWorkflow && (loading || confirmingSubmission) ? (
                         message
                     ) : (
                         <>

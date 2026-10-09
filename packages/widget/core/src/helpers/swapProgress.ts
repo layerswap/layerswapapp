@@ -1,29 +1,14 @@
 import { SwapStatus } from '@layerswap/widget-types'
-import type {
-    DepositAction,
-    GaslessAuthorizationStatus,
-    SwapDetails,
-} from '@/lib/apiClients/layerSwapApiClient'
+import type { DepositAction, GaslessAuthorizationResult, SwapDetails } from '@/lib/apiClients/layerSwapApiClient'
 import { BackendTransactionStatus, TransactionType } from '@/lib/apiClients/layerSwapApiClient'
-import type { DepositSignature, GaslessAuthorization, SwapTransaction } from '@/stores/swapTransactionStore'
 import { isGaslessDepositWorkflow } from './gasless'
+import type { DepositSignature, GaslessAuthorization, SwapTransaction } from '@/stores/swapTransactionStore'
 
 type SwapProgressOptions = {
-    swapDetails: SwapDetails | undefined
-    depositActions: DepositAction[] | undefined
-    storedWalletTransaction: SwapTransaction | undefined
-    gaslessAuthorization: GaslessAuthorization | undefined
-    gaslessAuthorizationFailed?: boolean
-    depositSignature?: DepositSignature
-    atomicBatchOutstanding?: boolean
-    atomicBatchFailed?: boolean
+    swapDetails?: SwapDetails
+    depositActions?: DepositAction[]
+    gaslessAuthorization?: GaslessAuthorizationResult
 }
-
-const FAILED_AUTHORIZATION_STATUSES: ReadonlySet<GaslessAuthorizationStatus> = new Set([
-    'expired',
-    'insufficient',
-    'rejected',
-])
 
 const ADVANCED_SWAP_STATUSES: ReadonlySet<SwapStatus> = new Set([
     SwapStatus.LsTransferPending,
@@ -32,61 +17,43 @@ const ADVANCED_SWAP_STATUSES: ReadonlySet<SwapStatus> = new Set([
     SwapStatus.Refunded,
 ])
 
-// Progress means the old swap can still move funds or has already moved beyond user setup.
-// Merely creating it, rejecting a wallet prompt, or completing Permit2 approval is safe to
-// abandon and must not pin a retry to stale execution preferences.
-export function hasSwapExecutionProgress({
-    swapDetails,
-    depositActions,
-    storedWalletTransaction,
-    gaslessAuthorization,
-    gaslessAuthorizationFailed = false,
-    depositSignature,
-    atomicBatchOutstanding,
-    atomicBatchFailed,
-}: SwapProgressOptions): boolean {
-    if (atomicBatchOutstanding) return true
+/** Only fetched swap, workflow and authorization data describe execution progress. */
+export function hasSwapExecutionProgress({ swapDetails, depositActions, gaslessAuthorization }: SwapProgressOptions): boolean {
     if (swapDetails?.status && ADVANCED_SWAP_STATUSES.has(swapDetails.status)) return true
-
-    const hasLiveInputTransaction = swapDetails?.transactions?.some(transaction =>
-        transaction.type === TransactionType.Input
-        && transaction.status !== BackendTransactionStatus.Failed
-        && !!transaction.transaction_hash
-    )
-    if (hasLiveInputTransaction) return true
-
+    if (swapDetails?.transactions?.some(transaction => transaction.type === TransactionType.Input
+        && transaction.status !== BackendTransactionStatus.Failed && !!transaction.transaction_hash)) return true
+    if (gaslessAuthorization?.transaction?.transaction_hash
+        && gaslessAuthorization.transaction.status !== BackendTransactionStatus.Failed) return true
+    const authorizationFailed = gaslessAuthorization?.status === 'expired'
+        || gaslessAuthorization?.status === 'insufficient' || gaslessAuthorization?.status === 'rejected'
+    if (gaslessAuthorization?.status && !authorizationFailed) return true
     const selfPaid = isGaslessDepositWorkflow(depositActions) === false
-    const authorizationFailed = !selfPaid && (gaslessAuthorizationFailed
-        || (!!gaslessAuthorization?.status
-            && FAILED_AUTHORIZATION_STATUSES.has(gaslessAuthorization.status)))
-
-    const authorizationTransaction = gaslessAuthorization?.transaction
-    if (authorizationTransaction?.transaction_hash
-        && authorizationTransaction.status !== BackendTransactionStatus.Failed) return true
-
-    // Older clients could persist an authorization failure as the transaction's status.
-    // That failure does not establish that a broadcast transaction failed on chain.
-    if (storedWalletTransaction?.hash && authorizationFailed) return true
-
-    // Gasless authorization creates a pending local marker before a transaction hash
-    // exists. A terminal authorization must invalidate that placeholder, while a real
-    // transaction hash still means the swap can move funds and must be resumed.
-    if (storedWalletTransaction
-        && storedWalletTransaction.status !== BackendTransactionStatus.Failed
-        && (!!storedWalletTransaction.hash || !authorizationFailed)) {
-        return true
-    }
-
-    if (!selfPaid && ((gaslessAuthorization && !authorizationFailed) || depositSignature)) return true
-
     const firstIncompleteIndex = depositActions?.findIndex(action => action.status !== 'completed') ?? -1
-
     return depositActions?.some((action, index) => {
-        if ((action.type === 'send_calls' || depositActions?.some(item => item.step === 'approve')) && atomicBatchFailed) return false
         if (action.status !== 'pending' && action.status !== 'completed') return false
-        // The backend also marks future steps pending; only the current step can have started.
         if (action.status === 'pending' && index !== firstIncompleteIndex) return false
         if (action.step === 'publish' || action.step === 'deposit') return true
         return action.step === 'sign' && !selfPaid && !authorizationFailed
     }) ?? false
+}
+
+/** Deduplicate recorded wallet actions until fetched data proves they cannot move funds. */
+export function hasUnacknowledgedWalletAction(input: {
+    transaction?: SwapTransaction
+    authorizationReceipt?: GaslessAuthorization
+    signatureReceipt?: DepositSignature
+    pendingSubmission?: boolean
+    transactionStatus?: { hash: string; status: string }
+    gaslessAuthorization?: GaslessAuthorizationResult
+    depositActions?: DepositAction[]
+}): boolean {
+    if (input.pendingSubmission) return true
+    if (input.transaction?.hash && !(input.transactionStatus?.hash === input.transaction.hash
+        && input.transactionStatus.status === 'failed')) return true
+    const authorization = input.gaslessAuthorization
+    const failed = authorization?.status === 'expired' || authorization?.status === 'insufficient'
+        || authorization?.status === 'rejected'
+    if (authorization?.transaction?.transaction_hash && authorization.transaction.status !== 'failed') return true
+    if (failed || isGaslessDepositWorkflow(input.depositActions) === false) return false
+    return !!input.authorizationReceipt || !!input.signatureReceipt
 }
