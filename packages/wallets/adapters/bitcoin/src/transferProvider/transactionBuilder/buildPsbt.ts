@@ -8,7 +8,7 @@ initEccLib(ecc);
 
 const MIN_FEE = 0n // sats, as BigInt
 
-export async function fetchUtxos(
+async function fetchUtxos(
   address: string,
   version: 'mainnet' | 'testnet',
 ): Promise<Utxo[]> {

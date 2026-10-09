@@ -29,17 +29,3 @@ async function fetchRecommendedFee(
 function calculateFee(numInputs: number, numOutputs: number, feePerByte: number) {
     return (numInputs * 148 + numOutputs * 34 + 10) * feePerByte;
 }
-
-export async function estimateConservativeFee(numInputs: number, version: 'mainnet' | 'testnet') {
-    const { economyFee } = await fetchRecommendedFee(version);
-    if (!Number.isFinite(economyFee) || economyFee <= 0) {
-        throw new Error('Invalid recommended Bitcoin fee');
-    }
-    // Budget all single-key inputs at legacy size, two Taproot-sized outputs,
-    // an 80-byte OP_RETURN memo, and serialization overhead. This also covers
-    // the smaller SegWit inputs without needing an amount-dependent PSBT.
-    const bytes = numInputs * 149 + 2 * 43 + 92 + 20;
-    const fee = Math.ceil(bytes * economyFee);
-    if (!Number.isSafeInteger(fee)) throw new Error('Invalid Bitcoin fee');
-    return BigInt(fee);
-}

@@ -10,7 +10,7 @@ export class StarknetGasProvider implements GasProvider {
         return network.type === NetworkType.Starknet
     }
 
-    getGas = async ({ network, token, wallet }: GasProps) => {
+    getGas = async ({ network, token, wallet, amount }: GasProps) => {
 
         const testnetWatchdog = '0x0423074c4bf903478daaa719bb3b1539d23af07db07101d263c78d75e5e6e0a3'
         const mainnetWatchdog = '0x022993789c33e54e0d296fc266a9c9a2e9dcabe2e48941f5fa1bd5692ac4a8c4'
@@ -23,9 +23,7 @@ export class StarknetGasProvider implements GasProvider {
 
         if (!token || !network.token || !token.contract || !starknetWalletAccount) return
 
-        // Estimate the same representative transfer regardless of the form amount.
-        // This is in atomic units; the widget applies its gas reserve separately.
-        const amt = 100000n;
+        const amt = BigInt(amount ?? 100000);
 
         const transferCall: Call = {
             contractAddress: token.contract.toLowerCase(),
