@@ -373,7 +373,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             const slippage = useSlippageStore.getState().slippage
             const gaslessEnabled = useGaslessPreferenceStore.getState().gaslessEnabled
 
-            const useDepository = shouldUseDepository(values, !!sourceIsSupported, selectedSourceAccount?.address)
+            const useDepository = shouldUseDepository(values)
             const useGasless = isGaslessCapableRoute({
                 depositMethod,
                 supportsGaslessDeposit: fromCurrency.supports_gasless_deposit,
