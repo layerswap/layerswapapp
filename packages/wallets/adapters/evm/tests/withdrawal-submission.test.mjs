@@ -146,6 +146,7 @@ function createProviderExecution() {
             TransactionType: { Input: 'input' },
         },
         '@/helpers/swapProgress': { hasSwapExecutionProgress: () => false },
+        '@/stores/atomicBatchStore': { getAtomicBatch: () => undefined },
         '@/stores/swapTransactionStore': { useSwapTransactionStore: store },
     })
     return {
@@ -187,9 +188,8 @@ for (const reload of [false, true]) {
 
         assert.equal(await execution.execute(flow), '')
         assert.equal(submissions, 2, 'the refused withdrawal can submit again')
-        assert.equal(execution.store.getState().swapTransactions['swap-1'].status, 'pending')
-        assert.equal(execution.store.getState().swapTransactions['swap-1'].hash, '')
-        assert.deepEqual(execution.store.getState().pendingSubmissions, {})
+        assert.deepEqual(execution.store.getState().swapTransactions, {}, 'a provider request without a hash is not a transaction receipt')
+        assert.deepEqual(execution.store.getState().pendingSubmissions, { 'swap-1': true }, 'reconcile the accepted provider request before retry')
     })
 }
 

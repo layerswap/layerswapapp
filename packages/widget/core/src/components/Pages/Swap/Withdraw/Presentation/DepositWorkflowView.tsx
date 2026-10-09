@@ -21,6 +21,7 @@ export function DepositWorkflowView({
     actionStateText,
     destinationToken,
     receiveAmount,
+    showDeliveryStep,
     processing,
     completed,
     readOnly,
@@ -33,6 +34,7 @@ export function DepositWorkflowView({
     actionStateText?: string;
     destinationToken?: Token;
     receiveAmount?: number;
+    showDeliveryStep?: boolean;
     readOnly?: boolean;
     processing?: {
         title?: string;
@@ -56,7 +58,7 @@ export function DepositWorkflowView({
     }
     const hasDeliveryStep =
         !!destinationToken &&
-        workflowActions.some((action) => action.step === 'publish');
+        workflowActions.some((action) => action.step === 'publish' || (showDeliveryStep && action.step === 'deposit'));
     // Between signing and publication the backend is preparing a waiting step.
     // Keep that status attached to the step when there is no wallet prompt yet.
     const currentStepIndex = getCurrentDepositActionIndex(workflowActions, !!loading || !!error);

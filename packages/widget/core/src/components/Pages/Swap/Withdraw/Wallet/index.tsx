@@ -1,6 +1,6 @@
 import { NetworkType, type TransferBlockedReasonCode } from '@layerswap/widget-types';
 import { FC, Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import { PublishedSwapTransactions, SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
+import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { WithdrawalProvider } from "@/context/withdrawalContext";
 import useWallet from "@/hooks/useWallet";
 import { useSelectedAccount } from "@/context/swapAccounts";
@@ -27,6 +27,7 @@ import { useTransferBlocked } from "@/hooks/useTransferBlocked";
 import { isProviderHydrated } from "@layerswap/wallet-core";
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 import { isUserRejection } from "./Common/isUserRejection";
+import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 
 type Props = {
     swapData: SwapBasicData
@@ -76,7 +77,7 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
     const { onSwapLifecycle } = useCallbacks()
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id && w.withdrawalSupportedNetworks?.includes(source_network?.name))
     const networkChainId = source_network?.chain_id ?? undefined
-    const [savedTransactionHash, setSavedTransactionHash] = useState<string>()
+    const savedTransactionHash = useSwapTransactionStore(state => swapId ? state.swapTransactions[swapId]?.hash : undefined)
     const lifecycleContext = useMemo(
         () => lifecycleContextFromSwap(swapBasicData, swapDetails),
         [
@@ -99,20 +100,6 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
         && destination_address
         && selectedSourceAccount.address.toLowerCase() !== destination_address.toLowerCase()
     )
-
-    useEffect(() => {
-        if (!swapId) return;
-        try {
-            const data: PublishedSwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
-            const hash = data?.[swapId!]?.hash
-            if (hash)
-                setSavedTransactionHash(hash)
-        }
-        catch (e) {
-            //TODO log to logger
-            console.error(e.message)
-        }
-    }, [swapId])
 
     const isExtendedSource = source_network?.type === NetworkType.Polymarket || isExtendedSourceNetwork(source_network?.name)
     const hasMultiStepHandler = !!provider?.multiStepHandlers?.some(handler => handler.supportedNetworks.includes(source_network?.name))
@@ -161,7 +148,7 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
                     swapBasicData={swapBasicData}
                     refuel={refuel}
                     onTransferComplete={(hash: string) => {
-                        setSavedTransactionHash(hash)
+                        if (swapId) useSwapTransactionStore.getState().setSwapTransaction(swapId, hash)
                         onSwapLifecycle({
                             step: 'transaction_submitted',
                             stage: 'input_transfer',

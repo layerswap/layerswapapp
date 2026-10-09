@@ -264,11 +264,12 @@ export function walletConnect(parameters: Params) {
             async function initProvider() {
                 const optionalChains = config.chains.map((x) => x.id) as [number]
                 if (!optionalChains.length) return
-                const { EthereumProvider } = await import(
+                const { EthereumProvider, OPTIONAL_METHODS } = await import(
                     '@walletconnect/ethereum-provider'
                 )
                 const provider = await EthereumProvider.init({
                     ...parameters,
+                    optionalMethods: [...new Set([...OPTIONAL_METHODS, 'wallet_getCapabilities', 'wallet_sendCalls', 'wallet_getCallsStatus'])],
                     disableProviderPing: true,
                     optionalChains,
                     projectId: parameters.projectId,

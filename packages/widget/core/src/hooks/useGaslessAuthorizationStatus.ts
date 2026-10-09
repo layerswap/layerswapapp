@@ -1,8 +1,8 @@
 import useSWR from 'swr'
-import { useEffect } from 'react'
-import LayerSwapApiClient, { DepositAction, GaslessAuthorizationStatus } from '@/lib/apiClients/layerSwapApiClient'
+import type { ApiResponse } from '@layerswap/widget-types'
+import LayerSwapApiClient, { DepositAction, GaslessAuthorizationResult, GaslessAuthorizationStatus } from '@/lib/apiClients/layerSwapApiClient'
 import { useGaslessAuthorizationStore } from '@/stores/swapTransactionStore'
-import { isGaslessAuthorizationForWorkflow } from '@/helpers/gasless'
+import { gaslessAuthorizationKey, isGaslessAuthorizationForWorkflow } from '@/helpers/gasless'
 
 const apiClient = new LayerSwapApiClient()
 const POLL_INTERVAL_MS = 4000
@@ -18,31 +18,24 @@ export function isTerminalGaslessStatus(status: GaslessAuthorizationStatus | und
     return !!status && TERMINAL_STATUSES.has(status)
 }
 
-// Polls GET /swaps/{id}/authorize (~4s) and mirrors status/transaction into the gasless store.
-export function useGaslessAuthorizationStatus(swapId: string | undefined, depositActions?: DepositAction[]): void {
+// Share the fetched response with execution and processing; never persist its outcome.
+export function useGaslessAuthorizationStatus(swapId: string | undefined, depositActions?: DepositAction[]): GaslessAuthorizationResult | undefined {
     const authorization = useGaslessAuthorizationStore(
         state => swapId ? state.authorizations[swapId] : undefined,
     )
-    const setStatus = useGaslessAuthorizationStore(state => state.setGaslessAuthorizationStatus)
-
     const active = !!swapId && isGaslessAuthorizationForWorkflow(authorization, depositActions)
-        && !isTerminalGaslessStatus(authorization?.status)
 
-    const { data } = useSWR(
-        active ? `/swaps/${swapId}/authorize` : null,
+    const { data } = useSWR<ApiResponse<GaslessAuthorizationResult>>(
+        active ? gaslessAuthorizationKey(swapId) : null,
         () => apiClient.GetGaslessAuthorizationAsync(swapId!),
-        { refreshInterval: POLL_INTERVAL_MS, errorRetryCount: 5, revalidateOnFocus: false },
+        {
+            refreshInterval: response => isTerminalGaslessStatus(response?.data?.status) ? 0 : POLL_INTERVAL_MS,
+            errorRetryCount: 5,
+            revalidateOnFocus: false,
+            revalidateOnMount: true,
+            keepPreviousData: false,
+        },
     )
 
-    useEffect(() => {
-        const result = data?.data
-        if (active && swapId && result?.status) {
-            // Skip responses that arrive after the authorization was removed
-            // (e.g. retry cleanup while this poll was in flight); the store
-            // also refuses to recreate a removed entry.
-            const current = useGaslessAuthorizationStore.getState().authorizations[swapId]
-            if (!current) return
-            setStatus(swapId, result.status, result.transaction)
-        }
-    }, [active, swapId, data, setStatus])
+    return active ? data?.data : undefined
 }

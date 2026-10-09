@@ -78,9 +78,9 @@ test('local failure and wallet retries do not stop backend polling or replay sta
   globalThis.__swapTransport = async () => { requests++; return response }
   const { render, events } = harness()
   await render()
-  assert.equal(container.textContent, 'input_pending')
+  assert.equal(container.textContent, 'awaiting_user_deposit')
   await render({ localStatus: 'failed' })
-  assert.equal(container.textContent, 'failed')
+  assert.equal(container.textContent, 'awaiting_user_deposit')
   const before = requests
   for (let i = 0; i < 3; i++) await act(async () => { t.mock.timers.tick(500) })
   assert.ok(requests > before, 'polling survives the terminal UI phase')

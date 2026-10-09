@@ -13,7 +13,7 @@ The Transfer flow picker lists only flows belonging to the selected widget. Each
 | Widget | Flow | Cases |
 | --- | --- | --- |
 | Swap widget | Wallet transfers | Successful transfer, refuel, wallet setup, quotes and balances, submission errors, failures, expiration and refunds |
-| Swap widget | Token swaps | Approval/sign/publication, existing allowance, native tokens, quote confirmation, retries and gasless fallback |
+| Swap widget | Token swaps | Atomic approval/swap, allowance reset, sufficient allowance, submission recovery, rejection/revert, legacy approval/sign/publication, native tokens, quote confirmation, retries and gasless fallback |
 | Swap widget | Gasless transfers | Gasless transfer, authorization failures, submission failures and standard fallback |
 | Swap widget | Manual deposits | Network/exchange instructions and changes to withdrawal limits |
 | Swap widget | Hyperliquid withdrawals | Hyperliquid prerequisites, withdrawal, rejection and provider errors |
@@ -26,6 +26,8 @@ The Transfer flow picker lists only flows belonging to the selected widget. Each
 `model.ts` defines widgets, their flow groups, section IDs, labels and display order. Every fixture declares a typed `group` and `section`; `scenarioGroups` in `fixtures.ts` builds flow navigation, omitting empty sections, and `scenarioWidgets` scopes those groups to each widget. Declaration order only controls scenario order within each section. Add new cases to their transfer flow instead of creating top-level categories for errors, quotes or individual features.
 
 Timeline controls reuse `Select`, `Tabs`, and `SecondaryButton` from `@layerswap/widget/internal`, including the group picker, mode switch, scenario rows, milestones, and Previous/Next actions. Tailwind handles the page layout and selected states. The widget's `layerswap-styles` scope wraps the shared preview; the shared select supplies its own scoped portal.
+
+Under **Swap widget → Token swaps**, select **Atomic batch: approve and swap** for the complete atomic flow. Allowance reset and sufficient allowance have separate cases, each with one wallet confirmation and no signature step. Recovery, rejection/retry and reverted transactions appear under Errors and retries. Once the wallet accepts the batch, the shared timeline shows **Confirming transaction** with no action button, including after reopening the page. The recorded request prevents repeat submission; a wallet receipt alone cannot advance the swap phase. Input, failure and completion follow fetched API snapshots. The previews use the shared wallet and processing presenters and perform no wallet requests or storage writes.
 
 `model.ts` clamps time to each scenario's range, selects the latest preceding snapshot, and finds strictly earlier/later milestones. Every milestone supplies a complete `Page2Snapshot` or `DepositSnapshot`; the selected second is passed separately as `now`. Scenario changes reset to the first milestone. Component/Modal mode switches preserve the selected scenario and time.
 

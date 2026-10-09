@@ -15,37 +15,39 @@ const globals = {
 for (const [key, value] of Object.entries(globals)) {
   Object.defineProperty(globalThis, key, { configurable: true, writable: true, value })
 }
-// Keep the API client's browser dependency graph out; exercise the real hook and store.
+// Keep the HTTP/browser graph out while exercising real SWR, hooks and persistence.
 const apiModule = 'data:text/javascript,' + encodeURIComponent(`
   export const TransactionType = { Input: 'input' };
   export const requests = [];
+  let response = { status: 'initiated' };
+  export function setResponse(value) { response = value; }
   export default class Client {
     async GetGaslessAuthorizationAsync(id) {
       requests.push(id);
-      return { data: { status: 'initiated' } };
+      return { data: response };
     }
   }
 `)
 const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
-  if (specifier.endsWith('/lib/apiClients/layerSwapApiClient')) return {
-    url: apiModule, shortCircuit: true,
-  }
+  if (specifier.endsWith('/lib/apiClients/layerSwapApiClient')) return { url: apiModule, shortCircuit: true }
   if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
     return nextResolve(`${specifier}.js`, context)
   }
   return nextResolve(specifier, context)
 } })
 const { createRoot } = await import('react-dom/client')
-const { SWRConfig } = await import('swr')
-const { requests } = await import(apiModule)
+const { SWRConfig, useSWRConfig } = await import('swr')
+const { requests, setResponse } = await import(apiModule)
 const { useGaslessAuthorization } = await import('../dist/esm/hooks/useGaslessAuthorization.js')
 const { useGaslessAuthorizationStatus } = await import('../dist/esm/hooks/useGaslessAuthorizationStatus.js')
 const { useGaslessAuthorizationStore: store, useDepositSignatureStore: signatures } = await import('../dist/esm/stores/swapTransactionStore.js')
-let root, container, observations, config
+let root, container, observations, config, mutateAuthorizationCache
 beforeEach(() => {
+  localStorage.clear()
   store.setState({ authorizations: {} })
   signatures.setState({ signatures: {} })
   requests.length = 0
+  setResponse({ status: 'initiated' })
   config = { provider: () => new Map(), revalidateOnFocus: false, revalidateOnReconnect: false }
   container = document.createElement('div')
   document.body.append(container)
@@ -66,131 +68,156 @@ after(() => {
 })
 
 const swap = (id = 'A', extra = {}) => ({ id, status: 'user_transfer_pending', transactions: [], ...extra })
-function Probe({ details, actions, poll }) {
-  const result = useGaslessAuthorization(details, actions)
-  useGaslessAuthorizationStatus(poll ? details?.id : undefined, actions)
-  // Observe every commit: checking only the settled result misses the stale failure.
-  useEffect(() => { observations.push({ id: details?.id, ...result }) })
+const selfPaidActions = [{ step: 'sign', status: 'completed' }, { step: 'publish', status: 'waiting' }]
+const gaslessActions = [{ step: 'sign', signing_standard: 'permit2', status: 'completed' }]
+function Probe({ details, actions, poll, authorization }) {
+  mutateAuthorizationCache = useSWRConfig().mutate
+  const fetchedAuthorization = useGaslessAuthorizationStatus(poll ? details?.id : undefined, actions)
+  const result = useGaslessAuthorization(details, actions, poll ? fetchedAuthorization : authorization)
+  // Check every committed render, including those before cleanup effects run.
+  useEffect(() => { observations.push({ id: details?.id, fetchedAuthorization, ...result }) })
   return null
 }
-const render = (details, actions, poll = false) => act(async () => root.render(createElement(StrictMode, null,
-  createElement(SWRConfig, { value: config }, createElement(Probe, { details, actions, poll })))))
+const render = (details, actions, poll = false, authorization) => act(async () => root.render(createElement(StrictMode, null,
+  createElement(SWRConfig, { value: config }, createElement(Probe, { details, actions, poll, authorization })))))
 const authorize = (id, validBefore) => store.getState().setGaslessAuthorization(id, validBefore)
-const setStatus = status => store.getState().setGaslessAuthorizationStatus('A', status)
 
-async function expire(t) {
+test('an overdue signature receipt cannot declare authorization expiry', async t => {
   t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 100_000 })
-  authorize('A', 101)
+  authorize('A', 1)
   await render(swap())
-  assert.equal(observations.at(-1).failed, false)
-  await act(async () => t.mock.timers.tick(30_999))
-  assert.equal(observations.at(-1).failed, false, 'preserve the 30-second grace period')
-  await act(async () => t.mock.timers.tick(1))
-  assert.equal(observations.at(-1).failureStatus, 'expired')
-  observations = []
-}
+  await act(async () => t.mock.timers.tick(60_000))
+  assert.ok(observations.every(result => !result.failed))
+  assert.deepEqual(store.getState().authorizations.A, { kind: 'gasless', validBefore: 1 })
+})
 
-const transitions = [
-  ['switch to a swap without authorization', () => render(swap('B'))],
-  ['clear the active swap', () => render(undefined)],
-  ['remove authorization for retry', () => act(async () => store.getState().removeGaslessAuthorization('A'))],
-  ['renew the authorization deadline', () => act(async () => authorize('A', 300))],
-  ...['initiated', 'published', 'completed'].map(status => [
-    `receive authoritative ${status} status`, () => act(async () => setStatus(status)),
-  ]),
-  ['receive an input transaction', () => render(swap('A', { transactions: [{ type: 'input' }] }))],
-  ['leave the user-transfer-pending stage', () => render(swap('A', { status: 'ls_transfer_pending' }))],
-]
-for (const [name, transition] of transitions) {
-  test(`expired timer cannot leak a failure when we ${name}`, async t => {
-    await expire(t)
-    await transition()
-    assert.ok(observations.length > 0)
-    assert.ok(observations.every(result => !result.failed), JSON.stringify(observations))
+for (const status of ['rejected', 'insufficient', 'expired']) {
+  test(`fetched ${status} is authoritative without a stored outcome`, async () => {
+    await render(swap(), gaslessActions, false, { status })
+    assert.equal(observations.at(-1).failed, true)
+    assert.equal(observations.at(-1).failureStatus, status)
+    assert.equal(observations.at(-1).expired, status === 'expired')
+    assert.deepEqual(store.getState().authorizations, {})
   })
 }
 
-test('switching swaps with the same deadline still expires the active swap', async t => {
-  t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 100_000 })
-  authorize('A', 101)
-  authorize('B', 101)
-  await render(swap())
-  await render(swap('B'))
-  await act(async () => t.mock.timers.tick(31_000))
-  assert.equal(observations.at(-1).id, 'B')
-  assert.equal(observations.at(-1).failureStatus, 'expired')
-})
+for (const status of ['initiated', 'published', 'completed']) {
+  test(`fetched ${status} overrides an overdue signed-action deadline`, async () => {
+    authorize('A', 1)
+    await render(swap(), undefined, false, { status })
+    assert.ok(observations.every(result => !result.failed))
+  })
+}
 
-test('polled failures remain authoritative after timer expiry', async t => {
-  await expire(t)
-  for (const status of ['rejected', 'insufficient', 'expired']) {
-    await act(async () => setStatus(status))
-    assert.equal(observations.at(-1).failed, true)
-    assert.equal(observations.at(-1).failureStatus, status)
-  }
-})
+for (const [name, details, actions] of [
+  ['receives an input transaction', swap('A', { transactions: [{ type: 'input' }] }), undefined],
+  ['advances beyond the deposit stage', swap('A', { status: 'ls_transfer_pending' }), undefined],
+  ['discovers self-paid publication', swap(), selfPaidActions],
+  ['has no active swap', undefined, undefined],
+]) {
+  test(`an old fetched failure cannot fail a swap that ${name}`, async () => {
+    authorize('A', 1)
+    await render(details, actions, false, { status: 'expired' })
+    assert.ok(observations.every(result => !result.failed))
+  })
+}
 
-const selfPaidActions = [
-  { step: 'sign', status: 'completed' },
-  { step: 'publish', status: 'waiting' },
-]
-
-test('a persisted prerequisite signature never starts gasless polling or expiry after reload', async t => {
-  t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 100_000 })
-  signatures.getState().setDepositSignature('A', 101)
+test('a persisted prerequisite signature never starts gasless polling after reload', async () => {
+  signatures.getState().setDepositSignature('A', 1)
   const saved = localStorage.getItem('depositSignatures')
   signatures.setState({ signatures: {} })
   localStorage.setItem('depositSignatures', saved)
   await signatures.persist.rehydrate()
-  assert.deepEqual(signatures.getState().signatures.A, { validBefore: 101 })
   await render(swap(), undefined, true)
   await render(swap(), selfPaidActions, true)
-  await act(async () => t.mock.timers.tick(60_000))
   assert.deepEqual(requests, [])
   assert.equal(store.getState().authorizations.A, undefined)
   assert.ok(observations.every(result => !result.failed))
 })
 
-for (const status of [undefined, 'expired']) {
-  test(`a legacy ${status ?? 'unpolled'} self-paid marker cannot fail while restored actions load`, async t => {
-    t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 100_000 })
+for (const status of [undefined, 'expired', 'completed']) {
+  test(`a legacy ${status ?? 'unpolled'} self-paid marker cannot become backend authority`, async () => {
     localStorage.setItem('gaslessAuthorizations', JSON.stringify({
-      state: { authorizations: { A: { validBefore: 1, status } } }, version: 0,
+      state: { authorizations: { A: { validBefore: 1, status, transaction: { transaction_hash: 'old' } } } }, version: 0,
     }))
     await store.persist.rehydrate()
+    assert.deepEqual(store.getState().authorizations.A, { validBefore: 1 })
     await render(swap(), undefined, true)
-    await act(async () => t.mock.timers.tick(60_000))
     await render(swap(), selfPaidActions, true)
     assert.ok(observations.every(result => !result.failed))
     assert.deepEqual(requests, [])
-    assert.equal(store.getState().authorizations.A, undefined, 'discard the obsolete prerequisite marker')
+    assert.equal(store.getState().authorizations.A, undefined)
   })
 }
 
-test('discovering self-paid publication cancels a prior gasless expiry immediately', async t => {
-  await expire(t)
-  await render(swap(), selfPaidActions, true)
-  assert.ok(observations.every(result => !result.failed))
-  assert.deepEqual(requests, [])
-})
-
-test('an actual transaction on an old self-paid marker is preserved without gasless failure', async () => {
-  const transaction = { transaction_hash: '0xinput', status: 'pending' }
-  store.setState({ authorizations: { A: { validBefore: 1, status: 'expired', transaction } } })
-  await render(swap(), selfPaidActions, true)
-  assert.equal(store.getState().authorizations.A.transaction, transaction)
-  assert.ok(observations.every(result => !result.failed))
-  assert.deepEqual(requests, [])
-})
-
 for (const legacy of [false, true]) {
-  test(`${legacy ? 'legacy' : 'new'} gasless authorization still polls when its workflow is established`, async () => {
-    if (legacy) store.setState({ authorizations: { A: { validBefore: Date.now() / 1000 + 60 } } })
-    else authorize('A', Date.now() / 1000 + 60)
-    const actions = legacy ? [{ step: 'sign', signing_standard: 'permit2', status: 'completed' }] : undefined
-    await render(swap(), actions, true)
+  test(`${legacy ? 'legacy' : 'new'} gasless signature polls without mirroring the fetched result`, async () => {
+    if (legacy) store.setState({ authorizations: { A: { validBefore: 1 } } })
+    else authorize('A', 1)
+    await render(swap(), legacy ? gaslessActions : undefined, true)
     assert.deepEqual(requests, ['A'])
-    assert.equal(store.getState().authorizations.A.status, 'initiated')
+    assert.deepEqual(observations.at(-1).fetchedAuthorization, { status: 'initiated' })
+    assert.deepEqual(store.getState().authorizations.A, legacy ? { validBefore: 1 } : { kind: 'gasless', validBefore: 1 })
     assert.ok(observations.every(result => !result.failed))
   })
 }
+
+test('gasless backend actions trigger authorization fetch without any local marker', async () => {
+  await render(swap(), gaslessActions, true)
+  assert.deepEqual(requests, ['A'])
+  assert.deepEqual(observations.at(-1).fetchedAuthorization, { status: 'initiated' })
+  assert.deepEqual(store.getState().authorizations, {})
+})
+
+for (const status of ['pending', 'completed']) {
+  test(`a fetched ${status} EIP-3009 sign action recovers authorization failure on a fresh browser`, async () => {
+    setResponse({ status: 'expired' })
+    await render(swap(), [{ type: 'sign', signing_standard: 'eip3009', status }], true)
+    assert.deepEqual(requests, ['A'])
+    assert.deepEqual(observations.at(-1).fetchedAuthorization, { status: 'expired' })
+    assert.equal(observations.at(-1).failureStatus, 'expired')
+    assert.equal(observations.at(-1).failed, true)
+    assert.deepEqual(store.getState().authorizations, {})
+  })
+}
+
+test('a completed self-paid sign action never probes authorization on a fresh browser', async () => {
+  await render(swap(), selfPaidActions, true)
+  assert.deepEqual(requests, [])
+  assert.ok(observations.every(result => !result.failed))
+  assert.deepEqual(store.getState().authorizations, {})
+})
+
+test('reloading a saved terminal outcome always fetches the current backend authorization', async () => {
+  localStorage.setItem('gaslessAuthorizations', JSON.stringify({
+    state: { authorizations: { A: { kind: 'gasless', validBefore: 1, status: 'expired' } } }, version: 0,
+  }))
+  await store.persist.rehydrate()
+  setResponse({ status: 'published', transaction: { transaction_hash: '0xcurrent', status: 'pending' } })
+  await render(swap(), undefined, true)
+  assert.deepEqual(requests, ['A'])
+  assert.equal(observations.at(-1).fetchedAuthorization.status, 'published')
+  assert.ok(observations.every(result => !result.failed))
+  assert.deepEqual(store.getState().authorizations.A, { kind: 'gasless', validBefore: 1 })
+})
+
+test('invalidating a terminal authorization for a renewed signature restarts backend polling on the same key', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 100_000 })
+  authorize('A', 1)
+  setResponse({ status: 'expired' })
+  await render(swap(), gaslessActions, true)
+  assert.equal(observations.at(-1).failureStatus, 'expired')
+  assert.deepEqual(requests, ['A'])
+
+  setResponse({ status: 'initiated' })
+  await act(async () => {
+    await mutateAuthorizationCache('/swaps/A/authorize', undefined, { revalidate: false })
+    authorize('A', 123)
+  })
+  assert.equal(observations.at(-1).fetchedAuthorization, undefined)
+  assert.equal(observations.at(-1).failed, false, 'do not reuse the prior signature outcome')
+  await act(async () => t.mock.timers.tick(4000))
+  assert.deepEqual(requests, ['A', 'A'])
+  assert.deepEqual(observations.at(-1).fetchedAuthorization, { status: 'initiated' })
+  assert.deepEqual(store.getState().authorizations.A, { kind: 'gasless', validBefore: 123 })
+})

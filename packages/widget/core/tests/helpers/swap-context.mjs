@@ -8,7 +8,7 @@ const noop = () => {}
 
 // Run the real swap provider and its SWR receipt subscription, with unrelated
 // quote, route, wallet and whole-swap services held at deterministic boundaries.
-export function createSwapContext({ Client, getSwapId, getAccount, stores, swapTransactions = {}, swr = require('swr') }) {
+export function createSwapContext({ Client, getSwapId, getAccount, stores, swapTransactions = {}, swr = require('swr'), overrides = {} }) {
     const network = { name: 'BASE_MAINNET' }
     const snapshots = new Map()
     const store = state => Object.assign(selector => selector(state), { getState: () => state })
@@ -34,7 +34,7 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
             useSettingsState: () => ({ sourceRoutes: [], destinationRoutes: [], networks: [] }),
         },
         '@/hooks/useWallet': { default: () => ({ wallets: [{
-            ...getAccount(), asSourceSupportedNetworks: [network.name],
+            ...getAccount(), addresses: getAccount().addresses ?? [getAccount().address], asSourceSupportedNetworks: [network.name],
         }] }) },
         './swapAccounts': { useSelectedAccount: getAccount },
         '@/hooks/useFee': { transformSwapDataToQuoteArgs: noop, useQuoteData: () => ({}) },
@@ -43,10 +43,12 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
         './callbackProvider': { useCallbacks: () => ({ onSwapCreate: noop, onSwapLifecycle: noop }) },
         '@/lib/address/Address': { Address: { equals: (a, b) => a === b } },
         '@/stores': stores ?? emptyStores,
+        '@/stores/swapTransactionStore': overrides['@/stores'] ?? stores ?? emptyStores,
         '@/helpers/depositActions': { isDepositWorkflowComplete: () => false },
         '@/components/utils/resolveSwapPhase': { resolveSwapPhase: () => resolved },
         './depositSettings': { useDepositSettings: () => ({ isDepositFlow: false }) },
         '@/hooks/useGaslessAuthorization': { useGaslessAuthorization: () => ({}) },
+        '@/hooks/useGaslessAuthorizationStatus': { useGaslessAuthorizationStatus: noop },
         '@/stores/contractAddressStore': { useContractAddressStore: () => ({}) },
         '@/hooks/useExtendedSwapDisplay': { useExtendedSwapData: noop },
         '@/stores/gaslessPreferenceStore': { useGaslessPreferenceStore: store({ gaslessEnabled: false }) },
@@ -63,8 +65,15 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
             return { data: id ? snapshots.get(id) : undefined, mutate: noop }
         } },
         '@/hooks/useSwapStatusNotification': { useSwapStatusNotification: noop },
+        '@/hooks/useAtomicBatchTracking': { useAtomicBatchTracking: noop },
+        '@/hooks/useAtomicBatchCapability': { useAtomicBatchCapability: () => false },
+        '@/hooks/useClientLayoutEffect': { useClientLayoutEffect: React.useLayoutEffect },
+        '@/stores/atomicBatchStore': { useAtomicBatchStore: store({ batches: {} }), getAtomicBatch: noop, supportsWebLocks: () => true },
+        '@/helpers/atomicBatch': { isAtomicBatchEligible: () => false },
+        '@/lib/resolvers/resolverService': {},
         '@/lib/swapLifecycle': {},
         '@/lib/swapCreation': {},
+        ...overrides,
     }
     const { outputText } = ts.transpileModule(readFileSync(new URL('../../src/context/swap.tsx', import.meta.url), 'utf8'), {
         compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },

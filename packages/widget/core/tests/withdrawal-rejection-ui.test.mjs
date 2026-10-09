@@ -87,7 +87,7 @@ beforeEach(() => {
   unsubscribeStore = useSwapTransactionStore.subscribe((current, previous) => {
     for (const [id, transaction] of Object.entries(current.swapTransactions)) {
       if (transaction !== previous.swapTransactions[id]) {
-        state.published.push([id, transaction.status, transaction.hash])
+        state.published.push([id, transaction.hash])
       }
     }
   })
@@ -160,7 +160,7 @@ for (const stage of ['preparation', 'signing']) {
 
 test('concurrent retries cannot both reconcile a failed withdrawal and submit again', async () => {
   const reconciliation = Promise.withResolvers()
-  useSwapTransactionStore.getState().setSwapTransaction('swap-1', 'failed', 'failed-withdrawal')
+  useSwapTransactionStore.getState().setSwapTransaction('swap-1', 'failed-withdrawal')
   useSwapTransactionStore.getState().markSubmissionPending('swap-1')
   state.getSwap = () => reconciliation.promise
   let preparations = 0
@@ -201,6 +201,32 @@ test('an unrelated backend failure cannot clear a pending submission without a r
   assert.equal(useSwapTransactionStore.getState().pendingSubmissions['swap-1'], true)
 })
 
+test('a successful hashless provider response is reconciled after reload before another wallet request', async () => {
+  const request = {
+    swapId: 'swap-1', sourceAddress: 'source', onReconcile: async () => {},
+    prepare: async () => 'prepared',
+    execute: async (_, onSubmissionStateChange) => {
+      onSubmissionStateChange('preparing')
+      return ''
+    },
+  }
+  assert.equal(await executeProviderWithdrawal(request), '')
+  assert.deepEqual(useSwapTransactionStore.getState().swapTransactions, {})
+  assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, { 'swap-1': true })
+  await reloadTransactionStore()
+  state.getSwap = async id => ({ data: { swap: { id, transactions: [
+    { type: 'input', status: 'pending', transaction_hash: 'indexed-withdrawal' },
+  ] } } })
+  assert.equal(await executeProviderWithdrawal({
+    ...request,
+    prepare: async () => assert.fail('the accepted request must be reconciled'),
+    execute: async () => assert.fail('never send the withdrawal twice'),
+  }), 'indexed-withdrawal')
+  assert.deepEqual(state.refreshes, [['swap-1', 'source']])
+  assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, {})
+  assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].hash, 'indexed-withdrawal')
+})
+
 test('recording a transaction clears its pending submission atomically and preserves other swaps', () => {
   const store = useSwapTransactionStore.getState()
   store.markSubmissionPending('swap-1')
@@ -211,13 +237,13 @@ test('recording a transaction clears its pending submission atomically and prese
     pending: current.pendingSubmissions['swap-1'], transaction: current.swapTransactions['swap-1'],
   }))
   try {
-    store.setSwapTransaction('swap-1', 'pending', 'hash')
+    store.setSwapTransaction('swap-1', 'hash')
     assert.equal(transitions.length, 1)
     assert.equal(transitions[0].pending, undefined)
     assert.equal(transitions[0].transaction.hash, 'hash')
     assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, { 'swap-2': true })
     assert.deepEqual(JSON.parse(localStorage.getItem('swapTransactions')).state, {
-      swapTransactions: { 'swap-1': { hash: 'hash', status: 'pending', timestamp: transitions[0].transaction.timestamp } },
+      swapTransactions: { 'swap-1': { hash: 'hash', timestamp: transitions[0].transaction.timestamp } },
       stepTransactions: {},
       pendingSubmissions: { 'swap-2': true },
     })
@@ -237,7 +263,7 @@ test('transaction cleanup does not discard an unresolved provider submission', (
 })
 
 test('existing persisted transactions hydrate with an empty pending submission map', async () => {
-  const transaction = { hash: 'existing-hash', status: 'pending', timestamp: 123 }
+  const transaction = { hash: 'existing-hash', timestamp: 123 }
   localStorage.setItem('swapTransactions', JSON.stringify({
     state: { swapTransactions: { 'swap-1': transaction } }, version: 0,
   }))
@@ -321,8 +347,8 @@ for (const reload of [false, true]) {
       assert.equal(state.creations, 0)
       assert.deepEqual(state.refreshes, [])
       assert.equal(state.successes, 1)
-      assert.deepEqual(state.published, [['swap-1', 'pending', '']])
-      assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, {})
+      assert.deepEqual(state.published, [])
+      assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, { 'swap-1': true }, 'hashless success remains a request awaiting API reconciliation')
     } finally {
       await mounted.unmount()
     }
@@ -430,7 +456,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
         assert.equal(state.creations, 0)
         assert.equal(state.selectedSwapId, 'swap-1')
         assert.deepEqual(state.actionRefreshes, [['swap-1', 'source']], 'ambiguous retries do not prepare another withdrawal')
-        assert.deepEqual(state.published, [['swap-1', 'pending', 'accepted-withdrawal']])
+        assert.deepEqual(state.published, [['swap-1', 'accepted-withdrawal']])
         assert.equal(state.successes, 1)
         assert.equal(mounted.result.error, undefined)
         assert.equal(useSwapTransactionStore.getState().pendingSubmissions['swap-1'], undefined)
@@ -455,7 +481,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
   })
 
   test(`${useWithdrawal.name} reuses a submitted withdrawal after reloading the transaction store`, async () => {
-    state.executeTransfer = async () => ''
+    state.executeTransfer = async () => 'submitted-withdrawal'
     let mounted = await mountWithdrawal(useWithdrawal)
     try {
       await act(async () => mounted.result.handleWithdraw())
@@ -464,11 +490,14 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
       assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, {})
       state.depositActions = undefined
       state.getDepositActions = async () => assert.fail('a submitted withdrawal does not need deposit instructions')
+      state.getSwap = async id => ({ data: { swap: { id, transactions: [
+        { type: 'input', status: 'pending', transaction_hash: 'submitted-withdrawal' },
+      ] } } })
       mounted = await mountWithdrawal(useWithdrawal)
       await act(async () => mounted.result.handleWithdraw())
       assert.equal(state.transfers.length, 1)
       assert.equal(state.creations, 0)
-      assert.deepEqual(state.refreshes, [])
+      assert.deepEqual(state.refreshes, [['swap-1', 'source']], 'a saved receipt always fetches its current backend outcome')
       assert.equal(mounted.result.error, undefined)
       assert.equal(state.successes, 2)
     } finally {
@@ -477,7 +506,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
   })
 
   test(`${useWithdrawal.name} reconciles a stored failed transaction before allowing another withdrawal`, async () => {
-    useSwapTransactionStore.getState().setSwapTransaction('swap-1', 'failed', 'withdrawal-hash')
+    useSwapTransactionStore.getState().setSwapTransaction('swap-1', 'withdrawal-hash')
     const mounted = await mountWithdrawal(useWithdrawal)
     try {
       await act(async () => mounted.result.handleWithdraw())
@@ -492,7 +521,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
 
   test(`${useWithdrawal.name} retries a backend-confirmed failed withdrawal on the existing swap`, async () => {
     const store = useSwapTransactionStore.getState()
-    store.setSwapTransaction('swap-1', 'failed', 'failed-withdrawal')
+    store.setSwapTransaction('swap-1', 'failed-withdrawal')
     store.markSubmissionPending('swap-1')
     store.markSubmissionPending('swap-2')
     await reloadTransactionStore()
@@ -536,7 +565,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
   ]) {
     test(`${useWithdrawal.name} preserves the retry block with ${label}`, async () => {
       const store = useSwapTransactionStore.getState()
-      store.setSwapTransaction('swap-1', 'failed', hash)
+      store.setSwapTransaction('swap-1', hash)
       store.markSubmissionPending('swap-1')
       const transaction = useSwapTransactionStore.getState().swapTransactions['swap-1']
       state.getSwap = async id => ({ data: { swap: { id, transactions }, deposit_actions: state.depositActions } })
@@ -555,7 +584,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
   }
 
   test(`${useWithdrawal.name} does not retry a confirmed failed input while a deposit is active`, async () => {
-    useSwapTransactionStore.getState().setSwapTransaction('swap-1', 'failed', 'failed-withdrawal')
+    useSwapTransactionStore.getState().setSwapTransaction('swap-1', 'failed-withdrawal')
     state.getSwap = async id => ({ data: {
       swap: { id, transactions: [{ type: 'input', status: 'failed', transaction_hash: 'failed-withdrawal' }] },
       deposit_actions: [{ type: 'transfer', step: 'deposit', status: 'pending' }],
@@ -567,7 +596,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
       assert.deepEqual(state.actionRefreshes, [])
       assert.deepEqual(state.transfers, [])
       assert.equal(state.successes, 1)
-      assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].status, 'pending')
+      assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].hash, 'failed-withdrawal', 'fetched progress must not overwrite receipt history with an empty hash')
     } finally {
       await mounted.unmount()
     }
@@ -596,7 +625,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
       } else {
         assert.deepEqual(state.transfers.map(([params]) => params.amountInBaseUnits), ['1000000', '2000000'])
       }
-      assert.deepEqual(state.published, [['new-swap', 'pending', '']])
+      assert.deepEqual(state.published, [])
       assert.equal(state.successes, 1)
     } finally {
       await mounted.unmount()
@@ -617,7 +646,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
       if (useWithdrawal === useHyperliquidWithdrawal) {
         assert.equal(state.transfers[0][0].amountInBaseUnits, '2000000')
       }
-      assert.deepEqual(state.published, [['swap-1', 'pending', '']])
+      assert.deepEqual(state.published, [])
     } finally {
       await mounted.unmount()
     }
@@ -649,7 +678,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
         assert.equal(state.transfers.length, 2)
         assert.equal(state.transfers[1][0].depositAddress, 'current-deposit')
         assert.deepEqual(state.actionRefreshes, Array.from({ length: 3 }, () => ['swap-1', 'source']))
-        assert.deepEqual(state.published, [['swap-1', 'pending', '']])
+        assert.deepEqual(state.published, [])
         assert.equal(state.successes, 1)
       } finally {
         await mounted.unmount()
@@ -688,7 +717,8 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
           assert.equal(event.path, useWithdrawal.name.slice(3))
           assert.equal(event.provider, 'test-wallet')
         }
-        assert.deepEqual(state.published, [['swap-1', 'pending', hash || '']])
+        assert.deepEqual(state.published, hash ? [['swap-1', hash]] : [])
+        assert.equal(useSwapTransactionStore.getState().pendingSubmissions['swap-1'], hash ? undefined : true)
         assert.equal(state.successes, 1)
         assert.deepEqual(state.errors, [])
         assert.equal(mounted.result.loading, false)
@@ -713,7 +743,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
         ['wallet_prompt_opened', 'new-swap'], ['transaction_submitted', 'new-swap'],
       ])
       assert.equal(state.transfers[0][0].depositAddress, 'new-deposit')
-      assert.deepEqual(state.published, [['new-swap', 'pending', '']])
+      assert.deepEqual(state.published, [])
     } finally {
       await mounted.unmount()
     }
@@ -769,7 +799,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
       await pending
       assert.deepEqual(state.events.map(event => event.step), ['wallet_prompt_opened'])
       assert.deepEqual(state.errors, [])
-      assert.deepEqual(state.published, rejected ? [] : [['swap-1', 'pending', 'late-hash']])
+      assert.deepEqual(state.published, rejected ? [] : [['swap-1', 'late-hash']])
       assert.equal(state.successes, 0)
     })
   }

@@ -125,11 +125,14 @@ export type SendTransactionViewProps = SubmitButtonProps & {
     quoteIsLoading?: boolean;
     quoteError?: boolean;
     loading?: boolean;
+    /** A wallet receipt keeps confirmation visible without advancing the API swap phase. */
+    submissionAccepted?: boolean;
     networkSwitch?: ActionData;
     sourceNetworkName?: string;
     actionStateText?: string;
     actionButtonText?: string;
     depositActions?: DepositAction[];
+    showSwapProgress?: boolean;
     stepTransactions?: SwapStepTransactions;
     readOnly?: boolean;
     error?: boolean;
@@ -154,11 +157,13 @@ export function SendTransactionView({
     quoteIsLoading,
     quoteError,
     loading,
+    submissionAccepted,
     networkSwitch,
     sourceNetworkName,
     actionStateText,
     actionButtonText,
     depositActions,
+    showSwapProgress,
     stepTransactions,
     readOnly,
     error,
@@ -182,14 +187,15 @@ export function SendTransactionView({
         (!!stepTransactions?.approve_permit2?.explorerUrl &&
             !!depositActions?.some(action => action.step === 'approve_permit2')) ||
         (!!quote?.destination_token &&
-            !!depositActions?.some((action) => action.step === 'publish'));
+            !!depositActions?.some((action) => action.step === 'publish' || (showSwapProgress && action.step === 'deposit')));
     const workflowCompleted = isDepositWorkflowComplete(depositActions ?? []);
     const workflowFailed = depositActions?.some(action => action.status === 'failed');
     const actionableAction = getActionableDepositAction(depositActions);
-    const primaryActionText = actionableAction
+    const primaryActionText = props.isDisabled && actionButtonText ? actionButtonText : actionableAction
         ? getDepositActionLabel(actionableAction)
         : actionButtonText || 'Swap now';
     const hasError = error || swapError || gaslessUnavailable;
+    const confirmingSubmission = isMultiStepWorkflow && submissionAccepted && !hasError && !workflowFailed;
     const showStepError = isMultiStepWorkflow && !loading &&
         getCurrentDepositActionIndex(depositActions?.filter(action => !!action.step) ?? [], true) !== -1;
     const errorDescription = showStepError && hasError && errorMessage ? (
@@ -200,12 +206,13 @@ export function SendTransactionView({
             actions={depositActions}
             stepTransactions={stepTransactions}
             readOnly={readOnly}
-            loading={loading}
+            loading={loading || confirmingSubmission}
             error={hasError}
             errorDescription={errorDescription}
-            actionStateText={actionStateText}
+            actionStateText={confirmingSubmission ? 'Confirming transaction' : actionStateText}
             destinationToken={quote?.destination_token}
             receiveAmount={quote?.receive_amount}
+            showDeliveryStep={showSwapProgress}
         />
     ) : undefined;
     const networkSwitchMessage = networkSwitch && (networkSwitch.isPending || networkSwitch.isError)
@@ -220,12 +227,12 @@ export function SendTransactionView({
                 {errorMessage}
             </div>
         ) : undefined);
-    if (quoteIsLoading || loading)
+    if (quoteIsLoading || loading || confirmingSubmission)
         return (
             <WalletExecutionTransition
                 workflow={workflowProgress}
                 controls={
-                    isMultiStepWorkflow && loading ? (
+                    isMultiStepWorkflow && (loading || confirmingSubmission) ? (
                         message
                     ) : (
                         <>
@@ -354,6 +361,7 @@ export function SendTransactionView({
                             }
                             onClick={handleClick}
                             isDisabled={
+                                props.isDisabled ||
                                 quoteIsLoading ||
                                 !!quoteError ||
                                 workflowCompleted

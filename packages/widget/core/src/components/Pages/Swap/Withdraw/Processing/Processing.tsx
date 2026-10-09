@@ -14,7 +14,6 @@ import {
 } from '@/lib/apiClients/layerSwapApiClient';
 import { ErrorHandler } from '@/lib/ErrorHandler';
 import {
-    useGaslessAuthorizationStore,
     useSwapTransactionStore,
 } from '@/stores/swapTransactionStore';
 import { type Refuel } from '@layerswap/widget-types';
@@ -44,24 +43,15 @@ const Processing: FC<Props> = ({
 }) => {
     const { boot, show, update } = useIntercom();
     const { onSwapLifecycle } = useCallbacks();
-    const { depositActionsResponse } = useSwapDataState();
+    const { depositActionsResponse, gaslessAuthorization } = useSwapDataState();
     const { isDepositFlow } = useDepositSettings();
-    const setSwapTransaction = useSwapTransactionStore(
-        (state) => state.setSwapTransaction,
-    );
     const storedWalletTransaction = useSwapTransactionStore((state) =>
         swapDetails?.id ? state.swapTransactions[swapDetails.id] : undefined,
     );
     const stepTransactions = useSwapTransactionStore((state) =>
         swapDetails?.id ? state.stepTransactions[swapDetails.id] : undefined,
     );
-    // Gasless deposit broadcast tx (from the /authorize poll) — surfaces the hash + confirmations
-    // before the swap's own input transaction appears.
-    const gaslessAuthTx = useGaslessAuthorizationStore((state) =>
-        swapDetails?.id
-            ? state.authorizations[swapDetails.id]?.transaction
-            : undefined,
-    );
+    const gaslessAuthTx = gaslessAuthorization?.transaction;
 
     const { source_network, source_token, destination_network, destination_token } = swapBasicData;
 
@@ -146,28 +136,6 @@ const Processing: FC<Props> = ({
         source_network,
         swapInputTxStatus,
         transactionHash,
-    ]);
-
-    useEffect(() => {
-        if (!swapDetails?.id) return;
-        if (!storedWalletTransaction?.hash) return;
-        // An authorization can expire while its transaction is still settling. Only
-        // transaction evidence may overwrite the status of an already broadcast hash.
-        if (resolved.gaslessFailureStatus && !swapInputTransaction) return;
-        if (storedWalletTransaction.status !== swapInputTxStatus) {
-            setSwapTransaction(
-                swapDetails.id,
-                swapInputTxStatus,
-                storedWalletTransaction.hash,
-            );
-        }
-    }, [
-        swapInputTxStatus,
-        storedWalletTransaction,
-        swapDetails?.id,
-        setSwapTransaction,
-        resolved.gaslessFailureStatus,
-        swapInputTransaction,
     ]);
 
     useEffect(() => {
