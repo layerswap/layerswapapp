@@ -126,7 +126,7 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
 
         const isWalletConnect = snapshot.name === SOLANA_WC_MODAL_NAME || snapshot.name === SOLANA_HIDDEN_WC_NAME
         const dynamicMeta = isWalletConnect
-            ? (getDynamicWcMetadata(SVM_NS, activeAddress) || getPendingDynamicWcMetadata(SVM_NS))
+            ? (getPendingDynamicWcMetadata(SVM_NS) || getDynamicWcMetadata(SVM_NS, activeAddress))
             : null
 
         const normalizedName = normalizeWcName(snapshot.name) || snapshot.name
@@ -258,6 +258,10 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
 
             const targetAdapter = useWalletConnect ? hiddenWcAdapter : installedAdapter
             if (!targetAdapter) throw new Error('Connector not found')
+
+            // Every registry wallet uses the same hidden transport. A new wallet
+            // selection must pair again, not relabel its predecessor's session.
+            if (useWalletConnect) await targetAdapter.disconnect()
 
             if (useSvmStore.getState().activeAddress) {
                 const activeAdapter = svmAdapterManager.getActiveAdapter()

@@ -23,6 +23,9 @@ export type ResolveSwapPhaseInput = {
     refuel: Refuel | undefined;
     inputTxStatusFromApi?: TransactionStatus;
     storedWalletTransaction?: StoredWalletTransaction;
+    // The server reports every wallet deposit step completed. It holds only while the latest
+    // deposit-actions response says so, unlike a stored transaction this client broadcast.
+    depositCompleted?: boolean;
     isDepositFlow?: boolean;
     // Terminal status of the gasless (paymaster) authorization; any value marks the input failed.
     gaslessFailureStatus?: GaslessAuthorizationStatus;
@@ -58,6 +61,7 @@ export type ResolvedSwapStatus = {
 
 export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStatus {
     const { swapDetails, refuel, inputTxStatusFromApi, storedWalletTransaction, gaslessFailureStatus } = input;
+    const depositSubmitted = !!storedWalletTransaction || !!input.depositCompleted || !!input.atomicBatchPending;
 
     const inputTx = swapDetails?.transactions?.find(t => t.type === TransactionType.Input);
     const outputTx = swapDetails?.transactions?.find(t => t.type === TransactionType.Output);
@@ -78,7 +82,7 @@ export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStat
 
     const showWithdrawScreen =
         (!swapStatus || swapStatus === SwapStatus.UserTransferPending || swapStatus === SwapStatus.Created)
-        && !(inputTx || storedWalletTransaction || input.atomicBatchPending)
+        && !(inputTx || depositSubmitted)
         && !failureReason;
 
     const phase = resolvePhase({
@@ -88,7 +92,7 @@ export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStat
         outputReady,
         refuelPending,
         hasInputTx: !!inputTx,
-        hasStoredWalletTx: !!storedWalletTransaction || !!input.atomicBatchPending,
+        depositSubmitted,
         showWithdrawScreen,
     });
 
@@ -153,12 +157,12 @@ function resolvePhase(args: {
     outputReady: boolean;
     refuelPending: boolean;
     hasInputTx: boolean;
-    hasStoredWalletTx: boolean;
+    depositSubmitted: boolean;
     showWithdrawScreen: boolean;
 }): SwapPhase {
     const {
         swapStatus, swapInputTxStatus, inputReady, outputReady, refuelPending,
-        hasInputTx, hasStoredWalletTx, showWithdrawScreen,
+        hasInputTx, depositSubmitted, showWithdrawScreen,
     } = args;
 
     if (swapStatus === SwapStatus.Expired) return SwapPhase.Expired;
@@ -177,7 +181,7 @@ function resolvePhase(args: {
 
     if (swapStatus === SwapStatus.LsTransferPending) return SwapPhase.OutputPending;
     if (inputReady) return SwapPhase.OutputPending;
-    if (hasInputTx || hasStoredWalletTx) return SwapPhase.InputPending;
+    if (hasInputTx || depositSubmitted) return SwapPhase.InputPending;
 
     return SwapPhase.AwaitingUserDeposit;
 }

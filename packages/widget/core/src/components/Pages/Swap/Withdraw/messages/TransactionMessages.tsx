@@ -54,11 +54,11 @@ const TransactionExpiredMessage: FC = () => {
         details='Refresh the transfer details and try again' />
 }
 
-const WalletMismatchMessage: FC<{ address: string; network: { name: string } }> = ({ address, network }) => {
+const WalletMismatchMessage: FC<{ address: string; network: { name: string }; details?: string }> = ({ address, network, details }) => {
     return <WalletMessage
         status="error"
         header='Account mismatch'
-        details={`Select ${new Address(address, network).toShortString()} in your wallet, then try again`} />
+        details={details ?? `Select ${new Address(address, network).toShortString()} in your wallet, then try again`} />
 }
 
 const SwapErrorMessage: FC<{ message?: string }> = ({ message }) => {

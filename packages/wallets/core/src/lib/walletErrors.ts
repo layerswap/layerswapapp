@@ -52,6 +52,7 @@ const REASON_CODES: Record<WalletErrorReasonCode, true> = {
     internal_rpc_error: true,
     network_error: true,
     timeout: true,
+    request_pending: true,
     unknown_error: true,
 }
 
@@ -125,6 +126,9 @@ const CODE_RULES: Record<Tier, Record<string, WalletErrorReasonCode>> = {
         ECONNRESET: 'network_error',
         TIMEOUT: 'timeout',
         ETIMEDOUT: 'timeout',
+        // EIP-1193 "resource unavailable": MetaMask answers with it while an earlier
+        // prompt of the same type (chain switch, account request) is still open.
+        '-32002': 'request_pending',
     },
     fallback: {
         // JSON-RPC "Internal error": the spec catch-all and @metamask/rpc-errors' serializer fallback.
@@ -204,6 +208,7 @@ const MESSAGE_RULES: Record<TextTier, NameRules> = {
         [/invalid (params|parameters|argument)/i, 'invalid_parameters'],
         [/network error|failed to fetch|load failed|econnre|socket hang up|fetch failed/i, 'network_error'],
         [/timed? ?out|timeout/i, 'timeout'],
+        [/already pending|already processing/i, 'request_pending'],
     ],
     fallback: [
         [/internal (json-rpc|rpc) error|internal error/i, 'internal_rpc_error'],

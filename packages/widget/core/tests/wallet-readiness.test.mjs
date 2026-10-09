@@ -29,7 +29,6 @@ const mockUrl = `data:text/javascript,${encodeURIComponent(`
   export const useSettingsState = () => ({ networks: [] })
   export const WithdrawalProvider = ({ children }) => children
   export const ConnectWalletButton = () => createElement('button', null, 'Connect wallet')
-  export const ChangeNetworkButton = () => createElement('button', null, 'Change network')
   export const SendTransactionButton = () => createElement('button', null, 'Send transaction')
   export const WalletIcon = () => null
   export const ActionMessage = () => null

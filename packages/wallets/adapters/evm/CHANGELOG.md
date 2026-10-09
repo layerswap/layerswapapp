@@ -1,5 +1,36 @@
 # @layerswap/wallet-evm
 
+## 2.4.0
+
+### Minor Changes
+
+- Register WalletConnect chains during provider initialization instead of hardcoding them in wallet-core.
+  - `@layerswap/wallet-core` exports `WalletConnectChainRegistry`, `defaultWalletConnectChainRegistry`, and `WalletConnectChainDefinition` for namespace, network type, and wallet explorer chain definitions.
+  - EVM, Solana, and Stellar adapters export their chain definitions and registration helpers, and register their chains when their connection providers initialize.
+  - `@layerswap/wallets` exports `registerDefaultWalletConnectChains`, which is also called by `getDefaultProviders`.
+  - Custom integrations that query wallet explorer chains before initializing providers must register their namespace first. An unregistered namespace now throws an explicit error.
+
+### Patch Changes
+
+- Reduce repeated balance requests and report API failures consistently.
+  - Keep failed EVM multicall results instead of immediately repeating each failed token balance request against the same RPC.
+  - Report balance failures once per fetch through the balance resolver instead of emitting an additional error for every failed token.
+  - Report unauthenticated API failures through the widget's `APIError` handler, matching authenticated requests. Expected transaction-status 404 responses and ignored API error codes remain excluded from reporting; request rejection and polling behavior are preserved.
+
+- Route mobile WalletConnect signing requests to the wallet that owns the selected session.
+  - Export `subscribeWalletRequests` from wallet-core. EVM and Solana WalletConnect connectors open the session's wallet after the signing request reaches the relay, using the request ID and session topic. Link-mode sessions retain the SDK's app link behavior.
+  - Resolve deep links from session metadata and matching registry metadata, including native and universal mobile links, with the MetaMask app link workaround.
+  - Add optional `Wallet.metadata.evmConnectorUid` and use the selected connector for EVM transfers and gasless signatures. Ambiguous or disconnected selections require reconnection instead of falling back to another wallet using the same address.
+  - Clean up signing-request listeners when connectors are replaced or reset.
+
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @layerswap/widget-types@2.4.0
+  - @layerswap/wallet-core@2.4.0
+  - @layerswap/utils@2.4.0
+
 ## 2.3.1
 
 ### Patch Changes

@@ -70,6 +70,16 @@ test('a pending gasless deposit without a failure stays input-pending with no fa
   assert.equal(resolved.gaslessFailureStatus, undefined)
 })
 
+test('server-reported deposit completion shows processing only while the server reports it', () => {
+  const completed = resolve(pendingSwap(), { depositCompleted: true })
+  assert.equal(completed.showWithdrawScreen, false)
+  assert.equal(completed.phase, SwapPhase.InputPending)
+
+  const actionRequired = resolve(pendingSwap(), { depositCompleted: false })
+  assert.equal(actionRequired.showWithdrawScreen, true)
+  assert.equal(actionRequired.phase, SwapPhase.AwaitingUserDeposit)
+})
+
 test('a failed status from the tx-status poll resolves a client-detected transfer failure', () => {
   const resolved = resolve(pendingSwap(), {
     storedWalletTransaction: { hash: '0x1', status: 'pending' },

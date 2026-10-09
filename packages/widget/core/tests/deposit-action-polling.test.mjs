@@ -35,8 +35,10 @@ const { createRoot } = await import('react-dom/client')
 const swr = await import('swr')
 const { SWRConfig } = swr
 let providerProps = {}
+const swapTransactions = {}
 const swapContext = createSwapContext({
     swr,
+    swapTransactions,
     Client: class {
         fetcher = key => globalThis.__depositTransport(key)
         GetTransactionStatus(network, hash) { return globalThis.__depositTransport(['receipt', network, hash]) }
@@ -55,9 +57,16 @@ const approval = { type: 'transfer', step: 'approve_permit2', status: 'action_re
 const waiting = () => ({ data: [{ ...sign, status: 'completed' }, publish] })
 const ready = () => ({ data: [{ ...sign, status: 'completed' }, { ...publish, status: 'action_required' }] })
 let root, container, result, config, requests, response, failure, authorization, receipts, receiptFailure, onReceipt
-function Withdrawal({ id, address, executing }) {
-    const { setSwapId } = swapContext.useSwapDataUpdate()
+function SwapView({ id, children }) {
+    const { setSwapId, setSwapViewMounted } = swapContext.useSwapDataUpdate()
     useLayoutEffect(() => { setSwapId(id) }, [id])
+    useLayoutEffect(() => {
+        setSwapViewMounted(true)
+        return () => setSwapViewMounted(false)
+    }, [])
+    return children
+}
+function Withdrawal({ id, address, executing }) {
     result = useDepositActionPolling(id, address, executing)
     return createElement('output', null, result.data?.find(action => action.status === 'action_required')?.step ?? 'waiting')
 }
@@ -65,7 +74,8 @@ const render = (props = {}) => {
     providerProps = { id: 's1', address: 'source', executing: true, ...props }
     return act(async () => root.render(createElement(StrictMode, null,
         createElement(SWRConfig, { value: config }, createElement(swapContext.SwapDataProvider, null,
-            createElement(Withdrawal, providerProps))))))
+            providerProps.swapView === false ? null : createElement(SwapView, { id: providerProps.id },
+                providerProps.walletControls === false ? null : createElement(Withdrawal, providerProps)))))))
 }
 const wait = (signal, extra = {}) => {
     let pending
@@ -74,6 +84,7 @@ const wait = (signal, extra = {}) => {
 }
 
 beforeEach(() => {
+    for (const id of Object.keys(swapTransactions)) delete swapTransactions[id]
     container = document.createElement('div')
     document.body.append(container)
     root = createRoot(container)
@@ -347,6 +358,32 @@ test('idle polling continues after execution ends and uses the slower interval',
     await act(async () => { t.mock.timers.tick(1) })
     assert.equal(requests.length, before + 1)
     assert.equal(container.textContent, 'publish')
+})
+
+test('the provider keeps refreshing after the wallet controls unmount, until the swap view closes', async t => {
+    t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 10000 })
+    await render()
+    await render({ walletControls: false })
+    const processing = requests.length
+    await act(async () => { t.mock.timers.tick(5000) })
+    assert.equal(requests.length, processing + 1, 'the processing screen still reads fresh deposit actions')
+    await render({ swapView: false })
+    const closed = requests.length
+    await act(async () => { t.mock.timers.tick(10000) })
+    assert.equal(requests.length, closed)
+})
+
+test('refreshing stops once this client has broadcast the deposit', async t => {
+    t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 10000 })
+    await render({ executing: false })
+    const idle = requests.length
+    await act(async () => { t.mock.timers.tick(5000) })
+    assert.equal(requests.length, idle + 1)
+    swapTransactions.s1 = { hash: '0xbroadcast', status: 'pending' }
+    await render({ executing: false })
+    const broadcast = requests.length
+    await act(async () => { t.mock.timers.tick(10000) })
+    assert.equal(requests.length, broadcast)
 })
 
 test('retry revalidates through SWR and never returns stale data after a failed or empty refresh', async () => {

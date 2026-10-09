@@ -17,7 +17,6 @@ import type { ActionMessageType, Refuel } from '@layerswap/widget-types';
 /** Presentation inputs only. No providers, callbacks, live clocks or persisted viewer state. */
 export type Page2WalletState =
     | { kind: 'connect'; pending?: boolean; error?: string }
-    | { kind: 'network'; pending?: boolean; error?: string }
     | { kind: 'account-mismatch' }
     | {
           kind: 'send';
@@ -31,6 +30,8 @@ export type Page2WalletState =
           gaslessUnavailable?: boolean;
           gaslessMessage?: string;
           gaslessFailureStage?: 'create' | 'deposit';
+          /** The send button's own source-chain switch (see ensureSourceChain). */
+          networkSwitch?: 'pending' | 'rejected' | 'still-waiting' | 'timeout';
       }
     | {
           kind: 'specialized';

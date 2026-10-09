@@ -8,20 +8,22 @@ const noop = () => {}
 
 // Run the real swap provider and its SWR receipt subscription, with unrelated
 // quote, route, wallet and whole-swap services held at deterministic boundaries.
-export function createSwapContext({ Client, getSwapId, getAccount, stores, swr = require('swr'), overrides = {} }) {
+export function createSwapContext({ Client, getSwapId, getAccount, stores, swapTransactions = {}, swr = require('swr'), overrides = {} }) {
     const network = { name: 'BASE_MAINNET' }
     const snapshots = new Map()
     const store = state => Object.assign(selector => selector(state), { getState: () => state })
     const emptyStores = {
-        useSwapTransactionStore: store({ swapTransactions: {}, setSwapTransaction: noop }),
+        useSwapTransactionStore: store({ swapTransactions, setSwapTransaction: noop }),
         useGaslessAuthorizationStore: store({ authorizations: {} }),
         useDepositSignatureStore: store({ removeDepositSignature: noop }),
     }
     const resolved = {}
     const imports = {
+        '@/helpers/depository': { shouldUseDepository: () => false },
         react: React,
         'react/jsx-runtime': require('react/jsx-runtime'),
         swr,
+        '@layerswap/widget-types': { SwapStatus: { Created: 'created', UserTransferPending: 'user_transfer_pending' } },
         '@/lib/apiClients/layerSwapApiClient': {
             default: Client,
             BackendTransactionStatus: { Completed: 'completed', Pending: 'pending' },
@@ -69,7 +71,6 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swr =
         '@/lib/resolvers/resolverService': {},
         '@/lib/swapLifecycle': {},
         '@/lib/swapCreation': {},
-        '@layerswap/utils': { KnownInternalNames: {} },
         ...overrides,
     }
     const { outputText } = ts.transpileModule(readFileSync(new URL('../../src/context/swap.tsx', import.meta.url), 'utf8'), {

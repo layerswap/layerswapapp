@@ -103,7 +103,7 @@ test('signing cancellation selects signing copy even when a generic swap error e
 test('raw EVM signing cancellation survives the resolver and authorization workflow', async () => {
     const cancellation = { code: -32603, data: { originalError: { code: 4001 } } }
     const { createEVMGaslessProvider } = loadSource('../../../wallets/adapters/evm/src/gaslessProvider/createEVMGaslessProvider.ts', {
-        '@layerswap/wallet-core': { foregroundWalletApp: async () => {} },
+        '../service/resolveWalletConnector': { resolveWalletConnector: () => assert.fail('No explicit wallet was provided') },
         '@wagmi/core': { getAccount: () => ({ connector: { getProvider: async () => ({
             request: async ({ method }) => {
                 assert.equal(method, 'eth_signTypedData_v4')

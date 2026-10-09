@@ -14,12 +14,14 @@ for (const [key, value] of Object.entries({ window: dom.window, document: dom.wi
   Object.defineProperty(globalThis, key, { configurable: true, writable: true, value })
 }
 const moduleUrl = source => 'data:text/javascript,' + encodeURIComponent(source)
+const widgetModule = path => new URL(`../dist/esm/${path}.js`, import.meta.url).href
 const fixtureUrl = moduleUrl(`
-  export const state = { wallet: { id:'wallet', address:'source', isActive:true, providerName:'test-wallet', asSourceSupportedNetworks:['A'] } }
+  export const state = { wallet: { id:'wallet', address:'source', isActive:true, providerName:'test-wallet', provider:{}, asSourceSupportedNetworks:['A'] } }
   export const useSelectedAccount = () => state.wallet
   export const useSwapDataState = () => state.swap
   export const useSwapDataUpdate = () => ({
     setSwapId(id) { state.swap.swapId = id }, setQuoteLoading() {}, markWalletExecutionStarted() {},
+    setWalletActionExecuting() {}, setSwapModalOpen(open) { state.swap.swapModalOpen = open },
     startFreshSwapAttempt() {
       state.freshAttempts++
       state.swap = { ...state.swap, swapId: undefined, swapDetails: undefined, depositActionsResponse: undefined }
@@ -32,8 +34,7 @@ const fixtureUrl = moduleUrl(`
   })
   export const useInitialSettings = () => ({})
   export const useSettingsState = () => ({ networks: [] })
-  export const useWalletWithdrawalState = () => ({ onWalletWithdrawalSuccess() { state.successes++ } })
-  export const useBalance = () => ({ balances: [] })
+  export const useBalance = () => ({ balances: [], mutate() { state.balanceRefreshes++ } })
   export const useConnectModal = () => ({})
   export const resolvePriceImpactValues = () => ({})
   export const WalletIcon = () => null
@@ -42,6 +43,13 @@ const fixtureUrl = moduleUrl(`
   export const ICON_CLASSES_WARNING = ''
   export const sleep = () => Promise.resolve()
   export const WalletMessageDetails = ({ children }) => children
+  export const useAsyncModal = () => ({})
+  export const useContractAddressStore = () => ({})
+  export const useResolvedSwapStatus = () => ({})
+  export const ContractSourceAddressValidationCache = () => null
+  export const SwapDetailsSceleton = () => null
+  export const generateSwapInitialValuesFromSwap = () => ({ amount: '1', depositMethod: 'wallet' })
+  export const generateSwapInitialValues = generateSwapInitialValuesFromSwap
   export default () => null
 `)
 const buttonUrl = moduleUrl(`
@@ -52,17 +60,50 @@ const buttonUrl = moduleUrl(`
   }, children)
 `)
 const settingsUrl = moduleUrl('export default { LayerswapApiUri:"https://api.test", LayerswapApiKeys:{ mainnet:"test-secret-api-key" }, ApiVersion:"mainnet" }')
-const fixtures = ['/context/swap', '/context/swapAccounts', '/context/settings', '/context/withdrawalContext',
+const fixtures = ['/context/swap', '/context/swapAccounts', '/context/settings',
   '/lib/balances/useBalance', '/components/Wallet/WalletModal', '/lib/fees', '/validationError/ErrorDisplay',
   '/validationError/ErrorDismissButton', '/validationError/constants', '/Icons/FailIcon', '/Icons/InfoIcon', '/messages/Message']
+// Exercise the contained form's real success handler and Formik state. Keep
+// drawers, route setup and the unrelated SwapDetails presentation at boundaries.
+const formUrl = moduleUrl(`
+  import { createElement, Fragment } from ${JSON.stringify(import.meta.resolve('react'))}
+  import { Formik } from ${JSON.stringify(import.meta.resolve('formik'))}
+  export default ({ initialValues, onSubmit, children }) => createElement(Formik, { initialValues, onSubmit },
+    props => createElement(Fragment, null, createElement('output', { id: 'amount' }, String(props.values.amount)), children(props)))
+`)
+const drawerUrl = moduleUrl(`
+  const Drawer = ({ show, children }) => show ? children : null
+  Drawer.Snap = ({ children }) => children
+  export default Drawer
+`)
+const containedDetailsUrl = moduleUrl(`
+  import { createElement } from ${JSON.stringify(import.meta.resolve('react'))}
+  import { state } from ${JSON.stringify(fixtureUrl)}
+  import { WithdrawalProvider } from ${JSON.stringify(widgetModule('context/withdrawalContext'))}
+  import { SendTransactionButton } from ${JSON.stringify(widgetModule('components/Pages/Swap/Withdraw/Wallet/Common/buttons'))}
+  export default ({ onWalletWithdrawalSuccess }) => createElement(WithdrawalProvider, {
+    onWalletWithdrawalSuccess() { state.successes++; onWalletWithdrawalSuccess() }
+  }, createElement(SendTransactionButton, {
+    swapData: state.swap.swapBasicData, refuel: false, onSign: state.onSign, onClick: state.onTransfer
+  }))
+`)
+const formFixtures = ['/context/asyncModal', '/stores/contractAddressStore', '/hooks/useResolvedSwapStatus',
+  '/lib/generateSwapInitialValues', '/Common/Sceletons', '/Input/Address/ContractAddressNote',
+  '/Input/Address/UrlAddressNote', '/validationError/ContractAddressValidationCache']
 const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
   if (specifier.endsWith('/AppSettings')) return { url: settingsUrl, shortCircuit: true }
   if (specifier.endsWith('/context/swap') && ['/useSwapRetry.js', '/useResolvedSwapStatus.js', '/useDepositActionPolling.js'].some(path => context.parentURL?.endsWith(path))) {
     return { url: fixtureUrl, shortCircuit: true }
   }
-  if (['/Wallet/Common/buttons.js', '/Presentation/WalletActionsView.js'].some(path => context.parentURL?.endsWith(path))) {
+  if (context.parentURL?.endsWith('/Form/FormWrapper.js')) {
+    if (specifier === './SwapForm') return { url: formUrl, shortCircuit: true }
+    if (specifier === '../Withdraw/SwapDetails') return { url: containedDetailsUrl, shortCircuit: true }
+    if (specifier.endsWith('/Modal/vaulModal')) return { url: drawerUrl, shortCircuit: true }
+    if (formFixtures.some(path => specifier.endsWith(path))) return { url: fixtureUrl, shortCircuit: true }
+  }
+  if (['/Wallet/Common/buttons.js', '/Presentation/WalletActionsView.js', '/Form/FormWrapper.js'].some(path => context.parentURL?.endsWith(path))) {
     if (specifier.endsWith('/Buttons/submitButton')) return { url: buttonUrl, shortCircuit: true }
-    if (specifier.endsWith('/hooks/useWallet')) return { url: moduleUrl(`import { state } from ${JSON.stringify(fixtureUrl)}; export default () => ({ wallets:[state.wallet] })`), shortCircuit: true }
+    if (specifier.endsWith('/hooks/useWallet')) return { url: moduleUrl(`import { state } from ${JSON.stringify(fixtureUrl)}; export default () => ({ wallets:[state.wallet], getProvider() {} })`), shortCircuit: true }
     if (specifier.endsWith('/lib/gases/useSWRGas')) return { url: moduleUrl('export default () => ({})'), shortCircuit: true }
     if (fixtures.some(s => specifier.endsWith(s)) || ['@layerswap/utils', '@layerswap/ui-kit/components', 'lucide-react'].includes(specifier)) return { url: fixtureUrl, shortCircuit: true }
   }
@@ -98,12 +139,22 @@ const { CallbackProvider } = await import('../dist/esm/context/callbackProvider.
 const { ErrorProvider } = await import('../dist/esm/context/ErrorProvider.js')
 const { registerWidgetErrorLogger } = await import('../dist/esm/lib/ErrorHandler.js')
 const { SendTransactionButton } = await import('../dist/esm/components/Pages/Swap/Withdraw/Wallet/Common/buttons.js')
+const { WithdrawalProvider } = await import('../dist/esm/context/withdrawalContext.js')
+const { default: FormWrapper } = await import('../dist/esm/components/Pages/Swap/Form/FormWrapper.js')
 const { useGaslessPreferenceStore } = await import('../dist/esm/stores/gaslessPreferenceStore.js')
 const { useSwapTransactionStore, useDepositSignatureStore, useGaslessAuthorizationStore } = await import('../dist/esm/stores/swapTransactionStore.js')
 const { useGaslessAuthorization } = await import('../dist/esm/hooks/useGaslessAuthorization.js')
 const { useSwapRetry } = await import('../dist/esm/hooks/useSwapRetry.js')
 const { resolveSwapPhase } = await import('../dist/esm/components/utils/resolveSwapPhase.js')
-const { SWRConfig } = await import('swr')
+const { SWRConfig, default: useSWR } = await import('swr')
+const { default: LayerSwapApiClient } = await import('../dist/esm/lib/apiClients/layerSwapApiClient.js')
+
+// Stands in for the swap provider, which schedules deposit-action refreshes for every reader of the key.
+const depositActionsClient = new LayerSwapApiClient()
+function DepositActionsSchedule() {
+  useSWR('/swaps/swap-1/deposit_actions?source_address=source', depositActionsClient.fetcher, { refreshInterval: 2000, dedupingInterval: 1000 })
+  return null
+}
 
 const basic = { requested_amount: '1', source_network: { name: 'A' }, destination_network: { name: 'B' },
   source_token: { symbol: 'X', contract: '0xtoken', supports_gasless_deposit: true, gasless_standard: 'eip3009' }, destination_token: { symbol: 'Y' }, destination_address: 'destination', use_deposit_address: false }
@@ -114,6 +165,7 @@ beforeEach(() => {
   state.apiCalls = []; state.authorizeSucceeds = false
   state.authorization = { status: 'initiated' }
   state.freshAttempts = 0; state.creations = 0; state.newSwap = undefined
+  state.balanceRefreshes = 0
   localStorage.clear()
   useSwapTransactionStore.setState({ swapTransactions: {} })
   useDepositSignatureStore.setState({ signatures: {} })
@@ -137,10 +189,12 @@ after(() => {
 async function clickTransfer(onSign, { onClick = () => assert.fail('gasless should sign, not send a transaction'), waitForCompletion = true, label = 'Sign to swap' } = {}) {
   await act(async () => root.render(createElement(StrictMode, null,
     createElement(SWRConfig, { value: swrConfig },
+    createElement(DepositActionsSchedule),
     createElement(CallbackProvider, { callbacks: { onSwapLifecycle: e => lifecycle.push(e) } },
       createElement(ErrorProvider, { onError: e => errors.push(e) },
-        createElement(SendTransactionButton, { swapData: basic, refuel: false, onSign,
-          onClick })))))))
+        createElement(WithdrawalProvider, { onWalletWithdrawalSuccess() { state.successes++ } },
+          createElement(SendTransactionButton, { swapData: basic, refuel: false, onSign,
+            onClick }))))))))
   assert.equal(container.querySelector('button').textContent, label)
   await act(async () => { container.querySelector('button').click(); if (waitForCompletion) await state.pending })
 }
@@ -299,6 +353,69 @@ test(`the real button resumes ${initialPublish ? 'known' : 'late'} publication f
   assert.equal(state.successes, 1)
   assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].hash, 'published-hash')
   assert.ok(state.apiCalls.filter(([method]) => method === 'get').every(([, url]) => (url.includes('/deposit_actions') || (!initialPublish && url.endsWith('/authorize')))), 'execution never requests a whole swap')
+  assert.deepEqual(errors, [])
+})
+}
+
+for (const initialPublish of [true, false]) {
+test(`a transient completed ${initialPublish ? 'known' : 'late'} publication preserves the contained form until wallet submission`, async t => {
+  t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 10000 })
+  state.authorizeSucceeds = true
+  useGaslessPreferenceStore.getState().setGaslessEnabled(false)
+  state.swap.swapBasicData = basic
+  state.swap.swapModalOpen = true
+  state.swap.swapDetails.metadata = {}
+  const sign = state.swap.depositActionsResponse[0]
+  const publish = { type: 'transfer', step: 'publish', status: 'waiting', amount: 1, to_address: 'deposit' }
+  state.swap.depositActionsResponse = initialPublish ? [sign, publish] : [sign]
+  let signs = 0, transfers = 0
+  const submission = Promise.withResolvers()
+  state.onSign = async () => { signs++; return 'signature' }
+  state.onTransfer = async () => { transfers++; return submission.promise }
+  const amount = () => container.querySelector('#amount').textContent
+
+  await act(async () => root.render(createElement(StrictMode, null,
+    createElement(SWRConfig, { value: swrConfig },
+      createElement(DepositActionsSchedule),
+      createElement(CallbackProvider, { callbacks: { onSwapLifecycle: e => lifecycle.push(e) } },
+        createElement(ErrorProvider, { onError: e => errors.push(e) },
+          createElement(FormWrapper, { type: 'cross-chain' })))))))
+  assert.equal(amount(), '1')
+  await act(async () => { container.querySelector('button').click() })
+  assert.equal(signs, 1)
+  assert.ok(useDepositSignatureStore.getState().signatures['swap-1'])
+
+  state.swap.depositActionsResponse = [{ ...sign, status: 'completed' }, { ...publish, status: 'completed' }]
+  await act(async () => { t.mock.timers.tick(2000) })
+  await state.pending
+  assert.equal(state.successes, 0, 'server action completion is provisional without a wallet submission')
+  assert.equal(amount(), '1')
+  assert.equal(useGaslessPreferenceStore.getState().gaslessEnabled, false, 'retain the selected execution preference')
+  assert.equal(state.balanceRefreshes, 0)
+  assert.ok(useDepositSignatureStore.getState().signatures['swap-1'], 'retain the accepted signature for corrected actions')
+  assert.equal(container.querySelector('button').disabled, true)
+
+  state.swap.depositActionsResponse = [{ ...sign, status: 'completed' }, { ...publish, status: 'action_required' }]
+  await act(async () => { t.mock.timers.tick(2000) })
+  const confirm = container.querySelector('button')
+  assert.equal(confirm.textContent, 'Confirm swap')
+  assert.equal(confirm.disabled, false)
+  assert.equal(amount(), '1')
+  assert.equal(useGaslessPreferenceStore.getState().gaslessEnabled, false)
+  await act(async () => confirm.click())
+  assert.equal(signs, 1, 'correction resumes publication without signing again')
+  assert.equal(transfers, 1)
+  assert.equal(state.successes, 0, 'an open wallet prompt is not a submission')
+  assert.equal(amount(), '1')
+
+  await act(async () => { submission.resolve('published-hash'); await state.pending })
+  assert.equal(state.successes, 1)
+  assert.equal(amount(), '0', 'the confirmed wallet submission clears the form')
+  assert.equal(useGaslessPreferenceStore.getState().gaslessEnabled, true)
+  assert.equal(state.balanceRefreshes, 1)
+  assert.equal(useDepositSignatureStore.getState().signatures['swap-1'], undefined)
+  assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].hash, 'published-hash')
+  assert.equal(state.creations, 0)
   assert.deepEqual(errors, [])
 })
 }

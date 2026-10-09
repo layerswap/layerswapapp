@@ -126,7 +126,15 @@ function createWorkflow({ mounted = false, realPolling = false, atomic = false }
         '@/context/swap': swapContext,
         './useClientLayoutEffect': { useClientLayoutEffect: React.useLayoutEffect },
     }) : undefined
+    const SwapView = ({ children }) => {
+        const { setSwapViewMounted } = swapContext.useSwapDataUpdate()
+        React.useLayoutEffect(() => { setSwapViewMounted(true) }, [])
+        return children
+    }
     const lifecycle = { lifecycleContextFromSwap: () => ({}), lifecycleErrorDetails: () => ({}) }
+    const sourceChain = loadSource(`${walletPath}ensureSourceChain.ts`, {
+        '@/lib/swapLifecycle': lifecycle, './isUserRejection': rejection,
+    })
     const { executeWalletOperation } = loadSource(`${walletPath}executeWalletOperation.ts`, {
         '@/lib/swapLifecycle': lifecycle, './isUserRejection': rejection,
     })
@@ -183,10 +191,16 @@ function createWorkflow({ mounted = false, realPolling = false, atomic = false }
         '../../Form/SecondaryComponents/validationError/ErrorDismissButton': { default: noop },
         '../../Form/SecondaryComponents/validationError/ErrorDisplay': { ErrorDisplay },
         '../messages/Message': { default: noop },
+        '../Wallet/Common/ensureSourceChain': sourceChain,
     })
-    const useFakeLayoutEffect = callback => {
-        const [scope] = useState({ initialized: false })
-        if (!scope.initialized) { callback(); scope.initialized = true }
+    const useFakeLayoutEffect = (callback, dependencies) => {
+        const [effect] = useState({ initialized: false })
+        if (!effect.initialized || !dependencies || dependencies.some((value, index) => value !== effect.dependencies?.[index])) {
+            effect.cleanup?.()
+            effect.cleanup = callback()
+            effect.dependencies = dependencies
+            effect.initialized = true
+        }
     }
     const { SendTransactionButton, ButtonWrapper } = loadSource(`${walletPath}buttons.tsx`, {
         '@/helpers/depositActions': depositActions,
@@ -231,7 +245,7 @@ function createWorkflow({ mounted = false, realPolling = false, atomic = false }
         '@/context/swap': {
             useSwapDataState: () => state,
             useSwapDataUpdate: () => ({
-                createSwap: (...args) => state.createSwap ? state.createSwap(...args) : assert.fail('Retry must keep the existing swap'),
+                createSwap: state.createSwap ?? (() => assert.fail('Retry must keep the existing swap')),
                 startFreshSwapAttempt: noop,
                 mutateSwap: async () => {},
                 setSwapId: id => { state.swapId = id },
@@ -252,7 +266,7 @@ function createWorkflow({ mounted = false, realPolling = false, atomic = false }
         '@layerswap/utils': { sleep: async duration => { calls.sleeps.push(duration); await state.onQuoteUpdate?.() } },
         '@/components/utils/numbers': { isDiffByPercent: () => state.quoteChanged ?? false },
         '@/context/withdrawalContext': { useWalletWithdrawalState: () => ({ onWalletWithdrawalSuccess: () => calls.success++ }) },
-        '@/context/swapAccounts': { useSelectedAccount: () => ({ id: wallet.id, address: wallet.address }) },
+        '@/context/swapAccounts': { useSelectedAccount: () => ({ id: wallet.id, address: wallet.address, provider: { switchChain: state.switchChain } }) },
         '@/lib/ErrorHandler': { ErrorHandler: error => calls.errors.push(error) },
         '@/lib/fees': loadSource('../src/lib/fees.ts'),
         '@/components/Icons/InfoIcon': { default: noop },
@@ -261,6 +275,7 @@ function createWorkflow({ mounted = false, realPolling = false, atomic = false }
         '@/lib/gases/useSWRGas': { default: () => ({}) },
         '@/context/depositSettings': { useDepositSettings: () => ({}) },
         './depositExecution': execution,
+        './ensureSourceChain': sourceChain,
         '../../Presentation/WalletActionsView': mounted ? { ...walletViews, SendTransactionView: props => { view = props; return null } } : walletViews,
         '../../Processing/StepsComponent': { default: Steps },
         '../../Processing/types': progressTypes,
@@ -324,9 +339,9 @@ function createWorkflow({ mounted = false, realPolling = false, atomic = false }
         }
     }
     return {
-        state, calls, render, wallet, preferences, stores, execution,
+        state, calls, render, wallet, network, preferences, stores, execution,
         Component: () => realPolling
-            ? createElement(swapContext.SwapDataProvider, null, createElement(SendTransactionButton, props()))
+            ? createElement(swapContext.SwapDataProvider, null, createElement(SwapView, null, createElement(SendTransactionButton, props())))
             : createElement(SendTransactionButton, props()),
         get view() { return view },
         poll: async () => {
@@ -526,6 +541,7 @@ test('a swap created with only approval discovers and executes signing and publi
 
     const execution = flow.render().button.props.onClick()
     assert.deepEqual(flow.calls.executionStarts, [], 'keep the full quote while preparing the swap')
+    await Promise.resolve() // Source-chain readiness is checked before swap creation.
     resolveCreation(created)
     await execution
 
@@ -636,8 +652,9 @@ for (const completes of [false, true]) {
 
         assert.equal(flow.calls.transfer.length + flow.calls.sign.length, 10)
         assert.equal(transitions, 10)
-        assert.deepEqual(flow.calls.storedTransactions, completes ? [[swapId, 'pending', '']] : [])
-        assert.equal(flow.calls.success, completes ? 1 : 0)
+        assert.deepEqual(flow.calls.storedTransactions, [], 'server-reported completion is not recorded as a broadcast')
+        assert.equal(flow.calls.success, 0, 'server completion without wallet submission must not clear the form')
+        assert.ok(flow.stores.useDepositSignatureStore.getState().signatures[swapId], 'retain the signature until submission')
         assert.deepEqual(flow.calls.errors.map(error => error.message), completes ? [] : ['The swap workflow has more actions than expected'])
     })
 }
@@ -757,12 +774,13 @@ test('a failed or empty refresh never falls back to signing an expired cached ac
 })
 
 
-for (const stop of ['unmount', 'reopen', 'account change']) {
+for (const stop of ['unmount', 'reopen', 'account change', 'chain change']) {
     test(`approval confirmation cannot continue after ${stop}`, async () => {
         const dom = new JSDOM('<div id="root"></div>')
         const previous = Object.getOwnPropertyDescriptors(globalThis)
         Object.assign(globalThis, { window: dom.window, document: dom.window.document, IS_REACT_ACT_ENVIRONMENT: true })
         const flow = createWorkflow({ mounted: true })
+        flow.wallet.chainId = 1
         flow.state.apiActions = [
             { type: 'transfer', step: 'approve_permit2', status: 'action_required', amount: '0', to_address: '0x456' },
             ...actionsFor('fresh').map(action => ({ ...action, status: 'waiting' })),
@@ -784,8 +802,11 @@ for (const stop of ['unmount', 'reopen', 'account change']) {
             } else if (stop === 'reopen') {
                 await act(async () => root.render(null))
                 await act(async () => root.render(createElement(flow.Component)))
-            } else {
+            } else if (stop === 'account change') {
                 flow.wallet.address = '0xother'
+                await act(async () => root.render(createElement(flow.Component)))
+            } else {
+                flow.wallet.chainId = 10
                 await act(async () => root.render(createElement(flow.Component)))
             }
             await act(async () => { confirmation.resolve(); await pending })
@@ -1221,6 +1242,137 @@ test('the mounted controller and real polling resume a mined partial approval wi
         await execution
         dom.window.close()
         for (const key of ['window', 'document', 'localStorage', 'IS_REACT_ACT_ENVIRONMENT']) {
+            if (previous[key]) Object.defineProperty(globalThis, key, previous[key])
+            else delete globalThis[key]
+        }
+    }
+})
+
+
+test('network switching finishes before deposit actions refresh and execute', async t => {
+    t.mock.timers.enable({ apis: ['setTimeout'] })
+    const flow = createWorkflow()
+    flow.network.chain_id = '10'
+    flow.wallet.chainId = 1
+    flow.state.rejectSigning = false
+    const switched = Promise.withResolvers()
+    flow.state.switchChain = async (wallet, chainId) => {
+        assert.equal(wallet, flow.wallet)
+        assert.equal(chainId, '10')
+        await switched.promise
+        wallet.chainId = 10
+    }
+    const execution = flow.render().button.props.onClick()
+    assert.deepEqual(flow.calls.refresh, [])
+    assert.deepEqual(flow.calls.sign, [])
+    assert.equal(flow.render().viewProps.networkSwitch.isPending, false)
+    t.mock.timers.tick(1000)
+    assert.equal(flow.render().viewProps.networkSwitch.isPending, true)
+    assert.equal(flow.render().viewProps.actionStateText, 'Switching network')
+    switched.resolve()
+    await execution
+    assert.equal(flow.render().viewProps.networkSwitch.isPending, false)
+    assert.equal(flow.calls.success, 1)
+    assert.deepEqual(flow.calls.lifecycle.slice(0, 2).map(event => event.step), ['network_switch_started', 'network_switched'])
+})
+
+test('a rejected network switch preserves the workflow and retries before signing', async () => {
+    const flow = createWorkflow()
+    flow.network.chain_id = '10'
+    flow.wallet.chainId = 1
+    flow.state.switchChain = async () => { throw { code: 4001 } }
+    await flow.render().button.props.onClick()
+    assert.equal(flow.state.swapId, swapId)
+    assert.deepEqual(flow.calls.refresh, [])
+    assert.deepEqual(flow.calls.sign, [])
+    assert.deepEqual(flow.calls.errors, [])
+    assert.equal(flow.render().viewProps.networkSwitch.error.kind, 'rejected')
+    assert.equal(flow.render().button.props.children, 'Try again')
+    flow.state.switchChain = async () => { flow.wallet.chainId = 10 }
+    flow.state.rejectSigning = false
+    await flow.render().button.props.onClick()
+    assert.equal(flow.calls.success, 1)
+    assert.equal(flow.state.swapId, swapId)
+    assert.equal(flow.render().viewProps.networkSwitch.isError, false)
+})
+
+
+for (const atomic of [true, false]) for (const fresh of [false, true]) {
+    test(`a mounted ${fresh ? 'fresh' : 'existing'} ${atomic ? 'atomic' : 'legacy'} workflow continues after switching to the source chain`, async () => {
+        const dom = new JSDOM('<div id="root"></div>')
+        const previous = Object.getOwnPropertyDescriptors(globalThis)
+        Object.assign(globalThis, { window: dom.window, document: dom.window.document, IS_REACT_ACT_ENVIRONMENT: true })
+        const flow = createWorkflow({ mounted: true, atomic })
+        flow.network.chain_id = '10'
+        flow.wallet.chainId = 1
+        flow.state.rejectSigning = false
+        if (atomic) flow.state.apiActions = [atomicFixtures.actions.zero_allowance]
+        if (fresh) {
+            flow.state.swapId = undefined
+            flow.state.swapDetails = undefined
+            flow.state.createSwap = () => assert.fail('Creation must use the callback for the switched wallet')
+        }
+        const switched = Promise.withResolvers()
+        flow.state.switchChain = () => switched.promise
+        const root = createRoot(document.getElementById('root'))
+        let pending
+        try {
+            await act(async () => root.render(createElement(flow.Component)))
+            await act(async () => { pending = flow.view.handleClick() })
+            assert.deepEqual(flow.calls.refresh, [])
+            flow.wallet.chainId = 10
+            if (fresh) flow.state.createSwap = async () => ({
+                swap: { id: swapId, metadata: {} }, quote: {}, deposit_actions: flow.state.apiActions,
+            })
+            await act(async () => root.render(createElement(flow.Component)))
+            await act(async () => { switched.resolve(); await pending })
+            assert.deepEqual(flow.calls.refresh, fresh ? [] : [[swapId, sourceAddress]])
+            assert.equal(flow.calls.batches.length, atomic ? 1 : 0)
+            assert.equal(flow.calls.transfer.length, atomic ? 0 : 1)
+            assert.equal(flow.calls.success, atomic ? 0 : 1)
+            assert.deepEqual(flow.calls.errors, [])
+        } finally {
+            switched.resolve()
+            if (pending) await act(async () => pending)
+            await act(async () => root.unmount())
+            dom.window.close()
+            for (const key of ['window', 'document', 'IS_REACT_ACT_ENVIRONMENT']) {
+                if (previous[key]) Object.defineProperty(globalThis, key, previous[key])
+                else delete globalThis[key]
+            }
+        }
+    })
+}
+
+test('a network switch completing after unmount cannot start a deposit', async () => {
+    const dom = new JSDOM('<div id="root"></div>')
+    const previous = Object.getOwnPropertyDescriptors(globalThis)
+    Object.assign(globalThis, { window: dom.window, document: dom.window.document, IS_REACT_ACT_ENVIRONMENT: true })
+    const flow = createWorkflow({ mounted: true })
+    flow.network.chain_id = '10'
+    flow.wallet.chainId = 1
+    const switched = Promise.withResolvers()
+    flow.state.switchChain = () => switched.promise
+    const root = createRoot(document.getElementById('root'))
+    let pending
+    let unmounted = false
+    try {
+        await act(async () => root.render(createElement(flow.Component)))
+        await act(async () => { pending = flow.view.handleClick() })
+        await act(async () => root.unmount())
+        unmounted = true
+        await act(async () => { switched.resolve(); await pending })
+        assert.deepEqual(flow.calls.refresh, [])
+        assert.deepEqual(flow.calls.sign, [])
+        assert.deepEqual(flow.calls.transfer, [])
+        assert.deepEqual(flow.calls.errors, [])
+        assert.equal(flow.calls.success, 0)
+    } finally {
+        switched.resolve()
+        if (pending) await act(async () => pending)
+        if (!unmounted) await act(async () => root.unmount())
+        dom.window.close()
+        for (const key of ['window', 'document', 'IS_REACT_ACT_ENVIRONMENT']) {
             if (previous[key]) Object.defineProperty(globalThis, key, previous[key])
             else delete globalThis[key]
         }

@@ -50,6 +50,8 @@ export type Wallet = {
     l1ProviderName?: string;
     l1ChainId?: string | number;
     deepLink?: string;
+    /** Runtime wagmi connector identity; separate from the displayed wallet name. */
+    evmConnectorUid?: string;
   };
   chainId?: string | number;
   isLoading?: boolean;
