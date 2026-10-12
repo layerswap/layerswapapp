@@ -27,6 +27,7 @@ const mockUrl = `data:text/javascript,${encodeURIComponent(`
   export const useQuoteData = () => ({ minAllowedAmount: 0.001, maxAllowedAmount: 10 })
   export const transformSwapDataToQuoteArgs = () => ({})
   const passthrough = ({ children }) => children
+  export const WalletActionTransition = passthrough
   export const Widget = { Content: passthrough, Footer: passthrough }
   export const AnimatePresence = passthrough
   export const motion = { div: passthrough }
@@ -46,6 +47,7 @@ const mocked = [
   '/lib/balances/useBalance', '/context/settings', '/context/swapAccounts',
   '/validationError/ErrorDisplay', '/hooks/useFee', '/components/Icons/InfoIcon',
   '/validationError/RefreshBalanceButton', '/validationError/AdjustAmountButton',
+  '/Presentation/WalletActionTransition',
 ]
 const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
   const parent = context.parentURL ?? ''

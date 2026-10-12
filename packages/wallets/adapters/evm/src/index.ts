@@ -11,4 +11,5 @@ export {
     useEvmStore,
     getEthersSigner,
     walletClientToSigner,
+    EVMRpcHealthCheckProvider,
 } from "./generic"

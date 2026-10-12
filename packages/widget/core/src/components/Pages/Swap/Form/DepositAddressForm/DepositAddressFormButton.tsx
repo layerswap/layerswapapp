@@ -1,67 +1,26 @@
-import { FC } from "react";
-import { useCopyClipboard } from "@layerswap/ui-kit";
-import { SubmitButton } from "@/components/Buttons";
-import { SwapFormValues } from "../SwapFormValues";
+import { FC } from 'react';
+import { useCopyClipboard } from '@layerswap/ui-kit';
+import { SwapFormValues } from '../SwapFormValues';
+import {
+    DepositAddressFormButtonView,
+    type DepositAddressFormButtonViewProps,
+} from './DepositAddressFormButtonView';
 
-type DepositAddressFormButtonProps = {
-    values: SwapFormValues;
-    isValid: boolean;
-    error?: string;
-    isSubmitting: boolean;
-    showDepositInfo: boolean;
-    depositAddress: string | undefined;
-    isProcessing: boolean;
-    isCompleted: boolean;
-    hasDepositError?: boolean;
-    onRetry: () => void;
-    onDepositMore: () => void;
-}
-
-const DepositAddressFormButton: FC<DepositAddressFormButtonProps> = ({
-    values, isValid, error, isSubmitting, showDepositInfo, depositAddress, isProcessing, isCompleted, hasDepositError, onDepositMore, onRetry,
-}) => {
+type Props = Omit<
+    DepositAddressFormButtonViewProps,
+    'waitingForAddress' | 'copied' | 'onCopy'
+> & { values: SwapFormValues };
+const DepositAddressFormButton: FC<Props> = ({ values, ...props }) => {
     const [copied, copy] = useCopyClipboard();
-
-    if (isCompleted) {
-        return (
-            <SubmitButton type="button" onClick={onDepositMore}>
-                Deposit more
-            </SubmitButton>
-        );
-    }
-
-    if (isProcessing) {
-        return null;
-    }
-
-    if (hasDepositError) {
-        return (
-            <SubmitButton type="button" buttonStyle="secondary" onClick={onRetry} isDisabled={!isValid} isSubmitting={isSubmitting}>
-                Retry
-            </SubmitButton>
-        );
-    }
-
-    if (showDepositInfo && depositAddress) {
-        return (
-            <SubmitButton type="button" onClick={() => copy(depositAddress)}>
-                {copied ? 'Copied!' : 'Copy deposit address'}
-            </SubmitButton>
-        );
-    }
-
-    const waitingForAddress = !values?.destination_address;
-    const label = error
-        || (waitingForAddress ? 'Enter destination address' : 'Generating deposit address');
-
     return (
-        <SubmitButton
-            type="button"
-            isDisabled
-            isSubmitting={!waitingForAddress && isValid && !error && isSubmitting}
-        >
-            {label}
-        </SubmitButton>
+        <DepositAddressFormButtonView
+            {...props}
+            waitingForAddress={!values?.destination_address}
+            copied={copied}
+            onCopy={() => {
+                if (props.depositAddress) copy(props.depositAddress);
+            }}
+        />
     );
 };
 

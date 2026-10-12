@@ -40,7 +40,7 @@ const network = { name: 'ETHEREUM_MAINNET', token }
 let root, container, props, swrConfig, gasResult
 
 function Probe() {
-  gasResult = useSWRGas(props.address, props.network, props.token, props.amount, props.wallet)
+  gasResult = useSWRGas(props.address, props.network, props.token, props.amount, props.wallet, props.options)
   return null
 }
 const render = () => act(() => root.render(createElement(StrictMode, null,
@@ -172,4 +172,20 @@ test('gas estimation does not send a missing, zero or invalid amount', async () 
     assert.equal(requests.length, 1)
     assert.equal(gasResult.gasData, undefined)
   }
+})
+
+test('disabled gas controls retain the last fee without requesting a new amount', async () => {
+  props.amount = '0.25'
+  await render()
+  await settle(requests[0], 0.01)
+  props.options = { enabled: false }
+  props.amount = '0.5'
+  await render()
+  assert.equal(requests.length, 1)
+  assert.equal(gasResult.gasData.gas, 0.01)
+  props.options = { enabled: true }
+  await render()
+  assert.equal(requests.length, 2)
+  assert.equal(requests[1].args.amount, 0.5)
+  assert.equal(gasResult.gasData, undefined)
 })

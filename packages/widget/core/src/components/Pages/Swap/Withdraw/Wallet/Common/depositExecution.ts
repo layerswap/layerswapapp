@@ -3,10 +3,13 @@ import LayerSwapApiClient, {
     BackendTransactionStatus,
     DepositAction,
     SignDepositAction,
+    TransferDepositAction,
     SwapBasicData,
     SwapDetails,
+    GaslessAuthorizationResult,
 } from "@/lib/apiClients/layerSwapApiClient";
-import { useGaslessAuthorizationStore } from "@/stores/swapTransactionStore";
+import { useDepositSignatureStore, useGaslessAuthorizationStore, useSwapTransactionStore } from "@/stores/swapTransactionStore";
+import { getExplorerUrl } from '@/lib/address/explorerUrl';
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 import { isUserRejection } from "./isUserRejection";
 import { TransferProps } from "@layerswap/widget-types";
@@ -14,6 +17,7 @@ import { ErrorHandler } from "@/lib/ErrorHandler";
 import { lifecycleContextFromSwap, lifecycleErrorDetails } from "@/lib/swapLifecycle";
 import { widgetTelemetry } from '@/lib/widgetTelemetry';
 import { executeWalletOperation } from './executeWalletOperation';
+import { isGaslessDepositWorkflow, isGaslessAuthorizationSubmitted } from '@/helpers/gasless';
 
 export type WalletTransfer = (props: TransferProps) => Promise<string | undefined>
 export type GaslessSigner = (signAction: SignDepositAction) => Promise<string>
@@ -24,6 +28,7 @@ export type DepositExecutionContext = {
     swapBasicData: SwapBasicData
     selectedWallet: Wallet
     sourceAddress?: string
+    signal?: AbortSignal
     layerswapApiClient: LayerSwapApiClient
     setActionStateText: (text?: string) => void
     setSwapTransaction: (id: string, status: BackendTransactionStatus, hash: string) => void
@@ -32,38 +37,52 @@ export type DepositExecutionContext = {
     onLifecycle: (event: SwapLifecycleEvent) => void
 }
 
-export const isSignAction = (action: DepositAction): action is SignDepositAction => action.type === 'sign'
+export { isSignAction, isTransferAction, getActionableDepositAction, getDepositActionLabel, getDepositActionDescription, requiresDepositActionRefresh } from '@/helpers/depositActions';
+import { getActionableDepositAction, isTransferAction, isSignAction } from '@/helpers/depositActions';
 
 const isExpiredTransaction = (error: unknown) => (error as Error)?.name === ActionMessageType.TransactionExpired
 
-export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClick: WalletTransfer): Promise<void> => {
-    const { swapData, depositActions, swapBasicData, selectedWallet, sourceAddress, layerswapApiClient, setActionStateText, setSwapTransaction, onSuccess, onLifecycle } = ctx
+export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClick: WalletTransfer, action: DepositAction | undefined = getActionableDepositAction(ctx.depositActions)): Promise<string> => {
+    const { swapData, swapBasicData, selectedWallet, sourceAddress, layerswapApiClient, setActionStateText, setSwapTransaction, onSuccess, onLifecycle, signal } = ctx
 
-    const transferProps = resolveTransactionData(swapData, depositActions, swapBasicData, selectedWallet)
+    if (!action || !isTransferAction(action)) throw new Error('No transfer action')
+    const transferProps = resolveTransactionData(swapData, action, swapBasicData, selectedWallet)
     const lifecycleContext = lifecycleContextFromSwap(swapBasicData, swapData)
-    setActionStateText("Opening Wallet")
+    const confirmationText = action.step === 'approve_permit2' ? "Approve in your wallet" : "Confirm in your wallet"
+    setActionStateText(confirmationText)
 
     let hash: string
     const finishTelemetry = widgetTelemetry.beginOperation('wallet_transfer', {
         swap_id: swapData.id, provider: selectedWallet.providerName, timing_kind: 'user_wait_included',
     })
-    const requestWallet = (props: TransferProps, { retriesExpiry }: { retriesExpiry: boolean }) => executeWalletOperation({
-        context: {
-            ...lifecycleContext,
-            path: 'WalletTransfer',
-            action: 'send_transaction',
-            provider: selectedWallet.providerName,
-        },
-        onLifecycle,
-        // Keep one timing operation across the Stellar refresh and both wallet requests.
-        onSettled: finishTelemetry,
-        shouldReportError: error => !(retriesExpiry && isExpiredTransaction(error)),
-    }, () => onClick(props))
+    const requestWallet = (props: TransferProps, { retriesExpiry }: { retriesExpiry: boolean }) => {
+        if (signal?.aborted) {
+            finishTelemetry('cancelled')
+            signal.throwIfAborted()
+        }
+        return executeWalletOperation({
+            context: {
+                ...lifecycleContext,
+                path: 'WalletTransfer',
+                action: action.step === 'approve_permit2' ? 'approve_permit2' : 'send_transaction',
+                provider: selectedWallet.providerName,
+            },
+            onLifecycle,
+            // Keep one timing operation across the Stellar refresh and both wallet requests.
+            onSettled: finishTelemetry,
+            reportsSubmission: action.step !== 'approve_permit2',
+            shouldReportError: error => !(retriesExpiry && isExpiredTransaction(error)),
+        }, () => onClick(props))
+    }
 
     try {
         hash = await requestWallet(transferProps, { retriesExpiry: true })
     } catch (error) {
         if (!isExpiredTransaction(error)) throw error
+        if (signal?.aborted) {
+            finishTelemetry('cancelled')
+            signal.throwIfAborted()
+        }
 
         setActionStateText("Refreshing transfer")
         // An API step between two wallet requests: its failure ends the operation but is
@@ -74,10 +93,11 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
                 swapData.id,
                 sourceAddress ?? selectedWallet.address,
             )
-            if (!refreshed?.data?.length) {
+            const refreshedAction = getActionableDepositAction(refreshed?.data)
+            if (!refreshedAction || !isTransferAction(refreshedAction) || refreshedAction.step !== action.step) {
                 throw new Error('Could not refresh the expired Stellar deposit action. Please try again.')
             }
-            refreshedProps = resolveTransactionData(swapData, refreshed.data, swapBasicData, selectedWallet)
+            refreshedProps = resolveTransactionData(swapData, refreshedAction, swapBasicData, selectedWallet)
         } catch (refreshError) {
             finishTelemetry('failed', {
                 reason_code: 'deposit_action_refresh_failed',
@@ -85,12 +105,25 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
             })
             throw refreshError
         }
-        setActionStateText("Opening Wallet")
+        setActionStateText(confirmationText)
         hash = await requestWallet(refreshedProps, { retriesExpiry: false })
+    }
+
+    // Save the approval receipt even if the screen closed during the wallet request.
+    // It must not replace the execution transaction or mark the swap as submitted.
+    if (action.step === 'approve_permit2') {
+        useSwapTransactionStore.getState().setStepTransaction(
+            swapData.id,
+            action.step,
+            hash,
+            getExplorerUrl(transferProps.network.transaction_explorer_template, hash),
+        )
+        return hash
     }
 
     onSuccess()
     setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, hash)
+    useDepositSignatureStore.getState().removeDepositSignature(swapData.id)
     try {
         await layerswapApiClient.SwapCatchup(swapData.id, hash)
     } catch (e) {
@@ -106,18 +139,19 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
             toAddress: swapBasicData?.destination_address,
         })
     }
+    return hash
 }
 
-export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, onSign: GaslessSigner): Promise<void> => {
-    const { swapData, depositActions, swapBasicData, selectedWallet, sourceAddress, layerswapApiClient, setActionStateText, setSwapTransaction, onSuccess, onLifecycle } = ctx
+export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, onSign: GaslessSigner, signAction: DepositAction | undefined = getActionableDepositAction(ctx.depositActions)): Promise<number | undefined> => {
+    const { swapData, depositActions, swapBasicData, selectedWallet, sourceAddress, layerswapApiClient, setActionStateText, onLifecycle, signal } = ctx
 
-    const signAction = depositActions.find(isSignAction)
-    if (!signAction) throw new Error('No sign action')
+    if (!signAction || !isSignAction(signAction)) throw new Error('No sign action')
     if (!sourceAddress) throw new Error('No selected account')
 
     const lifecycleContext = lifecycleContextFromSwap(swapBasicData, swapData)
     // Once per wallet request, so the re-sign after an expired authorization is a prompt too.
     const onWalletPrompt = () => {
+        signal?.throwIfAborted()
         setActionStateText("Sign in wallet")
         onLifecycle({
             step: 'wallet_prompt_opened',
@@ -143,6 +177,10 @@ export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, 
             layerswapApiClient,
         })
     } catch (e: any) {
+        if (signal?.aborted) {
+            finishTelemetry('cancelled')
+            throw e
+        }
         const rejected = isUserRejection(e)
         const errorDetails = lifecycleErrorDetails(e)
         // Layerswap's API refused the authorization or its refresh failed: not a wallet failure.
@@ -175,7 +213,7 @@ export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, 
             ...lifecycleContext,
         })
         // Don't flag the route unavailable when the user simply declined.
-        if (!rejected) {
+        if (isGaslessDepositWorkflow(depositActions) === true && !rejected) {
             const message = e?.response?.data?.error?.message || e?.message
             useGaslessPreferenceStore.getState().reportGaslessUnavailable('deposit', message)
         }
@@ -183,6 +221,22 @@ export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, 
     }
 
     finishTelemetry('succeeded')
+    // Retain accepted signatures after closing, but only confirmed gasless workflows
+    // may activate authorization polling/expiry. Sign-only payloads can reveal publish later.
+    const validBefore = authorizedValidBefore ?? fallbackGaslessValidBefore()
+    if (isGaslessDepositWorkflow(depositActions) === true) {
+        useGaslessAuthorizationStore.getState().setGaslessAuthorization(swapData.id, validBefore)
+        useDepositSignatureStore.getState().removeDepositSignature(swapData.id)
+    } else {
+        useDepositSignatureStore.getState().setDepositSignature(swapData.id, validBefore)
+    }
+    return authorizedValidBefore
+}
+
+export const completeGaslessSubmission = (ctx: DepositExecutionContext, authorization: GaslessAuthorizationResult, validBefore?: number): void => {
+    if (!isGaslessAuthorizationSubmitted(authorization)) throw new Error('The gasless deposit has not been submitted')
+    const { swapData, swapBasicData, selectedWallet, setSwapTransaction, onSuccess, onLifecycle } = ctx
+
     onLifecycle({
         step: 'gasless_authorization_submitted',
         stage: 'input_transfer',
@@ -190,19 +244,23 @@ export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, 
         path: 'GaslessAuthorization',
         action: 'authorize_deposit',
         provider: selectedWallet.providerName,
-        ...lifecycleContext,
+        ...lifecycleContextFromSwap(swapBasicData, swapData),
     })
 
-    setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, '')
-    useGaslessAuthorizationStore.getState().setGaslessAuthorization(swapData.id, authorizedValidBefore ?? fallbackGaslessValidBefore())
+    const store = useGaslessAuthorizationStore.getState()
+    if (!store.authorizations[swapData.id]) {
+        store.setGaslessAuthorization(swapData.id, validBefore ?? fallbackGaslessValidBefore())
+    }
+    store.setGaslessAuthorizationStatus(swapData.id, authorization.status, authorization.transaction)
+    useDepositSignatureStore.getState().removeDepositSignature(swapData.id)
+    setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, authorization.transaction?.transaction_hash ?? '')
     onSuccess()
 }
 
-const resolveTransactionData = (swapDetails: SwapDetails, deposit_actions: DepositAction[], swapBasicData: SwapBasicData, selectedWallet: Wallet): TransferProps => {
-    const depositAction = deposit_actions?.find(action => action.type === 'transfer')
-    if (!depositAction) {
-        throw new Error('No deposit action found')
-    }
+const resolveTransactionData = (swapDetails: SwapDetails, depositAction: TransferDepositAction, swapBasicData: SwapBasicData, selectedWallet: Wallet): TransferProps => {
+    if (!depositAction.to_address) throw new Error('Deposit action is missing a target address')
+    if (depositAction.amount === undefined) throw new Error('Deposit action is missing an amount')
+
     return {
         amount: depositAction.amount,
         amountInBaseUnits: depositAction.amount_in_base_units,
@@ -213,8 +271,8 @@ const resolveTransactionData = (swapDetails: SwapDetails, deposit_actions: Depos
         sequenceNumber: swapDetails.metadata.sequence_number,
         swapId: swapDetails.id,
         userDestinationAddress: swapBasicData.destination_address,
-        network: swapBasicData.source_network,
-        token: swapBasicData.source_token,
+        network: depositAction.network ?? swapBasicData.source_network,
+        token: depositAction.token ?? swapBasicData.source_token,
         selectedWallet,
     }
 }

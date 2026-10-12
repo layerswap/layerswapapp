@@ -11,7 +11,7 @@ import * as sessionContext from '../faro-session-context.ts'
 import * as policy from '../faro-policy.ts'
 import * as sampling from '../faro-sampling.ts'
 import { resolveFaroDeployment } from '../faro-release.cjs'
-import { buildConfig } from './helpers/next-config.mjs'
+import { buildConfig, phases } from './helpers/next-config.mjs'
 
 const require = createRequire(import.meta.url)
 const sdkRequire = createRequire(require.resolve('@grafana/faro-web-sdk'))
@@ -23,26 +23,49 @@ const { createPageMeta } = require(join(dirname(require.resolve('@grafana/faro-w
 
 // Capture the actual initFaro options, then exercise their page metadata using
 // the installed SDK below. This harness never contacts a collector.
-function browserConfig(env) {
+function browserHarness(env, pathname = '/') {
     let config
     const exports = {}
+    const window = { location: { origin: 'https://layerswap.io', pathname } }
     const source = readFileSync(new URL('../faro.ts', import.meta.url), 'utf8')
     const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText
     vm.runInNewContext(compiled, {
-        exports, process: { env }, window: { location: { origin: 'https://layerswap.io' } }, console,
+        exports, process: { env }, window, console,
         require: name => ({
             './faro-sanitizer': sanitizer,
             './faro-session-context': sessionContext,
             './faro-policy': policy,
             './faro-sampling': sampling,
             '@grafana/faro-web-sdk': { ...web, getInternalFaroFromGlobalObject: () => undefined,
-                initializeFaro: options => { config = options; return {} } },
+                initializeFaro: options => { config = options; return { unpatchedConsole: { info() {} } } } },
         })[name] ?? require(name),
     })
     exports.initFaro()
+    return { config, api: exports, window }
+}
+
+function browserConfig(env) {
+    const { config } = browserHarness(env)
     assert(config)
     return config
 }
+
+test('timeline previews never initialize Faro, including under a base path', () => {
+    for (const pathname of ['/timeline', '/timeline/', '/bridge/timeline']) {
+        const { config, api } = browserHarness({ NEXT_PUBLIC_FARO_COLLECTOR_URL: 'https://collector.invalid' }, pathname)
+        assert.equal(config, undefined)
+        assert.equal(api.captureEvent('preview'), false)
+        assert.equal(api.captureException(new Error('preview')), false)
+    }
+})
+
+test('navigation into a timeline suppresses already initialized telemetry', () => {
+    const { config, api, window } = browserHarness({ NEXT_PUBLIC_FARO_COLLECTOR_URL: 'https://collector.invalid' })
+    window.location.pathname = '/timeline'
+    assert.equal(config.beforeSend({}), null)
+    assert.equal(api.getFaro(), undefined)
+    assert.equal(api.captureEvent('preview'), false)
+})
 
 test('deployment comes from platform target, independently of API mode and optimized build mode', () => {
     for (const mode of ['mainnet', 'testnet']) {
@@ -123,4 +146,31 @@ test('initFaro beforeSend drops successful and third-party requests before sanit
     assert.notEqual(beforeSend(request('https://layerswap.io/app/api/x', 500)), null)
     const leaked = beforeSend({ type: web.TransportItemType.EVENT, meta: {}, payload: { name: 'widget_flow', attributes: { password: 'synthetic' } } })
     assert.equal(leaked.payload.attributes.password, '[REDACTED]')
+})
+
+test('development sends to the local collector without Faro credentials, even with remote settings', () => {
+    for (const collector of [undefined, 'https://collector.invalid']) {
+        const env = { NODE_ENV: 'development', NEXT_PUBLIC_FARO_COLLECTOR_URL: collector, NEXT_PUBLIC_FARO_SAMPLE_RATE: '0' }
+        const config = browserConfig({ ...env, ...buildConfig({ APP_BASE_PATH: '/app' }, phases.PHASE_DEVELOPMENT_SERVER).env })
+        assert.equal(config.url, 'https://layerswap.io/app/api/local-telemetry')
+        assert.equal(config.dedupe, false)
+        assert.equal(config.batching.sendTimeout, 1000)
+        assert.equal(config.sessionTracking.sampler({ metas: { session: { id: 'old', attributes: { isSampled: 'false' } } } }), 1)
+        assert.equal(config.consoleInstrumentation.disabledLevels.length, 0)
+        const request = config.beforeSend({ type: web.TransportItemType.EVENT, meta: {}, payload: {
+            name: 'faro.tracing.fetch', attributes: { 'url.full': 'https://rpc.test.invalid', 'http.response.status_code': '200', password: 'synthetic' },
+        } })
+        assert(request, 'successful third-party requests must reach the local file')
+        assert.equal(request.payload.attributes.password, '[REDACTED]')
+        assert.equal(config.logArgsSerializer([{ privateKey: 'synthetic', safe: 'kept' }]), '{"privateKey":"[REDACTED]","safe":"kept"}')
+    }
+    assert.equal(browserConfig({ NODE_ENV: 'development' }).url, 'https://layerswap.io/api/local-telemetry')
+})
+
+test('production builds retain the remote collector and do not enable local telemetry', () => {
+    const config = browserConfig({ NODE_ENV: 'production', NEXT_PUBLIC_FARO_COLLECTOR_URL: 'https://collector.invalid' })
+    assert.equal(config.url, 'https://collector.invalid')
+    assert.equal(config.dedupe, true)
+    assert.equal(browserHarness({ NODE_ENV: 'production' }).config, undefined)
+    assert.equal(browserHarness({ NODE_ENV: 'development' }, '/timeline').config, undefined)
 })

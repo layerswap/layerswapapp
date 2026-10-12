@@ -1,6 +1,5 @@
-import { FC, ReactNode } from "react";
-import clsx from "clsx";
-import { QrCode, ChevronRight, Loader2 } from "lucide-react";
+import { FC } from "react";
+import { QrCode } from "lucide-react";
 import useWallet from "@/hooks/useWallet";
 import { useSelectSwapAccount } from "@/context/swapAccounts";
 import { useDepositSettings } from "@/context/depositSettings";
@@ -14,57 +13,7 @@ import { ImageWithFallback, WalletIcon } from "@layerswap/ui-kit/components";
 import { ResolveConnectorIcon } from "@/components/Icons/ConnectorIcons";
 import { useExtendedDepositOption } from "./useExtendedDepositOption";
 
-type MethodCardProps = {
-    icon: ReactNode;
-    title: string;
-    subtitle: string;
-    onClick: () => void;
-    disabled?: boolean;
-    disabledReason?: string;
-    /** Show a spinner instead of the chevron (and keep the card non-interactive)
-     * while the method's availability is still resolving. */
-    loading?: boolean;
-};
-
-const MethodCard: FC<MethodCardProps> = ({
-    icon,
-    title,
-    subtitle,
-    onClick,
-    disabled,
-    disabledReason,
-    loading,
-}) => {
-    const nonInteractive = !!disabled || !!loading;
-    return (
-        <button
-            type="button"
-            disabled={!loading && !!disabled}
-            aria-disabled={nonInteractive}
-            aria-busy={loading}
-            onClick={() => { if (nonInteractive) return; onClick(); }}
-            title={disabled && !loading ? disabledReason : undefined}
-            className={clsx(
-                "group/card flex items-start gap-3.5 w-full text-left rounded-2xl px-4 py-3.5 transition-colors",
-                "bg-secondary-500 hover:bg-secondary-400/70",
-                "border border-transparent hover:border-secondary-300",
-                "focus-visible:ring-2 focus-visible:ring-primary-500/60 focus-visible:outline-none",
-                nonInteractive && "opacity-50 hover:bg-secondary-500 hover:border-transparent cursor-not-allowed",
-            )}
-        >
-            <div className="shrink-0 h-[46px] w-[46px] rounded-xl flex items-center justify-center border bg-secondary-700 border-secondary-400" >
-                {icon}
-            </div>
-            <div className="flex-1 min-w-0 flex flex-col gap-1">
-                <span className="text-primary-text text-base font-semibold truncate">{title}</span>
-                <span className="text-secondary-text text-[13px] leading-tight truncate">{subtitle}</span>
-            </div>
-            {loading
-                ? <Loader2 aria-hidden="true" className="h-5 w-5 text-primary-text-tertiary shrink-0 mt-2.5 animate-spin" />
-                : <ChevronRight aria-hidden="true" className="h-5 w-5 text-primary-text-tertiary shrink-0 mt-2.5" />}
-        </button>
-    );
-};
+import { MethodCard, MethodPickerView } from "./MethodPickerView";
 
 const MethodPicker: FC = () => {
     const { push, setPresetSourceNetwork } = useDepositStep();
@@ -148,83 +97,75 @@ const MethodPicker: FC = () => {
         />;
 
     return (
-        <div className="flex flex-col gap-2 w-full">
-            <DestinationTokenPicker />
-
-            <p className="text-secondary-text text-xs px-1 pt-0.5 mb-1">
-                Choose how to fund this deposit
-            </p>
-
-            <div className="flex flex-col gap-2 w-full">
-                {canShow("wallet") && (
+        <MethodPickerView destinationPicker={<DestinationTokenPicker />}>
+            {canShow("wallet") && (
+                <MethodCard
+                    icon={walletCardIcon}
+                    title="Wallet transfer"
+                    subtitle={walletSubtitle}
+                    onClick={handleWalletClick}
+                    disabled={walletDisabled}
+                    disabledReason="Pick a destination first"
+                />
+            )}
+            {canShow("deposit_address") && (
+                <MethodCard
+                    icon={<QrCode className="h-6 w-6 text-primary-text" />}
+                    title="Deposit address"
+                    subtitle="Send from any wallet or CEX"
+                    onClick={handleTransferCryptoClick}
+                    disabled={!destinationReady}
+                    disabledReason="Pick a destination first"
+                />
+            )}
+            {extendedSources.map(({ id, option }) => {
+                if (!(option.present && canShow(id))) return null;
+                const name = option.network?.display_name ?? "";
+                const balanceLabel = (option.compatibleWalletBalance != null && option.compatibleWalletBalance > 0) && option.token
+                    ? `Balance: ${truncateDecimals(option.compatibleWalletBalance, option.token.precision)} ${option.token.asset}`
+                    : undefined;
+                return (
                     <MethodCard
-                        icon={walletCardIcon}
-                        title="Wallet transfer"
-                        subtitle={walletSubtitle}
-                        onClick={handleWalletClick}
-                        disabled={walletDisabled}
-                        disabledReason="Pick a destination first"
+                        key={id}
+                        icon={
+                            <ImageWithFallback
+                                src={option.network?.logo}
+                                alt={`${name} logo`}
+                                height={28}
+                                width={28}
+                                className="rounded-full object-contain"
+                            />
+                        }
+                        title={`Deposit from ${name}`}
+                        subtitle={
+                            option.loading
+                                ? "Checking availability…"
+                                : option.available
+                                    ? (balanceLabel ?? `From your ${name} balance`)
+                                    : "Not available for this destination"
+                        }
+                        onClick={() => handleExtendedClick(option)}
+                        loading={option.loading}
+                        disabled={option.loading || !option.available || !destinationReady}
+                        disabledReason={
+                            !destinationReady
+                                ? "Pick a destination first"
+                                : `${name} can't reach this destination`
+                        }
                     />
-                )}
-                {canShow("deposit_address") && (
-                    <MethodCard
-                        icon={<QrCode className="h-6 w-6 text-primary-text" />}
-                        title="Deposit address"
-                        subtitle="Send from any wallet or CEX"
-                        onClick={handleTransferCryptoClick}
-                        disabled={!destinationReady}
-                        disabledReason="Pick a destination first"
-                    />
-                )}
-                {extendedSources.map(({ id, option }) => {
-                    if (!(option.present && canShow(id))) return null;
-                    const name = option.network?.display_name ?? "";
-                    const balanceLabel = (option.compatibleWalletBalance != null && option.compatibleWalletBalance > 0) && option.token
-                        ? `Balance: ${truncateDecimals(option.compatibleWalletBalance, option.token.precision)} ${option.token.asset}`
-                        : undefined;
-                    return (
-                        <MethodCard
-                            key={id}
-                            icon={
-                                <ImageWithFallback
-                                    src={option.network?.logo}
-                                    alt={`${name} logo`}
-                                    height={28}
-                                    width={28}
-                                    className="rounded-full object-contain"
-                                />
-                            }
-                            title={`Deposit from ${name}`}
-                            subtitle={
-                                option.loading
-                                    ? "Checking availability…"
-                                    : option.available
-                                        ? (balanceLabel ?? `From your ${name} balance`)
-                                        : "Not available for this destination"
-                            }
-                            onClick={() => handleExtendedClick(option)}
-                            loading={option.loading}
-                            disabled={option.loading || !option.available || !destinationReady}
-                            disabledReason={
-                                !destinationReady
-                                    ? "Pick a destination first"
-                                    : `${name} can't reach this destination`
-                            }
-                        />
-                    );
-                })}
-                {canShow("wallet") && hasWallet && (
-                    <MethodCard
-                        icon={<WalletIcon className="h-6 w-6 text-primary-text" strokeWidth={2} />}
-                        title="More wallets"
-                        subtitle="Use MetaMask, Phantom and more"
-                        onClick={handleMoreWalletsClick}
-                        disabled={!destinationReady}
-                        disabledReason="Pick a destination first"
-                    />
-                )}
-            </div>
-        </div>
+                );
+            })}
+            {canShow("wallet") && hasWallet && (
+                <MethodCard
+                    icon={<WalletIcon className="h-6 w-6 text-primary-text" strokeWidth={2} />}
+                    title="More wallets"
+                    subtitle="Use MetaMask, Phantom and more"
+                    onClick={handleMoreWalletsClick}
+                    disabled={!destinationReady}
+                    disabledReason="Pick a destination first"
+                />
+            )}
+        </MethodPickerView>
     );
 };
 

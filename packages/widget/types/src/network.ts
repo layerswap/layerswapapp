@@ -13,6 +13,8 @@ export enum NetworkType {
   Polymarket = 'polymarket',
 }
 
+export type GaslessStandard = 'none' | 'eip3009' | 'erc2612' | 'permit2';
+
 type RefuelToken = {
   /** Canonical identifier used in Layerswap API requests and lookups. */
   symbol: string;
@@ -27,7 +29,7 @@ type RefuelToken = {
   listing_date: string;
   status?: 'active' | 'inactive' | 'not_found';
   supports_gasless_deposit?: boolean;
-  gasless_standard?: string | null;
+  gasless_standard?: GaslessStandard | null;
   source_rank?: number;
   destination_rank?: number;
 };

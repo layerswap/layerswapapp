@@ -1,5 +1,6 @@
 import { TokenBalance } from "@layerswap/widget-types";
 import { Token } from "@layerswap/widget-types";
+import { truncateToDecimals } from "@/components/utils/RoundDecimals";
 
 
 type ResoleMaxAllowedAmountProps = {
@@ -28,6 +29,6 @@ export const resolveMaxAllowedAmount = (props: ResoleMaxAllowedAmountProps) => {
         return undefined
 
     const payableAmount = Number(walletBalance.amount) - (gasAmount * 1.02)
-    const res = Number(Number(payableAmount).toFixed(fromCurrency?.decimals))
+    const res = Number(truncateToDecimals(String(payableAmount), fromCurrency.decimals))
     return res <= 0 ? fallbackAmount : res
 }

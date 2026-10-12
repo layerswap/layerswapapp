@@ -20,6 +20,9 @@ export type ResolveSwapPhaseInput = {
     refuel: Refuel | undefined;
     inputTxStatusFromApi?: TransactionStatus;
     storedWalletTransaction?: StoredWalletTransaction;
+    // The server reports every wallet deposit step completed. It holds only while the latest
+    // deposit-actions response says so, unlike a stored transaction this client broadcast.
+    depositCompleted?: boolean;
     isDepositFlow?: boolean;
     // Terminal status of the gasless (paymaster) authorization; any value marks the input failed.
     gaslessFailureStatus?: GaslessAuthorizationStatus;
@@ -55,6 +58,7 @@ export type ResolvedSwapStatus = {
 
 export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStatus {
     const { swapDetails, refuel, inputTxStatusFromApi, storedWalletTransaction, gaslessFailureStatus } = input;
+    const depositSubmitted = !!storedWalletTransaction || !!input.depositCompleted;
 
     const inputTx = swapDetails?.transactions?.find(t => t.type === TransactionType.Input);
     const outputTx = swapDetails?.transactions?.find(t => t.type === TransactionType.Output);
@@ -74,7 +78,8 @@ export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStat
 
     const showWithdrawScreen =
         (!swapStatus || swapStatus === SwapStatus.UserTransferPending || swapStatus === SwapStatus.Created)
-        && !(inputTx || storedWalletTransaction);
+        && !(inputTx || depositSubmitted)
+        && !failureReason;
 
     const phase = resolvePhase({
         swapStatus,
@@ -83,7 +88,7 @@ export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStat
         outputReady,
         refuelPending,
         hasInputTx: !!inputTx,
-        hasStoredWalletTx: !!storedWalletTransaction,
+        depositSubmitted,
         showWithdrawScreen,
     });
 
@@ -113,7 +118,8 @@ export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStat
     const isRefundFlow = phase === SwapPhase.PendingRefund || phase === SwapPhase.Refunded;
     const hidesSteps = phase === SwapPhase.Expired;
     const showsFailedPanel = phase === SwapPhase.Expired;
-    const showsEstimatedTime = !outputReady && !isTerminal && phase !== SwapPhase.PendingRefund;
+    // Backend completion can precede output/refuel delivery; keep timing until the resolved flow ends.
+    const showsEstimatedTime = !isTerminal && phase !== SwapPhase.PendingRefund;
 
     return {
         phase,
@@ -140,12 +146,12 @@ function resolvePhase(args: {
     outputReady: boolean;
     refuelPending: boolean;
     hasInputTx: boolean;
-    hasStoredWalletTx: boolean;
+    depositSubmitted: boolean;
     showWithdrawScreen: boolean;
 }): SwapPhase {
     const {
         swapStatus, swapInputTxStatus, inputReady, outputReady, refuelPending,
-        hasInputTx, hasStoredWalletTx, showWithdrawScreen,
+        hasInputTx, depositSubmitted, showWithdrawScreen,
     } = args;
 
     if (swapStatus === SwapStatus.Expired) return SwapPhase.Expired;
@@ -164,7 +170,7 @@ function resolvePhase(args: {
 
     if (swapStatus === SwapStatus.LsTransferPending) return SwapPhase.OutputPending;
     if (inputReady) return SwapPhase.OutputPending;
-    if (hasInputTx || hasStoredWalletTx) return SwapPhase.InputPending;
+    if (hasInputTx || depositSubmitted) return SwapPhase.InputPending;
 
     return SwapPhase.AwaitingUserDeposit;
 }
@@ -327,7 +333,9 @@ function formatElapsedTime(inputTx: Transaction | undefined, outputTx: Transacti
     if (!start || !end) return null;
 
     const diffMs = new Date(end).getTime() - new Date(start).getTime();
-    if (!Number.isFinite(diffMs) || diffMs <= 0) return null;
+    if (!Number.isFinite(diffMs) || diffMs < 0) return null;
 
-    return `Completed in ${formatElapsedHms(msToParts(diffMs))}`;
+    // Atomic token swaps can record input and output in the same transaction.
+    // A zero timestamp difference is valid, not a missing completion duration.
+    return `Completed in ${diffMs < 1000 ? '<1s' : formatElapsedHms(msToParts(diffMs))}`;
 }

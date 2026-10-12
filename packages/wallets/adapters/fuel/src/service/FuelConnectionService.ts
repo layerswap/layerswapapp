@@ -190,6 +190,9 @@ export class FuelConnectionService<Network> implements WalletConnectionService<n
         }
     }
 
+    // Unlike the best-effort account switch above, a failed chain switch must reach the
+    // caller: the send flow switches right before transferring and would otherwise go on
+    // with the wallet on the wrong network.
     async switchChain(connector: Wallet, chainId: string | number): Promise<void> {
         try {
             const fuelConnector = useFuelStore.getState().connectors.find(c => c.name === connector.id)
@@ -199,6 +202,7 @@ export class FuelConnectionService<Network> implements WalletConnectionService<n
         } catch (e) {
             const msg = e instanceof Error ? e.message : String(e)
             console.error(`[Fuel] Failed to switch chain to ${chainId}: ${msg}`)
+            throw e
         }
     }
 

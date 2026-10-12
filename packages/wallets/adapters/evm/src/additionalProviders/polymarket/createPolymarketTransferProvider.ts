@@ -8,7 +8,7 @@ import { resolveFallbackTransport } from "../../evmUtils/resolveTransports"
 import { resolvePolymarketHolding, selectPolymarketFunder } from "./funder"
 import { buildDepositWalletBatchRequest, buildDepositWalletDeployRequest, buildPolymarketDepositCalls } from "./depositWithdraw"
 import { buildSafeBatchRequest } from "./safeWithdraw"
-import { getRelayerNonce, isPolymarketDeployed, submitRelayerTransaction, type RelayerSubmittable } from "./relayerClient"
+import { getRelayerNonce, isPolymarketDeployed, submitRelayerTransaction, RelayerNotSubmittedError, type RelayerSubmittable } from "./relayerClient"
 import {
     POLYMARKET_BATCH_DEADLINE_SECONDS,
     POLYMARKET_CHAIN_ID,
@@ -90,6 +90,7 @@ export function createPolymarketTransferProvider(
         supportsNetwork,
 
         async executeTransfer(params: TransferProps, _wallet, onProgress?: (info: TransferProgress | undefined) => void): Promise<string> {
+            params.onSubmissionStateChange?.('preparing')
             const { network, token: sourceToken, sourceAddress, depositAddress, callData } = params
             const pmConfig = resolvePolymarketConfig(network?.name)
             if (!pmConfig) throw fail('Unsupported network', 'No Polymarket route for this destination.')
@@ -193,7 +194,16 @@ export function createPolymarketTransferProvider(
                 throw signErr
             }
 
-            const submitResponse = await submitRelayerTransaction(request)
+            params.onSubmissionStateChange?.('submitting')
+            let submitResponse: Awaited<ReturnType<typeof submitRelayerTransaction>>
+            try {
+                submitResponse = await submitRelayerTransaction(request)
+            } catch (error) {
+                if (error instanceof RelayerNotSubmittedError) {
+                    params.onSubmissionStateChange?.('not_submitted')
+                }
+                throw error
+            }
             if (!submitResponse?.transactionID) {
                 const { header, details } = resolvePolymarketError('Polymarket rejected the withdrawal')
                 throw fail(header, details)

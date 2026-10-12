@@ -1,4 +1,5 @@
 import { buildDeepLink, subscribeWalletRequests } from "@layerswap/wallet-core"
+import { isUserRejection } from '@layerswap/wallet-core/errors'
 import {
     ChainNotConfiguredError,
     type Connector,
@@ -326,17 +327,21 @@ export function walletConnect(parameters: Params) {
             const chain = config.chains.find((x) => x.id === chainId)
             if (!chain) throw new SwitchChainError(new ChainNotConfiguredError())
 
-            try {
+            let removeChainChangedListener = () => { }
+            // Resolves once the wallet has both accepted the request and reported the new chain.
+            const requestSwitch = async () => {
+                removeChainChangedListener()
                 await Promise.all([
                     new Promise<void>((resolve) => {
                         const listener = ({
                             chainId: currentChainId,
                         }: { chainId?: number | undefined }) => {
                             if (currentChainId === chainId) {
-                                config.emitter.off('change', listener)
+                                removeChainChangedListener()
                                 resolve()
                             }
                         }
+                        removeChainChangedListener = () => config.emitter.off('change', listener)
                         config.emitter.on('change', listener)
                     }),
                     provider.request({
@@ -344,6 +349,9 @@ export function walletConnect(parameters: Params) {
                         params: [{ chainId: numberToHex(chainId) }],
                     }),
                 ])
+            }
+            try {
+                await requestSwitch()
 
                 const requestedChains = await this.getRequestedChainsIds()
                 this.setRequestedChainsIds([...requestedChains, chainId])
@@ -352,10 +360,12 @@ export function walletConnect(parameters: Params) {
             } catch (err) {
                 const error = err as RpcError
 
-                if (/(user rejected)/i.test(error.message))
+                if (isUserRejection(error))
                     throw new UserRejectedRequestError(error)
+                if (!isUnknownChainError(error)) throw error
 
-                // Indicates chain is not added to provider
+                // Only an unknown chain needs adding; pending prompts and transport
+                // failures must keep their original meaning for the caller.
                 try {
                     let blockExplorerUrls: string[] | undefined
                     if (addEthereumChainParameter?.blockExplorerUrls)
@@ -384,13 +394,19 @@ export function walletConnect(parameters: Params) {
                         method: 'wallet_addEthereumChain',
                         params: [addEthereumChain],
                     })
+                    // EIP-3085: adding a chain does not select it, and callers treat a resolved
+                    // switch as "the wallet is on this chain", so ask again unless it already moved.
+                    if (await this.getChainId() !== chainId) await requestSwitch()
 
                     const requestedChains = await this.getRequestedChainsIds()
                     this.setRequestedChainsIds([...requestedChains, chainId])
                     return chain
                 } catch (error) {
-                    throw new UserRejectedRequestError(error as Error)
+                    if (isUserRejection(error)) throw new UserRejectedRequestError(error as Error)
+                    throw error
                 }
+            } finally {
+                removeChainChangedListener()
             }
         },
         onAccountsChanged(accounts) {
@@ -485,6 +501,24 @@ export function walletConnect(parameters: Params) {
             return `${this.id}.requestedChains` as Properties['requestedChainsStorageKey']
         },
     }))
+}
+
+/** Wallets can relay the unknown-chain code through JSON-RPC or SDK wrappers. */
+function isUnknownChainError(error: unknown): boolean {
+    const queue: unknown[] = [error]
+    const seen = new Set<object>()
+    for (let index = 0; index < queue.length && index < 16; index++) {
+        const value = queue[index]
+        if (!value || typeof value !== 'object' || seen.has(value)) continue
+        seen.add(value)
+        const candidate = value as Record<string, unknown>
+        if (candidate.code === 4902 || candidate.code === '4902') return true
+        for (const key of ['cause', 'data', 'originalError', 'error']) {
+            const nested = candidate[key]
+            if (nested && typeof nested === 'object') queue.push(nested)
+        }
+    }
+    return false
 }
 
 function getResolveUri(
