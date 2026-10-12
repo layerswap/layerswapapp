@@ -100,6 +100,7 @@ const result = await build({
         export { SendTransactionView, ConnectWalletView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/WalletActionsView.js';
         export { ProcessingView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/ProcessingView.js';
         export { gaslessFailureMessage } from '../../packages/widget/core/dist/esm/helpers/gaslessFailureMessage.js';
+        export { isGaslessAuthorizationSubmitted } from '../../packages/widget/core/dist/esm/helpers/gasless.js';
         export { SpecializedWithdrawalView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/SpecializedWithdrawalView.js';
         export { default as ProductionSummary } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Summary/Summary.js';
         export { default as ProductionAddressIcon } from '../../packages/widget/core/dist/esm/components/Common/AddressIcon/index.js';
@@ -176,6 +177,7 @@ const {
     SendTransactionView,
     ProcessingView,
     gaslessFailureMessage,
+    isGaslessAuthorizationSubmitted,
     ConnectWalletView,
     SpecializedWithdrawalView,
     ProductionSummary,
@@ -216,7 +218,8 @@ const phase = (s) =>
         swapDetails: s.details,
         refuel: s.refuel,
         inputTxStatusFromApi: s.inputTxStatusFromApi,
-        depositCompleted: ['initiated', 'published', 'completed'].includes(s.gaslessAuthorization?.status),
+        depositCompleted: isGaslessAuthorizationSubmitted(s.gaslessAuthorization),
+        walletActionExecuting: s.wallet.kind === 'send' && !!s.wallet.pending,
         gaslessFailureStatus: [
             'expired',
             'insufficient',
@@ -340,6 +343,33 @@ test('lifecycle fixtures agree with the existing resolver, including refuel, ref
             phase(find(`gasless-${status}`, 'retry')).phase,
             SwapPhase.AwaitingUserDeposit,
         );
+    }
+});
+
+test('gasless previews keep signing and publication controls until execution finishes', () => {
+    const ready = scenarios.find(scenario => scenario.id === 'gasless-success').milestones[0].snapshot;
+    const unsigned = {
+        ...ready,
+        depositActions: [{ type: 'sign', step: 'sign', signing_standard: 'permit2', status: 'action_required' }],
+        gaslessAuthorization: { status: 'initiated' },
+    };
+    const publishing = {
+        ...unsigned,
+        gaslessAuthorization: { status: 'published' },
+        wallet: { kind: 'send', pending: true, label: 'Preparing transaction…' },
+    };
+    for (const mode of ['component', 'modal']) {
+        const text = snapshot => {
+            const rendered = new JSDOM(renderToStaticMarkup(preview(snapshot, 0, mode)));
+            const content = rendered.window.document.body.textContent;
+            rendered.window.close();
+            return content;
+        };
+        assert.match(text(unsigned), /Sign to swap/, `${mode}: initiated does not remove the unsigned action`);
+        assert.match(text(publishing), /Preparing transaction/, `${mode}: publication does not interrupt active execution`);
+        assert.equal(phase(publishing).phase, SwapPhase.InputPending, 'the fetched publication still determines progress');
+        assert.doesNotMatch(text({ ...publishing, wallet: { kind: 'send' } }), /Sign to swap|Preparing transaction/,
+            `${mode}: finished execution switches to processing`);
     }
 });
 

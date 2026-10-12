@@ -21,9 +21,9 @@ import { SwapDetailsSceleton } from '@/components/Common/Sceletons';
 import { resolveSwapPhase } from '@/components/utils/resolveSwapPhase';
 import { shouldShowCompactSwapQuote } from '@/helpers/swapFlow';
 import { gaslessFailureMessage } from '@/helpers/gaslessFailureMessage';
+import { isGaslessAuthorizationSubmitted } from '@/helpers/gasless';
 import {
-    TransactionStatus,
-    TransactionType,
+    TransactionType
 } from '@/lib/apiClients/layerSwapApiClient';
 import { resolvePriceImpactValues } from '@/lib/fees';
 import { ReadOnlyPreview } from './ReadOnlyPreview';
@@ -142,7 +142,8 @@ export function Page2LoadedPreview({
         swapDetails: s.details,
         refuel: s.refuel,
         inputTxStatusFromApi: s.inputTxStatusFromApi,
-        depositCompleted: ['initiated', 'published', 'completed'].includes(s.gaslessAuthorization?.status ?? ''),
+        depositCompleted: isGaslessAuthorizationSubmitted(s.gaslessAuthorization),
+        walletActionExecuting: s.wallet.kind === 'send' && !!s.wallet.pending,
         gaslessFailureStatus: gaslessFailed
             ? s.gaslessAuthorization?.status as 'expired' | 'insufficient' | 'rejected'
             : undefined,

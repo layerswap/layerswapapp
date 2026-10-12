@@ -51,7 +51,14 @@ export function DepositWorkflowView({
         explorerUrl?: string;
     };
 }) {
-    const workflowActions = actions?.filter((action) => !!action.step) ?? [];
+    // Terminal responses expose flat approval/publication placeholders again.
+    // They still describe the same single atomic wallet operation.
+    const hasAtomicApproval =
+        !!actions?.some(action => action.step === 'approve') &&
+        !!actions?.some(action => action.step === 'publish');
+    const workflowActions = actions?.filter(action =>
+        !!action.step && (!hasAtomicApproval || action.step !== 'approve'),
+    ) ?? [];
     if ((processing || completed) && stepTransactions?.approve_permit2 &&
         !workflowActions.some(action => action.step === 'approve_permit2')) {
         workflowActions.unshift({ step: 'approve_permit2', status: 'completed' });
@@ -67,7 +74,9 @@ export function DepositWorkflowView({
         error &&
         workflowActions[currentStepIndex]?.status !== 'pending';
     const steps: StatusStep[] = workflowActions.map((action, index) => ({
-        name: getDepositActionLabel(action),
+        name: hasAtomicApproval && action.step === 'publish'
+            ? getDepositActionLabel({ step: 'approve' })
+            : getDepositActionLabel(action),
         status:
             action.status === 'completed'
                 ? ProgressStatus.Complete

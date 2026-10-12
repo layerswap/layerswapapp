@@ -160,7 +160,14 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const switchToStandardTransfer = useGaslessPreferenceStore(s => s.switchToStandardTransfer)
     const clearGaslessUnavailable = useGaslessPreferenceStore(s => s.clearGaslessUnavailable)
     const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess, onCancelWithdrawal } = useWalletWithdrawalState();
-    const { createSwap, setSwapId, setQuoteLoading, startFreshSwapAttempt, markWalletExecutionStarted } = useSwapDataUpdate()
+    const {
+        createSwap,
+        setSwapId,
+        setQuoteLoading,
+        startFreshSwapAttempt,
+        markWalletExecutionStarted,
+        setWalletActionExecuting,
+    } = useSwapDataUpdate()
     const setSwapTransaction = useSwapTransactionStore(state => state.setSwapTransaction)
     const storedWalletTransaction = useSwapTransactionStore(
         state => swapId ? state.swapTransactions[swapId] : undefined,
@@ -454,7 +461,15 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                         void mutateCache(gaslessAuthorizationKey(swapData.id), { data: authorization }, { revalidate: false })
                     },
                     setSwapError: value => { if (!signal.aborted) setSwapError?.(value) },
-                    onSuccess: () => { if (!signal.aborted) onWalletWithdrawalSuccess?.() },
+                    onSuccess: () => {
+                        if (signal.aborted) {
+                            return
+                        }
+
+                        // Submission has been consumed; optional catchup must not retain the wallet screen.
+                        setWalletActionExecuting(false)
+                        onWalletWithdrawalSuccess?.()
+                    },
                     onLifecycle: onSwapLifecycle,
                 }
 

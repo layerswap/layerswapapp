@@ -21,6 +21,8 @@ export type ResolveSwapPhaseInput = {
     // The server reports every wallet deposit step completed. It holds only while the latest
     // deposit-actions response says so, unlike a stored transaction this client broadcast.
     depositCompleted?: boolean;
+    // Keep a successful wallet handoff mounted until execution handles its response.
+    walletActionExecuting?: boolean;
     isDepositFlow?: boolean;
     // Terminal status of the gasless (paymaster) authorization; any value marks the input failed.
     gaslessFailureStatus?: GaslessAuthorizationStatus;
@@ -116,6 +118,8 @@ export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStat
     const isTerminal = TERMINAL_PHASES.has(phase);
 
     const isRefundFlow = phase === SwapPhase.PendingRefund || phase === SwapPhase.Refunded;
+    const keepWalletControls = !!input.walletActionExecuting && !isRefundFlow
+        && (!isTerminal || phase === SwapPhase.Completed);
     const hidesSteps = phase === SwapPhase.Expired;
     const showsFailedPanel = phase === SwapPhase.Expired;
     // Backend completion can precede output/refuel delivery; keep timing until the resolved flow ends.
@@ -128,7 +132,7 @@ export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStat
         isTerminal,
         inputReady,
         outputReady,
-        showWithdrawScreen,
+        showWithdrawScreen: showWithdrawScreen || keepWalletControls,
         swapInputTxStatus,
         isRefundFlow,
         hidesSteps,

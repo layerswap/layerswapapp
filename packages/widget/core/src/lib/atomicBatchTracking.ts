@@ -31,7 +31,12 @@ export function trackAtomicBatch(initial: AtomicBatchRecord, hooks: TrackingHook
             await hooks.onOutcome(batch, outcome)
             if (disposed) return
             if (outcome.state === 'confirmed') {
-                await hooks.onConfirmed(batch, outcome.hash)
+                try {
+                    await hooks.onConfirmed(batch, outcome.hash)
+                } catch {
+                    // Execution is already proven. A notification failure must not
+                    // restart receipt polling or repeat the deposit speedup request.
+                }
                 return
             }
             if (outcome.state === 'failed' || outcome.state === 'not_submitted') return

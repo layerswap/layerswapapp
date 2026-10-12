@@ -973,8 +973,9 @@ const gaslessScenarios: TimelineScenario[] = [
                 'Authorization is accepted; the input has not been broadcast.',
                 gaslessBase({
                     gaslessAuthorization: { status: 'initiated' },
+                    wallet: { kind: 'send', pending: true, label: 'Preparing transaction…' },
                 }),
-                SwapPhase.InputPending,
+                SwapPhase.AwaitingUserDeposit,
             ),
             m(
                 20,
@@ -1040,8 +1041,9 @@ const gaslessScenarios: TimelineScenario[] = [
                     'The signed deposit is waiting to be published.',
                     gaslessBase({
                         gaslessAuthorization: { status: 'initiated' },
+                        wallet: { kind: 'send', pending: true, label: 'Preparing transaction…' },
                     }),
-                    SwapPhase.InputPending,
+                    SwapPhase.AwaitingUserDeposit,
                 ),
                 m(
                     45,

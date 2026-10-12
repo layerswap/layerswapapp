@@ -77,6 +77,35 @@ test('server-reported deposit completion shows processing only while the server 
   assert.equal(actionRequired.phase, SwapPhase.AwaitingUserDeposit)
 })
 
+test('active wallet handoff retains its controls without overriding fetched progress', () => {
+  for (const swap of [
+    pendingSwap(),
+    pendingSwap({ transactions: [inputTx()] }),
+    pendingSwap({ status: 'completed', transactions: [inputTx()] }),
+    pendingSwap({ status: 'completed', transactions: [inputTx(), { type: 'output', transaction_hash: '0x2', amount: 1 }] }),
+  ]) {
+    const fetched = resolve(swap, { depositCompleted: true })
+    const executing = resolve(swap, { depositCompleted: true, walletActionExecuting: true })
+    assert.equal(executing.phase, fetched.phase)
+    assert.deepEqual(executing.stepStatuses, fetched.stepStatuses)
+    assert.equal(executing.showWithdrawScreen, true)
+    assert.equal(fetched.showWithdrawScreen, false)
+  }
+})
+
+test('active wallet execution cannot hide failures, expiry or refunds', () => {
+  for (const swap of [
+    pendingSwap({ status: 'failed' }), pendingSwap({ status: 'expired' }),
+    pendingSwap({ status: 'pending_refund' }), pendingSwap({ status: 'refunded' }),
+    pendingSwap({ transactions: [inputTx({ status: 'failed' })] }),
+  ]) {
+    const fetched = resolve(swap)
+    const executing = resolve(swap, { walletActionExecuting: true })
+    assert.equal(executing.phase, fetched.phase)
+    assert.equal(executing.showWithdrawScreen, false)
+  }
+})
+
 test('a failed status from the tx-status poll resolves a client-detected transfer failure', () => {
   const resolved = resolve(pendingSwap(), {
     storedWalletTransaction: { hash: '0x1', status: 'pending' },

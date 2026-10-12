@@ -19,14 +19,17 @@ export function useAtomicBatchTracking(swapDetails: SwapDetails | undefined, onL
         const confirm = async (batch: AtomicBatchRecord, hash: string) => {
             if (!isTransactionHash(hash)) throw new Error('Invalid batch receipt hash')
             const transactions = useSwapTransactionStore.getState()
-            if (transactions.swapTransactions[batch.swapId]?.hash !== hash) {
-                transactions.setSwapTransaction(batch.swapId, hash)
-                transactions.setStepTransaction(batch.swapId, 'publish', hash, getExplorerUrl(batch.network.transaction_explorer_template, hash))
-                emit.current({ step: 'transaction_submitted', stage: 'input_transfer', outcome: 'succeeded',
-                    path: 'AtomicBatchTracking', action: 'approve_and_swap', swapId: batch.swapId,
-                    transactionHash: hash, fromAddress: batch.account, sourceNetwork: batch.network.name, provider: batch.wallet.providerName })
+            // Claim the one-time notification before sending it. The durable receipt
+            // also prevents replay after a remount or reload, even if speedup fails.
+            if (transactions.swapTransactions[batch.swapId]?.hash === hash) {
+                return
             }
-            // Keep the ID until the swap API acknowledges the input, so reload can retry catchup.
+            transactions.setSwapTransaction(batch.swapId, hash)
+            transactions.setStepTransaction(batch.swapId, 'publish', hash, getExplorerUrl(batch.network.transaction_explorer_template, hash))
+            emit.current({ step: 'transaction_submitted', stage: 'input_transfer', outcome: 'succeeded',
+                path: 'AtomicBatchTracking', action: 'approve_and_swap', swapId: batch.swapId,
+                transactionHash: hash, fromAddress: batch.account, sourceNetwork: batch.network.name, provider: batch.wallet.providerName })
+            // Keep the recovery ID until the swap API acknowledges the input.
             await api.SwapCatchup(batch.swapId, hash)
         }
         const synchronize = () => {

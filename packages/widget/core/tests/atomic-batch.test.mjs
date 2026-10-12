@@ -221,6 +221,82 @@ test('a hung status request times out without allowing its late receipt to confi
     stop()
 })
 
+test('a failed confirmation notification does not restart wallet polling', async t => {
+    t.mock.timers.enable({ apis: ['setTimeout'] })
+    await submit()
+    let polls = 0, notifications = 0
+    const outcomes = []
+    const stop = trackAtomicBatch(getAtomicBatch('atomic-swap'), {
+        getRecord: id => useAtomicBatchStore.getState().batches[id],
+        onOutcome: (_record, outcome) => { outcomes.push(outcome.state) },
+        getStatus: async () => { polls++; return status() },
+        onConfirmed: async () => { notifications++; throw new Error('Speedup unavailable') },
+    })
+    try {
+        await flush()
+        for (let i = 0; i < 5; i++) {
+            t.mock.timers.tick(30000)
+            await flush()
+        }
+        assert.equal(polls, 1)
+        assert.equal(notifications, 1)
+        assert.deepEqual(outcomes, ['confirmed'])
+        assert.ok(getAtomicBatch('atomic-swap'), 'the recovery ID remains until backend acknowledgement')
+    } finally { stop() }
+})
+
+for (const catchupFails of [false, true]) test(`speedup runs once after execution, including remount and reload (${catchupFails ? 'failure' : 'success'})`, async t => {
+    t.mock.timers.enable({ apis: ['setTimeout'] })
+    await submit()
+    let executed = false
+    harness.catchupError = catchupFails ? new Error('Speedup unavailable') : undefined
+    harness.provider = { getStatus: async () => {
+        harness.statuses.push(executed)
+        return executed ? status(200, [receipt(), receipt(finalHash)]) : status(100, [])
+    } }
+    const events = []
+    function Provider() {
+        useAtomicBatchTracking(undefined, event => events.push(event))
+        return null
+    }
+    let root = createRoot(document.getElementById('root'))
+    try {
+        await act(() => root.render(createElement(Provider)))
+        await act(async () => { t.mock.timers.tick(0); await flush() })
+        assert.deepEqual(harness.catchups, [], 'a returned batch ID is not execution proof')
+        await act(async () => { t.mock.timers.tick(2000); await flush() })
+        assert.deepEqual(harness.catchups, [], 'pending receipts cannot trigger speedup')
+
+        executed = true
+        await act(async () => { t.mock.timers.tick(2000); await flush() })
+        assert.deepEqual(harness.catchups, [['atomic-swap', finalHash]])
+        const pollsAtExecution = harness.statuses.length
+        for (let i = 0; i < 5; i++) {
+            await act(async () => { t.mock.timers.tick(30000); await flush() })
+        }
+        assert.equal(harness.statuses.length, pollsAtExecution, 'execution ends wallet polling')
+        assert.deepEqual(harness.catchups, [['atomic-swap', finalHash]])
+
+        // The durable receipt deduplicates notifications without persisting a swap outcome.
+        for (const reload of [false, true]) {
+            await act(() => root.unmount())
+            if (reload) {
+                const savedTransactions = localStorage.getItem('swapTransactions')
+                useSwapTransactionStore.setState({ swapTransactions: {}, stepTransactions: {} })
+                localStorage.setItem('swapTransactions', savedTransactions)
+                await useSwapTransactionStore.persist.rehydrate()
+                await reloadAtomicBatchStorage()
+            }
+            root = createRoot(document.getElementById('root'))
+            await act(() => root.render(createElement(Provider)))
+            await act(async () => { t.mock.timers.tick(0); await flush() })
+            assert.deepEqual(harness.catchups, [['atomic-swap', finalHash]])
+            assert.ok(getAtomicBatch('atomic-swap'))
+        }
+        assert.equal(events.length, 1)
+    } finally { await act(() => root.unmount()) }
+})
+
 test('swap-provider tracking resumes after reload, ignores selected account changes and survives withdrawal unmount', async t => {
     t.mock.timers.enable({ apis: ['setTimeout'] })
     await submit()

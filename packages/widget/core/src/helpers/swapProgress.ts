@@ -1,7 +1,7 @@
 import { SwapStatus } from '@layerswap/widget-types'
 import type { DepositAction, GaslessAuthorizationResult, SwapDetails } from '@/lib/apiClients/layerSwapApiClient'
 import { BackendTransactionStatus, TransactionType } from '@/lib/apiClients/layerSwapApiClient'
-import { isGaslessDepositWorkflow } from './gasless'
+import { isGaslessAuthorizationSubmitted, isGaslessDepositWorkflow } from './gasless'
 import type { DepositSignature, GaslessAuthorization, SwapTransaction } from '@/stores/swapTransactionStore'
 
 type SwapProgressOptions = {
@@ -22,11 +22,9 @@ export function hasSwapExecutionProgress({ swapDetails, depositActions, gaslessA
     if (swapDetails?.status && ADVANCED_SWAP_STATUSES.has(swapDetails.status)) return true
     if (swapDetails?.transactions?.some(transaction => transaction.type === TransactionType.Input
         && transaction.status !== BackendTransactionStatus.Failed && !!transaction.transaction_hash)) return true
-    if (gaslessAuthorization?.transaction?.transaction_hash
-        && gaslessAuthorization.transaction.status !== BackendTransactionStatus.Failed) return true
+    if (isGaslessAuthorizationSubmitted(gaslessAuthorization)) return true
     const authorizationFailed = gaslessAuthorization?.status === 'expired'
         || gaslessAuthorization?.status === 'insufficient' || gaslessAuthorization?.status === 'rejected'
-    if (gaslessAuthorization?.status && !authorizationFailed) return true
     const selfPaid = isGaslessDepositWorkflow(depositActions) === false
     const firstIncompleteIndex = depositActions?.findIndex(action => action.status !== 'completed') ?? -1
     return depositActions?.some((action, index) => {

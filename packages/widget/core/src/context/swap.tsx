@@ -26,7 +26,7 @@ import { useGaslessAuthorizationStatus } from '@/hooks/useGaslessAuthorizationSt
 import { useContractAddressStore } from '@/stores/contractAddressStore';
 import { useExtendedSwapData } from '@/hooks/useExtendedSwapDisplay';
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore';
-import { isGaslessCapableRoute } from '@/helpers/gasless';
+import { isGaslessAuthorizationSubmitted, isGaslessCapableRoute } from '@/helpers/gasless';
 import { shouldUseDepository } from '@/helpers/depository';
 import { resolveExtendedRoutePlan } from '@/lib/extendedRoutes/registry';
 import { buildCreateSwapParamsForExtendedRoute } from '@/lib/extendedRoutes/transforms';
@@ -352,11 +352,19 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
 
     useAtomicBatchTracking(swapDetails, onSwapLifecycle)
     const resolved = useMemo(
-        () => resolveSwapPhase({ swapDetails, refuel, inputTxStatusFromApi,
-            depositCompleted: depositCompleted || gaslessAuthorization?.status === 'initiated'
-                || gaslessAuthorization?.status === 'published' || gaslessAuthorization?.status === 'completed',
-            isDepositFlow, gaslessFailureStatus }),
-        [swapDetails, refuel, inputTxStatusFromApi, depositCompleted, isDepositFlow, gaslessFailureStatus, gaslessAuthorization?.status],
+        () => resolveSwapPhase({
+            swapDetails,
+            refuel,
+            inputTxStatusFromApi,
+            // Initiated can be unsigned. Fetched submission advances the phase,
+            // while execution consumes that response before releasing its controller.
+            depositCompleted: depositCompleted || isGaslessAuthorizationSubmitted(gaslessAuthorization),
+            walletActionExecuting,
+            isDepositFlow,
+            gaslessFailureStatus,
+        }),
+        [swapDetails, refuel, inputTxStatusFromApi, depositCompleted, walletActionExecuting,
+            isDepositFlow, gaslessFailureStatus, gaslessAuthorization],
     )
 
     // Observe every API status here, regardless of which screen is mounted.

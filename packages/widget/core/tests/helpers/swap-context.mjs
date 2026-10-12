@@ -52,7 +52,7 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
         '@/stores/contractAddressStore': { useContractAddressStore: () => ({}) },
         '@/hooks/useExtendedSwapDisplay': { useExtendedSwapData: noop },
         '@/stores/gaslessPreferenceStore': { useGaslessPreferenceStore: store({ gaslessEnabled: false }) },
-        '@/helpers/gasless': {},
+        '@/helpers/gasless': { isGaslessAuthorizationSubmitted: () => false },
         '@/lib/extendedRoutes/registry': {},
         '@/lib/extendedRoutes/transforms': {},
         '@/stores/extendedRoutesStore': {},

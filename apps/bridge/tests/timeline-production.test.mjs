@@ -1394,7 +1394,7 @@ function createRetryHarness({
             swapDetails: swap,
             inputTxStatusFromApi: inputTransactionStatus?.status,
             gaslessFailureStatus: failureStatus,
-            depositCompleted: ['initiated', 'published', 'completed'].includes(fetched?.status),
+            depositCompleted: gasless.isGaslessAuthorizationSubmitted(fetched),
         });
         harness.refreshAuthorization = async result => {
             harness.fetchedAuthorization = result;
@@ -1419,7 +1419,7 @@ test('a past signing deadline cannot fail a swap while the fetched authorization
     const root = createRoot(container);
     try {
         await act(async () => root.render(React.createElement(harness.Probe)));
-        assert.equal(harness.resolved.phase, 'input_pending');
+        assert.equal(harness.resolved.phase, 'awaiting_user_deposit');
         assert.equal(harness.resolved.failureReason, undefined);
         assert.equal(harness.retry.canRetry, false);
         assert.deepEqual(harness.stores.useGaslessAuthorizationStore.getState().authorizations.S,
