@@ -34,7 +34,8 @@ const MinMax = (props: MinMaxProps) => {
     const { wallets } = useWallet(from, 'withdrawal')
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
     const isWalletConnected = !!wallet
-    const { gasData, gasError } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency, values.amount, wallet)
+    const maxEstimationAmount = Number(values.amount) > 0 ? values.amount : undefined
+    const { gasData, gasError } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency, maxEstimationAmount, wallet)
     const { balances, mutate: mutateBalances } = useBalance(selectedSourceAccount?.address, from)
 
     const walletBalance = useMemo(() => {

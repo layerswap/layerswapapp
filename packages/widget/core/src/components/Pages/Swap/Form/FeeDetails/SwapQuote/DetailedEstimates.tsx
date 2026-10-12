@@ -72,12 +72,13 @@ const RowWrapper = ({ children, title }: RowWrapperProps) => {
 
 export const GasFee = ({ values, quote }: { values: SwapValues, quote: SwapQuote | undefined }) => {
     const isCEX = !!values.fromExchange
-    const { provider } = useWallet(!isCEX ? values.from : undefined, 'withdrawal')
+    const sourceAccountNetwork = !isCEX ? values.from : undefined
+    const { provider } = useWallet(sourceAccountNetwork, 'withdrawal')
 
-    const selectedSourceAccount = useSelectedAccount("from", values.from?.name);
+    const selectedSourceAccount = useSelectedAccount("from", sourceAccountNetwork?.name);
     const wallet = useMemo(() => provider?.connectedWallets?.find(w => w.id === selectedSourceAccount?.id), [provider?.connectedWallets, selectedSourceAccount])
 
-    const { gasData, isGasLoading } = useSWRGas(selectedSourceAccount?.address, values.from, values.fromAsset, values.amount, wallet)
+    const { gasData, isGasLoading } = useSWRGas(selectedSourceAccount?.address, sourceAccountNetwork, values.fromAsset, values.amount, wallet)
     const gasTokenPriceInUsd = resolveTokenUsdPrice(gasData?.token, quote)
     const gasFeeInUsd = gasData?.gas && gasTokenPriceInUsd ? gasData.gas * gasTokenPriceInUsd : null
     const displayGasFeeInUsd = gasFeeInUsd != null ? (gasFeeInUsd < 0.01 ? '<$0.01' : `$${gasFeeInUsd.toFixed(2)}`) : null

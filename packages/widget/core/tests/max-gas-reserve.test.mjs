@@ -46,6 +46,7 @@ const { createRoot } = await import('react-dom/client')
 const { SWRConfig, useSWRConfig } = await import('swr')
 const { default: MinMax } = await import('../dist/esm/components/Input/Amount/MinMax.js')
 const { resolveMaxAllowedAmount } = await import('../dist/esm/components/Input/Amount/helpers.js')
+const { getKey, useBalanceStore } = await import('../dist/esm/stores/balanceStore.js')
 const token = { symbol: 'ETH', decimals: 18, price_in_usd: 2000 }
 const network = { name: 'ETHEREUM_MAINNET', token }
 let root, container, props, swrConfig, formik, mutateGas
@@ -74,6 +75,9 @@ beforeEach(() => {
     balances: [{ network: network.name, token: token.symbol, amount: 1 }],
     requests: [],
   })
+  useBalanceStore.setState({ balances: {
+    [getKey('source', network.name)]: { status: 'success', data: { balances: state.balances } },
+  } })
   props = { from: network, fromCurrency: token, limitsMinAmount: 0.001, limitsMaxAmount: 10, depositMethod: 'wallet', onActionHover() {} }
   swrConfig = { provider: () => new Map(), dedupingInterval: 0, revalidateOnFocus: false, revalidateOnReconnect: false, shouldRetryOnError: false }
 })
@@ -122,6 +126,21 @@ test('an estimate from the previous account cannot enable Max for the current ac
   await act(() => maxButton().click())
   assert.equal(formik.values.amount, '0.9694')
 })
+
+for (const amount of [0, '0', '0.']) {
+  test(`Max reserves gas when the amount is reset to ${JSON.stringify(amount)}`, async () => {
+    await render()
+    await settle(state.requests[0], 0.01)
+    await act(() => formik.setFieldValue('amount', amount))
+    assert.equal(state.requests.length, 2)
+    assert.equal(state.requests[1].args.amount, 1, 'Probe the balance instead of zero')
+    assert.equal(maxButton().disabled, true)
+    await settle(state.requests[1], 0.01)
+    assert.equal(maxButton().disabled, false)
+    await act(() => maxButton().click())
+    assert.equal(formik.values.amount, '0.9898')
+  })
+}
 
 test('an unavailable estimate leaves the existing amount untouched', async () => {
   await render()
