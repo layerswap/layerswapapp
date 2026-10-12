@@ -1,13 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import CopyButton from "../buttons/copyButton";
 import SwapTableRow from "./SwapTableRow";
 import { Swap, TransactionType } from "@/models/Swap";
 
 interface SwapListViewProps {
     swaps: Swap[];
-    destinationAddress?: string;
     onLoadMore?: () => void;
     isLoadingMore?: boolean;
     isReachingEnd?: boolean;
@@ -15,7 +13,6 @@ interface SwapListViewProps {
 
 export default function SwapListView({
     swaps,
-    destinationAddress,
     onLoadMore,
     isLoadingMore = false,
     isReachingEnd = true,
@@ -26,23 +23,6 @@ export default function SwapListView({
     return (
         <div className="px-4 sm:px-6 lg:px-8 w-full">
             <div className="flow-root w-full">
-                {/* Address Header */}
-                <div className="inline-block min-w-full align-middle">
-                    <h1 className="h5 mb-4 text-primary-text flex gap-1">
-                        <span className="font-bold text-primary-text">Address: </span>
-                        <span className="break-all">
-                            {destinationAddress}
-                            <CopyButton
-                                toCopy={destinationAddress || ''}
-                                iconHeight={16}
-                                iconClassName="order-2"
-                                iconWidth={16}
-                                className="inline-flex items-center ml-1 align-middle"
-                            />
-                        </span>
-                    </h1>
-                </div>
-
                 {/* Table Container */}
                 <div className={`
                     ${hasScrollableList ? "overflow-y-scroll h-full max-h-[55vh] 2xl:max-h-[65vh] dataTable" : "overflow-hidden"}
