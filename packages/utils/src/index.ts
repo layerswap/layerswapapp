@@ -53,7 +53,7 @@ export { default as sleep } from "@/sleep";
 
 export { cn } from "@/cn";
 export { formatUnits } from "@/formatUnits";
-export { truncateDecimals, isScientific } from "@/truncateDecimals";
+export { truncateDecimals, isScientific, ceilToDecimals, truncateToDecimals, roundToDecimals } from "@/truncateDecimals";
 export { shortenString } from "@/shortenString";
 export { getExplorerUrl } from "@/explorerUrl";
 export { retry, retryWithExponentialBackoff } from "@/retry";

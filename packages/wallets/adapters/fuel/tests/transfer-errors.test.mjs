@@ -43,3 +43,16 @@ test('Fuel funds and unexpected failures keep their labels without a reason code
         assert.equal(thrown.message, original instanceof Error ? original.message : original)
     }
 })
+
+test('Fuel authorization failures are account mismatches, not user rejections', () => {
+    for (const original of [
+        new Error('address is not authorized for this connection.'),
+        { code: -32603, message: 'Address is not authorized for this connection' },
+        'address is not authorized for this connection.',
+    ]) {
+        const thrown = toTransferError(original)
+        expectShape(thrown, original, 'WaletMismatch')
+        assert.equal(normalizeWalletErrorCode(thrown), 'unauthorized')
+        assert.equal(isUserRejection(thrown), false)
+    }
+})

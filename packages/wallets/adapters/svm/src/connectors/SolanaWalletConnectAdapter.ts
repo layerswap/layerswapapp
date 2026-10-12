@@ -2,7 +2,7 @@ import {
     BaseSignerWalletAdapter,
     WalletAdapterNetwork,
     WalletDisconnectionError,
-    WalletName,
+    type WalletName,
     WalletNotConnectedError,
     WalletNotReadyError,
     WalletReadyState,
@@ -10,11 +10,12 @@ import {
     WalletSignTransactionError,
     isVersionedTransaction,
 } from "@solana/wallet-adapter-base"
-import { PublicKey, Transaction, VersionedTransaction, TransactionVersion } from "@solana/web3.js"
+import { PublicKey, Transaction, VersionedTransaction, type TransactionVersion } from "@solana/web3.js"
 import type { UniversalProvider as UniversalProviderClass } from "@walletconnect/universal-provider"
 import type { SessionTypes, SignClientTypes } from "@walletconnect/types"
 import { getSdkError, parseAccountId } from "@walletconnect/utils"
 import base58 from "bs58"
+import { subscribeWalletRequests } from '@layerswap/wallet-core'
 import { SolanaWalletConnectChain, solanaWalletConnectChain } from '../constants'
 
 type UniversalProviderType = InstanceType<typeof UniversalProviderClass>
@@ -67,6 +68,7 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
     private _onSessionDelete: () => void
     private _displayUriListeners: Set<DisplayUriListener> = new Set()
     private _internalDisplayUriHandler: ((uri: string) => void) | undefined
+    private _unsubscribeWalletRequests: (() => void) | undefined
 
     constructor(config: SolanaWalletConnectAdapterConfig) {
         super()
@@ -119,6 +121,7 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
                         customStoragePrefix: this._config.options.customStoragePrefix ?? SOLANA_WC_STORAGE_PREFIX,
                     })
                     this._provider = provider
+                    this._unsubscribeWalletRequests = subscribeWalletRequests(provider.client, solanaWalletConnectChain.namespace)
                     if (!this._internalDisplayUriHandler) {
                         this._internalDisplayUriHandler = (uri: string) => {
                             for (const cb of this._displayUriListeners) {
@@ -231,6 +234,8 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
     }
 
     private resetProvider(): void {
+        this._unsubscribeWalletRequests?.()
+        this._unsubscribeWalletRequests = undefined
         const provider = this._provider
         if (provider && this._internalDisplayUriHandler) {
             try { provider.off("display_uri", this._internalDisplayUriHandler) } catch { /* no-op */ }

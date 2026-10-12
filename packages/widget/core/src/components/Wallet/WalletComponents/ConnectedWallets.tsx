@@ -1,3 +1,5 @@
+import { WalletsHeaderView } from './WalletsHeaderView';
+import { WalletHeaderIcon } from '@/components/Widget/WidgetNavigationView';
 import { type Wallet } from '@layerswap/widget-types';
 import { WalletIcon, WalletIconView, ConnectButton, WalletsIcons } from "@layerswap/ui-kit";
 import useWallet from "@/hooks/useWallet"
@@ -15,21 +17,13 @@ export const WalletsHeader = () => {
         )
     }
 
-    return (
-        <ConnectButton>
-            <div className="p-1.5 max-sm:p-2 active:animate-press-down justify-self-start text-secondary-text hover:bg-secondary-500 max-sm:bg-secondary-500 hover:text-primary-text focus:outline-hidden inline-flex rounded-lg items-center">
-                <WalletIcon className="h-6 w-6 mx-0.5" strokeWidth="2" />
-            </div>
-        </ConnectButton>
-    )
+    return <WalletsHeaderView connectButton={<ConnectButton><WalletHeaderIcon /></ConnectButton>} />;
 }
 
 const WalletsHeaderWalletsList = ({ wallets }: { wallets: Wallet[] }) => {
     const [openModal, setOpenModal] = useState<boolean>(false)
     return <>
-        <button type="button" onClick={() => setOpenModal(true)} className="p-1.5 max-sm:p-2 justify-self-start text-secondary-text hover:bg-secondary-500 max-sm:bg-secondary-500 hover:text-primary-text focus:outline-hidden inline-flex rounded-lg items-center active:animate-press-down">
-            <WalletsIcons wallets={wallets} />
-        </button>
+        <WalletsHeaderView wallets={wallets} icons={<WalletsIcons wallets={wallets} />} onManage={() => setOpenModal(true)} />
         <VaulDrawer
             show={openModal}
             setShow={setOpenModal}

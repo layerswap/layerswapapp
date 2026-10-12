@@ -1,7 +1,7 @@
-import { foregroundWalletApp } from "@layerswap/wallet-core";
 import { Network } from "@layerswap/widget-types";
 import { GaslessProvider, GaslessSignParams } from "@layerswap/widget-types";
 import { getAccount, Config } from '@wagmi/core'
+import { resolveWalletConnector } from '../service/resolveWalletConnector'
 
 export function createEVMGaslessProvider(
     config: Config,
@@ -16,12 +16,11 @@ export function createEVMGaslessProvider(
             if (!address)
                 throw new Error('No selected account')
 
-            const walletProvider = await getAccount(config).connector?.getProvider() as
+            const connector = wallet ? resolveWalletConnector(config, { ...wallet, address }) : getAccount(config).connector
+            const walletProvider = await connector?.getProvider() as
                 { request?: (args: { method: string; params: any[] }) => Promise<unknown> } | undefined
             if (!walletProvider?.request)
                 throw new Error('Wallet provider unavailable')
-
-            await foregroundWalletApp(wallet?.metadata?.deepLink)
 
             const signature = await walletProvider.request({
                 method: 'eth_signTypedData_v4',

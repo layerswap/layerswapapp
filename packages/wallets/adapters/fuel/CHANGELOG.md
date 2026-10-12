@@ -1,5 +1,23 @@
 # @layerswap/wallet-fuel
 
+## 2.4.0
+
+### Patch Changes
+
+- Keep Fuel account permissions current and send transactions through the selected connector.
+  - Reconcile accounts on account, connection, and network changes; remove stale authorized addresses and prevent older synchronization results from overwriting newer wallet state.
+  - Preserve the last known wallet during transient account queries. When only network resolution fails, retain cached network metadata while applying the confirmed account permissions.
+  - Use the selected source address and connector, and check sender authorization before preparing and before sending the transaction.
+  - Classify unauthorized senders as account mismatches with `reasonCode: 'unauthorized'`, and display the supplied authorization details in the widget.
+
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @layerswap/widget-types@2.4.0
+  - @layerswap/wallet-core@2.4.0
+  - @layerswap/utils@2.4.0
+
 ## 2.3.1
 
 ### Patch Changes

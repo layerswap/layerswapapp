@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict'
 import test, { after } from 'node:test'
-import { registerHooks } from 'node:module'
+import { createRequire, registerHooks } from 'node:module'
+import { readFileSync } from 'node:fs'
 import { extname } from 'node:path'
+import ts from 'typescript'
 import { ActionMessageType } from '@layerswap/widget-types'
 import { userRejectedError, walletActionError } from '@layerswap/wallet-core/errors'
 
@@ -19,6 +21,70 @@ const hooks = registerHooks({
 after(() => hooks.deregister())
 const { executeWalletTransfer } = await import('../dist/esm/components/Pages/Swap/Withdraw/Wallet/Common/depositExecution.js')
 const { widgetTelemetry } = await import('../dist/esm/lib/widgetTelemetry.js')
+
+const require = createRequire(import.meta.url)
+function loadAdapterSource(path, imports) {
+  const { outputText } = ts.transpileModule(readFileSync(new URL(path, import.meta.url), 'utf8'), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  })
+  const module = { exports: {} }
+  new Function('require', 'module', 'exports', outputText)(name => {
+    if (name in imports) return imports[name]
+    return require(name)
+  }, module, module.exports)
+  return module.exports
+}
+
+function calldataContext(callData, network) {
+  return {
+    swapData: { id: 'swap-calldata', metadata: {} },
+    swapBasicData: { source_network: network, source_token: { decimals: 6 } },
+    depositActions: [{ type: 'transfer', amount: 1, to_address: 'destination', call_data: callData }],
+    selectedWallet: { address: 'source' },
+    setActionStateText() {}, setSwapTransaction() {}, onSuccess() {}, onLifecycle() {},
+    layerswapApiClient: { SwapCatchup: async () => {} },
+  }
+}
+
+for (const [callData, expectedMemo] of [[null, ''], [undefined, ''], ['', ''], ['swap memo', '73776170206d656d6f'], ['0x', '3078']]) {
+  test(`Tron preserves the memo bytes of deposit calldata ${JSON.stringify(callData)}`, async () => {
+    const memos = []
+    const { createTronTransfer } = loadAdapterSource('../../../wallets/adapters/tron/src/transferProvider/createTronTransfer.ts', {
+      tronweb: { TronWeb: class {
+        transactionBuilder = { addUpdateData: async (transaction, data, format) => {
+          memos.push([data, format])
+          return transaction
+        } }
+        trx = { sendRawTransaction: async () => ({ result: true }) }
+      } },
+      './transactionBuilder': { buildInitialTransaction: async () => ({ txID: 'tron-hash' }) },
+      './toTransferError': { toTransferError: error => error },
+      '../tronGasProvider': { TronGasProvider: class { async getGas() { return {} } } },
+      '@layerswap/utils': { KnownInternalNames: { Networks: { TronMainnet: 'TRON_MAINNET', TronTestnet: 'TRON_TESTNET' } } },
+      '../service/tronAdapterManager': { tronAdapterManager: {
+        getActiveAdapter: () => ({}), signTransaction: async transaction => transaction,
+      } },
+    })
+    const ctx = calldataContext(callData, { name: 'TRON_MAINNET', type: 'tron' })
+    assert.equal(await executeWalletTransfer(ctx, createTronTransfer().executeTransfer), 'tron-hash')
+    assert.deepEqual(memos, [[expectedMemo, 'hex']])
+  })
+}
+
+for (const [callData, expectedData] of [[null, '0x'], [undefined, '0x'], ['', '0x'], ['0x1234', '0x1234']]) {
+  test(`EVM normalizes deposit calldata ${JSON.stringify(callData)} at the adapter boundary`, async () => {
+    const { transactionBuilder } = loadAdapterSource('../../../wallets/adapters/evm/src/transferProvider/transactionBuilder.ts', {
+      viem: { parseEther: () => 0n },
+      '../gasProviders': { EVMGasProvider: class { async getGas() { return {} } } },
+    })
+    const ctx = calldataContext(callData, { name: 'ETHEREUM_MAINNET', type: 'evm', chain_id: '1' })
+    await executeWalletTransfer(ctx, async props => {
+      const transaction = await transactionBuilder(props)
+      assert.equal(transaction.data, expectedData)
+      return 'evm-hash'
+    })
+  })
+}
 
 for (const result of ['success', 'rejected', 'expired-again', 'refresh-failed', 'empty-refresh']) {
   test(`expired Stellar transfer refreshes once and reports prompts/timing: ${result}`, async t => {

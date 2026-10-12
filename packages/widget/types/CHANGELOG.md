@@ -1,5 +1,26 @@
 # @layerswap/widget-types
 
+## 2.4.0
+
+### Minor Changes
+
+- Expose shared Layerswap API contracts from `@layerswap/widget-types`.
+  - Export `ApiError`, `LSAPIKnownErrorCode`, `ApiResponse`, and `EmptyApiResponse` so consumers can use API contracts without importing the widget runtime.
+  - Update the widget to consume the shared contracts and retain its model re-exports.
+
+### Patch Changes
+
+- Reduce repeated balance requests and report API failures consistently.
+  - Keep failed EVM multicall results instead of immediately repeating each failed token balance request against the same RPC.
+  - Report balance failures once per fetch through the balance resolver instead of emitting an additional error for every failed token.
+  - Report unauthenticated API failures through the widget's `APIError` handler, matching authenticated requests. Expected transaction-status 404 responses and ignored API error codes remain excluded from reporting; request rejection and polling behavior are preserved.
+
+- Route mobile WalletConnect signing requests to the wallet that owns the selected session.
+  - Export `subscribeWalletRequests` from wallet-core. EVM and Solana WalletConnect connectors open the session's wallet after the signing request reaches the relay, using the request ID and session topic. Link-mode sessions retain the SDK's app link behavior.
+  - Resolve deep links from session metadata and matching registry metadata, including native and universal mobile links, with the MetaMask app link workaround.
+  - Add optional `Wallet.metadata.evmConnectorUid` and use the selected connector for EVM transfers and gasless signatures. Ambiguous or disconnected selections require reconnection instead of falling back to another wallet using the same address.
+  - Clean up signing-request listeners when connectors are replaced or reset.
+
 ## 2.3.0
 
 ### Minor Changes

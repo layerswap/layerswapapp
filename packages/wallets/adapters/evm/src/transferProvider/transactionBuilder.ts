@@ -11,7 +11,7 @@ export const transactionBuilder = async (params: TransferProps) => {
         to: depositAddress as `0x${string}`,
         value: parseEther(amount.toString()),
         gas: undefined as any,
-        data: callData as `0x${string}`,
+        data: (callData || '0x') as `0x${string}`,
         account: selectedWallet.address as `0x${string}`
     }
 

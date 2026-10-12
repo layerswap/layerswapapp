@@ -1,5 +1,6 @@
 import type { SwapLifecycleEvent, SwapLifecycleObservationKey, SwapLifecycleStep, WidgetTelemetryEvent, WidgetTelemetryHandler, WidgetTelemetryAttributes, WidgetTelemetryData, WidgetFlowStep, WidgetOperation, WidgetOperationOutcome } from '@layerswap/widget-types'
 import { SWAP_LIFECYCLE_ATTEMPT_START_STEPS, createRandomId, lifecycleObservationFingerprint, lifecycleObservationKey } from '@layerswap/widget-types'
+import type { DepositAction, GaslessAuthorizationResult, SwapResponse } from './apiClients/layerSwapApiClient'
 
 type Attributes = WidgetTelemetryAttributes
 type Flow = {
@@ -173,11 +174,36 @@ export const widgetTelemetry = createWidgetTelemetry()
 
 export function startApiOperation(method: string, endpoint: string) {
     const [path] = endpoint.split('?')
+    const swapEndpoint = /^\/swaps\/([^/]+)\/(deposit_actions|authorize)$/.exec(path)
     const operation = path === '/quote' ? 'quote_request' : path === '/detailed_quote' ? 'detailed_quote_request'
         : path === '/limits' ? 'limits_request' : path === '/swaps' && method === 'POST' ? 'swap_creation'
-        : /^\/swaps\/[^/]+\/deposit_actions$/.test(path) ? 'deposit_actions' : undefined
-    if (!operation) return (_outcome: string, _extra?: Attributes) => {}
-    return widgetTelemetry.beginOperation(operation)
+        : swapEndpoint?.[2] === 'deposit_actions' ? 'deposit_actions'
+        : swapEndpoint?.[2] === 'authorize' && method === 'GET' ? 'gasless_authorization_status' : undefined
+    if (!operation) return (_outcome: WidgetOperationOutcome, _extra?: Attributes, _data?: unknown) => {}
+    const finish = widgetTelemetry.beginOperation(operation, swapEndpoint ? { swap_id: swapEndpoint[1] } : {})
+    return (outcome: WidgetOperationOutcome, extra: Attributes = {}, data?: unknown) => {
+        const attributes: Attributes = { ...extra }
+        if (data && typeof data === 'object') {
+            if (operation === 'gasless_authorization_status') {
+                const authorization = data as GaslessAuthorizationResult
+                // "authorization" in an attribute key is redacted as a credential by the host.
+                attributes.gasless_status = authorization.status
+                attributes.has_transaction_hash = !!authorization.transaction?.transaction_hash
+            }
+            const swap = operation === 'swap_creation' ? data as SwapResponse : undefined
+            const actions = operation === 'deposit_actions' ? data as DepositAction[] : swap?.deposit_actions
+            if (swap?.swap?.id) attributes.swap_id = swap.swap.id
+            if (Array.isArray(actions)) {
+                // Only workflow metadata: never serialize signing data or transaction payloads.
+                attributes.deposit_actions = JSON.stringify(actions.map(action => ({
+                    type: action.type ?? null,
+                    step: action.step ?? null,
+                    status: action.status ?? null,
+                })))
+            }
+        }
+        finish(outcome, attributes)
+    }
 }
 
 /** Activated controls only: native click also covers keyboard and touch activation. */

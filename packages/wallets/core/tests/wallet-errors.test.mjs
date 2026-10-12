@@ -14,6 +14,8 @@ test('rejection classification works without an SDK or a particular message', ()
         new Error('user rejected transaction'),
         new Error('wrapper', { cause: { code: 'ACTION_REJECTED' } }),
         { code: -32603, cause: { code: 4001 } },
+        { info: { error: { code: '4001' } } },
+        { cause: { info: { data: { originalError: { code: 4001 } } } } },
     ]) {
         assert.equal(normalizeWalletErrorCode(error), 'user_rejected')
         assert.equal(isUserRejection(error), true)
@@ -31,6 +33,19 @@ test('authorization and node failures must not become user cancellations', () =>
         new Error('RPC endpoint unavailable'),
     ]) assert.equal(isUserRejection(error), false)
     assert.equal(normalizeWalletErrorCode({ code: 4100 }), 'unauthorized')
+})
+
+test('a prompt the wallet is still showing is request_pending, never a cancellation', () => {
+    for (const error of [
+        { code: -32002, message: "Request of type 'wallet_switchEthereumChain' already pending for origin https://layerswap.io. Please wait." },
+        { code: '-32002' },
+        new Error('Already processing eth_requestAccounts. Please wait.'),
+        new Error('wrapper', { cause: { code: -32002 } }),
+    ]) {
+        assert.equal(normalizeWalletErrorCode(error), 'request_pending')
+        assert.equal(isUserRejection(error), false)
+    }
+    assert.equal(isWalletErrorReasonCode('request_pending'), true)
 })
 
 test('the rejected UI label never classifies on its own', () => {
