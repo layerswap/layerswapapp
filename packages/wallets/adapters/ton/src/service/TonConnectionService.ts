@@ -3,11 +3,12 @@ import type { WalletConnectionProvider, WalletConnectionService } from "@layersw
 import type { WalletModalConnector } from "@layerswap/wallet-core/types"
 import { connectModalStore, type AppNetworkAdapter } from "@layerswap/wallet-core"
 import { resolveWalletIconString } from "@layerswap/wallet-core"
-import { isWalletInfoCurrentlyInjected, isWalletInfoInjectable, isWalletInfoRemote, type Wallet as TonWallet, type WalletInfo, type WalletInfoInjectable, type WalletInfoRemote, } from '@tonconnect/sdk'
+import { isWalletInfoInjectable, isWalletInfoRemote, type Wallet as TonWallet, type WalletInfo, type WalletInfoRemote, } from '@tonconnect/sdk'
 import { Address } from '@ton/core'
 import { name as PROVIDER_NAME, id as PROVIDER_ID } from '../constants'
 import { getTonConnect } from './getTonConnect'
 import { snapshotFromTonWallet, type TonWalletSnapshot, useTonStore } from './tonStore'
+import { isTonWalletInstalled } from './isTonWalletInstalled'
 
 type RuntimeDeps = {
     setSelectedConnector?: (connector: unknown) => void
@@ -50,7 +51,7 @@ export class TonConnectionService<Network> implements WalletConnectionService<Ru
 
     getAvailableConnectors(): InternalConnector[] {
         const wallets = useTonStore.getState().wallets
-        return dedupeTonWallets(wallets).map(walletInfoToInternalConnector)
+        return dedupeTonWallets(wallets).map(info => walletInfoToInternalConnector(info, wallets))
     }
 
     resolveWallet(snapshot: TonWalletSnapshot | undefined): Wallet | undefined {
@@ -115,7 +116,8 @@ export class TonConnectionService<Network> implements WalletConnectionService<Ru
             await this.disconnectWallets()
         }
 
-        const walletInfo = useTonStore.getState().wallets.find(w => w.appName === connector.id)
+        const wallets = useTonStore.getState().wallets
+        const walletInfo = wallets.find(w => w.appName === connector.id)
         if (!walletInfo) throw new Error('TON wallet not found')
 
         // Set up the status-change promise first so we don't miss an instant
@@ -140,9 +142,8 @@ export class TonConnectionService<Network> implements WalletConnectionService<Ru
         })
 
         try {
-            if (isWalletInfoCurrentlyInjected(walletInfo) || (isWalletInfoInjectable(walletInfo) && walletInfo.injected)) {
-                const injectable = walletInfo as WalletInfoInjectable
-                tonConnect.connect({ jsBridgeKey: injectable.jsBridgeKey }, { signal: abortController?.signal })
+            if (isTonWalletInstalled(walletInfo, wallets)) {
+                tonConnect.connect({ jsBridgeKey: walletInfo.jsBridgeKey }, { signal: abortController?.signal })
             } else if (isWalletInfoRemote(walletInfo)) {
                 const remote = walletInfo as WalletInfoRemote
                 // Loading state for the QR view while the bridge handshakes.
@@ -250,9 +251,9 @@ function dedupeTonWallets(wallets: readonly WalletInfo[]): WalletInfo[] {
     return result
 }
 
-function walletInfoToInternalConnector(info: WalletInfo): InternalConnector {
+function walletInfoToInternalConnector(info: WalletInfo, wallets: readonly WalletInfo[]): InternalConnector {
     const isInjectable = isWalletInfoInjectable(info)
-    const isInjected = isWalletInfoCurrentlyInjected(info)
+    const isInjected = isTonWalletInstalled(info, wallets)
     const hasBrowserExtension = isInjectable
     const isMobileSupported = isWalletInfoRemote(info)
     const displayName = TON_WALLET_DISPLAY_NAMES[info.appName] ?? info.name
