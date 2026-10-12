@@ -21,6 +21,8 @@ import { FC, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useIntercom } from 'react-use-intercom';
 import Failed from '../Failed';
 import { ProcessingView } from '../Presentation/ProcessingView';
+import { ActionMessage } from '../Wallet/Common/actionMessage';
+import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore';
 import { useSwapDataState } from '@/context/swap';
 import { lifecycleContextFromSwap, PHASE_LIFECYCLE_EVENTS } from '@/lib/swapLifecycle';
 import { useLifecycleObservation } from '@/hooks/useLifecycleObservation';
@@ -43,7 +45,8 @@ const Processing: FC<Props> = ({
 }) => {
     const { boot, show, update } = useIntercom();
     const { onSwapLifecycle } = useCallbacks();
-    const { depositActionsResponse, gaslessAuthorization } = useSwapDataState();
+    const { depositActionsResponse, gaslessAuthorization, walletActionFeedback, swapError, atomicBatch } = useSwapDataState();
+    const gaslessUnavailable = useGaslessPreferenceStore(state => state.gaslessUnavailable);
     const { isDepositFlow } = useDepositSettings();
     const storedWalletTransaction = useSwapTransactionStore((state) =>
         swapDetails?.id ? state.swapTransactions[swapDetails.id] : undefined,
@@ -51,6 +54,9 @@ const Processing: FC<Props> = ({
     const stepTransactions = useSwapTransactionStore((state) =>
         swapDetails?.id ? state.stepTransactions[swapDetails.id] : undefined,
     );
+    const walletFeedback = walletActionFeedback?.swapId === swapDetails.id
+        ? walletActionFeedback
+        : undefined;
     const gaslessAuthTx = gaslessAuthorization?.transaction;
 
     const { source_network, source_token, destination_network, destination_token } = swapBasicData;
@@ -218,16 +224,37 @@ const Processing: FC<Props> = ({
         maxConfirmations: swapOutputTransaction.max_confirmations,
     } : undefined, lifecycleContext)
 
-    useLifecycleObservation({
+    useLifecycleObservation(!resolved.showWithdrawScreen ? {
         ...PHASE_LIFECYCLE_EVENTS[phase],
         path: 'Processing',
         status: swapDetails.status,
         phase,
         reasonCode: swapDetails.fail_reason || failureReason,
-    }, lifecycleContext)
+    } : undefined, lifecycleContext)
 
     return (
         <ProcessingView
+            walletProgress={{
+                quote,
+                depositActions: depositActionsResponse,
+                stepTransactions,
+                loading: walletFeedback?.loading,
+                actionStateText: walletFeedback?.actionStateText,
+                error: walletFeedback?.failed,
+                swapError: !!swapError,
+                gaslessUnavailable,
+                submissionAccepted: !!atomicBatch?.id || !!storedWalletTransaction?.hash,
+                showSwapProgress: walletFeedback?.showSwapProgress,
+                errorMessage: (
+                    <ActionMessage
+                        error={walletFeedback?.error}
+                        isSignatureError={walletFeedback?.isSignatureError}
+                        isLoading={false}
+                        sourceNetwork={source_network}
+                        selectedSourceAddress={swapDetails.source_address || ''}
+                    />
+                ),
+            }}
             swapBasicData={swapBasicData}
             swapDetails={swapDetails}
             depositActions={depositActionsResponse}

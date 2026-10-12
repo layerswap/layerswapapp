@@ -54,11 +54,22 @@ export type ApprovalTransaction = {
     hash: string
 }
 
+export type WalletActionFeedback = {
+    swapId?: string;
+    loading: boolean;
+    actionStateText?: string;
+    error?: Error;
+    failed?: boolean;
+    isSignatureError?: boolean;
+    showSwapProgress?: boolean;
+};
+
 export type UpdateSwapInterface = {
     createSwap: (values: SwapFormValues, query: InitialSettings, partner?: Partner) => Promise<SwapResponse>,
     setQuoteLoading: (value: boolean) => void;
     mutateSwap: KeyedMutator<ApiResponse<SwapResponse>>
     mutateDepositActions: KeyedMutator<ApiResponse<DepositAction[]>>
+    reportWalletActionFeedback: (feedback: WalletActionFeedback) => () => void
     setWalletActionExecuting: (value: boolean) => void
     setSwapViewMounted: (value: boolean) => void
     setDepositAddressIsFromAccount: (value: boolean) => void,
@@ -92,6 +103,7 @@ export type SwapContextData = {
     swapDetails: SwapDetails | undefined,
     swapId: string | undefined,
     walletExecutionStarted: boolean,
+    walletActionFeedback?: WalletActionFeedback,
     swapModalOpen: boolean,
     // The single resolved swap status every reader renders and reports from (phase,
     // step statuses, client-detected input failures). Computed once here so no reader can
@@ -126,6 +138,12 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const [swapModalOpen, setSwapModalOpen] = useState(false)
     const [swapError, setSwapError] = useState<string | null>(null)
     const [approvalWait, setApprovalWait] = useState<ApprovalTransaction>()
+    const [walletActionFeedback, setWalletActionFeedback] = useState<WalletActionFeedback>();
+    const reportWalletActionFeedback = useCallback((feedback: WalletActionFeedback) => {
+        setWalletActionFeedback(feedback);
+        // An outgoing controller must not clear a newer controller's feedback.
+        return () => setWalletActionFeedback(current => current === feedback ? undefined : current);
+    }, []);
     const [walletActionExecuting, setWalletActionExecuting] = useState(false)
     const [swapViewMounted, setSwapViewMounted] = useState(false)
     const watchApprovalTransaction = useCallback((transaction: ApprovalTransaction) => {
@@ -513,6 +531,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         mutateSwap: mutate,
         mutateDepositActions,
         setWalletActionExecuting,
+        reportWalletActionFeedback,
         setSwapViewMounted,
         setDepositAddressIsFromAccount,
         setWithdrawType,
@@ -523,7 +542,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         setSubmitedFormValues,
         setQuoteLoading,
         setSwapModalOpen
-    }), [createSwap, mutate, mutateDepositActions, handleUpdateSwapid, markWalletExecutionStarted, startFreshSwapAttempt, watchApprovalTransaction, setSubmitedFormValues]);
+    }), [createSwap, mutate, mutateDepositActions, handleUpdateSwapid, markWalletExecutionStarted, startFreshSwapAttempt, watchApprovalTransaction, setSubmitedFormValues, reportWalletActionFeedback]);
 
     const stateValue = useMemo(() => ({
         atomicBatch,
@@ -545,11 +564,12 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         swapDetails,
         swapId,
         walletExecutionStarted,
+        walletActionFeedback,
         swapModalOpen,
         resolved,
         swapError,
         setSwapError
-    }), [atomicBatch, gaslessAuthorization, inputTransactionStatus, atomicBatchSupported, withdrawType, depositAddressIsFromAccount, error, swapDetailsError, depositActionsResponse, depositActionsError, approvalTransaction, quote, quoteIsLoading, quoteError, refuel, swapBasicData, swapDetails, swapId, walletExecutionStarted, swapModalOpen, resolved, swapError]);
+    }), [atomicBatch, gaslessAuthorization, inputTransactionStatus, atomicBatchSupported, withdrawType, depositAddressIsFromAccount, error, swapDetailsError, depositActionsResponse, depositActionsError, approvalTransaction, quote, quoteIsLoading, quoteError, refuel, swapBasicData, swapDetails, swapId, walletExecutionStarted, walletActionFeedback, swapModalOpen, resolved, swapError]);
 
     return (
         <SwapDataStateContext.Provider value={stateValue}>

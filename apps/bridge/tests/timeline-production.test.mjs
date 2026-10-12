@@ -122,6 +122,7 @@ test('switching gasless mode preserves the live execution lock while swap creati
     const swapHooks = {
         useSwapDataState: () => context,
         useSwapDataUpdate: () => ({
+            reportWalletActionFeedback: () => noop,
             createSwap: () => { creates++; return creation; },
             setSwapId: noop,
             startFreshSwapAttempt: noop,
@@ -241,7 +242,8 @@ test('a same-network quote stays expanded through confirmation and compacts when
         '@/components/Widget/Index': { Widget: childrenOnly },
         '@/context/callbackProvider': { useCallbacks: () => ({ onBackClick: noop, onSwapLifecycle: noop }) },
         '@/lib/swapLifecycle': {},
-        '@/context/swap': { useSwapDataState: () => context, useSwapDataUpdate: () => ({ setSwapViewMounted: noop }) },
+        '@/context/swap': { useSwapDataState: () => context, useSwapDataUpdate: () => ({
+            reportWalletActionFeedback: () => noop, setSwapViewMounted: noop }) },
         '@/hooks/useGaslessAuthorizationStatus': { useGaslessAuthorizationStatus: noop },
         '@/hooks/useResolvedSwapStatus': { useResolvedSwapStatus: () => ({ showWithdrawScreen }) },
         '@/hooks/useSwapRetry': { useSwapRetry: () => ({}) },
@@ -346,7 +348,8 @@ test('live recipient visibility preserves disconnected destinations and respects
         '@/components/Widget/Index': { Widget: childrenOnly },
         '@/context/callbackProvider': { useCallbacks: () => ({ onBackClick: noop, onSwapLifecycle: noop }) },
         '@/lib/swapLifecycle': {},
-        '@/context/swap': { useSwapDataState: () => context, useSwapDataUpdate: () => ({ setSwapViewMounted: noop }) },
+        '@/context/swap': { useSwapDataState: () => context, useSwapDataUpdate: () => ({
+            reportWalletActionFeedback: () => noop, setSwapViewMounted: noop }) },
         '@/hooks/useGaslessAuthorizationStatus': { useGaslessAuthorizationStatus: noop },
         '@/hooks/useResolvedSwapStatus': { useResolvedSwapStatus: () => ({ showWithdrawScreen: !context.swapDetails }) },
         '@/hooks/useSwapRetry': { useSwapRetry: () => ({}) },
@@ -585,9 +588,14 @@ function createSwapHistoryHarness(fetcher, { onCreate, selectedAccount } = {}) {
                     step.explorerUrl && React.createElement('a', { href: step.explorerUrl, 'aria-label': 'View transaction' })))),
         },
     };
+    shared['./ProgressPanelView'] = loadSource(`${withdraw}Presentation/ProgressPanelView.tsx`, shared);
     const workflow = loadSource(`${withdraw}Presentation/DepositWorkflowView.tsx`, {
         ...shared,
         '../Processing/StepTransactionLink': { StepTransactionLink: empty },
+    });
+    const walletProgress = loadSource(`${withdraw}Presentation/walletProgress.tsx`, {
+        ...shared, './DepositWorkflowView': workflow,
+        '../messages/Message': { WalletMessageDetails: childrenOnly },
     });
     const { ProcessingView } = loadSource(`${withdraw}Presentation/ProcessingView.tsx`, {
         ...shared,
@@ -597,6 +605,7 @@ function createSwapHistoryHarness(fetcher, { onCreate, selectedAccount } = {}) {
         '@/components/utils/ShortenString': { default: value => value },
         'lucide-react': { CircleCheck: empty, Undo2: empty },
         './DepositWorkflowView': workflow,
+        './walletProgress': walletProgress,
     });
     const pollingPolicy = loadSource('lib/swapPollingPolicy.ts', {
         '@layerswap/widget-types': widgetTypes,
@@ -980,6 +989,7 @@ for (const provider of ['Hyperliquid', 'Polymarket']) {
             const swapContext = {
                 ...harness.context,
                 useSwapDataUpdate: () => ({
+            reportWalletActionFeedback: () => noop,
                     ...harness.context.useSwapDataUpdate(),
                     createSwap: async () => { creates++; throw new Error('A restored withdrawal must retain its swap'); },
                 }),
@@ -1304,6 +1314,7 @@ function createRetryHarness({
     const swapHooks = {
         useSwapDataState: () => context,
         useSwapDataUpdate: () => ({
+            reportWalletActionFeedback: () => noop,
             startFreshSwapAttempt: () => { harness.freshAttempts++; },
             setSwapViewMounted: noop,
         }),
@@ -1354,6 +1365,8 @@ function createRetryHarness({
         'react-use-intercom': { useIntercom: () => ({ boot: noop, show: noop, update: noop }) },
         '../Failed': { default: empty },
         '../Presentation/ProcessingView': { ProcessingView: empty },
+        '../Wallet/Common/actionMessage': { ActionMessage: empty },
+        '@/stores/gaslessPreferenceStore': { useGaslessPreferenceStore },
         '@/context/swap': swapHooks,
         '@/lib/swapLifecycle': { lifecycleContextFromSwap: () => ({}), PHASE_LIFECYCLE_EVENTS: {} },
         '@/hooks/useLifecycleObservation': { useLifecycleObservation: noop },

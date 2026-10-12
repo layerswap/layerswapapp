@@ -10,10 +10,10 @@ import type {
 import {
     getActionableDepositAction,
     getDepositActionLabel,
-    getCurrentDepositActionIndex,
     isDepositWorkflowComplete,
 } from '@/helpers/depositActions';
-import { DepositWorkflowView } from './DepositWorkflowView';
+import { ProgressPanelView } from './ProgressPanelView';
+import { getWalletProgress, getWalletWorkflowState } from './walletProgress';
 import { WalletExecutionTransition } from './WalletExecutionTransition';
 import { resolvePriceImpactValues } from '@/lib/fees';
 import { WalletIcon } from '@layerswap/ui-kit/components';
@@ -22,7 +22,7 @@ import { type FC, type ReactNode } from 'react';
 import { ICON_CLASSES_WARNING } from '../../Form/SecondaryComponents/validationError/constants';
 import ErrorDismissButton from '../../Form/SecondaryComponents/validationError/ErrorDismissButton';
 import { ErrorDisplay } from '../../Form/SecondaryComponents/validationError/ErrorDisplay';
-import WalletMessage, { WalletMessageDetails } from '../messages/Message';
+import WalletMessage from '../messages/Message';
 import { NetworkSwitchError, networkSwitchFailureReason } from '../Wallet/Common/ensureSourceChain';
 import type { ActionData } from '../Wallet/Common/sharedTypes';
 import type { SwapStepTransactions } from '@/stores/swapTransactionStore';
@@ -120,6 +120,7 @@ export function ConnectWalletView({
     );
 }
 export type SendTransactionViewProps = SubmitButtonProps & {
+    showProgress?: boolean;
     errorMessage?: ReactNode;
     quote?: SwapQuote;
     quoteIsLoading?: boolean;
@@ -151,6 +152,7 @@ export type SendTransactionViewProps = SubmitButtonProps & {
     onCancelWithdrawal?: () => void;
 };
 export function SendTransactionView({
+    showProgress = true,
     icon = <WalletIcon className="stroke-2 w-6 h-6" />,
     errorMessage,
     quote,
@@ -182,39 +184,22 @@ export function SendTransactionView({
     onCancelWithdrawal,
     ...props
 }: SendTransactionViewProps) {
-    const isMultiStepWorkflow =
-        (depositActions?.filter((action) => !!action.step).length ?? 0) > 1 ||
-        (!!stepTransactions?.approve_permit2?.explorerUrl &&
-            !!depositActions?.some(action => action.step === 'approve_permit2')) ||
-        (!!quote?.destination_token &&
-            !!depositActions?.some((action) => action.step === 'publish' || (showSwapProgress && action.step === 'deposit')));
+    const walletProgress = {
+        quote, depositActions, stepTransactions, loading, submissionAccepted,
+        error, swapError, gaslessUnavailable, errorMessage, actionStateText,
+        showSwapProgress, readOnly,
+    };
+    const { isMultiStepWorkflow, hasError, workflowFailed, confirmingSubmission, showStepError } =
+        getWalletWorkflowState(walletProgress);
     const workflowCompleted = isDepositWorkflowComplete(depositActions ?? []);
-    const workflowFailed = depositActions?.some(action => action.status === 'failed');
     const actionableAction = getActionableDepositAction(depositActions);
     const primaryActionText = props.isDisabled && actionButtonText ? actionButtonText : actionableAction
         ? getDepositActionLabel(actionableAction)
         : actionButtonText || 'Swap now';
-    const hasError = error || swapError || gaslessUnavailable;
-    const confirmingSubmission = isMultiStepWorkflow && submissionAccepted && !hasError && !workflowFailed;
-    const showStepError = isMultiStepWorkflow && !loading &&
-        getCurrentDepositActionIndex(depositActions?.filter(action => !!action.step) ?? [], true) !== -1;
-    const errorDescription = showStepError && hasError && errorMessage ? (
-        <WalletMessageDetails>{errorMessage}</WalletMessageDetails>
-    ) : undefined;
-    const workflowProgress = isMultiStepWorkflow ? (
-        <DepositWorkflowView
-            actions={depositActions}
-            stepTransactions={stepTransactions}
-            readOnly={readOnly}
-            loading={loading || confirmingSubmission}
-            error={hasError}
-            errorDescription={errorDescription}
-            actionStateText={confirmingSubmission ? 'Confirming transaction' : actionStateText}
-            destinationToken={quote?.destination_token}
-            receiveAmount={quote?.receive_amount}
-            showDeliveryStep={showSwapProgress}
-        />
-    ) : undefined;
+    const progress = showProgress ? getWalletProgress(walletProgress) : null;
+    const workflowProgress = progress
+        ? <ProgressPanelView data={progress} />
+        : undefined;
     const networkSwitchMessage = networkSwitch && (networkSwitch.isPending || networkSwitch.isError)
         ? <ChangeNetworkMessage data={networkSwitch} network={sourceNetworkName ?? ''} />
         : undefined;

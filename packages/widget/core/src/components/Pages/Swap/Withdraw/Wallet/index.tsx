@@ -35,8 +35,9 @@ type Props = {
     refuel: boolean
     onWalletWithdrawalSuccess?: () => void
     onCancelWithdrawal?: () => void
+    showProgress?: boolean
 };
-export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWalletWithdrawalSuccess, onCancelWithdrawal }) => {
+export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWalletWithdrawalSuccess, onCancelWithdrawal, showProgress }) => {
     const { source_network } = swapData
 
     const { provider, wallets } = useWallet(source_network, "withdrawal")
@@ -52,7 +53,7 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
     return <>
         {
             swapData &&
-            <WithdrawalProvider onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal}>
+            <WithdrawalProvider onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal} showProgress={showProgress}>
                 <WalletWithdrawal
                     swapId={swapId}
                     swapBasicData={swapData}
@@ -355,7 +356,14 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
             }
             onClick={clickHandler}
             onSign={isGaslessSupported(swapData.source_network) ? signHandler : undefined}
+            onWalletActionError={(cause) => {
+                setButtonClicked(true)
+                setIsSignatureError(false)
+                setError(cause instanceof Error ? cause : new Error('Wallet request failed', { cause }))
+            }}
             error={!!error && buttonClicked}
+            walletError={error}
+            isSignatureError={isSignatureError}
             clearError={() => setError(undefined)}
             swapData={swapData}
             refuel={refuel}

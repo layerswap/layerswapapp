@@ -7,11 +7,13 @@ export function WalletExecutionTransition({
     overview,
     workflow,
     controls,
+    controlsKey = 'controls',
     animate = true,
 }: {
     overview?: ReactNode;
     workflow?: ReactNode;
     controls?: ReactNode;
+    controlsKey?: string;
     animate?: boolean;
 }) {
     const reducedMotion = useHydratedReducedMotion();
@@ -38,7 +40,7 @@ export function WalletExecutionTransition({
         ),
         controls && (
             <ExecutionPanel
-                key="controls"
+                key={controlsKey}
                 kind="controls"
                 reducedMotion={reducedMotion}
                 animate={animate}
@@ -82,7 +84,7 @@ function ExecutionPanel({
     if (kind === 'workflow') {
         return (
             <div
-                data-wallet-execution-panel={animate ? kind : undefined}
+                data-wallet-execution-panel={kind}
                 aria-hidden={!isPresent}
                 inert={!isPresent}
             >

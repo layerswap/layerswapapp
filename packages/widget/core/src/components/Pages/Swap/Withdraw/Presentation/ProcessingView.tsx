@@ -15,14 +15,14 @@ import { SwapFailReasons } from '@/Models/RangeError';
 import { SwapStatus, type Refuel } from '@layerswap/widget-types';
 import { CircleCheck, Undo2 } from 'lucide-react';
 import { useMemo, type ReactNode } from 'react';
-import { TransferStatusHeader } from './TransferStatusHeader';
-import Steps, { StepsPanel } from '../Processing/StepsComponent';
+import { ProgressPanelView, type ProgressPanelData } from './ProgressPanelView';
+import { getWalletProgress, type WalletProgressData } from './walletProgress';
 import {
     ProgressStates,
     ProgressStatus,
     StatusStep,
 } from '../Processing/types';
-import { DepositWorkflowView } from './DepositWorkflowView';
+import { getDepositWorkflowProgress } from './DepositWorkflowView';
 import shortenString from '@/components/utils/ShortenString';
 import type { SwapStepTransactions } from '@/stores/swapTransactionStore';
 import { getDepositActionLabel } from '@/helpers/depositActions';
@@ -44,6 +44,7 @@ export function ProcessingView({
     depositActions,
     stepTransactions,
     quote,
+    walletProgress,
 }: {
     swapBasicData: SwapBasicData;
     swapDetails: SwapDetails;
@@ -61,6 +62,7 @@ export function ProcessingView({
     depositActions?: DepositAction[];
     stepTransactions?: SwapStepTransactions;
     quote?: SwapQuote;
+    walletProgress?: WalletProgressData;
 }) {
     const { source_network, destination_network, destination_token } =
         swapBasicData;
@@ -68,13 +70,13 @@ export function ProcessingView({
     const input_tx_explorer = source_network.transaction_explorer_template;
     const output_tx_explorer =
         destination_network.transaction_explorer_template;
-    const swapOutputTransaction = swapDetails.transactions.find(
+    const swapOutputTransaction = swapDetails.transactions?.find(
         (t) => t.type === TransactionType.Output,
     );
-    const swapRefuelTransaction = swapDetails.transactions.find(
+    const swapRefuelTransaction = swapDetails.transactions?.find(
         (t) => t.type === TransactionType.Refuel,
     );
-    const swapRefundTransaction = swapDetails.transactions.find(
+    const swapRefundTransaction = swapDetails.transactions?.find(
         (t) => t.type === TransactionType.Refund,
     );
     // Same-network swaps already have their execution hash while the output
@@ -94,9 +96,11 @@ export function ProcessingView({
         resolved.stepStatuses.output_transfer === ProgressStatus.Complete;
     const outputExplorerUrl = showReceiveTransaction
         ? getExplorerUrl(
-            output_tx_explorer || (sharesExecutionTransaction ? input_tx_explorer : undefined),
-            swapOutputTransaction?.transaction_hash || (sharesExecutionTransaction ? transactionHash : undefined),
-        )
+              output_tx_explorer ||
+                  (sharesExecutionTransaction ? input_tx_explorer : undefined),
+              swapOutputTransaction?.transaction_hash ||
+                  (sharesExecutionTransaction ? transactionHash : undefined),
+          )
         : undefined;
     const refuelExplorerUrl = getExplorerUrl(
         output_tx_explorer,
@@ -130,8 +134,8 @@ export function ProcessingView({
                         : 'Processing your deposit',
                     description:
                         inputConfirmations != null &&
-                            inputMaxConfirmations != null &&
-                            inputConfirmations > 0 ? (
+                        inputMaxConfirmations != null &&
+                        inputConfirmations > 0 ? (
                             <span>
                                 Confirmations{' '}
                                 <span className="text-primary-text">
@@ -156,10 +160,10 @@ export function ProcessingView({
                         <div className="flex space-x-1">
                             <div className="space-x-1 text-primary-text">
                                 {fail_reason ==
-                                    SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? (
+                                SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? (
                                     "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
                                 ) : fail_reason ==
-                                    SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ? (
+                                  SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ? (
                                     "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
                                 ) : (
                                     <div>
@@ -205,24 +209,24 @@ export function ProcessingView({
                 failed: {
                     name:
                         swapDetails.status === SwapStatus.PendingRefund ||
-                            swapDetails.status === SwapStatus.Refunded
+                        swapDetails.status === SwapStatus.Refunded
                             ? 'Processing Failed'
                             : fail_reason ==
                                 SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE
-                                ? `The transfer is on hold`
-                                : 'The transfer has failed',
+                              ? `The transfer is on hold`
+                              : 'The transfer has failed',
                     description: (
                         <div className="flex space-x-1">
                             <div className="space-x-1 text-secondary-text">
                                 {swapDetails.status ===
                                     SwapStatus.PendingRefund ||
-                                    swapDetails.status === SwapStatus.Refunded ? (
+                                swapDetails.status === SwapStatus.Refunded ? (
                                     "There was an issue completing the transfer. We're refunding your deposit."
                                 ) : fail_reason ==
-                                    SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? (
+                                  SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? (
                                     "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
                                 ) : fail_reason ==
-                                    SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ? (
+                                  SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ? (
                                     "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
                                 ) : (
                                     <div>
@@ -369,14 +373,18 @@ export function ProcessingView({
         ];
         const approval = stepTransactions?.approve_permit2;
         if (approval) {
-            const approvalAction = depositActions?.find(action => action.step === 'approve_permit2');
+            const approvalAction = depositActions?.find(
+                (action) => action.step === 'approve_permit2',
+            );
             allSteps.unshift({
                 name: getDepositActionLabel({ step: 'approve_permit2' }),
-                status: approvalAction?.status === 'failed'
-                    ? ProgressStatus.Failed
-                    : approvalAction?.status === 'completed' || transactionHash
-                        ? ProgressStatus.Complete
-                        : ProgressStatus.Current,
+                status:
+                    approvalAction?.status === 'failed'
+                        ? ProgressStatus.Failed
+                        : approvalAction?.status === 'completed' ||
+                            transactionHash
+                          ? ProgressStatus.Complete
+                          : ProgressStatus.Current,
                 explorerUrl: approval.explorerUrl,
                 readOnly,
                 index: 0,
@@ -434,83 +442,77 @@ export function ProcessingView({
             phase === SwapPhase.SettlingOutput ||
             phase === SwapPhase.Completed);
 
-    if (showUnifiedProgress) {
-        return (
-            <DepositWorkflowView
-                actions={depositActions}
-                stepTransactions={stepTransactions}
-                readOnly={readOnly}
-                destinationToken={destination_token}
-                receiveAmount={
-                    phase === SwapPhase.Completed
-                        ? swapOutputTransaction?.amount
-                        : quote?.receive_amount
-                }
-                completed={
-                    phase === SwapPhase.Completed
-                        ? {
-                            completionTime: statusDescription,
-                            explorerUrl: outputExplorerUrl,
-                        }
-                        : undefined
-                }
-                processing={{
-                    title: statusTitle,
-                    inputExplorerUrl,
-                    outputExplorerUrl,
-                    inputStatus: stepStatuses.input_transfer,
-                    outputStatus: stepStatuses.output_transfer,
-                    elapsedTime: displayedElapsedTime,
-                    inputDescription:
-                        stepStatuses.input_transfer ===
-                            ProgressStatus.Current ? (
-                            <p>Confirming transaction</p>
-                        ) : undefined,
-                    outputDescription:
-                        stepStatuses.output_transfer === ProgressStatus.Current
-                            ? `Sending to ${shortenString(swapBasicData.destination_address)}`
-                            : undefined,
-                }}
-            />
+    let progress: ProgressPanelData | null;
+    if (phase === SwapPhase.AwaitingUserDeposit) {
+        progress = getWalletProgress(
+            walletProgress ?? {
+                quote,
+                depositActions,
+                stepTransactions,
+                readOnly,
+            },
         );
-    }
-
-    return (
-        <StepsPanel>
-            <TransferStatusHeader
-                title={statusTitle}
-                description={
-                    showsEstimatedTime
-                        ? displayedElapsedTime
-                        : statusDescription
-                }
-                progress={stepsProgressPercentage}
-                completed={phase === SwapPhase.Completed}
-                icon={
-                    phase === SwapPhase.PendingRefund ? (
-                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
-                            <Undo2
-                                className="h-5 w-5 text-primary"
-                                aria-hidden="true"
-                            />
-                        </span>
-                    ) : phase === SwapPhase.Refunded ? (
-                        <CircleCheck
-                            className="h-8 w-8 text-primary"
-                            strokeWidth={2}
+    } else if (showUnifiedProgress) {
+        progress = getDepositWorkflowProgress({
+            actions: depositActions,
+            stepTransactions,
+            readOnly,
+            destinationToken: destination_token,
+            receiveAmount:
+                phase === SwapPhase.Completed
+                    ? swapOutputTransaction?.amount
+                    : quote?.receive_amount,
+            completed:
+                phase === SwapPhase.Completed
+                    ? {
+                          completionTime: statusDescription,
+                          explorerUrl: outputExplorerUrl,
+                      }
+                    : undefined,
+            processing: {
+                title: statusTitle,
+                inputExplorerUrl,
+                outputExplorerUrl,
+                inputStatus: stepStatuses.input_transfer,
+                outputStatus: stepStatuses.output_transfer,
+                elapsedTime: displayedElapsedTime,
+                inputDescription:
+                    stepStatuses.input_transfer === ProgressStatus.Current ? (
+                        <p>Confirming transaction</p>
+                    ) : undefined,
+                outputDescription:
+                    stepStatuses.output_transfer === ProgressStatus.Current
+                        ? `Sending to ${shortenString(swapBasicData.destination_address)}`
+                        : undefined,
+            },
+        });
+    } else {
+        progress = {
+            title: statusTitle,
+            description: showsEstimatedTime
+                ? displayedElapsedTime
+                : statusDescription,
+            progress: stepsProgressPercentage,
+            completed: phase === SwapPhase.Completed,
+            icon:
+                phase === SwapPhase.PendingRefund ? (
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
+                        <Undo2
+                            className="h-5 w-5 text-primary"
                             aria-hidden="true"
                         />
-                    ) : undefined
-                }
-            />
-            <div className="pt-4">
-                {!hidesSteps && currentSteps.length > 0 && (
-                    <div className="flex flex-col justify-center space-y-4">
-                        <Steps steps={currentSteps} />
-                    </div>
-                )}
-                {showsFailedPanel && failedPanel}
-            </div>
-        </StepsPanel>
-    );
+                    </span>
+                ) : phase === SwapPhase.Refunded ? (
+                    <CircleCheck
+                        className="h-8 w-8 text-primary"
+                        strokeWidth={2}
+                        aria-hidden="true"
+                    />
+                ) : undefined,
+            steps: hidesSteps ? [] : currentSteps,
+            details: showsFailedPanel ? failedPanel : undefined,
+        };
+    }
+
+    return <ProgressPanelView data={progress} />;
 }

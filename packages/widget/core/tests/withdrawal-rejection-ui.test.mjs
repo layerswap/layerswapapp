@@ -14,7 +14,7 @@ for (const [key, value] of Object.entries({ window: dom.window, document: dom.wi
 const fixtureUrl = 'data:text/javascript,' + encodeURIComponent(`
   export const state = { events: [], errors: [] }
   export const useSwapDataState = () => ({ swapDetails: state.swapDetails, depositActionsResponse: state.depositActions })
-  export const useSwapDataUpdate = () => ({ setSwapId(id) { state.selectedSwapId = id },
+  export const useSwapDataUpdate = () => ({ reportWalletActionFeedback() { return () => {} }, setSwapId(id) { state.selectedSwapId = id },
     startFreshSwapAttempt() { state.freshAttempts++ },
     createSwap: (...args) => { state.creations++; return state.createSwap(...args) },
     mutateSwap: async response => { state.reconciled.push(response); state.swapDetails = response.data.swap },

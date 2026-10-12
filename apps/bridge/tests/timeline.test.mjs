@@ -925,7 +925,7 @@ test('deposit widget navigation shares canvas, modal and timeline controls', asy
         assert.match(summary.textContent, /99 USDC/);
         assert.match(summary.textContent, /Base/);
         await act(async () => [...container.querySelectorAll('ol[aria-label="Milestones"] button')].find(button => button.textContent.includes('Deposit details')).click());
-        assert.equal(container.querySelector('[data-wallet-execution-panel="workflow"]'), null);
+        assert.equal(container.querySelector('[data-steps-panel]'), null);
         assert.equal(container.querySelector('[data-wallet-execution-panel="overview"]'), null);
         assert.match(container.querySelector('[data-wallet-execution-panel="controls"]').textContent, /Maximum/);
         await act(async () => [...container.querySelectorAll('ol[aria-label="Milestones"] button')].find(button => button.textContent.includes('Transfer complete')).click());
@@ -2151,7 +2151,9 @@ test('wallet execution exchanges the preparing button for persistent steps and r
     try {
         await act(async () => root.render(preview(preparing.snapshot, preparing.at)));
         assert.match(container.querySelector('[data-wallet-execution-panel="controls"]').textContent, /Preparing swap/);
-        assert.equal(container.querySelector('[data-wallet-execution-panel="workflow"]'), null);
+        const preparingButton = [...container.querySelectorAll('button')].find(button => button.textContent.includes('Preparing swap'));
+        assert.ok(preparingButton);
+        assert.equal(container.querySelector('[data-steps-panel]'), null);
 
         await act(async () => root.render(preview(approving.snapshot, approving.at)));
         const workflow = container.querySelector('[data-wallet-execution-panel="workflow"]');
@@ -2160,7 +2162,7 @@ test('wallet execution exchanges the preparing button for persistent steps and r
         assert.equal(panel.style.height, 'auto', 'reduced motion shows the final height immediately');
         assert.equal(panel.style.opacity, '1');
         assert.equal(workflow.style.height, '', 'the wallet wrapper does not run a second height animation');
-        assert.equal(container.querySelector('[data-wallet-execution-panel="controls"]'), null, 'reduced motion removes the old button immediately');
+        assert.equal(preparingButton.isConnected, false, 'the old preparing button is removed immediately');
 
         await act(async () => root.render(preview(signing.snapshot, signing.at)));
         assert.equal(container.querySelector('[data-wallet-execution-panel="workflow"]'), workflow);
@@ -2168,7 +2170,7 @@ test('wallet execution exchanges the preparing button for persistent steps and r
         assert.match(steps.textContent, /Sign in your wallet/);
 
         await act(async () => root.render(preview(preparing.snapshot, preparing.at)));
-        assert.equal(container.querySelector('[data-wallet-execution-panel="workflow"]'), null);
+        assert.equal(container.querySelectorAll('[data-steps-panel]').length, 0);
         assert.match(container.querySelector('[data-wallet-execution-panel="controls"]').textContent, /Preparing swap/);
     } finally {
         await act(async () => root.unmount());

@@ -60,7 +60,7 @@ const actionsFor = nonce => [
     { type: 'transfer', step: 'publish', status: 'waiting', amount: '1', to_address: '0x456' },
 ]
 
-function createWorkflow({ mounted = false, realPolling = false, atomic = false, renderResolvedScreen = false } = {}) {
+function createWorkflow({ mounted = false, realPolling = false, atomic = false, renderResolvedScreen = false, walletController = false } = {}) {
     let view
     const calls = { refresh: [], confirmations: [], sign: [], authorize: [], transfer: [], batches: [], executionStarts: [], quoteLoading: [], sleeps: [], storedTransactions: [], authorizations: [], signatures: [], errors: [], lifecycle: [], success: 0 }
     const state = {
@@ -106,7 +106,7 @@ function createWorkflow({ mounted = false, realPolling = false, atomic = false, 
     }
     const preferenceStore = { useGaslessPreferenceStore: store(preferences) }
     const network = { name: 'BASE_MAINNET', transaction_explorer_template: 'https://base.example.invalid/tx/{0}' }
-    const wallet = { id: 'wallet', address: sourceAddress, isActive: true, asSourceSupportedNetworks: [network.name] }
+    const wallet = { id: 'wallet', address: sourceAddress, isActive: true, asSourceSupportedNetworks: [network.name], withdrawalSupportedNetworks: [network.name] }
     const cache = new Map([[cacheKey, { data: state.depositActionsResponse }]])
     let pollingKey
     const api = {
@@ -186,25 +186,38 @@ function createWorkflow({ mounted = false, realPolling = false, atomic = false, 
         if (!(index in hooks)) hooks[index] = initial
         return [hooks[index], value => { hooks[index] = typeof value === 'function' ? value(hooks[index]) : value }]
     }
-    const Steps = () => null
-    const workflowView = loadSource('../src/components/Pages/Swap/Withdraw/Presentation/DepositWorkflowView.tsx', {
-        '@/helpers/depositActions': depositActions,
+    const Steps = ({ steps }) => walletController
+        ? createElement('ol', null, steps.map((step, index) => createElement('li', { key: index, 'data-status': step.status }, step.name, step.description)))
+        : null
+    const SubmitButton = walletController
+        ? ({ children, onClick, isDisabled }) => createElement('button', { onClick, disabled: isDisabled }, children)
+        : noop
+    const progressPanel = loadSource('../src/components/Pages/Swap/Withdraw/Presentation/ProgressPanelView.tsx', {
         '../Processing/StepsComponent': {
             default: Steps,
             StepsPanel: ({ children }) => createElement(Fragment, null, children),
         },
-        '../Processing/StepTransactionLink': { StepTransactionLink: noop },
-        '@/components/utils/RoundDecimals': { truncateDecimals: value => value },
         './TransferStatusHeader': { TransferStatusHeader: noop },
+    })
+    const workflowView = loadSource('../src/components/Pages/Swap/Withdraw/Presentation/DepositWorkflowView.tsx', {
+        '@/helpers/depositActions': depositActions,
+        '@/components/utils/RoundDecimals': { truncateDecimals: value => value },
+        './ProgressPanelView': progressPanel,
         '../Processing/types': progressTypes,
+    })
+    const walletProgress = loadSource('../src/components/Pages/Swap/Withdraw/Presentation/walletProgress.tsx', {
+        '@/helpers/depositActions': depositActions,
+        './DepositWorkflowView': workflowView,
+        '../messages/Message': { WalletMessageDetails: ({ children }) => children },
     })
     const ErrorDisplay = () => null
     const walletViews = loadSource('../src/components/Pages/Swap/Withdraw/Presentation/WalletActionsView.tsx', {
-        '@/components/Buttons/submitButton': { default: noop },
+        '@/components/Buttons/submitButton': { default: SubmitButton },
         '@/components/Icons/FailIcon': { default: noop },
         '@/components/Icons/InfoIcon': { default: noop },
         '@/helpers/depositActions': depositActions,
-        './DepositWorkflowView': workflowView,
+        './ProgressPanelView': progressPanel,
+        './walletProgress': walletProgress,
         './WalletExecutionTransition': {
             WalletExecutionTransition: ({ workflow, controls }) =>
                 createElement(Fragment, null, workflow, controls),
@@ -226,7 +239,15 @@ function createWorkflow({ mounted = false, realPolling = false, atomic = false, 
             effect.initialized = true
         }
     }
-    const { SendTransactionButton, ButtonWrapper } = loadSource(`${walletPath}buttons.tsx`, {
+    const reportWalletActionFeedback = feedback => {
+        state.feedback = feedback
+        return () => {
+            if (state.feedback === feedback) {
+                state.feedback = undefined
+            }
+        }
+    }
+    const buttonImports = {
         '@/helpers/depositActions': depositActions,
         '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: event => calls.lifecycle.push(event) }) },
         '@/lib/swapLifecycle': lifecycle,
@@ -269,6 +290,7 @@ function createWorkflow({ mounted = false, realPolling = false, atomic = false, 
         '@/context/swap': {
             useSwapDataState: () => renderResolvedScreen ? { ...state, ...swapContext.useSwapDataState() } : state,
             useSwapDataUpdate: () => ({
+                reportWalletActionFeedback,
                 ...(realPolling ? swapContext.useSwapDataUpdate() : { setWalletActionExecuting: noop }),
                 createSwap: state.createSwap ?? (() => assert.fail('Retry must keep the existing swap')),
                 startFreshSwapAttempt: noop,
@@ -303,6 +325,9 @@ function createWorkflow({ mounted = false, realPolling = false, atomic = false, 
         './ensureSourceChain': sourceChain,
         '../../Presentation/WalletActionsView': mounted ? { ...walletViews, SendTransactionView: props => {
             view = props
+            if (walletController) {
+                return createElement(walletViews.SendTransactionView, props)
+            }
             return renderResolvedScreen ? createElement('button', null, props.actionStateText ?? 'Swap now') : null
         } } : walletViews,
         '../../Processing/StepsComponent': { default: Steps },
@@ -323,7 +348,49 @@ function createWorkflow({ mounted = false, realPolling = false, atomic = false, 
         swr: realPolling ? require('swr') : {
             useSWRConfig: () => ({ mutate: async (key, result) => { const data = await result; cache.set(key, data); return data } }),
         },
-    })
+    }
+    const { SendTransactionButton, ButtonWrapper } = loadSource(`${walletPath}buttons.tsx`, buttonImports)
+    let WalletWithdrawal
+    if (walletController) {
+        const messages = loadSource('../src/components/Pages/Swap/Withdraw/messages/TransactionMessages.tsx', {
+            './Message': { default: ({ header, details }) => createElement('div', null, header, details), WalletUnknownError: noop },
+            '@/lib/address/Address': {},
+        })
+        const actionView = loadSource('../src/components/Pages/Swap/Withdraw/Presentation/ActionMessageView.tsx', {
+            '../Wallet/Common/isUserRejection': rejection,
+            '@layerswap/widget-types': walletTypes,
+            '../messages/Message': { WalletUnknownError: noop },
+            '../messages/TransactionMessages': messages,
+        })
+        const actionMessage = loadSource(`${walletPath}actionMessage.tsx`, {
+            './isUserRejection': rejection,
+            '@/context/swap': buttonImports['@/context/swap'],
+            '@/lib/ErrorHandler': buttonImports['@/lib/ErrorHandler'],
+            '@/stores/gaslessPreferenceStore': preferenceStore,
+            '@layerswap/widget-types': walletTypes,
+            '../../Presentation/ActionMessageView': actionView,
+            react: React,
+        })
+        const walletComponents = loadSource('../src/components/Pages/Swap/Withdraw/Wallet/index.tsx', {
+            ...buttonImports,
+            '@layerswap/widget-types': { ...walletTypes, NetworkType: { Polymarket: 'polymarket' } },
+            '@/context/withdrawalContext': { WithdrawalProvider: ({ children }) => children },
+            './Common/buttons': { SendTransactionButton, ConnectWalletButton: noop },
+            '../Presentation/Page2Sections': { WalletSubmissionView: ({ children }) => children },
+            './Common/actionMessage': actionMessage,
+            '../messages/TransactionMessages': messages,
+            '@/hooks/useTransfer': { useTransfer: () => ({ executeTransfer: () => assert.fail('Atomic rejection must not fall back to a transfer') }) },
+            '@/hooks/useGasless': { useGasless: () => ({ isGaslessSupported: () => false }) },
+            '@/context/rpcHealthContext': { useRpcHealth: () => ({ health: { status: 'healthy' } }) },
+            './RPCUnhealthyMessage': { default: noop },
+            '@/lib/extendedRoutes/registry': { isExtendedSourceNetwork: () => false },
+            '../WithdrawalProviders/Hyperliquid': {},
+            '../WithdrawalProviders/Polymarket': {},
+            '@layerswap/wallet-core': { isProviderHydrated: () => true },
+            './Common/isUserRejection': rejection,
+        })
+        WalletWithdrawal = walletComponents.WalletWithdrawal
+    }
     const findElement = (node, type, predicate = () => true) => {
         if (!node || typeof node !== 'object') return undefined
         if (node.type === type && predicate(node)) return node
@@ -370,7 +437,9 @@ function createWorkflow({ mounted = false, realPolling = false, atomic = false, 
         state, calls, render, wallet, network, preferences, stores, execution,
         Component: () => realPolling
             ? createElement(swapContext.SwapDataProvider, null, createElement(SwapView, null, createElement(SendTransactionButton, props())))
-            : createElement(SendTransactionButton, props()),
+            : walletController
+                ? createElement(WalletWithdrawal, { swapBasicData: props().swapData, swapId: state.swapId, refuel: false })
+                : createElement(SendTransactionButton, props()),
         get view() { return view },
         poll: async () => {
             assert.ok(pollingKey, 'Polling remains enabled after rejection')
@@ -431,6 +500,68 @@ test('new backend batch rejection never falls back to signing or an ordinary tra
     assert.deepEqual(flow.calls.sign, [])
     assert.deepEqual(flow.calls.storedTransactions, [])
 })
+
+for (const rejectedError of [walletErrors.userRejectedError(), { code: 4001 }]) {
+    test(`atomic rejection reaches the wallet message, retry button and shared feedback: ${rejectedError instanceof Error ? 'adapter error' : 'raw code'}`, async () => {
+        const dom = new JSDOM('<div id="root"></div>')
+        globalThis.window = dom.window
+        globalThis.document = dom.window.document
+        globalThis.IS_REACT_ACT_ENVIRONMENT = true
+        const container = document.getElementById('root')
+        const root = createRoot(container)
+        const flow = createWorkflow({ mounted: true, atomic: true, walletController: true })
+        flow.state.swapBasicData = {
+            source_network: { ...flow.network, type: 'evm' },
+            destination_network: flow.network,
+            source_token: atomicFixtures.token,
+            destination_token: atomicFixtures.swap.destination_token,
+            destination_address: '0xdestination',
+            use_deposit_address: false,
+        }
+        flow.state.apiActions = [atomicFixtures.actions.zero_allowance]
+        flow.state.depositActionsResponse = flow.state.apiActions
+        flow.state.quote = { receive_amount: 1, destination_token: atomicFixtures.swap.destination_token }
+        flow.state.batchError = rejectedError
+        try {
+            await act(() => root.render(createElement(flow.Component)))
+            await act(async () => {
+                await flow.poll()
+                root.render(createElement(flow.Component))
+            })
+            assert.equal(container.querySelector('button').textContent, 'Approve and swap')
+            await act(async () => flow.view.handleClick())
+            assert.equal(container.querySelector('button').textContent, 'Try again')
+            assert.match(container.textContent, /Transaction rejected/)
+            assert.doesNotMatch(container.textContent, /Signing rejected/)
+            assert.equal(flow.state.feedback.failed, true)
+            assert.equal(flow.state.feedback.isSignatureError, false)
+            assert.equal(rejection.isUserRejection(flow.state.feedback.error), true)
+            assert.equal(flow.state.swapId, swapId)
+            assert.deepEqual(flow.calls.errors, [], 'wallet rejection is not reported as an unexpected error')
+            assert.deepEqual(flow.calls.transfer, [])
+            assert.deepEqual(flow.calls.sign, [])
+            assert.deepEqual(flow.calls.storedTransactions, [])
+
+            const retry = Promise.withResolvers()
+            flow.state.batchError = undefined
+            flow.state.onWalletPrompt = () => retry.promise
+            let pending
+            await act(async () => { pending = flow.view.handleClick() })
+            assert.doesNotMatch(container.textContent, /Transaction rejected/)
+            assert.equal(flow.state.feedback.failed, false)
+            assert.equal(flow.state.feedback.error, undefined)
+            await act(async () => { retry.resolve(); await pending })
+            assert.equal(flow.calls.batches.length, 2, 'retry reuses the existing swap')
+            assert.equal(flow.state.swapId, swapId)
+        } finally {
+            await act(() => root.unmount())
+            dom.window.close()
+            delete globalThis.window
+            delete globalThis.document
+            delete globalThis.IS_REACT_ACT_ENVIRONMENT
+        }
+    })
+}
 
 test('wallet capabilities alone never promise an approval before the server provides the calls', () => {
     const flow = createWorkflow()

@@ -21,7 +21,7 @@ const fixtureUrl = moduleUrl(`
   export const useSwapDataState = () => state.swap
   export const useSwapDataUpdate = () => ({
     setSwapId(id) { state.swap.swapId = id }, setQuoteLoading() {}, markWalletExecutionStarted() {},
-    setWalletActionExecuting() {}, setSwapModalOpen(open) { state.swap.swapModalOpen = open },
+    reportWalletActionFeedback() { return () => {} }, setWalletActionExecuting() {}, setSwapModalOpen(open) { state.swap.swapModalOpen = open },
     startFreshSwapAttempt() {
       state.freshAttempts++
       state.swap = { ...state.swap, swapId: undefined, swapDetails: undefined, depositActionsResponse: undefined }
@@ -45,7 +45,7 @@ const fixtureUrl = moduleUrl(`
   export const WalletMessageDetails = ({ children }) => children
   export const useAsyncModal = () => ({})
   export const useContractAddressStore = () => ({})
-  export const useResolvedSwapStatus = () => ({})
+  export const useResolvedSwapStatus = () => ({ phase: 'input_pending', isTerminal: false })
   export const ContractSourceAddressValidationCache = () => null
   export const SwapDetailsSceleton = () => null
   export const generateSwapInitialValuesFromSwap = () => ({ amount: '1', depositMethod: 'wallet' })
@@ -72,7 +72,11 @@ const formUrl = moduleUrl(`
     props => createElement(Fragment, null, createElement('output', { id: 'amount' }, String(props.values.amount)), children(props)))
 `)
 const drawerUrl = moduleUrl(`
-  const Drawer = ({ show, children }) => show ? children : null
+  import { state } from ${JSON.stringify(fixtureUrl)}
+  const Drawer = ({ show, children, setShow }) => {
+    if (show) state.closeModal = setShow
+    return show ? children : null
+  }
   Drawer.Snap = ({ children }) => children
   export default Drawer
 `)
@@ -101,7 +105,7 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
     if (specifier.endsWith('/Modal/vaulModal')) return { url: drawerUrl, shortCircuit: true }
     if (formFixtures.some(path => specifier.endsWith(path))) return { url: fixtureUrl, shortCircuit: true }
   }
-  if (['/Wallet/Common/buttons.js', '/Presentation/WalletActionsView.js', '/Form/FormWrapper.js'].some(path => context.parentURL?.endsWith(path))) {
+  if (['/Wallet/Common/buttons.js', '/Presentation/WalletActionsView.js', '/Presentation/walletProgress.js', '/Form/FormWrapper.js'].some(path => context.parentURL?.endsWith(path))) {
     if (specifier.endsWith('/Buttons/submitButton')) return { url: buttonUrl, shortCircuit: true }
     if (specifier.endsWith('/hooks/useWallet')) return { url: moduleUrl(`import { state } from ${JSON.stringify(fixtureUrl)}; export default () => ({ wallets:[state.wallet], getProvider() {} })`), shortCircuit: true }
     if (specifier.endsWith('/lib/gases/useSWRGas')) return { url: moduleUrl('export default () => ({})'), shortCircuit: true }
@@ -416,11 +420,13 @@ test(`a transient completed ${initialPublish ? 'known' : 'late'} publication pre
   await act(async () => { submission.resolve('published-hash'); await state.pending })
   assert.equal(state.successes, 1)
   assert.equal(amount(), '0', 'the confirmed wallet submission clears the form')
-  assert.equal(useGaslessPreferenceStore.getState().gaslessEnabled, true)
+  assert.equal(useGaslessPreferenceStore.getState().gaslessEnabled, false, 'submission keeps the active quote in its selected fee mode')
   assert.equal(state.balanceRefreshes, 1)
   assert.equal(useDepositSignatureStore.getState().signatures['swap-1'], undefined)
   assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].hash, 'published-hash')
   assert.equal(state.creations, 0)
+  await act(async () => state.closeModal(false))
+  assert.equal(useGaslessPreferenceStore.getState().gaslessEnabled, true, 'closing the modal restores the default for the next swap')
   assert.deepEqual(errors, [])
 })
 }

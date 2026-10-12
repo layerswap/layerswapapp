@@ -121,13 +121,9 @@ const SwapDetails: FC<Props> = ({
     return (
         <Container type={type} goBack={onBackClick}>
             <SwapContentView
-                transferStage={
-                    !compactsDuringWalletExecution
-                        ? resolved.showWithdrawScreen
-                            ? 'withdraw'
-                            : 'processing'
-                        : undefined
-                }
+                progress={<Processing inputFailureMessage={gaslessFailureMessage} />}
+                stage={resolved.showWithdrawScreen ? 'withdraw' : 'processing'}
+                animateControls={!compactsDuringWalletExecution}
                 summary={
                     swapBasicData.use_deposit_address &&
                     resolved.showWithdrawScreen ? null : (
@@ -170,23 +166,17 @@ const SwapDetails: FC<Props> = ({
                             onCancelWithdrawal={onCancelWithdrawal}
                         />
                     )
-                ) : (
+                ) : canRetry ? (
                     <ProcessingSectionView
                         actions={
-                            canRetry && (
-                                <RetryView
-                                    canSwitchToStandard={canSwitchToStandard}
-                                    onRetry={handleRetry}
-                                    onSwitchToStandard={handleSwitchToStandard}
-                                />
-                            )
+                            <RetryView
+                                canSwitchToStandard={canSwitchToStandard}
+                                onRetry={handleRetry}
+                                onSwitchToStandard={handleSwitchToStandard}
+                            />
                         }
-                    >
-                        <Processing
-                            inputFailureMessage={gaslessFailureMessage}
-                        />
-                    </ProcessingSectionView>
-                )}
+                    />
+                ) : null}
             </SwapContentView>
         </Container>
     );
