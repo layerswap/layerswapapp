@@ -51,7 +51,7 @@ export default function SearchData({ searchParam }: SearchDataProps) {
     const isEmptyData = !!data && allData.every(s => !s?.swap?.transactions?.length);
 
     // Handle error and empty states
-    if (error || isEmptyData) return <NotFound />;
+    if ((error && allData.length === 0) || isEmptyData) return <NotFound />;
     if (isLoading) return <LoadingBlocks variant="swap" />;
 
     // Multiple swaps found - show list view
