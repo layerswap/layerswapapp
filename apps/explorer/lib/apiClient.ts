@@ -9,7 +9,8 @@ export class ApiClientError extends Error {
     public readonly response: { status: number; data: unknown };
 
     constructor(status: number, data: unknown,) {
-        super(`Layerswap API request failed with status ${status}`);
+        const message = (data as ApiResponse<unknown>)?.error?.message;
+        super(typeof message === "string" && message ? message : `Layerswap API request failed with status ${status}`);
         this.name = "ApiClientError";
         this.response = { status, data };
     }
