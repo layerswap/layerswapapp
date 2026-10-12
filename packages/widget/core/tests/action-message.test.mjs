@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test, { after } from 'node:test'
 import { registerHooks } from 'node:module'
+import { existsSync } from 'node:fs'
 import { extname } from 'node:path'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
@@ -26,7 +27,8 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
     return { url: messageWrapper, shortCircuit: true }
   }
   if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
-    return nextResolve(`${specifier}.js`, context)
+    const file = new URL(`${specifier}.js`, context.parentURL)
+    return nextResolve(existsSync(file) ? `${specifier}.js` : `${specifier}/index.js`, context)
   }
   return nextResolve(specifier, context)
 } })

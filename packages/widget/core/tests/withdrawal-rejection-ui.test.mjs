@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test, { after, afterEach, beforeEach } from 'node:test'
 import { registerHooks } from 'node:module'
+import { existsSync } from 'node:fs'
 import { extname } from 'node:path'
 import { JSDOM } from 'jsdom'
 import { act, createElement } from 'react'
@@ -48,7 +49,10 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
   if ((/\/use(?:Hyperliquid|Polymarket)Withdrawal\.js$/.test(context.parentURL ?? '') || context.parentURL?.endsWith('/executeProviderWithdrawal.js')) && mocked.some(path => specifier.endsWith(path))) {
     return { url: fixtureUrl, shortCircuit: true }
   }
-  if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) return nextResolve(`${specifier}.js`, context)
+  if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
+    const file = new URL(`${specifier}.js`, context.parentURL)
+    return nextResolve(existsSync(file) ? `${specifier}.js` : `${specifier}/index.js`, context)
+  }
   return nextResolve(specifier, context)
 } })
 after(() => {
