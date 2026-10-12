@@ -21,7 +21,8 @@ function loadSource(path, imports = {}) {
 }
 
 const { ActionMessageType } = loadSource('../../types/src/actionMessage.ts')
-const walletTypes = { ActionMessageType }
+const { NetworkType } = loadSource('../../types/src/network.ts')
+const walletTypes = { ActionMessageType, NetworkType }
 const walletPath = '../src/components/Pages/Swap/Withdraw/Wallet/Common/'
 const walletErrors = loadSource('../../../wallets/core/src/lib/walletErrors.ts', { '@layerswap/widget-types': walletTypes })
 const { isUserRejection } = loadSource(`${walletPath}isUserRejection.ts`, { '@layerswap/wallet-core/errors': walletErrors })
@@ -60,11 +61,16 @@ const { ActionMessages } = loadSource('../src/components/Pages/Swap/Withdraw/mes
     '@/lib/address/Address': {},
 })
 const depositActions = loadSource('../src/helpers/depositActions.ts')
+const walletMessages = loadSource('../src/components/Pages/Swap/Withdraw/messages/walletErrorMessage.ts', {
+    '@layerswap/widget-types': walletTypes,
+})
 const presentation = loadSource('../src/components/Pages/Swap/Withdraw/Presentation/ActionMessageView.tsx', {
     '@layerswap/widget-types': walletTypes,
+    '@layerswap/wallet-core/errors': walletErrors,
     '../Wallet/Common/isUserRejection': { isUserRejection },
     '../messages/Message': { WalletUnknownError: () => null },
     '../messages/TransactionMessages': { ActionMessages },
+    '../messages/walletErrorMessage': walletMessages,
 })
 const gaslessState = {
     gaslessUnavailable: false,
@@ -83,7 +89,7 @@ const { ActionMessage: ActionMessageController } = loadSource(`${walletPath}acti
 })
 
 function ActionMessage(props) {
-    const view = ActionMessageController(props)
+    const view = ActionMessageController({ sourceNetwork: { display_name: 'Optimism', type: NetworkType.EVM }, ...props })
     return view.type(view.props)
 }
 

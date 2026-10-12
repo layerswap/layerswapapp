@@ -16,6 +16,9 @@ const RAW_CODE_LIMIT = 128
 const MAX_NODES = 16
 
 export function walletErrorCode(candidate: unknown): string | undefined {
+    // viem assigns 4902 to every SwitchChainError, even a synchronization failure.
+    // Only the provider's cause can establish that a chain is actually unknown.
+    if ((candidate as ErrorCandidate | undefined)?.name === 'SwitchChainError') return undefined
     const code = (candidate as ErrorCandidate | undefined)?.code
     if (typeof code === 'string' && code) return code.slice(0, RAW_CODE_LIMIT)
     if (typeof code === 'number' && Number.isFinite(code)) return String(code)
@@ -150,7 +153,7 @@ const NAME_RULES: Record<Tier, NameRules> = {
         [/EstimateGas|GasEstimat|UnpredictableGas/i, 'gas_estimation_failed'],
         [/ContractFunction|CallException|Revert/i, 'contract_reverted'],
         [/Nonce|Replacement/i, 'nonce_or_replacement'],
-        [/ChainNotConfigured|ChainNotAdded|SwitchChain/i, 'chain_not_added'],
+        [/ChainNotConfigured|ChainNotAdded/i, 'chain_not_added'],
         [/Disconnected|ProviderDisconnected/i, 'wallet_disconnected'],
         [/UnsupportedProviderMethod|MethodNotSupported|MethodNotFound/i, 'unsupported_method'],
         [/InvalidParams/i, 'invalid_parameters'],
@@ -167,7 +170,7 @@ const NAME_RULES: Record<Tier, NameRules> = {
 // under "Details:". The cause node is already a candidate, so these contribute
 // no descriptive text. viem maps every node -32000 to InvalidInputRpcError
 // although geth uses -32000 for funds / nonce / revert failures.
-const BUCKET_NAMES = /InternalRpc|UnknownRpc|InvalidInputRpc|^RpcError$|^RpcRequestError$|^BaseError$/i
+const BUCKET_NAMES = /InternalRpc|UnknownRpc|InvalidInputRpc|^SwitchChainError$|^RpcError$|^RpcRequestError$|^BaseError$/i
 
 // ---- Decline text. Only phrasing that names the user (or a wallet SDK's own
 // ---- decline token) counts: "origin rejected the request" is a node or relay
@@ -206,7 +209,7 @@ const MESSAGE_RULES: Record<TextTier, NameRules> = {
         [/disconnected|not connected/i, 'wallet_disconnected'],
         [/method not (supported|found)|unsupported method|does not support/i, 'unsupported_method'],
         [/invalid (params|parameters|argument)/i, 'invalid_parameters'],
-        [/network error|failed to fetch|load failed|econnre|socket hang up|fetch failed/i, 'network_error'],
+        [/network error|failed to fetch|load failed|econnre|socket hang up|fetch failed|RPC endpoint returned HTTP (?:client|server) error/i, 'network_error'],
         [/timed? ?out|timeout/i, 'timeout'],
         [/already pending|already processing/i, 'request_pending'],
     ],
@@ -230,6 +233,17 @@ function isErrorLike(value: unknown): value is ErrorCandidate {
 /** Innermost first: deeper nodes describe the raw failure, wrappers add noise. */
 function collectCandidates(error: unknown): ErrorCandidate[] {
     return collectNodes(error).sort((a, b) => b.depth - a.depth).map(node => node.value)
+}
+
+/** Bounded cause text; retain the adapter's code unless it is missing or synthetic. */
+export function walletErrorDetails(error: unknown): { message: string; code?: string } {
+    const candidates = collectCandidates(error)
+    const messages = candidates.map(candidate => candidate.shortMessage || candidate.message)
+        .filter((message): message is string => typeof message === 'string' && !!message)
+    return {
+        message: ([...new Set(messages)].join(' | ') || errorMessage(error)).slice(0, 2048),
+        code: walletErrorCode(error) ?? candidates.map(walletErrorCode).find(code => code !== undefined),
+    }
 }
 
 /** Outermost first: the adapter that wrapped a failure has the final say on its meaning. */

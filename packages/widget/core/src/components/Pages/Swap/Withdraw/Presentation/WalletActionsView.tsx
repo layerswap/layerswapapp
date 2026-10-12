@@ -126,6 +126,7 @@ export type SendTransactionViewProps = SubmitButtonProps & {
     quoteError?: boolean;
     loading?: boolean;
     networkSwitch?: ActionData;
+    walletRequestRecovery?: ReactNode;
     sourceNetworkName?: string;
     actionStateText?: string;
     actionButtonText?: string;
@@ -155,6 +156,7 @@ export function SendTransactionView({
     quoteError,
     loading,
     networkSwitch,
+    walletRequestRecovery,
     sourceNetworkName,
     actionStateText,
     actionButtonText,
@@ -226,7 +228,7 @@ export function SendTransactionView({
                 workflow={workflowProgress}
                 controls={
                     isMultiStepWorkflow && loading ? (
-                        message
+                        <>{message}{walletRequestRecovery}</>
                     ) : (
                         <>
                             {message}
@@ -238,6 +240,7 @@ export function SendTransactionView({
                             >
                                 {actionStateText || 'Preparing…'}
                             </ButtonWrapper>
+                            {walletRequestRecovery}
                         </>
                     )
                 }

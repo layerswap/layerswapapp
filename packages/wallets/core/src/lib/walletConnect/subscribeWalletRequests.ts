@@ -2,6 +2,7 @@ import { isMobile } from '@layerswap/utils'
 import { walletKey } from '../walletKey'
 import { getDynamicWcMetadata, getPendingDynamicWcMetadata } from './dynamicMetadata'
 import { isSafeDeepLink } from './foregroundWalletApp'
+import { recordWalletRequest } from './walletRequestStore'
 
 type Session = {
     topic: string
@@ -39,8 +40,9 @@ function resolveDeepLink(session: Session, namespace: string): string | undefine
         getPendingDynamicWcMetadata(namespace),
         address ? getDynamicWcMetadata(namespace, address) : null,
     ].find(meta => meta?.deepLink && walletKey(meta.name) === walletKey(peer.name))
-    const link = peer.redirect?.native || peer.redirect?.universal || metadata?.deepLink
-    if (!link || !isSafeDeepLink(link)) return undefined
+    const link = [peer.redirect?.native, peer.redirect?.universal, metadata?.deepLink]
+        .find(candidate => candidate && isSafeDeepLink(candidate))
+    if (!link) return undefined
     // Use the same MetaMask workaround as the pairing link builder.
     return walletKey(peer.name) === 'metamask' ? 'https://metamask.app.link' : link
 }
@@ -87,7 +89,15 @@ export function subscribeWalletRequests(client: SignClient, namespace: string): 
             // Link-mode sessions carry their request in the SDK's own app link.
             if (session.transportType === 'link_mode') return
             const link = resolveDeepLink(session, namespace)
-            if (link) window.location.href = buildWalletRequestLink(link, id, topic)
+            const href = link ? buildWalletRequestLink(link, id, topic) : undefined
+            recordWalletRequest({
+                walletName: session.peer.metadata.name,
+                namespace,
+                accounts: session.namespaces[namespace]?.accounts.map(account => account.split(':').slice(2).join(':')) ?? [],
+                href,
+            })
+            if (href) window.location.href = href
+            else console.warn('WalletConnect request sent without a wallet link', { wallet: session.peer.metadata.name, namespace })
         } catch (error) {
             // A deleted session or blocked navigation must not reject a request
             // that has already been published and can still be approved manually.

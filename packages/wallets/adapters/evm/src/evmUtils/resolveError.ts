@@ -23,7 +23,9 @@ export const resolveError = (error: BaseError): ResolvedError | undefined => {
 
     // Decline evidence first: a nested -32000 is also what WalletConnect wallets
     // answer a declined prompt with, so it must not shadow the rejection.
-    if (code_name === 4001 || inner_code === -1 || isUserRejection(error))
+    // A nested -1 is also viem's UnknownRpcError sentinel, not evidence that
+    // the user declined. Require a rejection code, SDK name, or user-decline text.
+    if (code_name === 4001 || isUserRejection(error))
         return "transaction_rejected"
 
     if (code_name === 'INSUFFICIENT_FUNDS'
@@ -36,9 +38,7 @@ export const resolveError = (error: BaseError): ResolvedError | undefined => {
 }
 
 /**
- * Preserve the EVM adapter's legacy nested -1/data.code cancellation handling.
- * Keep this compatibility rule at the adapter boundary: an unrecognized -1
- * from another provider must not become a cancellation just because it is wrapped.
+ * Share the rejection decision between EVM signing and transaction errors.
  */
 export function isEvmUserRejection(error: unknown): boolean {
     return isUserRejection(error) || resolveError(error as BaseError) === 'transaction_rejected'

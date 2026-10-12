@@ -13,6 +13,7 @@ const hooks = registerHooks({
     },
 })
 const { buildWalletRequestLink, subscribeWalletRequests } = await import('../dist/esm/lib/walletConnect/subscribeWalletRequests.js')
+const { walletRequestStore } = await import('../dist/esm/lib/walletConnect/walletRequestStore.js')
 const { clearPendingDynamicWcMetadata, setDynamicWcMetadata, setPendingMetadataForRegistry } = await import('../dist/esm/lib/walletConnect/dynamicMetadata.js')
 
 const previousNavigator = Object.getOwnPropertyDescriptor(globalThis, 'navigator')
@@ -74,11 +75,49 @@ test('iPhone Rainbow requests ignore a stale MetaMask choice and redirect only a
 
     client.emit('session_request_sent', { topic: rainbow.topic, chainId: 'eip155:1', id: 42 })
     assert.deepEqual(redirects, ['rainbow://wc?requestId=42&sessionTopic=eip155-Rainbow'])
+    assert.equal(walletRequestStore.getSnapshot().href, redirects[0], 'manual recovery opens the request already sent')
     assert.equal(JSON.parse(storage.get('WALLETCONNECT_DEEPLINK_CHOICE')).href, 'metamask://', 'other connectors retain their own SDK setting')
 
     unsubscribe()
     assert.equal(client.listenerCount('session_request_sent'), 0)
     assert.equal(client.listenerCount('session_connect'), 0)
+})
+
+test('missing wallet links publish manual recovery information instead of opening a stale wallet', t => {
+    const warnings = []
+    t.mock.method(console, 'warn', (...args) => warnings.push(args))
+    const wallet = session('eip155', 'Unknown Wallet')
+    wallet.peer.metadata.redirect = undefined
+    const client = clientFor(wallet)
+    const unsubscribe = subscribeWalletRequests(client, 'eip155')
+    const previousSequence = walletRequestStore.getSnapshot()?.sequence ?? 0
+    let updates = 0
+    const unsubscribeStore = walletRequestStore.subscribe(() => updates++)
+    client.emit('session_request_sent', { topic: wallet.topic, chainId: 'eip155:1', id: 12 })
+    assert.deepEqual(redirects, [])
+    assert.deepEqual(walletRequestStore.getSnapshot(), {
+        sequence: previousSequence + 1, walletName: 'Unknown Wallet', namespace: 'eip155', accounts: ['address'], href: undefined,
+    })
+    assert.equal(updates, 1)
+    assert.equal(warnings.length, 1)
+    unsubscribeStore()
+    unsubscribe()
+})
+
+test('a blocked automatic navigation retains its link for a user-initiated retry', t => {
+    t.mock.method(console, 'warn', () => {})
+    const location = window.location
+    window.location = { set href(_) { throw new Error('Navigation blocked') } }
+    const wallet = session()
+    const client = clientFor(wallet)
+    const unsubscribe = subscribeWalletRequests(client, 'eip155')
+    try {
+        client.emit('session_request_sent', { topic: wallet.topic, chainId: 'eip155:1', id: 99 })
+        assert.equal(walletRequestStore.getSnapshot().href, 'rainbow://wc?requestId=99&sessionTopic=eip155-Rainbow')
+    } finally {
+        window.location = location
+        unsubscribe()
+    }
 })
 
 test('new Solana sessions and restored EVM sessions use their own wallet', () => {

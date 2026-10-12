@@ -2,9 +2,32 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { ActionMessageType } from '@layerswap/widget-types'
 import {
-    errorMessage, isUserRejection, isWalletErrorReasonCode, normalizeWalletErrorCode, userRejectedError, walletActionError, walletErrorCode,
+    errorMessage, isUserRejection, isWalletErrorReasonCode, normalizeWalletErrorCode, userRejectedError, walletActionError, walletErrorCode, walletErrorDetails,
 } from '../dist/esm/lib/walletErrors.js'
 import { FIXTURES, GENERIC_WRAPPERS } from './wallet-error-fixtures.mjs'
+
+test('a synthetic SwitchChainError code does not hide the underlying failure', () => {
+    const wrap = cause => Object.assign(new Error('An error occurred when attempting to switch chain.', { cause }), {
+        name: 'SwitchChainError', code: 4902, shortMessage: 'An error occurred when attempting to switch chain.',
+    })
+    for (const [cause, reason, code] of [
+        [new Error('Timed out waiting for wallet state'), 'timeout', undefined],
+        [new Error('Unexpected response'), 'unknown_error', undefined],
+        [{ code: -32002, message: 'Request already pending' }, 'request_pending', '-32002'],
+        [{ code: 4001, message: 'User rejected the request' }, 'user_rejected', '4001'],
+        [{ code: 4902, message: 'Unrecognized chain ID' }, 'chain_not_added', '4902'],
+    ]) {
+        const error = wrap(cause)
+        assert.equal(normalizeWalletErrorCode(error), reason)
+        assert.equal(walletErrorDetails(error).code, code)
+        assert.ok(walletErrorDetails(error).message.includes(cause.message))
+        assert.equal(walletErrorCode(error), undefined)
+    }
+    assert.equal(walletErrorDetails('x'.repeat(5000)).message.length, 2048)
+    const cyclic = wrap(undefined)
+    cyclic.cause = cyclic
+    assert.equal(normalizeWalletErrorCode(cyclic), 'unknown_error')
+})
 
 test('rejection classification works without an SDK or a particular message', () => {
     for (const error of [
@@ -27,8 +50,7 @@ test('authorization and node failures must not become user cancellations', () =>
         { code: 4100 }, { name: 'UnauthorizedProviderError' },
         { code: -32003, name: 'TransactionRejectedRpcError', message: 'Transaction rejected' },
         { code: -1, message: 'Provider failure' },
-        // Legacy EVM cancellation shapes are recognised by that adapter, which
-        // then throws userRejectedError; the shared classifier never guesses from -1.
+        // A nested unknown-error code is not evidence of user cancellation.
         { cause: { code: -1 } }, { data: { code: -1 } },
         new Error('RPC endpoint unavailable'),
     ]) assert.equal(isUserRejection(error), false)
