@@ -1,5 +1,5 @@
 'use client'
-import { type Wallet } from '@layerswap/widget-types';
+import { ErrorHandler, type Wallet } from '@layerswap/widget-types';
 import { RefreshCw } from "lucide-react";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { clsx } from "clsx";
@@ -79,7 +79,13 @@ const ConnectWalletButton: FC<Props> = ({ provider, onConnect, descriptionText, 
             const result = await connect(provider)
             if (onConnect && result) onConnect(result)
         } catch (error) {
-            console.error('ConnectWalletButton', error)
+            ErrorHandler({
+                type: 'WalletError',
+                name: 'ConnectWalletButton',
+                message: error instanceof Error ? error.message : String(error),
+                stack: error instanceof Error ? error.stack : undefined,
+                cause: error,
+            })
         } finally {
             setIsLoading(false)
         }
