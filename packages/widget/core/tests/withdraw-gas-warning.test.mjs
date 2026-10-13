@@ -24,7 +24,7 @@ const mockUrl = `data:text/javascript,${encodeURIComponent(`
   export const useBalance = () => ({ balances: state.balances, mutate() {}, isLoading: false })
   export const useFormikContext = () => ({ setFieldValue() {} })
   export const useCallbacks = () => ({ onSwapLifecycle: event => state.events.push(event) })
-  export const useQuoteData = () => ({ minAllowedAmount: 0.001, maxAllowedAmount: 10 })
+  export const useQuoteData = () => ({ minAllowedAmount: 0.001, maxAllowedAmount: state.maxAllowedAmount })
   export const transformSwapDataToQuoteArgs = () => ({})
   const passthrough = ({ children }) => children
   export const WalletActionTransition = passthrough
@@ -76,6 +76,7 @@ beforeEach(() => {
     swap: { source_network: network, source_token: token, destination_network: { name: 'BASE_MAINNET' }, destination_token: token, requested_amount: '0.95', use_deposit_address: false },
     balances: [{ network: network.name, token: token.symbol, amount: 1, isNativeCurrency: true }],
     gasData: { gas: 0.1, token },
+    maxAllowedAmount: 10,
   })
 })
 afterEach(async () => {
@@ -104,6 +105,51 @@ test('a gas warning leaves Send available without reporting a blocked transfer',
   state.gasData = undefined
   await render()
   state.gasData = { gas: 0.1, token }
+  await render()
+  assert.match(container.textContent, /Insufficient balance for gas/)
+  assert.equal(sendButton().disabled, false)
+  assert.deepEqual(blocks(), [])
+})
+
+test('a native reserve triggers a gas warning when the amount and fee are covered', async () => {
+  state.gasData = { gas: 0.01, token }
+  await render()
+  assert.doesNotMatch(container.textContent, /Insufficient balance for gas/)
+
+  state.gasData.reserve = 0.1
+  await render()
+  assert.match(container.textContent, /Insufficient balance for gas/)
+  assert.equal(sendButton().disabled, false)
+  assert.deepEqual(blocks(), [])
+
+  state.gasData.reserve = 0
+  await render()
+  assert.doesNotMatch(container.textContent, /Insufficient balance for gas/)
+})
+
+test('a balance that exactly covers the amount, fee and reserve has no gas warning', async () => {
+  state.swap.requested_amount = '0.75'
+  state.gasData = { gas: 0.125, reserve: 0.125, token }
+  await render()
+  assert.doesNotMatch(container.textContent, /Insufficient balance for gas/)
+
+  state.swap.requested_amount = '0.750001'
+  await render()
+  assert.match(container.textContent, /Insufficient balance for gas/)
+})
+
+test('a native reserve is required even when the gas fee is zero', async () => {
+  state.gasData = { gas: 0, reserve: 0.1, token }
+  await render()
+  assert.match(container.textContent, /Insufficient balance for gas/)
+  assert.equal(sendButton().disabled, false)
+  assert.deepEqual(blocks(), [])
+})
+
+test('the route maximum cutoff includes the native reserve', async () => {
+  state.swap.requested_amount = '0.9'
+  state.maxAllowedAmount = 0.9
+  state.gasData = { gas: 0.01, reserve: 0.2, token }
   await render()
   assert.match(container.textContent, /Insufficient balance for gas/)
   assert.equal(sendButton().disabled, false)
