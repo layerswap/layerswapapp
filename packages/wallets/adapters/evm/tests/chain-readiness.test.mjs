@@ -112,6 +112,30 @@ test('unknown-chain codes nested by the transport still add the chain, including
     f.clean()
 })
 
+test('empty or missing add-chain overrides keep the chain defaults', async t => {
+    let attempts = 0
+    const f = fixture(t, { onSwitch: state => {
+        if (++attempts === 1) throw { code: 4902 }
+        state.chainId = 1
+    } })
+    await f.run({ addEthereumChainParameter: { rpcUrls: [], blockExplorerUrls: undefined, chainName: 'Custom' } })
+    const [params] = f.calls.find(({ method }) => method === 'wallet_addEthereumChain').params
+    assert.deepEqual(params.rpcUrls, mainnet.rpcUrls.default.http)
+    assert.deepEqual(params.blockExplorerUrls, [mainnet.blockExplorers.default.url])
+    assert.equal(params.chainName, 'Custom')
+    f.clean()
+})
+
+test('MetaMask’s transient 1013 disconnect does not cancel a switch in progress', async t => {
+    const f = fixture(t, { onSwitch: (state, provider) => {
+        provider.emit('disconnect', { code: 1013, message: 'MetaMask: Disconnected from chain. Attempting to connect.' })
+        state.chainId = 1
+    } })
+    await f.run()
+    assert.equal(f.state.ready, 1)
+    f.clean()
+})
+
 test('a rejection wins over nested unknown-chain diagnostics', async t => {
     const error = { code: 4001, data: { originalError: { code: 4902 } } }
     const f = fixture(t, { onSwitch: () => { throw error } })

@@ -23,6 +23,7 @@ import { ICON_CLASSES_WARNING } from '../../Form/SecondaryComponents/validationE
 import ErrorDismissButton from '../../Form/SecondaryComponents/validationError/ErrorDismissButton';
 import { ErrorDisplay } from '../../Form/SecondaryComponents/validationError/ErrorDisplay';
 import WalletMessage, { WalletMessageDetails } from '../messages/Message';
+import { walletDisconnectedMessage } from '../messages/walletErrorMessage';
 import { NetworkSwitchError, networkSwitchFailureReason } from '../Wallet/Common/ensureSourceChain';
 import type { ActionData } from '../Wallet/Common/sharedTypes';
 import type { SwapStepTransactions } from '@/stores/swapTransactionStore';
@@ -42,6 +43,10 @@ export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = (
             header='Network switch still waiting'
             details={`Your wallet is still asking to switch to ${network}. Confirm it there, then try again`}
         />
+    }
+    // Readiness lost the wallet; switching manually would not help.
+    if (kind === 'disconnected') {
+        return <WalletMessage {...walletDisconnectedMessage} />
     }
     if (kind === 'timeout') {
         return <WalletMessage

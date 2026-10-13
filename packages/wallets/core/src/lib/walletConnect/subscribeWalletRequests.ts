@@ -92,6 +92,7 @@ export function subscribeWalletRequests(client: SignClient, namespace: string): 
             const href = link ? buildWalletRequestLink(link, id, topic) : undefined
             recordWalletRequest({
                 walletName: session.peer.metadata.name,
+                topic,
                 namespace,
                 accounts: session.namespaces[namespace]?.accounts.map(account => account.split(':').slice(2).join(':')) ?? [],
                 href,

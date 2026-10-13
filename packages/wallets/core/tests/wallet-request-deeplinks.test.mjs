@@ -96,7 +96,7 @@ test('missing wallet links publish manual recovery information instead of openin
     client.emit('session_request_sent', { topic: wallet.topic, chainId: 'eip155:1', id: 12 })
     assert.deepEqual(redirects, [])
     assert.deepEqual(walletRequestStore.getSnapshot(), {
-        sequence: previousSequence + 1, walletName: 'Unknown Wallet', namespace: 'eip155', accounts: ['address'], href: undefined,
+        sequence: previousSequence + 1, walletName: 'Unknown Wallet', topic: wallet.topic, namespace: 'eip155', accounts: ['address'], href: undefined,
     })
     assert.equal(updates, 1)
     assert.equal(warnings.length, 1)

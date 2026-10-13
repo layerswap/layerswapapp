@@ -101,6 +101,7 @@ export function walletConnect(parameters: Params) {
             chainId: number
         }>
         getNamespaceChainsIds(): number[]
+        getSessionTopic(): string | undefined
         getRequestedChainsIds(): Promise<number[]>
         isChainsStale(): Promise<boolean>
         onConnect(connectInfo: ProviderConnectInfo): void
@@ -132,6 +133,8 @@ export function walletConnect(parameters: Params) {
         deepLink: mobile.native || mobile.universal,
         icon: icon,
         resolveURI: (uri: string) => getResolveUri(id, uri, mobile),
+        // Requests are recorded per session topic; wallets carry it to claim them.
+        getSessionTopic: () => provider_?.session?.topic,
         async setup() {
             const provider = await this.getProvider().catch(() => null)
             if (!provider) return

@@ -8,9 +8,10 @@ type ChainSwitcher = (wallet: Wallet, chainId: string | number) => Promise<void>
 /**
  * Why the wallet did not end up on the source chain. `pending` and `timeout` are stalls
  * rather than refusals: the wallet is still showing the prompt (a second tap while it is
- * open answers "already pending"), or it never answered at all.
+ * open answers "already pending"), or it never answered at all. `disconnected` means the
+ * readiness check lost the selected wallet or account, which needs a reconnect.
  */
-type NetworkSwitchFailure = 'rejected' | 'pending' | 'timeout' | 'failed'
+type NetworkSwitchFailure = 'rejected' | 'pending' | 'timeout' | 'disconnected' | 'failed'
 
 /**
  * A chain switch the wallet refused or could not complete. `cause` is the wallet's own
@@ -58,7 +59,8 @@ const classifyFailure = (rejected: boolean, reasonCode: string | undefined): Net
     rejected ? 'rejected'
         : reasonCode === 'request_pending' ? 'pending'
             : reasonCode === 'timeout' ? 'timeout'
-                : 'failed'
+                : reasonCode === 'wallet_disconnected' ? 'disconnected'
+                    : 'failed'
 
 async function withTimeout<T>(promise: Promise<T>, ms: number, timeoutError: () => Error): Promise<T> {
     let timer: ReturnType<typeof setTimeout> | undefined

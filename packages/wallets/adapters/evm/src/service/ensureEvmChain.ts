@@ -80,7 +80,13 @@ export async function ensureEvmChain(options: Options): Promise<void> {
             controller.abort(disconnected('Selected wallet account changed. Please try again with the selected account.'))
         }
     }
-    const disconnect = () => controller.abort(disconnected('Selected wallet disconnected. Reconnect your wallet.'))
+    const disconnect = (error?: { code?: unknown }) => {
+        // MetaMask emits 1013 while it reconnects, e.g. to the new network's RPC
+        // (https://github.com/MetaMask/providers/pull/120). The account and chain
+        // checks below still fail if the session is really gone.
+        if (error?.code === 1013) return
+        controller.abort(disconnected('Selected wallet disconnected. Reconnect your wallet.'))
+    }
     const check = () => {
         // Mobile browsers can suspend timers while the wallet is foregrounded.
         if (Date.now() >= deadline) controller.abort(timeoutError())
@@ -167,7 +173,10 @@ export async function ensureEvmChain(options: Options): Promise<void> {
                 await switchChain()
             } catch (error) {
                 if (!isUnknownChain(error)) throw error
-                const overrides = options.addEthereumChainParameter
+                // An override replaces a chain default only when it carries a value;
+                // wallets reject an empty or missing rpcUrls list.
+                const overrides = Object.fromEntries(Object.entries(options.addEthereumChainParameter ?? {})
+                    .filter(([, value]) => value !== undefined && !(Array.isArray(value) && value.length === 0)))
                 await request('wallet_addEthereumChain', [{
                     chainName: chain.name,
                     nativeCurrency: chain.nativeCurrency,

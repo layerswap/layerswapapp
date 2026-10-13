@@ -28,8 +28,8 @@ test('mobile recovery only opens the selected wallet’s current request and cle
     const dom = new JSDOM('<div id="root"></div>')
     Object.assign(globalThis, { window: dom.window, document: dom.window.document, IS_REACT_ACT_ENVIRONMENT: true })
     const root = createRoot(document.getElementById('root'))
-    const wallet = { id: 'Rainbow', address: '0xAbC' }
-    const request = { walletName: 'Rainbow', namespace: 'eip155', accounts: ['0xabc'], href: 'rainbow://wc?requestId=1&sessionTopic=test' }
+    const wallet = { id: 'Rainbow', address: '0xAbC', metadata: { walletConnectTopic: 'rainbow-session' } }
+    const request = { walletName: 'Rainbow', topic: 'rainbow-session', namespace: 'eip155', accounts: ['0xabc'], href: 'rainbow://wc?requestId=1&sessionTopic=rainbow-session' }
     const render = async (props = {}) => act(async () => root.render(createElement(WalletRequestRecovery, {
         wallet, active: true, afterSequence: 0, ...props,
     })))
@@ -46,14 +46,21 @@ test('mobile recovery only opens the selected wallet’s current request and cle
         assert.equal(document.querySelector('a'), null, 'the previous approval must not reopen during signing')
         await publish({ href: 'rainbow://wc?requestId=2&sessionTopic=test' })
         assert.match(document.querySelector('a').getAttribute('href'), /requestId=2/)
-        await publish({ walletName: 'MetaMask' })
-        assert.equal(document.querySelector('a'), null)
+        await render({ wallet: { id: 'WalletConnect', address: '0xAbC', metadata: { walletConnectTopic: 'trust-session' } } })
+        await publish({ walletName: 'Trust Wallet', topic: 'trust-session', href: 'trust://wc?requestId=3&sessionTopic=trust-session' })
+        assert.match(document.querySelector('a').getAttribute('href'), /requestId=3/, 'generic WalletConnect wallets are named after the connector, not the peer')
+        await render()
+        assert.equal(document.querySelector('a'), null, 'another session using the same account is not this wallet’s request')
+        await render({ wallet: { id: 'Rainbow', address: '0xAbC' } })
+        await publish()
+        assert.equal(document.querySelector('a'), null, 'a wallet without a WalletConnect session has no requests to recover')
+        await render()
         await publish({ accounts: ['0xother'] })
         assert.equal(document.querySelector('a'), null)
         await publish({ href: undefined })
         assert.equal(document.querySelector('a'), null)
         assert.match(document.body.textContent, /Open Rainbow manually/)
-        await render({ wallet: { id: 'Rainbow', address: 'AbC' } })
+        await render({ wallet: { ...wallet, address: 'AbC' } })
         await publish({ namespace: 'solana', accounts: ['abc'] })
         assert.equal(document.querySelector('a'), null, 'non-EVM accounts are case sensitive')
     } finally {

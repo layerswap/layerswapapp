@@ -72,6 +72,34 @@ test('the adapter owns its deadline and cancellation does not report a wallet fa
   assert.deepEqual(events, ['network_switch_started'])
 })
 
+for (const [kind, walletError] of [
+  ['disconnected', Object.assign(new Error('Selected wallet account is no longer connected. Reconnect your wallet.'), { reasonCode: 'wallet_disconnected' })],
+  ['pending', Object.assign(new Error('A network request is already pending for this wallet'), { code: -32002 })],
+  ['timeout', Object.assign(new Error('Timed out waiting for wallet network 1; phase=eth_chainId'), { reasonCode: 'timeout' })],
+]) {
+  test(`a ${kind} readiness failure before any switch is reported and keeps its recovery`, async () => {
+    const events = []
+    await assert.rejects(ensureSourceChain({
+      wallet: { chainId: 10, providerName: 'EVM' }, network, context, path: 'SendTransactionButton', switchChain: undefined,
+      ensureChain: async () => { throw walletError },
+      onLifecycle: e => events.push(e.step),
+    }), error => error instanceof NetworkSwitchError && error.kind === kind && error.cause === walletError)
+    assert.deepEqual(events, ['network_switch_failed'])
+  })
+}
+
+test('a disconnect during a switch is reported, then surfaced as a disconnect', async () => {
+  const events = []
+  const walletError = Object.assign(new Error('Selected wallet disconnected. Reconnect your wallet.'), { reasonCode: 'wallet_disconnected' })
+  await assert.rejects(ensureSourceChain({
+    wallet: { chainId: 1, providerName: 'EVM' }, network, context, path: 'SendTransactionButton', switchChain: undefined,
+    ensureChain: async (_wallet, _chainId, options) => { options.onSwitchStart(); throw walletError },
+    onLifecycle: e => events.push(e),
+  }), error => error instanceof NetworkSwitchError && error.kind === 'disconnected' && error.cause === walletError)
+  assert.deepEqual(events.map(e => e.step), ['network_switch_started', 'network_switch_failed'])
+  assert.equal(events[1].reasonCode, 'wallet_disconnected')
+})
+
 test('only wallets reporting a different chain need a switch', () => {
   // wagmi reports numbers, the API serves strings; non-EVM wallets report no chain at all.
   assert.equal(needsChainSwitch({ chainId: 10 }, network), false)

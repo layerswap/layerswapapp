@@ -296,6 +296,20 @@ function messageReason(candidate: ErrorCandidate, tier: TextTier): WalletErrorRe
     return MESSAGE_RULES[tier].find(([pattern]) => pattern.test(text))?.[1]
 }
 
+// CAIP-25 5000 is what WalletConnect wallets answer *any* failed request with:
+// MetaMask Mobile relays its own RPC failures as 5000 with the failure as the
+// message ("RPC 0xa Custom eth_getBlockByNumber: RPC endpoint returned HTTP
+// client error."). When the 5000 node's own text names a non-decline failure,
+// that text is the reason; viem's UserRejectedRequestError wrapper adds nothing.
+function caip25FailureReason(chain: ErrorCandidate[]): WalletErrorReasonCode | undefined {
+    for (const candidate of chain) {
+        if (walletErrorCode(candidate) !== '5000') continue
+        const reason = messageReason(candidate, 'descriptive')
+        if (reason && reason !== 'user_rejected') return reason
+    }
+    return undefined
+}
+
 function rawTextReason(error: unknown, tier: TextTier): WalletErrorReasonCode | undefined {
     if (typeof error !== 'string') return undefined
     if (tier === 'descriptive' && isDeclineText(error)) return 'user_rejected'
@@ -306,6 +320,7 @@ function rawTextReason(error: unknown, tier: TextTier): WalletErrorReasonCode | 
  * Evidence tier decides precedence, not the field a signal came from:
  *   0. an explicit `reasonCode` set by an adapter (walletActionError /
  *      userRejectedError) wins anywhere in the chain, outermost first;
+ *      then a CAIP-25 5000 whose own text names a non-decline failure;
  *   1. a definitive cancellation signal anywhere in the tree;
  *   2. definitive codes/names, innermost first;
  *   3. descriptive message text, innermost first (SDK bucket classes contribute no text);
@@ -324,6 +339,8 @@ export function normalizeWalletErrorCode(error: unknown): WalletErrorReasonCode 
     const declared = declaredReason(error)
     if (declared) return declared
     const chain = collectCandidates(error)
+    const caip25Failure = caip25FailureReason(chain)
+    if (caip25Failure) return caip25Failure
     for (const candidate of chain) {
         if (codeReason(candidate, 'definitive') === 'user_rejected' || nameReason(candidate, 'definitive') === 'user_rejected') return 'user_rejected'
     }

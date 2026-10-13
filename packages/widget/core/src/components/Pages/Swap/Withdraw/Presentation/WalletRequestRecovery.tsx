@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react'
-import { walletKey, walletRequestStore } from '@layerswap/wallet-core'
+import { walletRequestStore } from '@layerswap/wallet-core'
 import type { Wallet } from '@layerswap/widget-types'
 
 /** A second tap opens the already-published request; it never sends another one. */
@@ -10,7 +10,10 @@ export function WalletRequestRecovery({ wallet, active, afterSequence }: {
 }) {
     const request = useSyncExternalStore(walletRequestStore.subscribe, walletRequestStore.getSnapshot, walletRequestStore.getServerSnapshot)
     if (!active || !wallet || !request || request.sequence <= afterSequence) return null
-    if (walletKey(request.walletName) !== walletKey(wallet.id)) return null
+    // Match the session, not the name: a wallet connected through the generic
+    // WalletConnect connector is named after the connector, not the peer wallet,
+    // and two wallet apps can share an account.
+    if (!wallet.metadata?.walletConnectTopic || request.topic !== wallet.metadata.walletConnectTopic) return null
     const normalize = (address: string) => request.namespace === 'eip155' ? address.toLowerCase() : address
     if (!request.accounts.some(address => normalize(address) === normalize(wallet.address))) return null
 

@@ -50,6 +50,8 @@ export type Wallet = {
     deepLink?: string;
     /** Runtime wagmi connector identity; separate from the displayed wallet name. */
     evmConnectorUid?: string;
+    /** WalletConnect session topic; identifies the session that receives this wallet's requests. */
+    walletConnectTopic?: string;
   };
   chainId?: string | number;
   isLoading?: boolean;

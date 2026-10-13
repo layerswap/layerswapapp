@@ -57,6 +57,18 @@ test('a nested wallet RPC failure shows network recovery instead of the generic 
   assert.doesNotMatch(otherNetwork, /RPC URL|Optimism/)
 })
 
+test('a wallet RPC failure relayed over WalletConnect as 5000 is not shown as a rejection', () => {
+  // MetaMask Mobile answers with CAIP-25 5000; viem wraps it in UserRejectedRequestError.
+  const error = Object.assign(new Error('User rejected the request.', {
+    cause: { code: 5000, message: 'RPC 0xa Custom eth_getBlockByNumber: RPC endpoint returned HTTP client error.' },
+  }), { name: 'UserRejectedRequestError', code: 4001 })
+  const html = renderError(error)
+  assert.match(html, /Network connection failed/)
+  assert.match(html, /Optimism network settings/)
+  assert.match(html, /remove any others/)
+  assert.doesNotMatch(html, /rejected|eth_getBlockByNumber|5000/)
+})
+
 test('recognized wallet failures give specific recovery guidance', () => {
   for (const [error, header, guidance] of [
     [{ code: -32603 }, /Wallet request failed/, /Check your wallet for details/],

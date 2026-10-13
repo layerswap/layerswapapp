@@ -11,6 +11,7 @@ import { NetworkSwitchError, ensureSourceChain } from './ensureSourceChain';
 import type { ActionData } from './sharedTypes';
 import { useSWRConfig } from 'swr';
 import { SubmitButtonProps } from '@/components/Buttons/submitButton';
+import { isDiffByPercent } from '@/components/utils/numbers';
 import { useConnectModal } from '@/components/Wallet/WalletModal';
 import { useDepositSettings } from '@/context/depositSettings';
 import { useInitialSettings, useSettingsState } from '@/context/settings';
@@ -156,7 +157,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const switchToStandardTransfer = useGaslessPreferenceStore(s => s.switchToStandardTransfer)
     const clearGaslessUnavailable = useGaslessPreferenceStore(s => s.clearGaslessUnavailable)
     const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess, onCancelWithdrawal } = useWalletWithdrawalState();
-    const { createSwap, setSwapId, startFreshSwapAttempt, markWalletExecutionStarted } = useSwapDataUpdate()
+    const { createSwap, setSwapId, setQuoteLoading, startFreshSwapAttempt, markWalletExecutionStarted } = useSwapDataUpdate()
     const setSwapTransaction = useSwapTransactionStore(state => state.setSwapTransaction)
     const storedWalletTransaction = useSwapTransactionStore(
         state => swapId ? state.swapTransactions[swapId] : undefined,
@@ -336,6 +337,21 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     return
                 }
 
+                if (newSwapData.quote && isDiffByPercent(quote?.receive_amount, newSwapData.quote.receive_amount, 2)) {
+                    setActionStateText("Updating quote…")
+                    setQuoteLoading(true)
+                    try {
+                        // Cancellation ends the pause immediately.
+                        await new Promise<void>(resolve => {
+                            const done = () => { clearTimeout(timer); signal.removeEventListener('abort', done); resolve() }
+                            const timer = setTimeout(done, 3500)
+                            signal.addEventListener('abort', done, { once: true })
+                        })
+                    } finally {
+                        setQuoteLoading(false)
+                    }
+                    signal.throwIfAborted()
+                }
                 swapData = newSwapData.swap
                 activeDepositActions = newSwapData.deposit_actions;
             } else {

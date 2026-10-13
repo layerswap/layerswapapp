@@ -129,7 +129,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         React.useLayoutEffect(() => { setSwapViewMounted(true) }, [])
         return children
     }
-    const lifecycle = { lifecycleContextFromSwap: () => ({}), lifecycleErrorDetails: () => ({}) }
+    const lifecycle = { lifecycleContextFromSwap: () => ({}), lifecycleErrorDetails: error => ({ reasonCode: error?.reasonCode }) }
     const sourceChain = loadSource(`${walletPath}ensureSourceChain.ts`, {
         '@/lib/swapLifecycle': lifecycle, './isUserRejection': rejection,
     })
@@ -189,6 +189,9 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         '../../Form/SecondaryComponents/validationError/ErrorDismissButton': { default: noop },
         '../../Form/SecondaryComponents/validationError/ErrorDisplay': { ErrorDisplay },
         '../messages/Message': { default: noop },
+        '../messages/walletErrorMessage': loadSource('../src/components/Pages/Swap/Withdraw/messages/walletErrorMessage.ts', {
+            '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
+        }),
         '../Wallet/Common/ensureSourceChain': sourceChain,
     })
     const useFakeLayoutEffect = callback => {
@@ -323,7 +326,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         }
     }
     return {
-        state, calls, render, wallet, network, preferences, stores,
+        state, calls, render, wallet, network, preferences, stores, walletViews,
         Component: () => realPolling
             ? createElement(swapContext.SwapDataProvider, null, createElement(SwapView, null, createElement(SendTransactionButton, props())))
             : createElement(SendTransactionButton, props()),
@@ -1170,13 +1173,20 @@ test('readiness failure between signature and publication prevents the transacti
     flow.state.rejectSigning = false
     let checks = 0
     flow.state.ensureChain = async () => {
-        if (++checks === 2) throw new Error('Selected wallet disconnected')
+        if (++checks === 2) throw Object.assign(new Error('Selected wallet disconnected'), { reasonCode: 'wallet_disconnected' })
     }
     await flow.render().button.props.onClick()
     assert.deepEqual(flow.calls.sign, ['fresh'])
     assert.deepEqual(flow.calls.transfer, [])
     assert.equal(flow.calls.success, 0)
-    assert.equal(flow.render().viewProps.networkSwitch.isError, true)
+    // The readiness slot shows reconnect guidance, not the generic swap error.
+    const { networkSwitch } = flow.render().viewProps
+    assert.equal(networkSwitch.isError, true)
+    assert.equal(networkSwitch.error.kind, 'disconnected')
+    assert.equal(flow.state.swapError, '')
+    const message = flow.walletViews.ChangeNetworkMessage({ data: networkSwitch, network: 'Optimism' })
+    assert.equal(message.props.header, 'Wallet disconnected')
+    assert.ok(flow.calls.lifecycle.some(event => event.step === 'network_switch_failed' && event.reasonCode === 'wallet_disconnected'))
 })
 
 test('readiness follows the prepared transaction network', async () => {

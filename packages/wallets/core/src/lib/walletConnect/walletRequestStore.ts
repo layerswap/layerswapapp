@@ -1,6 +1,8 @@
 export type WalletRequest = {
     sequence: number
     walletName: string
+    /** WalletConnect session topic the request was sent on. */
+    topic: string
     namespace: string
     accounts: string[]
     href?: string

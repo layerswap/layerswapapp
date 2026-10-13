@@ -23,6 +23,9 @@ test('transaction RPC failures wrapped by viem are not reported as user rejectio
     for (const [code, message, reason] of [
         [-32080, 'RPC 0xa Custom eth_getBlockByNumber: RPC endpoint returned HTTP client error.', 'network_error'],
         [-32080, 'RPC 0xa Custom eth_getBlockByNumber: RPC endpoint returned HTTP server error.', 'network_error'],
+        // MetaMask Mobile relays its RPC failure over WalletConnect as CAIP-25 5000.
+        [5000, 'RPC 0xa Custom eth_getBlockByNumber: RPC endpoint returned HTTP client error.', 'network_error'],
+        [5000, 'MetaMask Tx Signature: [REDACTED]', 'user_rejected'],
         [-1, 'Provider failure', 'unknown_error'],
         [4001, 'User rejected the request.', 'user_rejected'],
         [-1, 'User rejected the request.', 'user_rejected'],

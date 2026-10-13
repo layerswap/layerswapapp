@@ -226,7 +226,7 @@ export class EvmConnectionService<Network> implements WalletConnectionService<Ru
             getProvider: () => connector.getProvider() as Promise<ChainProvider | undefined>,
             assertConnected: () => {
                 if (resolveWalletConnector(config, wallet).uid !== connector.uid) {
-                    throw new Error('Selected wallet changed. Please try again.')
+                    throw Object.assign(new Error('Selected wallet changed. Please try again.'), { reasonCode: 'wallet_disconnected' })
                 }
             },
             onReady: () => confirmConnectorChain(connector, chain.id),
