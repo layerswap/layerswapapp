@@ -127,9 +127,7 @@ const SwapDetails: FC<Props> = ({
                 }
                 summary={
                     swapBasicData.use_deposit_address &&
-                    resolved.showWithdrawScreen ? null : (
-                        <SwapSummary />
-                    )
+                    resolved.showWithdrawScreen ? null : <SwapSummary />
                 }
                 compactQuote={compactQuote}
                 quote={

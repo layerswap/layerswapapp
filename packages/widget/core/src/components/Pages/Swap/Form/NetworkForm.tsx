@@ -52,7 +52,8 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
     const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
-    const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isQuoteLoading, quote, quoteTokenPrices } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval });
+    const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isQuoteLoading: quoteLoading, quote, quoteTokenPrices } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval });
+    const isQuoteLoading = quoteLoading || (values.amountMode === 'max' && !!values.maxAmountPending);
     useReportFormQuote(quote?.quote);
 
     const toAsset = values.toAsset;

@@ -27,7 +27,7 @@ const AmountStep: FC = () => {
         minAllowedAmountInUsd,
         maxAllowedAmountInUsd,
         quoteTokenPrices,
-        isQuoteLoading,
+        isQuoteLoading: quoteLoading,
         quoteError,
     } = useQuoteData(
         from && fromAsset && to && toAsset
@@ -43,6 +43,7 @@ const AmountStep: FC = () => {
             : undefined,
     );
 
+    const isQuoteLoading = quoteLoading || (values.amountMode === 'max' && !!values.maxAmountPending);
     const { formValidation } = useValidationContext();
 
     const hasQuote = !!fee?.quote && !quoteError;

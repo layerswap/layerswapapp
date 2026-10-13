@@ -48,8 +48,8 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, mi
                 <div className={clsx(
                     "absolute z-10 -top-6.5 left-0",
                     {
-                        "hidden": !showQuickActions,
-                        "block": showQuickActions
+                        "hidden": !showQuickActions && values.amountMode !== 'max',
+                        "block": showQuickActions || values.amountMode === 'max'
                     },
                     "group-hover/source:block"
                 )}>

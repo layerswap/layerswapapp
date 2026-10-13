@@ -189,6 +189,11 @@ export type SwapResponse = {
 }
 
 export type SwapBasicData = {
+    /** Local amount intent; never serialized as an API parameter. */
+    amountMode?: 'manual' | 'max'
+    maxAmountSource?: string
+    maxAmountError?: string
+    maxAmountPending?: boolean
     source_network: Network,
     source_token: Token,
     source_exchange?: Exchange,

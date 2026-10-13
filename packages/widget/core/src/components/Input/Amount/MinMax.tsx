@@ -13,6 +13,8 @@ import { skipNextUsdSync } from "@/hooks/useUsdTokenSync";
 import { ceilUsd, floorUsd } from "@/components/utils/formatUsdAmount";
 import { ceilToDecimals, roundToDecimals, truncateToDecimals, isScientific } from "@/components/utils/RoundDecimals";
 
+import { maxAmountSource } from '@/lib/maxAmount';
+
 type MinMaxProps = {
     fromCurrency: NetworkRouteToken,
     from: NetworkRoute,
@@ -26,7 +28,7 @@ type MinMaxProps = {
 
 const MinMax = (props: MinMaxProps) => {
 
-    const { setFieldValue, values } = useFormikContext<SwapFormValues>();
+    const { setValues, values } = useFormikContext<SwapFormValues>();
     const { fromCurrency, from, limitsMinAmount, limitsMaxAmount, limitsMinAmountInUsd, limitsMaxAmountInUsd, onActionHover, depositMethod } = props;
     const isUsdMode = useUsdModeStore(s => s.isUsdMode);
     const setUsdAmount = useUsdModeStore(s => s.setUsdAmount);
@@ -34,6 +36,7 @@ const MinMax = (props: MinMaxProps) => {
     const { wallets } = useWallet(from, 'withdrawal')
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
     const isWalletConnected = !!wallet
+    const usingMax = values.amountMode === 'max'
     const { balances, mutate: mutateBalances } = useBalance(selectedSourceAccount?.address, from)
 
     const walletBalance = useMemo(() => {
@@ -61,8 +64,8 @@ const MinMax = (props: MinMaxProps) => {
     }, [fromCurrency.price_in_usd, fromCurrency.decimals]);
 
     const maxAllowedAmount = useMemo(() => {
-        return resolveMaxAllowedAmount({ fromCurrency, limitsMaxAmount, walletBalance, gasAmount, gasReserve, native_currency, depositMethod, fallbackAmount });
-    }, [fromCurrency, limitsMaxAmount, walletBalance, gasAmount, gasReserve, native_currency, depositMethod, fallbackAmount])
+        return resolveMaxAllowedAmount({ fromCurrency, limitsMaxAmount, walletBalance, gasAmount, gasReserve, native_currency, depositMethod });
+    }, [fromCurrency, limitsMaxAmount, walletBalance, gasAmount, gasReserve, native_currency, depositMethod])
 
     const minAmount = useMemo(() => {
         if (walletBalance && walletBalance.amount !== undefined && limitsMinAmount !== undefined && depositMethod === 'wallet') {
@@ -77,8 +80,8 @@ const MinMax = (props: MinMaxProps) => {
         return base ? Number(truncateToDecimals(String(base / 2), fromCurrency.decimals)) : 0;
     }, [walletBalance?.amount, maxAllowedAmount, fromCurrency.decimals]);
 
-    const handleSetValue = (value: string, usdValue?: string) => {
-        mutateBalances()
+    const handleSetValue = (value: string, usdValue?: string, enableMax = false) => {
+        void Promise.resolve(mutateBalances()).catch(() => undefined)
         const truncatedValue = truncateToDecimals(value, fromCurrency.decimals)
         const sanitizedValue = value !== '' && Number.isFinite(Number(value))
             ? (isScientific(truncatedValue)
@@ -93,7 +96,9 @@ const MinMax = (props: MinMaxProps) => {
             }
             setUsdAmount(usdValue);
         }
-        setFieldValue('amount', sanitizedValue, true)
+        void setValues({ ...values, amount: sanitizedValue, amountMode: enableMax ? 'max' : 'manual',
+            maxAmountSource: enableMax ? maxAmountSource(from.name, fromCurrency.symbol, selectedSourceAccount?.id, selectedSourceAccount?.address) : undefined,
+            maxAmountPending: enableMax, maxAmountError: undefined }, true)
         onActionHover(undefined)
     }
 
@@ -127,8 +132,13 @@ const MinMax = (props: MinMaxProps) => {
     const handleSetMaxAmount = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
         e.stopPropagation()
+        if (usingMax) {
+            void setValues({ ...values, amountMode: 'manual', maxAmountSource: undefined, maxAmountPending: false, maxAmountError: undefined }, true)
+            onActionHover(undefined)
+            return
+        }
         if (maxValue === undefined) return
-        handleSetValue(maxValue, maxUsdFormatted)
+        handleSetValue(maxValue, maxUsdFormatted, isWalletConnected && depositMethod === 'wallet')
     }
 
     const showMaxTooltip = !!(depositMethod === 'wallet' && walletBalance?.amount && shouldPayGasWithTheToken && (!limitsMaxAmount || walletBalance.amount < limitsMaxAmount))
@@ -154,14 +164,15 @@ const MinMax = (props: MinMaxProps) => {
                 <TooltipTrigger asChild>
                     <ActionButton
                         data-attr="max-amount"
-                        label="Max"
-                        disabled={isWalletConnected && maxValue === undefined}
+                        label={usingMax ? 'Using max' : 'Max'}
+                        aria-pressed={usingMax}
+                        disabled={!usingMax && isWalletConnected && maxValue === undefined}
                         onMouseEnter={() => onActionHover(maxValue === undefined ? undefined : Number(maxValue), maxUsdFormatted)}
                         onClick={handleSetMaxAmount}
                     />
                 </TooltipTrigger>
                 {showMaxTooltip ? <TooltipContent className="pointer-events-none w-80 grow p-2 border-none! bg-secondary-300! text-xs rounded-xl!" side="top" align="start" alignOffset={-10}>
-                    <p>Max is calculated based on your balance minus gas fee for the transaction</p>
+                    <p>Using max keeps your amount updated for your balance and network fee until you confirm.</p>
                 </TooltipContent> : null}
             </Tooltip>
         </div>
@@ -186,7 +197,7 @@ const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProps>(({ l
             onClick={onClick}
             type="button"
             disabled={disabled}
-            className="px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer disabled:opacity-50 enabled:active:animate-press-down"
+            className="px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer aria-pressed:bg-primary-500 aria-pressed:text-primary-buttonTextColor disabled:opacity-50 enabled:active:animate-press-down"
         >
             {label}
         </button>

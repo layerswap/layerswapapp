@@ -53,6 +53,7 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
         return { message: 'Select destination asset' };
     }
     if (!depositAddressFlow) {
+        if (values.amountMode === 'max' && values.maxAmountError) return { message: values.maxAmountError };
         if (amount === undefined || isNaN(Number(amount))) {
             return { message: 'Enter an amount' };
         }

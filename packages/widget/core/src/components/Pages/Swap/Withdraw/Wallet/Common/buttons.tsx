@@ -1,3 +1,4 @@
+import { MaxAmountChangedError } from '@/lib/maxAmount';
 import { useCallbacks } from '@/context/callbackProvider';
 import { lifecycleContextFromSwap, lifecycleErrorDetails } from '@/lib/swapLifecycle';
 import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect';
@@ -307,6 +308,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 setCriticalConfirmation(undefined)
 
                 const swapValues: SwapFormValues = {
+                    amountMode: swapBasicData.amountMode,
+                    maxAmountSource: swapBasicData.maxAmountSource,
                     amount: swapBasicData.requested_amount.toString(),
                     from: swapBasicData.source_network as NetworkRoute,
                     to: swapBasicData.destination_network as NetworkRoute,
@@ -448,6 +451,10 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         }
         catch (e) {
             if (signal.aborted) return
+            if (e instanceof MaxAmountChangedError) {
+                setSwapError?.(e.message)
+                return
+            }
             if (e instanceof NetworkSwitchError) {
                 // Keep the swap intact: retry only re-asks the wallet to switch.
                 setNetworkSwitch({ isPending: false, isError: true, error: e })

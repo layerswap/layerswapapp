@@ -22,6 +22,7 @@ interface UseUsdTokenSyncArgs {
     } | undefined;
     fromCurrency: { symbol?: string; precision?: number; price_in_usd?: number } | undefined;
     amount: string | undefined;
+    amountMode?: 'manual' | 'max';
     setFieldValue: (field: string, value: any, shouldValidate?: boolean) => void;
 }
 
@@ -38,6 +39,7 @@ export function useUsdTokenSync({
     quote,
     fromCurrency,
     amount,
+    amountMode,
     setFieldValue,
 }: UseUsdTokenSyncArgs): UseUsdTokenSyncReturn {
     const isUsdMode = useUsdModeStore(s => s.isUsdMode);
@@ -110,23 +112,23 @@ export function useUsdTokenSync({
 
     // Recompute token amount when price changes in USD mode
     useEffect(() => {
-        if (!isUsdMode || !sourceCurrencyPriceInUsd || !usdAmount) {
+        if (amountMode === 'max' || !isUsdMode || !sourceCurrencyPriceInUsd || !usdAmount) {
             prevPriceRef.current = sourceCurrencyPriceInUsd;
             return;
         }
         if (prevPriceRef.current === sourceCurrencyPriceInUsd) return;
         prevPriceRef.current = sourceCurrencyPriceInUsd;
         computeAndSetTokenAmount(preciseUsdRef.current);
-    }, [sourceCurrencyPriceInUsd, isUsdMode, usdAmount, computeAndSetTokenAmount]);
+    }, [amountMode, sourceCurrencyPriceInUsd, isUsdMode, usdAmount, computeAndSetTokenAmount]);
 
     // Recompute token amount when source token changes in USD mode
     useEffect(() => {
-        if (!isUsdMode || !sourceCurrencyPriceInUsd || !usdAmount) return;
+        if (amountMode === 'max' || !isUsdMode || !sourceCurrencyPriceInUsd || !usdAmount) return;
         if (prevTokenSymbolRef.current === fromCurrency?.symbol) return;
         prevTokenSymbolRef.current = fromCurrency?.symbol;
         prevPriceRef.current = sourceCurrencyPriceInUsd;
         computeAndSetTokenAmount(preciseUsdRef.current);
-    }, [fromCurrency?.symbol, isUsdMode, sourceCurrencyPriceInUsd, usdAmount, computeAndSetTokenAmount]);
+    }, [amountMode, fromCurrency?.symbol, isUsdMode, sourceCurrencyPriceInUsd, usdAmount, computeAndSetTokenAmount]);
 
     // Sync usdAmount when formik amount changes externally (e.g. quick action buttons).
     // The ref-based guards ensure only truly external changes trigger the sync.
@@ -153,7 +155,7 @@ export function useUsdTokenSync({
             didInitUsdRef.current = true;
             return;
         }
-        if (!amountChanged && !isInitialSync) return;
+        if (!amountChanged && !isInitialSync && amountMode !== 'max') return;
         if (skipSync) {
             const amountNum = Number(amount);
             if (!isNaN(amountNum) && amountNum > 0 && sourceCurrencyPriceInUsd) {
@@ -178,7 +180,7 @@ export function useUsdTokenSync({
         preciseUsdRef.current = preciseUsd;
         setUsdAmount(preciseUsd.toFixed(2).replace(/\.?0+$/, ''));
         didInitUsdRef.current = true;
-    }, [amount, isUsdMode, sourceCurrencyPriceInUsd, setUsdAmount]);
+    }, [amount, amountMode, isUsdMode, sourceCurrencyPriceInUsd, setUsdAmount]);
 
     // --- Toggle handler ---
 
@@ -203,11 +205,15 @@ export function useUsdTokenSync({
         const value = e.target.value.replace(',', '.');
         // Allow empty, or a valid USD amount: no leading zeros (except "0" itself), up to 2 decimals
         if (value !== '' && !/^(0|[1-9]\d*)\.?\d{0,2}$/.test(value)) return;
+        setFieldValue('amountMode', 'manual', false);
+        setFieldValue('maxAmountSource', undefined, false);
+        setFieldValue('maxAmountPending', false, false);
+        setFieldValue('maxAmountError', undefined, false);
         const numValue = Number(value) || 0;
         preciseUsdRef.current = numValue;
         setUsdAmount(value);
         computeAndSetTokenAmount(numValue);
-    }, [setUsdAmount, computeAndSetTokenAmount]);
+    }, [setFieldValue, setUsdAmount, computeAndSetTokenAmount]);
 
     return {
         sourceCurrencyPriceInUsd,

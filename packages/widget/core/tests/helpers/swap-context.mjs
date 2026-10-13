@@ -2,23 +2,27 @@ import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import React from 'react'
 import ts from 'typescript'
+import { maxAmount, swapProgress } from './source.mjs'
 
 const require = createRequire(import.meta.url)
 const noop = () => {}
 
 // Run the real swap provider and its SWR receipt subscription, with unrelated
 // quote, route, wallet and whole-swap services held at deterministic boundaries.
-export function createSwapContext({ Client, getSwapId, getAccount, stores, swapTransactions = {}, swr = require('swr') }) {
+export function createSwapContext({ Client, getSwapId, getAccount, stores, swapTransactions = {}, swr = require('swr'), overrides = {} }) {
     const network = { name: 'BASE_MAINNET' }
     const snapshots = new Map()
     const store = state => Object.assign(selector => selector(state), { getState: () => state })
     const emptyStores = {
         useSwapTransactionStore: store({ swapTransactions, setSwapTransaction: noop }),
         useGaslessAuthorizationStore: store({ authorizations: {} }),
-        useDepositSignatureStore: store({ removeDepositSignature: noop }),
+        useDepositSignatureStore: store({ signatures: {}, removeDepositSignature: noop }),
     }
     const resolved = {}
     const imports = {
+        '@/lib/maxAmount': maxAmount,
+        '@/lib/prepareMaxAmount': { prepareMaxAmount: () => { throw new Error('Unexpected max preparation') } },
+        '@/helpers/swapProgress': swapProgress,
         '@/helpers/depository': { shouldUseDepository: () => false },
         react: React,
         'react/jsx-runtime': require('react/jsx-runtime'),
@@ -65,6 +69,7 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
         '@/hooks/useSwapStatusNotification': { useSwapStatusNotification: noop },
         '@/lib/swapLifecycle': {},
         '@/lib/swapCreation': {},
+        ...overrides,
     }
     const { outputText } = ts.transpileModule(readFileSync(new URL('../../src/context/swap.tsx', import.meta.url), 'utf8'), {
         compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },

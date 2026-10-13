@@ -8,7 +8,9 @@ import { transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { useBalance } from '@/lib/balances/useBalance';
 import useOutOfGas from '@/lib/gases/useOutOfGas';
 import useSWRGas from '@/lib/gases/useSWRGas';
-import { resolveNativePayableAmount } from '@/components/Input/Amount/helpers';
+import { resolveMaxAllowedAmount } from '@/components/Input/Amount/helpers';
+import { maxAmountSource } from '@/lib/maxAmount';
+import { truncateToDecimals } from '@/components/utils/RoundDecimals';
 import { NetworkRoute } from '@layerswap/widget-types';
 import { useFormikContext } from 'formik';
 import type { JSX } from 'react';
@@ -42,7 +44,7 @@ const Withdraw: FC<{
 }> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal }) => {
     const { swapBasicData, swapDetails, refuel, quoteIsLoading } =
         useSwapDataState();
-    const { setSubmitedFormValues, startFreshSwapAttempt } = useSwapDataUpdate();
+    const { setSubmitedFormValues, startFreshSwapAttempt, canAdjustAmount } = useSwapDataUpdate();
 
     const { networks } = useSettingsState();
     const source_network =
@@ -71,7 +73,7 @@ const Withdraw: FC<{
         swapBasicData?.source_token,
         swapBasicData?.requested_amount,
     );
-    const { setFieldValue } = useFormikContext<SwapFormValues>();
+    const { setValues, values } = useFormikContext<SwapFormValues>();
 
     const lifecycleContext = useMemo(
         () => swapBasicData ? lifecycleContextFromSwap(swapBasicData, swapDetails) : undefined,
@@ -91,24 +93,26 @@ const Withdraw: FC<{
     // The swap id and source address arrive after creation; they enrich the report but never repeat it.
     useLifecycleObservation(swapBasicData && !swapBasicData.use_deposit_address ? AWAITING_WALLET_ACTION : undefined, lifecycleContext)
 
+    const quoteArgs = transformSwapDataToQuoteArgs(swapBasicData, !!refuel);
+    // Limits feed useOutOfGas, which only matters for wallet withdrawals — skip them in deposit address flow
+    const { minAllowedAmount, maxAllowedAmount } = useQuoteData(quoteArgs, {
+        skipLimits: isDepositAddressSwap(swapBasicData),
+    });
     const handleEditAmount = useCallback(() => {
-        if (walletBalanceAmount == null || !gasData?.gas || !swapBasicData)
-            return;
-        const maxAmount = resolveNativePayableAmount(
-            walletBalanceAmount,
-            gasData.gas,
-            gasData.reserve ?? 0,
-            swapBasicData.source_token.decimals,
-        );
-        if (maxAmount <= 0) return;
-
-        const newAmount = truncateDecimals(
-            maxAmount,
-            swapBasicData.source_token?.precision,
-        );
-        startFreshSwapAttempt();
-        setFieldValue('amount', newAmount, true);
-        setSubmitedFormValues({
+        if (!canAdjustAmount() || walletBalanceAmount == null || !swapBasicData) return;
+        const maxAmount = resolveMaxAllowedAmount({
+            walletBalance, gasAmount: gasData?.gas, gasReserve: gasData?.reserve,
+            fromCurrency: swapBasicData.source_token, native_currency: gasData?.token ?? source_network?.token,
+            limitsMaxAmount: maxAllowedAmount, depositMethod: 'wallet',
+        });
+        if (maxAmount == null || maxAmount <= 0) return;
+        const newAmount = truncateToDecimals(String(maxAmount), swapBasicData.source_token.decimals);
+        const maxFields = { amountMode: 'max' as const,
+            maxAmountSource: maxAmountSource(swapBasicData.source_network.name, swapBasicData.source_token.symbol, selectedSourceAccount?.id, selectedSourceAccount?.address),
+            maxAmountPending: true, maxAmountError: undefined };
+        const nextValues: SwapFormValues = {
+            ...values,
+            ...maxFields,
             amount: newAmount,
             from: swapBasicData.source_network as NetworkRoute,
             to: swapBasicData.destination_network as NetworkRoute,
@@ -119,14 +123,17 @@ const Withdraw: FC<{
             depositMethod: swapBasicData.use_deposit_address
                 ? 'deposit_address'
                 : 'wallet',
-        });
+        };
+        startFreshSwapAttempt();
+        void setValues(nextValues, true);
+        setSubmitedFormValues(nextValues);
     }, [
         walletBalanceAmount,
         gasData?.gas,
         gasData?.reserve,
         swapBasicData,
         refuel,
-        setFieldValue,
+        setValues, values, canAdjustAmount, walletBalance, source_network, selectedSourceAccount, maxAllowedAmount,
         setSubmitedFormValues,
         startFreshSwapAttempt,
     ]);
@@ -142,11 +149,6 @@ const Withdraw: FC<{
         Number(swapBasicData?.requested_amount) &&
         Number(walletBalanceAmount) < Number(swapBasicData?.requested_amount);
 
-    const quoteArgs = transformSwapDataToQuoteArgs(swapBasicData, !!refuel);
-    // Limits feed useOutOfGas, which only matters for wallet withdrawals — skip them in deposit address flow
-    const { minAllowedAmount, maxAllowedAmount } = useQuoteData(quoteArgs, {
-        skipLimits: isDepositAddressSwap(swapBasicData),
-    });
     const { outOfGas } = useOutOfGas({
         address: selectedSourceAccount?.address,
         network: source_network,
@@ -183,10 +185,10 @@ const Withdraw: FC<{
                     asset={swapBasicData?.source_token?.asset}
                     refreshing={showSpinner}
                     refreshButton={
-                        <RefreshBalanceButton
-                            onRefresh={mutate}
-                            isLoading={isLoading}
-                        />
+                        <div className="flex gap-2">
+                            <RefreshBalanceButton onRefresh={mutate} isLoading={isLoading} />
+                            <AdjustAmountButton onEditAmount={handleEditAmount} isLoading={quoteIsLoading || !canAdjustAmount()} />
+                        </div>
                     }
                 />
             ),
@@ -205,7 +207,7 @@ const Withdraw: FC<{
                             adjustButton={
                                 <AdjustAmountButton
                                     onEditAmount={handleEditAmount}
-                                    isLoading={quoteIsLoading}
+                                    isLoading={quoteIsLoading || !canAdjustAmount()}
                                 />
                             }
                         />

@@ -6,6 +6,7 @@ import ts from 'typescript'
 import React, { act, createElement, Fragment } from 'react'
 import { createRoot } from 'react-dom/client'
 import { JSDOM } from 'jsdom'
+import { maxAmount } from './helpers/source.mjs'
 import { createSwapContext } from './helpers/swap-context.mjs'
 
 const require = createRequire(import.meta.url)
@@ -196,6 +197,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         if (!scope.initialized) { callback(); scope.initialized = true }
     }
     const { SendTransactionButton, ButtonWrapper } = loadSource(`${walletPath}buttons.tsx`, {
+        '@/lib/maxAmount': maxAmount,
         '@/helpers/depositActions': depositActions,
         '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: event => calls.lifecycle.push(event) }) },
         '@/lib/swapLifecycle': lifecycle,

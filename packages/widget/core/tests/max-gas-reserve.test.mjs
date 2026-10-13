@@ -94,7 +94,7 @@ after(() => {
   }
 })
 
-test('repeated Max clicks cannot remove the reserve while the new amount is being estimated', async () => {
+test('Using max can be turned off during gas estimation without changing the amount', async () => {
   await render()
   assert.equal(maxButton().disabled, true)
   await settle(state.requests[0], 0.01)
@@ -104,10 +104,14 @@ test('repeated Max clicks cannot remove the reserve while the new amount is bein
   assert.equal(formik.values.amount, '0.9898')
   assert.equal(state.requests.length, 2)
   assert.equal(state.requests[1].args.amount, 0.9898)
-  assert.equal(maxButton().disabled, true)
+  assert.equal(maxButton().disabled, false)
+  assert.equal(maxButton().textContent, 'Using max')
+  assert.equal(maxButton().getAttribute('aria-pressed'), 'true')
 
   await act(() => maxButton().click())
   assert.equal(formik.values.amount, '0.9898')
+  assert.equal(formik.values.amountMode, 'manual')
+  assert.equal(maxButton().textContent, 'Max')
   await settle(state.requests[1], 0.02)
   assert.equal(maxButton().disabled, false)
   await act(() => maxButton().click())
@@ -171,7 +175,7 @@ test('tokens paid with another gas asset can still use Max before gas loads', as
   await render()
   assert.equal(maxButton().disabled, false)
   await act(() => maxButton().click())
-  assert.equal(formik.values.amount, '50')
+  assert.equal(formik.values.amount, '10', 'Max also respects the route limit')
 })
 
 test('deposit-address Max still uses route limits without a gas estimate', async () => {
@@ -234,5 +238,5 @@ test('Max keeps the native reserve (Solana rent-exempt minimum) on top of the fe
   const input = { walletBalance: { amount: 0.00468252 }, fromCurrency: sol, native_currency: sol, depositMethod: 'wallet', fallbackAmount: 0.0001, gasAmount: 0.000005 }
   // Without the reserve this left 100 lamports behind and failed simulation.
   assert.equal(resolveMaxAllowedAmount({ ...input, gasReserve: 0.00089088 }), 0.003786539)
-  assert.equal(resolveMaxAllowedAmount({ ...input, walletBalance: { amount: 0.0008 }, gasReserve: 0.00089088 }), 0.0001)
+  assert.equal(resolveMaxAllowedAmount({ ...input, walletBalance: { amount: 0.0008 }, gasReserve: 0.00089088 }), 0)
 })

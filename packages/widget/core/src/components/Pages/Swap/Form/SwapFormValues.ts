@@ -3,6 +3,11 @@ import { Exchange } from "@/Models/Exchange";
 
 export type SwapFormValues = {
   amount?: string;
+  amountMode?: 'manual' | 'max';
+  /** Scope of the user's Max choice; changing the funding account or asset resets it. */
+  maxAmountSource?: string;
+  maxAmountError?: string;
+  maxAmountPending?: boolean;
   destination_address?: string;
   //TODO: refactor
   fromAsset?: NetworkRouteToken & { manuallySet?: boolean };

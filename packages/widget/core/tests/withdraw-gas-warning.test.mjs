@@ -18,11 +18,11 @@ const mockUrl = `data:text/javascript,${encodeURIComponent(`
   import { createElement } from ${JSON.stringify(import.meta.resolve('react'))}
   export const state = {}
   export const useSwapDataState = () => ({ swapBasicData: state.swap })
-  export const useSwapDataUpdate = () => ({ setSubmitedFormValues() {} })
+  export const useSwapDataUpdate = () => ({ setSubmitedFormValues(values) { state.submitted = values }, startFreshSwapAttempt() { state.freshAttempts++ }, canAdjustAmount: () => !state.locked })
   export const useSettingsState = () => ({ networks: [state.swap.source_network] })
   export const useSelectedAccount = () => ({ address: 'source' })
   export const useBalance = () => ({ balances: state.balances, mutate() {}, isLoading: false })
-  export const useFormikContext = () => ({ setFieldValue() {} })
+  export const useFormikContext = () => ({ values: {}, setValues(values) { state.formValues = values } })
   export const useCallbacks = () => ({ onSwapLifecycle: event => state.events.push(event) })
   export const useQuoteData = () => ({ minAllowedAmount: 0.001, maxAllowedAmount: state.maxAllowedAmount })
   export const transformSwapDataToQuoteArgs = () => ({})
@@ -34,7 +34,7 @@ const mockUrl = `data:text/javascript,${encodeURIComponent(`
   export default () => null
   export const SwapQuoteDetails = () => null
   export const ErrorDisplay = ({ title, message, action, footer }) => createElement('div', null, title, message, action, footer)
-  export const AdjustAmountButton = () => createElement('button', null, 'Adjust amount')
+  export const AdjustAmountButton = ({ onEditAmount, isLoading }) => createElement('button', { onClick: onEditAmount, disabled: isLoading }, 'Adjust amount')
   export const RefreshBalanceButton = () => createElement('button', null, 'Refresh balance')
   export const WalletTransferAction = () => createElement('button', null, 'Send transaction')
 `)}`
@@ -72,7 +72,7 @@ beforeEach(() => {
   document.body.append(container)
   root = createRoot(container)
   Object.assign(state, {
-    events: [],
+    events: [], locked: false, freshAttempts: 0, submitted: undefined, formValues: undefined,
     swap: { source_network: network, source_token: token, destination_network: { name: 'BASE_MAINNET' }, destination_token: token, requested_amount: '0.95', use_deposit_address: false },
     balances: [{ network: network.name, token: token.symbol, amount: 1, isNativeCurrency: true }],
     gasData: { gas: 0.1, token },
@@ -177,4 +177,21 @@ test('deposit-address swaps do not report wallet balance or gas blocks', async (
   await render()
   assert.deepEqual(state.events, [])
   assert.doesNotMatch(container.textContent, /Insufficient balance/)
+})
+
+const adjustButton = () => [...container.querySelectorAll('button')].find(button => button.textContent === 'Adjust amount')
+test('Adjust amount explicitly starts a fresh draft with Max enabled', async () => {
+  await render()
+  await act(() => adjustButton().click())
+  assert.equal(state.freshAttempts, 1)
+  assert.equal(state.submitted.amountMode, 'max')
+  assert.equal(state.submitted.amount, '0.898')
+  assert.equal(state.formValues.amount, state.submitted.amount)
+})
+test('Adjust amount cannot abandon an executing swap', async () => {
+  state.locked = true
+  await render()
+  assert.equal(adjustButton().disabled, true)
+  await act(() => adjustButton().click())
+  assert.equal(state.freshAttempts, 0)
 })
