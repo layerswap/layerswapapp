@@ -36,6 +36,8 @@ await build({
         contents: `
             export { SwapContentView, ProcessingSectionView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/Page2Sections.js';
             export { StepsPanel } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Processing/StepsComponent.js';
+            export { ProcessingView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/ProcessingView.js';
+            export { resolveSwapPhase } from '../../packages/widget/core/dist/esm/components/utils/resolveSwapPhase.js';
             export { DepositWorkflowView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/DepositWorkflowView.js';
             export { WalletExecutionTransition } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/WalletExecutionTransition.js';
             export { WalletActionTransition } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/WalletActionTransition.js';
@@ -51,21 +53,21 @@ await build({
     platform: 'node',
     format: 'esm',
     bundle: true,
+    banner: { js: "import { createRequire as _createRequire } from 'node:module'; const require = _createRequire(import.meta.url);" },
     external: ['react', 'react-dom', 'react-dom/*', 'framer-motion'],
     mainFields: ['module', 'main'],
     logLevel: 'silent',
 });
-const { SwapContentView, ProcessingSectionView, StepsPanel, DepositWorkflowView, WalletExecutionTransition, WalletActionTransition, SendTransactionView, RetryView, DepositLayoutView, DepositAddressTransition } = await import(pathToFileURL(outfile));
+const { SwapContentView, ProcessingSectionView, StepsPanel, ProcessingView, resolveSwapPhase, DepositWorkflowView, WalletExecutionTransition, WalletActionTransition, SendTransactionView, RetryView, DepositLayoutView, DepositAddressTransition } = await import(pathToFileURL(outfile));
 const container = document.getElementById('root');
 const settle = () => act(() => new Promise(resolve => setTimeout(resolve, 400)));
 const view = (processing, manual = false) => React.createElement(SwapContentView, {
     summary: (!manual || processing) && React.createElement('div', null, 'Summary'),
     quote: !manual && React.createElement('div', null, 'Quote'),
     compactQuote: !manual && processing,
-    transferStage: processing ? 'processing' : 'withdraw',
-}, processing
-    ? React.createElement(StepsPanel, null, 'Processing deposit')
-    : React.createElement('button', null, 'Confirm in your wallet'));
+    stage: processing ? 'processing' : 'withdraw',
+    progress: processing && React.createElement(StepsPanel, null, 'Processing deposit'),
+}, !processing && React.createElement('button', null, 'Confirm in your wallet'));
 
 test('standard transfer retains inert controls until their exit finishes alongside entering steps', async () => {
     const root = createRoot(container);
@@ -119,10 +121,10 @@ test('retry collapses failed-state actions with the steps and gives Swap now one
         summary: React.createElement('div', null, 'Summary'),
         quote: React.createElement('div', null, 'Quote'),
         compactQuote: failed,
-        transferStage: failed ? 'processing' : 'withdraw',
+        stage: failed ? 'processing' : 'withdraw',
+        progress: failed && React.createElement(StepsPanel, null, 'The transfer failed'),
     }, failed
-        ? React.createElement(ProcessingSectionView, { actions: React.createElement(RetryView) },
-            React.createElement(StepsPanel, null, 'The transfer failed'))
+        ? React.createElement(ProcessingSectionView, { actions: React.createElement(RetryView) })
         : React.createElement(WalletActionTransition, { actionKey: 'transfer' },
             React.createElement(SendTransactionView)));
     try {
@@ -134,7 +136,7 @@ test('retry collapses failed-state actions with the steps and gives Swap now one
 
         await act(() => {
             flushSync(() => root.render(scene(false)));
-            const controls = container.querySelector('[data-wallet-execution-panel="controls"]');
+            const controls = container.querySelector('[data-wallet-execution-panel="controls"]:not([inert])');
             assert.equal(controls.style.opacity, '0', 'the outer controls own the entrance');
             const walletAction = controls.querySelector('[style*="transform"]');
             assert.equal(walletAction.style.transform, 'none', 'no second slide under the height animation');
@@ -144,10 +146,10 @@ test('retry collapses failed-state actions with the steps and gives Swap now one
         assert.ok(actions.hasAttribute('inert'));
         assert.equal(actions.getAttribute('aria-hidden'), 'true');
         assert.equal(container.querySelector('[data-quote-transition]'), quote);
+
         await act(() => new Promise(resolve => setTimeout(resolve, 100)));
         assert.ok(Number(actions.style.opacity) < 1, 'retry controls fade out with the steps');
         assert.notEqual(actions.style.height, 'auto', 'retry controls collapse rather than leaving their height until unmount');
-
         await settle();
         assert.equal(container.querySelector('[data-processing-actions]'), null);
         assert.equal(container.querySelector('[data-steps-panel]'), null);
@@ -204,59 +206,69 @@ test('manual deposit animates summary entry and retains instructions through the
     }
 });
 
-test('wallet confirmation hands off to transaction confirmation without replaying the steps entrance', async () => {
+test('wallet prompts, transaction confirmation and completion update one persistent progress panel with motion enabled', async () => {
     const root = createRoot(container);
+    const network = { name: 'BASE_MAINNET', transaction_explorer_template: 'https://basescan.org/tx/{0}' };
+    const token = { asset: 'USDT', decimals: 6 };
+    const swap = { source_network: network, destination_network: network, destination_token: token, use_deposit_address: false };
+    const quote = { destination_token: token, receive_amount: 2.662674 };
     const actions = [
-        { step: 'approve_permit2', status: 'completed' },
         { step: 'sign', status: 'completed' },
         { step: 'publish', status: 'action_required' },
     ];
-    const common = { actions, destinationToken: { asset: 'ETH', decimals: 18 }, receiveAmount: 0.0396 };
-    function WalletController({ ready }) {
-        return React.createElement(WalletExecutionTransition, {
-            workflow: !ready && React.createElement(DepositWorkflowView, {
-                ...common, loading: true, actionStateText: 'Confirm in your wallet',
+    const scene = stage => {
+        const processing = stage !== 'wallet';
+        const completed = stage === 'completed';
+        const details = {
+            status: completed ? 'completed' : processing ? 'ls_transfer_pending' : 'user_transfer_pending',
+            transactions: processing ? [
+                { type: 'input', status: 'pending', transaction_hash: '0xswap', confirmations: 0, max_confirmations: 1 },
+                ...(completed ? [{ type: 'output', status: 'completed', transaction_hash: '0xswap', amount: 2.662674 }] : []),
+            ] : undefined,
+        };
+        return React.createElement(React.StrictMode, null, React.createElement(SwapContentView, {
+            summary: React.createElement('div', null, 'Summary'),
+            quote: React.createElement('div', null, 'Receive at least 2.649361 USDT'),
+            compactQuote: true,
+            stage: processing ? 'processing' : 'withdraw',
+            progress: React.createElement(ProcessingView, {
+                swapBasicData: swap, swapDetails: details, quote,
+                depositActions: actions,
+                resolved: resolveSwapPhase({ swapDetails: details }),
+                walletProgress: { quote, depositActions: actions, loading: true, actionStateText: 'Confirm in your wallet' },
+                transactionHash: processing ? '0xswap' : undefined,
             }),
-            controls: ready && React.createElement('button', null, 'Preparing swap'),
-        });
-    }
-    function ProcessingController() {
-        return React.createElement('div', null, React.createElement(DepositWorkflowView, {
-            ...common,
-            processing: { title: 'Transfer in progress', inputStatus: 'current', outputStatus: 'upcoming', inputDescription: 'Confirming transaction · no action needed' },
-        }));
-    }
-    const scene = stage => React.createElement(React.StrictMode, null,
-        React.createElement(SwapContentView, { summary: React.createElement('div', null, 'Summary') },
-            stage === 'processing' ? React.createElement(ProcessingController) : React.createElement(WalletController, { ready: stage === 'ready' })));
+        }, !processing && React.createElement(WalletActionTransition, { actionKey: 'send' },
+            React.createElement(SendTransactionView, { quote, depositActions: actions, loading: true, showProgress: false, actionStateText: 'Confirm in your wallet' }))));
+    };
     try {
-        await act(() => root.render(scene('ready')));
-        await act(() => {
-            flushSync(() => root.render(scene('wallet')));
-            assert.equal(container.querySelector('[data-steps-panel]').style.opacity, '0', 'the actual first appearance still animates');
-        });
+        await act(() => root.render(scene('wallet')));
         await settle();
-        assert.match(container.textContent, /Confirm in your wallet/);
-
-        await act(() => root.render(scene('processing')));
-        let panel = container.querySelector('[data-steps-panel]');
-        assert.equal(panel.style.height, 'auto', 'a controller handoff must not collapse an already visible panel');
-        assert.equal(panel.style.opacity, '1', 'a controller handoff must not fade the panel in again');
-        assert.match(panel.textContent, /Confirming transaction · no action needed/);
+        const panel = container.querySelector('[data-steps-panel]');
+        const gauge = panel.querySelector('[role="progressbar"]');
+        const steps = panel.querySelector('[aria-label="Progress"]');
+        const quoteNode = container.querySelector('[data-quote-transition]');
+        assert.match(panel.textContent, /Confirm in your wallet/);
         assert.equal(container.querySelectorAll('[data-steps-panel]').length, 1);
 
-        await act(() => root.render(scene('wallet')));
-        panel = container.querySelector('[data-steps-panel]');
-        assert.equal(panel.style.height, 'auto');
-        assert.equal(panel.style.opacity, '1');
-        await act(() => root.render(scene('ready')));
-        await settle();
-        assert.equal(container.querySelector('[data-steps-panel]'), null);
-        await act(() => {
-            flushSync(() => root.render(scene('wallet')));
-            assert.equal(container.querySelector('[data-steps-panel]').style.opacity, '0', 'returning after the panel disappeared restores its entrance');
-        });
-        await settle();
+        for (const stage of ['processing', 'completed', 'wallet', 'completed']) {
+            await act(() => root.render(scene(stage)));
+            for (const duration of [0, 70, 400]) {
+                if (duration) await act(() => new Promise(resolve => setTimeout(resolve, duration)));
+                assert.equal(container.querySelectorAll('[data-steps-panel]').length, 1, `${stage}: one panel throughout the handoff`);
+                assert.equal(container.querySelector('[data-steps-panel]'), panel);
+                assert.equal(panel.querySelector('[role="progressbar"]'), gauge);
+                assert.equal(panel.querySelector('[aria-label="Progress"]'), steps);
+                assert.equal(container.querySelector('[data-quote-transition]'), quoteNode);
+                assert.equal(panel.closest('[inert]'), null);
+                assert.equal(panel.style.opacity, '1');
+            }
+            if (stage === 'completed') {
+                assert.match(panel.textContent, /Transfer complete/);
+                assert.doesNotMatch(panel.textContent, /Swap in progress|Confirm in your wallet/);
+                assert.equal(panel.querySelectorAll('.animate-spin').length, 0);
+            }
+        }
     } finally {
         await act(() => root.unmount());
     }

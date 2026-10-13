@@ -189,6 +189,7 @@ const Withdraw: FC<{
             footerKey: 'outOfGas',
             footer: (
                 <WalletTransferButton
+                    showProgress={false}
                     swapBasicData={swapBasicData}
                     swapId={swapDetails?.id}
                     refuel={!!refuel}
@@ -212,6 +213,7 @@ const Withdraw: FC<{
             footerKey: 'transfer',
             footer: (
                 <WalletTransferButton
+                    showProgress={false}
                     swapBasicData={swapBasicData}
                     swapId={swapDetails?.id}
                     refuel={!!refuel}

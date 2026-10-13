@@ -185,6 +185,8 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
         setSwapModalOpen(value)
         onSwapModalStateChange(value)
         if (!value) {
+            // Keep the active swap's fee mode and compact quote stable through submission.
+            useGaslessPreferenceStore.getState().resetGaslessPreference()
             if (swapBasicData) {
                 // Synchronous, after onSwapModalStateChange(false): the host's close handler
                 // defers its cleanup so this event keeps its journey context.
@@ -238,7 +240,6 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                                 <Suspense fallback={<SwapDetailsSceleton />}>
                                     <SwapDetails type="contained" onWalletWithdrawalSuccess={() => {
                                         setWalletWihdrawDone(true)
-                                        useGaslessPreferenceStore.getState().resetGaslessPreference()
                                         setFieldValue('amount', 0)
                                         mutateBalances()
                                     }} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />

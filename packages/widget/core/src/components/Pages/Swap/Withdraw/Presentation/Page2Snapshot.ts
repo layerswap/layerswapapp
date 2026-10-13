@@ -21,6 +21,8 @@ export type Page2WalletState =
     | {
           kind: 'send';
           pending?: boolean;
+          disabled?: boolean;
+          submissionAccepted?: boolean;
           label?: string;
           isSignatureError?: boolean;
           error?: ActionMessageType | 'unknown';

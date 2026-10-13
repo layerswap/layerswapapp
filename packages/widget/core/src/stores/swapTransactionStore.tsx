@@ -1,11 +1,9 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { BackendTransactionStatus, type DepositActionStep, GaslessAuthorizationStatus, GaslessAuthorizationTransaction, TransactionStatus } from '../lib/apiClients/layerSwapApiClient';
+import type { DepositActionStep } from '../lib/apiClients/layerSwapApiClient';
 
 export type SwapTransaction = {
     hash: string;
-    status: BackendTransactionStatus | TransactionStatus;
-    failReason?: string;
     timestamp: number;
 };
 
@@ -16,7 +14,7 @@ export type SwapStepTransaction = Pick<SwapTransaction, 'hash' | 'timestamp'> & 
 export type SwapStepTransactions = Partial<Record<DepositActionStep, SwapStepTransaction>>;
 
 type SwapTransactionStore = {
-    // Keep the execution record and persisted shape used by status, history and retry guards.
+    // Wallet receipts are display/recovery helpers. Swap status comes from the API.
     swapTransactions: Record<string, SwapTransaction>;
     // Prerequisite receipts are display history, never evidence of a submitted swap.
     stepTransactions: Record<string, SwapStepTransactions>;
@@ -25,7 +23,7 @@ type SwapTransactionStore = {
     pendingSubmissions: Record<string, true>;
     markSubmissionPending: (Id: string) => void;
     clearPendingSubmission: (Id: string) => void;
-    setSwapTransaction: (Id: string, status: BackendTransactionStatus | TransactionStatus, txHash: string, failReason?: string) => void;
+    setSwapTransaction: (id: string, hash: string) => void;
     removeSwapTransaction: (Id: string) => void;
 };
 
@@ -37,10 +35,8 @@ type SwapDepositHintClickedStore = {
 export type GaslessAuthorization = {
     // Absent on older clients, which also stored self-paid prerequisites here.
     kind?: 'gasless';
-    // Signature expiry (unix seconds); fallback deadline when the authorize poll is unreachable.
+    // Signed authorization deadline (unix seconds), never a locally inferred outcome.
     validBefore: number;
-    status?: GaslessAuthorizationStatus;
-    transaction?: GaslessAuthorizationTransaction | null;
 };
 
 export type DepositSignature = { validBefore: number };
@@ -70,25 +66,82 @@ export const useDepositSignatureStore = create(persist<DepositSignatureStore>(
 type GaslessAuthorizationStore = {
     authorizations: Record<string, GaslessAuthorization>;
     setGaslessAuthorization: (Id: string, validBefore: number) => void;
-    setGaslessAuthorizationStatus: (Id: string, status: GaslessAuthorizationStatus, transaction?: GaslessAuthorizationTransaction | null) => void;
     removeGaslessAuthorization: (Id: string) => void;
 };
 
+type PersistedTransactionReceipts = Pick<SwapTransactionStore, 'swapTransactions' | 'stepTransactions' | 'pendingSubmissions'>;
+type PersistedGaslessAuthorizations = Pick<GaslessAuthorizationStore, 'authorizations'>;
 
-export const useSwapTransactionStore = create(
-    persist<SwapTransactionStore>(
+function savedRecords(value: unknown): Record<string, unknown> {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+    return value as Record<string, unknown>;
+}
+
+function transactionReceipt(value: unknown): SwapTransaction | undefined {
+    const saved = savedRecords(value);
+    if (typeof saved.hash !== 'string' || !saved.hash.trim()) return undefined;
+    return {
+        hash: saved.hash,
+        timestamp: typeof saved.timestamp === 'number' && Number.isFinite(saved.timestamp) ? saved.timestamp : 0,
+    };
+}
+
+function transactionReceipts(value: unknown): PersistedTransactionReceipts {
+    const saved = savedRecords(value);
+    const swapTransactions: Record<string, SwapTransaction> = {};
+    for (const [id, value] of Object.entries(savedRecords(saved.swapTransactions))) {
+        const receipt = transactionReceipt(value);
+        if (receipt) swapTransactions[id] = receipt;
+    }
+    const stepTransactions: Record<string, SwapStepTransactions> = {};
+    for (const [id, steps] of Object.entries(savedRecords(saved.stepTransactions))) {
+        const receipts: SwapStepTransactions = {};
+        for (const [step, value] of Object.entries(savedRecords(steps))) {
+            const receipt = transactionReceipt(value);
+            const explorerUrl = savedRecords(value).explorerUrl;
+            if (receipt && typeof explorerUrl === 'string') receipts[step] = { ...receipt, explorerUrl };
+        }
+        if (Object.keys(receipts).length) stepTransactions[id] = receipts;
+    }
+    const pendingSubmissions: Record<string, true> = {};
+    for (const [id, pending] of Object.entries(savedRecords(saved.pendingSubmissions))) {
+        if (pending === true) pendingSubmissions[id] = true;
+    }
+    return { swapTransactions, stepTransactions, pendingSubmissions };
+}
+
+function gaslessAuthorizationReceipts(persisted: unknown): PersistedGaslessAuthorizations {
+    const authorizations: Record<string, GaslessAuthorization> = {};
+    for (const [id, value] of Object.entries(savedRecords(savedRecords(persisted).authorizations))) {
+        const saved = savedRecords(value);
+        if (typeof saved.validBefore !== 'number' || !Number.isFinite(saved.validBefore)) continue;
+        authorizations[id] = {
+            ...(saved.kind === 'gasless' ? { kind: 'gasless' as const } : {}),
+            validBefore: saved.validBefore,
+        };
+    }
+    return { authorizations };
+}
+
+export const useSwapTransactionStore = create<SwapTransactionStore>()(
+    persist<SwapTransactionStore, [], [], PersistedTransactionReceipts>(
         (set) => ({
             swapTransactions: {},
             stepTransactions: {},
             pendingSubmissions: {},
             setStepTransaction: (id, step, hash, explorerUrl) => {
-                if (!hash) return;
+                if (!hash.trim()) return;
                 set(state => ({
                     stepTransactions: {
                         ...state.stepTransactions,
                         [id]: {
                             ...state.stepTransactions[id],
-                            [step]: { hash, explorerUrl, timestamp: Date.now() },
+                            [step]: {
+                                hash,
+                                explorerUrl,
+                                timestamp: state.stepTransactions[id]?.[step]?.hash === hash
+                                    ? state.stepTransactions[id][step]!.timestamp : Date.now(),
+                            },
                         },
                     },
                 }));
@@ -104,16 +157,16 @@ export const useSwapTransactionStore = create(
                     return { pendingSubmissions };
                 });
             },
-            setSwapTransaction: (Id, status, txHash, failReason) => {
+            setSwapTransaction: (Id, hash) => {
+                if (!hash.trim()) return;
                 set((state) => {
                     const { [Id]: _removed, ...pendingSubmissions } = state.pendingSubmissions;
                     const txForSwap = {
                         ...state.swapTransactions,
                         [Id]: {
-                            hash: txHash,
-                            status: status,
-                            failReason: failReason,
-                            timestamp: Date.now()
+                            hash,
+                            timestamp: state.swapTransactions[Id]?.hash === hash
+                                ? state.swapTransactions[Id].timestamp : Date.now(),
                         }
                     };
                     return { swapTransactions: txForSwap, pendingSubmissions };
@@ -129,12 +182,15 @@ export const useSwapTransactionStore = create(
         {
             name: 'swapTransactions',
             storage: createJSONStorage(() => localStorage),
+            // Also sanitize on writes so old lifecycle fields cannot survive migration.
+            partialize: transactionReceipts,
+            merge: (persisted, current) => ({ ...current, ...transactionReceipts(persisted) }),
         }
     ),
 )
 
-export const useGaslessAuthorizationStore = create(
-    persist<GaslessAuthorizationStore>(
+export const useGaslessAuthorizationStore = create<GaslessAuthorizationStore>()(
+    persist<GaslessAuthorizationStore, [], [], PersistedGaslessAuthorizations>(
         (set) => ({
             authorizations: {},
             setGaslessAuthorization: (Id, validBefore) => {
@@ -144,25 +200,6 @@ export const useGaslessAuthorizationStore = create(
                         [Id]: { kind: 'gasless', validBefore },
                     },
                 }));
-            },
-            setGaslessAuthorizationStatus: (Id, status, transaction) => {
-                set((state) => {
-                    // A late poll response must not resurrect an authorization that
-                    // retry cleanup already removed — recreating it with validBefore: 0
-                    // would immediately re-expire the fresh attempt.
-                    const current = state.authorizations[Id];
-                    if (!current) return state;
-                    return {
-                        authorizations: {
-                            ...state.authorizations,
-                            [Id]: {
-                                ...current,
-                                status,
-                                transaction: transaction ?? current.transaction ?? null,
-                            },
-                        },
-                    };
-                });
             },
             removeGaslessAuthorization: (Id) => {
                 set((state) => {
@@ -174,6 +211,8 @@ export const useGaslessAuthorizationStore = create(
         {
             name: 'gaslessAuthorizations',
             storage: createJSONStorage(() => localStorage),
+            partialize: gaslessAuthorizationReceipts,
+            merge: (persisted, current) => ({ ...current, ...gaslessAuthorizationReceipts(persisted) }),
         }
     ),
 )

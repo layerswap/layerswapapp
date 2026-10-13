@@ -81,6 +81,48 @@ test('iPhone Rainbow requests ignore a stale MetaMask choice and redirect only a
     assert.equal(client.listenerCount('session_connect'), 0)
 })
 
+for (const method of ['wallet_getCapabilities', 'wallet_getCallsStatus']) {
+    test(`mobile ${method} reads do not open the wallet`, () => {
+        const rainbow = session()
+        const client = clientFor(rainbow)
+        const unsubscribe = subscribeWalletRequests(client, 'eip155')
+        try {
+            assert.equal(client.session.get(rainbow.topic).sessionConfig.disableDeepLink, true)
+            for (const id of [42, 43, 44]) {
+                client.emit('session_request_sent', {
+                    topic: rainbow.topic,
+                    chainId: 'eip155:1',
+                    id,
+                    request: { method, params: [method === 'wallet_getCapabilities' ? 'address' : 'batch-id'] },
+                })
+            }
+            assert.deepEqual(redirects, [], 'discovery and receipt polling must leave the browser in the foreground')
+        } finally {
+            unsubscribe()
+        }
+    })
+}
+
+test('mobile signing, submission and explicit status display still open the wallet', () => {
+    const rainbow = session()
+    const client = clientFor(rainbow)
+    const unsubscribe = subscribeWalletRequests(client, 'eip155')
+    const methods = ['personal_sign', 'eth_signTypedData_v4', 'eth_sendTransaction', 'wallet_sendCalls', 'wallet_showCallsStatus']
+    try {
+        methods.forEach((method, id) => {
+            client.emit('session_request_sent', {
+                topic: rainbow.topic,
+                chainId: 'eip155:1',
+                id,
+                request: { method, params: [] },
+            })
+        })
+        assert.deepEqual(redirects, methods.map((_, id) => `rainbow://wc?requestId=${id}&sessionTopic=eip155-Rainbow`))
+    } finally {
+        unsubscribe()
+    }
+})
+
 test('new Solana sessions and restored EVM sessions use their own wallet', () => {
     const rainbow = session()
     const phantom = session('solana', 'Phantom', 'phantom://')
