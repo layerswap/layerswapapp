@@ -121,6 +121,20 @@ test('classification follows the cause chain and prefers structured codes over t
   assert.equal(lifecycleErrorDetails(Object.assign(new Error('x'), { code: 'A'.repeat(500) })).errorCode.length, 128)
 })
 
+test('wallet lifecycle events retain codes wrapped by the Starknet adapter and RPC SDK', () => {
+  for (const [code, message, expectedReason] of [[163, 'UNKNOWN_ERROR', 'unknown_error'], [4100, 'Unauthorized', 'unauthorized'], [4001, 'User rejected', 'user_rejected']]) {
+    const original = Object.assign(new Error(message), { code })
+    const error = Object.assign(new Error(message, { cause: original }), { name: 'UnexpectedErrorMessage' })
+    const details = lifecycleErrorDetails(error)
+    assert.equal(details.reasonCode, expectedReason)
+    assert.equal(details.errorCode, String(code))
+    assert.equal(details.occurrenceId, getErrorOccurrenceId(original))
+    assert.equal(details.reason, message)
+  }
+  assert.equal(lifecycleErrorDetails({ data: { originalError: { code: 4100 } } }).errorCode, '4100')
+  assert.equal(lifecycleErrorDetails({ code: -32603, data: { originalError: { code: 4100 } } }).errorCode, '-32603')
+})
+
 test('ambiguous -32000 RPC errors use their details and preserve the raw code', () => {
   const cases = [
     ['nonce too low', 'nonce_or_replacement'],

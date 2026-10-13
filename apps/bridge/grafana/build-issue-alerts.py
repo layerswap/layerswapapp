@@ -23,7 +23,7 @@ def build():
     # Static alert scope needs no dashboard-variable decoding. Keep the repeated
     # comparison query small enough for the Loki gateway's request-URI limit.
     base = '{source="faro"} | logfmt | __error__="" | app_name="layerswap-frontend" | app_environment="mainnet"'
-    source = base + ' | kind="exception" | context_impact!="diagnostic" | context_eventType!~"' + trial.BACKGROUND_TYPES + '" | type!="TransactionRejected"'
+    source = base + ' | kind="exception" | context_impact!="diagnostic" | context_impact!="expected" | context_reason_code!="user_rejected" | context_eventType!~"' + trial.BACKGROUND_TYPES + '"'
     source += ' | label_format type=`{{ if .type }}{{ .type }}{{ else }}(unknown type){{ end }}`'
     template = '{{ $m := .value | trim }}'
     for pattern, replacement in trial.NORMALIZATIONS:

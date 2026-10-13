@@ -5,6 +5,7 @@ export type ConnectedWalletContext = {
     wallet_family: string
     wallet_connector: string
     wallet_chain_id?: string
+    wallet_version?: string
 }
 
 // Bound the complete JSON, never truncate inside an address or JSON record.
@@ -36,6 +37,8 @@ export function getWalletSessionAttributes(providers: readonly WalletConnectionP
                 wallet_family: families.has(provider.id) ? provider.id : 'unknown',
                 wallet_connector: connector,
                 ...(chainId === undefined ? {} : { wallet_chain_id: chainId }),
+                ...(typeof wallet.version === 'string' && /^[a-zA-Z0-9][a-zA-Z0-9.+_-]{0,127}$/.test(wallet.version)
+                    ? { wallet_version: wallet.version } : {}),
             }
             records.set(JSON.stringify(record), record)
         }

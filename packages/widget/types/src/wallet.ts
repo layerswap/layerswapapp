@@ -36,6 +36,8 @@ export type Wallet = {
   id: string;
   internalId?: string;
   displayName?: string;
+  /** Wallet-reported implementation version, when exposed by the provider. */
+  version?: string;
   isActive: boolean;
   address: string | `0x${string}`;
   addresses: string[];
