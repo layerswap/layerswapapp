@@ -177,6 +177,15 @@ the input/output/refund transaction hashes.
 
 - A wallet rejection is `outcome="rejected"`, `reason_code="user_rejected"`; it
   is not reported as an exception.
+- Issue views and alert definitions exclude explicit `user_rejected` reasons or
+  `expected` impact, never the `TransactionRejected` presentation name alone.
+  Historical generic execution failures can carry that name.
+- `wallet_prompt_opened` marks the start of a wallet request, not confirmation
+  that a wallet prompt became visible. Its elapsed time includes wallet processing.
+- Wallet lifecycle `error_code` includes nested provider codes. Exception causes
+  retain allowlisted RPC wrappers and simulation/revert details with depth, node
+  and size limits; request bodies and arbitrary provider fields are omitted.
+  Session `connected_wallets` entries include `wallet_version` when exposed.
 - `suspected_stall` fires after a stage-specific threshold on a pending step. It
   is an investigation signal, not proof of failure; later transitions stay in
   the same journey.

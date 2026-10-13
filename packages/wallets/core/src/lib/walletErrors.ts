@@ -232,6 +232,17 @@ function collectCandidates(error: unknown): ErrorCandidate[] {
     return collectNodes(error).sort((a, b) => b.depth - a.depth).map(node => node.value)
 }
 
+/** Preserve the outer raw code; look through known wrappers only when it is absent. */
+export function walletErrorCodeFromChain(error: unknown): string | undefined {
+    for (const { value } of collectNodes(error).sort((a, b) => a.depth - b.depth)) {
+        try {
+            const code = walletErrorCode(value)
+            if (code !== undefined) return code
+        } catch { /* A foreign code getter must not prevent reporting the remaining causes. */ }
+    }
+    return undefined
+}
+
 /** Outermost first: the adapter that wrapped a failure has the final say on its meaning. */
 function declaredReason(error: unknown): WalletErrorReasonCode | undefined {
     const nodes = collectNodes(error).sort((a, b) => a.depth - b.depth)

@@ -61,8 +61,19 @@ function mockRpc(t, specVersion) {
     return requests
 }
 
-async function connectWallet() {
+async function connectWallet(version = '5.1.0') {
     const walletRequests = []
+    const walletProvider = {
+        on: () => {},
+        request: async request => {
+            walletRequests.push(request)
+            if (request.type === 'wallet_requestAccounts') return [address]
+            if (request.type === 'wallet_addInvokeTransaction') return { transaction_hash: '0xabc' }
+            if (request.type === 'wallet_signTypedData') return ['0x1', '0x2']
+            assert.fail(`Unexpected wallet request: ${request.type}`)
+        },
+    }
+    Object.defineProperty(walletProvider, 'version', typeof version === 'function' ? { get: version } : { value: version })
     const wallet = await resolveStarknetWallet({
         name: 'Starknet',
         address,
@@ -71,16 +82,7 @@ async function connectWallet() {
         disconnectWallets: async () => {},
         connector: {
             id: 'argentX', name: 'Ready', icon: '',
-            wallet: {
-                on: () => {},
-                request: async request => {
-                    walletRequests.push(request)
-                    if (request.type === 'wallet_requestAccounts') return [address]
-                    if (request.type === 'wallet_addInvokeTransaction') return { transaction_hash: '0xabc' }
-                    if (request.type === 'wallet_signTypedData') return ['0x1', '0x2']
-                    assert.fail(`Unexpected wallet request: ${request.type}`)
-                },
-            },
+            wallet: walletProvider,
         },
     })
     assert.ok(wallet, 'Wallet initialization must succeed')
@@ -103,6 +105,7 @@ for (const specVersion of ['0.10.0', '0.10.1', '0.10.2', '0.10.3', '0.10.4', '0.
     test(`wallet fee estimation, transfers, and signing work with RPC ${specVersion}`, async t => {
         const requests = mockRpc(t, specVersion)
         const { wallet, walletRequests } = await connectWallet()
+        assert.equal(wallet.version, '5.1.0')
         assert.ok(wallet.metadata.starknetAccount instanceof WalletAccount)
         assert.ok(wallet.metadata.starknetAccount.provider)
         assert.equal(typeof wallet.metadata.starknetAccount.getClassAt, 'undefined')
