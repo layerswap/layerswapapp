@@ -19,7 +19,11 @@ import {
 import {
     chainsToNetworkTypes,
 } from '../dist/esm/lib/walletConnect/types.js'
+import { defaultWalletConnectChainRegistry } from '../dist/esm/lib/walletConnect/chainRegistry.js'
 
+defaultWalletConnectChainRegistry.register({ namespace: 'eip155', networkType: 'evm', explorerChainIds: ['eip155:1'] })
+defaultWalletConnectChainRegistry.register({ namespace: 'solana', networkType: 'solana', explorerChainIds: ['solana:mainnet'] })
+defaultWalletConnectChainRegistry.register({ namespace: 'stellar', networkType: 'stellar', explorerChainIds: ['stellar:pubnet', 'stellar:testnet'] })
 const registryWallet = {
     walletConnectProjectId: 'test-project',
     id: 'rainbow',

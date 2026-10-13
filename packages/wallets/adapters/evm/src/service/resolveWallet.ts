@@ -2,12 +2,10 @@ import { type Wallet } from '@layerswap/widget-types';
 import type { Connector } from 'wagmi'
 import { getDynamicWcMetadata, getPendingDynamicWcMetadata, type AppNetworkAdapter } from "@layerswap/wallet-core"
 import { evmConnectorNameResolver, resolveEVMWalletConnectorIcon } from '../evmUtils'
-import { HIDDEN_WALLETCONNECT_ID, immutableZKEvm } from '../constants'
+import { EIP155_NAMESPACE, HIDDEN_WALLETCONNECT_ID, immutableZKEvm } from '../constants'
 import type { LSConnector } from '../connectors/types'
 import { findEthereumNetwork } from './findEthereumNetwork'
 import { resolveSupportedNetworks } from './resolveSupportedNetworks'
-
-const EVM_NS = 'eip155'
 
 export type ResolveWalletProps<Network> = {
     connection: {
@@ -52,7 +50,7 @@ export function resolveWallet<Network>(props: ResolveWalletProps<Network>): Wall
 
     const isHiddenConnector = connector.id === HIDDEN_WALLETCONNECT_ID
     const dynamicMetadata = isHiddenConnector
-        ? (getDynamicWcMetadata(EVM_NS, address) || getPendingDynamicWcMetadata(EVM_NS))
+        ? (getPendingDynamicWcMetadata(EIP155_NAMESPACE) || getDynamicWcMetadata(EIP155_NAMESPACE, address))
         : null
 
     const walletName = dynamicMetadata?.name || connector.name
@@ -81,7 +79,8 @@ export function resolveWallet<Network>(props: ResolveWalletProps<Network>): Wall
         withdrawalSupportedNetworks: resolveSupportedNetworks(supportedNetworks.withdrawal, walletId),
         networkIcon: iconNetwork ? networkAdapter.getIcon(iconNetwork) : undefined,
         metadata: {
-            deepLink: (connector as LSConnector).deepLink,
+            deepLink: dynamicMetadata?.deepLink || (connector as LSConnector).deepLink,
+            evmConnectorUid: connector.uid,
         },
     }
 }

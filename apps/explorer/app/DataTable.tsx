@@ -1,5 +1,5 @@
 "use client"
-import { ApiResponse } from '@layerswap/widget/types'
+import { ApiResponse } from '@layerswap/widget-types'
 import useSWR from "swr"
 import { CheckCircle2, ChevronRight } from "lucide-react";
 import Image from "next/image";

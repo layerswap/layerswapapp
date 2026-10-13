@@ -12,7 +12,7 @@ import { useInitialSettings } from "@/context/settings";
 import { useSettingsState } from "@/context/settings";
 import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 import useSWR from "swr";
-import { ApiResponse } from "@/Models/ApiResponse";
+import type { ApiResponse } from "@layerswap/widget-types";
 import { Partner } from "@/Models/Partner";
 import AppSettings from "@/lib/AppSettings";
 import clsx from "clsx";

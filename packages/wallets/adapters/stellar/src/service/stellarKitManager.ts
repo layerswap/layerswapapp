@@ -3,11 +3,10 @@ import { ActionMessageType } from '@layerswap/widget-types'
 import { AppSettings, isMobile, isValidStellarAddress } from '@layerswap/utils'
 import type { ISupportedWallet } from '@creit.tech/stellar-wallets-kit/types'
 import type { WalletConnectModule as StellarKitWalletConnectModule } from '@creit.tech/stellar-wallets-kit/modules/wallet-connect'
-import { STELLAR_SESSION_KEY } from '../constants'
+import { STELLAR_SESSION_KEY, StellarWalletConnectChain, stellarWalletConnectChain } from '../constants'
 import {
     STELLAR_APPKIT_WALLET_CONNECT_ID,
     STELLAR_WALLET_CONNECT_ID,
-    StellarWalletConnectChain,
     StellarWalletConnectModule,
 } from './StellarWalletConnectModule'
 import { stellarStore, type StellarWalletSnapshot } from './stellarStore'
@@ -242,7 +241,6 @@ class StellarKitManager {
             if (knownNetwork) kit.setNetwork(knownNetwork)
         }
         return kit.signTransaction(xdr, { networkPassphrase, address })
-            .catch((error: { message: string }) => { throw new Error(error.message) })
     }
 
     async refreshWallets(): Promise<void> {
@@ -291,7 +289,7 @@ class StellarKitManager {
 
     private async getAppKitConnectedAddress(module: StellarKitWalletConnectModule, expectedAddress: string,): Promise<{ address: string }> {
         const sessions = await module.getSessions()
-        const connected = sessions.some(session => (session.namespaces['stellar']?.accounts ?? []).some(account => account.split(':')[2] === expectedAddress))
+        const connected = sessions.some(session => (session.namespaces[stellarWalletConnectChain.namespace]?.accounts ?? []).some(account => account.split(':')[2] === expectedAddress))
         if (!connected) {
             throw new Error('The Stellar WalletConnect session expired; reconnect the wallet')
         }

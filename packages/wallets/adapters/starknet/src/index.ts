@@ -85,3 +85,4 @@ export function createStarknetProvider<Network = NetworkWithTokens>(
 export { createStarknetConnection } from "./service/createStarknetConnection"
 export { useStarknetStore } from "./service/starknetStore"
 export { starknetConnectorManager } from "./service/starknetConnectorManager"
+export type { WalletAccount as StarknetWalletAccount } from "starknet-rpc"
