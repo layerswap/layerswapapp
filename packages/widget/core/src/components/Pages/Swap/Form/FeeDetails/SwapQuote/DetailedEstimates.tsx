@@ -84,12 +84,13 @@ export const GasFee = ({
     enabled?: boolean;
 }) => {
     const isCEX = !!values.fromExchange;
+    const sourceAccountNetwork = !isCEX ? values.from : undefined;
     const { provider } = useWallet(
-        !isCEX ? values.from : undefined,
+        sourceAccountNetwork,
         'withdrawal',
     );
 
-    const selectedSourceAccount = useSelectedAccount('from', values.from?.name);
+    const selectedSourceAccount = useSelectedAccount('from', sourceAccountNetwork?.name);
     const wallet = useMemo(
         () =>
             provider?.connectedWallets?.find(
@@ -99,11 +100,11 @@ export const GasFee = ({
     );
 
     const { gasData, isGasLoading } = useSWRGas(
-        wallet?.address,
-        values.from,
+        selectedSourceAccount?.address,
+        sourceAccountNetwork,
         values.fromAsset,
-        undefined,
-        undefined,
+        values.amount,
+        wallet,
         { enabled },
     );
     const gasTokenPriceInUsd = resolveTokenUsdPrice(gasData?.token, quote);

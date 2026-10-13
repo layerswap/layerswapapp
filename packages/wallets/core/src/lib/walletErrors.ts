@@ -18,7 +18,9 @@ const MAX_NODES = 16
 export function walletErrorCode(candidate: unknown): string | undefined {
     // viem assigns 4902 to every SwitchChainError, even a synchronization failure.
     // Only the provider's cause can establish that a chain is actually unknown.
-    if ((candidate as ErrorCandidate | undefined)?.name === 'SwitchChainError') return undefined
+    // Likewise UnknownRpcError's -1 is viem's placeholder; the wallet's code is its cause.
+    const name = (candidate as ErrorCandidate | undefined)?.name
+    if (name === 'SwitchChainError' || name === 'UnknownRpcError') return undefined
     const code = (candidate as ErrorCandidate | undefined)?.code
     if (typeof code === 'string' && code) return code.slice(0, RAW_CODE_LIMIT)
     if (typeof code === 'number' && Number.isFinite(code)) return String(code)
@@ -235,6 +237,17 @@ function collectCandidates(error: unknown): ErrorCandidate[] {
     return collectNodes(error).sort((a, b) => b.depth - a.depth).map(node => node.value)
 }
 
+/** Preserve the outer raw code; look through known wrappers only when it is absent. */
+export function walletErrorCodeFromChain(error: unknown): string | undefined {
+    for (const { value } of collectNodes(error).sort((a, b) => a.depth - b.depth)) {
+        try {
+            const code = walletErrorCode(value)
+            if (code !== undefined) return code
+        } catch { /* A foreign code getter must not prevent reporting the remaining causes. */ }
+    }
+    return undefined
+}
+
 /** Bounded cause text; retain the adapter's code unless it is missing or synthetic. */
 export function walletErrorDetails(error: unknown): { message: string; code?: string } {
     const candidates = collectCandidates(error)
@@ -242,7 +255,7 @@ export function walletErrorDetails(error: unknown): { message: string; code?: st
         .filter((message): message is string => typeof message === 'string' && !!message)
     return {
         message: ([...new Set(messages)].join(' | ') || errorMessage(error)).slice(0, 2048),
-        code: walletErrorCode(error) ?? candidates.map(walletErrorCode).find(code => code !== undefined),
+        code: walletErrorCodeFromChain(error),
     }
 }
 

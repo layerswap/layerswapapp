@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { ActionMessageType } from '@layerswap/widget-types'
 import {
-    errorMessage, isUserRejection, isWalletErrorReasonCode, normalizeWalletErrorCode, userRejectedError, walletActionError, walletErrorCode, walletErrorDetails,
+    errorMessage, isUserRejection, isWalletErrorReasonCode, normalizeWalletErrorCode, userRejectedError, walletActionError, walletErrorCode, walletErrorCodeFromChain, walletErrorDetails,
 } from '../dist/esm/lib/walletErrors.js'
 import { FIXTURES, GENERIC_WRAPPERS } from './wallet-error-fixtures.mjs'
 
@@ -27,6 +27,30 @@ test('a synthetic SwitchChainError code does not hide the underlying failure', (
     const cyclic = wrap(undefined)
     cyclic.cause = cyclic
     assert.equal(normalizeWalletErrorCode(cyclic), 'unknown_error')
+})
+
+test('raw diagnostic codes survive codeless adapter/SDK wrappers without replacing existing outer codes', () => {
+    for (const code of [163, 4100, 4001, 0]) {
+        const original = Object.assign(new Error('Wallet response'), { code })
+        for (const wrap of [cause => new Error('Wrapper', { cause }),
+            cause => ({ info: { error: cause } }), cause => ({ data: { originalError: cause } })]) {
+            const error = wrap(original)
+            assert.equal(walletErrorCodeFromChain(error), String(code))
+        }
+    }
+    const error = { code: -32603, data: { originalError: { code: 4100 } } }
+    assert.equal(walletErrorCode(error), '-32603')
+    assert.equal(walletErrorCodeFromChain(error), '-32603')
+    assert.equal(walletErrorCodeFromChain({ code: 4001, cause: { code: -32603 } }), '4001')
+    assert.equal(normalizeWalletErrorCode(error), 'unauthorized')
+    assert.equal(walletErrorCodeFromChain({ cause: { code: 'x'.repeat(500) } }).length, 128)
+    const cyclic = { code: 163 }; cyclic.cause = cyclic
+    assert.equal(walletErrorCodeFromChain(cyclic), '163')
+    assert.equal(walletErrorCodeFromChain({ get code() { throw Error('unreadable') }, cause: { code: 163 } }), '163')
+    let deep = { code: 163 }
+    for (let i = 0; i < 20; i++) deep = { cause: deep }
+    assert.equal(walletErrorCodeFromChain(deep), undefined)
+    for (const value of [undefined, null, 'Execute failed', { code: NaN }]) assert.equal(walletErrorCodeFromChain(value), undefined)
 })
 
 test('rejection classification works without an SDK or a particular message', () => {

@@ -52,6 +52,20 @@ test('stellar connections keep their wallet family', () => {
     assert.deepEqual(entries(attrs), [{ wallet_address: 'test-stellar-account', wallet_family: 'stellar', wallet_connector: 'freighter' }])
 })
 
+test('wallet versions are optional bounded identifiers and survive the telemetry sanitizer', () => {
+    const attrs = getWalletSessionAttributes([provider([wallet('starknet-account', {
+        id: 'Ready X', internalId: 'argentX', version: '5.2.0-beta.1',
+        metadata: { wallet: { privateKey: 'never-export' } },
+    })], { id: 'starknet' })])
+    assert.equal(entries(attrs)[0].wallet_version, '5.2.0-beta.1')
+    const sanitized = beforeSend({ type: 'event', payload: { name: 'test' }, meta: { session: { id: 'test', attributes: attrs } } })
+    assert.equal(JSON.parse(sanitized.meta.session.attributes.connected_wallets)[0].wallet_version, '5.2.0-beta.1')
+    assert(!JSON.stringify(attrs).includes('never-export'))
+    for (const version of [undefined, '', 'x'.repeat(129), {}, 'https://rpc.test/key', 'password=secret']) {
+        assert(!('wallet_version' in entries(getWalletSessionAttributes([provider([wallet('test', { version })])]))[0]))
+    }
+})
+
 test('multiple connections, account/chain changes, missing chains and disconnects replace the snapshot', () => {
     const api = sessionAPI({ swap_id: 'test-swap', requested_amount: 'test-amount' })
     const publish = snapshots => updateSessionContext(api, 'wallet', getWalletSessionAttributes(snapshots))

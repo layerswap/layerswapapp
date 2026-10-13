@@ -6,7 +6,8 @@ import { truncateToDecimals } from "@/components/utils/RoundDecimals";
 type ResoleMaxAllowedAmountProps = {
     limitsMaxAmount: number | undefined
     walletBalance: TokenBalance | undefined
-    gasAmount: number
+    gasAmount: number | undefined
+    gasReserve?: number
     fromCurrency: Token
     native_currency: Token | undefined
     depositMethod: 'wallet' | 'deposit_address' | undefined
@@ -14,17 +15,26 @@ type ResoleMaxAllowedAmountProps = {
 }
 
 export const resolveMaxAllowedAmount = (props: ResoleMaxAllowedAmountProps) => {
-    const { limitsMaxAmount, walletBalance, gasAmount, fromCurrency, native_currency, depositMethod, fallbackAmount } = props
+    const { limitsMaxAmount, walletBalance, gasAmount, gasReserve = 0, fromCurrency, native_currency, depositMethod, fallbackAmount } = props
 
     if (!walletBalance || isNaN(Number(walletBalance.amount)) || depositMethod !== 'wallet')
         return limitsMaxAmount
 
     const shouldPayGasWithTheToken = Number(walletBalance.amount) > 0 && (native_currency?.symbol === fromCurrency?.symbol) || !native_currency
-    const payableAmount = Number(walletBalance.amount) - (gasAmount * 1.02)
-
     if (!shouldPayGasWithTheToken)
         return isNaN(Number(walletBalance.amount)) ? 0 : Number(walletBalance.amount)
 
-    const res = Number(truncateToDecimals(String(payableAmount), fromCurrency.decimals))
+    // An unavailable estimate is not a zero fee. In particular, changing the
+    // amount starts a new estimate; another Max click must not spend its reserve.
+    if (gasAmount == null || !Number.isFinite(gasAmount) || gasAmount < 0)
+        return undefined
+
+    const res = resolveNativePayableAmount(Number(walletBalance.amount), gasAmount, gasReserve, fromCurrency.decimals)
     return res <= 0 ? fallbackAmount : res
+}
+
+/** Native balance left to send after the buffered gas fee and the reserve the network requires to stay in the account. */
+export const resolveNativePayableAmount = (balance: number, gasAmount: number, gasReserve: number, decimals: number) => {
+    const payableAmount = balance - (gasAmount * 1.02) - gasReserve
+    return Number(truncateToDecimals(String(payableAmount), decimals))
 }
