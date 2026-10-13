@@ -65,7 +65,7 @@ export class TonConnectionService<Network> implements WalletConnectionService<Ru
             console.warn('[TON] Failed to parse wallet address:', snapshot.address, e)
             return undefined
         }
-        const walletInfo = useTonStore.getState().wallets.find(w => w.appName.toLowerCase() === snapshot.appName?.toLowerCase())
+        const walletInfo = useTonStore.getState().wallets.find(w => w.appName.toLowerCase() === snapshot.appName?.toLowerCase() || w.name.toLowerCase() === snapshot.appName?.toLowerCase())
         const walletId = walletInfo?.name || snapshot.walletName || snapshot.appName
         if (!walletId) return undefined
 
