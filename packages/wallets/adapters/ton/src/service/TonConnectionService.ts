@@ -1,7 +1,9 @@
+import { NetworkType } from '@layerswap/widget-types';
 import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
 import type { WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types";
 import type { WalletModalConnector } from "@layerswap/wallet-core/types"
-import { connectModalStore, type AppNetworkAdapter } from "@layerswap/wallet-core"
+import { connectModalStore } from "@layerswap/wallet-core"
+import type { AppNetworkAdapter } from "@layerswap/utils"
 import { resolveWalletIconString } from "@layerswap/wallet-core"
 import { isWalletInfoCurrentlyInjected, isWalletInfoInjectable, isWalletInfoRemote, type Wallet as TonWallet, type WalletInfo, type WalletInfoInjectable, type WalletInfoRemote, } from '@tonconnect/sdk'
 import { Address } from '@ton/core'
@@ -33,13 +35,13 @@ export class TonConnectionService<Network> implements WalletConnectionService<Ru
     }
 
     getNetworkIcon(): string | undefined {
-        const network = this._networks.find(item => this._networkAdapter?.isTonNetwork(item))
+        const network = this._networks.find(item => this._networkAdapter?.getNetworkType(item) === NetworkType.TON)
         return network && this._networkAdapter ? this._networkAdapter.getIcon(network) : undefined
     }
 
     private getSupportedNetworks(): string[] {
         return this._networks
-            .filter(network => this._networkAdapter?.isTonNetwork(network))
+            .filter(network => this._networkAdapter?.getNetworkType(network) === NetworkType.TON)
             .map(network => this._networkAdapter?.getId(network))
             .filter((id): id is string => !!id)
     }

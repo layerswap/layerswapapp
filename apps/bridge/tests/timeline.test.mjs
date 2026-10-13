@@ -102,13 +102,13 @@ const result = await build({
         export { gaslessFailureMessage } from '../../packages/widget/core/dist/esm/helpers/gaslessFailureMessage.js';
         export { SpecializedWithdrawalView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/SpecializedWithdrawalView.js';
         export { default as ProductionSummary } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Summary/Summary.js';
-        export { default as ProductionAddressIcon } from '../../packages/widget/core/dist/esm/components/Common/AddressIcon/index.js';
+        export { AddressIcon as ProductionAddressIcon } from '@layerswap/ui-kit';
         export { SlippageView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Form/FeeDetails/SlippageView.js';
         export { Slippage as ProductionSlippage } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Form/FeeDetails/Slippage.js';
         export { GasFeeView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Form/FeeDetails/SwapQuote/GasFeeView.js';
         export { ManualDepositButtonView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/ManualDepositButtonView.js';
         export { ConfirmationContent } from '../../packages/widget/core/dist/esm/components/Modal/ConfirmationContent.js';
-        export { CopyButtonView } from '@layerswap/ui-kit/components';
+        export { CopyButtonView } from '@layerswap/ui-kit';
         export { SettingsStateContext } from '../../packages/widget/core/dist/esm/context/settings.js';`,
         resolveDir: resolve(directory, '..'),
         loader: 'tsx',

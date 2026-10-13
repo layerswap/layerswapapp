@@ -16,8 +16,7 @@ const previewOnly = new Set([...adapters, resolve(presentation, 'ReadOnlyPreview
 
 function resolveSource(specifier, from) {
     let base;
-    if (specifier === '@layerswap/ui-kit/components') base = resolve(uiKit, 'components/index');
-    else if (specifier === '@layerswap/ui-kit') base = resolve(uiKit, 'index');
+    if (specifier === '@layerswap/ui-kit') base = resolve(uiKit, 'index');
     else if (specifier.startsWith('@/')) base = resolve(from.startsWith(uiKit) ? uiKit : widget, specifier.slice(2));
     else if (specifier.startsWith('.')) base = resolve(dirname(from), specifier);
     if (!base) return;

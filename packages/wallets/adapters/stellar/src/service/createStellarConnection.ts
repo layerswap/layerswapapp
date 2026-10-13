@@ -49,6 +49,7 @@ export function createStellarConnection<Network>(
                 browseConnectors: additional?.browseConnectors,
                 recentConnectors: additional?.recentConnectors,
                 networks,
+                networkAdapter,
             }
         },
         buildSnapshot: inputs => {

@@ -1,6 +1,6 @@
 import { TokenBalance } from "@layerswap/widget-types";
 import { Token } from "@layerswap/widget-types";
-import { truncateToDecimals } from "@/components/utils/RoundDecimals";
+import { truncateToDecimals } from "@layerswap/utils";
 
 
 type ResoleMaxAllowedAmountProps = {

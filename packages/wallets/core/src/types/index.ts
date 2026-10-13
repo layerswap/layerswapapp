@@ -8,6 +8,7 @@ export type {
     WalletConnectionProvider,
     MultiStepHandler,
     SelectAccountProps,
+    AccountIdentity,
     RequestAdditionalConnectorsParams,
     RequestAdditionalConnectorsResult,
 } from "@/types/wallet";
@@ -22,5 +23,3 @@ export type {
     WalletProviderModule,
     BaseWalletProviderConfig,
 } from "@/types/provider";
-export type { AppNetworkAdapter } from "@/types/network";
-export { defineNetworkAdapter } from "@/types/network";

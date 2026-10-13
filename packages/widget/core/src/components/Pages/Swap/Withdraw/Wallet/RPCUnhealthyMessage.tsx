@@ -1,4 +1,4 @@
-import { useCopyClipboard } from '@layerswap/ui-kit';
+import { useCopyClipboard } from '@layerswap/utils/react';
 import { KnownInternalNames } from '@layerswap/utils';
 import {
     AddEthereumChainParams,

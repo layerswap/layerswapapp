@@ -144,7 +144,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         './isUserRejection': rejection,
         '@/helpers/depositActions': depositActions,
         '@/helpers/gasless': gasless,
-        '@/lib/address/explorerUrl': loadSource('../src/lib/address/explorerUrl.ts'),
+        '@layerswap/utils': loadSource('../../../utils/src/explorerUrl.ts'),
         '@/lib/swapLifecycle': lifecycle,
         '@/lib/widgetTelemetry': { widgetTelemetry: { beginOperation: () => () => {} } },
         './executeWalletOperation': { executeWalletOperation },
@@ -168,7 +168,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
             StepsPanel: ({ children }) => createElement(Fragment, null, children),
         },
         '../Processing/StepTransactionLink': { StepTransactionLink: noop },
-        '@/components/utils/RoundDecimals': { truncateDecimals: value => value },
+        '@layerswap/utils': { truncateDecimals: value => value },
         './TransferStatusHeader': { TransferStatusHeader: noop },
         '../Processing/types': progressTypes,
     })
@@ -183,7 +183,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
             WalletExecutionTransition: ({ workflow, controls }) =>
                 createElement(Fragment, null, workflow, controls),
         },
-        '@layerswap/ui-kit/components': { WalletIcon: noop },
+        '@layerswap/ui-kit': { WalletIcon: noop },
         'lucide-react': { Loader2: noop },
         '../../Form/SecondaryComponents/validationError/constants': {},
         '../../Form/SecondaryComponents/validationError/ErrorDismissButton': { default: noop },
@@ -232,7 +232,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
             },
         },
         react: mounted ? React : { useState, useRef: initial => useState({ current: initial })[0], useMemo: fn => fn(), useCallback: fn => fn },
-        '@layerswap/ui-kit/components': { WalletIcon: noop },
+        '@layerswap/ui-kit': { WalletIcon: noop },
         '@/components/Buttons/submitButton': { default: noop },
         '@/hooks/useWallet': { default: () => ({ wallets: [wallet] }) },
         '@/context/swap': {

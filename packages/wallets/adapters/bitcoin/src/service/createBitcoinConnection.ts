@@ -37,6 +37,7 @@ export function createBitcoinConnection<Network>(
                 resolvedConnectors: state.resolvedConnectors,
                 ready: state.ready,
                 networks,
+                networkAdapter,
             }
         },
         buildSnapshot: () => ({

@@ -1,22 +1,15 @@
-import { Network } from "@layerswap/widget-types";
+import { Network, NetworkType } from "@layerswap/widget-types";
 import { TransferProvider, TransferProps } from "@layerswap/widget-types";
 import { Account, Provider } from '@fuel-ts/account'
 import { Address } from '@fuel-ts/address'
 import { transactionBuilder } from "./transactionBuilder"
 import { toTransferError } from "./toTransferError"
-import { KnownInternalNames } from "@layerswap/utils";
 import { getFuelInstance, hasFuelInstance } from "../service/getFuel"
-
-const supportedNetworks = [
-    KnownInternalNames.Networks.FuelTestnet,
-    KnownInternalNames.Networks.FuelDevnet,
-    KnownInternalNames.Networks.FuelMainnet
-]
 
 export function createFuelTransfer(): TransferProvider {
     return {
         supportsNetwork(network: Network): boolean {
-            return supportedNetworks.includes(network.name)
+            return network.type === NetworkType.Fuel
         },
 
         async executeTransfer(params: TransferProps): Promise<string> {

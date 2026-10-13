@@ -3,7 +3,7 @@ import {
     AccordionContent,
     AccordionItem,
     AccordionTrigger,
-} from '@/components/shadcn/accordion';
+} from '@layerswap/ui-kit';
 import clsx from 'clsx';
 import { ChevronDown } from 'lucide-react';
 import type { ReactNode } from 'react';

@@ -5,7 +5,7 @@ import {
     Popover,
     PopoverContent,
     PopoverTrigger,
-} from '@/components/shadcn/popover';
+} from '@layerswap/ui-kit';
 import TokenChainBadge from './_shared/TokenChainBadge';
 import PickerTriggerContent from './_shared/PickerTriggerContent';
 import type { ResolvedDestination } from './DestinationTokenPicker';

@@ -10,3 +10,31 @@ Contains no UI. React appears only as a peer dependency for the headless context
   Transfer providers throw through `walletActionError(name, { message, cause?, reasonCode? })` and `userRejectedError({ message?, cause? })`: `name` is the `ActionMessageType` the widget renders (UI copy only, it never classifies), `reasonCode` is what the host and telemetry are told and wins over every inferred signal anywhere in the `cause` chain. Rule: labels are UI copy; declare declines with `userRejectedError`. `tests/adapter-sentinel-guard.test.mjs` fails CI for any adapter that assigns the rejected label by hand.
 
 Chain packages (`@layerswap/wallet-evm`, `@layerswap/wallet-svm`, …) must depend only on this package, `@layerswap/utils`, and `@layerswap/widget-types` — never on `@layerswap/ui-kit`.
+
+## Host network types
+
+`AppNetworkAdapter<Network>.getNetworkType(network)` returns the shared `NetworkType` from `@layerswap/widget-types`. Any package can check EVM with `adapter.getNetworkType(network) === NetworkType.EVM`, or Solana with `NetworkType.Solana`.
+
+Layerswap already uses this enum, so its getter returns `network.type`. Train maps its existing enum in the app adapter:
+
+```ts
+import { NetworkTypes, type ExtendedNetwork } from '@/Models/Network'
+import { NetworkType } from '@layerswap/widget-types'
+
+const packageTypes = new Map<string, NetworkType>([
+    [NetworkTypes.EVM, NetworkType.EVM],
+    [NetworkTypes.Solana, NetworkType.Solana],
+    [NetworkTypes.Starknet, NetworkType.Starknet],
+    [NetworkTypes.TON, NetworkType.TON],
+    [NetworkTypes.Fuel, NetworkType.Fuel],
+])
+const getNetworkType = (network: ExtendedNetwork): NetworkType | undefined => {
+    const normalizedType = network.networkType.toLowerCase()
+    if (normalizedType === 'tron') return NetworkType.Tron
+    if (normalizedType === 'bitcoin') return NetworkType.Bitcoin
+    if (normalizedType === 'fuel') return NetworkType.Fuel
+    return packageTypes.get(network.networkType)
+}
+```
+
+Replace the adapter's `is*Network` methods with `getNetworkType`. Keep its other getters and optional address validation/formatting functions. Unregistered ecosystems return `undefined`. Existing provider factory generics are unchanged, so Train can keep calls such as `createTronProvider<ExtendedNetwork>()`.

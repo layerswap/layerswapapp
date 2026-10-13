@@ -7,7 +7,7 @@ import {
     useState,
     type ReactNode,
 } from 'react';
-import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion';
+import { useHydratedReducedMotion } from '@layerswap/ui-kit';
 import { swapFlowTransition } from '../Presentation/swapFlowAnimation';
 import Step from './Step';
 import type { StatusStep } from './types';

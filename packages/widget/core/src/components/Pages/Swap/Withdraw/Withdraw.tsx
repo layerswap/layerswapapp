@@ -1,4 +1,4 @@
-import { truncateDecimals } from '@/components/utils/RoundDecimals';
+import { truncateDecimals } from '@layerswap/utils';
 import { Widget } from '@/components/Widget/Index';
 import { useSettingsState } from '@/context/settings';
 import { useSwapDataState, useSwapDataUpdate } from '@/context/swap';

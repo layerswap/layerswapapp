@@ -68,7 +68,7 @@ const addressModule = loadSource('../../../utils/src/address/Address.ts', {
 const { useGaslessPreferenceStore } = loadSource('stores/gaslessPreferenceStore.ts', { zustand: coreRequire('zustand') });
 const motion = {
     'framer-motion': { motion: { div: childrenOnly }, AnimatePresence: childrenOnly, useIsPresent: () => true },
-    '@/hooks/useHydratedReducedMotion': { useHydratedReducedMotion: () => false },
+    '@layerswap/ui-kit': { useHydratedReducedMotion: () => false },
     './swapFlowAnimation': loadSource(`${withdraw}Presentation/swapFlowAnimation.ts`),
 };
 const transition = loadSource(`${withdraw}Presentation/WalletExecutionTransition.tsx`, motion);
@@ -297,7 +297,7 @@ test('live recipient visibility preserves disconnected destinations and respects
         'lucide-react': { ChevronDown: empty },
     });
     const { SummaryRow } = loadSource(`${fees}SwapQuote/SummaryRow.tsx`, {
-        '@/components/Input/Address/AddressPicker/AddressWithIcon': { ExtendedAddress: empty },
+        '@layerswap/ui-kit': { ExtendedAddress: empty },
         '@/context/depositSettings': { useDepositSettings: () => ({ showDestinationAddress }) },
         '@/context/settings': { useInitialSettings: () => ({}) },
         '@/lib/address/Address': { Address: { isValid: () => false } },
@@ -425,7 +425,7 @@ test('compact quote controls retain their nodes and cached values without gas or
         '@/lib/gases/useSWRGas': gasHook,
         '@/lib/nft/useSWRNftBalance': nftHook,
         '@/stores/gaslessPreferenceStore': { useGaslessPreferenceStore },
-        '@/components/Input/Address/AddressPicker/AddressWithIcon': { ExtendedAddress: empty },
+        '@layerswap/ui-kit': { ExtendedAddress: empty },
         '@/lib/address/Address': { Address: { isValid: () => false } },
     };
     const gasFees = loadSource(`${fees}SwapQuote/DetailedEstimates.tsx`, {
@@ -558,7 +558,7 @@ function createSwapHistoryHarness(fetcher, { onCreate, selectedAccount } = {}) {
         '@/lib/apiClients/layerSwapApiClient': api,
         '@/components/utils/resolveSwapPhase': phases,
         '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
-        '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
+        '@layerswap/utils': loadSource('../../../utils/src/truncateDecimals.ts'),
         './TransferStatusHeader': loadSource(`${withdraw}Presentation/TransferStatusHeader.tsx`, {
             '../Processing/gauge': { Gauge: empty },
         }),
@@ -578,8 +578,11 @@ function createSwapHistoryHarness(fetcher, { onCreate, selectedAccount } = {}) {
         ...shared,
         '@layerswap/widget-types': widgetTypes,
         '@/Models/RangeError': rangeErrors,
-        '@/lib/address/explorerUrl': loadSource('lib/address/explorerUrl.ts'),
-        '@/components/utils/ShortenString': { default: value => value },
+        '@layerswap/utils': {
+            ...shared['@layerswap/utils'],
+            ...loadSource('../../../utils/src/explorerUrl.ts'),
+            shortenString: value => value,
+        },
         'lucide-react': { CircleCheck: empty, Undo2: empty },
         './DepositWorkflowView': workflow,
     });
@@ -1007,7 +1010,7 @@ for (const provider of ['Hyperliquid', 'Polymarket']) {
                 '@/lib/ErrorHandler': { ErrorHandler: noop },
                 '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: noop }) },
                 '@/lib/swapLifecycle': { lifecycleContextFromSwap: () => ({}) },
-                '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
+                '@layerswap/utils': loadSource('../../../utils/src/truncateDecimals.ts'),
             });
             function Withdrawal({ data }) {
                 React.useEffect(() => { mounts++; }, []);
@@ -1148,7 +1151,7 @@ for (const failure of ['rejected', 'failed']) {
         const lifecycle = { lifecycleContextFromSwap: () => ({}), lifecycleErrorDetails: () => ({}) };
         const rejection = { isUserRejection: error => error?.code === 4001 };
         const execution = loadSource(`${withdraw}Wallet/Common/depositExecution.ts`, {
-            '@/lib/address/explorerUrl': loadSource('lib/address/explorerUrl.ts'),
+            '@layerswap/utils': loadSource('../../../utils/src/explorerUrl.ts'),
             '@/helpers/gasless': gasless,
             '@layerswap/widget-types': { ActionMessageType: { TransactionExpired: 'TransactionExpired' } },
             '@/lib/apiClients/layerSwapApiClient': harness.api,
@@ -1203,7 +1206,7 @@ for (const failure of ['rejected', 'failed']) {
         });
         const { default: Withdraw } = loadSource(`${withdraw}Withdraw.tsx`, {
             ...controllerImports,
-            '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
+            '@layerswap/utils': loadSource('../../../utils/src/truncateDecimals.ts'),
             '@/components/Widget/Index': { Widget: { Footer: childrenOnly } },
             '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
             '@/hooks/useFee': { transformSwapDataToQuoteArgs: noop, useQuoteData: () => ({}) },
@@ -1310,7 +1313,7 @@ function createRetryHarness({ transaction, authorization, transactions = [], dep
         '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: noop }) },
         '@/context/depositSettings': { useDepositSettings: () => ({}) },
         '@/hooks/useResolvedSwapStatus': statusHook,
-        '@/lib/address/explorerUrl': { getExplorerUrl: noop },
+        '@layerswap/utils': { getExplorerUrl: noop },
         '@/lib/apiClients/layerSwapApiClient': api,
         '@/lib/ErrorHandler': { ErrorHandler: noop },
         '@/stores/swapTransactionStore': stores,

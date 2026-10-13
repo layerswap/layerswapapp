@@ -1,7 +1,7 @@
 import type { DepositAction } from '@/lib/apiClients/layerSwapApiClient';
 import type { Token } from '@layerswap/widget-types';
 import type { ReactNode } from 'react';
-import { truncateDecimals } from '@/components/utils/RoundDecimals';
+import { truncateDecimals } from '@layerswap/utils';
 import {
     getDepositActionDescription,
     getDepositActionLabel,

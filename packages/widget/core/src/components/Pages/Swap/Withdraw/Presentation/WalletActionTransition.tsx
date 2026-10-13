@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion';
+import { useHydratedReducedMotion } from '@layerswap/ui-kit';
 import type { ReactNode } from 'react';
 
 /** Animate action changes; the enclosing workflow owns the initial appearance. */

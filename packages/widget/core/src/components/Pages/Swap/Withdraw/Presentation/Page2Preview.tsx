@@ -1,5 +1,5 @@
 import { WidgetFooterView } from '@/components/Widget/Footer';
-import { CopyButtonView } from '@layerswap/ui-kit/components';
+import { CopyButtonView } from '@layerswap/ui-kit';
 import { ConfirmationContent } from '@/components/Modal/ConfirmationContent';
 import { DetailedEstimatesView } from '../../Form/FeeDetails/SwapQuote/DetailedEstimatesView';
 import { GasFeeView } from '../../Form/FeeDetails/SwapQuote/GasFeeView';

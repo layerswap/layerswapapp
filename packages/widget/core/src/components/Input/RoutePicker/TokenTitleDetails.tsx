@@ -1,12 +1,12 @@
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import { Info } from "lucide-react";
-import { ExtendedAddress } from "../Address/AddressPicker/AddressWithIcon";
+import { ExtendedAddress } from "@layerswap/ui-kit";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
 import { TokenBalance } from "@layerswap/widget-types";
 import { useState } from "react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components//shadcn/popover";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components//shadcn/tooltip";
-import { ImageWithFallback } from "@layerswap/ui-kit/components";
+import { Popover, PopoverContent, PopoverTrigger } from "@layerswap/ui-kit";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@layerswap/ui-kit";
+import { ImageWithFallback } from "@layerswap/ui-kit";
 
 type TokenTitleWithBalanceProps = {
     item: NetworkRouteToken;
