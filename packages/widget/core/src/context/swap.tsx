@@ -344,7 +344,14 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const { data: inputTxStatusData } = useSWR<ApiResponse<{ status: TransactionStatus }>>(
         (inputTransactionHash && inputTx?.status !== BackendTransactionStatus.Completed) ? [swapBasicData?.source_network?.name, inputTransactionHash] : null,
         ([network, tx_id]: [string, string]) => layerswapApiClient.GetTransactionStatus(network, tx_id),
-        { dedupingInterval: 2000, refreshInterval: inputTx ? 0 : 3000, keepPreviousData: false },
+        {
+            dedupingInterval: 2000,
+            refreshInterval: response => {
+                const failed = response?.data?.status?.toLowerCase() === TransactionStatus.Failed
+                return inputTx || failed ? 0 : 3000
+            },
+            keepPreviousData: false,
+        },
     )
     const inputTxStatusFromApi = inputTxStatusData?.data?.status?.toLowerCase() as TransactionStatus | undefined
 

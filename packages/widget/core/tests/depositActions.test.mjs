@@ -30,6 +30,7 @@ const rejection = loadSource(`${walletPath}isUserRejection.ts`, { '@layerswap/wa
 const gasless = loadSource('../src/helpers/gasless.ts')
 const depositActions = loadSource('../src/helpers/depositActions.ts')
 const atomicActions = loadSource('../src/lib/atomicBatchActions.ts')
+const atomicStore = loadSource('../src/stores/atomicBatchStore.ts', { zustand: require('zustand') })
 const atomicFixtures = JSON.parse(readFileSync(new URL('./fixtures/atomic-batch.json', import.meta.url)))
 const swapProgress = loadSource('../src/helpers/swapProgress.ts', {
     './gasless': gasless,
@@ -60,7 +61,14 @@ const actionsFor = nonce => [
     { type: 'transfer', step: 'publish', status: 'waiting', amount: '1', to_address: '0x456' },
 ]
 
-function createWorkflow({ mounted = false, realPolling = false, atomic = false, renderResolvedScreen = false, walletController = false } = {}) {
+function createWorkflow({
+    mounted = false,
+    realPolling = false,
+    atomic = false,
+    renderResolvedScreen = false,
+    walletController = false,
+    realWalletExecution = false,
+} = {}) {
     let view
     const calls = { refresh: [], confirmations: [], sign: [], authorize: [], transfer: [], batches: [], executionStarts: [], quoteLoading: [], sleeps: [], storedTransactions: [], authorizations: [], signatures: [], errors: [], lifecycle: [], success: 0 }
     const state = {
@@ -334,7 +342,7 @@ function createWorkflow({ mounted = false, realPolling = false, atomic = false, 
         '../../Processing/types': progressTypes,
         '@/helpers/swapProgress': swapProgress,
         '@/helpers/atomicBatch': { isAtomicBatchEligible: () => state.atomicBatchEligible ?? false },
-        '@/stores/atomicBatchStore': { acquireWalletExecution: () => () => {}, getAtomicBatch: noop },
+        '@/stores/atomicBatchStore': realWalletExecution ? atomicStore : { acquireWalletExecution: () => () => {}, getAtomicBatch: noop },
         '@/lib/atomicBatchExecution': { executeAtomicBatch: async (ctx, action) => {
             if (!atomic) assert.fail('legacy workflow cannot execute a batch')
             calls.batches.push(action)
@@ -640,6 +648,128 @@ for (const atomic of [true, false]) test(`a changed creation quote ${atomic ? 'e
     assert.equal(flow.calls.transfer.length, atomic ? 0 : 1)
     assert.deepEqual(flow.calls.sign, [])
     assert.deepEqual(flow.calls.errors, [])
+})
+
+function createIndependentWalletWorkflows(firstOptions = {}) {
+    const first = createWorkflow({ ...firstOptions, realWalletExecution: true })
+    const second = createWorkflow({ realWalletExecution: true })
+    const publish = { type: 'transfer', step: 'publish', status: 'action_required', amount: 1, to_address: '0x456' }
+    for (const [flow, id] of [[first, 'first-swap'], [second, 'second-swap']]) {
+        flow.state.swapId = id
+        flow.state.swapDetails.id = id
+        flow.state.apiActions = [publish]
+        flow.state.depositActionsResponse = [publish]
+    }
+    return { first, second }
+}
+
+test('wallet execution releases after submission while optional catchup remains pending', async () => {
+    const { first, second } = createIndependentWalletWorkflows()
+    const catchup = Promise.withResolvers()
+    const enteredCatchup = Promise.withResolvers()
+    first.state.onCatchup = () => {
+        enteredCatchup.resolve()
+        return catchup.promise
+    }
+    const execution = first.render().button.props.onClick()
+    try {
+        await enteredCatchup.promise
+        assert.equal(first.calls.success, 1)
+        assert.deepEqual(first.calls.storedTransactions, [['first-swap', '0xtransaction']])
+
+        await second.render().button.props.onClick()
+        assert.equal(second.calls.transfer.length, 1, 'an unrelated swap can submit before catchup finishes')
+        assert.deepEqual(second.calls.storedTransactions, [['second-swap', '0xtransaction']])
+        assert.deepEqual(second.calls.errors, [])
+    } finally {
+        catchup.resolve()
+        await execution
+    }
+    await second.render().button.props.onClick()
+    assert.equal(second.calls.transfer.length, 1, 'the recorded transaction still prevents duplicate submission')
+})
+
+for (const waitingFor of ['wallet prompt', 'approval confirmation']) {
+    test(`wallet execution excludes another swap during ${waitingFor}`, async () => {
+        const { first, second } = createIndependentWalletWorkflows()
+        const waiting = Promise.withResolvers()
+        const enteredWait = Promise.withResolvers()
+        const holdExecution = () => {
+            enteredWait.resolve()
+            return waiting.promise
+        }
+        if (waitingFor === 'approval confirmation') {
+            first.state.apiActions = [
+                { type: 'transfer', step: 'approve_permit2', status: 'action_required', amount: 0, to_address: '0x456' },
+                { ...first.state.apiActions[0], status: 'waiting' },
+            ]
+            first.state.depositActionsResponse = first.state.apiActions
+            first.state.onTransition = holdExecution
+        } else {
+            first.state.onWalletPrompt = holdExecution
+        }
+        const execution = first.render().button.props.onClick()
+        try {
+            await enteredWait.promise
+            await second.render().button.props.onClick()
+            assert.deepEqual(second.calls.transfer, [], 'the ongoing wallet workflow retains the lock')
+            assert.deepEqual(second.calls.refresh, [])
+            assert.equal(first.calls.success, 0)
+        } finally {
+            waiting.resolve()
+            await execution
+        }
+        await second.render().button.props.onClick()
+        assert.equal(second.calls.transfer.length, 1)
+        assert.deepEqual(second.calls.errors, [])
+    })
+}
+
+test('wallet execution releases when a wallet response arrives after the screen closes', async () => {
+    const dom = new JSDOM('<div id="root"></div>')
+    const previous = Object.getOwnPropertyDescriptors(globalThis)
+    Object.assign(globalThis, { window: dom.window, document: dom.window.document, IS_REACT_ACT_ENVIRONMENT: true })
+    const { first, second } = createIndependentWalletWorkflows({ mounted: true })
+    const walletResponse = Promise.withResolvers()
+    const catchup = Promise.withResolvers()
+    const enteredCatchup = Promise.withResolvers()
+    first.state.onWalletPrompt = () => walletResponse.promise
+    first.state.onCatchup = () => {
+        enteredCatchup.resolve()
+        return catchup.promise
+    }
+    const root = createRoot(document.getElementById('root'))
+    let execution
+    let unmounted = false
+    try {
+        await act(async () => root.render(createElement(first.Component)))
+        await act(async () => { execution = first.view.handleClick() })
+        await act(async () => root.unmount())
+        unmounted = true
+        walletResponse.resolve()
+        await enteredCatchup.promise
+        assert.equal(first.calls.success, 0, 'the closed screen receives no stale UI callback')
+        assert.deepEqual(first.calls.storedTransactions, [['first-swap', '0xtransaction']])
+
+        await second.render().button.props.onClick()
+        assert.equal(second.calls.transfer.length, 1, 'the late successful handoff still releases the lock')
+        assert.deepEqual(second.calls.errors, [])
+    } finally {
+        walletResponse.resolve()
+        catchup.resolve()
+        await execution
+        if (!unmounted) {
+            await act(async () => root.unmount())
+        }
+        dom.window.close()
+        for (const key of ['window', 'document', 'IS_REACT_ACT_ENVIRONMENT']) {
+            if (previous[key]) {
+                Object.defineProperty(globalThis, key, previous[key])
+            } else {
+                delete globalThis[key]
+            }
+        }
+    }
 })
 
 test('raw atomic approval items cannot reach the ordinary transfer callback', async () => {
@@ -1266,6 +1396,51 @@ test('a terminal authorization with no submission can switch to a new standard s
     assert.equal(flow.calls.transfer[0].swapId, 'standard-swap')
     assert.deepEqual(flow.calls.errors, [])
 })
+
+for (const modeChangesDuringCreation of [false, true]) {
+    test(`an atomic standard fallback ${modeChangesDuringCreation ? 'rejects a later mode change' : 'submits in one click'}`, async () => {
+        const flow = createWorkflow({ atomic: true })
+        flow.preferences.gaslessEnabled = true
+        flow.preferences.reportGaslessUnavailable('create')
+        flow.state.sourceToken = {
+            contract: atomicFixtures.token.contract,
+            supports_gasless_deposit: true,
+            gasless_standard: 'eip3009',
+        }
+        flow.state.swapId = undefined
+        flow.state.swapDetails = undefined
+        const creationStarted = Promise.withResolvers()
+        const finishCreation = Promise.withResolvers()
+        flow.state.createSwap = async () => {
+            assert.equal(flow.preferences.gaslessEnabled, false)
+            creationStarted.resolve()
+            await finishCreation.promise
+            return { swap: { id: 'standard-swap', metadata: {} }, quote: {}, deposit_actions: [atomicFixtures.actions.zero_allowance] }
+        }
+
+        const execution = flow.render().buttonByText('Switch to standard transfer').props.onClick()
+        await creationStarted.promise
+        if (modeChangesDuringCreation) {
+            flow.preferences.gaslessEnabled = true
+        }
+        finishCreation.resolve()
+        await execution
+
+        assert.equal(flow.state.swapId, 'standard-swap')
+        assert.deepEqual(flow.calls.transfer, [], 'the batch cannot fall back to an ordinary transfer')
+        assert.deepEqual(flow.calls.sign, [])
+        assert.deepEqual(flow.calls.authorize, [])
+        if (modeChangesDuringCreation) {
+            assert.deepEqual(flow.calls.batches, [])
+            assert.equal(flow.state.swapError, 'Execution mode changed. Refresh the swap before submitting the atomic batch.')
+        } else {
+            assert.equal(flow.preferences.gaslessEnabled, false)
+            assert.equal(flow.calls.batches.length, 1)
+            assert.deepEqual(flow.calls.errors, [])
+            assert.equal(flow.state.swapError, '')
+        }
+    })
+}
 
 for (const change of ['preference toggle', 'standard fallback']) {
     test(`an unsigned initiated authorization permits a ${change} before signing`, async () => {

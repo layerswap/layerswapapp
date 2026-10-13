@@ -247,7 +247,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         depositActions,
         gaslessAuthorization,
     }), [swapDetails, depositActions, gaslessAuthorization])
-    const desiredGasless = gaslessEnabled && isGaslessCapableRoute({
+    const gaslessCapable = isGaslessCapableRoute({
         depositMethod: swapBasicData.use_deposit_address ? 'deposit_address' : 'wallet',
         supportsGaslessDeposit: swapBasicData.source_token?.supports_gasless_deposit,
         sourceTokenContract: swapBasicData.source_token?.contract,
@@ -255,10 +255,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         sourceIsSupported: !!selectedWallet?.asSourceSupportedNetworks?.includes(swapBasicData.source_network.name),
         sourceAddress: selectedSourceAccount?.address,
     })
+    const desiredGasless = gaslessEnabled && gaslessCapable
     const currentGasless = isGaslessDepositWorkflow(depositActions)
-    const flowPreferenceChanged = !!swapId
-        && currentGasless !== undefined
-        && currentGasless !== desiredGasless
     const walletActionFeedback = useMemo(() => ({
         swapId,
         loading,
@@ -291,6 +289,9 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     })
 
     const executeWorkflow = async (requestFreshSwap = false) => {
+        // A standard fallback changes the preference before starting this invocation.
+        const executionGaslessEnabled = useGaslessPreferenceStore.getState().gaslessEnabled
+        const executionDesiredGasless = executionGaslessEnabled && gaslessCapable
         const signal = executionScope.current?.signal
         if (!signal || signal.aborted || executionInFlight.current || getAtomicBatch(swapId)) return
         const receipts = useSwapTransactionStore.getState()
@@ -303,6 +304,9 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         // Wallet rejections leave actions actionable and still retry the same swap.
         // Read submission markers at click time; they may have arrived since render.
         const workflowFailed = depositActions?.some(action => action.status === 'failed')
+        const flowPreferenceChanged = !!swapId
+            && currentGasless !== undefined
+            && currentGasless !== executionDesiredGasless
         const forceNewSwap = (requestFreshSwap || flowPreferenceChanged || workflowFailed)
             && !hasRecordedWalletAction() && !hasSwapExecutionProgress({
                 swapDetails,
@@ -489,6 +493,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     },
                     setSwapError: value => { if (!signal.aborted) setSwapError?.(value) },
                     onSuccess: () => {
+                        // Submission has finished, even if its screen closed. Catchup must not own the wallet lock.
+                        releaseExecution()
                         if (signal.aborted) {
                             return
                         }
@@ -502,7 +508,10 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
                 let approvalTransaction: { network: string; hash: string } | undefined
                 if (currentAction && isBatchTransferAction(currentAction)) {
-                    if (desiredGasless || gaslessEnabled !== useGaslessPreferenceStore.getState().gaslessEnabled) throw new Error('Execution mode changed. Refresh the swap before submitting the atomic batch.')
+                    const executionModeChanged = executionGaslessEnabled !== useGaslessPreferenceStore.getState().gaslessEnabled
+                    if (executionDesiredGasless || executionModeChanged) {
+                        throw new Error('Execution mode changed. Refresh the swap before submitting the atomic batch.')
+                    }
                     const provider = resolverService.getTransferResolver().getAtomicBatchProvider({ ...(currentAction.network ?? swapBasicData.source_network), token: swapBasicData.source_token })
                     if (!provider) throw new Error('This wallet has no atomic batch provider')
                     try {

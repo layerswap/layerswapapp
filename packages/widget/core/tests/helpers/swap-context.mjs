@@ -27,6 +27,7 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
         '@/lib/apiClients/layerSwapApiClient': {
             default: Client,
             BackendTransactionStatus: { Completed: 'completed', Pending: 'pending' },
+            TransactionStatus: { Completed: 'completed', Pending: 'pending', Failed: 'failed' },
             TransactionType: { Input: 'input' },
         },
         './settings': {
