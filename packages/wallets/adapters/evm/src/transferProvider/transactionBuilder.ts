@@ -5,7 +5,6 @@ import { EVMGasProvider } from "../gasProviders"
 export const transactionBuilder = async (params: TransferProps) => {
     const { amount, callData, depositAddress, network, selectedWallet, token } = params
 
-
     const tx = {
         chainId: Number(network?.chain_id),
         to: depositAddress as `0x${string}`,
@@ -19,7 +18,8 @@ export const transactionBuilder = async (params: TransferProps) => {
         const gasData = await new EVMGasProvider().getGas({
             address: selectedWallet.address,
             network,
-            token
+            token,
+            amount
         })
 
         if (gasData?.gas) tx.gas = BigInt(gasData.gas)

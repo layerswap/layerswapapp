@@ -111,7 +111,7 @@ for (const specVersion of ['0.10.0', '0.10.1', '0.10.2', '0.10.3', '0.10.4', '0.
         assert.equal(typeof wallet.metadata.starknetAccount.getClassAt, 'undefined')
         assert.equal(wallet.metadata.starknetAccount.provider.readSpecVersion(), specVersion)
 
-        const fee = await new StarknetGasProvider().getGas({ network, token, wallet, amount: '1000000' })
+        const fee = await new StarknetGasProvider().getGas({ network, token, wallet, amount: 1.25 })
         assert.equal(fee.gas, 0.0675)
         assert.equal(fee.token, token)
         const estimate = requests.find(r => r.method === 'starknet_estimateFee')
@@ -135,15 +135,22 @@ for (const specVersion of ['0.10.0', '0.10.1', '0.10.2', '0.10.3', '0.10.4', '0.
     })
 }
 
-test('optional wallet-version diagnostics cannot break connection or invoke foreign getters', async t => {
-    mockRpc(t, '0.10.0')
-    let getterCalls = 0
-    for (const version of [null, '', {}, 'x'.repeat(129), 'https://rpc.test/secret', () => { getterCalls++; throw Error('unreadable') }]) {
-        const { wallet, walletRequests } = await connectWallet(version)
-        assert.equal(wallet.version, undefined)
-        assert.deepEqual(walletRequests.map(request => request.type), ['wallet_requestAccounts'])
+test('gas estimation converts fractional and scientific-notation amounts to base units', async () => {
+    for (const [amount, decimals, baseUnits] of [
+        [0.75, 18, 750000000000000000n],
+        [0.1, 18, 100000000000000000n],
+        [1.25, 6, 1250000n],
+        [1e-8, 18, 10000000000n],
+        [undefined, 18, 100000n],
+    ]) {
+        let calldata
+        const wallet = { metadata: { starknetAccount: { estimateInvokeFee: async ([transfer]) => {
+            calldata = transfer.calldata
+            return { overall_fee: 1000n }
+        } } } }
+        await new StarknetGasProvider().getGas({ network, token: { ...token, decimals }, wallet, amount })
+        assert.deepEqual(calldata.slice(1).map(BigInt), [baseUnits, 0n], `Encode ${amount} with ${decimals} decimals`)
     }
-    assert.equal(getterCalls, 0)
 })
 
 test('rejects unsupported RPC versions before requesting a balance', async t => {

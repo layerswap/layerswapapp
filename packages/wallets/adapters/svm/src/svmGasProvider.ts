@@ -31,11 +31,17 @@ export class SolanaGasProvider implements GasProvider {
             if (!transaction || !network.token) return
 
             const message = transaction.compileMessage();
-            const result = await connection.getFeeForMessage(message)
+            // A native transfer must not leave the sender between 0 and the
+            // rent-exempt minimum, or the runtime rejects the transaction.
+            const [result, rentExemptMinimum] = await Promise.all([
+                connection.getFeeForMessage(message),
+                token.contract ? undefined : connection.getMinimumBalanceForRentExemption(0),
+            ])
 
             if (result.value) {
                 const formatedGas = Number(formatUnits(BigInt(result.value), network.token?.decimals))
-                return { gas: formatedGas, token: network.token }
+                const reserve = rentExemptMinimum ? Number(formatUnits(BigInt(rentExemptMinimum), network.token?.decimals)) : undefined
+                return { gas: formatedGas, token: network.token, reserve }
             }
         }
         catch (e) {
