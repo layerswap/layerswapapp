@@ -34,13 +34,19 @@ const MinMax = (props: MinMaxProps) => {
     const { wallets } = useWallet(from, 'withdrawal')
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
     const isWalletConnected = !!wallet
-    const maxEstimationAmount = Number(values.amount) > 0 ? values.amount : undefined
-    const { gasData, gasError } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency, maxEstimationAmount, wallet)
     const { balances, mutate: mutateBalances } = useBalance(selectedSourceAccount?.address, from)
 
     const walletBalance = useMemo(() => {
         return isWalletConnected && selectedSourceAccount?.address ? balances?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol) : undefined
     }, [isWalletConnected, selectedSourceAccount?.address, balances, from?.name, fromCurrency?.symbol])
+
+    // Max must be able to correct an amount that exceeds the available balance.
+    const enteredAmount = Number(values.amount)
+    const balanceAmount = walletBalance?.amount
+    const maxEstimationAmount = enteredAmount > 0
+        ? Math.min(enteredAmount, balanceAmount != null && Number.isFinite(balanceAmount) && balanceAmount >= 0 ? balanceAmount : enteredAmount)
+        : undefined
+    const { gasData, gasError } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency, maxEstimationAmount, wallet)
 
     const gasAmount = gasError ? undefined : gasData?.gas;
 
