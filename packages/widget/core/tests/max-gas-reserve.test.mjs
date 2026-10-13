@@ -228,3 +228,11 @@ test('Max distinguishes a known zero fee from missing or invalid gas data', () =
   }
   assert.equal(resolveMaxAllowedAmount({ ...input, gasAmount: 0 }), 1)
 })
+
+test('Max keeps the native reserve (Solana rent-exempt minimum) on top of the fee', () => {
+  const sol = { symbol: 'SOL', decimals: 9, price_in_usd: 100 }
+  const input = { walletBalance: { amount: 0.00468252 }, fromCurrency: sol, native_currency: sol, depositMethod: 'wallet', fallbackAmount: 0.0001, gasAmount: 0.000005 }
+  // Without the reserve this left 100 lamports behind and failed simulation.
+  assert.equal(resolveMaxAllowedAmount({ ...input, gasReserve: 0.00089088 }), 0.003786539)
+  assert.equal(resolveMaxAllowedAmount({ ...input, walletBalance: { amount: 0.0008 }, gasReserve: 0.00089088 }), 0.0001)
+})

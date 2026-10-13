@@ -49,6 +49,7 @@ const MinMax = (props: MinMaxProps) => {
     const { gasData, gasError } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency, maxEstimationAmount, wallet)
 
     const gasAmount = gasError ? undefined : gasData?.gas;
+    const gasReserve = gasError ? undefined : gasData?.reserve;
 
     const native_currency = gasData?.token || from?.token
 
@@ -60,8 +61,8 @@ const MinMax = (props: MinMaxProps) => {
     }, [fromCurrency.price_in_usd, fromCurrency.decimals]);
 
     const maxAllowedAmount = useMemo(() => {
-        return resolveMaxAllowedAmount({ fromCurrency, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod, fallbackAmount });
-    }, [fromCurrency, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod, fallbackAmount])
+        return resolveMaxAllowedAmount({ fromCurrency, limitsMaxAmount, walletBalance, gasAmount, gasReserve, native_currency, depositMethod, fallbackAmount });
+    }, [fromCurrency, limitsMaxAmount, walletBalance, gasAmount, gasReserve, native_currency, depositMethod, fallbackAmount])
 
     const minAmount = useMemo(() => {
         if (walletBalance && walletBalance.amount !== undefined && limitsMinAmount !== undefined && depositMethod === 'wallet') {

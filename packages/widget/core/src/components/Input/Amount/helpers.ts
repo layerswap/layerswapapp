@@ -7,6 +7,7 @@ type ResoleMaxAllowedAmountProps = {
     limitsMaxAmount: number | undefined
     walletBalance: TokenBalance | undefined
     gasAmount: number | undefined
+    gasReserve?: number
     fromCurrency: Token
     native_currency: Token | undefined
     depositMethod: 'wallet' | 'deposit_address' | undefined
@@ -14,7 +15,7 @@ type ResoleMaxAllowedAmountProps = {
 }
 
 export const resolveMaxAllowedAmount = (props: ResoleMaxAllowedAmountProps) => {
-    const { limitsMaxAmount, walletBalance, gasAmount, fromCurrency, native_currency, depositMethod, fallbackAmount } = props
+    const { limitsMaxAmount, walletBalance, gasAmount, gasReserve = 0, fromCurrency, native_currency, depositMethod, fallbackAmount } = props
 
     if (!walletBalance || isNaN(Number(walletBalance.amount)) || depositMethod !== 'wallet')
         return limitsMaxAmount
@@ -28,7 +29,12 @@ export const resolveMaxAllowedAmount = (props: ResoleMaxAllowedAmountProps) => {
     if (gasAmount == null || !Number.isFinite(gasAmount) || gasAmount < 0)
         return undefined
 
-    const payableAmount = Number(walletBalance.amount) - (gasAmount * 1.02)
-    const res = Number(truncateToDecimals(String(payableAmount), fromCurrency.decimals))
+    const res = resolveNativePayableAmount(Number(walletBalance.amount), gasAmount, gasReserve, fromCurrency.decimals)
     return res <= 0 ? fallbackAmount : res
+}
+
+/** Native balance left to send after the buffered gas fee and the reserve the network requires to stay in the account. */
+export const resolveNativePayableAmount = (balance: number, gasAmount: number, gasReserve: number, decimals: number) => {
+    const payableAmount = balance - (gasAmount * 1.02) - gasReserve
+    return Number(truncateToDecimals(String(payableAmount), decimals))
 }
