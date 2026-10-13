@@ -15,12 +15,14 @@ export function isTonWalletInstalled(info: WalletInfo, wallets: readonly WalletI
     if (typeof appName !== 'string') return true
 
     const identity = appName.toLowerCase()
-    // Like Tron's ownership check, reject an alias that exposes another wallet's API.
-    return !wallets.some(candidate => {
-        if (!isWalletInfoCurrentlyInjected(candidate) || candidate.jsBridgeKey === info.jsBridgeKey) return false
+    // Like Tron's ownership check, compare the shared API before resolving its owner.
+    const injectedWallets = wallets.filter((candidate): candidate is WalletInfoCurrentlyInjected => {
+        if (!isWalletInfoCurrentlyInjected(candidate)) return false
 
         const otherProvider = Reflect.get(window, candidate.jsBridgeKey) as InjectedTonProvider | undefined
         return otherProvider?.tonconnect === tonconnect
-            && (candidate.appName.toLowerCase() === identity || candidate.name.toLowerCase() === identity)
     })
+    const owner = injectedWallets.find(candidate => candidate.appName.toLowerCase() === identity)
+        ?? injectedWallets.find(candidate => candidate.name.toLowerCase() === identity)
+    return !owner || owner.jsBridgeKey === info.jsBridgeKey
 }
