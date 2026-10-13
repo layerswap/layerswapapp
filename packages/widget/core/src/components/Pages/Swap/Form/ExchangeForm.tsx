@@ -14,6 +14,7 @@ import { Address as AddressClass } from "@/lib/address/Address";
 import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
 import MinMax from "@/components/Input/Amount/MinMax";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
+import { useReportFormQuote } from "@/context/formQuote";
 import { useValidationContext } from "@/context/validationContext";
 import clsx from "clsx";
 import { useSwapDataState } from "@/context/swap";
@@ -50,6 +51,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
     const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
     const { isQuoteLoading, quote, quoteTokenPrices, minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval });
+    useReportFormQuote(quote?.quote);
     const { formValidation } = useValidationContext();
 
     const isValid = !formValidation.message;

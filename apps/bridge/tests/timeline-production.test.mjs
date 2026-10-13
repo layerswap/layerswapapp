@@ -406,8 +406,21 @@ test('compact quote controls retain their nodes and cached values without gas or
     const root = createRoot(container);
     const requests = [];
     const nftRequests = [];
+    const balanceStore = loadSource('stores/balanceStore.ts', {
+        zustand: coreRequire('zustand'),
+        'zustand/middleware': coreRequire('zustand/middleware'),
+        '../lib/resolvers/resolverService': { resolverService: {
+            getBalanceResolver: () => assert.fail('Quote controls must reuse cached balances'),
+        } },
+    });
+    balanceStore.useBalanceStore.setState({ balances: {
+        [balanceStore.getKey(account.address, network.name)]: {
+            status: 'success', data: { balances: [{ network: network.name, token: token.symbol, amount: 1 }] },
+        },
+    } });
     const gasHook = loadSource('lib/gases/useSWRGas.tsx', {
         swr: { default: useSWR },
+        '../../stores/balanceStore': balanceStore,
         '../resolvers/resolverService': { resolverService: { getGasResolver: () => ({
             getGas: async args => { requests.push(args); return { gas: 0.01, token: { asset: 'ETH' } }; },
         }) } },
@@ -496,7 +509,8 @@ test('compact quote controls retain their nodes and cached values without gas or
         assert.equal(nftRequests.length, 0, 'initially compact quotes do not request NFT eligibility');
         await act(async () => root.render(view(false)));
         await act(async () => container.querySelector('[data-page2-quote-disclosure]').click());
-        assert.equal(requests.length, 2, 'both gas controller keys initially fetch');
+        assert.equal(requests.length, 1, 'gas controls share one estimate for the quote amount');
+        assert.equal(requests[0].amount, 1);
         assert.ok(nftRequests.length > 0, 'expanded quotes request NFT eligibility');
         const nftRequestsBeforeCollapse = nftRequests.length;
         const gasNode = container.querySelector('[data-gas]');
@@ -509,7 +523,7 @@ test('compact quote controls retain their nodes and cached values without gas or
         await tick(120_000);
         await act(async () => onFocus());
         await tick(10);
-        assert.equal(requests.length, 2, 'compact controls stop interval and focus revalidation');
+        assert.equal(requests.length, 1, 'compact controls stop interval and focus revalidation');
         assert.equal(nftRequests.length, nftRequestsBeforeCollapse, 'both hidden reward lookups stop interval and focus revalidation');
         assert.equal(container.querySelector('[data-gas]'), gasNode);
         assert.equal(container.querySelector('[data-details]'), detailsNode);
@@ -1204,6 +1218,9 @@ for (const failure of ['rejected', 'failed']) {
         const { default: Withdraw } = loadSource(`${withdraw}Withdraw.tsx`, {
             ...controllerImports,
             '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
+            '@/components/Input/Amount/helpers': loadSource('components/Input/Amount/helpers.ts', {
+                '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
+            }),
             '@/components/Widget/Index': { Widget: { Footer: childrenOnly } },
             '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
             '@/hooks/useFee': { transformSwapDataToQuoteArgs: noop, useQuoteData: () => ({}) },
