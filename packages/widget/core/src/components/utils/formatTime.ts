@@ -9,17 +9,23 @@ export function msToParts(ms: number): TimeParts {
     };
 }
 
-/** Parse "H:MM:SS" or "H:MM:SS.fff" (API average completion format). */
+/**
+ * Parse the API's average completion format (a .NET TimeSpan): "H:MM:SS",
+ * "H:MM:SS.fff", or "D.HH:MM:SS(.fff)" once it reaches a day. Days fold into hours.
+ */
 export function parseHmsString(value: string | undefined): TimeParts | null {
     if (!value) return null;
-    const [whole] = value.split('.');
-    const segments = whole.split(':').map(Number);
-    if (segments.length !== 3 || segments.some(n => Number.isNaN(n))) return null;
-    const [hours, minutes, seconds] = segments;
-    return { hours, minutes, seconds };
+    const match = /^(?:(\d+)\.)?(\d+):(\d+):(\d+)(?:\.\d+)?$/.exec(value.trim());
+    if (!match) return null;
+    const [, days, hours, minutes, seconds] = match;
+    return {
+        hours: Number(days ?? 0) * 24 + Number(hours),
+        minutes: Number(minutes),
+        seconds: Number(seconds),
+    };
 }
 
-/** Total milliseconds represented by an "H:MM:SS(.fff)" string, or undefined if unparsable. */
+/** Total milliseconds represented by an API completion-time string (see `parseHmsString`), or undefined if unparsable. */
 export function hmsToMs(value: string | undefined): number | undefined {
     const parts = parseHmsString(value);
     if (!parts) return undefined;

@@ -34,10 +34,6 @@ export function routeSpeedTextClass(speed: RouteSpeed, defaultClass: string): st
     }
 }
 
-export function isSlowRoute(avgCompletionTime: string | undefined): boolean {
-    return resolveRouteSpeed(avgCompletionTime) !== 'normal';
-}
-
 export function isVerySlowRoute(avgCompletionTime: string | undefined): boolean {
     return resolveRouteSpeed(avgCompletionTime) === 'very_slow';
 }
