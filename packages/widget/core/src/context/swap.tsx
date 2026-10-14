@@ -198,6 +198,9 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const storedWalletTransaction = useSwapTransactionStore(
         state => swapId ? state.swapTransactions[swapId] : undefined,
     )
+    const pendingProviderSubmission = useSwapTransactionStore(
+        state => swapId ? !!state.pendingSubmissions[swapId] : false,
+    )
     const { data, mutate, error } = useSwapPolling(swapId, initialSwapData, storedWalletTransaction?.timestamp)
     // A failed background refresh must not hide usable data for the active swap.
     const swapDetailsError = swapId && data?.data?.swap?.id !== swapId && (error || data)
@@ -516,12 +519,19 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         })
     }, [selectedSourceAccount, selectedWallet, onSwapCreate, onSwapLifecycle, updateRecentTokens, swapDetails?.id, networks, sourceRoutes])
 
-    const canAdjustAmount = useCallback(() => !presetPreparation.current && !walletActionInFlight.current && !hasSwapExecutionProgress({
-        swapDetails, depositActions: depositActionsResponse,
-        storedWalletTransaction: swapId ? useSwapTransactionStore.getState().swapTransactions[swapId] : undefined,
-        gaslessAuthorization: swapId ? useGaslessAuthorizationStore.getState().authorizations[swapId] : undefined,
-        depositSignature: swapId ? useDepositSignatureStore.getState().signatures[swapId] : undefined,
-    }), [walletActionExecuting, swapId, swapDetails, depositActionsResponse])
+    const canAdjustAmount = useCallback(() => {
+        // The provider may have submitted before the API sees an input transaction.
+        // Re-read at click time as a submission can arrive after the last render.
+        const transactions = useSwapTransactionStore.getState()
+        if (presetPreparation.current || walletActionInFlight.current
+            || (swapId && transactions.pendingSubmissions[swapId])) return false
+        return !hasSwapExecutionProgress({
+            swapDetails, depositActions: depositActionsResponse,
+            storedWalletTransaction: swapId ? transactions.swapTransactions[swapId] : undefined,
+            gaslessAuthorization: swapId ? useGaslessAuthorizationStore.getState().authorizations[swapId] : undefined,
+            depositSignature: swapId ? useDepositSignatureStore.getState().signatures[swapId] : undefined,
+        })
+    }, [walletActionExecuting, pendingProviderSubmission, swapId, swapDetails, depositActionsResponse])
 
     const selectedPresetSource = amountPresetSource(sourceNetwork?.name, swapBasicData?.source_token.symbol, swapBasicData?.use_deposit_address ? undefined : selectedSourceAccount?.id, swapBasicData?.use_deposit_address ? undefined : selectedSourceAccount?.address)
     const latestPresetSource = useRef(selectedPresetSource)
@@ -531,11 +541,13 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         if (!isAmountPreset(values.amountMode)) return createSwapRequest(values, query, partner)
         if (presetPreparation.current) throw new Error('The swap is already being prepared.')
         const walletFlow = values.depositMethod === 'wallet'
-        if ((walletFlow && (!selectedSourceAccount || !selectedWallet)) || values.amountPresetSource !== latestPresetSource.current)
+        // Direct exchange submissions create before their submitted draft renders.
+        // Only wallet flows need the live account identity from the review screen.
+        const source = walletFlow ? latestPresetSource.current : amountPresetSource(values.from?.name, values.fromAsset?.symbol)
+        if ((walletFlow && (!selectedSourceAccount || !selectedWallet)) || values.amountPresetSource !== source)
             throw new Error('The source account changed. Select an amount preset again.')
         presetPreparation.current = true
         setPreparingPreset(true)
-        const source = latestPresetSource.current
         const useGasless = useGaslessPreferenceStore.getState().gaslessEnabled && isGaslessCapableRoute({
             depositMethod: values.depositMethod,
             supportsGaslessDeposit: values.fromAsset?.supports_gasless_deposit,
@@ -547,7 +559,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         return preparePresetAmount(values, selectedSourceAccount?.address, selectedWallet, sourceRoutes, useGasless,
             (key, response) => mutateCache(key, response, { revalidate: false }))
             .then(amount => {
-                if (source !== latestPresetSource.current) throw new Error('The source account changed. Select an amount preset again.')
+                if (walletFlow && source !== latestPresetSource.current) throw new Error('The source account changed. Select an amount preset again.')
                 if (Number(amount) < Number(values.amount) || (values.amountMode === 'min' && Number(amount) > Number(values.amount))) {
                     setSwapBasicFormData(current => current ? { ...current, requested_amount: amount, amountPresetPending: true } : current)
                     throw new AmountPresetChangedError()

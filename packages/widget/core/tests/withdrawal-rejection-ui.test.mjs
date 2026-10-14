@@ -15,6 +15,7 @@ const fixtureUrl = 'data:text/javascript,' + encodeURIComponent(`
   export const state = { events: [], errors: [] }
   export const useSwapDataState = () => ({ swapDetails: state.swapDetails, depositActionsResponse: state.depositActions })
   export const useSwapDataUpdate = () => ({ setSwapId(id) { state.selectedSwapId = id },
+    setWalletActionExecuting(value) { state.executing = value; state.executionLocks.push(value) },
     startFreshSwapAttempt() { state.freshAttempts++ },
     createSwap: (...args) => { state.creations++; return state.createSwap(...args) },
     mutateSwap: async response => { state.reconciled.push(response); state.swapDetails = response.data.swap },
@@ -77,7 +78,7 @@ beforeEach(() => {
   Object.assign(state, {
     events: [], errors: [], transfers: [], published: [], successes: 0, error: undefined,
     refreshes: [], actionRefreshes: [], reconciled: [], freshAttempts: 0, creations: 0, selectedSwapId: 'swap-1',
-    swapDetails: { id: 'swap-1' }, onSuccess: undefined,
+    swapDetails: { id: 'swap-1' }, onSuccess: undefined, executing: false, executionLocks: [],
     depositActions: [{ type: 'transfer', to_address: 'deposit', call_data: '0x', amount_in_base_units: '1000000' }],
     executeTransfer: async params => { params.onSubmissionStateChange('preparing'); throw state.error },
     createSwap: async () => assert.fail('unexpected swap creation'),
@@ -330,6 +331,38 @@ for (const reload of [false, true]) {
 }
 
 for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal]) {
+  for (const stage of ['preparation', 'signing']) {
+    test(`${useWithdrawal.name} locks adjustment throughout ${stage}, including after unmount`, async () => {
+      const paused = Promise.withResolvers()
+      if (stage === 'preparation') state.getDepositActions = async () => {
+        await paused.promise
+        return { data: state.depositActions }
+      }
+      state.executeTransfer = async params => {
+        params.onSubmissionStateChange('preparing')
+        if (stage === 'signing') await paused.promise
+        throw userRejectedError()
+      }
+      const mounted = await mountWithdrawal(useWithdrawal)
+      let pending, unmounted = false
+      try {
+        await act(async () => {
+          pending = mounted.result.handleWithdraw()
+          assert.equal(state.executing, true, 'lock synchronously before any async work or rerender')
+        })
+        assert.equal(state.executing, true)
+        assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, {}, 'preparation has no durable submission marker')
+        await mounted.unmount(); unmounted = true
+        assert.equal(state.executing, true, 'closing the screen must not unlock an active wallet request')
+      } finally {
+        await act(async () => { paused.resolve(); await pending })
+        if (!unmounted) await mounted.unmount()
+      }
+      assert.equal(state.executing, false)
+      assert.deepEqual(state.executionLocks, [true, false])
+      assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, {})
+    })
+  }
   for (const [label, error, rejected, outcome] of [
     ['legacy rejected UI label', Object.assign(new Error('Request declined'), { name: 'TransactionRejected' }), true, 'failed'],
     ['declared cancellation', userRejectedError(), true, 'rejected'],

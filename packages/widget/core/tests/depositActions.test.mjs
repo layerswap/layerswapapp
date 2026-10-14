@@ -83,6 +83,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
             removeGaslessAuthorization(id) { delete this.authorizations[id] },
         }),
         useSwapTransactionStore: store({
+            pendingSubmissions: {},
             swapTransactions: {}, setSwapTransaction(id, status, hash) { stores.useSwapTransactionStore.getState().swapTransactions[id] = { status, hash }; calls.storedTransactions.push([id, status, hash]) },
             stepTransactions: {},
             setStepTransaction(id, step, hash, explorerUrl) {

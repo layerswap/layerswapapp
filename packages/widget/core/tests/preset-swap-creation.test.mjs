@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test, { beforeEach, afterEach, after } from 'node:test'
 import React, { act, createElement } from 'react'
 import { JSDOM } from 'jsdom'
+import { create } from 'zustand'
 import { createSwapContext } from './helpers/swap-context.mjs'
 import { loadSource, amountPresets } from './helpers/source.mjs'
 
@@ -11,6 +12,12 @@ for (const [key, value] of Object.entries({ window: dom.window, document: dom.wi
   Object.defineProperty(globalThis, key, { configurable: true, writable: true, value })
 const { createRoot } = await import('react-dom/client')
 const state = {}
+const transactionStore = create(() => ({ swapTransactions: {}, pendingSubmissions: {} }))
+const stores = {
+  useSwapTransactionStore: transactionStore,
+  useGaslessAuthorizationStore: create(() => ({ authorizations: {} })),
+  useDepositSignatureStore: create(() => ({ signatures: {}, removeDepositSignature() {} })),
+}
 const swapCreation = loadSource('lib/swapCreation.ts', {
   '@layerswap/widget-types': { getErrorOccurrenceId: () => 'test-error' },
   '@/lib/ErrorHandler': { ErrorHandler: () => {} },
@@ -24,6 +31,7 @@ const context = createSwapContext({
     }
   },
   getSwapId: () => undefined, getAccount: () => state.account,
+  stores,
   swr: { default: () => ({}) },
   overrides: {
     '@/lib/preparePresetAmount': { preparePresetAmount: async () => { state.prepares++; return state.preparation.promise } },
@@ -37,15 +45,77 @@ const context = createSwapContext({
 const token = { symbol: 'ETH', decimals: 18 }
 const network = { name: 'BASE_MAINNET', token }
 let root, container, data, updates, values
-function Probe() { data = context.useSwapDataState(); updates = context.useSwapDataUpdate(); return null }
-const render = () => act(() => root.render(createElement(context.SwapDataProvider, null, createElement(Probe))))
+function Probe() {
+  data = context.useSwapDataState(); updates = context.useSwapDataUpdate()
+  return createElement('button', { disabled: !updates.canAdjustAmount() }, 'Adjust amount')
+}
+const render = key => act(() => root.render(createElement(context.SwapDataProvider, { key }, createElement(Probe))))
 beforeEach(async () => {
+  transactionStore.setState({ swapTransactions: {}, pendingSubmissions: {} })
   container = document.createElement('div'); document.body.append(container); root = createRoot(container)
   Object.assign(state, { account: { id: 'wallet', address: 'source' }, created: [], prepares: 0, preparation: Promise.withResolvers() })
   values = { from: network, to: network, fromAsset: token, toAsset: token, amount: '0.9', destination_address: 'destination',
     depositMethod: 'wallet', amountMode: 'max', amountPresetSource: amountPresets.amountPresetSource(network.name, token.symbol, 'wallet', 'source') }
   await render()
   await act(() => { updates.setSubmitedFormValues(values); updates.setSwapViewMounted(true) })
+})
+
+for (const mode of ['min', 'max']) {
+  for (const firstSubmit of [true, false]) {
+    test(`${mode}: direct exchange submission succeeds ${firstSubmit ? 'before any draft has rendered' : 'after changing source routes'}`, async () => {
+      state.account = undefined
+      await render(firstSubmit ? 'fresh' : undefined)
+      if (firstSubmit) assert.equal(data.swapBasicData, undefined)
+      const source = firstSubmit ? network : { ...network, name: 'OTHER_MAINNET' }
+      const submitted = { ...values, from: source, amountMode: mode, depositMethod: 'deposit_address', fromExchange: { name: 'exchange' },
+        amountPresetSource: amountPresets.amountPresetSource(source.name, token.symbol) }
+      state.preparation.resolve(submitted.amount)
+      await act(async () => {
+        // FormWrapper submits and creates in one event, without an intervening render.
+        updates.setSubmitedFormValues(submitted)
+        await updates.createSwap(submitted, {})
+      })
+      assert.equal(state.prepares, 1)
+      assert.equal(state.created.length, 1)
+      assert.equal(state.created[0].source_network, source.name)
+      assert.equal(state.created[0].amount, submitted.amount)
+      assert.equal(state.created[0].use_deposit_address, true)
+    })
+  }
+}
+
+test('direct exchange submission still rejects preset intent belonging to another route', async () => {
+  const submitted = { ...values, depositMethod: 'deposit_address',
+    amountPresetSource: amountPresets.amountPresetSource('OTHER_MAINNET', token.symbol) }
+  await act(async () => {
+    updates.setSubmitedFormValues(submitted)
+    await assert.rejects(updates.createSwap(submitted, {}), /source account changed/)
+  })
+  assert.equal(state.prepares, 0)
+  assert.equal(state.created.length, 0)
+})
+
+test('an unresolved provider submission disables adjustment until its marker is cleared', async () => {
+  await act(() => updates.setSwapId('existing'))
+  assert.equal(container.querySelector('button').disabled, false)
+  await act(() => transactionStore.setState({ pendingSubmissions: { existing: true, other: true } }))
+  assert.equal(updates.canAdjustAmount(), false)
+  assert.equal(container.querySelector('button').disabled, true, 'marker updates must reach the disabled view')
+  assert.equal(data.swapId, 'existing')
+  await act(() => transactionStore.setState({ pendingSubmissions: { other: true } }))
+  assert.equal(updates.canAdjustAmount(), true, 'a definitively unsubmitted attempt can be adjusted')
+  assert.equal(container.querySelector('button').disabled, false)
+})
+
+test('a provider submission arriving between render and click prevents detaching the swap', async () => {
+  await act(() => updates.setSwapId('existing'))
+  const guardAtRender = updates.canAdjustAmount
+  await act(() => {
+    transactionStore.setState({ pendingSubmissions: { existing: true } })
+    assert.equal(guardAtRender(), false, 'read the marker synchronously, before a rerender')
+    if (guardAtRender()) updates.startFreshSwapAttempt()
+  })
+  assert.equal(data.swapId, 'existing')
 })
 afterEach(async () => { await act(() => root.unmount()); container.remove() })
 after(() => {

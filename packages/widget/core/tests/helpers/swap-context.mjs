@@ -14,7 +14,7 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
     const snapshots = new Map()
     const store = state => Object.assign(selector => selector(state), { getState: () => state })
     const emptyStores = {
-        useSwapTransactionStore: store({ swapTransactions, setSwapTransaction: noop }),
+        useSwapTransactionStore: store({ swapTransactions, pendingSubmissions: {}, setSwapTransaction: noop }),
         useGaslessAuthorizationStore: store({ authorizations: {} }),
         useDepositSignatureStore: store({ signatures: {}, removeDepositSignature: noop }),
     }

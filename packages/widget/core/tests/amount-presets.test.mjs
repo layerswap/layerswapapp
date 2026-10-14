@@ -42,6 +42,13 @@ const usdStore = require('zustand').create(set => ({ isUsdMode: true, usdAmount:
 const { useUsdTokenSync } = loadSource('hooks/useUsdTokenSync.ts', {
   react: React, '@/lib/amountPresets': amountPresets, '@/stores/usdModeStore': { useUsdModeStore: usdStore },
 })
+const { default: ExchangeAmountField } = loadSource('components/Input/Amount/ExchangeAmountField.tsx', {
+  react: React, formik: require('formik'),
+  '../NumericInput': { default: props => { state.changeExchangeAmount = props.onChange; return null } },
+  '@/components/utils/formatUsdAmount': { formatUsd: String },
+  clsx: { default: () => '' },
+  '@/helpers/tokenHelper': { resolveTokenUsdPrice: () => 2000 },
+})
 let usd
 function UsdProbe() {
   const { values, setFieldValue } = useFormikContext()
@@ -54,7 +61,8 @@ const updates = { syncAmountPresetDraft: values => { state.draft = values; retur
 function Probe() {
   formik = useFormikContext()
   mutate = useSWRConfig().mutate
-  return createElement(React.Fragment, null, createElement(Controller), state.usdMode ? createElement(UsdProbe) : null)
+  return createElement(React.Fragment, null, createElement(Controller), state.usdMode ? createElement(UsdProbe) : null,
+    state.exchangeInput ? createElement(ExchangeAmountField) : null)
 }
 const render = () => act(async () => root.render(createElement(StrictMode, null,
   createElement(SWRConfig, { value: config },
@@ -65,7 +73,7 @@ beforeEach(() => {
   container = document.createElement('div'); document.body.append(container); root = createRoot(container)
   Object.assign(state, { account: { id: 'wallet', address: 'source' }, wallets: [{ id: 'wallet' }],
     balances: [{ amount: 1, network: network.name, token: 'ETH', request_time: 1 }], gas: 0.01, reserve: 0,
-    usdMode: false, usdPrice: 2000, limit: 10, minimum: 0.001, probes: [], locked: false, revision: 0, preparedDraft: undefined, deferred: undefined, error: undefined, balanceError: undefined, limitsError: undefined })
+    usdMode: false, exchangeInput: false, usdPrice: 2000, limit: 10, minimum: 0.001, probes: [], locked: false, revision: 0, preparedDraft: undefined, deferred: undefined, error: undefined, balanceError: undefined, limitsError: undefined })
   initialValues = { amountMode: 'max', amountPresetSource: amountPresets.amountPresetSource(network.name, 'ETH', 'wallet', 'source'),
     amount: '0.5', from: network, fromAsset: token, to: { name: 'BASE_MAINNET' }, toAsset: token,
     destination_address: 'dest', depositMethod: 'wallet' }
@@ -377,6 +385,32 @@ test('deposit-address Min tracks route limits without requesting wallet balances
   assert.equal(formik.values.amount, '0.01')
   assert.equal(state.probes.length, 0)
 })
+
+for (const mode of ['min', 'max']) {
+  for (const entered of ['0.25', '']) {
+    test(`editing exchange ${mode} to ${JSON.stringify(entered)} exits the preset and survives limit refreshes`, async () => {
+      initialValues.amountMode = mode
+      initialValues.depositMethod = 'deposit_address'
+      initialValues.fromExchange = { name: 'exchange' }
+      initialValues.amountPresetSource = amountPresets.amountPresetSource(network.name, token.symbol)
+      state.exchangeInput = true
+      state.wallets = []; state.account = undefined
+      await render()
+      assert.equal(formik.values.amount, mode === 'min' ? '0.001' : '10')
+      // Exercise the actual exchange field handler, without pre-clearing preset intent.
+      await act(async () => state.changeExchangeAmount({ target: { name: 'amount', type: 'text', value: entered } }))
+      assert.equal(formik.values.amount, entered)
+      assert.equal(formik.values.amountMode, 'manual')
+      assert.equal(formik.values.amountPresetSource, undefined)
+      assert.equal(formik.values.amountPresetPending, false)
+      assert.equal(formik.values.amountPresetError, undefined)
+      state.minimum = 0.1; state.limit = 20
+      await render()
+      assert.equal(formik.values.amount, entered)
+      assert.equal(state.draft.amount, entered)
+    })
+  }
+}
 
 
 test('Min resumes from the fresh confirmation limits instead of reverting the reviewed draft', async () => {
