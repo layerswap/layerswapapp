@@ -26,6 +26,7 @@ export { useBalanceStore, selectResolvedSortingBalances, getKey, type BalanceEnt
 export { useRouteTokenSwitchStore } from "../stores/routeTokenSwitchStore"
 export { useManualDestAddressesStore, type ManualDestAddress } from "../stores/manualDestAddressesStore"
 export { default as ShortenString } from "../components/utils/ShortenString"
+export { formatTokenAmount } from "../components/utils/formatTokenAmount"
 export { Address } from "../lib/address/Address"
 export { getExplorerUrl } from "../lib/address/explorerUrl"
 export * from "../context/swap"

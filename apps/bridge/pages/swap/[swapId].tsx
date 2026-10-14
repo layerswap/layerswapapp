@@ -2,7 +2,7 @@ import { InferGetServerSidePropsType } from 'next';
 import React, { useMemo } from 'react';
 import { getThemeData } from '../../helpers/settingsHelper';
 import { SwapWithdrawal, inflateSettings, encodeSettingsForSSR } from '@layerswap/widget';
-import { AppSettings, LayerswapApiClient } from '@layerswap/widget/internal';
+import { AppSettings, LayerswapApiClient, formatTokenAmount } from '@layerswap/widget/internal';
 import Layout from '../../components/layout';
 import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
@@ -74,7 +74,7 @@ export const getServerSideProps = async (ctx) => {
       to: swapData.swap.destination_network.name,
       fromAsset: swapData.swap.source_token.symbol,
       toAsset: swapData.swap.destination_token.symbol,
-      amount: String(swapData.swap.requested_amount),
+      amount: formatTokenAmount(swapData.swap.requested_amount, { maximumFractionDigits: swapData.swap.source_token.decimals, useGrouping: false }),
     })
     const defaultTab = ctx.query?.defaultTab
     if (typeof defaultTab === 'string' && defaultTab) {
