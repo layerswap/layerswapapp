@@ -1,7 +1,7 @@
 import { useFormikContext } from "formik";
 import useSWRGas from "@/lib/gases/useSWRGas";
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
-import React, { useId, useMemo } from "react";
+import React, { useEffect, useId, useMemo, useRef } from "react";
 import { LayoutGroup, motion } from "framer-motion";
 import { resolveMaxAllowedAmount } from "./helpers";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
@@ -52,12 +52,28 @@ const MinMax = (props: MinMaxProps) => {
     const maxEstimationAmount = enteredAmount > 0
         ? Math.min(enteredAmount, balanceAmount != null && Number.isFinite(balanceAmount) && balanceAmount >= 0 ? balanceAmount : enteredAmount)
         : undefined
-    const { gasData, gasError } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency, maxEstimationAmount, wallet)
+    const { gasData, gasError, isGasLoading } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency, maxEstimationAmount, wallet)
 
-    const gasAmount = gasError ? undefined : gasData?.gas;
-    const gasReserve = gasError ? undefined : gasData?.reserve;
+    // Amount changes start a new fee request. Keep the preset previews available
+    // during that request; selecting one still sets pending and runs the live
+    // controller's fresh calculation before the user can continue.
+    const gasSource = `${depositMethod}:${amountPresetSource(from?.name, fromCurrency?.symbol, wallet?.id, selectedSourceAccount?.address)}`;
+    const previousGas = useRef<{ source: string; data: typeof gasData } | undefined>(undefined);
+    useEffect(() => {
+        if (gasData && !gasError) {
+            previousGas.current = { source: gasSource, data: gasData };
+        } else if (!isGasLoading || gasError || previousGas.current?.source !== gasSource) {
+            previousGas.current = undefined;
+        }
+    }, [gasSource, gasData, gasError, isGasLoading]);
+    const previewGas = gasError ? undefined : gasData ?? (
+        isGasLoading && previousGas.current?.source === gasSource ? previousGas.current.data : undefined
+    );
 
-    const native_currency = gasData?.token || from?.token
+    const gasAmount = previewGas?.gas;
+    const gasReserve = previewGas?.reserve;
+
+    const native_currency = previewGas?.token || from?.token
 
     const shouldPayGasWithTheToken = (native_currency?.symbol === fromCurrency?.symbol) || !native_currency
 
