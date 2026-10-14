@@ -2203,8 +2203,12 @@ test('frontend snapshots keep automatic wallet execution busy until processing o
                 quote: s.quote, depositActions: s.depositActions, loading: wallet.pending, actionStateText: wallet.label,
             }));
             const buttons = [...container.querySelectorAll('button')];
-            assert.equal(buttons.length, 0, `${label}: wallet execution has no intermediate action button`);
-            assert.ok(container.querySelector('[data-steps-panel]'), `${label}: single and multiple actions use the progress card`);
+            if (s.depositActions.filter(action => action.step).length > 1 || s.depositActions.some(action => action.step === 'publish')) {
+                assert.equal(buttons.length, 0, `${label}: multistep execution has no intermediate action button`);
+            } else {
+                assert.equal(buttons.length, 1, label);
+                assert.ok(buttons[0].disabled, `${label}: the single-step submitting button is disabled`);
+            }
         }
     }
 });

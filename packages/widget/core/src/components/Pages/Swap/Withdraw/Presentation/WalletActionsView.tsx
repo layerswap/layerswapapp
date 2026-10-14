@@ -12,8 +12,6 @@ import {
     getDepositActionLabel,
     getCurrentDepositActionIndex,
     isDepositWorkflowComplete,
-    isSignAction,
-    isTransferAction,
 } from '@/helpers/depositActions';
 import { DepositWorkflowView } from './DepositWorkflowView';
 import { WalletExecutionTransition } from './WalletExecutionTransition';
@@ -179,18 +177,12 @@ export function SendTransactionView({
     onCancelWithdrawal,
     ...props
 }: SendTransactionViewProps) {
-    const singleAction = depositActions?.length === 1 ? depositActions[0] : undefined;
-    // Older responses omit workflow metadata. Adapt the single wallet action
-    // for display without changing the actions used by the execution controller.
-    const workflowActions = singleAction && (!singleAction.step || !singleAction.status) &&
-        (isSignAction(singleAction) || isTransferAction(singleAction))
-        ? [{
-            ...singleAction,
-            step: singleAction.step ?? (isSignAction(singleAction) ? 'sign' : 'deposit'),
-            status: singleAction.status ?? 'action_required',
-        }]
-        : depositActions;
-    const hasWorkflowProgress = !!workflowActions?.some(action => action.step);
+    const isMultiStepWorkflow =
+        (depositActions?.filter((action) => !!action.step).length ?? 0) > 1 ||
+        (!!stepTransactions?.approve_permit2?.explorerUrl &&
+            !!depositActions?.some(action => action.step === 'approve_permit2')) ||
+        (!!quote?.destination_token &&
+            !!depositActions?.some((action) => action.step === 'publish'));
     const workflowCompleted = isDepositWorkflowComplete(depositActions ?? []);
     const workflowFailed = depositActions?.some(action => action.status === 'failed');
     const actionableAction = getActionableDepositAction(depositActions);
@@ -198,14 +190,14 @@ export function SendTransactionView({
         ? getDepositActionLabel(actionableAction)
         : actionButtonText || 'Swap now';
     const hasError = error || swapError || gaslessUnavailable;
-    const showStepError = hasWorkflowProgress && !loading &&
-        getCurrentDepositActionIndex(workflowActions?.filter(action => !!action.step) ?? [], true) !== -1;
+    const showStepError = isMultiStepWorkflow && !loading &&
+        getCurrentDepositActionIndex(depositActions?.filter(action => !!action.step) ?? [], true) !== -1;
     const errorDescription = showStepError && hasError && errorMessage ? (
         <WalletMessageDetails>{errorMessage}</WalletMessageDetails>
     ) : undefined;
-    const workflowProgress = hasWorkflowProgress ? (
+    const workflowProgress = isMultiStepWorkflow ? (
         <DepositWorkflowView
-            actions={workflowActions}
+            actions={depositActions}
             stepTransactions={stepTransactions}
             readOnly={readOnly}
             loading={loading}
@@ -233,7 +225,7 @@ export function SendTransactionView({
             <WalletExecutionTransition
                 workflow={workflowProgress}
                 controls={
-                    hasWorkflowProgress && loading ? (
+                    isMultiStepWorkflow && loading ? (
                         message
                     ) : (
                         <>
@@ -379,3 +371,4 @@ export function SendTransactionView({
         />
     );
 }
+

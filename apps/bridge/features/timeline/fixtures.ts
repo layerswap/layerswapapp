@@ -1656,9 +1656,6 @@ const gaslessFrontendState: Partial<Page2LoadedSnapshot> = {
 const gaslessFrontendActions = workflow([['sign', 'action_required']]).map(
     (action) => ({ ...action, token: gaslessFrontendToken }),
 );
-const legacyTransferActions = workflow([['deposit', 'action_required']]).map(
-    ({ step: _step, status: _status, ...action }) => action,
-);
 const frontendScenarios: TimelineScenario[] = [
     {
         id: 'frontend-permit2',
@@ -2071,38 +2068,6 @@ const frontendScenarios: TimelineScenario[] = [
         ],
     },
     {
-        id: 'frontend-single-action',
-        label: 'Single wallet confirmation',
-        group: 'token-swap',
-        section: 'main-flow',
-        milestones: [
-            frontendMilestone(0, 'ready', 'Quote ready',
-                'The quote is ready before the wallet action is requested.',
-                undefined, { kind: 'send' }, { swapId: undefined }),
-            frontendMilestone(5, 'confirm', 'Confirm in wallet',
-                'A transfer response without step metadata still shows the shared progress card.',
-                legacyTransferActions, { kind: 'send', pending: true, label: 'Confirm in your wallet' }),
-            frontendMilestone(10, 'rejected', 'Wallet request rejected',
-                'The current step retains the error and offers retry.',
-                legacyTransferActions, { kind: 'send', error: ActionMessageType.TransactionRejected }),
-            frontendMilestone(15, 'retry', 'Confirm again',
-                'Retry keeps the progress card and removes the action button while the wallet prompt is open.',
-                legacyTransferActions, { kind: 'send', pending: true, label: 'Confirm in your wallet' }),
-            ...[pendingInput, confirmed, completed].map((milestone) => ({
-                ...milestone,
-                snapshot: frontend({
-                    depositActions: legacyTransferActions,
-                    details: details({
-                        ...(milestone.snapshot as Page2LoadedSnapshot).details,
-                        transactions: (milestone.snapshot as Page2LoadedSnapshot).details.transactions.map(tx => ({
-                            ...tx, amount: tx.type === TransactionType.Output ? 0.0396 : tx.amount,
-                        })),
-                    }),
-                }),
-            })),
-        ],
-    },
-    {
         id: 'frontend-gasless-success',
         label: 'Gasless token swap completed',
         group: 'token-swap',
@@ -2173,7 +2138,7 @@ const frontendScenarios: TimelineScenario[] = [
                 5,
                 'signing',
                 'Sign in wallet',
-                'A single signature uses the shared progress card while the wallet prompt is open.',
+                'A single signature uses the submitting button without a multi-step panel.',
                 gaslessFrontendActions,
                 { kind: 'send', pending: true, label: 'Sign in your wallet' },
                 gaslessFrontendState,
