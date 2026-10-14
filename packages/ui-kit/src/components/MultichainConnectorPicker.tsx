@@ -17,6 +17,9 @@ type MultichainConnectorModalProps = {
 
 export const MultichainConnectorPicker: FC<MultichainConnectorModalProps> = ({ selectedConnector, providers, connect, isLoadingMore }) => {
     const iconSrc = selectedConnector.icon
+    const variants = selectedConnector.variants ?? []
+    const showGrid = variants.length >= 4
+
     return (
         <div className="flex flex-col justify-between h-full min-h-80">
             <div className="flex grow py-4">
@@ -40,9 +43,9 @@ export const MultichainConnectorPicker: FC<MultichainConnectorModalProps> = ({ s
                 </div>
             </div>
 
-            <div className="flex flex-col gap-2 w-full">
+            <div className={`${showGrid ? "grid grid-cols-2" : "flex flex-col"} gap-2 w-full`}>
                 {
-                    (selectedConnector.variants ?? []).map((connector, index) => {
+                    variants.map((connector, index) => {
                         const provider = providers.find(p => p.name === connector?.providerName)
                         return (
                             <button
@@ -51,7 +54,7 @@ export const MultichainConnectorPicker: FC<MultichainConnectorModalProps> = ({ s
                                 onClick={async () => {
                                     if (provider) await connect(connector, provider)
                                 }}
-                                className="w-full h-fit flex items-center gap-3 bg-secondary-500 hover:bg-secondary-400 transition-colors duration-200 rounded-xl p-3"
+                                className="w-full min-w-0 h-fit flex items-center gap-3 bg-secondary-500 hover:bg-secondary-400 transition-colors duration-200 rounded-xl p-3"
                             >
                                 {
                                     provider?.providerIcon &&
@@ -63,7 +66,7 @@ export const MultichainConnectorPicker: FC<MultichainConnectorModalProps> = ({ s
                                         alt={provider.name}
                                     />
                                 }
-                                <p>
+                                <p className="truncate">
                                     {connector?.providerName}
                                 </p>
                             </button>
@@ -71,7 +74,7 @@ export const MultichainConnectorPicker: FC<MultichainConnectorModalProps> = ({ s
                     })
                 }
                 {isLoadingMore && (
-                    <div className="w-full flex items-center justify-center gap-2 p-3">
+                    <div className={`${showGrid ? "col-span-2" : ""} w-full flex items-center justify-center gap-2 p-3`}>
                         <CircularLoader className="w-5 h-5 animate-spin" />
                         <p className="text-sm text-secondary-text">Checking for more networks...</p>
                     </div>

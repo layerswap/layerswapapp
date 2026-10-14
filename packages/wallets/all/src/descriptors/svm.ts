@@ -1,15 +1,20 @@
+import KnownInternalNames from "@layerswap/utils/known-ids"
 import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
-import type { NetworkType } from "@layerswap/widget-types"
 import type { WalletConnectConfig } from "@layerswap/wallet-evm"
+import { solanaWalletConnectChain } from '@layerswap/wallet-svm'
 import { defineWalletDescriptor, type DescriptorNetworkOptions } from "./defineWalletDescriptor"
 import { hasStorageKey } from "./persistedSession"
 
 // SVM's runtime list is built dynamically from `NetworkType.Solana` networks
 // in `SvmConnectionService` — for static gating we mirror the universe of
-// Solana network ids from widget's `knownIds.ts`. Extras don't hurt the
+// Solana network ids from utils. Extras don't hurt the
 // route filter (it intersects with the active networks list); missing entries
 // would.
-const SVM_NETWORKS = ['SOLANA_MAINNET', 'SOLANA_TESTNET', 'SOLANA_DEVNET']
+const SVM_NETWORKS = [
+    KnownInternalNames.Networks.SolanaMainnet,
+    KnownInternalNames.Networks.SolanaTestnet,
+    KnownInternalNames.Networks.SolanaDevnet,
+]
 
 /**
  * Tree-shake-safe stand-in for `createSVMProvider`. Defers the eager portion
@@ -22,11 +27,10 @@ export function createSVMDescriptor(walletConnectConfigs?: WalletConnectConfig, 
     return defineWalletDescriptor({
         id: 'solana',
         name: 'Solana',
-        // Keep this descriptor's module graph type-only; loading the widget or
-        // Solana runtime here would defeat the lazy-provider boundary.
+        // Keep widget and wallet imports type-only to preserve lazy loading.
         capabilities: {
             walletConnectRegistry: {
-                networkTypes: ['solana' as NetworkType],
+                networkTypes: [solanaWalletConnectChain.networkType],
             },
         },
         autofillSupportedNetworks: supportedNetworks,

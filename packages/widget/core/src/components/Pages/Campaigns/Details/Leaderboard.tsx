@@ -3,7 +3,7 @@ import { FC, useMemo, useState } from "react"
 import LayerSwapApiClient, { Campaign, Leaderboard, Reward } from "@/lib/apiClients/layerSwapApiClient"
 import { RewardsComponentLeaderboardSceleton } from "@/components/Common/Sceletons"
 import useSWR from "swr"
-import { ApiResponse } from "@/Models/ApiResponse"
+import type { ApiResponse } from "@layerswap/widget-types"
 import ClickTooltip from "@/components/Common/ClickTooltip"
 import { truncateDecimals } from "@/components/utils/RoundDecimals"
 import AddressIcon from "@/components/Common/AddressIcon";
@@ -132,7 +132,7 @@ const LeaderbordComponent: FC<{
                                                     <span className="text-primary">You</span>
                                                 </a>}
                                             </div>
-                                            <p className="mt-1 text-sm font-medium text-secondary-text leading-3">{truncateDecimals(rewards.user_reward.total_amount, token?.precision)} {token?.symbol}</p>
+                                            <p className="mt-1 text-sm font-medium text-secondary-text leading-3">{truncateDecimals(rewards.user_reward.total_amount, token?.precision)} {token?.asset}</p>
                                         </div>
                                     </div >
                                 </div >
@@ -169,7 +169,7 @@ const LeaderboardItem: FC<{
                             {user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : displayName}
                         </a>}
                     </div>
-                    <p className="mt-1 text-sm font-medium text-secondary-text leading-3">{truncateDecimals(user.amount, token?.precision)} {token?.symbol}</p>
+                    <p className="mt-1 text-sm font-medium text-secondary-text leading-3">{truncateDecimals(user.amount, token?.precision)} {token?.asset}</p>
                 </div>
             </div >
         </div >
@@ -189,7 +189,7 @@ const LeaderboardItem: FC<{
                                 className="rounded-full object-contain" />
                         </div>
                         <p>
-                            <span>{leaderboardRewards[user.position - 1]} {token?.symbol}</span>
+                            <span>{leaderboardRewards[user.position - 1]} {token?.asset}</span>
                         </p>
                     </div>
                 } />

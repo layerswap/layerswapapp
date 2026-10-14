@@ -3,7 +3,7 @@ import { FC, useCallback } from "react"
 import { Gift } from "lucide-react"
 import LayerSwapApiClient, { Campaign } from "@/lib/apiClients/layerSwapApiClient"
 import useSWR from "swr"
-import { ApiResponse } from "@/Models/ApiResponse"
+import type { ApiResponse } from "@layerswap/widget-types"
 import SubmitButton from "@/components/Buttons/submitButton";
 import { ImageWithFallback, WalletIcon } from "@layerswap/ui-kit/components";
 import LinkWrapper from "@/components/Common/LinkWrapper";
@@ -90,7 +90,7 @@ const BriefInformation: FC<BriefInformationProps> = ({ campaign }) =>
             :
             <>
                 <span>You can earn $</span>
-                <span>{campaign?.token.symbol}</span>
+                <span>{campaign?.token.asset}</span>
                 <span>&nbsp;tokens by transferring assets to&nbsp;</span>
                 <span>{campaign.network.display_name}.</span>
                 <span> For each transaction, you&#39;ll receive&nbsp;</span>

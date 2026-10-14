@@ -5,6 +5,7 @@ import { connectModalStore } from "@layerswap/wallet-core"
 import * as UiKit from "@layerswap/ui-kit/components"
 import type { ModalWalletProvider } from "@layerswap/ui-kit/components"
 import type { WalletConnectionProvider, WalletModalConnector } from "@layerswap/wallet-core/types";
+import { widgetTelemetry } from '@/lib/widgetTelemetry';
 
 export type { WalletModalConnector } from "@layerswap/wallet-core/types"
 export type { ModalWalletProvider } from "@layerswap/ui-kit/components"
@@ -75,19 +76,21 @@ function WalletModalShell({ children }: { children: ReactNode }) {
         provider?: WalletConnectionProvider,
         options: ConnectOptions = {},
     ) => {
-        const hasConnectorPicker = !!provider?.availableConnectors?.length
-            || !!provider?.additionalConnectors?.length
-            || !!provider?.requestAdditionalConnectors
-
-        if (!hasConnectorPicker) await provider?.connectWallet()
-
         setPresentation("modal")
         setDismissible(options.dismissible ?? true)
         setTopContent(options.topContent ?? null)
         setFullHeight(options.fullHeight ?? false)
         setHideHeader(options.hideHeader ?? false)
         setOpen(true)
-        return start(provider)
+        const finishTelemetry = widgetTelemetry.beginOperation('wallet_connection', { timing_kind: 'user_wait_included' })
+        try {
+            const wallet = await start(provider)
+            finishTelemetry(wallet ? 'succeeded' : 'cancelled')
+            return wallet
+        } catch (error) {
+            finishTelemetry('failed')
+            throw error
+        }
     }, [start])
 
     const cancel = useCallback(() => {

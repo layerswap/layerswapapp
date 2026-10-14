@@ -1,8 +1,8 @@
 import { SwapStatus } from '@layerswap/widget-types';
 import { useEffect, useState } from 'react'
-import { useSwapDataState } from '@/context/swap'
 import { useGaslessAuthorizationStore } from '@/stores/swapTransactionStore'
-import { GaslessAuthorizationStatus, TransactionType } from '@/lib/apiClients/layerSwapApiClient'
+import { DepositAction, GaslessAuthorizationStatus, SwapDetails, TransactionType } from '@/lib/apiClients/layerSwapApiClient'
+import { isGaslessAuthorizationForWorkflow, isGaslessDepositWorkflow } from '@/helpers/gasless'
 
 // Grace for client clock skew before the fallback timer declares expiry.
 const EXPIRY_GRACE_SECONDS = 30
@@ -16,13 +16,14 @@ type UseGaslessAuthorizationResult = {
 const FAILURE_STATUSES: ReadonlySet<GaslessAuthorizationStatus> = new Set(['expired', 'insufficient', 'rejected'])
 
 // Poll status is authoritative; the valid_before timer is a fallback until a status arrives.
-export function useGaslessAuthorization(): UseGaslessAuthorizationResult {
-    const { swapDetails } = useSwapDataState()
+// Takes the swap as a parameter (no context read) so SwapDataProvider can own the single instance.
+export function useGaslessAuthorization(swapDetails: SwapDetails | undefined, depositActions?: DepositAction[]): UseGaslessAuthorizationResult {
     const swapId = swapDetails?.id
 
-    const authorization = useGaslessAuthorizationStore(
+    const storedAuthorization = useGaslessAuthorizationStore(
         state => swapId ? state.authorizations[swapId] : undefined,
     )
+    const authorization = isGaslessAuthorizationForWorkflow(storedAuthorization, depositActions) ? storedAuthorization : undefined
     const status = authorization?.status
 
     const hasInputTransaction = !!swapDetails?.transactions?.some(t => t.type === TransactionType.Input)
@@ -36,29 +37,40 @@ export function useGaslessAuthorization(): UseGaslessAuthorizationResult {
         && swapDetails?.status === SwapStatus.UserTransferPending
 
     const validBefore = authorization?.validBefore
-    const [expiredByTimer, setExpiredByTimer] = useState(false)
+    const [expiredDeadline, setExpiredDeadline] = useState<{
+        swapId: string;
+        validBefore: number;
+    } | undefined>(undefined)
     useEffect(() => {
-        if (!pendingPublish || validBefore == null) {
-            setExpiredByTimer(false)
+        if (!swapId || !pendingPublish || validBefore == null) {
+            setExpiredDeadline(undefined)
             return
         }
         const deadlineMs = (validBefore + EXPIRY_GRACE_SECONDS) * 1000
         const msLeft = deadlineMs - Date.now()
         if (msLeft <= 0) {
-            setExpiredByTimer(true)
+            setExpiredDeadline({ swapId, validBefore })
             return
         }
-        setExpiredByTimer(false)
-        const timer = setTimeout(() => setExpiredByTimer(true), msLeft)
+        setExpiredDeadline(undefined)
+        const timer = setTimeout(() => setExpiredDeadline({ swapId, validBefore }), msLeft)
         return () => clearTimeout(timer)
-    }, [pendingPublish, validBefore])
+    }, [swapId, pendingPublish, validBefore])
 
+    const stalePrerequisite = isGaslessDepositWorkflow(depositActions) === false
+        && !storedAuthorization?.transaction?.transaction_hash
     useEffect(() => {
-        if (swapId && authorization && hasInputTransaction) {
+        if (swapId && storedAuthorization && (hasInputTransaction || stalePrerequisite)) {
             useGaslessAuthorizationStore.getState().removeGaslessAuthorization(swapId)
         }
-    }, [swapId, authorization, hasInputTransaction])
+    }, [swapId, storedAuthorization, hasInputTransaction, stalePrerequisite])
 
+    // Ignore an obsolete expiry during render, before the effect resets it after a
+    // swap change, retry, or authoritative poll result.
+    const expiredByTimer = pendingPublish
+        && expiredDeadline !== undefined
+        && expiredDeadline.swapId === swapId
+        && expiredDeadline.validBefore === validBefore
     const failureStatus = polledFailure ?? (expiredByTimer ? 'expired' : undefined)
 
     return {
@@ -68,15 +80,4 @@ export function useGaslessAuthorization(): UseGaslessAuthorizationResult {
     }
 }
 
-export function gaslessFailureMessage(status: GaslessAuthorizationStatus | undefined): string {
-    switch (status) {
-        case 'expired':
-            return 'The deposit authorization expired before it was broadcast.'
-        case 'insufficient':
-            return 'Your balance is insufficient to complete this deposit.'
-        case 'rejected':
-            return 'The deposit was rejected.'
-        default:
-            return 'The gasless deposit could not be completed.'
-    }
-}
+export { gaslessFailureMessage } from '@/helpers/gaslessFailureMessage';

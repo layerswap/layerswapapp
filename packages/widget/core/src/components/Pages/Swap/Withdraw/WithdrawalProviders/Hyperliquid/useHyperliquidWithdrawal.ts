@@ -1,4 +1,4 @@
-import { ActionMessageType } from '@layerswap/widget-types';
+import { isUserRejection } from '@layerswap/wallet-core/errors';
 import { useCallback, useEffect, useRef, useState } from "react";
 import { WithdrawPageProps } from "../../Wallet/Common/sharedTypes";
 import { StepError } from "./resolveError";
@@ -8,18 +8,18 @@ import { useSelectedAccount } from "@/context/swapAccounts";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
 import useWallet from "@/hooks/useWallet";
 import { useTransfer } from "@/hooks/useTransfer";
-import { TransferProgress } from "@layerswap/widget-types";
+import { executeWalletOperation } from "@/components/Pages/Swap/Withdraw/Wallet/Common/executeWalletOperation";
+import { ActionMessageType, TransferProgress } from "@layerswap/widget-types";
 import { NetworkRoute } from "@layerswap/widget-types";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
-import { BackendTransactionStatus, DepositAction } from "@/lib/apiClients/layerSwapApiClient";
-import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
+import { DepositAction, TransferDepositAction } from "@/lib/apiClients/layerSwapApiClient";
+import { executeProviderWithdrawal, getProviderDepositActions } from "../executeProviderWithdrawal";
 import { ErrorHandler } from "@/lib/ErrorHandler";
+import { useCallbacks } from "@/context/callbackProvider";
+import { lifecycleContextFromSwap } from "@/lib/swapLifecycle";
 
-/** Deposit-action kinds that carry the destination deposit address. */
-const DEPOSIT_ACTION_TYPES = ['transfer', 'manual_transfer']
-
-const getDepositAddress = (actions: DepositAction[] | undefined): string | undefined =>
-    actions?.find(a => DEPOSIT_ACTION_TYPES.includes(a.type))?.to_address
+const getDepositAction = (actions: DepositAction[] | undefined): TransferDepositAction | undefined =>
+    actions?.find((a): a is TransferDepositAction => a.type === 'transfer' || a.type === 'manual_transfer')
 
 const logWithdrawalError = (error: unknown, ctx: { swapId?: string; fromAddress?: string; toAddress?: string }) => {
     const e = error instanceof Error ? error : new Error(String(error))
@@ -28,7 +28,7 @@ const logWithdrawalError = (error: unknown, ctx: { swapId?: string; fromAddress?
         message: e.message,
         name: e.name || 'HyperliquidWithdrawalError',
         stack: e.stack,
-        cause: e.cause,
+        cause: e,
         swapId: ctx.swapId,
         fromAddress: ctx.fromAddress,
         toAddress: ctx.toAddress,
@@ -44,8 +44,9 @@ const logWithdrawalError = (error: unknown, ctx: { swapId?: string; fromAddress?
  * transaction so the standard Processing screen takes over (no real source hash: the backend
  * detects the CCTP deposit on the destination chain).
  *
- * The flow is idempotent across retries: the provider re-reads the split each attempt,
- * so after a successful consolidation a retry skips straight to the withdraw signature.
+ * Safe pre-submission retries refresh deposit actions and re-read the balance split.
+ * Ambiguous submissions are reconciled against the existing swap before another
+ * withdrawal can be considered.
  */
 export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: WithdrawPageProps) {
     const { source_network, source_token, destination_network, destination_token, destination_address } = swapBasicData
@@ -53,9 +54,10 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
     const { networks, sourceRoutes } = useSettingsState()
     const initialSettings = useInitialSettings()
     const { onWalletWithdrawalSuccess } = useWalletWithdrawalState()
-    const { swapDetails, depositActionsResponse } = useSwapDataState()
-    const { createSwap, setSwapId } = useSwapDataUpdate()
+    const { swapDetails } = useSwapDataState()
+    const { createSwap, setSwapId, startFreshSwapAttempt, mutateSwap } = useSwapDataUpdate()
     const { executeTransfer } = useTransfer()
+    const { onSwapLifecycle } = useCallbacks()
 
     const selectedSourceAccount = useSelectedAccount("from", source_network?.name)
     const { wallets } = useWallet(source_network, "withdrawal")
@@ -73,8 +75,12 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
     const [progress, setProgress] = useState<TransferProgress | undefined>()
     const [error, setError] = useState<StepError | undefined>()
     const [rejected, setRejected] = useState(false)
+    // The rejected UI label alone does not establish a user cancellation.
+    const lastFailureWasUserRejection = useRef(false)
     // Synchronous double-submit guard: covers the click→re-render gap that `loading` can't.
     const submittingRef = useRef(false)
+    // Keep a lazily created swap even before its context state has caught up.
+    const preparedSwapRef = useRef<{ swapId: string } | undefined>(undefined)
     // The flow widens the async window (sign + submit + poll); avoid setting state after unmount.
     const mountedRef = useRef(true)
     useEffect(() => {
@@ -84,18 +90,32 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
 
     const handleWithdraw = useCallback(async () => {
         if (submittingRef.current) return
+        if (rejected || error) {
+            onSwapLifecycle({
+                step: 'retry_requested',
+                stage: 'wallet_action',
+                outcome: 'started',
+                path: 'HyperliquidWithdrawal',
+                reasonCode: lastFailureWasUserRejection.current ? 'user_rejected' : 'provider_withdrawal_failed',
+                action: 'hyperliquid_withdrawal',
+                provider: wallet?.providerName,
+                ...lifecycleContextFromSwap(swapBasicData, swapDetails),
+                swapId: swapId ?? preparedSwapRef.current?.swapId,
+            })
+        }
         submittingRef.current = true
         setError(undefined)
         setRejected(false)
         setLoading(true)
 
-        // Ensure the backend swap exists (created lazily on first click) and resolve
-        // its deposit address, which the withdrawal funds.
-        const resolveSwapAndDepositAddress = async (amount: string): Promise<{ destination: string; activeSwapId: string }> => {
-            let depositActions = depositActionsResponse
-            let activeSwapId = swapId
-            if (!swapId || !swapDetails) {
-                setSwapId(undefined)
+        // Keep the swap identity even when its details or deposit actions are missing.
+        const resolveSwap = async (amount: string): Promise<{ depositActions?: DepositAction[]; activeSwapId: string }> => {
+            let activeSwapId = swapId ?? preparedSwapRef.current?.swapId
+            // Only the creation response is fresh for this attempt. Existing swaps
+            // fetch current actions in prepare, after the submission guard.
+            let depositActions: DepositAction[] | undefined
+            if (!activeSwapId) {
+                startFreshSwapAttempt()
                 const swapValues: SwapFormValues = {
                     amount,
                     from: source_network as NetworkRoute,
@@ -109,64 +129,86 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
                 const newSwap = await createSwap(swapValues, initialSettings)
                 activeSwapId = newSwap?.swap?.id
                 if (!activeSwapId) throw new Error('Swap ID is undefined')
-                setSwapId(activeSwapId)
                 depositActions = newSwap.deposit_actions
+                preparedSwapRef.current = { swapId: activeSwapId }
+                setSwapId(activeSwapId)
             }
             if (!activeSwapId) throw new Error('Swap ID is undefined')
-            const destination = getDepositAddress(depositActions)
-            if (!destination) throw new Error('No deposit address')
-            return { destination, activeSwapId }
+            return { depositActions, activeSwapId }
         }
 
+        let lifecycleSwapId = swapId ?? preparedSwapRef.current?.swapId
         try {
             if (!sourceAddress) throw new Error('No connected Hyperliquid account')
             if (!source_network || !destination_network || !destination_token) throw new Error('Unsupported Hyperliquid network')
 
-            // The amount string is signed verbatim and leaves HyperCore as-is. Reject
-            // anything beyond the source token's precision (USDC = 6 dp): `Number()`
-            // silently rounds excess decimals, which on a signed financial amount would
-            // withdraw a different value than shown.
+            if (swapBasicData.requested_amount == null) throw new Error('Invalid amount')
+            // The requested amount creates the swap; its deposit action supplies the withdrawal amount.
             const amount = swapBasicData.requested_amount.toString().trim()
-            const decimals = source_token.decimals ?? 6
-            const amountPattern = decimals > 0 ? new RegExp(`^\\d+(\\.\\d{1,${decimals}})?$`) : /^\d+$/
-            if (!amountPattern.test(amount)) throw new Error(`Invalid amount — at most ${decimals} decimal places for ${source_token.symbol}`)
             const A = Number(amount)
             if (!Number.isFinite(A) || A <= 0) throw new Error('Invalid amount')
 
-            const { destination, activeSwapId } = await resolveSwapAndDepositAddress(amount)
-
-            // Resolves with a (possibly empty) hash on success; throws on rejection/failure.
-            const txHash = await executeTransfer({
-                network: source_network,
-                token: source_token,
-                destinationNetwork: destination_network,
-                destinationToken: destination_token,
-                networks,
-                sourceRoutes,
+            const { depositActions, activeSwapId } = await resolveSwap(amount)
+            lifecycleSwapId = activeSwapId
+            await executeProviderWithdrawal({
+                swapId: activeSwapId,
                 sourceAddress,
-                depositAddress: destination,
-                amount: A,
-                amountExact: amount,
-                callData: '',
-                selectedWallet: wallet!,
-            }, wallet, (info) => { if (mountedRef.current) setProgress(info) })
+                onReconcile: response => mutateSwap(response, false),
+                prepare: async () => {
+                    const actions = depositActions?.length ? depositActions : await getProviderDepositActions(activeSwapId, sourceAddress)
+                    const action = getDepositAction(actions)
+                    if (!action?.to_address) throw new Error('No deposit address')
+                    if (!action.amount_in_base_units) throw new Error('No withdrawal amount')
+                    return action
+                },
+                execute: (action, onSubmissionStateChange) => executeWalletOperation({
+                    context: {
+                        ...lifecycleContextFromSwap(swapBasicData, swapDetails),
+                        swapId: activeSwapId,
+                        path: 'HyperliquidWithdrawal',
+                        action: 'hyperliquid_withdrawal',
+                        provider: wallet?.providerName,
+                    },
+                    onLifecycle: onSwapLifecycle,
+                    allowEmptyHash: true,
+                    isActive: () => mountedRef.current,
+                }, () => executeTransfer({
+                    swapId: activeSwapId,
+                    onSubmissionStateChange,
+                    network: source_network,
+                    token: action.token ?? source_token,
+                    destinationNetwork: destination_network,
+                    destinationToken: destination_token,
+                    networks,
+                    sourceRoutes,
+                    sourceAddress,
+                    depositAddress: action.to_address,
+                    amount: action.amount ?? A,
+                    amountInBaseUnits: action.amount_in_base_units,
+                    callData: '',
+                    selectedWallet: wallet!,
+                }, wallet, (info) => { if (mountedRef.current) setProgress(info) })),
+            })
 
             if (!mountedRef.current) return
 
-            // Success — hand off to the standard Processing screen by recording a pending input.
-            // There is usually no real source tx hash (the backend detects the CCTP deposit), so
-            // the empty hash just flips the swap off the withdraw screen.
-            useSwapTransactionStore.getState().setSwapTransaction(activeSwapId, BackendTransactionStatus.Pending, txHash || '')
+            // Submission is already recorded, including when no source hash is returned.
             onWalletWithdrawalSuccess?.()
         } catch (e) {
             if (!mountedRef.current) return
+            lastFailureWasUserRejection.current = isUserRejection(e)
             // A declined wallet prompt is a user action, not an error to log.
-            if ((e as Error)?.name === ActionMessageType.TransactionRejected) {
+            if (lastFailureWasUserRejection.current) {
                 setRejected(true)
                 return
             }
-            logWithdrawalError(e, { swapId, fromAddress: sourceAddress })
-            setError({ header: (e as any)?.header ?? 'Withdrawal failed', details: (e as Error)?.message || 'Unexpected error occurred.' })
+            logWithdrawalError(e, { swapId: lifecycleSwapId, fromAddress: sourceAddress })
+            // Preserve the provider's UI label even when it cannot establish a cancellation for telemetry.
+            if ((e as Error)?.name === ActionMessageType.TransactionRejected) {
+                setRejected(true)
+            } else {
+                setError({ header: (e as any)?.header ?? 'Withdrawal failed', details: (e as Error)?.message || 'Unexpected error occurred.' })
+            }
         } finally {
             if (mountedRef.current) {
                 setLoading(false)
@@ -174,7 +216,7 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
             }
             submittingRef.current = false
         }
-    }, [sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, networks, sourceRoutes, depositActionsResponse, swapId, swapDetails, refuel, initialSettings, wallet, createSwap, setSwapId, executeTransfer, onWalletWithdrawalSuccess, swapBasicData.requested_amount])
+    }, [sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, networks, sourceRoutes, swapId, swapDetails, refuel, initialSettings, wallet, createSwap, setSwapId, startFreshSwapAttempt, mutateSwap, executeTransfer, onWalletWithdrawalSuccess, swapBasicData.requested_amount, error, rejected, onSwapLifecycle])
 
     return {
         handleWithdraw,

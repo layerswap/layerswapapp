@@ -6,13 +6,13 @@ import { createEVMProvider } from "@layerswap/wallet-evm"
 import { createStarknetProvider } from "@layerswap/wallet-starknet"
 import { createSVMProvider } from "@layerswap/wallet-svm"
 import { createBitcoinProvider } from "@layerswap/wallet-bitcoin"
-import useCustomStarknet, { customStarknetAdapter } from "../hooks/useCustomStarknet";
+import { customStarknetAdapter, customStarknetNetworkAdapter } from "../hooks/useCustomStarknet";
 import { useSettingsState } from "@layerswap/widget/internal";
 import "@layerswap/widget/index.css"
 
 const CustomStarknetHydrator: FC = () => {
     const { networks } = useSettingsState()
-    return <customStarknetAdapter.Hydrator networks={networks} />
+    return <customStarknetAdapter.Hydrator networks={networks} networkAdapter={customStarknetNetworkAdapter} />
 }
 type WidgetType = "swap" | "deposit";
 

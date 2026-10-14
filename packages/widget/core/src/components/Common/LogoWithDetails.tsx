@@ -1,8 +1,7 @@
-import { FC } from "react";
+import { FC, ReactNode, useCallback, useState } from "react";
 import { CopyButton } from "@layerswap/ui-kit/components";
 import LayerSwapLogo from "../Icons/layerSwapLogo";
 import { Paperclip } from 'lucide-react'
-import { renderToString } from 'react-dom/server'
 import LayerSwapLogoSmall from "../Icons/layerSwapLogoSmall";
 import * as ContextMenuPrimitive from '@radix-ui/react-context-menu';
 import clsx from "clsx";
@@ -11,6 +10,22 @@ interface Props {
     className?: string;
     onlyFullVersion?: boolean;
 }
+
+// Serialize an unstyled SVG after it mounts. Importing react-dom/server here
+// bundles a renderer that may not match the federated host's React version.
+const CopyLogoButton = ({ children, label }: { children: ReactNode; label: string }) => {
+    const [svg, setSvg] = useState('');
+    const captureSvg = useCallback((node: HTMLSpanElement | null) => {
+        if (node) setSvg(node.querySelector('svg')?.outerHTML ?? '');
+    }, []);
+
+    return (
+        <>
+            <span hidden aria-hidden="true" ref={captureSvg}>{children}</span>
+            <CopyButton toCopy={svg} disabled={!svg}>{label}</CopyButton>
+        </>
+    );
+};
 
 const LogoWithDetails: FC<Props> = (({ className, onlyFullVersion }) => {
 
@@ -39,10 +54,10 @@ const LogoWithDetails: FC<Props> = (({ className, onlyFullVersion }) => {
             </ContextMenuPrimitive.Trigger>
             <ContextMenuPrimitive.Content className="dialog-overlay absolute z-40 border h-fit text-secondary-text border-secondary-100 mt-2 w-fit rounded-md shadow-lg bg-secondary-700 ring-1 ring-black/5 focus:outline-hidden">
                 <ContextMenuPrimitive.ContextMenuItem className="dialog-content px-4 py-2 text-sm text-left w-full rounded-t hover:bg-secondary-400 whitespace-nowrap">
-                    <CopyButton toCopy={renderToString(<LayerSwapLogo />)}>Copy logo as SVG</CopyButton>
+                    <CopyLogoButton label="Copy logo as SVG"><LayerSwapLogo /></CopyLogoButton>
                 </ContextMenuPrimitive.ContextMenuItem >
                 <ContextMenuPrimitive.ContextMenuItem className="dialog-content px-4 py-2 text-sm text-left w-full hover:bg-secondary-400 whitespace-nowrap">
-                    <CopyButton toCopy={renderToString(<LayerSwapLogoSmall />)}>Copy symbol as SVG</CopyButton>
+                    <CopyLogoButton label="Copy symbol as SVG"><LayerSwapLogoSmall /></CopyLogoButton>
                 </ContextMenuPrimitive.ContextMenuItem >
                 <hr className="horizontal-gradient" />
                 <ContextMenuPrimitive.ContextMenuItem className="dialog-content">

@@ -13,7 +13,17 @@ import {
 import {
     resolveChainConnectors,
 } from '../dist/esm/hooks/useConnectors.js'
+import {
+    chainsForNamespace,
+} from '../dist/esm/lib/walletConnect/api.js'
+import {
+    chainsToNetworkTypes,
+} from '../dist/esm/lib/walletConnect/types.js'
+import { defaultWalletConnectChainRegistry } from '../dist/esm/lib/walletConnect/chainRegistry.js'
 
+defaultWalletConnectChainRegistry.register({ namespace: 'eip155', networkType: 'evm', explorerChainIds: ['eip155:1'] })
+defaultWalletConnectChainRegistry.register({ namespace: 'solana', networkType: 'solana', explorerChainIds: ['solana:mainnet'] })
+defaultWalletConnectChainRegistry.register({ namespace: 'stellar', networkType: 'stellar', explorerChainIds: ['stellar:pubnet', 'stellar:testnet'] })
 const registryWallet = {
     walletConnectProjectId: 'test-project',
     id: 'rainbow',
@@ -136,5 +146,13 @@ test('provider capability matching does not depend on provider id', () => {
     assert.deepEqual(
         getProvidersForWalletConnectNetworkType(providers, 'solana').map(provider => provider.name),
         ['Custom Multichain', 'Solana'],
+    )
+})
+
+test('maps Stellar WalletConnect chains into registry capabilities', () => {
+    assert.equal(chainsForNamespace('stellar'), 'stellar:pubnet,stellar:testnet')
+    assert.deepEqual(
+        chainsToNetworkTypes(['stellar:pubnet', 'stellar:testnet']),
+        ['stellar'],
     )
 })

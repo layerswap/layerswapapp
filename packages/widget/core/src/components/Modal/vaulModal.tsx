@@ -1,9 +1,9 @@
+import { DrawerSurfaceView, DrawerBodyView, DrawerHeadingGroup, DrawerTitleView, DrawerCloseButton, DrawerBackdropView } from "./DrawerPresentation";
 import { Dispatch, FC, ReactNode, SetStateAction, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { clsx } from 'clsx';
 import useWindowDimensions from '@/hooks/useWindowDimensions';
-import IconButton from '../Buttons/iconButton';
-import { ChevronUp, X } from 'lucide-react';
+import { ChevronUp } from 'lucide-react';
 import { useMeasure } from '@uidotdev/usehooks';
 import { SnapElement, SnapPointsProvider, useSnapPoints } from '@/context/snapPointsContext';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -22,9 +22,10 @@ export type VaulDrawerProps = {
     className?: string;
     mode?: 'snapPoints' | 'fitHeight';
     dismissible?: boolean;
+    nonModal?: boolean;
 }
 
-const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd, className, modalId, mode = 'snapPoints', dismissible = true }) => {
+const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd, className, modalId, mode = 'snapPoints', dismissible = true, nonModal }) => {
     const { isMobileWithPortal: isMobile, isMobile: isMobileWithoutPortal } = useWindowDimensions();
     let [headerRef, { height }] = useMeasure();
     const { setHeaderHeight } = useSnapPoints()
@@ -41,6 +42,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
     const isFitHeightMode = mode === 'fitHeight';
     const isSnapPointsMode = mode === 'snapPoints';
     const isLastSnap = isSnapPointsMode ? snapElement?.id === snapPoints[snapPoints.length - 1]?.id : true;
+    const isFullHeightSnap = isSnapPointsMode && snapElement?.height === 1;
 
     const snapPointsSettled = snapElemenetsHeight.length > 0 && snap !== null && snapPointsHeight.includes(snap);
     const everSettledRef = useRef(false);
@@ -154,7 +156,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
             onOpenChange={handleOpenChange}
             container={container}
             {...snapPointsProps}
-            modal={isMobile ? true : false}
+            modal={isMobile ? !nonModal : false}
             repositionInputs={false}
             onAnimationEnd={(e) => { onAnimationEnd && onAnimationEnd(e) }}
             handleOnly={isMobileWithoutPortal}
@@ -179,78 +181,29 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         {show && (
                             dismissible ? (
                                 <Drawer.Close asChild key={`backdrop-${modalId}`}>
-                                    <motion.div
-                                        className='absolute inset-0 z-50 bg-black/50 block pointer-events-auto'
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        transition={{ duration: 0.3 }}
-                                    />
+                                    <DrawerBackdropView key={`backdrop-${modalId}`} />
                                 </Drawer.Close>
                             ) : (
-                                <motion.div
-                                    key={`backdrop-${modalId}`}
-                                    className='absolute inset-0 z-50 bg-black/50 block pointer-events-auto'
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.3 }}
-                                />
+                                <DrawerBackdropView key={`backdrop-${modalId}`} />
                             )
                         )}
                     </AnimatePresence>
                 )}
-                <Drawer.Content
-                    data-testid="content"
-                    data-fit-height={isFitHeightMode ? 'true' : undefined}
+                <Drawer.Content asChild>
+                <DrawerSurfaceView
+                    fitHeight={isFitHeightMode} fullHeight={snap === 1} portal={AppSettings.ThemeData?.enablePortal === true} className={className}
+                    data-testid="content" data-fit-height={isFitHeightMode ? 'true' : undefined}
                     style={parked ? { transform: 'translate3d(0, 100%, 0)', animation: 'none', transition: 'none' } : undefined}
-                    className={clsx('absolute bg-secondary-700 rounded-t-3xl bottom-0 left-0 right-0 z-50 text-primary-text ring-0! outline-hidden!', className, {
-                        'flex flex-col pb-4 h-full': isSnapPointsMode,
-                        'flex flex-col': isFitHeightMode,
-                        'border-none! rounded-none!': isSnapPointsMode && snap === 1,
-                        'fixed! sm:absolute!': AppSettings.ThemeData?.enablePortal == true,
-                    })}
                 >
-                    <div
-                        ref={headerRef}
-                        className={clsx('w-full flex-shrink-0', { 'relative': isSnapPointsMode })}>
-                        {
-                            isMobileWithoutPortal && dismissible &&
-                            <div className="flex justify-center w-full mt-2 mb-[6px]" >
-                                <Drawer.Handle className='w-12! bg-primary-text-tertiary!' />
-                            </div>
-                        }
-
-                        {(header || dismissible) && (
-                            <div className='flex items-center w-full text-left justify-between px-4 sm:pt-2 pb-2'>
-                                <Drawer.Title className="text-lg text-secondary-text font-semibold w-full">
-                                    {header}
-                                </Drawer.Title>
-                                {dismissible && (
-                                    <Drawer.Close asChild>
-                                        <div>
-                                            <IconButton className='inline-flex active:animate-press-down' icon={
-                                                <X strokeWidth={2} />
-                                            }>
-                                            </IconButton>
-                                        </div>
-                                    </Drawer.Close>
-                                )}
-                            </div>
-                        )}
-                        {
-                            description &&
-                            <Drawer.Description className="text-sm mt-2 text-secondary-text px-4">
-                                {description}
-                            </Drawer.Description>
-                        }
-                    </div>
-                    <div
+                    <DrawerHeadingGroup ref={headerRef} snapPoints={isSnapPointsMode}
+                        handle={isMobileWithoutPortal && dismissible && <Drawer.Handle className="w-12! bg-primary-text-tertiary!" />}
+                        title={(header || dismissible) && <Drawer.Title asChild><DrawerTitleView>{header}</DrawerTitleView></Drawer.Title>}
+                        close={dismissible && <Drawer.Close asChild><DrawerCloseButton /></Drawer.Close>}
+                        description={description && <Drawer.Description className="text-sm mt-2 text-secondary-text px-4">{description}</Drawer.Description>}
+                    />
+                    <DrawerBodyView
+                        fitHeight={isFitHeightMode} fullHeight={isFullHeightSnap}
                         ref={isFitHeightMode ? drawerContentRef : undefined}
-                        className={clsx('w-full px-4 styled-scroll', {
-                            'flex flex-col overflow-x-hidden relative h-full': isSnapPointsMode,
-                            'pb-4': isFitHeightMode
-                        })}
                         id="virtualListContainer"
                     >
                         {children}
@@ -271,9 +224,10 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                                 </motion.div>
                             }
                         </AnimatePresence>
-                        {isMobile && <VaulFooter snapElement={snapElement} mode={mode} />}
-                    </div>
-                    {!isMobile && <VaulFooter snapElement={snapElement} mode={mode} />}
+                        {isMobile && !isFullHeightSnap && <VaulFooter snapElement={snapElement} mode={mode} />}
+                    </DrawerBodyView>
+                    {(!isMobile || isFullHeightSnap) && <VaulFooter snapElement={snapElement} mode={mode} />}
+                </DrawerSurfaceView>
                 </Drawer.Content>
                 </div>
             </Drawer.Portal>
@@ -291,14 +245,15 @@ const VaulFooter: FC<{ snapElement: SnapElement | null; mode?: 'snapPoints' | 'f
         setFooterHeight(height || 0);
     }, [height])
 
+    const isFullHeightSnap = mode === 'snapPoints' && snapElement?.height === 1;
+
     return <div
         ref={ref}
         id={WALLET_MODAL_FOOTER_ID}
         style={{
-            top: mode === 'snapPoints' && snapElement?.height !== 1 ? `${Number(snapElement?.height?.toString().replace('px', '')) - 50}px` : undefined,
-            bottom: mode === 'snapPoints' && snapElement?.height === 1 ? '12px' : undefined
+            top: mode === 'snapPoints' && !isFullHeightSnap ? `${Number(snapElement?.height?.toString().replace('px', '')) - 50}px` : undefined
         }}
-        className='w-full left-0 z-50 max-sm:absolute'
+        className={clsx('w-full left-0 z-50', isFullHeightSnap ? 'shrink-0' : 'max-sm:absolute')}
     />
 }
 

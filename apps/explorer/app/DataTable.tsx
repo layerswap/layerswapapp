@@ -1,5 +1,5 @@
 "use client"
-import { ApiResponse } from '@layerswap/widget/types'
+import { ApiResponse } from '@layerswap/widget-types'
 import useSWR from "swr"
 import { CheckCircle2, ChevronRight } from "lucide-react";
 import Image from "next/image";
@@ -81,7 +81,7 @@ export default function DataTable() {
                                                                     </div>
                                                                     <div className="mx-2.5">
                                                                         <span className="text-primary-text">{formatAmount(input_transaction?.amount)}</span>
-                                                                        <span className="mx-1 text-primary-text">{sourceToken?.symbol}</span>
+                                                                        <span className="mx-1 text-primary-text">{sourceToken?.asset}</span>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -117,7 +117,7 @@ export default function DataTable() {
                                                                     {output_transaction?.amount ?
                                                                         <div className="mx-2.5">
                                                                             <span className="text-primary-text">{formatAmount(output_transaction?.amount)}</span>
-                                                                            <span className="mx-1 text-primary-text">{destinationToken?.symbol}</span>
+                                                                            <span className="mx-1 text-primary-text">{destinationToken?.asset}</span>
                                                                         </div>
                                                                         :
                                                                         <span className="ml-2.5">-</span>

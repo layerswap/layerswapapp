@@ -16,6 +16,7 @@ export * from "../components/Pages/Swap/Withdraw/Wallet/Common/actionMessage"
 export { default as ClickTooltip } from "../components/Common/ClickTooltip"
 export { useSelectedAccount, useSelectSwapAccount, useSwapAccounts, useLatestSourceAccount, useNetworkBalance } from "@/context/swapAccounts";
 export { default as useWallet } from "@/hooks/useWallet"
+export { useClientLayoutEffect } from "@/hooks/useClientLayoutEffect"
 export * from "../lib/apiClients"
 export * from "../lib/formatUnits"
 export { useSlippageStore } from "../stores/slippageStore"
@@ -32,5 +33,15 @@ export { useWalletProvidersList } from "../components/Wallet/WalletProviders"
 export { ErrorHandler } from '../lib/ErrorHandler';
 export { useRpcHealth } from "../context/rpcHealthContext";
 export * from "../lib/extendedRoutes"
-export { connectModalStore, buildDeepLink, createRegistryConnector, createReactHookConnectionAdapter, findRegistryWalletByName, subscribeDisplayUri, isWalletConnectRegistryConnector, chainsToNetworkTypes, getProvidersForWalletConnectNetworkType, mapConnectError, getDynamicWcMetadata, getPendingDynamicWcMetadata, clearPendingDynamicWcMetadata, createMemoizedConnectionStore, setDynamicWcMetadata, setPendingMetadataForRegistry, getAdditionalConnectorsStore, useWalletDescriptorLoader, WalletDescriptorLoaderContext, useConnectors, WalletProvidersRegistryProvider, useWalletProvidersRegistry, useWalletProvidersReady, walletKey, getKnownConnectorIconBase64, normalizeIconSrc, resolveWalletConnectorIcon, walletIconResolver, getEip6963Providers, subscribeEip6963Providers } from "@layerswap/wallet-core";
-export type { DisplayUriSource, WalletConnectRegistryConnector, WalletConnectWalletBase, WalletConnectWallet, Eip6963Provider, isProviderConnectReady } from "@layerswap/wallet-core";
+export { connectModalStore, buildDeepLink, createRegistryConnector, createReactHookConnectionAdapter, findRegistryWalletByName, subscribeDisplayUri, isWalletConnectRegistryConnector, chainsToNetworkTypes, getProvidersForWalletConnectNetworkType, mapConnectError, getDynamicWcMetadata, getPendingDynamicWcMetadata, clearPendingDynamicWcMetadata, createMemoizedConnectionStore, setDynamicWcMetadata, setPendingMetadataForRegistry, getAdditionalConnectorsStore, useWalletDescriptorLoader, WalletDescriptorLoaderContext, useConnectors, WalletProvidersRegistryProvider, useWalletProvidersRegistry, useWalletProvidersReady, walletKey, getKnownConnectorIconBase64, normalizeIconSrc, resolveWalletConnectorIcon, walletIconResolver, getEip6963Providers, subscribeEip6963Providers, isProviderConnectReady, isProviderHydrated, PROVIDER_HYDRATION_TIMEOUT_MS } from "@layerswap/wallet-core";
+export type { DisplayUriSource, WalletConnectRegistryConnector, WalletConnectWalletBase, WalletConnectWallet, Eip6963Provider } from "@layerswap/wallet-core";
+
+export { Page2Preview } from '../components/Pages/Swap/Withdraw/Presentation/Page2Preview';
+export type { Page2Snapshot, Page2LoadedSnapshot, Page2WalletState } from '../components/Pages/Swap/Withdraw/Presentation/Page2Snapshot';
+export { resolveSwapPhase, SwapPhase } from '../components/utils/resolveSwapPhase';
+export { BackendTransactionStatus, TransactionStatus, TransactionType } from '../lib/apiClients/layerSwapApiClient';
+export type { SwapDetails, SwapQuote, Transaction, DepositAction } from '../lib/apiClients/layerSwapApiClient';
+
+export type { Page2PreviewMode } from '../components/Pages/Swap/Withdraw/Presentation/Page2PreviewFrame';
+export { DepositPreview } from '../components/Pages/Deposit/DepositPreview';
+export type { DepositSnapshot } from '../components/Pages/Deposit/DepositSnapshot';

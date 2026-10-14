@@ -1,4 +1,5 @@
-import { MenuIcon, ChevronLeft } from "lucide-react";
+import { WidgetMenuButton } from '../Widget/WidgetNavigationView';
+import { ChevronLeft } from "lucide-react";
 import { FC, Suspense, lazy, useEffect, useState } from "react";
 import IconButton from "../Buttons/iconButton";
 import { FormWizardProvider, useFormWizardaUpdate, useFormWizardState } from "../../context/formWizardProvider";
@@ -60,11 +61,7 @@ const Comp = () => {
 
     return <>
         <div className="text-secondary-text cursor-pointer relative">
-            <div className="sm:-mr-2 mr-0">
-                <IconButton className="inline-flex active:animate-press-down" onClick={() => setIsOpen(true)} icon={
-                    <MenuIcon strokeWidth="2" />
-                } />
-            </div>
+            <WidgetMenuButton onClick={() => setIsOpen(true)} />
             <Modal isOpen={isOpen} setIsOpen={handleModalOpenStateChange}>
                 <ModalContent
                     className="pb-4"

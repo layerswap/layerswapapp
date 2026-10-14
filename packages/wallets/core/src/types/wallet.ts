@@ -85,7 +85,7 @@ export interface WalletConnectionService<TDeps = never, Network = NetworkWithTok
 }
 
 export type WalletConnectionProvider = {
-    connectWallet: (props?: { connector?: InternalConnector }) => Promise<Wallet | undefined> | undefined,
+    connectWallet: (props: { connector: InternalConnector }) => Promise<Wallet | undefined> | undefined,
     disconnectWallets?: () => Promise<void> | undefined | void,
     switchAccount?: (connector: Wallet, address: string) => Promise<void>,
     switchChain?: (connector: Wallet, chainId: string | number) => Promise<void>

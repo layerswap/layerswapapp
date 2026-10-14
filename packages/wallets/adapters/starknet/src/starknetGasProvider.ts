@@ -1,8 +1,10 @@
 import { NetworkType } from '@layerswap/widget-types';
 import { formatUnits } from "@layerswap/utils";
-import { CallData, cairo, type Call, type EstimateFeeResponseOverhead } from "starknet";
+import { CallData, cairo, type Call } from "starknet";
+import type { EstimateFeeResponseOverhead } from "starknet-rpc";
 import { Network } from "@layerswap/widget-types";
 import { GasProvider, GasProps } from "@layerswap/widget-types";
+import { utils } from "ethers";
 
 export class StarknetGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
@@ -22,7 +24,12 @@ export class StarknetGasProvider implements GasProvider {
 
         if (!token || !network.token || !token.contract || !starknetWalletAccount) return
 
-        const amt = BigInt(amount ?? 100000);
+        // GasProps.amount is in token units, while Cairo expects base units.
+        const amountText = amount?.toString();
+        const amt = amountText == null ? 100000n : utils.parseUnits(
+            amountText.includes('e') ? Number(amount).toFixed(token.decimals) : amountText,
+            token.decimals,
+        ).toBigInt();
 
         const transferCall: Call = {
             contractAddress: token.contract.toLowerCase(),

@@ -1,7 +1,8 @@
 import Head from "next/head";
+import type { ReactNode } from "react";
 
 type Props = {
-  children: JSX.Element | JSX.Element[];
+  children: ReactNode;
 };
 
 

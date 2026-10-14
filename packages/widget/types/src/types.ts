@@ -1,4 +1,4 @@
-import { NetworkType, type Refuel } from './network';
+import { NetworkType, type GaslessStandard, type Refuel } from './network';
 
 export class Network {
     name: string;
@@ -22,7 +22,10 @@ export class NetworkWithTokens extends Network {
 }
 
 export class Token {
+    /** Canonical identifier used in Layerswap API requests and lookups. */
     symbol: string;
+    /** User-facing ticker used in labels and messages. */
+    asset: string;
     display_asset?: string;
     logo: string;
     //TODO may be plain string
@@ -33,6 +36,7 @@ export class Token {
     listing_date: string;
     status?: 'active' | 'inactive' | 'not_found';
     supports_gasless_deposit?: boolean;
+    gasless_standard?: GaslessStandard | null;
     source_rank?: number | undefined;
     destination_rank?: number | undefined;
 }

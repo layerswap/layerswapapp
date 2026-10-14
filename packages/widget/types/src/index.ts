@@ -1,5 +1,4 @@
 export type { ThemeData, ThemeColor, StatusColor } from './theme';
-export { WIDGET_PROTOCOL_MAJOR, widgetProtocolMajorOf } from './protocol.js';
 export type {
   WidgetConfig,
   WidgetCallbacks,
@@ -12,8 +11,16 @@ export type {
   SupportedDestination,
 } from './config';
 export { NetworkType } from './network';
-export type { Refuel, AvailableSourceNetworkTypes } from './network';
+export type { Refuel, AvailableSourceNetworkTypes, GaslessStandard } from './network';
 export { SwapStatus } from './SwapStatus';
+export { LSAPIKnownErrorCode, type ApiError } from './ApiError';
+export { ApiResponse, EmptyApiResponse } from './ApiResponse';
+export {
+  SWAP_LIFECYCLE_PHASE_STEPS, SWAP_LIFECYCLE_TRANSACTION_STEPS, SWAP_LIFECYCLE_REPEATABLE_STEPS,
+  SWAP_LIFECYCLE_ATTEMPT_START_STEPS, SWAP_LIFECYCLE_TRACKING_STEPS,
+} from './logEvents';
+export { lifecycleObservationKey, lifecycleObservationFingerprint } from './lifecycleObservation';
+export type { SwapLifecycleObservationKey } from './lifecycleObservation';
 export type {
   BaseErrorProps,
   AlertUIEvent,
@@ -27,14 +34,33 @@ export type {
   ChainError,
   TransferError,
   WalletError,
+  CallbackError,
+  SideEffectError,
   ErrorEventType,
+  ErrorReportInput,
+  ErrorSummary,
+  ErrorResponseSummary,
+  FailedTokenSummary,
   SwapStatusEvent,
+  SwapLifecycleEvent,
+  SwapLifecycleOutcome,
+  SwapLifecycleStage,
+  SwapLifecycleStep,
+  SwapLifecyclePhaseStep,
+  SwapLifecycleTransactionStep,
+  SwapLifecycleRepeatableStep,
+  TransferBlockedReasonCode,
+  WalletErrorReasonCode,
 } from './logEvents';
 export type { InternalConnector, Wallet, WalletConnectConfig, WalletConnectLink } from './wallet';
 export { ActionMessageType } from './actionMessage';
 export { GasCalculation } from './GasCalculation';
 export { Network, NetworkWithTokens, Token, Metadata, NetworkRoute, NetworkRouteToken } from './types';
-export { ErrorHandler, setErrorLogger } from './errorHandler';
+export { ErrorHandler, setErrorLogger, setErrorClassifier, createSafeErrorLogger, defaultErrorLogger, reportErrorLoggerFailure } from './errorHandler';
+export type { ErrorLogger, ErrorClassifier } from './errorHandler';
+export { getErrorOccurrenceId } from './errorOccurrence';
+export { createRandomId } from './randomId';
+export type { WidgetTelemetryEvent, WidgetTelemetryHandler, WidgetTelemetryAttributes, WidgetTelemetryData, WidgetFlowStep, WidgetOperation, WidgetOperationOutcome } from './telemetry';
 export { insertIfNotExists } from './insertIfNotExists';
 export { realRoutePresent } from './extendedRouteAvailability';
 export type { DepositRouteRef } from './extendedRouteAvailability';

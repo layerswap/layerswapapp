@@ -33,7 +33,7 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ source_token, destination
                                     <>{parsedReceiveAmount}</>
                                     &nbsp;
                                     <span>
-                                        {destination_token?.symbol}
+                                        {destination_token?.asset}
                                     </span>
                                     {
                                         receiveAmountInUsd !== undefined && Number(receiveAmountInUsd) > 0 &&

@@ -1,4 +1,19 @@
 export { default as KnownInternalNames } from "@/knownIds";
+export {
+    baseUnitsToNumber,
+    bytesToHex,
+    ceilUsd,
+    checkStorageIsAvailable,
+    classNames,
+    floorUsd,
+    formatUsd,
+    getDateDifferenceString,
+    groupBy,
+    isDiffByPercent,
+    isGuid,
+    isInIframe,
+} from '@/common'
+export type { StorageType } from '@/common'
 
 export type { AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
 export { AddressSelectionMode } from "@/types";
@@ -12,6 +27,7 @@ export { TonAddressUtilsProvider } from "@/address/providers/ton";
 export { StarknetAddressUtilsProvider } from "@/address/providers/starknet";
 export { TronAddressUtilsProvider } from "@/address/providers/tron";
 export { FuelAddressUtilsProvider } from "@/address/providers/fuel";
+export { StellarAddressUtilsProvider, isValidStellarAddress } from "@/address/providers/stellar";
 
 export {
     addressUtilsProviders,

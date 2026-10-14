@@ -36,6 +36,8 @@ export type Wallet = {
   id: string;
   internalId?: string;
   displayName?: string;
+  /** Wallet-reported implementation version, when exposed by the provider. */
+  version?: string;
   isActive: boolean;
   address: string | `0x${string}`;
   addresses: string[];
@@ -48,6 +50,8 @@ export type Wallet = {
     l1ProviderName?: string;
     l1ChainId?: string | number;
     deepLink?: string;
+    /** Runtime wagmi connector identity; separate from the displayed wallet name. */
+    evmConnectorUid?: string;
   };
   chainId?: string | number;
   isLoading?: boolean;

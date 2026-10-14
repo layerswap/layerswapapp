@@ -10,7 +10,7 @@ export const transactionBuilder = async (params: TransferProps) => {
         chainId: Number(network?.chain_id),
         to: depositAddress as `0x${string}`,
         value: isNativeSource ? parseEther(amount.toString()) : 0n,
-        data: callData as `0x${string}`,
+        data: (callData || '0x') as `0x${string}`,
         account: selectedWallet.address as `0x${string}`
     }
 

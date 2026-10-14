@@ -1,5 +1,6 @@
 import { Connector, ConnectorNotConnectedError, UserNotConnectedError } from '@starknet-react/core'
 import { RpcMessage, RequestFnCall, RpcTypeToMessageMap } from '@starknet-io/types-js'
+import { getKnownConnectorIconBase64 } from '@layerswap/wallet-core'
 import { starknetConnectorManager } from './service/starknetConnectorManager'
 
 let _initialized = false
@@ -76,7 +77,7 @@ export function initStarknetProvider(): void {
             defaultConnectors.push(new InjectedConnector({ options: { id: 'braavos' } }))
             defaultConnectors.push(new InjectedConnector({ options: { id: 'xverse' } }))
             defaultConnectors.push(new InjectedConnector({ options: { id: 'fordefi' } }))
-            defaultConnectors.push(new InjectedConnector({ options: { id: 'okxwallet' } }))
+            defaultConnectors.push(new InjectedConnector({ options: { id: 'okxwallet', icon: getKnownConnectorIconBase64('okxwallet') } }))
         }
 
         if ((isAndroid || isIOS) && !defaultConnectors.some(c => c.id === 'braavos')) {

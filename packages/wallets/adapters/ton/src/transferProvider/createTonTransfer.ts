@@ -1,9 +1,10 @@
-import { ActionMessageType, type Wallet } from '@layerswap/widget-types';
+import type { Wallet } from '@layerswap/widget-types';
 import { Network } from "@layerswap/widget-types";
 import { TransferProvider, TransferProps } from "@layerswap/widget-types";
 import { isMobile } from "@layerswap/utils"
 import { isWalletInfoRemote } from "@tonconnect/sdk"
 import { transactionBuilder } from "./transactionBuilder"
+import { toTransferError } from "./toTransferError"
 import { waitForTransaction } from "./waitForTransaction"
 import { createTonClient } from "../client"
 import { getTonApiKey, getTonConnect } from "../service/getTonConnect"
@@ -51,19 +52,7 @@ export function createTonTransfer(): TransferProvider {
 
                 throw new Error("No transaction BOC returned")
             } catch (error) {
-                const e = new Error()
-                e.message = error instanceof Error ? error.message : String(error)
-
-                if (typeof error === 'string' && error?.includes('Reject request')) {
-                    e.name = ActionMessageType.TransactionRejected
-                    throw e
-                } else if (typeof error === 'string' && error?.includes('Transaction was not sent')) {
-                    e.name = ActionMessageType.TransactionFailed
-                    throw e
-                } else {
-                    e.name = ActionMessageType.UnexpectedErrorMessage
-                    throw e
-                }
+                throw toTransferError(error)
             }
         },
     }

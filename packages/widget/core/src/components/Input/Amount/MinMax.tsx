@@ -12,7 +12,6 @@ import { useUsdModeStore } from "@/stores/usdModeStore";
 import { skipNextUsdSync } from "@/hooks/useUsdTokenSync";
 import { ceilUsd, floorUsd } from "@/components/utils/formatUsdAmount";
 import { ceilToDecimals, roundToDecimals, truncateToDecimals, isScientific } from "@/components/utils/RoundDecimals";
-import { resolveGasBalanceBudget } from "@/lib/gases/resolveGasBalanceBudget";
 
 type MinMaxProps = {
     fromCurrency: NetworkRouteToken,
@@ -34,14 +33,23 @@ const MinMax = (props: MinMaxProps) => {
     const selectedSourceAccount = useSelectedAccount("from", from?.name);
     const { wallets } = useWallet(from, 'withdrawal')
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
-    const { gasData, isGasLoading, gasError } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency, values.amount, wallet)
+    const isWalletConnected = !!wallet
     const { balances, mutate: mutateBalances } = useBalance(selectedSourceAccount?.address, from)
 
     const walletBalance = useMemo(() => {
-        return selectedSourceAccount?.address ? balances?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol) : undefined
-    }, [selectedSourceAccount?.address, balances, from?.name, fromCurrency?.symbol])
+        return isWalletConnected && selectedSourceAccount?.address ? balances?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol) : undefined
+    }, [isWalletConnected, selectedSourceAccount?.address, balances, from?.name, fromCurrency?.symbol])
 
-    const gasBalanceBudget = resolveGasBalanceBudget(gasData)
+    // Max must be able to correct an amount that exceeds the available balance.
+    const enteredAmount = Number(values.amount)
+    const balanceAmount = walletBalance?.amount
+    const maxEstimationAmount = enteredAmount > 0
+        ? Math.min(enteredAmount, balanceAmount != null && Number.isFinite(balanceAmount) && balanceAmount >= 0 ? balanceAmount : enteredAmount)
+        : undefined
+    const { gasData, gasError } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency, maxEstimationAmount, wallet)
+
+    const gasAmount = gasError ? undefined : (gasData?.maxFee ?? gasData?.gas);
+    const gasReserve = gasError ? undefined : (gasData?.balanceReserve ?? 0) + (gasData?.reserve ?? 0);
 
     const native_currency = gasData?.token || from?.token
 
@@ -52,9 +60,9 @@ const MinMax = (props: MinMaxProps) => {
         return roundToDecimals(raw, fromCurrency.decimals);
     }, [fromCurrency.price_in_usd, fromCurrency.decimals]);
 
-    let maxAllowedAmount: number = useMemo(() => {
-        return resolveMaxAllowedAmount({ fromCurrency, limitsMaxAmount, walletBalance, gasBalanceBudget, native_currency, depositMethod }) || 0;
-    }, [fromCurrency, limitsMaxAmount, walletBalance, gasBalanceBudget, native_currency, depositMethod])
+    const maxAllowedAmount = useMemo(() => {
+        return resolveMaxAllowedAmount({ fromCurrency, limitsMaxAmount, walletBalance, gasAmount, gasReserve, native_currency, depositMethod, fallbackAmount });
+    }, [fromCurrency, limitsMaxAmount, walletBalance, gasAmount, gasReserve, native_currency, depositMethod, fallbackAmount])
 
     const minAmount = useMemo(() => {
         if (walletBalance && walletBalance.amount !== undefined && limitsMinAmount !== undefined && depositMethod === 'wallet') {
@@ -71,11 +79,11 @@ const MinMax = (props: MinMaxProps) => {
 
     const handleSetValue = (value: string, usdValue?: string) => {
         mutateBalances()
-        const rounded = roundToDecimals(Number(value), fromCurrency?.decimals)
-        const sanitizedValue = value !== '' && !isNaN(Number(value))
-            ? (isScientific(rounded)
-                ? rounded.toFixed(fromCurrency?.decimals ?? 0).replace(/\.?0+$/, '')
-                : rounded.toString())
+        const truncatedValue = truncateToDecimals(value, fromCurrency.decimals)
+        const sanitizedValue = value !== '' && Number.isFinite(Number(value))
+            ? (isScientific(truncatedValue)
+                ? Number(truncatedValue).toFixed(fromCurrency.decimals).replace(/\.?0+$/, '')
+                : truncatedValue)
             : value
         if (isUsdMode && usdValue) {
             // Only skip sync if the amount will actually change,
@@ -90,7 +98,7 @@ const MinMax = (props: MinMaxProps) => {
     }
 
     const minIsFromLimits = limitsMinAmount !== undefined && Math.abs(minAmount - limitsMinAmount) < 1e-10;
-    const maxIsFromLimits = limitsMaxAmount !== undefined && Math.abs(maxAllowedAmount - limitsMaxAmount) < 1e-10;
+    const maxIsFromLimits = limitsMaxAmount !== undefined && maxAllowedAmount !== undefined && Math.abs(maxAllowedAmount - limitsMaxAmount) < 1e-10;
 
     // Quantize toward the safe side of each validation boundary: a backend
     // minimum rounds up (nearest could dip below it and fail immediately),
@@ -99,12 +107,10 @@ const MinMax = (props: MinMaxProps) => {
     const minValue = minIsFromLimits
         ? ceilToDecimals(minAmount, fromCurrency.decimals)
         : Number(truncateToDecimals(String(minAmount), fromCurrency.decimals));
-    const maxValue = Number(truncateToDecimals(String(maxAllowedAmount), fromCurrency.decimals));
+    const maxValue = maxAllowedAmount === undefined ? undefined : truncateToDecimals(String(maxAllowedAmount), fromCurrency.decimals);
 
     const minUsdFormatted = minIsFromLimits && limitsMinAmountInUsd != undefined ? ceilUsd(limitsMinAmountInUsd) : undefined;
     const maxUsdFormatted = maxIsFromLimits && limitsMaxAmountInUsd != undefined ? floorUsd(limitsMaxAmountInUsd) : undefined;
-    const maxRequiresGasData = depositMethod === 'wallet' && shouldPayGasWithTheToken
-    const maxIsDisabled = maxValue <= 0 || (maxRequiresGasData && (isGasLoading || !!gasError || !gasData))
 
     const handleSetMinAmount = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
@@ -121,8 +127,8 @@ const MinMax = (props: MinMaxProps) => {
     const handleSetMaxAmount = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
         e.stopPropagation()
-        if (maxIsDisabled) return
-        handleSetValue(maxValue.toString(), maxUsdFormatted)
+        if (maxValue === undefined) return
+        handleSetValue(maxValue, maxUsdFormatted)
     }
 
     const showMaxTooltip = !!(depositMethod === 'wallet' && walletBalance?.amount && shouldPayGasWithTheToken && (!limitsMaxAmount || walletBalance.amount < limitsMaxAmount))
@@ -149,9 +155,9 @@ const MinMax = (props: MinMaxProps) => {
                     <ActionButton
                         data-attr="max-amount"
                         label="Max"
-                        onMouseEnter={() => onActionHover(maxValue, maxUsdFormatted)}
+                        disabled={isWalletConnected && maxValue === undefined}
+                        onMouseEnter={() => onActionHover(maxValue === undefined ? undefined : Number(maxValue), maxUsdFormatted)}
                         onClick={handleSetMaxAmount}
-                        disabled={maxIsDisabled}
                     />
                 </TooltipTrigger>
                 {showMaxTooltip ? <TooltipContent className="pointer-events-none w-80 grow p-2 border-none! bg-secondary-300! text-xs rounded-xl!" side="top" align="start" alignOffset={-10}>
@@ -180,7 +186,7 @@ const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProps>(({ l
             onClick={onClick}
             type="button"
             disabled={disabled}
-            className="px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer enabled:active:animate-press-down"
+            className="px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer disabled:opacity-50 enabled:active:animate-press-down"
         >
             {label}
         </button>

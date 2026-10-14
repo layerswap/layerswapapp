@@ -29,7 +29,7 @@ export const CurrencySelectItemDisplay = memo((props: TokenItemProps) => {
     return <SelectItem className="group">
         <SelectItem.Logo
             imgSrc={item.logo}
-            altText={`${item.symbol} logo`}
+            altText={`${item.asset} logo`}
             className="rounded-full"
         />
         <NetworkTokenTitle item={item} route={route} direction={direction} type={type} hideBalances={hideBalances} />
@@ -131,7 +131,7 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                                         <ImageWithFallback
                                             key={`${t.symbol}-${index}`}
                                             src={t.logo}
-                                            alt={`${t.symbol} logo`}
+                                            alt={`${t.asset} logo`}
                                             height="16"
                                             width="16"
                                             loading="eager"
@@ -162,7 +162,7 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
 type SelectedCurrencyDisplayProps = {
     value: {
         logo: string
-        symbol: string
+        asset: string
     } | undefined;
     placeholder: string;
 }
@@ -230,13 +230,13 @@ export const GroupedTokenHeader = ({
         <SelectItem className="accordion-item-focused bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative pr-7 py-2">
             <SelectItem.Logo
                 imgSrc={mainToken.logo}
-                altText={`${mainToken.symbol} logo`}
+                altText={`${mainToken.asset} logo`}
                 className="rounded-full"
             />
             <SelectItem.Title>
                 <>
                     <span className="flex items-center gap-1.5 min-w-0">
-                        <span className="truncate">{mainToken.symbol}</span>
+                        <span className="truncate">{mainToken.asset}</span>
                     </span>
                     {hasLoadedBalances ? (
                         <div className={`${showNetworkIcons ? "flex flex-col space-y-0.5" : ""} ${hideTokenImages ? "invisible" : "visible"}`}>
@@ -299,7 +299,7 @@ export const SelectedCurrencyDisplay = (props: SelectedCurrencyDisplayProps) => 
         }
         {value ?
             <span className="ml-3 flex font-medium flex-auto space-x-1 text-primary-text items-center">
-                {value.symbol}
+                {value.asset}
             </span>
             :
             <span className="block font-medium text-primary-text-tertiary flex-auto items-center">
@@ -347,7 +347,7 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
                         </div>
                     </div>
                     <div className="ml-2 flex flex-col grow text-primary-text overflow-hidden min-w-0 max-w-3/4 group-[.exchange-picker]:max-w-full xs:max-w-[60px]"                    >
-                        <p className="text-base leading-5 font-medium">{token.symbol}</p>
+                        <p className="text-base leading-5 font-medium">{token.asset}</p>
                         <p className="text-secondary-text grow text-sm font-normal leading-4 truncate whitespace-nowrap">
                             {route.display_name}
                         </p>

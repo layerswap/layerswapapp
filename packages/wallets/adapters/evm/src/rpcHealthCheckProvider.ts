@@ -79,7 +79,9 @@ function createStore(): RpcHealthCheckStore {
     let probeGeneration = 0
 
     const check = async () => {
-        const { connector, isConnected } = getActiveConnector()
+        // The probe goes through the wallet, so it measures whichever chain the wallet is on;
+        // the verdict carries that chain so consumers can ignore it for any other network.
+        const { connector, isConnected, chainId } = getActiveConnector()
         if (!connector || !isConnected) return
 
         // Claim a generation synchronously, before any await — any context change
@@ -109,17 +111,7 @@ function createStore(): RpcHealthCheckStore {
                 ? Date.now() / 1000 - parseInt(tsHex, 16)
                 : Number.POSITIVE_INFINITY
 
-            const tooSlow = latencyMs > 2000
-            const tooStale = blockAgeSec > 60
-
-            if (tooSlow || tooStale) {
-                let reason = ''
-                if (tooSlow) reason += `Wallet RPC is slow (${latencyMs.toFixed(0)}ms). `
-                if (tooStale) reason += `Latest block is stale (${blockAgeSec.toFixed(0)}s old).`
-                setSnapshot({ health: { status: 'unhealthy', reason: reason.trim() } satisfies RpcHealth })
-                return
-            }
-            setSnapshot({ health: { status: 'healthy', latencyMs, blockAgeSec } satisfies RpcHealth })
+            setSnapshot({ health: { status: 'healthy', latencyMs, blockAgeSec, chainId } satisfies RpcHealth })
         } catch (e: any) {
             if (!isCurrent()) return
             // A wallet declining to serve the read method isn't an RPC health signal —
@@ -129,7 +121,7 @@ function createStore(): RpcHealthCheckStore {
                 return
             }
             const msg = e?.message || 'Unknown error from wallet RPC'
-            setSnapshot({ health: { status: 'unhealthy', reason: msg } satisfies RpcHealth })
+            setSnapshot({ health: { status: 'unhealthy', reason: msg, chainId } satisfies RpcHealth })
         }
     }
 

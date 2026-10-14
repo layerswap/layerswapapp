@@ -1,7 +1,7 @@
 packages:
   - packages/**
   - apps/*
-  - examples/widget-react-host
+  - eslint-plugins/*
 
 catalog:
   '@tanstack/react-query': 5.90.11

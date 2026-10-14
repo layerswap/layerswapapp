@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import useSWR from 'swr'
-import { ApiResponse } from '@/Models/ApiResponse'
+import type { ApiResponse } from '@layerswap/widget-types'
 import { NetworkRoute } from '@layerswap/widget-types';
 import LayerSwapApiClient from '@/lib/apiClients/layerSwapApiClient'
 import { resolveRoutesURLForSelectedToken } from '@/helpers/routes'
@@ -26,6 +26,7 @@ export default function useDepositAddressDestinations({ enabled = true }: Args =
             includes: { unmatched: false, unavailable: false, swaps: true },
             hasDepositAddress: true,
             useDepositAddressSwaps: true,
+            useFrontendSwap: true,
         })
     }, [enabled])
 
