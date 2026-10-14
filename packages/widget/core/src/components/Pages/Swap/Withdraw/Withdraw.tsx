@@ -97,7 +97,7 @@ const Withdraw: FC<{
         const maxAmount = resolveNativePayableAmount(
             walletBalanceAmount,
             gasData.maxFee ?? gasData.gas,
-            (gasData.balanceReserve ?? 0) + (gasData.reserve ?? 0),
+            gasData.reserve ?? 0,
             swapBasicData.source_token.decimals,
         );
         if (maxAmount <= 0) return;
@@ -124,7 +124,6 @@ const Withdraw: FC<{
         walletBalanceAmount,
         gasData?.gas,
         gasData?.maxFee,
-        gasData?.balanceReserve,
         gasData?.reserve,
         swapBasicData,
         refuel,

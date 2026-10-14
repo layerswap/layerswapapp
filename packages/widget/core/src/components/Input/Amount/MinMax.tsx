@@ -49,7 +49,7 @@ const MinMax = (props: MinMaxProps) => {
     const { gasData, gasError } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency, maxEstimationAmount, wallet)
 
     const gasAmount = gasError ? undefined : (gasData?.maxFee ?? gasData?.gas);
-    const gasReserve = gasError ? undefined : (gasData?.balanceReserve ?? 0) + (gasData?.reserve ?? 0);
+    const gasReserve = gasError ? undefined : gasData?.reserve;
 
     const native_currency = gasData?.token || from?.token
 

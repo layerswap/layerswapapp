@@ -11,9 +11,7 @@ export type GasWithToken = {
     gas: number,
     /** Maximum fee reserved for affordability checks, when it differs from the expected fee. */
     maxFee?: number,
-    /** Native-token balance that must remain after the transaction because of chain/account rules. */
-    balanceReserve?: number,
     token: Token
-    /** Native amount that must stay in the account after the transfer and fee (e.g. Solana's rent-exempt minimum). Not part of the fee. */
+    /** Native amount that must stay in the account after the transfer and fee due to chain/account rules (e.g. Solana rent or a Monad delegated-account reserve). Not part of the fee. */
     reserve?: number
 }

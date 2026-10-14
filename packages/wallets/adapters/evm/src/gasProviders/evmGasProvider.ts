@@ -13,7 +13,7 @@ import { resolveEVMGasPolicy } from "./evmGasPolicies";
 type ResolvedGas = {
     gas: number
     maxFee?: number
-    balanceReserve?: number
+    reserve?: number
 }
 
 export class EVMGasProvider implements GasProvider {
@@ -261,12 +261,12 @@ class getEthereumGas extends getEVMGas {
         const gas = Number(formatUnits(feeAmounts.estimatedFee, decimals))
         const maxFee = Number(formatUnits(feeAmounts.maximumFee, decimals))
         const accountBalanceReserve = resolveAccountBalanceReserve({ policy, accountCode })
-        const balanceReserve = Number(formatUnits(accountBalanceReserve, decimals))
+        const reserve = Number(formatUnits(accountBalanceReserve, decimals))
 
         return {
             gas,
             ...(policy.reserveMaximumFee ? { maxFee } : {}),
-            ...(balanceReserve > 0 ? { balanceReserve } : {}),
+            ...(reserve > 0 ? { reserve } : {}),
         }
     }
 

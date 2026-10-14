@@ -144,28 +144,28 @@ test('a balance that exactly covers the amount, fee and reserve has no gas warni
   assert.match(container.textContent, /Insufficient balance for gas/)
 })
 
-test('Adjust amount uses the maximum fee and retains both reserves across updates', async () => {
+test('Adjust amount uses the maximum fee and retains the required native balance across updates', async () => {
   state.balances[0].amount = 20
   state.swap.requested_amount = '19'
-  state.gasData = { gas: 0.01, maxFee: 0.02, balanceReserve: 10, reserve: 0.125, token }
+  state.gasData = { gas: 0.01, maxFee: 0.02, reserve: 10, token }
   await render()
   assert.match(container.textContent, /Insufficient balance for gas/)
   const adjust = () => [...container.querySelectorAll('button')].find(button => button.textContent === 'Adjust amount')
   await act(() => adjust().click())
-  assert.ok(Math.abs(Number(state.formValues.amount) - 9.8546) < 1e-6)
+  assert.ok(Math.abs(Number(state.formValues.amount) - 9.9796) < 1e-6)
   assert.equal(state.submittedValues.amount, state.formValues.amount)
   assert.equal(state.freshAttempts, 1)
 
-  state.gasData = { ...state.gasData, maxFee: 0.04, balanceReserve: 11 }
+  state.gasData = { ...state.gasData, maxFee: 0.04, reserve: 11 }
   await render()
   await act(() => adjust().click())
-  assert.ok(Math.abs(Number(state.formValues.amount) - 8.8342) < 1e-6)
+  assert.ok(Math.abs(Number(state.formValues.amount) - 8.9592) < 1e-6)
   assert.equal(state.freshAttempts, 2)
 })
 
 test('the gas warning uses the maximum fee when the expected fee is affordable', async () => {
   state.swap.requested_amount = '0.75'
-  state.gasData = { gas: 0.01, maxFee: 0.125, balanceReserve: 0.125, token }
+  state.gasData = { gas: 0.01, maxFee: 0.125, reserve: 0.125, token }
   await render()
   assert.doesNotMatch(container.textContent, /Insufficient balance for gas/)
 

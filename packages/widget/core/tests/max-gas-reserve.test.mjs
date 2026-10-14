@@ -114,17 +114,17 @@ test('repeated Max clicks cannot remove the reserve while the new amount is bein
   assert.equal(formik.values.amount, '0.9796')
 })
 
-test('Max uses the maximum fee and preserves both account and native reserves', async () => {
+test('Max uses the maximum fee and preserves the required native balance', async () => {
   state.balances[0].amount = 20
   await render()
-  await settle(state.requests[0], 0.01, { maxFee: 0.02, balanceReserve: 10, reserve: 0.125 })
+  await settle(state.requests[0], 0.01, { maxFee: 0.02, reserve: 10 })
   await act(() => maxButton().click())
-  assert.ok(Math.abs(Number(formik.values.amount) - 9.8546) < 1e-12)
+  assert.ok(Math.abs(Number(formik.values.amount) - 9.9796) < 1e-12)
   assert.equal(maxButton().disabled, true)
 
-  await settle(state.requests[1], 0.01, { maxFee: 0.02, balanceReserve: 10, reserve: 0.125 })
+  await settle(state.requests[1], 0.01, { maxFee: 0.02, reserve: 10 })
   await act(() => maxButton().click())
-  assert.ok(Math.abs(Number(formik.values.amount) - 9.8546) < 1e-12)
+  assert.ok(Math.abs(Number(formik.values.amount) - 9.9796) < 1e-12)
 })
 
 test('an estimate from the previous account cannot enable Max for the current account', async () => {

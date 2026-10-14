@@ -32,7 +32,7 @@ const useOutOfGas = ({
     }
 
     const numAmount = Number(amount)
-    const gasAndReserve = (gasData.maxFee ?? gasData.gas) + (gasData.balanceReserve ?? 0) + (gasData.reserve ?? 0)
+    const gasAndReserve = (gasData.maxFee ?? gasData.gas) + (gasData.reserve ?? 0)
     const totalNeeded = numAmount + gasAndReserve
     const balanceCoversAmount = numAmount <= balance
     const balanceExceedsMaxWithGas = balance > (maxAllowedAmount + gasAndReserve)
