@@ -292,3 +292,51 @@ test('50% waits for a spendable wallet balance instead of using a route limit as
   await render()
   assert.equal(container.querySelector('[data-attr="half-amount"]').disabled, true)
 })
+
+test('the group is disabled only until at least one preset becomes available', async () => {
+  state.account = undefined
+  state.wallets = []
+  props.limitsMinAmount = undefined
+  props.limitsMaxAmount = undefined
+  await render()
+
+  const group = container.querySelector('[role="group"][aria-label="Amount presets"]')
+  assert.equal(group.getAttribute('aria-disabled'), 'true')
+  assert.equal(group.querySelectorAll('button:disabled').length, 3)
+
+  props.limitsMinAmount = 0.001
+  await render()
+  assert.equal(group.getAttribute('aria-disabled'), 'false')
+  assert.equal(group.querySelectorAll('button:disabled').length, 2)
+  await act(() => container.querySelector('[data-attr="min-amount"]').click())
+  assert.equal(formik.values.amountMode, 'min')
+  assert.equal(formik.values.amount, '0.001')
+})
+
+for (const mode of ['min', 'half', 'max']) {
+  test(`selected ${mode} can still be turned off when all preset data becomes unavailable`, async () => {
+    await render()
+    await settle(state.requests[0], 0.01)
+    const button = container.querySelector(`[data-attr="${mode}-amount"]`)
+    await act(() => button.click())
+    const selectedAmount = formik.values.amount
+
+    state.balances = undefined
+    props.limitsMinAmount = undefined
+    props.limitsMaxAmount = undefined
+    await render()
+
+    const group = container.querySelector('[role="group"][aria-label="Amount presets"]')
+    assert.equal(group.getAttribute('aria-disabled'), 'false')
+    assert.equal(group.querySelectorAll('button:disabled').length, 2)
+    assert.equal(button.disabled, false)
+    assert.equal(button.getAttribute('aria-pressed'), 'true')
+    assert.equal(formik.values.amount, selectedAmount)
+
+    await act(() => button.click())
+    assert.equal(formik.values.amountMode, 'manual')
+    assert.equal(formik.values.amount, selectedAmount)
+    assert.equal(group.getAttribute('aria-disabled'), 'true')
+    assert.equal(group.querySelectorAll('button:disabled').length, 3)
+  })
+}

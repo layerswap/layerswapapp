@@ -70,6 +70,12 @@ const MinMax = (props: MinMaxProps) => {
     const halfValue = walletFlow && walletBalance && maxAllowedAmount !== undefined
         ? resolvePresetAmount('half', maxAllowedAmount, 0, fromCurrency.decimals) : undefined;
 
+    // A selected preset stays available so it can be turned off while data refreshes.
+    const minDisabled = values.amountMode !== 'min' && minValue === undefined;
+    const halfDisabled = values.amountMode !== 'half' && halfValue === undefined;
+    const maxDisabled = values.amountMode !== 'max' && maxValue === undefined;
+    const allPresetsDisabled = minDisabled && halfDisabled && maxDisabled;
+
     const handleSetValue = (mode: AmountPreset, value: string, usdValue?: string) => {
         void Promise.resolve(mutateBalances()).catch(() => undefined)
         const truncatedValue = truncateToDecimals(value, fromCurrency.decimals)
@@ -108,28 +114,30 @@ const MinMax = (props: MinMaxProps) => {
         handleSetValue(mode, value, usdValue)
     }
 
-    const showMaxTooltip = !!(depositMethod === 'wallet' && walletBalance?.amount && shouldPayGasWithTheToken && (!limitsMaxAmount || walletBalance.amount < limitsMaxAmount))
+    const showMaxTooltip = !maxDisabled && !!(depositMethod === 'wallet' && walletBalance?.amount && shouldPayGasWithTheToken && (!limitsMaxAmount || walletBalance.amount < limitsMaxAmount))
 
     if (!from || !fromCurrency)
         return null;
 
     return (
         <LayoutGroup id={layoutId}>
-            <div role="group" aria-label="Amount presets" className="relative isolate inline-flex gap-0.5 rounded-lg bg-secondary-300/35 p-0.5 text-xs font-medium leading-4" onMouseLeave={() => onActionHover(undefined)}>
+            <div role="group" aria-label="Amount presets" aria-disabled={allPresetsDisabled} className="group/presets relative isolate inline-flex gap-0.5 rounded-lg bg-secondary-300/35 p-0.5 text-xs font-medium leading-4 transition-opacity duration-150 aria-disabled:opacity-40 motion-reduce:transition-none" onMouseLeave={() => onActionHover(undefined)}>
                 <ActionButton
                     data-attr="min-amount"
                     label="Min"
                     aria-pressed={values.amountMode === 'min'}
-                    disabled={values.amountMode !== 'min' && minValue === undefined}
+                    disabled={minDisabled}
                     onMouseEnter={() => onActionHover(minValue === undefined ? undefined : Number(minValue), minUsdFormatted)}
+                    onMouseLeave={() => onActionHover(undefined)}
                     onClick={e => selectPreset(e, 'min', minValue, minUsdFormatted)}
                 />
                 <ActionButton
                     data-attr="half-amount"
                     label="50%"
                     aria-pressed={values.amountMode === 'half'}
-                    disabled={values.amountMode !== 'half' && halfValue === undefined}
+                    disabled={halfDisabled}
                     onMouseEnter={() => onActionHover(halfValue === undefined ? undefined : Number(halfValue))}
+                    onMouseLeave={() => onActionHover(undefined)}
                     onClick={e => selectPreset(e, 'half', halfValue)}
                 />
                 <Tooltip disableHoverableContent={true}>
@@ -138,8 +146,9 @@ const MinMax = (props: MinMaxProps) => {
                             data-attr="max-amount"
                             label="Max"
                             aria-pressed={values.amountMode === 'max'}
-                            disabled={values.amountMode !== 'max' && maxValue === undefined}
+                            disabled={maxDisabled}
                             onMouseEnter={() => onActionHover(maxValue === undefined ? undefined : Number(maxValue), maxUsdFormatted)}
+                            onMouseLeave={() => onActionHover(undefined)}
                             onClick={e => selectPreset(e, 'max', maxValue, maxUsdFormatted)}
                         />
                     </TooltipTrigger>
@@ -169,11 +178,11 @@ const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProps>(({ l
         <button
             {...rest}
             ref={ref}
-            onMouseEnter={onMouseEnter}
+            onMouseEnter={disabled ? undefined : onMouseEnter}
             onClick={onClick}
             type="button"
             disabled={disabled}
-            className="relative min-w-11 rounded-md px-2 py-0.5 text-secondary-text transition-colors duration-150 enabled:hover:aria-[pressed=false]:bg-secondary-300/50 enabled:hover:aria-[pressed=false]:text-primary-text aria-pressed:text-secondary-700 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-text disabled:opacity-40 motion-reduce:transition-none"
+            className="relative min-w-11 rounded-md px-2 py-0.5 text-secondary-text transition-colors duration-150 enabled:hover:aria-[pressed=false]:bg-secondary-300/50 enabled:hover:aria-[pressed=false]:text-primary-text aria-pressed:text-secondary-700 enabled:cursor-pointer disabled:cursor-default focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-text disabled:text-secondary-text/40 group-aria-disabled/presets:disabled:text-secondary-text motion-reduce:transition-none"
         >
             {selected ? <motion.span
                 aria-hidden="true"
