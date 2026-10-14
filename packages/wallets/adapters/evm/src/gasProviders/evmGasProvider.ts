@@ -1,7 +1,7 @@
 import { NetworkType } from '@layerswap/widget-types';
 import { Network, Token } from "@layerswap/widget-types";
 import { GasProvider, GasProps } from "@layerswap/widget-types";
-import { PublicClient, TransactionSerializedEIP1559, createPublicClient, encodeFunctionData, serializeTransaction, formatUnits, erc20Abi, parseGwei } from "viem";
+import { PublicClient, TransactionSerializedEIP1559, createPublicClient, encodeFunctionData, serializeTransaction, formatUnits, erc20Abi } from "viem";
 import { publicActionsL2 } from 'viem/op-stack'
 import resolveChain from "../evmUtils/resolveChain";
 import NetworkSettings from "../NetworkSettings";
@@ -9,6 +9,10 @@ import { ErrorHandler } from "@layerswap/widget-types";
 import { resolveFallbackTransport } from "../evmUtils/resolveTransports";
 import { calculateGasFeeAmounts, resolveAccountBalanceReserve } from "./evmGasMath";
 import { resolveEVMGasPolicy } from "./evmGasPolicies";
+import { resolveEVMFeeData } from "./resolveEVMFeeData";
+import { resolveEVMTransactionRequest } from "../transferProvider/resolveEVMTransactionRequest";
+
+type GasTransaction = ReturnType<typeof resolveEVMTransactionRequest>
 
 type ResolvedGas = {
     gas: number
@@ -21,11 +25,12 @@ export class EVMGasProvider implements GasProvider {
         return network.type === NetworkType.EVM && !!network.token
     }
 
-    getGas = async ({ address, network, token, recipientAddress = '0x2fc617e933a52713247ce25730f6695920b3befe' }: GasProps) => {
+    getGas = async ({ address, network, token, recipientAddress, callData, amount, amountInBaseUnits }: GasProps) => {
 
         const chainId = Number(network?.chain_id)
+        const destination = recipientAddress ?? '0x2fc617e933a52713247ce25730f6695920b3befe'
 
-        if (!network || !address || !chainId || !recipientAddress || !network.token) {
+        if (!network || !address || !chainId || !destination || !network.token) {
             return
         }
 
@@ -35,7 +40,7 @@ export class EVMGasProvider implements GasProvider {
 
             const publicClient = createPublicClient({
                 chain: resolveChain(network),
-                transport: resolveFallbackTransport(network.nodes),
+                transport: resolveFallbackTransport(network.nodes?.length > 0 ? network.nodes : [network.node_url]),
             })
 
             const getGas = network?.metadata?.evm_oracle_contract ? getOptimismGas : getEthereumGas
@@ -48,8 +53,13 @@ export class EVMGasProvider implements GasProvider {
                     account: address as `0x${string}`,
                     from: network,
                     currency: token,
-                    destination: recipientAddress as `0x${string}`,
-                    nativeToken: network.token
+                    destination: destination as `0x${string}`,
+                    nativeToken: network.token,
+                    transaction: recipientAddress != null && callData != null && amount != null ? resolveEVMTransactionRequest({
+                        network, token, amount, amountInBaseUnits, callData,
+                        depositAddress: recipientAddress,
+                        account: address as `0x${string}`,
+                    }) : undefined,
                 }
             )
 
@@ -84,6 +94,7 @@ abstract class getEVMGas {
     protected currency: Token
     protected destination: `0x${string}`
     protected nativeToken: Token
+    protected transaction?: GasTransaction
     constructor(
         {
             publicClient,
@@ -94,6 +105,7 @@ abstract class getEVMGas {
             currency,
             destination,
             nativeToken,
+            transaction,
         }: {
             publicClient: PublicClient,
             chainId: number,
@@ -103,6 +115,7 @@ abstract class getEVMGas {
             currency: Token,
             destination: `0x${string}`,
             nativeToken: Token,
+            transaction?: GasTransaction,
         }
     ) {
         this.publicClient = publicClient
@@ -113,86 +126,34 @@ abstract class getEVMGas {
         this.currency = currency
         this.destination = destination
         this.nativeToken = nativeToken
+        this.transaction = transaction
     }
 
     abstract resolveGas(): Promise<ResolvedGas | undefined>
 
     protected async resolveFeeData() {
+        return resolveEVMFeeData(this.publicClient, this.from)
+    }
 
-        const [gasPrice, feesPerGas] = await Promise.all([
-            this.getGasPrice(),
-            this.estimateFeesPerGas()
-        ]);
+    protected async estimateGasLimit(accountBalanceReserve = 0n) {
+        if (!this.transaction) {
+            return this.contract_address ? this.estimateERC20GasLimit() : this.estimateNativeGasLimit()
+        }
 
-        let maxPriorityFeePerGas = feesPerGas?.maxPriorityFeePerGas
-        if (!maxPriorityFeePerGas) maxPriorityFeePerGas = await this.estimateMaxPriorityFeePerGas()
-
-        let maxFeePerGas = feesPerGas?.maxFeePerGas
-
-        const minPriorityFeeGwei = NetworkSettings.KnownSettings[this.from.name]?.MinPriorityFeePerGasInGwei
-        if (minPriorityFeeGwei && maxPriorityFeePerGas !== undefined && maxFeePerGas !== undefined) {
-            const minPriorityFee = parseGwei(minPriorityFeeGwei.toString())
-            if (maxPriorityFeePerGas < minPriorityFee) {
-                const diff = minPriorityFee - maxPriorityFeePerGas
-                maxPriorityFeePerGas = minPriorityFee
-                maxFeePerGas = maxFeePerGas + diff
+        if (this.transaction.value > 0n && accountBalanceReserve > 0n) {
+            const balance = await this.publicClient.getBalance({ address: this.account })
+            const minimumBalance = this.transaction.value + accountBalanceReserve
+            if (balance < minimumBalance) {
+                // Quote the exact call even when its value would violate the reserve.
+                // Submission still estimates against the account's actual balance.
+                return this.publicClient.estimateGas({
+                    ...this.transaction,
+                    stateOverride: [{ address: this.account, balance: minimumBalance }],
+                })
             }
         }
 
-        return {
-            gasPrice,
-            maxFeePerGas,
-            maxPriorityFeePerGas: maxPriorityFeePerGas
-        }
-
-    }
-
-    private async getGasPrice() {
-        try {
-            return await this.publicClient.getGasPrice()
-
-        } catch (e) {
-            const error = new Error(e)
-            error.cause = e;
-            ErrorHandler({
-                type: 'GasPriceError',
-                message: error.message,
-                name: error.name,
-                stack: error.stack,
-                cause: error.cause
-            });
-        }
-    }
-    private async estimateFeesPerGas() {
-        try {
-            return await this.publicClient.estimateFeesPerGas()
-
-        } catch (e) {
-            const error = new Error(e)
-            error.cause = e;
-            ErrorHandler({
-                type: 'FeesPerGasError',
-                message: error.message,
-                name: error.name,
-                stack: error.stack,
-                cause: error.cause
-            });
-        }
-    }
-    private async estimateMaxPriorityFeePerGas() {
-        try {
-            return await this.publicClient.estimateMaxPriorityFeePerGas()
-        } catch (e) {
-            const error = new Error(e)
-            error.cause = e;
-            ErrorHandler({
-                type: 'MaxPriorityFeePerGasError',
-                message: error.message,
-                name: error.name,
-                stack: error.stack,
-                cause: error.cause
-            });
-        }
+        return this.publicClient.estimateGas(this.transaction)
     }
 
     protected async estimateNativeGasLimit() {
@@ -237,14 +198,16 @@ abstract class getEVMGas {
 class getEthereumGas extends getEVMGas {
     resolveGas = async () => {
         const policy = resolveEVMGasPolicy(this.chainId)
-        const [feeData, estimatedGasLimit, accountCode] = await Promise.all([
+        const accountReserve = policy.accountBalanceReserve
+            ? this.publicClient.getCode({ address: this.account }).then(accountCode =>
+                resolveAccountBalanceReserve({ policy, accountCode }))
+            : Promise.resolve(0n)
+        const [feeData, estimatedGasLimit, accountBalanceReserve] = await Promise.all([
             this.resolveFeeData(),
-            this.contract_address
-                ? this.estimateERC20GasLimit()
-                : this.estimateNativeGasLimit(),
-            policy.accountBalanceReserve
-                ? this.publicClient.getCode({ address: this.account })
-                : Promise.resolve(undefined),
+            this.transaction && this.transaction.value > 0n && policy.accountBalanceReserve
+                ? accountReserve.then(reserve => this.estimateGasLimit(reserve))
+                : this.estimateGasLimit(),
+            accountReserve,
         ])
 
         const feeAmounts = calculateGasFeeAmounts({
@@ -260,7 +223,6 @@ class getEthereumGas extends getEVMGas {
         const decimals = NetworkSettings.KnownSettings[this.from.name]?.FeeParsingDecimalPlaces || this.nativeToken?.decimals
         const gas = Number(formatUnits(feeAmounts.estimatedFee, decimals))
         const maxFee = Number(formatUnits(feeAmounts.maximumFee, decimals))
-        const accountBalanceReserve = resolveAccountBalanceReserve({ policy, accountCode })
         const reserve = Number(formatUnits(accountBalanceReserve, decimals))
 
         return {
@@ -279,15 +241,13 @@ export default class getOptimismGas extends getEVMGas {
 
     client: any = createPublicClient({
         chain: this.chain,
-        transport: resolveFallbackTransport(this.from.nodes),
+        transport: resolveFallbackTransport(this.from.nodes?.length > 0 ? this.from.nodes : [this.from.node_url]),
     }).extend(publicActionsL2())
 
     resolveGas = async () => {
         const feeData = await this.resolveFeeData()
 
-        const estimatedGasLimit = this.contract_address ?
-            await this.estimateERC20GasLimit()
-            : await this.estimateNativeGasLimit()
+        const estimatedGasLimit = await this.estimateGasLimit()
 
         const multiplier = feeData.maxFeePerGas || feeData.gasPrice
 
@@ -306,7 +266,13 @@ export default class getOptimismGas extends getEVMGas {
         const amount = BigInt(1000000000000)
         let serializedTransaction: TransactionSerializedEIP1559
 
-        if (this.contract_address) {
+        if (this.transaction) {
+            serializedTransaction = serializeTransaction({
+                ...this.transaction,
+                type: 'eip1559',
+            }) as TransactionSerializedEIP1559
+        }
+        else if (this.contract_address) {
             let encodedData = encodeFunctionData({
                 abi: erc20Abi,
                 functionName: "transfer",

@@ -4,6 +4,7 @@ import resolveChain from "../evmUtils/resolveChain";
 import { resolveFallbackTransport } from "../evmUtils/resolveTransports";
 import { buildTransactionGasParameters } from "./evmGasMath";
 import { resolveEVMGasPolicy } from "./evmGasPolicies";
+import { resolveEVMFeeData } from "./resolveEVMFeeData";
 
 type ResolveEVMTransactionGasParametersArgs = {
     network: Network
@@ -26,12 +27,12 @@ export const resolveEVMTransactionGasParameters = async ({
 
     const publicClient = createPublicClient({
         chain: resolveChain(network),
-        transport: resolveFallbackTransport(network.nodes),
+        transport: resolveFallbackTransport(network.nodes?.length > 0 ? network.nodes : [network.node_url]),
     })
 
     const [estimatedGas, feesPerGas] = await Promise.all([
         publicClient.estimateGas({ account, to, data, value }),
-        publicClient.estimateFeesPerGas(),
+        resolveEVMFeeData(publicClient, network),
     ])
 
     const { maxFeePerGas, maxPriorityFeePerGas } = feesPerGas
