@@ -14,7 +14,7 @@ import ts from 'typescript';
 // Exercise presence with motion enabled. The main timeline suite verifies
 // reduced motion; it cannot catch controls unmounting before their exit ends.
 const dom = new JSDOM('<div id="root"></div>', { pretendToBeVisual: true });
-for (const name of ['window', 'document', 'HTMLElement', 'Element', 'SVGElement', 'Node', 'getComputedStyle', 'customElements']) {
+for (const name of ['window', 'document', 'HTMLElement', 'Element', 'SVGElement', 'Node', 'NodeList', 'getComputedStyle', 'customElements']) {
     globalThis[name] = dom.window[name];
 }
 globalThis.requestAnimationFrame = dom.window.requestAnimationFrame.bind(dom.window);
@@ -650,6 +650,85 @@ test('inserting approval and refund rows preserves transfer row identity', async
         assert.equal(waiting.querySelector('.step-label-shimmer'), null);
         await act(() => new Promise(resolve => setTimeout(resolve, 700)));
         assert.equal(row.querySelector('[style]').style.transform, 'none');
+    } finally {
+        await act(() => root.unmount());
+    }
+});
+
+test('step labels animate changes while descriptions update immediately without animation', async () => {
+    const root = createRoot(container);
+    const scene = (name, confirmations) => React.createElement(React.StrictMode, null,
+        React.createElement(Steps, { steps: [{
+            id: 'input_transfer', name, status: 'current',
+            description: React.createElement('span', null, 'Confirmations ', React.createElement('strong', null, confirmations)),
+        }] }));
+    try {
+        await act(() => root.render(scene('Processing your deposit', '1/12')));
+        const label = container.querySelector('[data-step-text]');
+        const description = label.nextElementSibling;
+        const counter = description.querySelector('strong');
+        assert.equal(label.style.opacity, '', 'initial text appears immediately');
+        assert.equal(description.style.opacity, '');
+        await act(() => root.render(scene('Confirming your deposit', '2/12')));
+        assert.equal(description.textContent, 'Confirmations 2/12');
+        await act(() => new Promise(resolve => setTimeout(resolve, 60)));
+        assert.ok(Number(label.style.opacity) > 0 && Number(label.style.opacity) < 1);
+        assert.match(label.style.transform, /translateY/);
+        assert.notEqual(label.style.filter, 'blur(0px)');
+        assert.equal(description.getAttribute('style'), null);
+        assert.equal(description.closest('[data-step-text]'), null);
+        assert.equal(container.querySelector('.step-label-shimmer'), label);
+        assert.equal(description.querySelector('strong'), counter);
+        await settle();
+        await act(() => root.render(scene('Confirming your deposit', '2/12')));
+        await act(() => new Promise(resolve => setTimeout(resolve, 60)));
+        assert.equal(label.style.opacity, '1', 'identical polling results do not replay the animation');
+        assert.equal(label.style.transform, 'none');
+        for (const confirmations of ['3/12', '4/12', '5/12']) {
+            await act(() => root.render(scene('Confirming your deposit', confirmations)));
+        }
+        await settle();
+        assert.equal(description.textContent, 'Confirmations 5/12');
+        assert.equal(description.getAttribute('style'), null);
+        assert.equal(label.style.opacity, '1', 'description updates do not animate the label');
+        assert.equal(description.querySelector('strong'), counter);
+        await act(() => root.render(React.createElement(React.StrictMode, null,
+            React.createElement(Steps, { steps: [{ id: 'input_transfer', name: 'Deposit confirmed', status: 'complete' }] }))));
+        await settle();
+        assert.equal(description.isConnected, false);
+    } finally {
+        await act(() => root.unmount());
+    }
+});
+
+test('header descriptions update immediately without animating or restarting the timer or title', async () => {
+    const root = createRoot(container);
+    let setSeconds;
+    let mounts = 0;
+    function Timer() {
+        const [seconds, update] = React.useState(10);
+        setSeconds = update;
+        React.useEffect(() => { mounts++; }, []);
+        return React.createElement('time', null, `${seconds}s`);
+    }
+    try {
+        await act(() => root.render(React.createElement(TransferStatusHeader, {
+            title: 'Transfer in progress', progress: 20, description: React.createElement(Timer),
+        })));
+        const timer = container.querySelector('time');
+        const text = timer.parentElement;
+        const title = container.querySelector('[data-transfer-title] span');
+        await act(() => setSeconds(11));
+        assert.equal(timer.textContent, '11s');
+        assert.equal(timer.closest('[data-step-text]'), null);
+        await act(() => new Promise(resolve => setTimeout(resolve, 60)));
+        assert.equal(text.getAttribute('style'), null);
+        assert.equal(title.style.opacity, '1');
+        await settle();
+        assert.equal(timer.textContent, '11s');
+        assert.equal(container.querySelector('time'), timer);
+        assert.equal(mounts, 1);
+        assert.equal(text.getAttribute('style'), null);
     } finally {
         await act(() => root.unmount());
     }

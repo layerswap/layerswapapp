@@ -606,6 +606,7 @@ function createSwapHistoryHarness(fetcher, { onCreate, selectedAccount } = {}) {
         '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
         './TransferStatusHeader': loadSource(`${withdraw}Presentation/TransferStatusHeader.tsx`, {
             ...motion,
+            './StepText': { stepTextTransition: {} },
             '../Processing/gauge': { Gauge: empty },
         }),
         '../Processing/types': progressTypes,

@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion';
 import { ProgressStatus, type StatusStep } from './types';
 import { StepTransactionLink } from './StepTransactionLink';
+import { StepText } from '../Presentation/StepText';
 
 const completionSpring = {
     type: 'spring',
@@ -104,7 +105,7 @@ function Step({ step }: { step: StatusStep }) {
         >
             <StepMarker step={step} />
             <div className="min-w-0 break-words">
-                <span
+                <StepText
                     className={clsx('block text-sm font-medium leading-5', {
                         'step-label-shimmer': active,
                         'text-primary': step.status === ProgressStatus.Current,
@@ -119,7 +120,7 @@ function Step({ step }: { step: StatusStep }) {
                     })}
                 >
                     {step.name}
-                </span>
+                </StepText>
                 {step.description && (
                     <div className="text-xs leading-4 text-secondary-text">
                         {step.description}

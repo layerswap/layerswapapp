@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion';
 import { Gauge } from '../Processing/gauge';
+import { stepTextTransition } from './StepText';
 
 export function TransferStatusHeader({
     title,
@@ -64,10 +65,7 @@ export function TransferStatusHeader({
                                     y: -4,
                                     filter: 'blur(2px)',
                                 }}
-                                transition={{
-                                    duration: 0.15,
-                                    ease: [0.42, 0, 0.58, 1],
-                                }}
+                                transition={stepTextTransition}
                             >
                                 {title}
                             </motion.span>
