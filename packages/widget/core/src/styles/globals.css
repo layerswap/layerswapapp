@@ -568,12 +568,12 @@ padding: calc(var(--number-flow-mask-height, 0.25em) / 2) 0;
     background-repeat: no-repeat;
     background-clip: text;
     color: transparent;
-    animation: step-label-shimmer 1.6s linear infinite;
+    animation: step-label-shimmer 4s linear infinite;
   }
 }
 
 @keyframes step-label-shimmer {
-  /* Move one highlight fully across the label, resetting only while offscreen. */
-  from { background-position: 120% 0; }
-  to { background-position: -20% 0; }
+  /* Sweep for 1.6s, then pause offscreen for 2.4s before repeating. */
+  0% { background-position: 120% 0; }
+  40%, 100% { background-position: -20% 0; }
 }
