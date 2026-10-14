@@ -65,6 +65,7 @@ export function DepositWorkflowView({
         error &&
         workflowActions[currentStepIndex]?.status !== 'pending';
     const steps: StatusStep[] = workflowActions.map((action, index) => ({
+        id: `action:${action.step}`,
         name: getDepositActionLabel(action),
         status:
             action.status === 'completed'
@@ -118,6 +119,7 @@ export function DepositWorkflowView({
     }
     if (hasDeliveryStep) {
         steps.push({
+            id: 'output_transfer',
             name: `${completed ? 'Received' : 'Receive'} ${receiveAmount ? `${truncateDecimals(receiveAmount, destinationToken.precision ?? destinationToken.decimals)} ` : ''}${destinationToken.asset}`,
             status: completed
                 ? ProgressStatus.Complete

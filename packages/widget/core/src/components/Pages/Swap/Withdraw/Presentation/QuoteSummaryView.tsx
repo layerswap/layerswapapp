@@ -8,7 +8,7 @@ import type { Quote } from '@/lib/apiClients/layerSwapApiClient';
 import { Address } from '@/lib/address/Address';
 import clsx from 'clsx';
 import { ChevronDown } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { SwapValues } from '../../Form/FeeDetails';
 export function QuoteSummaryView({
     quoteData,
@@ -37,6 +37,13 @@ export function QuoteSummaryView({
     detailsButton: ReactNode;
     compact?: boolean;
 }) {
+    // Preserve the full summary's contents while its grid collapses. A polling
+    // update can reset isOpen at the same time as compact; replacing the gas row
+    // with the taller disclosure row would otherwise jump before the collapse.
+    const [lastExpanded, setLastExpanded] = useState(isOpen);
+    if (!compact && lastExpanded !== isOpen) setLastExpanded(isOpen);
+    const summaryOpen = compact ? lastExpanded : isOpen;
+
     return (
         <div
             style={swapFlowTransitionStyle}
@@ -103,9 +110,9 @@ export function QuoteSummaryView({
             >
                 <div className="min-h-0 overflow-hidden">
                     {slippage}
-                    {isOpen && gasFee}
+                    {summaryOpen && gasFee}
                     <div
-                        className={`${isOpen ? 'hidden' : ''} flex flex-wrap items-center w-full justify-between gap-2 px-2 py-3`}
+                        className={`${summaryOpen ? 'hidden' : ''} flex flex-wrap items-center w-full justify-between gap-2 px-2 py-3`}
                     >
                         {detailsButton}
 
@@ -119,7 +126,7 @@ export function QuoteSummaryView({
                             }}
                             className="ml-auto flex shrink-0 items-center text-secondary-text text-sm whitespace-nowrap gap-0.5 hover:text-primary-text"
                             aria-label="See details"
-                            aria-expanded={!!isOpen}
+                            aria-expanded={!!summaryOpen}
                         >
                             <span>See details</span>
                             <ChevronDown className="h-3.5 w-3.5" />

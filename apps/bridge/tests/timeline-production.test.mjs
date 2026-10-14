@@ -67,7 +67,8 @@ const addressModule = loadSource('../../../utils/src/address/Address.ts', {
 });
 const { useGaslessPreferenceStore } = loadSource('stores/gaslessPreferenceStore.ts', { zustand: coreRequire('zustand') });
 const motion = {
-    'framer-motion': { motion: { div: childrenOnly }, AnimatePresence: childrenOnly, useIsPresent: () => true },
+    '../Processing/StepsComponent': { StepsPanelProvider: childrenOnly },
+    'framer-motion': { motion: { div: childrenOnly, span: childrenOnly }, AnimatePresence: childrenOnly, useIsPresent: () => true },
     '@/hooks/useHydratedReducedMotion': { useHydratedReducedMotion: () => false },
     './swapFlowAnimation': loadSource(`${withdraw}Presentation/swapFlowAnimation.ts`),
 };
@@ -574,6 +575,7 @@ function createSwapHistoryHarness(fetcher, { onCreate, selectedAccount } = {}) {
         '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
         '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
         './TransferStatusHeader': loadSource(`${withdraw}Presentation/TransferStatusHeader.tsx`, {
+            ...motion,
             '../Processing/gauge': { Gauge: empty },
         }),
         '../Processing/types': progressTypes,

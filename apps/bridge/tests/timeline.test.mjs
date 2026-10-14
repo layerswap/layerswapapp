@@ -11,6 +11,7 @@ import { renderToStaticMarkup, renderToString } from 'react-dom/server';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
+const widgetRequire = createRequire(new URL('../../../packages/widget/core/package.json', import.meta.url));
 const temporary = mkdtempSync(join(directory, '.timeline-'));
 process.on('exit', () => rmSync(temporary, { recursive: true, force: true }));
 const dom = new JSDOM(
@@ -123,7 +124,6 @@ const result = await build({
         'react-dom',
         'react-dom/*',
         'next/head',
-        'framer-motion',
     ],
     banner: {
         js: "import { createRequire as _createRequire } from 'node:module'; const require = _createRequire(import.meta.url);",
@@ -136,6 +136,10 @@ const result = await build({
         {
             name: 'workspace-packages',
             setup(builder) {
+                builder.onResolve({ filter: /^framer-motion$/ }, () => ({
+                    path: widgetRequire.resolve('framer-motion'),
+                    external: true,
+                }));
                 builder.onResolve({ filter: /^next\/(head|router)$/ }, (args) => ({
                     path: require.resolve(args.path),
                     external: true,
@@ -575,7 +579,7 @@ test('reduced-motion hydration matches the server markup in both modes', async (
     const errors = [];
     const quotes = scenarios.find((s) => s.id === 'quote-loading');
     for (const mode of ['component', 'modal']) {
-        for (const milestone of [scenarios[0].milestones[0], quotes.milestones.at(-1)]) {
+        for (const milestone of [scenarios[0].milestones[0], scenarios[0].milestones[4], scenarios[0].milestones.at(-1), quotes.milestones.at(-1)]) {
             const element = preview(milestone.snapshot, milestone.at, mode);
             container.innerHTML = renderToString(element);
             let root;
@@ -612,6 +616,9 @@ test('all mounted previews ignore clicks and keyboard activation without request
                         assert.equal(panel.style.height, 'auto', `${label}: reduced motion shows steps immediately`);
                         assert.equal(panel.style.opacity, '1', label);
                         assert.equal(panel.parentElement.closest('[data-steps-panel]'), null, `${label}: no nested panel animations`);
+                        const heading = panel.querySelector('[data-transfer-title]');
+                        assert.equal(heading.querySelector('[style]'), null, `${label}: reduced motion has no heading translation, blur or delay`);
+                        assert.equal(heading.textContent, heading.parentElement.getAttribute('aria-label'), `${label}: heading immediately reflects the latest state`);
                     }
                     const before = container.textContent;
                     displayed.set(m.id, before);
@@ -1225,7 +1232,7 @@ test('viewer filters scenario groups, resets selections and preserves strictly e
     assert.equal(button('← Previous').disabled, true);
     assert.equal(
         container
-            .querySelector('[aria-current="step"]')
+            .querySelector('button[aria-current="step"]')
             .textContent.includes('Confirming deposit'),
         true,
     );

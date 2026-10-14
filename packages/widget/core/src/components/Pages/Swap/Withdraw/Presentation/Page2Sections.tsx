@@ -1,4 +1,4 @@
-import { motion, useIsPresent } from 'framer-motion';
+import { AnimatePresence, motion, useIsPresent } from 'framer-motion';
 import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion';
 import {
     swapFlowTransition,
@@ -6,7 +6,6 @@ import {
 } from './swapFlowAnimation';
 import type { ReactNode } from 'react';
 import { WalletExecutionTransition } from './WalletExecutionTransition';
-import { StepsPanelProvider } from '../Processing/StepsComponent';
 
 export function SwapOverviewView({
     summary,
@@ -92,20 +91,14 @@ export function SwapContentView({
     ) : undefined;
 
     return (
-        <StepsPanelProvider>
-            <div className="w-full flex flex-col gap-2 text-secondary-text">
-                <WalletExecutionTransition
-                    animate={!!transferStage}
-                    overview={overview}
-                    workflow={
-                        transferStage === 'processing' ? children : undefined
-                    }
-                    controls={
-                        transferStage !== 'processing' ? children : undefined
-                    }
-                />
-            </div>
-        </StepsPanelProvider>
+        <div className="w-full flex flex-col gap-2 text-secondary-text">
+            <WalletExecutionTransition
+                animate={!!transferStage}
+                overview={overview}
+                workflow={transferStage === 'processing' ? children : undefined}
+                controls={transferStage !== 'processing' ? children : undefined}
+            />
+        </div>
     );
 }
 export function WalletTransferView({
@@ -130,29 +123,42 @@ export function ProcessingSectionView({
     actions?: ReactNode;
 }) {
     const reducedMotion = useHydratedReducedMotion();
-    const isPresent = useIsPresent();
+    const controls = actions ? (
+        <ProcessingActions>{actions}</ProcessingActions>
+    ) : null;
 
     return (
         <div className="w-full">
             {children}
-            {actions && (
-                <motion.div
-                    data-processing-actions
-                    className="overflow-hidden"
-                    initial={false}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={
-                        reducedMotion ? { duration: 0 } : swapFlowTransition
-                    }
-                    aria-hidden={!isPresent}
-                    inert={!isPresent}
-                >
-                    {/* Collapse the retry controls and their spacing with the steps. */}
-                    <div className="pt-3">{actions}</div>
-                </motion.div>
+            {reducedMotion ? (
+                controls
+            ) : (
+                <AnimatePresence initial={false} propagate={!!actions}>
+                    {controls}
+                </AnimatePresence>
             )}
         </div>
+    );
+}
+
+function ProcessingActions({ children }: { children: ReactNode }) {
+    const reducedMotion = useHydratedReducedMotion();
+    const isPresent = useIsPresent();
+
+    return (
+        <motion.div
+            data-processing-actions
+            className="overflow-hidden"
+            initial={false}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={reducedMotion ? { duration: 0 } : swapFlowTransition}
+            aria-hidden={!isPresent}
+            inert={!isPresent}
+        >
+            {/* Collapse the retry controls and their spacing with the steps. */}
+            <div className="pt-3">{children}</div>
+        </motion.div>
     );
 }
 export function PendingSwapView({

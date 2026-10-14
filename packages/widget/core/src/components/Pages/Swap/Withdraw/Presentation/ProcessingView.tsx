@@ -324,6 +324,7 @@ export function ProcessingView({
     const { currentSteps, stepsProgressPercentage } = useMemo(() => {
         const allSteps: StatusStep[] = [
             {
+                id: 'input_transfer',
                 name: progressStates.input_transfer?.[
                     stepStatuses.input_transfer
                 ]?.name,
@@ -336,6 +337,7 @@ export function ProcessingView({
                 index: 1,
             },
             {
+                id: 'output_transfer',
                 name: progressStates.output_transfer?.[
                     stepStatuses.output_transfer
                 ]?.name,
@@ -349,6 +351,7 @@ export function ProcessingView({
                 index: 2,
             },
             {
+                id: 'refuel',
                 name: progressStates.refuel?.[stepStatuses.refuel]?.name,
                 status: stepStatuses.refuel,
                 description:
@@ -358,6 +361,7 @@ export function ProcessingView({
                 index: 3,
             },
             {
+                id: 'refund',
                 name: progressStates.refund?.[stepStatuses.refund]?.name,
                 status: stepStatuses.refund,
                 description:
@@ -371,6 +375,7 @@ export function ProcessingView({
         if (approval) {
             const approvalAction = depositActions?.find(action => action.step === 'approve_permit2');
             allSteps.unshift({
+                id: 'action:approve_permit2',
                 name: getDepositActionLabel({ step: 'approve_permit2' }),
                 status: approvalAction?.status === 'failed'
                     ? ProgressStatus.Failed
