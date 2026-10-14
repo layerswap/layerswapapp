@@ -290,6 +290,77 @@ test('wallet confirmation hands off to transaction confirmation without replayin
     }
 });
 
+test('single wallet actions keep progress visible through confirmation, rejection and retry', async () => {
+    const root = createRoot(container);
+    try {
+        for (const action of [
+            { type: 'transfer', step: 'deposit', status: 'action_required' },
+            { type: 'transfer', step: 'publish', status: 'action_required' },
+            { type: 'transfer', step: 'approve_permit2', status: 'action_required' },
+            { type: 'sign', step: 'sign', status: 'action_required' },
+            { type: 'transfer', step: 'deposit' },
+            { type: 'transfer' },
+            { type: 'sign' },
+        ]) {
+            const scene = props => React.createElement(SendTransactionView, {
+                depositActions: [action], ...props,
+            });
+            await act(() => root.render(scene({ loading: true, actionStateText: 'Confirm in your wallet' })));
+            await settle();
+            const panel = container.querySelector('[data-steps-panel]');
+            assert.ok(panel, `${action.step ?? action.type}: confirmation must have a progress panel even without a quote or receipt`);
+            assert.equal(panel.querySelectorAll('li').length, 1, 'show only the action the backend provided');
+            assert.match(panel.querySelector('[aria-current="step"]').textContent, /Confirm in your wallet/);
+            assert.equal(container.querySelector('button'), null, 'a wallet prompt is not a disabled in-app action');
+
+            let retries = 0;
+            await act(() => root.render(scene({ error: true, errorMessage: 'The request was rejected', handleClick: () => retries++ })));
+            await settle();
+            assert.equal(container.querySelector('[data-steps-panel]'), panel);
+            assert.match(panel.textContent, /The request was rejected/);
+            const retry = container.querySelector('button');
+            assert.equal(retry.textContent, 'Try again');
+            await act(() => retry.click());
+            assert.equal(retries, 1);
+
+            await act(() => root.render(scene({ loading: true, actionStateText: 'Confirm in your wallet' })));
+            await settle();
+            assert.equal(container.querySelector('[data-steps-panel]'), panel);
+            assert.equal(container.querySelector('button'), null);
+            assert.equal(panel.style.height, 'auto');
+        }
+    } finally {
+        await act(() => root.unmount());
+    }
+});
+
+test('a single completed prerequisite keeps the backend wait visible until the next action arrives', async () => {
+    const root = createRoot(container);
+    const signature = { type: 'sign', step: 'sign', status: 'completed' };
+    try {
+        await act(() => root.render(React.createElement(SendTransactionView, {
+            depositActions: [signature], loading: true, actionStateText: 'Preparing transaction…',
+        })));
+        await settle();
+        const panel = container.querySelector('[data-steps-panel]');
+        const signRow = panel.querySelector('[data-status-step="action:sign"]');
+        assert.match(panel.textContent, /Preparing transaction…/);
+        assert.equal(panel.querySelector('[aria-live]').textContent, 'Preparing transaction…');
+        assert.equal(container.querySelector('button'), null);
+
+        await act(() => root.render(React.createElement(SendTransactionView, {
+            depositActions: [signature, { type: 'transfer', step: 'publish', status: 'action_required' }],
+            loading: true, actionStateText: 'Confirm in your wallet',
+        })));
+        assert.equal(container.querySelector('[data-steps-panel]'), panel);
+        assert.equal(panel.querySelector('[data-status-step="action:sign"]'), signRow);
+        assert.match(panel.querySelector('[aria-current="step"]').textContent, /Confirm in your wallet/);
+        assert.doesNotMatch(panel.textContent, /Preparing transaction/);
+    } finally {
+        await act(() => root.unmount());
+    }
+});
+
 test('live token-swap handoff stays visible when submission resets the form gasless preference', async () => {
     const noop = () => {};
     const empty = () => null;

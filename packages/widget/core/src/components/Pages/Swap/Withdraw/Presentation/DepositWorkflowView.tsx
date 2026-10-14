@@ -131,7 +131,7 @@ export function DepositWorkflowView({
             index: steps.length + 1,
         });
     }
-    if (steps.length <= 1 && !completed && !steps.some(step => step.explorerUrl)) return null;
+    if (steps.length === 0 && !completed) return null;
     const currentStep = steps.find(
         (step) =>
             step.status === ProgressStatus.Current ||
@@ -148,7 +148,7 @@ export function DepositWorkflowView({
         : (processing?.title ?? 'Swap in progress');
     const description = completed
         ? completed.completionTime
-        : processing?.elapsedTime;
+        : processing?.elapsedTime ?? (loading && !currentStep ? actionStateText : undefined);
 
     return (
         <StepsPanel
@@ -171,7 +171,9 @@ export function DepositWorkflowView({
                     ? 'Transfer complete.'
                     : currentStep
                       ? `Step ${currentStep.index} of ${steps.length}: ${currentStep.name}. ${typeof currentStep.description === 'string' ? currentStep.description : ''}`
-                      : 'Wallet confirmation steps complete.'}
+                      : loading && actionStateText
+                        ? actionStateText
+                        : 'Wallet confirmation steps complete.'}
             </p>
             {steps.length > 0 && (
                 <div className="pt-4">
