@@ -179,7 +179,7 @@ const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProps>(({ l
                 aria-hidden="true"
                 layoutId={reducedMotion ? undefined : 'amount-preset-selection'}
                 initial={false}
-                className="pointer-events-none absolute inset-0 rounded-md bg-primary-text shadow-xs"
+                className="pointer-events-none absolute inset-0 rounded-md bg-secondary-text shadow-xs"
                 transition={{ type: 'spring', duration: 0.25, bounce: 0 }}
             /> : null}
             <span className="relative z-10">{label}</span>
