@@ -165,7 +165,7 @@ const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProps>(({ l
             onClick={onClick}
             type="button"
             disabled={disabled}
-            className="px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer aria-pressed:bg-primary-500 aria-pressed:text-primary-buttonTextColor disabled:opacity-50 enabled:active:animate-press-down"
+            className="px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-text cursor-pointer aria-pressed:bg-secondary-200 aria-pressed:text-primary-text aria-pressed:inset-ring aria-pressed:inset-ring-secondary-100 disabled:opacity-50 enabled:active:animate-press-down"
         >
             {label}
         </button>
