@@ -1,13 +1,14 @@
+import type { AmountMode } from '@/lib/amountPresets';
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import { Exchange } from "@/Models/Exchange";
 
 export type SwapFormValues = {
   amount?: string;
-  amountMode?: 'manual' | 'max';
-  /** Scope of the user's Max choice; changing the funding account or asset resets it. */
-  maxAmountSource?: string;
-  maxAmountError?: string;
-  maxAmountPending?: boolean;
+  amountMode?: AmountMode;
+  /** Scope of the user's amount preset; changing the funding account or asset resets it. */
+  amountPresetSource?: string;
+  amountPresetError?: string;
+  amountPresetPending?: boolean;
   destination_address?: string;
   //TODO: refactor
   fromAsset?: NetworkRouteToken & { manuallySet?: boolean };

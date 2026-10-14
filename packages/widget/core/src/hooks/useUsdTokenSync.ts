@@ -1,3 +1,4 @@
+import { isAmountPreset, type AmountMode } from '@/lib/amountPresets';
 import { useCallback, useEffect, useRef } from "react";
 import { useUsdModeStore } from "@/stores/usdModeStore";
 
@@ -22,7 +23,7 @@ interface UseUsdTokenSyncArgs {
     } | undefined;
     fromCurrency: { symbol?: string; precision?: number; price_in_usd?: number } | undefined;
     amount: string | undefined;
-    amountMode?: 'manual' | 'max';
+    amountMode?: AmountMode;
     setFieldValue: (field: string, value: any, shouldValidate?: boolean) => void;
 }
 
@@ -112,7 +113,7 @@ export function useUsdTokenSync({
 
     // Recompute token amount when price changes in USD mode
     useEffect(() => {
-        if (amountMode === 'max' || !isUsdMode || !sourceCurrencyPriceInUsd || !usdAmount) {
+        if (isAmountPreset(amountMode) || !isUsdMode || !sourceCurrencyPriceInUsd || !usdAmount) {
             prevPriceRef.current = sourceCurrencyPriceInUsd;
             return;
         }
@@ -123,7 +124,7 @@ export function useUsdTokenSync({
 
     // Recompute token amount when source token changes in USD mode
     useEffect(() => {
-        if (amountMode === 'max' || !isUsdMode || !sourceCurrencyPriceInUsd || !usdAmount) return;
+        if (isAmountPreset(amountMode) || !isUsdMode || !sourceCurrencyPriceInUsd || !usdAmount) return;
         if (prevTokenSymbolRef.current === fromCurrency?.symbol) return;
         prevTokenSymbolRef.current = fromCurrency?.symbol;
         prevPriceRef.current = sourceCurrencyPriceInUsd;
@@ -155,7 +156,7 @@ export function useUsdTokenSync({
             didInitUsdRef.current = true;
             return;
         }
-        if (!amountChanged && !isInitialSync && amountMode !== 'max') return;
+        if (!amountChanged && !isInitialSync && !isAmountPreset(amountMode)) return;
         if (skipSync) {
             const amountNum = Number(amount);
             if (!isNaN(amountNum) && amountNum > 0 && sourceCurrencyPriceInUsd) {
@@ -206,9 +207,9 @@ export function useUsdTokenSync({
         // Allow empty, or a valid USD amount: no leading zeros (except "0" itself), up to 2 decimals
         if (value !== '' && !/^(0|[1-9]\d*)\.?\d{0,2}$/.test(value)) return;
         setFieldValue('amountMode', 'manual', false);
-        setFieldValue('maxAmountSource', undefined, false);
-        setFieldValue('maxAmountPending', false, false);
-        setFieldValue('maxAmountError', undefined, false);
+        setFieldValue('amountPresetSource', undefined, false);
+        setFieldValue('amountPresetPending', false, false);
+        setFieldValue('amountPresetError', undefined, false);
         const numValue = Number(value) || 0;
         preciseUsdRef.current = numValue;
         setUsdAmount(value);

@@ -3,7 +3,7 @@ import test, { beforeEach, afterEach, after } from 'node:test'
 import React, { act, createElement } from 'react'
 import { JSDOM } from 'jsdom'
 import { createSwapContext } from './helpers/swap-context.mjs'
-import { loadSource, maxAmount } from './helpers/source.mjs'
+import { loadSource, amountPresets } from './helpers/source.mjs'
 
 const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://widget.example' })
 const previous = Object.getOwnPropertyDescriptors(globalThis)
@@ -26,7 +26,7 @@ const context = createSwapContext({
   getSwapId: () => undefined, getAccount: () => state.account,
   swr: { default: () => ({}) },
   overrides: {
-    '@/lib/prepareMaxAmount': { prepareMaxAmount: async () => { state.prepares++; return state.preparation.promise } },
+    '@/lib/preparePresetAmount': { preparePresetAmount: async () => { state.prepares++; return state.preparation.promise } },
     '@/helpers/gasless': { isGaslessCapableRoute: () => false },
     '@/lib/extendedRoutes/registry': { resolveExtendedRoutePlan: () => undefined },
     '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
@@ -43,7 +43,7 @@ beforeEach(async () => {
   container = document.createElement('div'); document.body.append(container); root = createRoot(container)
   Object.assign(state, { account: { id: 'wallet', address: 'source' }, created: [], prepares: 0, preparation: Promise.withResolvers() })
   values = { from: network, to: network, fromAsset: token, toAsset: token, amount: '0.9', destination_address: 'destination',
-    depositMethod: 'wallet', amountMode: 'max', maxAmountSource: maxAmount.maxAmountSource(network.name, token.symbol, 'wallet', 'source') }
+    depositMethod: 'wallet', amountMode: 'max', amountPresetSource: amountPresets.amountPresetSource(network.name, token.symbol, 'wallet', 'source') }
   await render()
   await act(() => { updates.setSubmitedFormValues(values); updates.setSwapViewMounted(true) })
 })
@@ -59,16 +59,16 @@ test('a changed final Max stops before creation and shows the revised draft for 
   let pending, rejected
   await act(() => {
     pending = updates.createSwap(values, {})
-    rejected = assert.rejects(pending, maxAmount.MaxAmountChangedError)
-    assert.equal(updates.syncMaxAmountDraft({ ...values, amount: '0.8' }), false, 'Synchronous lock rejects late refreshes before rerender')
+    rejected = assert.rejects(pending, amountPresets.AmountPresetChangedError)
+    assert.equal(updates.syncAmountPresetDraft({ ...values, amount: '0.8' }), false, 'Synchronous lock rejects late refreshes before rerender')
   })
-  assert.equal(data.maxAmountLocked, true)
+  assert.equal(data.amountPresetLocked, true)
   assert.equal(updates.canAdjustAmount(), false)
   await act(async () => { state.preparation.resolve('0.85'); await rejected })
   assert.equal(state.created.length, 0)
   assert.equal(data.swapBasicData.requested_amount, '0.85')
   assert.equal(data.quoteIsLoading, true, 'A new amount must wait for its quote')
-  assert.equal(data.maxAmountLocked, false)
+  assert.equal(data.amountPresetLocked, false)
 })
 
 test('unchanged Max creates exactly the reviewed amount and remains frozen after creation', async () => {
@@ -78,8 +78,8 @@ test('unchanged Max creates exactly the reviewed amount and remains frozen after
   assert.equal(state.created.length, 1)
   assert.equal(state.created[0].amount, '0.9')
   assert.equal('amountMode' in state.created[0], false, 'Max is local intent, not an API field')
-  assert.equal(data.maxAmountLocked, true, 'Creation must freeze before the caller attaches the swap id')
-  await act(() => { assert.equal(updates.syncMaxAmountDraft({ ...values, amount: '0.7' }), false) })
+  assert.equal(data.amountPresetLocked, true, 'Creation must freeze before the caller attaches the swap id')
+  await act(() => { assert.equal(updates.syncAmountPresetDraft({ ...values, amount: '0.7' }), false) })
   assert.equal(data.swapBasicData.requested_amount, '0.9')
 })
 
@@ -96,7 +96,7 @@ test('failed preparation unlocks the draft without creating a swap', async () =>
   let rejected
   await act(() => { rejected = assert.rejects(updates.createSwap(values, {}), /balance unavailable/) })
   await act(async () => { state.preparation.reject(new Error('balance unavailable')); await rejected })
-  assert.equal(data.maxAmountLocked, false)
+  assert.equal(data.amountPresetLocked, false)
   assert.equal(data.swapBasicData.requested_amount, '0.9')
   assert.equal(state.created.length, 0)
 })
@@ -109,11 +109,11 @@ test('manual amounts preserve the existing creation path', async () => {
 
 test('created swaps reject live draft syncing until an explicit fresh attempt', async () => {
   await act(() => { updates.setSwapId('existing') })
-  assert.equal(data.maxAmountLocked, true)
-  assert.equal(updates.syncMaxAmountDraft({ ...values, amount: '0.4' }), false)
+  assert.equal(data.amountPresetLocked, true)
+  assert.equal(updates.syncAmountPresetDraft({ ...values, amount: '0.4' }), false)
   assert.equal(data.swapBasicData.requested_amount, '1')
   await act(() => updates.startFreshSwapAttempt())
-  assert.equal(data.maxAmountLocked, false)
+  assert.equal(data.amountPresetLocked, false)
   assert.equal(data.swapId, undefined)
 })
 
@@ -129,10 +129,37 @@ test('wallet execution locks Max synchronously before the next render', async ()
   await act(() => {
     updates.setWalletActionExecuting(true)
     assert.equal(updates.canAdjustAmount(), false)
-    assert.equal(updates.syncMaxAmountDraft({ ...values, amount: '0.3' }), false)
+    assert.equal(updates.syncAmountPresetDraft({ ...values, amount: '0.3' }), false)
   })
-  assert.equal(data.maxAmountLocked, true)
+  assert.equal(data.amountPresetLocked, true)
   assert.equal(data.swapBasicData.requested_amount, '0.9')
   await act(() => updates.setWalletActionExecuting(false))
-  assert.equal(data.maxAmountLocked, false)
+  assert.equal(data.amountPresetLocked, false)
 })
+
+
+for (const [mode, fresh] of [['min', '1'], ['half', '0.4']]) {
+  test(`${mode}: a changed final amount updates the draft and requires confirmation before creation`, async () => {
+    values.amountMode = mode
+    await act(() => updates.setSubmitedFormValues(values))
+    let rejected
+    await act(() => { rejected = assert.rejects(updates.createSwap(values, {}), amountPresets.AmountPresetChangedError) })
+    assert.equal(data.amountPresetLocked, true)
+    await act(async () => { state.preparation.resolve(fresh); await rejected })
+    assert.equal(state.created.length, 0)
+    assert.equal(data.swapBasicData.requested_amount, fresh)
+    assert.equal(data.swapBasicData.amountMode, mode)
+    assert.equal(data.quoteIsLoading, true)
+    assert.equal(data.amountPresetLocked, false)
+  })
+  test(`${mode}: unchanged confirmation creates exactly the reviewed amount and freezes the draft`, async () => {
+    values.amountMode = mode
+    await act(() => updates.setSubmitedFormValues(values))
+    let pending
+    await act(() => { pending = updates.createSwap(values, {}) })
+    await act(async () => { state.preparation.resolve(values.amount); await pending })
+    assert.equal(state.created[0].amount, values.amount)
+    assert.equal(data.amountPresetLocked, true)
+    assert.equal(updates.syncAmountPresetDraft({ ...values, amount: '0.1' }), false)
+  })
+}

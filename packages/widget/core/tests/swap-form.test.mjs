@@ -21,7 +21,7 @@ for (const [key, value] of Object.entries(globals)) {
 // The widget emits extensionless relative imports for bundlers; resolve those in Node.
 const hooks = registerHooks({
   resolve(specifier, context, nextResolve) {
-    if (specifier === './MaxAmountController') return { url: 'data:text/javascript,export default () => null', shortCircuit: true }
+    if (specifier === './AmountPresetController') return { url: 'data:text/javascript,export default () => null', shortCircuit: true }
     if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
       return nextResolve(`${specifier}.js`, context)
     }

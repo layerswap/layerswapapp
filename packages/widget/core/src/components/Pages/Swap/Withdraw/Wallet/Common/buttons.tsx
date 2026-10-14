@@ -1,4 +1,4 @@
-import { MaxAmountChangedError } from '@/lib/maxAmount';
+import { AmountPresetChangedError } from '@/lib/amountPresets';
 import { useCallbacks } from '@/context/callbackProvider';
 import { lifecycleContextFromSwap, lifecycleErrorDetails } from '@/lib/swapLifecycle';
 import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect';
@@ -309,7 +309,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
                 const swapValues: SwapFormValues = {
                     amountMode: swapBasicData.amountMode,
-                    maxAmountSource: swapBasicData.maxAmountSource,
+                    amountPresetSource: swapBasicData.amountPresetSource,
                     amount: swapBasicData.requested_amount.toString(),
                     from: swapBasicData.source_network as NetworkRoute,
                     to: swapBasicData.destination_network as NetworkRoute,
@@ -451,7 +451,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         }
         catch (e) {
             if (signal.aborted) return
-            if (e instanceof MaxAmountChangedError) {
+            if (e instanceof AmountPresetChangedError) {
                 setSwapError?.(e.message)
                 return
             }

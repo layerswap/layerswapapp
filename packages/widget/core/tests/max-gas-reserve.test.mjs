@@ -105,7 +105,7 @@ test('Using max can be turned off during gas estimation without changing the amo
   assert.equal(state.requests.length, 2)
   assert.equal(state.requests[1].args.amount, 0.9898)
   assert.equal(maxButton().disabled, false)
-  assert.equal(maxButton().textContent, 'Using max')
+  assert.equal(maxButton().textContent, 'Max')
   assert.equal(maxButton().getAttribute('aria-pressed'), 'true')
 
   await act(() => maxButton().click())
@@ -196,12 +196,12 @@ test('Max uses the route maximum when no wallet is connected', async () => {
   assert.equal(formik.values.amount, '10')
 })
 
-test('without a wallet Max stays enabled before route limits are available and uses them when loaded', async () => {
+test('without a wallet Max waits for route limits and uses them when loaded', async () => {
   state.account = undefined
   state.wallets = []
   props.limitsMaxAmount = undefined
   await render()
-  assert.equal(maxButton().disabled, false)
+  assert.equal(maxButton().disabled, true)
   await act(() => maxButton().click())
   assert.equal(formik.values.amount, '0.5')
 
@@ -239,4 +239,56 @@ test('Max keeps the native reserve (Solana rent-exempt minimum) on top of the fe
   // Without the reserve this left 100 lamports behind and failed simulation.
   assert.equal(resolveMaxAllowedAmount({ ...input, gasReserve: 0.00089088 }), 0.003786539)
   assert.equal(resolveMaxAllowedAmount({ ...input, walletBalance: { amount: 0.0008 }, gasReserve: 0.00089088 }), 0)
+})
+
+
+for (const [mode, label, amount] of [['min', 'Min', '0.001'], ['half', '50%', '0.4949'], ['max', 'Max', '0.9898']]) {
+  test(`${label} keeps its label and selects only its own preset`, async () => {
+    await render()
+    await settle(state.requests[0], 0.01)
+    const button = container.querySelector(`[data-attr="${mode}-amount"]`)
+    await act(() => button.click())
+    assert.equal(formik.values.amount, amount)
+    assert.equal(formik.values.amountMode, mode)
+    assert.equal(button.textContent, label)
+    assert.equal(button.getAttribute('aria-pressed'), 'true')
+    assert.equal(container.querySelectorAll('[aria-pressed="true"]').length, 1)
+    await act(() => button.click())
+    assert.equal(formik.values.amountMode, 'manual')
+    assert.equal(formik.values.amount, amount)
+    assert.equal(container.querySelectorAll('[aria-pressed="true"]').length, 0)
+  })
+}
+
+test('selecting a new preset replaces the active selection', async () => {
+  await render()
+  await settle(state.requests[0], 0.01)
+  await act(() => maxButton().click())
+  await settle(state.requests[1], 0.01)
+  const half = container.querySelector('[data-attr="half-amount"]')
+  await act(() => half.click())
+  assert.equal(formik.values.amountMode, 'half')
+  assert.equal(half.getAttribute('aria-pressed'), 'true')
+  assert.equal(maxButton().getAttribute('aria-pressed'), 'false')
+  const min = container.querySelector('[data-attr="min-amount"]')
+  await act(() => min.click())
+  assert.equal(formik.values.amountMode, 'min')
+  assert.equal(min.getAttribute('aria-pressed'), 'true')
+  assert.equal(half.getAttribute('aria-pressed'), 'false')
+})
+
+test('Min selects the route minimum even when the balance is too low', async () => {
+  state.balances = [{ ...state.balances[0], amount: 0.0001 }]
+  props.limitsMinAmount = 0.00100001
+  props.fromCurrency = { ...token, decimals: 6 }
+  await render()
+  await act(() => container.querySelector('[data-attr="min-amount"]').click())
+  assert.equal(formik.values.amount, '0.001001')
+  assert.equal(formik.values.amountMode, 'min')
+})
+
+test('50% waits for a spendable wallet balance instead of using a route limit as a balance', async () => {
+  state.account = undefined; state.wallets = []
+  await render()
+  assert.equal(container.querySelector('[data-attr="half-amount"]').disabled, true)
 })

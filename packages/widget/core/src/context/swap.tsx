@@ -2,7 +2,7 @@ import { SwapStatus, type Refuel, type Wallet } from '@layerswap/widget-types';
 import { Context, useCallback, useEffect, useState, useRef, createContext, useContext, useMemo } from 'react'
 import LayerSwapApiClient, { BackendTransactionStatus, CreateSwapParams, PublishedSwapTransactions, SwapTransaction, TransactionStatus, WithdrawType, SwapResponse, DepositAction, SwapBasicData, SwapQuote, SwapDetails, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
 import { InitialSettings } from '@/Models/InitialSettings';
-import useSWR, { KeyedMutator } from 'swr';
+import useSWR, { KeyedMutator, useSWRConfig } from 'swr';
 import type { ApiResponse } from '@layerswap/widget-types';
 import { Partner } from '@/Models/Partner';
 import type { ApiError } from '@layerswap/widget-types';
@@ -36,8 +36,8 @@ import { useSwapStatusNotification } from '@/hooks/useSwapStatusNotification';
 import { lifecycleContextFromForm } from '@/lib/swapLifecycle';
 import { createSwapAttempt } from '@/lib/swapCreation';
 import { hasSwapExecutionProgress } from '@/helpers/swapProgress';
-import { prepareMaxAmount } from '@/lib/prepareMaxAmount';
-import { maxAmountSource, MaxAmountChangedError } from '@/lib/maxAmount';
+import { preparePresetAmount } from '@/lib/preparePresetAmount';
+import { isAmountPreset, amountPresetSource, AmountPresetChangedError } from '@/lib/amountPresets';
 
 export const SwapDataStateContext = createContext<SwapContextData | null>(null);
 
@@ -53,7 +53,7 @@ export type ApprovalTransaction = {
 export type UpdateSwapInterface = {
     createSwap: (values: SwapFormValues, query: InitialSettings, partner?: Partner) => Promise<SwapResponse>,
     canAdjustAmount: () => boolean
-    syncMaxAmountDraft: (values: SwapFormValues) => boolean
+    syncAmountPresetDraft: (values: SwapFormValues) => boolean
     setQuoteLoading: (value: boolean) => void;
     mutateSwap: KeyedMutator<ApiResponse<SwapResponse>>
     mutateDepositActions: KeyedMutator<ApiResponse<DepositAction[]>>
@@ -82,8 +82,8 @@ export type SwapContextData = {
     swapBasicData: SwapBasicData & { refuel: boolean } | undefined,
     quote: SwapQuote | undefined,
     quoteIsLoading: boolean,
-    maxAmountLocked: boolean,
-    maxAmountRevision: number,
+    amountPresetLocked: boolean,
+    amountPresetRevision: number,
     quoteError: QuoteError | undefined,
     refuel: Refuel | undefined,
     swapDetails: SwapDetails | undefined,
@@ -101,12 +101,13 @@ export type SwapContextData = {
 export function SwapDataProvider({ children, initialSwapData }: { children: React.ReactNode, initialSwapData?: SwapResponse | null }) {
     const initialSettings = useInitialSettings()
     const { onSwapCreate, onSwapLifecycle } = useCallbacks()
+    const { mutate: mutateCache } = useSWRConfig()
     const [swapBasicFormData, setSwapBasicFormData] = useState<SwapBasicData & { refuel: boolean }>()
 
-    const maxPreparation = useRef(false)
-    const [preparingMax, setPreparingMax] = useState(false)
-    const [maxCreated, setMaxCreated] = useState(false)
-    const [maxAmountRevision, setMaxAmountRevision] = useState(0)
+    const presetPreparation = useRef(false)
+    const [preparingPreset, setPreparingPreset] = useState(false)
+    const [presetCreated, setPresetCreated] = useState(false)
+    const [amountPresetRevision, setAmountPresetRevision] = useState(0)
     const [quoteIsLoading, setQuoteLoading] = useState<boolean>(false)
     const [withdrawType, setWithdrawType] = useState<WithdrawType>()
     const [depositAddressIsFromAccount, setDepositAddressIsFromAccount] = useState<boolean>()
@@ -157,12 +158,12 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         if (!isDepositAddressFlow(values.depositMethod, values.fromExchange) && !values.amount)
             throw new Error("Form data is missing")
 
-        setMaxCreated(false)
+        setPresetCreated(false)
         setSwapBasicFormData({
             amountMode: values.amountMode,
-            maxAmountSource: values.maxAmountSource,
-            maxAmountError: values.maxAmountError,
-            maxAmountPending: values.maxAmountPending,
+            amountPresetSource: values.amountPresetSource,
+            amountPresetError: values.amountPresetError,
+            amountPresetPending: values.amountPresetPending,
             source_network: values.from,
             destination_network: values.to,
             source_token: values.fromAsset,
@@ -175,23 +176,23 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         })
     }, [sourceRoutes, destinationRoutes])
 
-    const maxAmountLocked = preparingMax || walletActionExecuting || (swapViewMounted && (!!swapId || maxCreated))
-    const syncMaxAmountDraft = useCallback((values: SwapFormValues) => {
-        if (maxPreparation.current || walletActionInFlight.current || maxAmountLocked) return false
+    const amountPresetLocked = preparingPreset || walletActionExecuting || (swapViewMounted && (!!swapId || presetCreated))
+    const syncAmountPresetDraft = useCallback((values: SwapFormValues) => {
+        if (presetPreparation.current || walletActionInFlight.current || amountPresetLocked) return false
         if (!swapId) setSwapBasicFormData(current => {
-            if (!current || current.amountMode !== 'max'
+            if (!current || !isAmountPreset(current.amountMode)
                 || current.source_network.name !== values.from?.name
                 || current.source_token.symbol !== values.fromAsset?.symbol) return current
             const patch = {
                 requested_amount: values.amount ?? current.requested_amount,
-                amountMode: values.amountMode, maxAmountSource: values.maxAmountSource,
-                maxAmountError: values.maxAmountError, maxAmountPending: values.maxAmountPending,
+                amountMode: values.amountMode, amountPresetSource: values.amountPresetSource,
+                amountPresetError: values.amountPresetError, amountPresetPending: values.amountPresetPending,
             }
             if (Object.entries(patch).every(([key, value]) => current[key] === value)) return current
             return { ...current, ...patch }
         })
         return true
-    }, [maxAmountLocked, swapId])
+    }, [amountPresetLocked, swapId])
 
     const layerswapApiClient = new LayerSwapApiClient()
     const storedWalletTransaction = useSwapTransactionStore(
@@ -235,14 +236,14 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         if (swapId && data?.data) {
             if (!data.data.swap) return undefined
             const displayed = extendedSwapData?.swapBasicData ?? baseSwapData
-            // Retain local Max intent for an explicit fresh retry; the backend amount
+            // Retain local preset intent for an explicit fresh retry; the backend amount
             // and actions remain authoritative for this created swap.
-            return displayed && maxCreated && swapBasicFormData?.amountMode === 'max'
-                ? { ...displayed, amountMode: swapBasicFormData.amountMode, maxAmountSource: swapBasicFormData.maxAmountSource }
+            return displayed && presetCreated && isAmountPreset(swapBasicFormData?.amountMode)
+                ? { ...displayed, amountMode: swapBasicFormData.amountMode, amountPresetSource: swapBasicFormData.amountPresetSource }
                 : displayed
         }
         return swapBasicFormData
-    }, [data, swapBasicFormData, swapId, baseSwapData, extendedSwapData, maxCreated])
+    }, [data, swapBasicFormData, swapId, baseSwapData, extendedSwapData, presetCreated])
 
     const startFreshSwapAttempt = useCallback(() => {
         // Preserve the displayed inputs before detaching the stale attempt. This also makes
@@ -250,9 +251,9 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         if (swapBasicData) setSwapBasicFormData(current => ({
             ...swapBasicData,
             amountMode: current?.amountMode,
-            maxAmountSource: current?.maxAmountSource,
+            amountPresetSource: current?.amountPresetSource,
         }))
-        setMaxCreated(false)
+        setPresetCreated(false)
         setSwapTransaction(undefined)
         setSwapError(null)
         setWalletExecution(undefined)
@@ -275,8 +276,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         if (swapId && data?.data) {
             return undefined
         }
-        return swapBasicFormData?.maxAmountError ? { code: 'MAX_AMOUNT_UNAVAILABLE', message: swapBasicFormData.maxAmountError } : formDataQuoteError
-    }, [formDataQuoteError, data, swapId, swapBasicFormData?.maxAmountError]);
+        return swapBasicFormData?.amountPresetError ? { code: 'AMOUNT_PRESET_UNAVAILABLE', message: swapBasicFormData.amountPresetError } : formDataQuoteError
+    }, [formDataQuoteError, data, swapId, swapBasicFormData?.amountPresetError]);
 
     const refuel = useMemo(() => {
         if (swapId && data?.data) {
@@ -515,58 +516,60 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         })
     }, [selectedSourceAccount, selectedWallet, onSwapCreate, onSwapLifecycle, updateRecentTokens, swapDetails?.id, networks, sourceRoutes])
 
-    const canAdjustAmount = useCallback(() => !maxPreparation.current && !walletActionInFlight.current && !hasSwapExecutionProgress({
+    const canAdjustAmount = useCallback(() => !presetPreparation.current && !walletActionInFlight.current && !hasSwapExecutionProgress({
         swapDetails, depositActions: depositActionsResponse,
         storedWalletTransaction: swapId ? useSwapTransactionStore.getState().swapTransactions[swapId] : undefined,
         gaslessAuthorization: swapId ? useGaslessAuthorizationStore.getState().authorizations[swapId] : undefined,
         depositSignature: swapId ? useDepositSignatureStore.getState().signatures[swapId] : undefined,
     }), [walletActionExecuting, swapId, swapDetails, depositActionsResponse])
 
-    const selectedMaxSource = maxAmountSource(sourceNetwork?.name, swapBasicData?.source_token.symbol, selectedSourceAccount?.id, selectedSourceAccount?.address)
-    const latestMaxSource = useRef(selectedMaxSource)
-    latestMaxSource.current = selectedMaxSource
+    const selectedPresetSource = amountPresetSource(sourceNetwork?.name, swapBasicData?.source_token.symbol, swapBasicData?.use_deposit_address ? undefined : selectedSourceAccount?.id, swapBasicData?.use_deposit_address ? undefined : selectedSourceAccount?.address)
+    const latestPresetSource = useRef(selectedPresetSource)
+    latestPresetSource.current = selectedPresetSource
 
     const createSwap = useCallback(async (values: SwapFormValues, query: InitialSettings, partner?: Partner) => {
-        if (values.amountMode !== 'max') return createSwapRequest(values, query, partner)
-        if (maxPreparation.current) throw new Error('The swap is already being prepared.')
-        if (!selectedSourceAccount || !selectedWallet || values.maxAmountSource !== latestMaxSource.current)
-            throw new Error('The source account changed. Select Max again.')
-        maxPreparation.current = true
-        setPreparingMax(true)
-        const source = latestMaxSource.current
+        if (!isAmountPreset(values.amountMode)) return createSwapRequest(values, query, partner)
+        if (presetPreparation.current) throw new Error('The swap is already being prepared.')
+        const walletFlow = values.depositMethod === 'wallet'
+        if ((walletFlow && (!selectedSourceAccount || !selectedWallet)) || values.amountPresetSource !== latestPresetSource.current)
+            throw new Error('The source account changed. Select an amount preset again.')
+        presetPreparation.current = true
+        setPreparingPreset(true)
+        const source = latestPresetSource.current
         const useGasless = useGaslessPreferenceStore.getState().gaslessEnabled && isGaslessCapableRoute({
             depositMethod: values.depositMethod,
             supportsGaslessDeposit: values.fromAsset?.supports_gasless_deposit,
             sourceTokenContract: values.fromAsset?.contract,
             gaslessStandard: values.fromAsset?.gasless_standard,
-            sourceIsSupported: !!selectedWallet.asSourceSupportedNetworks?.includes(values.from?.name ?? ''),
-            sourceAddress: selectedSourceAccount.address,
+            sourceIsSupported: !!selectedWallet?.asSourceSupportedNetworks?.includes(values.from?.name ?? ''),
+            sourceAddress: selectedSourceAccount?.address,
         })
-        return prepareMaxAmount(values, selectedSourceAccount.address, selectedWallet, sourceRoutes, useGasless)
+        return preparePresetAmount(values, selectedSourceAccount?.address, selectedWallet, sourceRoutes, useGasless,
+            (key, response) => mutateCache(key, response, { revalidate: false }))
             .then(amount => {
-                if (source !== latestMaxSource.current) throw new Error('The source account changed. Select Max again.')
-                if (Number(amount) < Number(values.amount)) {
-                    setSwapBasicFormData(current => current ? { ...current, requested_amount: amount, maxAmountPending: true } : current)
-                    throw new MaxAmountChangedError()
+                if (source !== latestPresetSource.current) throw new Error('The source account changed. Select an amount preset again.')
+                if (Number(amount) < Number(values.amount) || (values.amountMode === 'min' && Number(amount) > Number(values.amount))) {
+                    setSwapBasicFormData(current => current ? { ...current, requested_amount: amount, amountPresetPending: true } : current)
+                    throw new AmountPresetChangedError()
                 }
                 // Confirmation fixes the reviewed amount. Extra balance or cheaper gas must
                 // not silently increase what the user is about to send.
                 return createSwapRequest(values, query, partner)
             })
             .then(created => {
-                setMaxCreated(true)
+                setPresetCreated(true)
                 return created
             })
             .finally(() => {
-                maxPreparation.current = false
-                setPreparingMax(false)
-                setMaxAmountRevision(revision => revision + 1)
+                presetPreparation.current = false
+                setPreparingPreset(false)
+                setAmountPresetRevision(revision => revision + 1)
             })
-    }, [createSwapRequest, selectedSourceAccount, selectedWallet, sourceRoutes])
+    }, [createSwapRequest, selectedSourceAccount, selectedWallet, sourceRoutes, mutateCache])
 
     const updateFns = useMemo<UpdateSwapInterface>(() => ({
         createSwap,
-        syncMaxAmountDraft,
+        syncAmountPresetDraft,
         canAdjustAmount,
         mutateSwap: mutate,
         mutateDepositActions,
@@ -581,7 +584,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         setSubmitedFormValues,
         setQuoteLoading,
         setSwapModalOpen
-    }), [createSwap, syncMaxAmountDraft, canAdjustAmount, mutate, mutateDepositActions, setWalletActionExecuting, handleUpdateSwapid, markWalletExecutionStarted, startFreshSwapAttempt, watchApprovalTransaction, setSubmitedFormValues]);
+    }), [createSwap, syncAmountPresetDraft, canAdjustAmount, mutate, mutateDepositActions, setWalletActionExecuting, handleUpdateSwapid, markWalletExecutionStarted, startFreshSwapAttempt, watchApprovalTransaction, setSubmitedFormValues]);
 
     const stateValue = useMemo(() => ({
         withdrawType,
@@ -593,9 +596,9 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         depositActionsError,
         approvalTransaction,
         quote,
-        quoteIsLoading: quoteIsLoading || (!swapId && !swapBasicFormData?.maxAmountError && (!!draftQuoteLoading || !!swapBasicFormData?.maxAmountPending)),
-        maxAmountLocked,
-        maxAmountRevision,
+        quoteIsLoading: quoteIsLoading || (!swapId && !swapBasicFormData?.amountPresetError && (!!draftQuoteLoading || !!swapBasicFormData?.amountPresetPending)),
+        amountPresetLocked,
+        amountPresetRevision,
         quoteError,
         refuel,
         swapBasicData,
@@ -606,7 +609,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         resolved,
         swapError,
         setSwapError
-    }), [withdrawType, swapTransaction, depositAddressIsFromAccount, error, swapDetailsError, depositActionsResponse, depositActionsError, approvalTransaction, quote, quoteIsLoading, draftQuoteLoading, swapBasicFormData, maxAmountLocked, maxAmountRevision, quoteError, refuel, swapBasicData, swapDetails, swapId, walletExecutionStarted, swapModalOpen, resolved, swapError]);
+    }), [withdrawType, swapTransaction, depositAddressIsFromAccount, error, swapDetailsError, depositActionsResponse, depositActionsError, approvalTransaction, quote, quoteIsLoading, draftQuoteLoading, swapBasicFormData, amountPresetLocked, amountPresetRevision, quoteError, refuel, swapBasicData, swapDetails, swapId, walletExecutionStarted, swapModalOpen, resolved, swapError]);
 
     return (
         <SwapDataStateContext.Provider value={stateValue}>

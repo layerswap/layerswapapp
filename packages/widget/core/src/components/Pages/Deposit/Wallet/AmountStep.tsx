@@ -1,3 +1,4 @@
+import { isAmountPreset } from '@/lib/amountPresets';
 import { FC, useCallback } from "react";
 import { useFormikContext } from "formik";
 import SubmitButton from "@/components/Buttons/submitButton";
@@ -43,7 +44,7 @@ const AmountStep: FC = () => {
             : undefined,
     );
 
-    const isQuoteLoading = quoteLoading || (values.amountMode === 'max' && !!values.maxAmountPending);
+    const isQuoteLoading = quoteLoading || (isAmountPreset(values.amountMode) && !!values.amountPresetPending);
     const { formValidation } = useValidationContext();
 
     const hasQuote = !!fee?.quote && !quoteError;

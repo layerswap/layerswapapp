@@ -1,4 +1,4 @@
-import { MaxAmountChangedError } from '@/lib/maxAmount';
+import { AmountPresetChangedError } from '@/lib/amountPresets';
 import { isUserRejection } from '@layerswap/wallet-core/errors';
 import { useCallback, useEffect, useRef, useState } from "react";
 import { WithdrawPageProps } from "../../Wallet/Common/sharedTypes";
@@ -121,7 +121,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
                 startFreshSwapAttempt()
                 const swapValues: SwapFormValues = {
                     amountMode: swapBasicData.amountMode,
-                    maxAmountSource: swapBasicData.maxAmountSource,
+                    amountPresetSource: swapBasicData.amountPresetSource,
                     amount,
                     from: source_network as NetworkRoute,
                     to: destination_network as NetworkRoute,
@@ -201,7 +201,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
             onWalletWithdrawalSuccess?.()
         } catch (e) {
             if (!mountedRef.current) return
-            if (e instanceof MaxAmountChangedError) {
+            if (e instanceof AmountPresetChangedError) {
                 setError({ header: 'Amount updated', details: e.message })
                 return
             }
@@ -225,7 +225,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
             }
             submittingRef.current = false
         }
-    }, [sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, networks, sourceRoutes, swapId, swapDetails, refuel, initialSettings, wallet, createSwap, setSwapId, startFreshSwapAttempt, mutateSwap, executeTransfer, onWalletWithdrawalSuccess, swapBasicData.requested_amount, swapBasicData.amountMode, swapBasicData.maxAmountSource, error, rejected, onSwapLifecycle])
+    }, [sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, networks, sourceRoutes, swapId, swapDetails, refuel, initialSettings, wallet, createSwap, setSwapId, startFreshSwapAttempt, mutateSwap, executeTransfer, onWalletWithdrawalSuccess, swapBasicData.requested_amount, swapBasicData.amountMode, swapBasicData.amountPresetSource, error, rejected, onSwapLifecycle])
 
     return {
         handleWithdraw,

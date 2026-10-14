@@ -9,7 +9,7 @@ import { useBalance } from '@/lib/balances/useBalance';
 import useOutOfGas from '@/lib/gases/useOutOfGas';
 import useSWRGas from '@/lib/gases/useSWRGas';
 import { resolveMaxAllowedAmount } from '@/components/Input/Amount/helpers';
-import { maxAmountSource } from '@/lib/maxAmount';
+import { amountPresetSource } from '@/lib/amountPresets';
 import { truncateToDecimals } from '@/components/utils/RoundDecimals';
 import { NetworkRoute } from '@layerswap/widget-types';
 import { useFormikContext } from 'formik';
@@ -108,8 +108,8 @@ const Withdraw: FC<{
         if (maxAmount == null || maxAmount <= 0) return;
         const newAmount = truncateToDecimals(String(maxAmount), swapBasicData.source_token.decimals);
         const maxFields = { amountMode: 'max' as const,
-            maxAmountSource: maxAmountSource(swapBasicData.source_network.name, swapBasicData.source_token.symbol, selectedSourceAccount?.id, selectedSourceAccount?.address),
-            maxAmountPending: true, maxAmountError: undefined };
+            amountPresetSource: amountPresetSource(swapBasicData.source_network.name, swapBasicData.source_token.symbol, selectedSourceAccount?.id, selectedSourceAccount?.address),
+            amountPresetPending: true, amountPresetError: undefined };
         const nextValues: SwapFormValues = {
             ...values,
             ...maxFields,

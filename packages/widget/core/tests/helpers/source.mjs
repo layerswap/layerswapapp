@@ -16,7 +16,7 @@ export function loadSource(path, imports = {}) {
 }
 export const rounding = loadSource('components/utils/RoundDecimals.ts')
 export const maxHelpers = loadSource('components/Input/Amount/helpers.ts', { '@/components/utils/RoundDecimals': rounding })
-export const maxAmount = loadSource('lib/maxAmount.ts', {
+export const amountPresets = loadSource('lib/amountPresets.ts', {
     '@/components/Input/Amount/helpers': maxHelpers, '@/components/utils/RoundDecimals': rounding,
 })
 export const swapProgress = loadSource('helpers/swapProgress.ts', {

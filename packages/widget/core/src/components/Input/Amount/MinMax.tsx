@@ -11,9 +11,9 @@ import useWallet from "@/hooks/useWallet";
 import { useUsdModeStore } from "@/stores/usdModeStore";
 import { skipNextUsdSync } from "@/hooks/useUsdTokenSync";
 import { ceilUsd, floorUsd } from "@/components/utils/formatUsdAmount";
-import { ceilToDecimals, roundToDecimals, truncateToDecimals, isScientific } from "@/components/utils/RoundDecimals";
+import { truncateToDecimals, isScientific } from "@/components/utils/RoundDecimals";
 
-import { maxAmountSource } from '@/lib/maxAmount';
+import { amountPresetSource, resolvePresetAmount, type AmountPreset } from '@/lib/amountPresets';
 
 type MinMaxProps = {
     fromCurrency: NetworkRouteToken,
@@ -36,7 +36,7 @@ const MinMax = (props: MinMaxProps) => {
     const { wallets } = useWallet(from, 'withdrawal')
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
     const isWalletConnected = !!wallet
-    const usingMax = values.amountMode === 'max'
+    const walletFlow = depositMethod === 'wallet'
     const { balances, mutate: mutateBalances } = useBalance(selectedSourceAccount?.address, from)
 
     const walletBalance = useMemo(() => {
@@ -58,29 +58,16 @@ const MinMax = (props: MinMaxProps) => {
 
     const shouldPayGasWithTheToken = (native_currency?.symbol === fromCurrency?.symbol) || !native_currency
 
-    const fallbackAmount = useMemo(() => {
-        const raw = fromCurrency.price_in_usd > 0 ? 0.01 / fromCurrency.price_in_usd : 0.01;
-        return roundToDecimals(raw, fromCurrency.decimals);
-    }, [fromCurrency.price_in_usd, fromCurrency.decimals]);
-
     const maxAllowedAmount = useMemo(() => {
         return resolveMaxAllowedAmount({ fromCurrency, limitsMaxAmount, walletBalance, gasAmount, gasReserve, native_currency, depositMethod });
     }, [fromCurrency, limitsMaxAmount, walletBalance, gasAmount, gasReserve, native_currency, depositMethod])
 
-    const minAmount = useMemo(() => {
-        if (walletBalance && walletBalance.amount !== undefined && limitsMinAmount !== undefined && depositMethod === 'wallet') {
-            return Number(walletBalance.amount) < limitsMinAmount ? Number(walletBalance.amount) : limitsMinAmount;
-        }
-        return limitsMinAmount || fallbackAmount;
-    }, [walletBalance, limitsMinAmount, fallbackAmount, depositMethod]);
+    const minValue = limitsMinAmount === undefined ? undefined : resolvePresetAmount('min', 0, limitsMinAmount, fromCurrency.decimals);
+    const maxValue = maxAllowedAmount === undefined ? undefined : resolvePresetAmount('max', maxAllowedAmount, 0, fromCurrency.decimals);
+    const halfValue = walletFlow && walletBalance && maxAllowedAmount !== undefined
+        ? resolvePresetAmount('half', maxAllowedAmount, 0, fromCurrency.decimals) : undefined;
 
-    const halfOfBalance = useMemo(() => {
-        const base = walletBalance?.amount || maxAllowedAmount;
-        // Truncate, not nearest-round: half of the balance must never exceed it.
-        return base ? Number(truncateToDecimals(String(base / 2), fromCurrency.decimals)) : 0;
-    }, [walletBalance?.amount, maxAllowedAmount, fromCurrency.decimals]);
-
-    const handleSetValue = (value: string, usdValue?: string, enableMax = false) => {
+    const handleSetValue = (mode: AmountPreset, value: string, usdValue?: string) => {
         void Promise.resolve(mutateBalances()).catch(() => undefined)
         const truncatedValue = truncateToDecimals(value, fromCurrency.decimals)
         const sanitizedValue = value !== '' && Number.isFinite(Number(value))
@@ -96,49 +83,26 @@ const MinMax = (props: MinMaxProps) => {
             }
             setUsdAmount(usdValue);
         }
-        void setValues({ ...values, amount: sanitizedValue, amountMode: enableMax ? 'max' : 'manual',
-            maxAmountSource: enableMax ? maxAmountSource(from.name, fromCurrency.symbol, selectedSourceAccount?.id, selectedSourceAccount?.address) : undefined,
-            maxAmountPending: enableMax, maxAmountError: undefined }, true)
+        void setValues({ ...values, amount: sanitizedValue, amountMode: mode,
+            amountPresetSource: amountPresetSource(from.name, fromCurrency.symbol, walletFlow && isWalletConnected ? selectedSourceAccount?.id : undefined, walletFlow && isWalletConnected ? selectedSourceAccount?.address : undefined),
+            amountPresetPending: true, amountPresetError: undefined }, true)
         onActionHover(undefined)
     }
 
-    const minIsFromLimits = limitsMinAmount !== undefined && Math.abs(minAmount - limitsMinAmount) < 1e-10;
     const maxIsFromLimits = limitsMaxAmount !== undefined && maxAllowedAmount !== undefined && Math.abs(maxAllowedAmount - limitsMaxAmount) < 1e-10;
-
-    // Quantize toward the safe side of each validation boundary: a backend
-    // minimum rounds up (nearest could dip below it and fail immediately),
-    // while a min derived from the wallet balance — like every max — is an
-    // upper bound and truncates so the set value never exceeds it.
-    const minValue = minIsFromLimits
-        ? ceilToDecimals(minAmount, fromCurrency.decimals)
-        : Number(truncateToDecimals(String(minAmount), fromCurrency.decimals));
-    const maxValue = maxAllowedAmount === undefined ? undefined : truncateToDecimals(String(maxAllowedAmount), fromCurrency.decimals);
-
-    const minUsdFormatted = minIsFromLimits && limitsMinAmountInUsd != undefined ? ceilUsd(limitsMinAmountInUsd) : undefined;
+    const minUsdFormatted = limitsMinAmountInUsd != undefined ? ceilUsd(limitsMinAmountInUsd) : undefined;
     const maxUsdFormatted = maxIsFromLimits && limitsMaxAmountInUsd != undefined ? floorUsd(limitsMaxAmountInUsd) : undefined;
 
-    const handleSetMinAmount = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const selectPreset = (e: React.MouseEvent<HTMLButtonElement>, mode: AmountPreset, value: string | undefined, usdValue?: string) => {
         e.preventDefault()
         e.stopPropagation()
-        handleSetValue(minValue.toString(), minUsdFormatted)
-    }
-
-    const handleSetHalfAmount = async (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault()
-        e.stopPropagation()
-        handleSetValue(halfOfBalance.toString())
-    }
-
-    const handleSetMaxAmount = async (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault()
-        e.stopPropagation()
-        if (usingMax) {
-            void setValues({ ...values, amountMode: 'manual', maxAmountSource: undefined, maxAmountPending: false, maxAmountError: undefined }, true)
+        if (values.amountMode === mode) {
+            void setValues({ ...values, amountMode: 'manual', amountPresetSource: undefined, amountPresetPending: false, amountPresetError: undefined }, true)
             onActionHover(undefined)
             return
         }
-        if (maxValue === undefined) return
-        handleSetValue(maxValue, maxUsdFormatted, isWalletConnected && depositMethod === 'wallet')
+        if (value === undefined) return
+        handleSetValue(mode, value, usdValue)
     }
 
     const showMaxTooltip = !!(depositMethod === 'wallet' && walletBalance?.amount && shouldPayGasWithTheToken && (!limitsMaxAmount || walletBalance.amount < limitsMaxAmount))
@@ -151,28 +115,32 @@ const MinMax = (props: MinMaxProps) => {
             <ActionButton
                 data-attr="min-amount"
                 label="Min"
-                onMouseEnter={() => onActionHover(minValue, minUsdFormatted)}
-                onClick={handleSetMinAmount}
+                aria-pressed={values.amountMode === 'min'}
+                disabled={values.amountMode !== 'min' && minValue === undefined}
+                onMouseEnter={() => onActionHover(minValue === undefined ? undefined : Number(minValue), minUsdFormatted)}
+                onClick={e => selectPreset(e, 'min', minValue, minUsdFormatted)}
             />
             <ActionButton
                 data-attr="half-amount"
                 label="50%"
-                onMouseEnter={() => onActionHover(halfOfBalance)}
-                onClick={handleSetHalfAmount}
+                aria-pressed={values.amountMode === 'half'}
+                disabled={values.amountMode !== 'half' && halfValue === undefined}
+                onMouseEnter={() => onActionHover(halfValue === undefined ? undefined : Number(halfValue))}
+                onClick={e => selectPreset(e, 'half', halfValue)}
             />
             <Tooltip disableHoverableContent={true}>
                 <TooltipTrigger asChild>
                     <ActionButton
                         data-attr="max-amount"
-                        label={usingMax ? 'Using max' : 'Max'}
-                        aria-pressed={usingMax}
-                        disabled={!usingMax && isWalletConnected && maxValue === undefined}
+                        label="Max"
+                        aria-pressed={values.amountMode === 'max'}
+                        disabled={values.amountMode !== 'max' && maxValue === undefined}
                         onMouseEnter={() => onActionHover(maxValue === undefined ? undefined : Number(maxValue), maxUsdFormatted)}
-                        onClick={handleSetMaxAmount}
+                        onClick={e => selectPreset(e, 'max', maxValue, maxUsdFormatted)}
                     />
                 </TooltipTrigger>
                 {showMaxTooltip ? <TooltipContent className="pointer-events-none w-80 grow p-2 border-none! bg-secondary-300! text-xs rounded-xl!" side="top" align="start" alignOffset={-10}>
-                    <p>Using max keeps your amount updated for your balance and network fee until you confirm.</p>
+                    <p>Network fees are reserved from your balance.</p>
                 </TooltipContent> : null}
             </Tooltip>
         </div>

@@ -267,8 +267,8 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                                         setWalletWihdrawDone(true)
                                         useGaslessPreferenceStore.getState().resetGaslessPreference()
                                         setFieldValue('amountMode', 'manual')
-                                        setFieldValue('maxAmountPending', false)
-                                        setFieldValue('maxAmountError', undefined)
+                                        setFieldValue('amountPresetPending', false)
+                                        setFieldValue('amountPresetError', undefined)
                                         setFieldValue('amount', 0)
                                         mutateBalances()
                                     }} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />

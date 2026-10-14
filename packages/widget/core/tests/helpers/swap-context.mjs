@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import React from 'react'
 import ts from 'typescript'
-import { maxAmount, swapProgress } from './source.mjs'
+import { amountPresets, swapProgress } from './source.mjs'
 
 const require = createRequire(import.meta.url)
 const noop = () => {}
@@ -20,13 +20,13 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
     }
     const resolved = {}
     const imports = {
-        '@/lib/maxAmount': maxAmount,
-        '@/lib/prepareMaxAmount': { prepareMaxAmount: () => { throw new Error('Unexpected max preparation') } },
+        '@/lib/amountPresets': amountPresets,
+        '@/lib/preparePresetAmount': { preparePresetAmount: () => { throw new Error('Unexpected preset preparation') } },
         '@/helpers/swapProgress': swapProgress,
         '@/helpers/depository': { shouldUseDepository: () => false },
         react: React,
         'react/jsx-runtime': require('react/jsx-runtime'),
-        swr,
+        swr: { ...swr, useSWRConfig: swr.useSWRConfig ?? (() => ({ mutate: async () => undefined })) },
         '@layerswap/widget-types': { SwapStatus: { Created: 'created', UserTransferPending: 'user_transfer_pending' } },
         '@/lib/apiClients/layerSwapApiClient': {
             default: Client,

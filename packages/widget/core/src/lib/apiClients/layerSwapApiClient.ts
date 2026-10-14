@@ -1,3 +1,4 @@
+import type { AmountMode } from '@/lib/amountPresets';
 import { SwapStatus, type Refuel } from '@layerswap/widget-types';
 import AppSettings from "../AppSettings";
 import { InitializeUnauthInstance, InitializeAuthInstance } from "../axiosInterceptor"
@@ -190,10 +191,10 @@ export type SwapResponse = {
 
 export type SwapBasicData = {
     /** Local amount intent; never serialized as an API parameter. */
-    amountMode?: 'manual' | 'max'
-    maxAmountSource?: string
-    maxAmountError?: string
-    maxAmountPending?: boolean
+    amountMode?: AmountMode
+    amountPresetSource?: string
+    amountPresetError?: string
+    amountPresetPending?: boolean
     source_network: Network,
     source_token: Token,
     source_exchange?: Exchange,

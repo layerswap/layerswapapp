@@ -168,7 +168,7 @@ const AmountField = forwardRef(function AmountField({ actionValue, actionValueUs
                 className="w-full text-[28px] leading-[34px] rounded-xl text-primary-text focus:outline-none focus:border-none focus:ring-0 duration-300 ease-in-out bg-secondary-500! font-normal! group-[.exchange-amount-field]:text-xl group-[.exchange-amount-field]:px-2.5 group-[.exchange-amount-field]:py-2 group-[.exchange-amount-field]:pr-2 group-[.exchange-amount-field]:bg-secondary-300! px-0 truncate"
                 onChange={e => {
                     if (/^[0-9]*[.,]?[0-9]*$/.test(e.target.value)) {
-                        void setValues({ ...values, amount: e.target.value, amountMode: 'manual', maxAmountSource: undefined, maxAmountPending: false, maxAmountError: undefined }, true);
+                        void setValues({ ...values, amount: e.target.value, amountMode: 'manual', amountPresetSource: undefined, amountPresetPending: false, amountPresetError: undefined }, true);
                     }
                 }}
             />

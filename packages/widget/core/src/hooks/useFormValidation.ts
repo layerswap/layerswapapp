@@ -1,3 +1,4 @@
+import { isAmountPreset } from '@/lib/amountPresets';
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues';
 import { QuoteError } from './useFee';
 import { Address } from '@/lib/address/Address';
@@ -53,7 +54,7 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
         return { message: 'Select destination asset' };
     }
     if (!depositAddressFlow) {
-        if (values.amountMode === 'max' && values.maxAmountError) return { message: values.maxAmountError };
+        if (isAmountPreset(values.amountMode) && values.amountPresetError) return { message: values.amountPresetError };
         if (amount === undefined || isNaN(Number(amount))) {
             return { message: 'Enter an amount' };
         }
