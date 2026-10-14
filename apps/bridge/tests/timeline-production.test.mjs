@@ -1220,6 +1220,7 @@ for (const failure of ['rejected', 'failed']) {
             '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
             '@/components/Input/Amount/helpers': loadSource('components/Input/Amount/helpers.ts', {
                 '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
+                '@/lib/gases/resolveGasBalanceBudget': loadSource('lib/gases/resolveGasBalanceBudget.ts'),
             }),
             '@/components/Widget/Index': { Widget: { Footer: childrenOnly } },
             '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
