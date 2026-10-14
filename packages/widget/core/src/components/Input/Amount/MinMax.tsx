@@ -1,8 +1,8 @@
 import { useFormikContext } from "formik";
 import useSWRGas from "@/lib/gases/useSWRGas";
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
-import React, { useMemo } from "react";
-import { Check } from "lucide-react";
+import React, { useId, useMemo } from "react";
+import { LayoutGroup, motion } from "framer-motion";
 import { resolveMaxAllowedAmount } from "./helpers";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import { useSelectedAccount } from "@/context/swapAccounts";
@@ -13,6 +13,7 @@ import { useUsdModeStore } from "@/stores/usdModeStore";
 import { skipNextUsdSync } from "@/hooks/useUsdTokenSync";
 import { ceilUsd, floorUsd } from "@/components/utils/formatUsdAmount";
 import { truncateToDecimals, isScientific } from "@/components/utils/RoundDecimals";
+import { useHydratedReducedMotion } from "@/hooks/useHydratedReducedMotion";
 
 import { amountPresetSource, resolvePresetAmount, type AmountPreset } from '@/lib/amountPresets';
 
@@ -29,6 +30,7 @@ type MinMaxProps = {
 
 const MinMax = (props: MinMaxProps) => {
 
+    const layoutId = useId();
     const { setValues, values } = useFormikContext<SwapFormValues>();
     const { fromCurrency, from, limitsMinAmount, limitsMaxAmount, limitsMinAmountInUsd, limitsMaxAmountInUsd, onActionHover, depositMethod } = props;
     const isUsdMode = useUsdModeStore(s => s.isUsdMode);
@@ -112,39 +114,41 @@ const MinMax = (props: MinMaxProps) => {
         return null;
 
     return (
-        <div className="flex gap-1.5 group text-xs leading-4" onMouseLeave={() => onActionHover(undefined)}>
-            <ActionButton
-                data-attr="min-amount"
-                label="Min"
-                aria-pressed={values.amountMode === 'min'}
-                disabled={values.amountMode !== 'min' && minValue === undefined}
-                onMouseEnter={() => onActionHover(minValue === undefined ? undefined : Number(minValue), minUsdFormatted)}
-                onClick={e => selectPreset(e, 'min', minValue, minUsdFormatted)}
-            />
-            <ActionButton
-                data-attr="half-amount"
-                label="50%"
-                aria-pressed={values.amountMode === 'half'}
-                disabled={values.amountMode !== 'half' && halfValue === undefined}
-                onMouseEnter={() => onActionHover(halfValue === undefined ? undefined : Number(halfValue))}
-                onClick={e => selectPreset(e, 'half', halfValue)}
-            />
-            <Tooltip disableHoverableContent={true}>
-                <TooltipTrigger asChild>
-                    <ActionButton
-                        data-attr="max-amount"
-                        label="Max"
-                        aria-pressed={values.amountMode === 'max'}
-                        disabled={values.amountMode !== 'max' && maxValue === undefined}
-                        onMouseEnter={() => onActionHover(maxValue === undefined ? undefined : Number(maxValue), maxUsdFormatted)}
-                        onClick={e => selectPreset(e, 'max', maxValue, maxUsdFormatted)}
-                    />
-                </TooltipTrigger>
-                {showMaxTooltip ? <TooltipContent className="pointer-events-none w-80 grow p-2 border-none! bg-secondary-300! text-xs rounded-xl!" side="top" align="start" alignOffset={-10}>
-                    <p>Network fees are reserved from your balance.</p>
-                </TooltipContent> : null}
-            </Tooltip>
-        </div>
+        <LayoutGroup id={layoutId}>
+            <div role="group" aria-label="Amount presets" className="relative isolate inline-flex gap-0.5 rounded-lg bg-secondary-300/35 p-0.5 text-xs font-medium leading-4" onMouseLeave={() => onActionHover(undefined)}>
+                <ActionButton
+                    data-attr="min-amount"
+                    label="Min"
+                    aria-pressed={values.amountMode === 'min'}
+                    disabled={values.amountMode !== 'min' && minValue === undefined}
+                    onMouseEnter={() => onActionHover(minValue === undefined ? undefined : Number(minValue), minUsdFormatted)}
+                    onClick={e => selectPreset(e, 'min', minValue, minUsdFormatted)}
+                />
+                <ActionButton
+                    data-attr="half-amount"
+                    label="50%"
+                    aria-pressed={values.amountMode === 'half'}
+                    disabled={values.amountMode !== 'half' && halfValue === undefined}
+                    onMouseEnter={() => onActionHover(halfValue === undefined ? undefined : Number(halfValue))}
+                    onClick={e => selectPreset(e, 'half', halfValue)}
+                />
+                <Tooltip disableHoverableContent={true}>
+                    <TooltipTrigger asChild>
+                        <ActionButton
+                            data-attr="max-amount"
+                            label="Max"
+                            aria-pressed={values.amountMode === 'max'}
+                            disabled={values.amountMode !== 'max' && maxValue === undefined}
+                            onMouseEnter={() => onActionHover(maxValue === undefined ? undefined : Number(maxValue), maxUsdFormatted)}
+                            onClick={e => selectPreset(e, 'max', maxValue, maxUsdFormatted)}
+                        />
+                    </TooltipTrigger>
+                    {showMaxTooltip ? <TooltipContent className="pointer-events-none w-80 grow p-2 border-none! bg-secondary-300! text-xs rounded-xl!" side="top" align="start" alignOffset={-10}>
+                        <p>Network fees are reserved from your balance.</p>
+                    </TooltipContent> : null}
+                </Tooltip>
+            </div>
+        </LayoutGroup>
     )
 }
 
@@ -158,6 +162,9 @@ type ActionButtonProps = React.DetailedHTMLProps<React.ButtonHTMLAttributes<HTML
 }
 
 const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProps>(({ label, onClick, onMouseEnter, disabled, ...rest }, ref) => {
+    const reducedMotion = useHydratedReducedMotion();
+    const selected = rest['aria-pressed'] === true;
+
     return (
         <button
             {...rest}
@@ -166,10 +173,16 @@ const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProps>(({ l
             onClick={onClick}
             type="button"
             disabled={disabled}
-            className="group/preset inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-text cursor-pointer aria-pressed:bg-secondary-100 aria-pressed:text-primary-text aria-pressed:inset-ring aria-pressed:inset-ring-secondary-text/60 disabled:opacity-50 enabled:active:animate-press-down"
+            className="relative min-w-11 rounded-md px-2 py-0.5 text-secondary-text transition-colors duration-150 enabled:hover:aria-[pressed=false]:bg-secondary-300/50 enabled:hover:aria-[pressed=false]:text-primary-text aria-pressed:text-secondary-700 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-text disabled:opacity-40 motion-reduce:transition-none"
         >
-            <Check className="h-3 w-3 shrink-0 opacity-0 group-aria-pressed/preset:opacity-100" strokeWidth={2.5} aria-hidden="true" />
-            {label}
+            {selected ? <motion.span
+                aria-hidden="true"
+                layoutId={reducedMotion ? undefined : 'amount-preset-selection'}
+                initial={false}
+                className="pointer-events-none absolute inset-0 rounded-md bg-primary-text shadow-xs"
+                transition={{ type: 'spring', duration: 0.25, bounce: 0 }}
+            /> : null}
+            <span className="relative z-10">{label}</span>
         </button>
     );
 })
