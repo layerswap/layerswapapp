@@ -26,6 +26,7 @@ import WalletMessage, { WalletMessageDetails } from '../messages/Message';
 import { NetworkSwitchError, networkSwitchFailureReason } from '../Wallet/Common/ensureSourceChain';
 import type { ActionData } from '../Wallet/Common/sharedTypes';
 import type { SwapStepTransactions } from '@/stores/swapTransactionStore';
+import { resolveSwapFlow, type ResolvedSwapFlow } from '@/components/utils/resolveSwapFlow';
 export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = ({ data, network }) => {
     if (data.isPending) {
         return <WalletMessage
@@ -120,6 +121,7 @@ export function ConnectWalletView({
     );
 }
 export type SendTransactionViewProps = SubmitButtonProps & {
+    flow?: ResolvedSwapFlow;
     errorMessage?: ReactNode;
     quote?: SwapQuote;
     quoteIsLoading?: boolean;
@@ -148,6 +150,7 @@ export type SendTransactionViewProps = SubmitButtonProps & {
     onCancelWithdrawal?: () => void;
 };
 export function SendTransactionView({
+    flow,
     icon = <WalletIcon className="stroke-2 w-6 h-6" />,
     errorMessage,
     quote,
@@ -177,12 +180,7 @@ export function SendTransactionView({
     onCancelWithdrawal,
     ...props
 }: SendTransactionViewProps) {
-    const isMultiStepWorkflow =
-        (depositActions?.filter((action) => !!action.step).length ?? 0) > 1 ||
-        (!!stepTransactions?.approve_permit2?.explorerUrl &&
-            !!depositActions?.some(action => action.step === 'approve_permit2')) ||
-        (!!quote?.destination_token &&
-            !!depositActions?.some((action) => action.step === 'publish'));
+    const isMultiStepWorkflow = (flow ?? resolveSwapFlow({ depositActions, stepTransactions, quote })).walletProgress === 'workflow';
     const workflowCompleted = isDepositWorkflowComplete(depositActions ?? []);
     const workflowFailed = depositActions?.some(action => action.status === 'failed');
     const actionableAction = getActionableDepositAction(depositActions);
@@ -371,4 +369,3 @@ export function SendTransactionView({
         />
     );
 }
-

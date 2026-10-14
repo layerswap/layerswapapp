@@ -6,6 +6,7 @@ import {
 } from './swapFlowAnimation';
 import type { ReactNode } from 'react';
 import { WalletExecutionTransition } from './WalletExecutionTransition';
+import type { ResolvedSwapFlow } from '@/components/utils/resolveSwapFlow';
 
 export function SwapOverviewView({
     summary,
@@ -70,12 +71,14 @@ export function SwapOverviewView({
 
 // Keep the overview and controller ancestors stable when the flow changes animation mode.
 export function SwapContentView({
+    flow,
     summary,
     quote,
-    compactQuote = false,
-    transferStage,
+    compactQuote = flow?.compactQuote ?? false,
+    transferStage = flow?.transferStage,
     children,
 }: {
+    flow?: ResolvedSwapFlow;
     summary: ReactNode;
     quote?: ReactNode;
     compactQuote?: boolean;
@@ -91,7 +94,7 @@ export function SwapContentView({
     ) : undefined;
 
     return (
-        <div className="w-full flex flex-col gap-2 text-secondary-text">
+        <div className="w-full flex flex-col gap-2 text-secondary-text" data-swap-flow={flow?.kind} data-flow-evidence={flow?.evidence}>
             <WalletExecutionTransition
                 animate={!!transferStage}
                 overview={overview}

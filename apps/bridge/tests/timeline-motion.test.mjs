@@ -79,6 +79,7 @@ function loadWidgetSource(path, imports) {
     const module = { exports: {} };
     new Function('require', 'module', 'exports', outputText)(name => {
         if (name === 'react' || name === 'react/jsx-runtime') return widgetRequire(name);
+        if (name === '../components/utils/resolveSwapFlow.js') return loadWidgetSource('components/utils/resolveSwapFlow.ts', {});
         if (name in imports) return imports[name];
         throw new Error(`Unexpected dependency: ${name}`);
     }, module, module.exports);
@@ -308,6 +309,7 @@ test('live token-swap handoff stays visible when submission resets the form gasl
     };
     let gaslessActive = false;
     let showWithdrawScreen = true;
+    const { resolveSwapFlow } = loadWidgetSource('components/utils/resolveSwapFlow.ts', {});
     const common = { actions: context.depositActionsResponse, destinationToken, receiveAmount: 2.652761339210903 };
     const { default: SwapDetails } = loadWidgetSource('components/Pages/Swap/Withdraw/SwapDetails.tsx', {
         './Presentation/Page2Sections': { SwapContentView, ProcessingSectionView },
@@ -320,7 +322,7 @@ test('live token-swap handoff stays visible when submission resets the form gasl
         '@/components/Common/Sceletons': { SwapDetailsSceleton: empty },
         '@/components/Widget/Index': { Widget: childrenOnly },
         '@/context/callbackProvider': { useCallbacks: () => ({ onBackClick: noop, onSwapLifecycle: noop }) },
-        '@/context/swap': { useSwapDataState: () => context, useSwapDataUpdate: () => ({ setSwapViewMounted: noop }) },
+        '@/context/swap': { useSwapDataState: () => ({ ...context, flow: resolveSwapFlow({ swapData: context.swapBasicData, depositActions: context.depositActionsResponse, walletExecutionStarted: context.walletExecutionStarted, resolved: { showWithdrawScreen } }) }), useSwapDataUpdate: () => ({ setSwapViewMounted: noop }) },
         '@/context/swapAccounts': { useSelectedAccount: () => ({ address: '0xsource' }) },
         '@/hooks/useGaslessAuthorizationStatus': { useGaslessAuthorizationStatus: noop },
         '@/hooks/useResolvedSwapStatus': { useResolvedSwapStatus: () => ({ showWithdrawScreen }) },
