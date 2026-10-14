@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createRequire } from 'node:module';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
@@ -9,6 +9,7 @@ import { JSDOM } from 'jsdom';
 import React, { act } from 'react';
 import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
+import ts from 'typescript';
 
 // Exercise presence with motion enabled. The main timeline suite verifies
 // reduced motion; it cannot catch controls unmounting before their exit ends.
@@ -71,6 +72,18 @@ await build({
     logLevel: 'silent',
 });
 const { SwapContentView, ProcessingSectionView, StepsPanel, Steps, TransferStatusHeader, QuoteView, QuoteSummaryView, DepositWorkflowView, WalletExecutionTransition, WalletActionTransition, SendTransactionView, RetryView, DepositLayoutView, DepositAddressTransition } = await import(pathToFileURL(outfile));
+function loadWidgetSource(path, imports) {
+    const { outputText } = ts.transpileModule(readFileSync(new URL(`../../../packages/widget/core/src/${path}`, import.meta.url), 'utf8'), {
+        compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
+    });
+    const module = { exports: {} };
+    new Function('require', 'module', 'exports', outputText)(name => {
+        if (name === 'react' || name === 'react/jsx-runtime') return widgetRequire(name);
+        if (name in imports) return imports[name];
+        throw new Error(`Unexpected dependency: ${name}`);
+    }, module, module.exports);
+    return module.exports;
+}
 const container = document.getElementById('root');
 const settle = () => act(() => new Promise(resolve => setTimeout(resolve, 400)));
 const view = (processing, manual = false) => React.createElement(SwapContentView, {
@@ -272,6 +285,83 @@ test('wallet confirmation hands off to transaction confirmation without replayin
             assert.equal(container.querySelector('[data-steps-panel]').style.opacity, '0', 'returning after the panel disappeared restores its entrance');
         });
         await settle();
+    } finally {
+        await act(() => root.unmount());
+    }
+});
+
+test('live token-swap handoff stays visible when submission resets the form gasless preference', async () => {
+    const noop = () => {};
+    const empty = () => null;
+    const childrenOnly = ({ children }) => children;
+    const destinationToken = { asset: 'USDe', decimals: 18 };
+    const context = {
+        swapBasicData: {
+            source_network: { name: 'BASE_MAINNET' }, destination_network: { name: 'BASE_MAINNET' },
+            use_deposit_address: false,
+        },
+        walletExecutionStarted: true,
+        depositActionsResponse: [
+            { step: 'sign', status: 'completed' },
+            { step: 'publish', status: 'action_required' },
+        ],
+    };
+    let gaslessActive = false;
+    let showWithdrawScreen = true;
+    const common = { actions: context.depositActionsResponse, destinationToken, receiveAmount: 2.652761339210903 };
+    const { default: SwapDetails } = loadWidgetSource('components/Pages/Swap/Withdraw/SwapDetails.tsx', {
+        './Presentation/Page2Sections': { SwapContentView, ProcessingSectionView },
+        '@/helpers/swapFlow': loadWidgetSource('helpers/swapFlow.ts', {}),
+        '@/helpers/gasless': loadWidgetSource('helpers/gasless.ts', {}),
+        '@/hooks/useIsGaslessActive': { useIsGaslessActive: () => gaslessActive },
+        './Summary': { default: () => React.createElement('div', null, 'USDC → USDe') },
+        './SwapQuoteDetails': { SwapQuoteDetails: () => React.createElement('div', null, 'Receive at least') },
+        './Presentation/Page2Contained': { Page2Contained: childrenOnly },
+        '@/components/Common/Sceletons': { SwapDetailsSceleton: empty },
+        '@/components/Widget/Index': { Widget: childrenOnly },
+        '@/context/callbackProvider': { useCallbacks: () => ({ onBackClick: noop, onSwapLifecycle: noop }) },
+        '@/context/swap': { useSwapDataState: () => context, useSwapDataUpdate: () => ({ setSwapViewMounted: noop }) },
+        '@/context/swapAccounts': { useSelectedAccount: () => ({ address: '0xsource' }) },
+        '@/hooks/useGaslessAuthorizationStatus': { useGaslessAuthorizationStatus: noop },
+        '@/hooks/useResolvedSwapStatus': { useResolvedSwapStatus: () => ({ showWithdrawScreen }) },
+        '@/hooks/useSwapRetry': { useSwapRetry: () => ({}) },
+        '@/lib/swapLifecycle': {},
+        './ManualWithdraw': { default: empty },
+        './Presentation/RetryView': { RetryView },
+        './Withdraw': { default: () => React.createElement(SendTransactionView, {
+            loading: true, depositActions: context.depositActionsResponse,
+            quote: { destination_token: destinationToken, receive_amount: common.receiveAmount },
+            actionStateText: 'Confirm in your wallet',
+        }) },
+        './Processing': { default: () => React.createElement(DepositWorkflowView, {
+            ...common,
+            processing: { inputStatus: 'current', outputStatus: 'upcoming', inputDescription: 'Confirming transaction' },
+        }) },
+    });
+    const root = createRoot(container);
+    const scene = () => React.createElement(React.StrictMode, null, React.createElement(SwapDetails, { type: 'contained' }));
+    try {
+        await act(() => root.render(scene()));
+        await settle();
+        assert.match(container.textContent, /Confirm in your wallet/);
+        const outerSlot = container.querySelector('[data-quote-layout]').closest('[style*="opacity"]').nextElementSibling;
+
+        // FormWrapper.onWalletWithdrawalSuccess resets this preference before the
+        // transaction store switches SwapDetails from Withdraw to Processing.
+        gaslessActive = true;
+        context.walletExecutionStarted = false;
+        showWithdrawScreen = false;
+        await act(() => {
+            flushSync(() => root.render(scene()));
+            const panels = [...container.querySelectorAll('[data-steps-panel]')].filter(panel => !panel.closest('[inert]'));
+            assert.equal(panels.length, 1);
+            assert.equal(panels[0].style.height, 'auto', 'the existing progress must not collapse and re-enter on submission');
+            assert.equal(panels[0].style.opacity, '1');
+            assert.ok(outerSlot.contains(panels[0]), 'processing remains in the same execution slot');
+            assert.match(panels[0].textContent, /Confirming transaction/);
+        });
+        await settle();
+        assert.equal(container.querySelectorAll('[data-steps-panel]').length, 1);
     } finally {
         await act(() => root.unmount());
     }

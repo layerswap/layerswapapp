@@ -3,6 +3,7 @@ import {
     SwapContentView,
 } from './Presentation/Page2Sections';
 import { shouldShowCompactSwapQuote } from '@/helpers/swapFlow';
+import { isGaslessDepositWorkflow } from '@/helpers/gasless';
 import { useIsGaslessActive } from '@/hooks/useIsGaslessActive';
 import SwapSummary from './Summary';
 import { SwapQuoteDetails } from './SwapQuoteDetails';
@@ -106,7 +107,10 @@ const SwapDetails: FC<Props> = ({
 
     const compactsDuringWalletExecution = shouldShowCompactSwapQuote({
         swapData: swapBasicData,
-        isGaslessActive,
+        // The form resets its preference after submission. Keep the active swap
+        // in its execution slot using its actual workflow, not the next form's mode.
+        isGaslessActive:
+            isGaslessDepositWorkflow(depositActionsResponse) ?? isGaslessActive,
     });
     const compactQuote =
         !swapBasicData.use_deposit_address &&
