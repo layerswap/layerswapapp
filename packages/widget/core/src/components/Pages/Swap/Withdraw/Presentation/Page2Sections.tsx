@@ -1,9 +1,6 @@
 import { AnimatePresence, motion, useIsPresent } from 'framer-motion';
 import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion';
-import {
-    swapFlowTransition,
-    swapFlowTransitionStyle,
-} from './swapFlowAnimation';
+import { swapFlowTransition } from './swapFlowAnimation';
 import type { ReactNode } from 'react';
 import { WalletExecutionTransition } from './WalletExecutionTransition';
 import type { ResolvedSwapFlow } from '@/components/utils/resolveSwapFlow';
@@ -17,42 +14,47 @@ export function SwapOverviewView({
     quote?: ReactNode;
     compactQuote?: boolean;
 }) {
+    const reducedMotion = useHydratedReducedMotion();
+    const transition = reducedMotion ? { duration: 0 } : swapFlowTransition;
     return (
         <div
             className="w-full"
             data-quote-layout={compactQuote ? 'attached' : 'separate'}
         >
-            <div
-                className="relative z-10 rounded-2xl bg-secondary-500 transition-[border-radius] motion-reduce:transition-none"
-                style={{
-                    ...swapFlowTransitionStyle,
+            <motion.div
+                className="relative z-10 rounded-2xl bg-secondary-500"
+                initial={false}
+                transition={transition}
+                animate={{
                     borderBottomLeftRadius: compactQuote && quote ? 0 : 16,
                     borderBottomRightRadius: compactQuote && quote ? 0 : 16,
                 }}
             >
                 {summary}
-            </div>
-            <div
+            </motion.div>
+            <motion.div
                 data-quote-transition
                 hidden={!quote}
-                className="transition-[margin-top] motion-reduce:transition-none"
-                style={{
-                    ...swapFlowTransitionStyle,
+                initial={false}
+                transition={transition}
+                animate={{
                     marginTop: compactQuote ? 0 : 8,
                 }}
             >
-                <div
-                    className="overflow-hidden rounded-2xl bg-secondary-500 transition-[border-radius] motion-reduce:transition-none"
-                    style={{
-                        ...swapFlowTransitionStyle,
+                <motion.div
+                    className="overflow-hidden rounded-2xl bg-secondary-500"
+                    initial={false}
+                    transition={transition}
+                    animate={{
                         borderTopLeftRadius: compactQuote ? 0 : 16,
                         borderTopRightRadius: compactQuote ? 0 : 16,
                     }}
                 >
-                    <div
-                        className="grid transition-[grid-template-rows,opacity] motion-reduce:transition-none"
-                        style={{
-                            ...swapFlowTransitionStyle,
+                    <motion.div
+                        className="grid"
+                        initial={false}
+                        transition={transition}
+                        animate={{
                             gridTemplateRows: compactQuote ? '1fr' : '0fr',
                             opacity: compactQuote ? 1 : 0,
                         }}
@@ -61,10 +63,10 @@ export function SwapOverviewView({
                         <div className="min-h-0 overflow-hidden">
                             <div className="mx-3 border-t border-secondary-300" />
                         </div>
-                    </div>
+                    </motion.div>
                     {quote}
-                </div>
-            </div>
+                </motion.div>
+            </motion.div>
         </div>
     );
 }

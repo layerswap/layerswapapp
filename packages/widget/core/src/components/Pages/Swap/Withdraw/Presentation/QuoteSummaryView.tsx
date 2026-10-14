@@ -1,4 +1,6 @@
-import { swapFlowTransitionStyle } from './swapFlowAnimation';
+import { swapFlowTransition } from './swapFlowAnimation';
+import { motion } from 'framer-motion';
+import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion';
 import NumFlowWithFallback from '@/components/Common/NumFlowWithFallback';
 import {
     RecipientAddressView,
@@ -6,7 +8,6 @@ import {
 } from '@/components/Common/RecipientAddressView';
 import type { Quote } from '@/lib/apiClients/layerSwapApiClient';
 import { Address } from '@/lib/address/Address';
-import clsx from 'clsx';
 import { ChevronDown } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import type { SwapValues } from '../../Form/FeeDetails';
@@ -37,6 +38,8 @@ export function QuoteSummaryView({
     detailsButton: ReactNode;
     compact?: boolean;
 }) {
+    const reducedMotion = useHydratedReducedMotion();
+    const transition = reducedMotion ? { duration: 0 } : swapFlowTransition;
     // Preserve the full summary's contents while its grid collapses. A polling
     // update can reset isOpen at the same time as compact; replacing the gas row
     // with the taller disclosure row would otherwise jump before the collapse.
@@ -45,14 +48,14 @@ export function QuoteSummaryView({
     const summaryOpen = compact ? lastExpanded : isOpen;
 
     return (
-        <div
-            style={swapFlowTransitionStyle}
-            className={clsx(
-                'flex flex-col w-full p-2 transition-[padding-bottom,margin-bottom] motion-reduce:transition-none',
-                {
-                    '!pb-0 !-mb-1': !compact && isOpen,
-                },
-            )}
+        <motion.div
+            initial={false}
+            transition={transition}
+            animate={{
+                paddingBottom: !compact && isOpen ? '0rem' : '0.5rem',
+                marginBottom: !compact && isOpen ? '-0.25rem' : '0rem',
+            }}
+            className="flex flex-col w-full p-2"
         >
             {showDestinationAddress &&
                 values.destination_address &&
@@ -98,10 +101,11 @@ export function QuoteSummaryView({
                         )}
                 </div>
             </div>
-            <div
-                className="grid transition-[grid-template-rows,opacity] motion-reduce:transition-none"
-                style={{
-                    ...swapFlowTransitionStyle,
+            <motion.div
+                className="grid"
+                initial={false}
+                transition={transition}
+                animate={{
                     gridTemplateRows: compact ? '0fr' : '1fr',
                     opacity: compact ? 0 : 1,
                 }}
@@ -133,7 +137,7 @@ export function QuoteSummaryView({
                         </button>
                     </div>
                 </div>
-            </div>
-        </div>
+            </motion.div>
+        </motion.div>
     );
 }

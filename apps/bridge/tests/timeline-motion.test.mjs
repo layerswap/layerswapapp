@@ -142,6 +142,47 @@ test('reversing an unfinished standard transfer transition settles on the latest
     }
 });
 
+test('quote compaction and progress entry exchange space on the same animation frames', async () => {
+    const root = createRoot(container);
+    const scene = processing => React.createElement(SwapContentView, {
+        summary: React.createElement('div', null, 'Summary'),
+        quote: React.createElement(QuoteSummaryView, {
+            compact: processing, isOpen: false, quoteData: { quote: {} }, values: {},
+            showDestinationAddress: false,
+            slippage: React.createElement('div', { 'data-slippage': true }, 'Slippage'),
+            detailsButton: 'Fees',
+        }),
+        compactQuote: processing,
+        transferStage: processing ? 'processing' : 'withdraw',
+    }, processing
+        ? React.createElement(StepsPanel, null, 'Processing deposit')
+        : React.createElement('button', null, 'Confirm in your wallet'));
+    try {
+        await act(() => root.render(scene(false)));
+        await settle();
+        const quote = container.querySelector('[data-quote-transition]');
+        const extras = container.querySelector('[data-slippage]').parentElement.parentElement;
+        for (const processing of [true, false]) {
+            await act(() => root.render(scene(processing)));
+            const steps = container.querySelector('[data-steps-panel]');
+            for (let frame = 0; frame < 3; frame++) {
+                await act(() => new Promise(resolve => setTimeout(resolve, 65)));
+                const progress = Number(steps.style.opacity);
+                assert.ok(progress > 0 && progress < 1, 'sample while the handoff is in flight');
+                assert.ok(Math.abs(Number(extras.style.opacity) + progress - 1) < 0.03,
+                    'quote rows must collapse as the steps enter, and expand as they exit');
+                assert.ok(Math.abs(parseFloat(extras.style.gridTemplateRows) + progress - 1) < 0.03,
+                    'quote height must follow the same progress as its opacity');
+                assert.ok(Math.abs(parseFloat(quote.style.marginTop) / 8 + progress - 1) < 0.03,
+                    'the gap between quote and summary must follow the same clock');
+            }
+            await settle();
+        }
+    } finally {
+        await act(() => root.unmount());
+    }
+});
+
 test('retry collapses failed-state actions with the steps and gives Swap now one entrance animation', async () => {
     const root = createRoot(container);
     const scene = (failed) => React.createElement(SwapContentView, {

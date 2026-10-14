@@ -318,13 +318,12 @@ test('live recipient visibility preserves disconnected destinations and respects
         quote: { source_network: network },
     };
     const { QuoteSummaryView } = loadSource(`${withdraw}Presentation/QuoteSummaryView.tsx`, {
+        ...motion,
         '@/lib/address/Address': addressModule,
-        './swapFlowAnimation': motion['./swapFlowAnimation'],
         '@/components/Common/NumFlowWithFallback': { default: empty },
         '@/components/Common/RecipientAddressView': {
             RecipientAddressView: ({ address }) => React.createElement('span', { 'data-recipient': true }, address),
         },
-        clsx: { default: require('clsx') },
         'lucide-react': { ChevronDown: empty },
     });
     const { SummaryRow } = loadSource(`${fees}SwapQuote/SummaryRow.tsx`, {
@@ -501,11 +500,10 @@ test('compact quote controls retain their nodes and cached values without gas or
         '../Slippage': { Slippage: empty },
         './DetailedEstimates': gasFees,
         '../../../Withdraw/Presentation/QuoteSummaryView': loadSource(`${withdraw}Presentation/QuoteSummaryView.tsx`, {
+            ...motion,
             '@/lib/address/Address': addressModule,
-            './swapFlowAnimation': motion['./swapFlowAnimation'],
             '@/components/Common/NumFlowWithFallback': { default: empty },
             '@/components/Common/RecipientAddressView': { RecipientAddressView: empty },
-            clsx: { default: require('clsx') },
             'lucide-react': { ChevronDown: empty },
         }),
     });
