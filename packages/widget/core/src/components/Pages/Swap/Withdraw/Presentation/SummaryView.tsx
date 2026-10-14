@@ -12,6 +12,13 @@ import NumFlowWithFallback from '@/components/Common/NumFlowWithFallback';
 import { PriceImpact } from '@/components/Input/Amount/PriceImpact';
 import { ImageWithFallback } from '@layerswap/ui-kit/components';
 import { Token } from '@layerswap/widget-types';
+import type { AmountPreset } from '@/lib/amountPresets';
+
+const amountPresetLabels: Record<AmountPreset, string> = {
+    min: 'Min',
+    half: '50%',
+    max: 'Max',
+};
 
 export type SwapInfoProps = Omit<SwapResponse, 'quote' | 'swap'> & {
     swap: SwapBasicData;
@@ -23,6 +30,7 @@ export type SwapInfoProps = Omit<SwapResponse, 'quote' | 'swap'> & {
     source?: { logo: string; display_name: string };
     destination?: { logo: string; display_name: string };
     isUsdMode?: boolean;
+    amountPreset?: AmountPreset;
     quoteIsLoading: boolean;
 };
 
@@ -37,7 +45,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
         requested_amount: requestedAmount,
         source_exchange: sourceExchange,
     } = swap;
-    const { source = from, destination = to, isUsdMode = false } = props;
+    const { source = from, destination = to, isUsdMode = false, amountPreset } = props;
     const destinationPrecision =
         destinationCurrency.precision ?? destinationCurrency.decimals;
 
@@ -51,6 +59,23 @@ const Summary: FC<SwapInfoProps> = (props) => {
         requestedAmount && sourcePriceInUsd
             ? (sourcePriceInUsd * Number(requestedAmount)).toFixed(2)
             : undefined
+    );
+    const sourceUsdValue = (
+        <span className="inline-flex items-center gap-1.5">
+            {amountPreset ? (
+                <span
+                    className="shrink-0 rounded bg-secondary-300/60 px-1.5 py-0.5 text-[10px] font-medium leading-3 text-secondary-text"
+                >
+                    <span className="sr-only">Amount preset: </span>
+                    {amountPresetLabels[amountPreset]}
+                </span>
+            ) : null}
+            <NumFlowWithFallback
+                value={Number(requestedAmountInUsd) || 0}
+                prefix="$"
+                trend={0}
+            />
+        </span>
     );
     const receiveAmountInUsd = receivedAmountInUsd?.toFixed(2) ?? (
         receiveAmount && destinationPriceInUsd
@@ -79,11 +104,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                     primary={
                         requestedAmount ? (
                             isUsdMode ? (
-                                <NumFlowWithFallback
-                                    value={Number(requestedAmountInUsd) || 0}
-                                    prefix="$"
-                                    trend={0}
-                                />
+                                sourceUsdValue
                             ) : (
                                 <span>
                                     {truncateDecimals(
@@ -106,11 +127,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                                     {` ${sourceCurrency.asset}`}
                                 </span>
                             ) : (
-                                <NumFlowWithFallback
-                                    value={Number(requestedAmountInUsd) || 0}
-                                    prefix="$"
-                                    trend={0}
-                                />
+                                sourceUsdValue
                             )
                         ) : null
                     }
