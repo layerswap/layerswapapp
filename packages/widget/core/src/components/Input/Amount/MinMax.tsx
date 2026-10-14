@@ -198,13 +198,13 @@ const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProps>(({ l
             onClick={onClick}
             type="button"
             disabled={disabled}
-            className="relative min-w-11 rounded-md px-2 py-0.5 text-secondary-text transition-colors duration-150 enabled:hover:aria-[pressed=false]:bg-secondary-300/50 enabled:hover:aria-[pressed=false]:text-primary-text aria-pressed:text-secondary-700 enabled:cursor-pointer disabled:cursor-default focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-text disabled:text-secondary-text/40 group-aria-disabled/presets:disabled:text-secondary-text motion-reduce:transition-none"
+            className="relative min-w-11 rounded-md px-2 py-0.5 text-preset-text transition-colors duration-150 enabled:hover:aria-[pressed=false]:bg-secondary-300/50 enabled:hover:aria-[pressed=false]:text-primary-text aria-pressed:text-preset-selected-text enabled:cursor-pointer disabled:cursor-default focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-preset-text disabled:text-secondary-text/40 group-aria-disabled/presets:disabled:text-secondary-text motion-reduce:transition-none"
         >
             {selected ? <motion.span
                 aria-hidden="true"
                 layoutId={reducedMotion ? undefined : 'amount-preset-selection'}
                 initial={false}
-                className="pointer-events-none absolute inset-0 rounded-md bg-secondary-text shadow-xs"
+                className="pointer-events-none absolute inset-0 rounded-md bg-preset-selected shadow-xs"
                 transition={{ type: 'spring', duration: 0.25, bounce: 0 }}
             /> : null}
             <span className="relative z-10">{label}</span>

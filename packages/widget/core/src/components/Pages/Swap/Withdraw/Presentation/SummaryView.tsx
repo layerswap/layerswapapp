@@ -64,7 +64,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
         <span className="inline-flex items-center gap-1.5">
             {amountPreset ? (
                 <span
-                    className="shrink-0 rounded bg-secondary-300/60 px-1.5 py-0.5 text-[10px] font-medium leading-3 text-secondary-text"
+                    className="shrink-0 rounded bg-secondary-300/60 px-1.5 py-0.5 text-[10px] font-medium leading-3 text-preset-badge-text"
                 >
                     <span className="sr-only">Amount preset: </span>
                     {amountPresetLabels[amountPreset]}

@@ -1,5 +1,6 @@
 import { FC } from "react";
 import { THEME_COLORS, ThemeData } from "../Models/Theme";
+import { resolveAmountPresetColors } from "../helpers/amountPresetColors";
 
 type Props = {
     themeData?: ThemeData | null
@@ -57,6 +58,7 @@ export const adjustBorderRadius = (key: string, borderRadiusType: string | undef
 const ColorSchema: FC<Props> = ({ themeData }) => {
     const fallbackTheme = THEME_COLORS.default;
     const mergedTheme = mergeWithFallback(themeData, fallbackTheme);
+    const presetColors = resolveAmountPresetColors(mergedTheme.secondary!, mergedTheme.primary!);
 
     return (
         <>
@@ -99,6 +101,11 @@ const ColorSchema: FC<Props> = ({ themeData }) => {
                     --ls-colors-secondary-800: ${mergedTheme.secondary?.[800]};
                     --ls-colors-secondary-900: ${mergedTheme.secondary?.[900]};
                     --ls-colors-secondary-text: ${mergedTheme.secondary?.text};
+
+                    --ls-colors-preset-selected: ${presetColors.selectedBackground};
+                    --ls-colors-preset-selected-text: ${presetColors.selectedText};
+                    --ls-colors-preset-text: ${presetColors.text};
+                    --ls-colors-preset-badge-text: ${presetColors.badgeText};
 
                     --ls-colors-warning-foreground: ${mergedTheme.warning?.Foreground};
                     --ls-colors-warning-background: ${mergedTheme.warning?.Background};
