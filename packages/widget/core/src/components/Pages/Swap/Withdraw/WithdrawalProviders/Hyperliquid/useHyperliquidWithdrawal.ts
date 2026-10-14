@@ -56,7 +56,7 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
     const initialSettings = useInitialSettings()
     const { onWalletWithdrawalSuccess } = useWalletWithdrawalState()
     const { swapDetails } = useSwapDataState()
-    const { createSwap, setSwapId, startFreshSwapAttempt, mutateSwap, setWalletActionExecuting } = useSwapDataUpdate()
+    const { createSwap, setSwapId, startFreshSwapAttempt, mutateSwap, acquireWalletExecution } = useSwapDataUpdate()
     const { executeTransfer } = useTransfer()
     const { onSwapLifecycle } = useCallbacks()
 
@@ -105,7 +105,7 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
             })
         }
         submittingRef.current = true
-        setWalletActionExecuting(true)
+        const releaseWalletExecution = acquireWalletExecution()
         setError(undefined)
         setRejected(false)
         setLoading(true)
@@ -219,14 +219,14 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
             }
         } finally {
             // Keep adjustment locked through active requests, even if this view closes.
-            setWalletActionExecuting(false)
+            releaseWalletExecution()
             if (mountedRef.current) {
                 setLoading(false)
                 setProgress(undefined)
             }
             submittingRef.current = false
         }
-    }, [sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, networks, sourceRoutes, swapId, swapDetails, refuel, initialSettings, wallet, createSwap, setSwapId, startFreshSwapAttempt, mutateSwap, setWalletActionExecuting, executeTransfer, onWalletWithdrawalSuccess, swapBasicData.requested_amount, swapBasicData.amountMode, swapBasicData.amountPresetSource, error, rejected, onSwapLifecycle])
+    }, [sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, networks, sourceRoutes, swapId, swapDetails, refuel, initialSettings, wallet, createSwap, setSwapId, startFreshSwapAttempt, mutateSwap, acquireWalletExecution, executeTransfer, onWalletWithdrawalSuccess, swapBasicData.requested_amount, swapBasicData.amountMode, swapBasicData.amountPresetSource, error, rejected, onSwapLifecycle])
 
     return {
         handleWithdraw,

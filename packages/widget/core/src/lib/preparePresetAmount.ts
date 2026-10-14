@@ -7,7 +7,7 @@ import { resolveExtendedRoutePlan } from './extendedRoutes/registry'
 import { transformLimitsForExtendedRoute, type ExtendedLimits } from './extendedRoutes/transforms'
 import { useBalanceStore } from '@/stores/balanceStore'
 import { resolverService } from './resolvers/resolverService'
-import { calculatePresetAmount, isAmountPreset, resolvePresetAmount } from './amountPresets'
+import { calculatePresetAmount, isAmountPreset, resolvePresetAmount, supportsLiveAmountPreset } from './amountPresets'
 
 /** Fresh reads before creation. Never changes a created swap or its actions. */
 export async function preparePresetAmount(values: SwapFormValues, address: string | undefined, wallet: Wallet | undefined, sourceRoutes: NetworkRoute[], useGasless: boolean, publishLimits?: (key: string, response: ApiResponse<ExtendedLimits>) => Promise<unknown>) {
@@ -16,6 +16,8 @@ export async function preparePresetAmount(values: SwapFormValues, address: strin
     const mode = isAmountPreset(values.amountMode) ? values.amountMode : 'max'
     const walletFlow = values.depositMethod === 'wallet'
     if (walletFlow && (!address || !wallet)) throw new Error('Connect your source wallet.')
+    if (walletFlow && !supportsLiveAmountPreset(from, fromAsset))
+        throw new Error('Live amount updates are unavailable for this asset. Select an amount again.')
     const plan = resolveExtendedRoutePlan({
         sourceNetworkName: from.name, sourceTokenSymbol: fromAsset.symbol,
         destinationNetworkName: to.name, destinationTokenSymbol: toAsset.symbol,
@@ -44,6 +46,8 @@ export async function preparePresetAmount(values: SwapFormValues, address: strin
     if (!walletFlow) {
         if (mode === 'half') throw new Error('Connect your source wallet to use 50%.')
         const reviewed = Number(values.amount)
+        if (mode === 'max' && reviewed < limits.min_amount)
+            throw new Error('The minimum swap amount increased. Review the updated amount and quote, then continue.')
         return reviewed >= limits.min_amount && reviewed <= limits.max_amount
             ? values.amount!
             : resolvePresetAmount(mode, limits.max_amount, limits.min_amount, fromAsset.decimals)

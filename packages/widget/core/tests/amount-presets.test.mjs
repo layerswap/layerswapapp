@@ -4,7 +4,7 @@ import { createRequire } from 'node:module'
 import React, { act, createElement, createContext, StrictMode } from 'react'
 import { Formik, useFormikContext } from 'formik'
 import { JSDOM } from 'jsdom'
-import { loadSource, amountPresets } from './helpers/source.mjs'
+import { loadSource, amountPresets, maxHelpers, rounding } from './helpers/source.mjs'
 
 const require = createRequire(import.meta.url)
 const dom = new JSDOM('<!doctype html><html><body></body></html>')
@@ -31,6 +31,7 @@ const { default: Controller } = loadSource('components/Pages/Swap/Form/AmountPre
     state.probes.push(amount)
     if (state.deferred) return state.deferred.promise
     if (state.error) throw state.error
+    if (state.providerGas) return state.providerGas()
     return { gas: state.gas, reserve: state.reserve, token }
   } }) } },
 })
@@ -53,7 +54,7 @@ let usd
 function UsdProbe() {
   const { values, setFieldValue } = useFormikContext()
   usd = useUsdTokenSync({ quote: { source_token: { ...token, price_in_usd: state.usdPrice } },
-    fromCurrency: token, amount: values.amount, amountMode: values.amountMode, setFieldValue })
+    fromCurrency: values.fromAsset, amount: values.amount, amountMode: values.amountMode, setFieldValue })
   return null
 }
 let root, container, formik, mutate, initialValues, config
@@ -62,7 +63,7 @@ function Probe() {
   formik = useFormikContext()
   mutate = useSWRConfig().mutate
   return createElement(React.Fragment, null, createElement(Controller), state.usdMode ? createElement(UsdProbe) : null,
-    state.exchangeInput ? createElement(ExchangeAmountField) : null)
+    state.exchangeInput ? createElement(ExchangeAmountField) : null, state.renderPresets ? createElement(PresetButtons) : null)
 }
 const render = () => act(async () => root.render(createElement(StrictMode, null,
   createElement(SWRConfig, { value: config },
@@ -73,7 +74,8 @@ beforeEach(() => {
   container = document.createElement('div'); document.body.append(container); root = createRoot(container)
   Object.assign(state, { account: { id: 'wallet', address: 'source' }, wallets: [{ id: 'wallet' }],
     balances: [{ amount: 1, network: network.name, token: 'ETH', request_time: 1 }], gas: 0.01, reserve: 0,
-    usdMode: false, exchangeInput: false, usdPrice: 2000, limit: 10, minimum: 0.001, probes: [], locked: false, revision: 0, preparedDraft: undefined, deferred: undefined, error: undefined, balanceError: undefined, limitsError: undefined })
+    usdMode: false, exchangeInput: false, renderPresets: false, providerGas: undefined, previewGas: undefined,
+    usdPrice: 2000, limit: 10, minimum: 0.001, probes: [], locked: false, revision: 0, preparedDraft: undefined, deferred: undefined, error: undefined, balanceError: undefined, limitsError: undefined })
   initialValues = { amountMode: 'max', amountPresetSource: amountPresets.amountPresetSource(network.name, 'ETH', 'wallet', 'source'),
     amount: '0.5', from: network, fromAsset: token, to: { name: 'BASE_MAINNET' }, toAsset: token,
     destination_address: 'dest', depositMethod: 'wallet' }
@@ -201,6 +203,25 @@ test('small balances stay plain decimals and cannot be rounded above the availab
     balance: { amount: 0.0000005 }, limit: 10, estimateGas: async () => ({ token, gas: 0.00000001 }) })
   assert.equal(result, '0.000000489')
 })
+
+for (const mode of ['min', 'half', 'max']) {
+  for (const price of [1, 4000]) {
+    test(`${mode}: changing source token to a $${price} asset preserves the entered USD value`, async () => {
+      initialValues.amountMode = mode
+      state.usdMode = true
+      usdStore.setState({ isUsdMode: true, usdAmount: '' })
+      await render()
+      const reviewedUsd = usd.usdAmount
+      const nextToken = { symbol: price === 1 ? 'USDC' : 'OTHER', decimals: 6, precision: 6, price_in_usd: price }
+      // RoutePicker updates fromAsset before the network, without pre-clearing the preset.
+      await act(() => formik.setFieldValue('fromAsset', nextToken))
+      assert.equal(formik.values.amountMode, 'manual')
+      assert.equal(formik.values.amountPresetSource, undefined)
+      assert.equal(usd.usdAmount, reviewedUsd)
+      assert.ok(Math.abs(Number(formik.values.amount) * price - Number(reviewedUsd)) < 0.005)
+    })
+  }
+}
 
 test('provider fees charged in the transferred token are reserved even on a different native asset', async () => {
   const usdc = { symbol: 'USDC', decimals: 6 }
@@ -424,4 +445,100 @@ test('Min resumes from the fresh confirmation limits instead of reverting the re
   await render()
   assert.equal(formik.values.amount, '0.2')
   assert.equal(state.draft.amount, '0.2')
+})
+
+const { default: MinMax } = loadSource('components/Input/Amount/MinMax.tsx', {
+  react: { ...React, default: React }, formik: require('formik'),
+  '@/lib/gases/useSWRGas': { default: () => ({ gasData: state.previewGas, isGasLoading: false }) },
+  'framer-motion': require('framer-motion'), './helpers': maxHelpers,
+  '@/components/shadcn/tooltip': { Tooltip: ({ children }) => children, TooltipTrigger: ({ children }) => children, TooltipContent: () => null },
+  '@/context/swapAccounts': { useSelectedAccount: () => state.account },
+  '@/lib/balances/useBalance': { useBalance: () => ({ balances: state.balances, mutate() {} }) },
+  '@/hooks/useWallet': { default: () => ({ wallets: state.wallets }) },
+  '@/stores/usdModeStore': { useUsdModeStore: usdStore }, '@/hooks/useUsdTokenSync': { skipNextUsdSync() {} },
+  '@/components/utils/formatUsdAmount': require('@layerswap/utils/common'),
+  '@/components/utils/RoundDecimals': rounding,
+  '@/hooks/useHydratedReducedMotion': { useHydratedReducedMotion: () => true },
+  '@/lib/amountPresets': amountPresets,
+})
+function PresetButtons() {
+  const { values } = useFormikContext()
+  return createElement(MinMax, { from: values.from, fromCurrency: values.fromAsset,
+    limitsMinAmount: state.minimum, limitsMaxAmount: state.limit,
+    depositMethod: values.depositMethod, onActionHover() {} })
+}
+const { BalanceResolver } = loadSource('lib/balances/balanceResolver.ts', {
+  '@/lib/ErrorHandler': { ErrorHandler() {} }, '@layerswap/widget-types': {},
+  '../knownIds': require('@layerswap/utils/known-ids'),
+  '../widgetTelemetry': { widgetTelemetry: { beginOperation: () => () => {} } },
+})
+// Use the bundled adapter's actual unsupported gas implementation.
+const { TonGasProvider } = loadSource('../../../wallets/adapters/ton/src/tonGasProvider.ts', {
+  '@layerswap/utils': { KnownInternalNames: require('@layerswap/utils/known-ids').default },
+})
+async function setupUnsupportedAdapter(name) {
+  const asset = name === 'TON_MAINNET' ? { symbol: 'TON', decimals: 9 } : { symbol: 'USDC', decimals: 6 }
+  initialValues.from = { name, token: asset, deposit_methods: ['wallet'] }
+  initialValues.fromAsset = asset
+  initialValues.amountMode = 'manual'
+  initialValues.amountPresetSource = undefined
+  state.balances = name === 'TON_MAINNET'
+    ? [{ network: name, token: asset.symbol, amount: 10, request_time: 1 }]
+    : (await new BalanceResolver().getBalance(initialValues.from, 'source')).balances
+  state.minimum = 1
+  state.renderPresets = true
+  if (name === 'TON_MAINNET') {
+    state.providerGas = () => new TonGasProvider().getGas({ network: initialValues.from, token: asset, address: 'source' })
+    state.previewGas = await state.providerGas()
+  }
+}
+
+for (const name of ['TON_MAINNET', 'PARADEX_MAINNET', 'PARADEX_TESTNET']) {
+  test(`${name}: supported quick fills remain usable without advertising unavailable live updates`, async () => {
+    await setupUnsupportedAdapter(name)
+    await render()
+    assert.equal(container.querySelector('[data-attr="half-amount"]').disabled, true)
+    if (name === 'TON_MAINNET') assert.equal(container.querySelector('[data-attr="max-amount"]').disabled, true)
+    for (const mode of name === 'TON_MAINNET' ? ['min'] : ['min', 'max']) {
+      const button = container.querySelector(`[data-attr="${mode}-amount"]`)
+      assert.equal(button.disabled, false)
+      await act(() => button.click())
+      assert.equal(formik.values.amount, mode === 'min' ? '1' : '10')
+      assert.equal(formik.values.amountMode, 'manual')
+      assert.equal(formik.values.amountPresetSource, undefined)
+      assert.equal(formik.values.amountPresetPending, false)
+      assert.equal(formik.values.amountPresetError, undefined)
+      assert.equal(button.getAttribute('aria-pressed'), 'false')
+      assert.equal(state.probes.length, 0, 'an unsupported live preset must not enter a retry loop')
+    }
+  })
+
+  test(`${name}: stale live intent is cleared instead of waiting forever for unsupported data`, async () => {
+    await setupUnsupportedAdapter(name)
+    initialValues.amountMode = 'min'
+    initialValues.amountPresetSource = amountPresets.amountPresetSource(name, initialValues.fromAsset.symbol, 'wallet', 'source')
+    initialValues.amountPresetPending = true
+    initialValues.amountPresetError = 'Network fee unavailable'
+    await render()
+    assert.equal(formik.values.amount, '0.5')
+    assert.equal(formik.values.amountMode, 'manual')
+    assert.equal(formik.values.amountPresetPending, false)
+    assert.equal(formik.values.amountPresetError, undefined)
+    assert.equal(state.probes.length, 0)
+  })
+}
+
+test('a temporary missing gas estimate on a supported adapter keeps Min selected and blocked', async () => {
+  initialValues.amountMode = 'manual'
+  state.renderPresets = true
+  state.providerGas = () => undefined
+  await render()
+  await act(() => container.querySelector('[data-attr="min-amount"]').click())
+  assert.equal(formik.values.amountMode, 'min')
+  assert.equal(formik.values.amountPresetError, 'Network fee unavailable')
+  state.providerGas = undefined
+  await act(async () => { await mutate(key => Array.isArray(key) && key[0] === 'amount-preset') })
+  assert.equal(formik.values.amountMode, 'min')
+  assert.equal(formik.values.amountPresetError, undefined)
+  assert.equal(formik.values.amountPresetPending, false)
 })

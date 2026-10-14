@@ -58,6 +58,7 @@ export type UpdateSwapInterface = {
     mutateSwap: KeyedMutator<ApiResponse<SwapResponse>>
     mutateDepositActions: KeyedMutator<ApiResponse<DepositAction[]>>
     setWalletActionExecuting: (value: boolean) => void
+    acquireWalletExecution: () => () => void
     setSwapViewMounted: (value: boolean) => void
     setDepositAddressIsFromAccount: (value: boolean) => void,
     setWithdrawType: (value: WithdrawType) => void
@@ -131,10 +132,28 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const [approvalWait, setApprovalWait] = useState<ApprovalTransaction>()
     const walletActionInFlight = useRef(false)
     const [walletActionExecuting, setWalletActionExecutingState] = useState(false)
-    const setWalletActionExecuting = useCallback((value: boolean) => {
-        walletActionInFlight.current = value
-        setWalletActionExecutingState(value)
+    const regularWalletExecuting = useRef(false)
+    const providerExecutions = useRef(new Set<symbol>())
+    const publishWalletExecution = useCallback(() => {
+        const executing = regularWalletExecuting.current || providerExecutions.current.size > 0
+        walletActionInFlight.current = executing
+        setWalletActionExecutingState(executing)
     }, [])
+    const setWalletActionExecuting = useCallback((value: boolean) => {
+        regularWalletExecuting.current = value
+        publishWalletExecution()
+    }, [publishWalletExecution])
+    const acquireWalletExecution = useCallback(() => {
+        // A remounted view may retry while the original wallet request is pending.
+        // Each request releases only its own hold, even when the executor rejects it.
+        const lease = Symbol()
+        providerExecutions.current.add(lease)
+        publishWalletExecution()
+        return () => {
+            providerExecutions.current.delete(lease)
+            publishWalletExecution()
+        }
+    }, [publishWalletExecution])
     const [swapViewMounted, setSwapViewMounted] = useState(false)
     const watchApprovalTransaction = useCallback((transaction: ApprovalTransaction) => {
         setApprovalWait(transaction)
@@ -586,6 +605,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         mutateSwap: mutate,
         mutateDepositActions,
         setWalletActionExecuting,
+        acquireWalletExecution,
         setSwapViewMounted,
         setDepositAddressIsFromAccount,
         setWithdrawType,
@@ -596,7 +616,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         setSubmitedFormValues,
         setQuoteLoading,
         setSwapModalOpen
-    }), [createSwap, syncAmountPresetDraft, canAdjustAmount, mutate, mutateDepositActions, setWalletActionExecuting, handleUpdateSwapid, markWalletExecutionStarted, startFreshSwapAttempt, watchApprovalTransaction, setSubmitedFormValues]);
+    }), [createSwap, syncAmountPresetDraft, canAdjustAmount, mutate, mutateDepositActions, setWalletActionExecuting, acquireWalletExecution, handleUpdateSwapid, markWalletExecutionStarted, startFreshSwapAttempt, watchApprovalTransaction, setSubmitedFormValues]);
 
     const stateValue = useMemo(() => ({
         withdrawType,

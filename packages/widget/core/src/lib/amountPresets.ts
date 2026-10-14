@@ -1,12 +1,22 @@
 import type { GasWithToken, NetworkRoute, Token, TokenBalance } from '@layerswap/widget-types'
 import { resolveMaxAllowedAmount } from '@/components/Input/Amount/helpers'
 import { ceilToDecimals, truncateToDecimals } from '@/components/utils/RoundDecimals'
+import KnownInternalNames from '@layerswap/utils/known-ids'
 
 export type AmountPreset = 'min' | 'half' | 'max'
 export type AmountMode = 'manual' | AmountPreset
 
 export function isAmountPreset(mode: string | undefined): mode is AmountPreset {
     return mode === 'min' || mode === 'half' || mode === 'max'
+}
+
+/** Bundled adapter capability gaps, not a fallback for transient RPC failures.
+ * These routes retain quick fills until balance/fee estimation is supported. */
+export function supportsLiveAmountPreset(network: NetworkRoute, token: Token): boolean {
+    if (network.name === KnownInternalNames.Networks.ParadexMainnet
+        || network.name === KnownInternalNames.Networks.ParadexTestnet) return false
+    return !(network.name === KnownInternalNames.Networks.TONMainnet
+        && token.symbol === network.token?.symbol)
 }
 
 export function amountPresetSource(network?: string, token?: string, accountId?: string, address?: string): string {

@@ -18,6 +18,7 @@ export const rounding = loadSource('components/utils/RoundDecimals.ts')
 export const maxHelpers = loadSource('components/Input/Amount/helpers.ts', { '@/components/utils/RoundDecimals': rounding })
 export const amountPresets = loadSource('lib/amountPresets.ts', {
     '@/components/Input/Amount/helpers': maxHelpers, '@/components/utils/RoundDecimals': rounding,
+    '@layerswap/utils/known-ids': require('@layerswap/utils/known-ids'),
 })
 export const swapProgress = loadSource('helpers/swapProgress.ts', {
     './gasless': loadSource('helpers/gasless.ts'),

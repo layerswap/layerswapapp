@@ -23,6 +23,14 @@ const swapCreation = loadSource('lib/swapCreation.ts', {
   '@/lib/ErrorHandler': { ErrorHandler: () => {} },
   './swapLifecycle': { lifecycleErrorDetails: () => ({}) },
 })
+const { preparePresetAmount } = loadSource('lib/preparePresetAmount.ts', {
+  '@layerswap/widget-types': { usesDepository: () => false },
+  '@/hooks/useFee': { buildLimitsUrl: () => '/limits' },
+  './apiClients/layerSwapApiClient': { default: class { async fetcher() { return { data: state.limits } } } },
+  './extendedRoutes/registry': { resolveExtendedRoutePlan: () => undefined },
+  './extendedRoutes/transforms': {}, '@/stores/balanceStore': {}, './resolvers/resolverService': {},
+  './amountPresets': amountPresets,
+})
 const context = createSwapContext({
   Client: class {
     async CreateSwapAsync(params) {
@@ -32,9 +40,12 @@ const context = createSwapContext({
   },
   getSwapId: () => undefined, getAccount: () => state.account,
   stores,
-  swr: { default: () => ({}) },
+  swr: { default: () => ({}), useSWRConfig: () => ({ mutate: async (key, response) => { state.publishedLimits.push({ key, response }) } }) },
   overrides: {
-    '@/lib/preparePresetAmount': { preparePresetAmount: async () => { state.prepares++; return state.preparation.promise } },
+    '@/lib/preparePresetAmount': { preparePresetAmount: async (...args) => {
+      state.prepares++
+      return state.limits ? preparePresetAmount(...args) : state.preparation.promise
+    } },
     '@/helpers/gasless': { isGaslessCapableRoute: () => false },
     '@/lib/extendedRoutes/registry': { resolveExtendedRoutePlan: () => undefined },
     '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
@@ -53,7 +64,7 @@ const render = key => act(() => root.render(createElement(context.SwapDataProvid
 beforeEach(async () => {
   transactionStore.setState({ swapTransactions: {}, pendingSubmissions: {} })
   container = document.createElement('div'); document.body.append(container); root = createRoot(container)
-  Object.assign(state, { account: { id: 'wallet', address: 'source' }, created: [], prepares: 0, preparation: Promise.withResolvers() })
+  Object.assign(state, { account: { id: 'wallet', address: 'source' }, created: [], prepares: 0, preparation: Promise.withResolvers(), limits: undefined, publishedLimits: [] })
   values = { from: network, to: network, fromAsset: token, toAsset: token, amount: '0.9', destination_address: 'destination',
     depositMethod: 'wallet', amountMode: 'max', amountPresetSource: amountPresets.amountPresetSource(network.name, token.symbol, 'wallet', 'source') }
   await render()
@@ -205,6 +216,62 @@ test('wallet execution locks Max synchronously before the next render', async ()
   assert.equal(data.swapBasicData.requested_amount, '0.9')
   await act(() => updates.setWalletActionExecuting(false))
   assert.equal(data.amountPresetLocked, false)
+})
+
+test('provider execution leases cannot release each other or the regular wallet lock', async () => {
+  let releaseFirst, releaseRetry
+  await act(() => {
+    releaseFirst = updates.acquireWalletExecution()
+    releaseRetry = updates.acquireWalletExecution()
+    assert.equal(updates.canAdjustAmount(), false)
+    releaseRetry()
+    releaseRetry() // A cleanup must be idempotent.
+    updates.setWalletActionExecuting(false)
+    assert.equal(updates.canAdjustAmount(), false)
+    assert.equal(updates.syncAmountPresetDraft({ ...values, amount: '0.3' }), false)
+  })
+  assert.equal(data.amountPresetLocked, true)
+  await act(() => {
+    updates.setWalletActionExecuting(true)
+    releaseFirst()
+    assert.equal(updates.canAdjustAmount(), false)
+  })
+  await act(() => updates.setWalletActionExecuting(false))
+  assert.equal(data.amountPresetLocked, false)
+  assert.equal(updates.canAdjustAmount(), true)
+})
+
+test('exchange Max below fresh minimum stops real preparation and creation until a new explicit submission', async () => {
+  state.account = undefined
+  state.limits = { min_amount: 0.95, max_amount: 2 }
+  const submitted = { ...values, depositMethod: 'deposit_address', fromExchange: { name: 'exchange' },
+    amountPresetSource: amountPresets.amountPresetSource(network.name, token.symbol) }
+  await act(async () => {
+    updates.setSubmitedFormValues(submitted)
+    await assert.rejects(updates.createSwap(submitted, {}), /minimum swap amount increased/)
+  })
+  assert.equal(state.created.length, 0)
+  assert.deepEqual(state.publishedLimits, [{ key: '/limits', response: { data: state.limits } }])
+  assert.equal(data.amountPresetRevision, 1)
+  assert.equal(data.amountPresetLocked, false)
+  // The refreshed form is reviewed and explicitly submitted again.
+  const reviewed = { ...submitted, amount: '2' }
+  await act(async () => {
+    updates.setSubmitedFormValues(reviewed)
+    await updates.createSwap(reviewed, {})
+  })
+  assert.deepEqual(state.created.map(request => request.amount), ['2'])
+})
+
+test('exchange Max within fresh limits preserves the reviewed amount when the cap increases', async () => {
+  state.limits = { min_amount: 0.1, max_amount: 2 }
+  const submitted = { ...values, depositMethod: 'deposit_address', fromExchange: { name: 'exchange' },
+    amountPresetSource: amountPresets.amountPresetSource(network.name, token.symbol) }
+  await act(async () => {
+    updates.setSubmitedFormValues(submitted)
+    await updates.createSwap(submitted, {})
+  })
+  assert.deepEqual(state.created.map(request => request.amount), ['0.9'])
 })
 
 

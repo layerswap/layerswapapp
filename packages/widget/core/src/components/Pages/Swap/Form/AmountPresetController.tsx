@@ -7,7 +7,7 @@ import { useSelectedAccount } from '@/context/swapAccounts'
 import useWallet from '@/hooks/useWallet'
 import { transformFormValuesToQuoteArgs, useQuoteData } from '@/hooks/useFee'
 import { useBalance } from '@/lib/balances/useBalance'
-import { calculatePresetAmount, amountPresetSource, isAmountPreset, resolvePresetAmount, AmountPresetUnavailableError, type AmountPreset } from '@/lib/amountPresets'
+import { calculatePresetAmount, amountPresetSource, isAmountPreset, resolvePresetAmount, supportsLiveAmountPreset, AmountPresetUnavailableError, type AmountPreset } from '@/lib/amountPresets'
 import { resolverService } from '@/lib/resolvers/resolverService'
 
 /** Lives with Formik, including when the amount input unmounts in the deposit widget. */
@@ -34,14 +34,15 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
     const revision = swap?.amountPresetRevision ?? 0
     const previousRevision = useRef(revision)
     const needsBalance = walletFlow && !!wallet
-    const { balances, error: balanceError } = useBalance(sameSource && !frozen && needsBalance ? account?.address : undefined, values.from, { refreshInterval: 20000, dedupeInterval: 20000 })
+    const liveSupported = !needsBalance || (!!values.from && !!values.fromAsset && supportsLiveAmountPreset(values.from, values.fromAsset))
+    const { balances, error: balanceError } = useBalance(sameSource && liveSupported && !frozen && needsBalance ? account?.address : undefined, values.from, { refreshInterval: 20000, dedupeInterval: 20000 })
     const balance = balances?.find(b => b.network === values.from?.name && b.token === values.fromAsset?.symbol)
     const { maxAllowedAmount, minAllowedAmount, limitsError } = useQuoteData(
-        !frozen && sameSource ? transformFormValuesToQuoteArgs(values) : undefined,
+        !frozen && sameSource && liveSupported ? transformFormValuesToQuoteArgs(values) : undefined,
     )
     // The chosen preset and both limits identify the calculation. The amount is
     // intentionally excluded: applying a result must not start another request.
-    const key = !frozen && sameSource && (!needsBalance || balance) && maxAllowedAmount !== undefined && minAllowedAmount !== undefined
+    const key = !frozen && sameSource && liveSupported && (!needsBalance || balance) && maxAllowedAmount !== undefined && minAllowedAmount !== undefined
         ? ['amount-preset', mode, source, values.depositMethod, balance?.amount, balance?.request_time, maxAllowedAmount, minAllowedAmount,
             values.to?.name, values.toAsset?.symbol, values.destination_address, !!values.refuel, revision]
         : null
@@ -64,7 +65,7 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
 
     useEffect(() => {
         if (frozen) return
-        if (!sameSource) {
+        if (!sameSource || !liveSupported) {
             const next = { ...values, amountMode: 'manual' as const, amountPresetSource: undefined, amountPresetError: undefined, amountPresetPending: false }
             if (updates?.syncAmountPresetDraft(next) === false) return
             void setValues(next, true)
@@ -80,6 +81,6 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
         if (updates?.syncAmountPresetDraft(next) === false) return
         if (next.amount !== values.amount || message !== values.amountPresetError || pending !== values.amountPresetPending)
             void setValues(next, true)
-    }, [amount, error, message, pending, sameSource, frozen, values, setValues, updates, revision, swap?.swapId, swap?.swapBasicData])
+    }, [amount, error, message, pending, sameSource, liveSupported, frozen, values, setValues, updates, revision, swap?.swapId, swap?.swapBasicData])
     return null
 }

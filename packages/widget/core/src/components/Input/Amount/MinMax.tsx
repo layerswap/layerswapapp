@@ -15,7 +15,7 @@ import { ceilUsd, floorUsd } from "@/components/utils/formatUsdAmount";
 import { truncateToDecimals, isScientific } from "@/components/utils/RoundDecimals";
 import { useHydratedReducedMotion } from "@/hooks/useHydratedReducedMotion";
 
-import { amountPresetSource, resolvePresetAmount, type AmountPreset } from '@/lib/amountPresets';
+import { amountPresetSource, resolvePresetAmount, supportsLiveAmountPreset, type AmountPreset } from '@/lib/amountPresets';
 
 type MinMaxProps = {
     fromCurrency: NetworkRouteToken,
@@ -108,9 +108,10 @@ const MinMax = (props: MinMaxProps) => {
             }
             setUsdAmount(usdValue);
         }
-        void setValues({ ...values, amount: sanitizedValue, amountMode: mode,
-            amountPresetSource: amountPresetSource(from.name, fromCurrency.symbol, walletFlow && isWalletConnected ? selectedSourceAccount?.id : undefined, walletFlow && isWalletConnected ? selectedSourceAccount?.address : undefined),
-            amountPresetPending: true, amountPresetError: undefined }, true)
+        const live = !walletFlow || !isWalletConnected || supportsLiveAmountPreset(from, fromCurrency)
+        void setValues({ ...values, amount: sanitizedValue, amountMode: live ? mode : 'manual',
+            amountPresetSource: live ? amountPresetSource(from.name, fromCurrency.symbol, walletFlow && isWalletConnected ? selectedSourceAccount?.id : undefined, walletFlow && isWalletConnected ? selectedSourceAccount?.address : undefined) : undefined,
+            amountPresetPending: live, amountPresetError: undefined }, true)
         onActionHover(undefined)
     }
 
