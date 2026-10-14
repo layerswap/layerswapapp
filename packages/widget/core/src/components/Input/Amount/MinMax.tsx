@@ -2,6 +2,7 @@ import { useFormikContext } from "formik";
 import useSWRGas from "@/lib/gases/useSWRGas";
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import React, { useMemo } from "react";
+import { Check } from "lucide-react";
 import { resolveMaxAllowedAmount } from "./helpers";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import { useSelectedAccount } from "@/context/swapAccounts";
@@ -165,8 +166,9 @@ const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProps>(({ l
             onClick={onClick}
             type="button"
             disabled={disabled}
-            className="px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-text cursor-pointer aria-pressed:bg-secondary-200 aria-pressed:text-primary-text aria-pressed:inset-ring aria-pressed:inset-ring-secondary-100 disabled:opacity-50 enabled:active:animate-press-down"
+            className="group/preset inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-text cursor-pointer aria-pressed:bg-secondary-100 aria-pressed:text-primary-text aria-pressed:inset-ring aria-pressed:inset-ring-secondary-text/60 disabled:opacity-50 enabled:active:animate-press-down"
         >
+            <Check className="h-3 w-3 shrink-0 opacity-0 group-aria-pressed/preset:opacity-100" strokeWidth={2.5} aria-hidden="true" />
             {label}
         </button>
     );
