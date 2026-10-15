@@ -127,7 +127,7 @@ export function generateSwapInitialValuesFromSwap(swapResponse: SwapBasicData, r
     const result: SwapFormValues = {
         from,
         to,
-        amount: requested_amount?.toString(),
+        amount: requested_amount,
         fromAsset: fromCurrency,
         toAsset: toCurrency,
         destination_address,
