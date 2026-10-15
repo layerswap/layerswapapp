@@ -18,6 +18,7 @@ function loadSource(path, imports = {}) {
     const module = { exports: {} }
     new Function('require', 'module', 'exports', outputText)(name => {
         if (name === 'react/jsx-runtime') return require(name)
+        if (name === '../components/utils/resolveSwapFlow.js' || name === '@/components/utils/resolveSwapFlow') return loadSource("../src/components/utils/resolveSwapFlow.ts");
         if (name in imports) return imports[name]
         throw new Error(`Unexpected dependency: ${name}`)
     }, module, module.exports)
@@ -617,6 +618,39 @@ for (const route of ['same-network token swap', 'bridge', 'native token', 'manua
         assert.deepEqual(flow.calls.errors, [])
     })
 }
+
+test('the shared flow keeps a same-network deposit transfer on its wallet controls', async () => {
+    const flow = createWorkflow()
+    const network = { name: 'BASE_MAINNET', type: 'evm' }
+    flow.state.swapBasicData = {
+        source_network: network,
+        destination_network: network,
+        source_token: { symbol: 'USDT', contract: atomicFixtures.token.contract },
+        destination_token: { symbol: 'USDC', asset: 'USDC', decimals: 6 },
+        use_deposit_address: false,
+    }
+    flow.state.quote = { receive_amount: 2.836322, destination_token: flow.state.swapBasicData.destination_token }
+    flow.state.apiActions = [{ type: 'transfer', step: 'deposit', status: 'action_required', amount: '2.896498', to_address: '0x456' }]
+    const { resolveSwapFlow } = loadSource('../src/components/utils/resolveSwapFlow.ts')
+    flow.state.flow = resolveSwapFlow({
+        swapData: flow.state.swapBasicData,
+        depositActions: flow.state.apiActions,
+        quote: flow.state.quote,
+    })
+    flow.render()
+    await flow.poll()
+    flow.state.onWalletPrompt = () => {
+        const rendered = flow.render()
+        assert.equal(rendered.steps, undefined, 'route geometry cannot create a frontend workflow')
+        assert.equal(rendered.button.props.children, 'Confirm in your wallet')
+    }
+
+    await flow.render().button.props.onClick()
+
+    assert.equal(flow.calls.transfer.length, 1)
+    assert.deepEqual(flow.calls.batches, [])
+    assert.deepEqual(flow.calls.errors, [])
+})
 
 for (const atomic of [true, false]) test(`a changed creation quote ${atomic ? 'enters atomic wallet progress directly' : 'keeps the legacy quote-update pause'}`, async () => {
     const flow = createWorkflow({ atomic })

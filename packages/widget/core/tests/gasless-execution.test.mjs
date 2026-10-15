@@ -57,7 +57,7 @@ for (const [code, rejected, message = 'Wallet request failed'] of [[4001, true],
     assert.equal(signed, true)
     assert.deepEqual(lifecycle.map(event => event.step), ['wallet_prompt_opened', rejected ? 'wallet_action_rejected' : 'wallet_action_failed'])
     assert.equal(lifecycle.at(-1).reasonCode, rejected ? 'user_rejected' : 'internal_rpc_error')
-    assert.equal(lifecycle.at(-1).errorCode, code === undefined ? undefined : String(code))
+    assert.equal(lifecycle.at(-1).errorCode, code === undefined ? '-32603' : String(code))
     assert.equal(useGaslessPreferenceStore.getState().gaslessUnavailable, !rejected)
     assert.equal(useGaslessPreferenceStore.getState().gaslessFailureStage, rejected ? null : 'deposit')
     assert.equal(telemetry.length, 1)

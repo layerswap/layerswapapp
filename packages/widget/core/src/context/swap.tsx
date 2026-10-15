@@ -20,6 +20,7 @@ import { Address } from '@/lib/address/Address';
 import { useDepositSignatureStore, useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import { isDepositWorkflowComplete } from '@/helpers/depositActions';
 import { ResolvedSwapStatus, resolveSwapPhase } from '@/components/utils/resolveSwapPhase';
+import { resolveSwapFlow, type ResolvedSwapFlow } from '@/components/utils/resolveSwapFlow';
 import { useDepositSettings } from './depositSettings';
 import { useGaslessAuthorization } from '@/hooks/useGaslessAuthorization';
 import { useGaslessAuthorizationStatus } from '@/hooks/useGaslessAuthorizationStatus';
@@ -109,6 +110,7 @@ export type SwapContextData = {
     // step statuses, client-detected input failures). Computed once here so no reader can
     // diverge by feeding the resolver private inputs.
     resolved: ResolvedSwapStatus,
+    flow: ResolvedSwapFlow,
     swapError?: string | null | undefined,
     setSwapError?: (value: string | null) => void
 }
@@ -184,6 +186,9 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const layerswapApiClient = new LayerSwapApiClient()
     const storedWalletTransaction = useSwapTransactionStore(
         state => swapId ? state.swapTransactions[swapId] : undefined,
+    )
+    const stepTransactions = useSwapTransactionStore(
+        state => swapId ? state.stepTransactions[swapId] : undefined,
     )
     const { data, mutate, error } = useSwapPolling(swapId, initialSwapData, storedWalletTransaction?.timestamp)
     const atomicBatch = useAtomicBatchStore(state => swapId ? state.batches[swapId] : undefined)
@@ -338,9 +343,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const { isDepositFlow } = useDepositSettings()
     const gaslessAuthorization = useGaslessAuthorizationStatus(swapId, depositActionsResponse)
     const { failureStatus: gaslessFailureStatus } = useGaslessAuthorization(swapDetails, depositActionsResponse, gaslessAuthorization)
-    const gaslessAuthTx = gaslessAuthorization?.transaction
     const inputTx = swapDetails?.transactions?.find(t => t.type === TransactionType.Input)
-    const inputTransactionHash = inputTx?.transaction_hash || gaslessAuthTx?.transaction_hash || storedWalletTransaction?.hash
+    const inputTransactionHash = inputTx?.transaction_hash || gaslessAuthorization?.transaction?.transaction_hash || storedWalletTransaction?.hash
     const { data: inputTxStatusData } = useSWR<ApiResponse<{ status: TransactionStatus }>>(
         (inputTransactionHash && inputTx?.status !== BackendTransactionStatus.Completed) ? [swapBasicData?.source_network?.name, inputTransactionHash] : null,
         ([network, tx_id]: [string, string]) => layerswapApiClient.GetTransactionStatus(network, tx_id),
@@ -391,6 +395,22 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         [swapDetails, refuel, inputTxStatusFromApi, depositCompleted, walletActionExecuting,
             isDepositFlow, gaslessFailureStatus, gaslessAuthorization],
     )
+
+    const flow = useMemo(() => resolveSwapFlow({
+        swapData: swapBasicData,
+        depositActions: depositActionsResponse,
+        stepTransactions,
+        quote,
+        gaslessAuthorization,
+        sourceProvider: extendedSwapData?.sourceProvider,
+        walletExecutionStarted,
+        isDepositFlow,
+        hasRefuel: !!refuel,
+        transactionHash: inputTransactionHash,
+        outputTransactionHash: swapDetails?.transactions.find(transaction => transaction.type === TransactionType.Output)?.transaction_hash,
+        resolved,
+    }), [swapBasicData, depositActionsResponse, stepTransactions, quote, gaslessAuthorization,
+        extendedSwapData?.sourceProvider, walletExecutionStarted, isDepositFlow, refuel, resolved, inputTransactionHash, swapDetails])
 
     // Observe every API status here, regardless of which screen is mounted.
     useSwapStatusNotification(swapDetails?.id, swapDetails?.status, {
@@ -574,9 +594,10 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         walletActionFeedback,
         swapModalOpen,
         resolved,
+        flow,
         swapError,
         setSwapError
-    }), [atomicBatch, gaslessAuthorization, inputTransactionStatus, atomicBatchSupported, withdrawType, depositAddressIsFromAccount, error, swapDetailsError, depositActionsResponse, depositActionsError, approvalTransaction, quote, quoteIsLoading, quoteError, refuel, swapBasicData, swapDetails, swapId, walletExecutionStarted, walletActionFeedback, swapModalOpen, resolved, swapError]);
+    }), [atomicBatch, gaslessAuthorization, inputTransactionStatus, atomicBatchSupported, withdrawType, depositAddressIsFromAccount, error, swapDetailsError, depositActionsResponse, depositActionsError, approvalTransaction, quote, quoteIsLoading, quoteError, refuel, swapBasicData, swapDetails, swapId, walletExecutionStarted, walletActionFeedback, swapModalOpen, resolved, flow, swapError]);
 
     return (
         <SwapDataStateContext.Provider value={stateValue}>

@@ -151,9 +151,14 @@ for (const result of ['success', 'rejected', 'expired-again', 'refresh-failed', 
   })
 }
 
+const { toTransferError: starknetTransferError } = loadAdapterSource('../../../wallets/adapters/starknet/src/transferProvider/toTransferError.ts', {})
+
 for (const [label, thrown, expected] of [
-  ['adapter-declared decline', userRejectedError({ cause: { code: 4001 } }), { step: 'wallet_action_rejected', outcome: 'rejected', reasonCode: 'user_rejected', reason: 'Transaction rejected' }],
+  ['adapter-declared decline', userRejectedError({ cause: { code: 4001 } }), { step: 'wallet_action_rejected', outcome: 'rejected', reasonCode: 'user_rejected', reason: 'Transaction rejected', errorCode: '4001' }],
   ['rejected label without a declared reason', walletActionError(ActionMessageType.TransactionRejected, { message: 'Execute failed' }), { step: 'wallet_action_failed', outcome: 'failed', reasonCode: 'unknown_error', reason: 'Execute failed' }],
+  ['Braavos execution failure', starknetTransferError(new Error('Execute failed')), { step: 'wallet_action_failed', outcome: 'failed', reasonCode: 'unknown_error', reason: 'Execute failed' }],
+  ['Ready X unknown RPC failure', starknetTransferError({ code: 163, message: 'UNKNOWN_ERROR' }), { step: 'wallet_action_failed', outcome: 'failed', reasonCode: 'unknown_error', reason: 'UNKNOWN_ERROR', errorCode: '163' }],
+  ['OKX authorization failure', starknetTransferError({ code: 4100, message: 'Unauthorized' }), { step: 'wallet_action_failed', outcome: 'failed', reasonCode: 'unauthorized', reason: 'Unauthorized', errorCode: '4100' }],
 ]) {
   test(`wallet transfer outcome follows the declared reason, not the UI label: ${label}`, async t => {
     const lifecycle = []
@@ -175,6 +180,7 @@ for (const [label, thrown, expected] of [
     assert.equal(failure.outcome, expected.outcome)
     assert.equal(failure.reasonCode, expected.reasonCode)
     assert.equal(failure.reason, expected.reason)
+    assert.equal(failure.errorCode, expected.errorCode)
     assert.equal(operations.length, 1)
     assert.equal(operations[0].attributes.operation, 'wallet_transfer')
     assert.equal(operations[0].attributes.outcome, expected.outcome)

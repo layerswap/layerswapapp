@@ -4,6 +4,7 @@ import Clock from '@/components/Icons/Clock';
 import ExchangeGasIcon from '@/components/Icons/ExchangeGasIcon';
 import GasIcon from '@/components/Icons/GasIcon';
 import type { QuoteReward } from '@/lib/apiClients/layerSwapApiClient';
+import { resolveRouteSpeed, routeSpeedTextClass } from '@/lib/routeSpeed';
 import clsx from 'clsx';
 import { lazy, Suspense } from 'react';
 import GaslessBadge from '../../Form/FeeDetails/GaslessBadge';
@@ -71,7 +72,15 @@ export function QuoteDetailsSummary({
                         )}
                     >
                         <div className="p-0.5">
-                            <Clock className="h-4 w-4 text-secondary-text" />
+                            <Clock
+                                className={clsx(
+                                    'h-4 w-4',
+                                    routeSpeedTextClass(
+                                        resolveRouteSpeed(averageCompletionTime),
+                                        'text-secondary-text',
+                                    ),
+                                )}
+                            />
                         </div>
                         <AverageCompletionTime
                             className="text-primary-text"

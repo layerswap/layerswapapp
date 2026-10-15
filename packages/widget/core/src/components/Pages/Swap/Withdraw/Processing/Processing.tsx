@@ -45,7 +45,7 @@ const Processing: FC<Props> = ({
 }) => {
     const { boot, show, update } = useIntercom();
     const { onSwapLifecycle } = useCallbacks();
-    const { depositActionsResponse, gaslessAuthorization, walletActionFeedback, swapError, atomicBatch } = useSwapDataState();
+    const { depositActionsResponse, flow, gaslessAuthorization, walletActionFeedback, swapError, atomicBatch } = useSwapDataState();
     const gaslessUnavailable = useGaslessPreferenceStore(state => state.gaslessUnavailable);
     const { isDepositFlow } = useDepositSettings();
     const storedWalletTransaction = useSwapTransactionStore((state) =>
@@ -234,6 +234,7 @@ const Processing: FC<Props> = ({
 
     return (
         <ProcessingView
+            flow={flow}
             walletProgress={{
                 quote,
                 depositActions: depositActionsResponse,

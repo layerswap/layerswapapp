@@ -558,3 +558,22 @@ padding: calc(var(--number-flow-mask-height, 0.25em) / 2) 0;
   pointer-events: auto;
   animation: releasePointerAfterDelay 600ms linear forwards;
 }
+
+/* Active task labels use the host's theme; waiting-for-user labels stay still. */
+@media (prefers-reduced-motion: no-preference) {
+  .step-label-shimmer {
+    background-color: var(--color-primary);
+    background-image: linear-gradient(90deg, var(--color-primary) 38%, var(--color-primary-200) 50%, var(--color-primary) 62%);
+    background-size: 220% 100%;
+    background-repeat: no-repeat;
+    background-clip: text;
+    color: transparent;
+    animation: step-label-shimmer 4s linear infinite;
+  }
+}
+
+@keyframes step-label-shimmer {
+  /* Sweep for 1.6s, then pause offscreen for 2.4s before repeating. */
+  0% { background-position: 120% 0; }
+  40%, 100% { background-position: -20% 0; }
+}

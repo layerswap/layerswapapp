@@ -39,6 +39,7 @@ export type { DisplayUriSource, WalletConnectRegistryConnector, WalletConnectWal
 export { Page2Preview } from '../components/Pages/Swap/Withdraw/Presentation/Page2Preview';
 export type { Page2Snapshot, Page2LoadedSnapshot, Page2WalletState } from '../components/Pages/Swap/Withdraw/Presentation/Page2Snapshot';
 export { resolveSwapPhase, SwapPhase } from '../components/utils/resolveSwapPhase';
+export { resolveSwapFlow, type ResolvedSwapFlow, type ResolveSwapFlowInput } from '../components/utils/resolveSwapFlow';
 export { BackendTransactionStatus, TransactionStatus, TransactionType } from '../lib/apiClients/layerSwapApiClient';
 export type { SwapDetails, SwapQuote, Transaction, DepositAction } from '../lib/apiClients/layerSwapApiClient';
 

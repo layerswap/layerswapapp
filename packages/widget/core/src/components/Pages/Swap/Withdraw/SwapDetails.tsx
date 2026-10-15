@@ -2,8 +2,6 @@ import {
     ProcessingSectionView,
     SwapContentView,
 } from './Presentation/Page2Sections';
-import { shouldShowCompactSwapQuote } from '@/helpers/swapFlow';
-import { useIsGaslessActive } from '@/hooks/useIsGaslessActive';
 import SwapSummary from './Summary';
 import { SwapQuoteDetails } from './SwapQuoteDetails';
 import { Page2Contained } from './Presentation/Page2Contained';
@@ -39,7 +37,7 @@ const SwapDetails: FC<Props> = ({
     const {
         swapBasicData,
         swapDetails,
-        walletExecutionStarted,
+        flow,
         refuel,
         depositActionsResponse,
         quote,
@@ -65,7 +63,6 @@ const SwapDetails: FC<Props> = ({
         setSwapViewMounted(true);
         return () => setSwapViewMounted(false);
     }, [setSwapViewMounted]);
-    const isGaslessActive = useIsGaslessActive(swapBasicData);
 
     const resolved = useResolvedSwapStatus();
     const {
@@ -107,14 +104,7 @@ const SwapDetails: FC<Props> = ({
 
     if (!swapBasicData) return <SwapDetailsSceleton />;
 
-    const compactsDuringWalletExecution = shouldShowCompactSwapQuote({
-        swapData: swapBasicData,
-        isGaslessActive,
-    });
-    const compactQuote =
-        !swapBasicData.use_deposit_address &&
-        (!resolved.showWithdrawScreen ||
-            (compactsDuringWalletExecution && walletExecutionStarted));
+    const { compactQuote } = flow;
     const sourceAddress =
         swapDetails?.source_address || selectedSourceAccount?.address;
 
@@ -123,14 +113,13 @@ const SwapDetails: FC<Props> = ({
             <SwapContentView
                 progress={<Processing inputFailureMessage={gaslessFailureMessage} />}
                 stage={resolved.showWithdrawScreen ? 'withdraw' : 'processing'}
-                animateControls={!compactsDuringWalletExecution}
+                flow={flow}
                 summary={
                     swapBasicData.use_deposit_address &&
                     resolved.showWithdrawScreen ? null : (
                         <SwapSummary />
                     )
                 }
-                compactQuote={compactQuote}
                 quote={
                     !swapBasicData.use_deposit_address && (
                         <SwapQuoteDetails

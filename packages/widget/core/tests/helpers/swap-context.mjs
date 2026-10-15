@@ -1,3 +1,4 @@
+import { resolveSwapFlow } from '../../dist/esm/components/utils/resolveSwapFlow.js'
 import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import React from 'react'
@@ -13,7 +14,7 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
     const snapshots = new Map()
     const store = state => Object.assign(selector => selector(state), { getState: () => state })
     const emptyStores = {
-        useSwapTransactionStore: store({ swapTransactions, setSwapTransaction: noop }),
+        useSwapTransactionStore: store({ swapTransactions, stepTransactions: {}, setSwapTransaction: noop }),
         useGaslessAuthorizationStore: store({ authorizations: {} }),
         useDepositSignatureStore: store({ removeDepositSignature: noop }),
     }
@@ -47,6 +48,7 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
         '@/stores/swapTransactionStore': overrides['@/stores'] ?? stores ?? emptyStores,
         '@/helpers/depositActions': { isDepositWorkflowComplete: () => false },
         '@/components/utils/resolveSwapPhase': { resolveSwapPhase: () => resolved },
+        '@/components/utils/resolveSwapFlow': { resolveSwapFlow },
         './depositSettings': { useDepositSettings: () => ({ isDepositFlow: false }) },
         '@/hooks/useGaslessAuthorization': { useGaslessAuthorization: () => ({}) },
         '@/hooks/useGaslessAuthorizationStatus': { useGaslessAuthorizationStatus: noop },

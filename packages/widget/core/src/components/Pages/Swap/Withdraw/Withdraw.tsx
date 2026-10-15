@@ -8,6 +8,7 @@ import { transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { useBalance } from '@/lib/balances/useBalance';
 import useOutOfGas from '@/lib/gases/useOutOfGas';
 import useSWRGas from '@/lib/gases/useSWRGas';
+import { resolveNativePayableAmount } from '@/components/Input/Amount/helpers';
 import { NetworkRoute } from '@layerswap/widget-types';
 import { useFormikContext } from 'formik';
 import type { JSX } from 'react';
@@ -93,7 +94,12 @@ const Withdraw: FC<{
     const handleEditAmount = useCallback(() => {
         if (walletBalanceAmount == null || !gasData?.gas || !swapBasicData)
             return;
-        const maxAmount = walletBalanceAmount - gasData.gas * 1.02;
+        const maxAmount = resolveNativePayableAmount(
+            walletBalanceAmount,
+            gasData.gas,
+            gasData.reserve ?? 0,
+            swapBasicData.source_token.decimals,
+        );
         if (maxAmount <= 0) return;
 
         const newAmount = truncateDecimals(
@@ -117,6 +123,7 @@ const Withdraw: FC<{
     }, [
         walletBalanceAmount,
         gasData?.gas,
+        gasData?.reserve,
         swapBasicData,
         refuel,
         setFieldValue,
@@ -150,9 +157,9 @@ const Withdraw: FC<{
         maxAllowedAmount,
     });
 
+    // The gas warning keeps WalletTransferButton available, so it is not a block.
     useTransferBlocked(
         swapBasicData?.use_deposit_address === false && showInsufficientBalanceWarning ? 'insufficient_balance'
-        : swapBasicData?.use_deposit_address === false && outOfGas ? 'insufficient_gas'
         : undefined,
         lifecycleContext, 'Withdraw')
 

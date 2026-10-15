@@ -52,6 +52,7 @@ export type Page2LoadedSnapshot = {
     details: SwapDetails;
     swapId?: string;
     walletExecutionStarted?: boolean;
+    sourceProvider?: string;
     depositActions?: DepositAction[];
     quote?: SwapQuote;
     refuel?: Refuel;

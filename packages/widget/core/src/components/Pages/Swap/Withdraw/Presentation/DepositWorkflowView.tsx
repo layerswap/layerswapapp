@@ -95,6 +95,7 @@ export function getDepositWorkflowProgress({
         error &&
         workflowActions[currentStepIndex]?.status !== 'pending';
     const steps: StatusStep[] = workflowActions.map((action, index) => ({
+        id: `action:${action.step}`,
         name:
             hasAtomicApproval && action.step === 'publish'
                 ? getDepositActionLabel({ step: 'approve' })
@@ -154,6 +155,7 @@ export function getDepositWorkflowProgress({
     }
     if (hasDeliveryStep) {
         steps.push({
+            id: 'output_transfer',
             name: `${completed ? 'Received' : 'Receive'} ${receiveAmount ? `${truncateDecimals(receiveAmount, destinationToken.precision ?? destinationToken.decimals)} ` : ''}${destinationToken.asset}`,
             status: completed
                 ? ProgressStatus.Complete

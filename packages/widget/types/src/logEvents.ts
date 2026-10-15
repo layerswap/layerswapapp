@@ -4,6 +4,11 @@ import { SwapStatus } from './SwapStatus';
 export type ErrorSummary = {
   name?: string; message?: string; stack?: string; code?: string | number;
   status?: string | number; method?: string; url?: string; cause?: ErrorSummary;
+  shortMessage?: string; details?: string;
+  data?: ErrorSummary; error?: ErrorSummary; originalError?: ErrorSummary; info?: ErrorSummary;
+  /** Allowlisted Starknet simulation/revert diagnostics; string leaves become { message }. */
+  revert_error?: ErrorSummary; execution_error?: ErrorSummary; revert_reason?: string;
+  contract_address?: string; class_hash?: string; selector?: string; transaction_index?: number;
 };
 export type ErrorResponseSummary = { code?: string | number; message?: string; error?: ErrorSummary };
 export type FailedTokenSummary = {

@@ -16,8 +16,8 @@ export const NotFoundBackground = (props: SVGProps<SVGSVGElement>) => {
         </g>
         <defs>
             <radialGradient id="paint0_radial_59_105" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(496 496.721) rotate(146.277) scale(538.306 538.422)">
-                <stop stop-color="#0A1123" stop-opacity="0" />
-                <stop offset="1" stop-color="#0A1123" stop-opacity="0.8" />
+                <stop stopColor="var(--color-secondary-800)" stop-opacity="0" />
+                <stop offset="1" stopColor="var(--color-secondary-800)" stop-opacity="0.8" />
             </radialGradient>
             <clipPath id="clip0_59_105">
                 <rect width="992" height="993" fill="white" />

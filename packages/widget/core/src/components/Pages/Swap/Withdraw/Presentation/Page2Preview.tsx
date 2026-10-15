@@ -19,7 +19,8 @@ import { Page2PreviewFrame, type Page2PreviewMode } from './Page2PreviewFrame';
 import { ElapsedTime } from '@/components/Common/ElapsedTime';
 import { SwapDetailsSceleton } from '@/components/Common/Sceletons';
 import { resolveSwapPhase } from '@/components/utils/resolveSwapPhase';
-import { shouldShowCompactSwapQuote } from '@/helpers/swapFlow';
+import { resolveSwapFlow, type ResolvedSwapFlow } from '@/components/utils/resolveSwapFlow';
+import { isDepositWorkflowComplete } from '@/helpers/depositActions';
 import { gaslessFailureMessage } from '@/helpers/gaslessFailureMessage';
 import { isGaslessAuthorizationSubmitted } from '@/helpers/gasless';
 import { TransactionType } from '@/lib/apiClients/layerSwapApiClient';
@@ -141,9 +142,8 @@ export function Page2LoadedPreview({
         swapDetails: s.details,
         refuel: s.refuel,
         inputTxStatusFromApi: s.inputTxStatusFromApi,
-        depositCompleted: isGaslessAuthorizationSubmitted(
-            s.gaslessAuthorization,
-        ),
+        depositCompleted: isGaslessAuthorizationSubmitted(s.gaslessAuthorization)
+            || (!s.swap.use_deposit_address && isDepositWorkflowComplete(s.depositActions ?? [])),
         walletActionExecuting: s.wallet.kind === 'send' && !!s.wallet.pending,
         gaslessFailureStatus: gaslessFailed
             ? (s.gaslessAuthorization?.status as
@@ -153,14 +153,21 @@ export function Page2LoadedPreview({
             : undefined,
         isDepositFlow: s.isDepositFlow,
     });
-    const compactsDuringWalletExecution = shouldShowCompactSwapQuote({
+    const flow = resolveSwapFlow({
         swapData: s.swap,
-        isGaslessActive: !!s.quoteState.gasless,
+        depositActions: s.depositActions,
+        stepTransactions: s.stepTransactions,
+        quote: s.quote,
+        gaslessAuthorization: s.gaslessAuthorization,
+        sourceProvider: s.sourceProvider ?? (s.wallet.kind === 'specialized' ? s.wallet.provider : undefined),
+        walletExecutionStarted: s.walletExecutionStarted,
+        isDepositFlow: s.isDepositFlow,
+        hasRefuel: !!s.refuel,
+        transactionHash: input?.transaction_hash || s.gaslessAuthorization?.transaction?.transaction_hash || s.storedWalletTransaction?.hash,
+        outputTransactionHash: output?.transaction_hash,
+        resolved,
     });
-    const compactQuote =
-        !s.swap.use_deposit_address &&
-        (!resolved.showWithdrawScreen ||
-            (compactsDuringWalletExecution && !!s.walletExecutionStarted));
+    const { compactQuote } = flow;
     const summary = (
         <SummaryView
             swap={{
@@ -179,6 +186,7 @@ export function Page2LoadedPreview({
     const authTx = s.gaslessAuthorization?.transaction;
     const progress = (
         <ProcessingView
+            flow={flow}
             walletProgress={previewWalletProgress(s)}
             swapBasicData={s.swap}
             swapDetails={s.details}
@@ -298,7 +306,7 @@ export function Page2LoadedPreview({
                         }
                     >
                         <WalletTransferView>
-                            <PreviewWallet snapshot={s} />
+                            <PreviewWallet snapshot={s} flow={flow} />
                         </WalletTransferView>
                     </WalletActionTransition>
                 </WidgetFooterView>
@@ -309,13 +317,12 @@ export function Page2LoadedPreview({
         <SwapContentView
             progress={progress}
             stage={resolved.showWithdrawScreen ? 'withdraw' : 'processing'}
-            animateControls={!compactsDuringWalletExecution}
+            flow={flow}
             summary={
                 s.swap.use_deposit_address && resolved.showWithdrawScreen
                     ? null
                     : summary
             }
-            compactQuote={compactQuote}
             quote={
                 !s.swap.use_deposit_address && (
                     <PreviewQuote
@@ -433,7 +440,7 @@ function PreviewQuote({
     );
 }
 
-function PreviewWallet({ snapshot: s }: { snapshot: Page2LoadedSnapshot }) {
+function PreviewWallet({ snapshot: s, flow }: { snapshot: Page2LoadedSnapshot; flow: ResolvedSwapFlow }) {
     const state = s.wallet;
     if (s.balanceWarning?.kind === 'balance')
         return (
@@ -499,6 +506,7 @@ function PreviewWallet({ snapshot: s }: { snapshot: Page2LoadedSnapshot }) {
                 <SendTransactionView
                     showProgress={false}
                     {...previewWalletProgress(s)}
+                    flow={flow}
                     swapId={s.swapId}
                     quoteIsLoading={s.quoteState.status === 'loading'}
                     quoteError={s.quoteState.status === 'error'}

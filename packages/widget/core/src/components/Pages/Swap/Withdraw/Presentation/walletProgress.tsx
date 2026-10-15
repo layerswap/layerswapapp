@@ -7,8 +7,10 @@ import type { SwapStepTransactions } from '@/stores/swapTransactionStore';
 import { getCurrentDepositActionIndex } from '@/helpers/depositActions';
 import { WalletMessageDetails } from '../messages/Message';
 import { getDepositWorkflowProgress } from './DepositWorkflowView';
+import type { ResolvedSwapFlow } from '@/components/utils/resolveSwapFlow';
 
 export type WalletProgressData = {
+    flow?: ResolvedSwapFlow;
     quote?: SwapQuote;
     depositActions?: DepositAction[];
     stepTransactions?: SwapStepTransactions;
@@ -31,18 +33,19 @@ export function getWalletWorkflowState(data: WalletProgressData) {
         showSwapProgress,
         loading,
     } = data;
-    const isMultiStepWorkflow =
-        (depositActions?.filter((action) => !!action.step).length ?? 0) > 1 ||
-        (!!stepTransactions?.approve_permit2?.explorerUrl &&
-            !!depositActions?.some(
-                (action) => action.step === 'approve_permit2',
-            )) ||
-        (!!quote?.destination_token &&
-            !!depositActions?.some(
-                (action) =>
-                    action.step === 'publish' ||
-                    (showSwapProgress && action.step === 'deposit'),
-            ));
+    const isMultiStepWorkflow = data.flow
+        ? data.flow.walletProgress === 'workflow'
+        : (depositActions?.filter((action) => !!action.step).length ?? 0) > 1 ||
+          (!!stepTransactions?.approve_permit2?.explorerUrl &&
+              !!depositActions?.some(
+                  (action) => action.step === 'approve_permit2',
+              )) ||
+          (!!quote?.destination_token &&
+              !!depositActions?.some(
+                  (action) =>
+                      action.step === 'publish' ||
+                      (showSwapProgress && action.step === 'deposit'),
+              ));
     const hasError = data.error || data.swapError || data.gaslessUnavailable;
     const workflowFailed = depositActions?.some(
         (action) => action.status === 'failed',

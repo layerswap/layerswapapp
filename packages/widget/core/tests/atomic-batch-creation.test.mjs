@@ -24,7 +24,10 @@ function pure(path) {
         compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
     }).outputText
     const module = { exports: {} }
-    new Function('module', 'exports', output)(module, module.exports)
+    new Function('require', 'module', 'exports', output)(name => {
+        if (name === '../components/utils/resolveSwapFlow.js') return pure('../src/components/utils/resolveSwapFlow.ts')
+        throw new Error(`Unexpected dependency: ${name}`)
+    }, module, module.exports)
     return module.exports
 }
 const fixture = JSON.parse(readFileSync(new URL('./fixtures/atomic-batch.json', import.meta.url)))

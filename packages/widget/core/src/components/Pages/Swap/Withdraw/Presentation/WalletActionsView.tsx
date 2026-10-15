@@ -26,6 +26,7 @@ import WalletMessage from '../messages/Message';
 import { NetworkSwitchError, networkSwitchFailureReason } from '../Wallet/Common/ensureSourceChain';
 import type { ActionData } from '../Wallet/Common/sharedTypes';
 import type { SwapStepTransactions } from '@/stores/swapTransactionStore';
+import type { ResolvedSwapFlow } from '@/components/utils/resolveSwapFlow';
 export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = ({ data, network }) => {
     if (data.isPending) {
         return <WalletMessage
@@ -121,6 +122,7 @@ export function ConnectWalletView({
 }
 export type SendTransactionViewProps = SubmitButtonProps & {
     showProgress?: boolean;
+    flow?: ResolvedSwapFlow;
     errorMessage?: ReactNode;
     quote?: SwapQuote;
     quoteIsLoading?: boolean;
@@ -153,6 +155,7 @@ export type SendTransactionViewProps = SubmitButtonProps & {
 };
 export function SendTransactionView({
     showProgress = true,
+    flow,
     icon = <WalletIcon className="stroke-2 w-6 h-6" />,
     errorMessage,
     quote,
@@ -185,7 +188,7 @@ export function SendTransactionView({
     ...props
 }: SendTransactionViewProps) {
     const walletProgress = {
-        quote, depositActions, stepTransactions, loading, submissionAccepted,
+        flow, quote, depositActions, stepTransactions, loading, submissionAccepted,
         error, swapError, gaslessUnavailable, errorMessage, actionStateText,
         showSwapProgress, readOnly,
     };
@@ -364,4 +367,3 @@ export function SendTransactionView({
         />
     );
 }
-

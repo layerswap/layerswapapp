@@ -246,6 +246,7 @@ const standard: TimelineScenario = {
             'Confirm in wallet',
             'The wallet is waiting for transaction approval.',
             { kind: 'send', pending: true, label: 'Confirm in your wallet' },
+            { walletExecutionStarted: true, depositActions: [{ type: 'transfer' }] },
         ),
         m(
             10,
@@ -2771,8 +2772,27 @@ const depositScenarios: TimelineScenario[] = [
     },
 ];
 
+function sameNetworkTransfer(milestone: TimelineMilestone): TimelineMilestone {
+    const state = milestone.snapshot;
+    if (state.kind !== 'swap') return milestone;
+    return {
+        ...milestone,
+        snapshot: {
+            ...state,
+            swap: { ...state.swap, destination_network: ethereum },
+            quote: { ...quote, destination_network: ethereum },
+        },
+    };
+}
+
 export const scenarios: readonly TimelineScenario[] = [
     standard,
+    {
+        ...standard,
+        id: 'wallet-same-network',
+        label: 'Same-network wallet transfer',
+        milestones: [sameNetworkTransfer(standard.milestones[0]), ...standard.milestones.slice(1).map(sameNetworkTransfer)],
+    },
     ...frontendScenarios,
     ...atomicBatchScenarios,
     ...failures,
