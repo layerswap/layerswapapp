@@ -15,7 +15,7 @@ import { ceilUsd, floorUsd } from "@/components/utils/formatUsdAmount";
 import { truncateToDecimals, isScientific } from "@/components/utils/RoundDecimals";
 import { useHydratedReducedMotion } from "@/hooks/useHydratedReducedMotion";
 
-import { amountPresetSource, resolvePresetAmount, supportsLiveAmountPreset, type AmountPreset } from '@/lib/amountPresets';
+import { amountPresetSource, isWalletAmountFlow, resolvePresetAmount, supportsLiveAmountPreset, type AmountPreset } from '@/lib/amountPresets';
 
 type MinMaxProps = {
     fromCurrency: NetworkRouteToken,
@@ -39,7 +39,10 @@ const MinMax = (props: MinMaxProps) => {
     const { wallets } = useWallet(from, 'withdrawal')
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
     const isWalletConnected = !!wallet
-    const walletFlow = depositMethod === 'wallet'
+    const walletFlow = isWalletAmountFlow({ depositMethod, fromExchange: values.fromExchange })
+    const live = walletFlow && isWalletConnected && !!selectedSourceAccount?.address && supportsLiveAmountPreset(from, fromCurrency)
+    const selectedPreset = live ? values.amountMode : undefined
+    const showHalf = walletFlow && isWalletConnected
     const { balances, mutate: mutateBalances } = useBalance(selectedSourceAccount?.address, from)
 
     const walletBalance = useMemo(() => {
@@ -78,8 +81,8 @@ const MinMax = (props: MinMaxProps) => {
     const shouldPayGasWithTheToken = (native_currency?.symbol === fromCurrency?.symbol) || !native_currency
 
     const maxAllowedAmount = useMemo(() => {
-        return resolveMaxAllowedAmount({ fromCurrency, limitsMaxAmount, walletBalance, gasAmount, gasReserve, native_currency, depositMethod });
-    }, [fromCurrency, limitsMaxAmount, walletBalance, gasAmount, gasReserve, native_currency, depositMethod])
+        return resolveMaxAllowedAmount({ fromCurrency, limitsMaxAmount, walletBalance, gasAmount, gasReserve, native_currency, depositMethod: walletFlow ? 'wallet' : 'deposit_address' });
+    }, [fromCurrency, limitsMaxAmount, walletBalance, gasAmount, gasReserve, native_currency, walletFlow])
 
     const minValue = limitsMinAmount === undefined ? undefined : resolvePresetAmount('min', 0, limitsMinAmount, fromCurrency.decimals);
     const maxValue = maxAllowedAmount === undefined ? undefined : resolvePresetAmount('max', maxAllowedAmount, 0, fromCurrency.decimals);
@@ -87,13 +90,13 @@ const MinMax = (props: MinMaxProps) => {
         ? resolvePresetAmount('half', maxAllowedAmount, 0, fromCurrency.decimals) : undefined;
 
     // A selected preset stays available so it can be turned off while data refreshes.
-    const minDisabled = values.amountMode !== 'min' && minValue === undefined;
-    const halfDisabled = values.amountMode !== 'half' && halfValue === undefined;
-    const maxDisabled = values.amountMode !== 'max' && maxValue === undefined;
+    const minDisabled = selectedPreset !== 'min' && minValue === undefined;
+    const halfDisabled = selectedPreset !== 'half' && halfValue === undefined;
+    const maxDisabled = selectedPreset !== 'max' && maxValue === undefined;
     const allPresetsDisabled = minDisabled && halfDisabled && maxDisabled;
 
     const handleSetValue = (mode: AmountPreset, value: string, usdValue?: string) => {
-        void Promise.resolve(mutateBalances()).catch(() => undefined)
+        if (walletFlow && isWalletConnected) void Promise.resolve(mutateBalances()).catch(() => undefined)
         const truncatedValue = truncateToDecimals(value, fromCurrency.decimals)
         const sanitizedValue = value !== '' && Number.isFinite(Number(value))
             ? (isScientific(truncatedValue)
@@ -108,10 +111,9 @@ const MinMax = (props: MinMaxProps) => {
             }
             setUsdAmount(usdValue);
         }
-        const live = !walletFlow || !isWalletConnected || supportsLiveAmountPreset(from, fromCurrency)
-        void setValues({ ...values, amount: sanitizedValue, amountMode: live ? mode : 'manual',
-            amountPresetSource: live ? amountPresetSource(from.name, fromCurrency.symbol, walletFlow && isWalletConnected ? selectedSourceAccount?.id : undefined, walletFlow && isWalletConnected ? selectedSourceAccount?.address : undefined) : undefined,
-            amountPresetPending: live, amountPresetError: undefined }, true)
+        void setValues({ ...values, amount: sanitizedValue, amountMode: live ? mode : 'fixed',
+            amountPresetSource: live ? amountPresetSource(from.name, fromCurrency.symbol, selectedSourceAccount?.id, selectedSourceAccount?.address) : undefined,
+            amountPresetPending: live, amountPresetError: undefined, amountPresetBalance: undefined }, true)
         onActionHover(undefined)
     }
 
@@ -122,7 +124,7 @@ const MinMax = (props: MinMaxProps) => {
     const selectPreset = (e: React.MouseEvent<HTMLButtonElement>, mode: AmountPreset, value: string | undefined, usdValue?: string) => {
         e.preventDefault()
         e.stopPropagation()
-        if (values.amountMode === mode) {
+        if (selectedPreset === mode) {
             void setValues({ ...values, amountMode: 'manual', amountPresetSource: undefined, amountPresetPending: false, amountPresetError: undefined }, true)
             onActionHover(undefined)
             return
@@ -131,48 +133,45 @@ const MinMax = (props: MinMaxProps) => {
         handleSetValue(mode, value, usdValue)
     }
 
-    const showMaxTooltip = !maxDisabled && !!(depositMethod === 'wallet' && walletBalance?.amount && shouldPayGasWithTheToken && (!limitsMaxAmount || walletBalance.amount < limitsMaxAmount))
+    const showMaxTooltip = !maxDisabled && !!(walletFlow && walletBalance?.amount && shouldPayGasWithTheToken && (!limitsMaxAmount || walletBalance.amount < limitsMaxAmount))
 
     if (!from || !fromCurrency)
         return null;
 
     return (
         <LayoutGroup id={layoutId}>
-            <div role="group" aria-label="Amount presets" aria-disabled={allPresetsDisabled} className="group/presets relative isolate inline-flex gap-0.5 rounded-lg bg-secondary-300/35 p-0.5 text-xs font-medium leading-4 transition-opacity duration-150 aria-disabled:opacity-40 motion-reduce:transition-none" onMouseLeave={() => onActionHover(undefined)}>
+            <div role="group" aria-label={live ? 'Amount presets' : 'Amount shortcuts'} aria-disabled={allPresetsDisabled} className={`group/presets relative isolate inline-flex ${live ? 'gap-0.5 rounded-lg bg-secondary-300/35 p-0.5' : 'gap-1 py-0.5'} text-xs font-medium leading-4 transition-opacity duration-150 aria-disabled:opacity-40 motion-reduce:transition-none`} onMouseLeave={() => onActionHover(undefined)}>
                 <ActionButton
                     data-attr="min-amount"
                     label="Min"
-                    aria-pressed={values.amountMode === 'min'}
+                    aria-pressed={live ? selectedPreset === 'min' : undefined}
+                    aria-label={live ? undefined : 'Set minimum amount'}
+                    description={live ? undefined : 'Set the current minimum once. The amount will not update automatically.'}
                     disabled={minDisabled}
                     onMouseEnter={() => onActionHover(minValue === undefined ? undefined : Number(minValue), minUsdFormatted)}
                     onMouseLeave={() => onActionHover(undefined)}
                     onClick={e => selectPreset(e, 'min', minValue, minUsdFormatted)}
                 />
-                <ActionButton
+                {showHalf ? <ActionButton
                     data-attr="half-amount"
                     label="50%"
-                    aria-pressed={values.amountMode === 'half'}
+                    aria-pressed={live ? selectedPreset === 'half' : undefined}
                     disabled={halfDisabled}
                     onMouseEnter={() => onActionHover(halfValue === undefined ? undefined : Number(halfValue))}
                     onMouseLeave={() => onActionHover(undefined)}
                     onClick={e => selectPreset(e, 'half', halfValue)}
+                /> : null}
+                <ActionButton
+                    data-attr="max-amount"
+                    label="Max"
+                    aria-pressed={live ? selectedPreset === 'max' : undefined}
+                    aria-label={live ? undefined : 'Set maximum amount'}
+                    description={!live ? 'Set the current maximum once. The amount will not update automatically.' : showMaxTooltip ? 'Network fees are reserved from your balance.' : undefined}
+                    disabled={maxDisabled}
+                    onMouseEnter={() => onActionHover(maxValue === undefined ? undefined : Number(maxValue), maxUsdFormatted)}
+                    onMouseLeave={() => onActionHover(undefined)}
+                    onClick={e => selectPreset(e, 'max', maxValue, maxUsdFormatted)}
                 />
-                <Tooltip disableHoverableContent={true}>
-                    <TooltipTrigger asChild>
-                        <ActionButton
-                            data-attr="max-amount"
-                            label="Max"
-                            aria-pressed={values.amountMode === 'max'}
-                            disabled={maxDisabled}
-                            onMouseEnter={() => onActionHover(maxValue === undefined ? undefined : Number(maxValue), maxUsdFormatted)}
-                            onMouseLeave={() => onActionHover(undefined)}
-                            onClick={e => selectPreset(e, 'max', maxValue, maxUsdFormatted)}
-                        />
-                    </TooltipTrigger>
-                    {showMaxTooltip ? <TooltipContent className="pointer-events-none w-80 grow p-2 border-none! bg-secondary-300! text-xs rounded-xl!" side="top" align="start" alignOffset={-10}>
-                        <p>Network fees are reserved from your balance.</p>
-                    </TooltipContent> : null}
-                </Tooltip>
             </div>
         </LayoutGroup>
     )
@@ -185,13 +184,14 @@ type ActionButtonProps = React.DetailedHTMLProps<React.ButtonHTMLAttributes<HTML
     onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
     onMouseEnter: () => void;
     disabled?: boolean;
+    description?: string;
 }
 
-const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProps>(({ label, onClick, onMouseEnter, disabled, ...rest }, ref) => {
+const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProps>(({ label, description, onClick, onMouseEnter, disabled, ...rest }, ref) => {
     const reducedMotion = useHydratedReducedMotion();
     const selected = rest['aria-pressed'] === true;
 
-    return (
+    const button = (
         <button
             {...rest}
             ref={ref}
@@ -199,7 +199,7 @@ const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProps>(({ l
             onClick={onClick}
             type="button"
             disabled={disabled}
-            className="relative min-w-11 rounded-md px-2 py-0.5 text-preset-text transition-colors duration-150 enabled:hover:aria-[pressed=false]:bg-secondary-300/50 enabled:hover:aria-[pressed=false]:text-primary-text aria-pressed:text-preset-selected-text enabled:cursor-pointer disabled:cursor-default focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-preset-text disabled:text-secondary-text/40 group-aria-disabled/presets:disabled:text-secondary-text motion-reduce:transition-none"
+            className={`relative min-w-11 rounded-md px-2 py-0.5 text-preset-text transition-colors duration-150 ${rest['aria-pressed'] === undefined ? 'bg-secondary-300/35 enabled:hover:bg-secondary-300 enabled:hover:text-primary-text' : 'enabled:hover:aria-[pressed=false]:bg-secondary-300/50 enabled:hover:aria-[pressed=false]:text-primary-text aria-pressed:text-preset-selected-text'} enabled:cursor-pointer disabled:cursor-default focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-preset-text disabled:text-secondary-text/40 group-aria-disabled/presets:disabled:text-secondary-text motion-reduce:transition-none`}
         >
             {selected ? <motion.span
                 aria-hidden="true"
@@ -211,4 +211,10 @@ const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProps>(({ l
             <span className="relative z-10">{label}</span>
         </button>
     );
+    return <Tooltip disableHoverableContent>
+        <TooltipTrigger asChild>{button}</TooltipTrigger>
+        {description ? <TooltipContent className="pointer-events-none w-64 p-2 border-none! bg-secondary-300! text-xs rounded-xl!" side="top" align="start">
+            <p>{description}</p>
+        </TooltipContent> : null}
+    </Tooltip>;
 })

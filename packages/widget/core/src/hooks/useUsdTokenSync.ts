@@ -47,6 +47,7 @@ export function useUsdTokenSync({
     const usdAmount = useUsdModeStore(s => s.usdAmount);
     const setUsdAmount = useUsdModeStore(s => s.setUsdAmount);
     const toggleMode = useUsdModeStore(s => s.toggleMode);
+    const tokenAmountIsFixed = amountMode === 'fixed' || isAmountPreset(amountMode);
 
     useEffect(() => () => { setUsdAmount(''); didInitUsdRef.current = false; }, [setUsdAmount]);
 
@@ -113,14 +114,14 @@ export function useUsdTokenSync({
 
     // Recompute token amount when price changes in USD mode
     useEffect(() => {
-        if (isAmountPreset(amountMode) || !isUsdMode || !sourceCurrencyPriceInUsd || !usdAmount) {
+        if (tokenAmountIsFixed || !isUsdMode || !sourceCurrencyPriceInUsd || !usdAmount) {
             prevPriceRef.current = sourceCurrencyPriceInUsd;
             return;
         }
         if (prevPriceRef.current === sourceCurrencyPriceInUsd) return;
         prevPriceRef.current = sourceCurrencyPriceInUsd;
         computeAndSetTokenAmount(preciseUsdRef.current);
-    }, [amountMode, sourceCurrencyPriceInUsd, isUsdMode, usdAmount, computeAndSetTokenAmount]);
+    }, [tokenAmountIsFixed, sourceCurrencyPriceInUsd, isUsdMode, usdAmount, computeAndSetTokenAmount]);
 
     // A source-token change ends its preset. Preserve USD through that transition;
     // only same-token price updates remain token-authoritative for live presets.
@@ -157,7 +158,7 @@ export function useUsdTokenSync({
             didInitUsdRef.current = true;
             return;
         }
-        if (!amountChanged && !isInitialSync && !isAmountPreset(amountMode)) return;
+        if (!amountChanged && !isInitialSync && !tokenAmountIsFixed) return;
         if (skipSync) {
             const amountNum = Number(amount);
             if (!isNaN(amountNum) && amountNum > 0 && sourceCurrencyPriceInUsd) {
@@ -182,7 +183,7 @@ export function useUsdTokenSync({
         preciseUsdRef.current = preciseUsd;
         setUsdAmount(preciseUsd.toFixed(2).replace(/\.?0+$/, ''));
         didInitUsdRef.current = true;
-    }, [amount, amountMode, isUsdMode, sourceCurrencyPriceInUsd, setUsdAmount]);
+    }, [amount, tokenAmountIsFixed, isUsdMode, sourceCurrencyPriceInUsd, setUsdAmount]);
 
     // --- Toggle handler ---
 

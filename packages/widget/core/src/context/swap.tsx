@@ -37,7 +37,7 @@ import { lifecycleContextFromForm } from '@/lib/swapLifecycle';
 import { createSwapAttempt } from '@/lib/swapCreation';
 import { hasSwapExecutionProgress } from '@/helpers/swapProgress';
 import { preparePresetAmount } from '@/lib/preparePresetAmount';
-import { isAmountPreset, amountPresetSource, AmountPresetChangedError } from '@/lib/amountPresets';
+import { isAmountPreset, isWalletAmountFlow, amountPresetSource, AmountPresetChangedError } from '@/lib/amountPresets';
 
 export const SwapDataStateContext = createContext<SwapContextData | null>(null);
 
@@ -171,6 +171,9 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     }
 
     const setSubmitedFormValues = useCallback((values: NonNullable<SwapFormValues>) => {
+        if (isAmountPreset(values.amountMode) && !isWalletAmountFlow(values)) {
+            values = { ...values, amountMode: 'fixed', amountPresetSource: undefined, amountPresetPending: false, amountPresetError: undefined, amountPresetBalance: undefined }
+        }
         if (!values.from || !values.to || !values.fromAsset || !values.toAsset || !values.destination_address)
             throw new Error("Form data is missing")
 
@@ -559,13 +562,10 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     latestPresetSource.current = selectedPresetSource
 
     const createSwap = useCallback(async (values: SwapFormValues, query: InitialSettings, partner?: Partner) => {
-        if (!isAmountPreset(values.amountMode)) return createSwapRequest(values, query, partner)
+        if (!isAmountPreset(values.amountMode) || !isWalletAmountFlow(values)) return createSwapRequest(values, query, partner)
         if (presetPreparation.current) throw new Error('The swap is already being prepared.')
-        const walletFlow = values.depositMethod === 'wallet'
-        // Direct exchange submissions create before their submitted draft renders.
-        // Only wallet flows need the live account identity from the review screen.
-        const source = walletFlow ? latestPresetSource.current : amountPresetSource(values.from?.name, values.fromAsset?.symbol)
-        if ((walletFlow && (!selectedSourceAccount || !selectedWallet)) || values.amountPresetSource !== source)
+        const source = latestPresetSource.current
+        if (!selectedSourceAccount || !selectedWallet || values.amountPresetSource !== source)
             throw new Error('The source account changed. Select an amount preset again.')
         presetPreparation.current = true
         setPreparingPreset(true)
@@ -580,7 +580,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         return preparePresetAmount(values, selectedSourceAccount?.address, selectedWallet, sourceRoutes, useGasless,
             (key, response) => mutateCache(key, response, { revalidate: false }))
             .then(amount => {
-                if (walletFlow && source !== latestPresetSource.current) throw new Error('The source account changed. Select an amount preset again.')
+                if (source !== latestPresetSource.current) throw new Error('The source account changed. Select an amount preset again.')
                 if (Number(amount) < Number(values.amount) || (values.amountMode === 'min' && Number(amount) > Number(values.amount))) {
                     setSwapBasicFormData(current => current ? { ...current, requested_amount: amount, amountPresetPending: true } : current)
                     throw new AmountPresetChangedError()

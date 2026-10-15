@@ -94,13 +94,20 @@ test('Min preparation returns a new required minimum for review and rejects an u
   await assert.rejects(insufficient.preparePresetAmount({ ...values, amountMode: 'min', amount: '0.1' }, 'source', {}, [], false), /Insufficient balance/)
 })
 
-test('deposit-address Min refreshes limits without a wallet and uses the correct quote flow', async () => {
-  const { preparePresetAmount, calls } = setup({ limits: { min_amount: 1, max_amount: 2 } })
-  assert.equal(await preparePresetAmount({ ...values, amountMode: 'min', depositMethod: 'deposit_address' }, undefined, undefined, [], false), '1')
-  assert.equal(calls.length, 1)
-  assert.equal(calls[0][1].useDepositAddress, true)
-})
-
+for (const flow of [
+  { depositMethod: 'deposit_address' },
+  { depositMethod: 'deposit_address', fromExchange: { name: 'exchange' } },
+  { depositMethod: 'wallet', fromExchange: { name: 'exchange' } },
+  { depositMethod: undefined },
+]) {
+  for (const mode of ['min', 'half', 'max', 'fixed']) {
+    test(`${JSON.stringify(flow)} ${mode}: preparation preserves the submitted amount without live reads`, async () => {
+      const { preparePresetAmount, calls } = setup({ limits: { min_amount: 1, max_amount: 2 } })
+      assert.equal(await preparePresetAmount({ ...values, ...flow, amountMode: mode }, undefined, undefined, [], false), values.amount)
+      assert.deepEqual(calls, [])
+    })
+  }
+}
 
 test('fresh confirmation limits reach the live cache before the revised amount returns', async () => {
   const limits = { min_amount: 0.2, max_amount: 2 }

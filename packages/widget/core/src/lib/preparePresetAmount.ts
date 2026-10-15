@@ -7,16 +7,16 @@ import { resolveExtendedRoutePlan } from './extendedRoutes/registry'
 import { transformLimitsForExtendedRoute, type ExtendedLimits } from './extendedRoutes/transforms'
 import { useBalanceStore } from '@/stores/balanceStore'
 import { resolverService } from './resolvers/resolverService'
-import { calculatePresetAmount, isAmountPreset, resolvePresetAmount, supportsLiveAmountPreset } from './amountPresets'
+import { calculatePresetAmount, isAmountPreset, isWalletAmountFlow, supportsLiveAmountPreset } from './amountPresets'
 
 /** Fresh reads before creation. Never changes a created swap or its actions. */
 export async function preparePresetAmount(values: SwapFormValues, address: string | undefined, wallet: Wallet | undefined, sourceRoutes: NetworkRoute[], useGasless: boolean, publishLimits?: (key: string, response: ApiResponse<ExtendedLimits>) => Promise<unknown>) {
+    if (!isWalletAmountFlow(values)) return values.amount ?? ''
     const { from, fromAsset, to, toAsset } = values
     if (!from || !fromAsset || !to || !toAsset) throw new Error('Select a route to use an amount preset.')
     const mode = isAmountPreset(values.amountMode) ? values.amountMode : 'max'
-    const walletFlow = values.depositMethod === 'wallet'
-    if (walletFlow && (!address || !wallet)) throw new Error('Connect your source wallet.')
-    if (walletFlow && !supportsLiveAmountPreset(from, fromAsset))
+    if (!address || !wallet) throw new Error('Connect your source wallet.')
+    if (!supportsLiveAmountPreset(from, fromAsset))
         throw new Error('Live amount updates are unavailable for this asset. Select an amount again.')
     const plan = resolveExtendedRoutePlan({
         sourceNetworkName: from.name, sourceTokenSymbol: fromAsset.symbol,
@@ -29,11 +29,11 @@ export async function preparePresetAmount(values: SwapFormValues, address: strin
         sourceToken: plan?.mapping.real.tokenSymbol ?? fromAsset.symbol,
         destinationNetwork: to.name, destinationToken: toAsset.symbol,
         destinationAddress: values.destination_address, refuel: values.refuel,
-        useDepositAddress: plan ? !usesDepository(plan.mapping.provider) : !walletFlow,
+        useDepositAddress: plan ? !usesDepository(plan.mapping.provider) : false,
         useFrontendSwap: true, useGasless: !plan && useGasless,
     })
     const [balanceData, limitsResponse] = await Promise.all([
-        walletFlow ? useBalanceStore.getState().fetchBalance(address!, from, { ignoreCache: true }) : Promise.resolve(undefined),
+        useBalanceStore.getState().fetchBalance(address, from, { ignoreCache: true }),
         api.fetcher(limitsUrl),
     ])
     const limits: ExtendedLimits | undefined = plan
@@ -43,15 +43,6 @@ export async function preparePresetAmount(values: SwapFormValues, address: strin
         throw new Error('Could not refresh the route limits. Try again.')
     // The resumed live controller must use the same limits that revised the draft.
     await publishLimits?.(limitsUrl, limitsResponse)
-    if (!walletFlow) {
-        if (mode === 'half') throw new Error('Connect your source wallet to use 50%.')
-        const reviewed = Number(values.amount)
-        if (mode === 'max' && reviewed < limits.min_amount)
-            throw new Error('The minimum swap amount increased. Review the updated amount and quote, then continue.')
-        return reviewed >= limits.min_amount && reviewed <= limits.max_amount
-            ? values.amount!
-            : resolvePresetAmount(mode, limits.max_amount, limits.min_amount, fromAsset.decimals)
-    }
     const amount = await calculatePresetAmount({
         mode, minimum: limits.min_amount,
         network: from, token: fromAsset, probeAmount: values.amount, preserveAmount: true,

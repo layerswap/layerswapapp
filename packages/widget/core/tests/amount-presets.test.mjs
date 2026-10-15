@@ -394,16 +394,17 @@ for (const mode of ['min', 'half']) {
   })
 }
 
-test('deposit-address Min tracks route limits without requesting wallet balances or gas', async () => {
+test('stale deposit-address Min keeps its amount and exits live tracking', async () => {
   initialValues.amountMode = 'min'
   initialValues.depositMethod = 'deposit_address'
   initialValues.amountPresetSource = amountPresets.amountPresetSource(network.name, token.symbol)
   state.wallets = []; state.account = undefined
   await render()
-  assert.equal(formik.values.amount, '0.001')
+  assert.equal(formik.values.amount, '0.5')
+  assert.equal(formik.values.amountMode, 'fixed')
   state.minimum = 0.01
   await render()
-  assert.equal(formik.values.amount, '0.01')
+  assert.equal(formik.values.amount, '0.5')
   assert.equal(state.probes.length, 0)
 })
 
@@ -417,7 +418,8 @@ for (const mode of ['min', 'max']) {
       state.exchangeInput = true
       state.wallets = []; state.account = undefined
       await render()
-      assert.equal(formik.values.amount, mode === 'min' ? '0.001' : '10')
+      assert.equal(formik.values.amount, '0.5')
+      assert.equal(formik.values.amountMode, 'fixed')
       // Exercise the actual exchange field handler, without pre-clearing preset intent.
       await act(async () => state.changeExchangeAmount({ target: { name: 'amount', type: 'text', value: entered } }))
       assert.equal(formik.values.amount, entered)
@@ -504,11 +506,11 @@ for (const name of ['TON_MAINNET', 'PARADEX_MAINNET', 'PARADEX_TESTNET']) {
       assert.equal(button.disabled, false)
       await act(() => button.click())
       assert.equal(formik.values.amount, mode === 'min' ? '1' : '10')
-      assert.equal(formik.values.amountMode, 'manual')
+      assert.equal(formik.values.amountMode, 'fixed')
       assert.equal(formik.values.amountPresetSource, undefined)
       assert.equal(formik.values.amountPresetPending, false)
       assert.equal(formik.values.amountPresetError, undefined)
-      assert.equal(button.getAttribute('aria-pressed'), 'false')
+      assert.equal(button.getAttribute('aria-pressed'), null)
       assert.equal(state.probes.length, 0, 'an unsupported live preset must not enter a retry loop')
     }
   })
@@ -521,7 +523,7 @@ for (const name of ['TON_MAINNET', 'PARADEX_MAINNET', 'PARADEX_TESTNET']) {
     initialValues.amountPresetError = 'Network fee unavailable'
     await render()
     assert.equal(formik.values.amount, '0.5')
-    assert.equal(formik.values.amountMode, 'manual')
+    assert.equal(formik.values.amountMode, 'fixed')
     assert.equal(formik.values.amountPresetPending, false)
     assert.equal(formik.values.amountPresetError, undefined)
     assert.equal(state.probes.length, 0)
@@ -541,4 +543,92 @@ test('a temporary missing gas estimate on a supported adapter keeps Min selected
   assert.equal(formik.values.amountMode, 'min')
   assert.equal(formik.values.amountPresetError, undefined)
   assert.equal(formik.values.amountPresetPending, false)
+})
+
+for (const [name, flow, connected] of [
+  ['manual transfer', { depositMethod: 'deposit_address' }, true],
+  ['exchange', { depositMethod: 'deposit_address', fromExchange: { name: 'exchange' } }, true],
+  ['no transfer method', { depositMethod: undefined }, false],
+  ['disconnected wallet', { depositMethod: 'wallet' }, false],
+]) {
+  for (const mode of ['min', 'max']) {
+    for (const isUsdMode of [false, true]) {
+      test(`${name} ${mode} in ${isUsdMode ? 'USD' : 'token'} mode is a one-time shortcut`, async () => {
+        Object.assign(initialValues, flow, { amountMode: 'manual', amountPresetSource: undefined })
+        state.renderPresets = true
+        state.usdMode = true
+        usdStore.setState({ isUsdMode, usdAmount: '' })
+        if (!connected) { state.wallets = []; state.account = undefined }
+        await render()
+        assert.equal(container.querySelector('[role="group"]').getAttribute('aria-label'), 'Amount shortcuts')
+        assert.equal(container.querySelector('[data-attr="half-amount"]'), null)
+        const button = container.querySelector(`[data-attr="${mode}-amount"]`)
+        assert.equal(button.getAttribute('aria-pressed'), null, 'One-time buttons do not expose toggle state')
+        await act(() => button.click())
+        const chosenAmount = mode === 'min' ? '0.001' : '10'
+        assert.equal(formik.values.amount, chosenAmount)
+        assert.equal(formik.values.amountMode, 'fixed')
+        assert.equal(formik.values.amountPresetPending, false)
+        assert.equal(formik.values.amountPresetSource, undefined)
+        assert.equal(container.querySelector('[aria-pressed="true"]'), null)
+        state.minimum = 0.02; state.limit = 0.75; state.gas = 0.3; state.usdPrice = 1000
+        state.balances = [{ ...state.balances[0], amount: 0.4, request_time: 2 }]
+        await render()
+        assert.equal(formik.values.amount, chosenAmount, 'Balance, fee, price and limit changes cannot rewrite a shortcut')
+        assert.equal(state.probes.length, 0)
+        if (isUsdMode) assert.equal(Number(usd.usdAmount), Number(chosenAmount) * 1000)
+        await act(() => usd.handleToggle())
+        await act(() => usd.handleToggle())
+        assert.equal(formik.values.amount, chosenAmount)
+        // Clicking again applies the latest limit; it does not toggle a binding.
+        await act(() => button.click())
+        assert.equal(formik.values.amount, mode === 'min' ? '0.02' : '0.75')
+        assert.equal(formik.values.amountMode, 'fixed')
+      })
+    }
+  }
+}
+
+for (const flow of [
+  { depositMethod: 'deposit_address' },
+  { depositMethod: undefined },
+  { depositMethod: 'wallet', fromExchange: { name: 'exchange' } },
+]) {
+  test(`switching to ${JSON.stringify(flow)} cancels a pending wallet preset without changing the amount`, async () => {
+    state.deferred = Promise.withResolvers()
+    state.usdMode = true
+    usdStore.setState({ isUsdMode: true, usdAmount: '' })
+    await render()
+    const chosenAmount = formik.values.amount
+    assert.equal(formik.values.amountPresetPending, true)
+    await act(() => formik.setValues({ ...formik.values, ...flow }))
+    assert.equal(formik.values.amountMode, 'fixed')
+    assert.equal(formik.values.amountPresetPending, false)
+    assert.equal(formik.values.amountPresetSource, undefined)
+    await act(async () => { state.deferred.resolve({ gas: 0.1, token }); await state.deferred.promise })
+    state.usdPrice = 1000; state.limit = 0.3
+    await render()
+    assert.equal(formik.values.amount, chosenAmount)
+    assert.equal(state.draft.amount, chosenAmount)
+    assert.equal(Number(usd.usdAmount), Number(chosenAmount) * 1000)
+    await act(() => formik.setValues({ ...formik.values, depositMethod: 'wallet', fromExchange: undefined }))
+    assert.equal(formik.values.amountMode, 'fixed', 'Returning to a wallet must not silently re-enable the preset')
+    assert.equal(formik.values.amount, chosenAmount)
+  })
+}
+
+test('editing a fixed shortcut in USD restores ordinary USD entry behavior', async () => {
+  initialValues.amountMode = 'fixed'
+  initialValues.depositMethod = 'deposit_address'
+  initialValues.amountPresetSource = undefined
+  state.usdMode = true
+  usdStore.setState({ isUsdMode: true, usdAmount: '' })
+  await render()
+  await act(() => usd.handleUsdInputChange({ target: { value: '100' } }))
+  assert.equal(formik.values.amountMode, 'manual')
+  assert.equal(formik.values.amount, '0.05')
+  state.usdPrice = 1000
+  await render()
+  assert.equal(formik.values.amount, '0.1')
+  assert.equal(usd.usdAmount, '100')
 })

@@ -4,7 +4,12 @@ import { ceilToDecimals, truncateToDecimals } from '@/components/utils/RoundDeci
 import KnownInternalNames from '@layerswap/utils/known-ids'
 
 export type AmountPreset = 'min' | 'half' | 'max'
-export type AmountMode = 'manual' | AmountPreset
+// Quick fills keep the chosen token amount fixed, including in USD display mode.
+export type AmountMode = 'manual' | 'fixed' | AmountPreset
+
+export function isWalletAmountFlow(values: { depositMethod?: string; fromExchange?: unknown }): boolean {
+    return values.depositMethod === 'wallet' && !values.fromExchange
+}
 
 export function isAmountPreset(mode: string | undefined): mode is AmountPreset {
     return mode === 'min' || mode === 'half' || mode === 'max'

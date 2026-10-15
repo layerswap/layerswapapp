@@ -42,6 +42,7 @@ const context = createSwapContext({
   stores,
   swr: { default: () => ({}), useSWRConfig: () => ({ mutate: async (key, response) => { state.publishedLimits.push({ key, response }) } }) },
   overrides: {
+    '@/stores/contractAddressStore': { useContractAddressStore: () => ({ checkContractStatus: async () => ({ sourceIsContract: false }) }) },
     '@/lib/preparePresetAmount': { preparePresetAmount: async (...args) => {
       state.prepares++
       return state.limits ? preparePresetAmount(...args) : state.preparation.promise
@@ -86,7 +87,7 @@ for (const mode of ['min', 'max']) {
         updates.setSubmitedFormValues(submitted)
         await updates.createSwap(submitted, {})
       })
-      assert.equal(state.prepares, 1)
+      assert.equal(state.prepares, 0)
       assert.equal(state.created.length, 1)
       assert.equal(state.created[0].source_network, source.name)
       assert.equal(state.created[0].amount, submitted.amount)
@@ -95,15 +96,23 @@ for (const mode of ['min', 'max']) {
   }
 }
 
-test('direct exchange submission still rejects preset intent belonging to another route', async () => {
+test('non-wallet submissions discard stale preset metadata without changing the submitted amount', async () => {
   const submitted = { ...values, depositMethod: 'deposit_address',
-    amountPresetSource: amountPresets.amountPresetSource('OTHER_MAINNET', token.symbol) }
+    amountPresetSource: amountPresets.amountPresetSource('OTHER_MAINNET', token.symbol),
+    amountPresetPending: true, amountPresetError: 'old error', amountPresetBalance: 1 }
   await act(async () => {
     updates.setSubmitedFormValues(submitted)
-    await assert.rejects(updates.createSwap(submitted, {}), /source account changed/)
+    await updates.createSwap(submitted, {})
   })
   assert.equal(state.prepares, 0)
-  assert.equal(state.created.length, 0)
+  assert.equal(state.created[0].amount, submitted.amount)
+  assert.equal(data.swapBasicData.amountMode, 'fixed')
+  assert.equal(data.swapBasicData.amountPresetPending, false)
+  assert.equal(data.swapBasicData.amountPresetSource, undefined)
+  assert.equal(data.swapBasicData.amountPresetError, undefined)
+  assert.equal(data.swapBasicData.amountPresetBalance, undefined)
+  await act(() => updates.syncAmountPresetDraft({ ...submitted, amount: '0.1' }))
+  assert.equal(data.swapBasicData.requested_amount, submitted.amount)
 })
 
 test('an unresolved provider submission disables adjustment until its marker is cleared', async () => {
@@ -241,39 +250,20 @@ test('provider execution leases cannot release each other or the regular wallet 
   assert.equal(updates.canAdjustAmount(), true)
 })
 
-test('exchange Max below fresh minimum stops real preparation and creation until a new explicit submission', async () => {
-  state.account = undefined
-  state.limits = { min_amount: 0.95, max_amount: 2 }
-  const submitted = { ...values, depositMethod: 'deposit_address', fromExchange: { name: 'exchange' },
-    amountPresetSource: amountPresets.amountPresetSource(network.name, token.symbol) }
-  await act(async () => {
-    updates.setSubmitedFormValues(submitted)
-    await assert.rejects(updates.createSwap(submitted, {}), /minimum swap amount increased/)
+for (const limit of [0.5, 2]) {
+  test(`exchange shortcuts never revise the submitted amount when route cap changes to ${limit}`, async () => {
+    state.account = undefined
+    state.limits = { min_amount: 0.1, max_amount: limit }
+    const submitted = { ...values, amountMode: 'fixed', depositMethod: 'deposit_address', fromExchange: { name: 'exchange' } }
+    await act(async () => {
+      updates.setSubmitedFormValues(submitted)
+      await updates.createSwap(submitted, {})
+    })
+    assert.equal(state.prepares, 0, 'Fixed amounts use the ordinary API validation path')
+    assert.deepEqual(state.created.map(request => request.amount), ['0.9'])
+    assert.deepEqual(state.publishedLimits, [])
   })
-  assert.equal(state.created.length, 0)
-  assert.deepEqual(state.publishedLimits, [{ key: '/limits', response: { data: state.limits } }])
-  assert.equal(data.amountPresetRevision, 1)
-  assert.equal(data.amountPresetLocked, false)
-  // The refreshed form is reviewed and explicitly submitted again.
-  const reviewed = { ...submitted, amount: '2' }
-  await act(async () => {
-    updates.setSubmitedFormValues(reviewed)
-    await updates.createSwap(reviewed, {})
-  })
-  assert.deepEqual(state.created.map(request => request.amount), ['2'])
-})
-
-test('exchange Max within fresh limits preserves the reviewed amount when the cap increases', async () => {
-  state.limits = { min_amount: 0.1, max_amount: 2 }
-  const submitted = { ...values, depositMethod: 'deposit_address', fromExchange: { name: 'exchange' },
-    amountPresetSource: amountPresets.amountPresetSource(network.name, token.symbol) }
-  await act(async () => {
-    updates.setSubmitedFormValues(submitted)
-    await updates.createSwap(submitted, {})
-  })
-  assert.deepEqual(state.created.map(request => request.amount), ['0.9'])
-})
-
+}
 
 for (const [mode, fresh] of [['min', '1'], ['half', '0.4']]) {
   test(`${mode}: a changed final amount updates the draft and requires confirmation before creation`, async () => {
