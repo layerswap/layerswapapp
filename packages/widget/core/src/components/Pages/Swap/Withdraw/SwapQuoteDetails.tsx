@@ -49,7 +49,11 @@ export const SwapQuoteDetails: FC<Props> = ({
     };
 
     return (
-        <QuoteAvailabilityView error={!!quoteError} available={!!quote}>
+        <QuoteAvailabilityView
+            error={!!quoteError}
+            errorMessage={quoteError?.code === 'AMOUNT_PRESET_UNAVAILABLE' ? quoteError.message : undefined}
+            available={!!quote}
+        >
             {quote && (
                 <SwapQuoteComp
                     quote={{ quote, refuel }}

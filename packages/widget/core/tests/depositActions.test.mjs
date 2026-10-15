@@ -6,6 +6,7 @@ import ts from 'typescript'
 import React, { act, createElement, Fragment } from 'react'
 import { createRoot } from 'react-dom/client'
 import { JSDOM } from 'jsdom'
+import { amountPresets } from './helpers/source.mjs'
 import { createSwapContext } from './helpers/swap-context.mjs'
 
 const require = createRequire(import.meta.url)
@@ -83,6 +84,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
             removeGaslessAuthorization(id) { delete this.authorizations[id] },
         }),
         useSwapTransactionStore: store({
+            pendingSubmissions: {},
             swapTransactions: {}, setSwapTransaction(id, status, hash) { stores.useSwapTransactionStore.getState().swapTransactions[id] = { status, hash }; calls.storedTransactions.push([id, status, hash]) },
             stepTransactions: {},
             setStepTransaction(id, step, hash, explorerUrl) {
@@ -126,8 +128,8 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         './useClientLayoutEffect': { useClientLayoutEffect: React.useLayoutEffect },
     }) : undefined
     const SwapView = ({ children }) => {
-        const { setSwapViewMounted } = swapContext.useSwapDataUpdate()
-        React.useLayoutEffect(() => { setSwapViewMounted(true) }, [])
+        state.executionUpdates = swapContext.useSwapDataUpdate()
+        React.useLayoutEffect(() => { state.executionUpdates.setSwapViewMounted(true) }, [])
         return children
     }
     const lifecycle = { lifecycleContextFromSwap: () => ({}), lifecycleErrorDetails: () => ({}) }
@@ -197,6 +199,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         if (!scope.initialized) { callback(); scope.initialized = true }
     }
     const { SendTransactionButton, ButtonWrapper } = loadSource(`${walletPath}buttons.tsx`, {
+        '@/lib/amountPresets': amountPresets,
         '@/helpers/depositActions': depositActions,
         '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: event => calls.lifecycle.push(event) }) },
         '@/lib/swapLifecycle': lifecycle,
@@ -238,13 +241,17 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         '@/hooks/useWallet': { default: () => ({ wallets: [wallet] }) },
         '@/context/swap': {
             useSwapDataState: () => state,
-            useSwapDataUpdate: () => ({
-                createSwap: (...args) => state.createSwap ? state.createSwap(...args) : assert.fail('Retry must keep the existing swap'),
-                startFreshSwapAttempt: noop,
-                mutateSwap: async () => {},
-                setSwapId: id => { state.swapId = id },
-                markWalletExecutionStarted: id => calls.executionStarts.push(id),
-            }),
+            useSwapDataUpdate: () => {
+                const executionUpdates = realPolling ? swapContext.useSwapDataUpdate() : undefined
+                return {
+                    acquireWalletExecution: executionUpdates?.acquireWalletExecution ?? (() => noop),
+                    createSwap: (...args) => state.createSwap ? state.createSwap(...args) : assert.fail('Retry must keep the existing swap'),
+                    startFreshSwapAttempt: noop,
+                    mutateSwap: async () => {},
+                    setSwapId: id => { state.swapId = id },
+                    markWalletExecutionStarted: id => calls.executionStarts.push(id),
+                }
+            },
         },
         'lucide-react': { Loader2: noop },
         '@/components/Pages/Swap/Form/SecondaryComponents/validationError/ErrorDisplay': { ErrorDisplay: noop },
@@ -324,7 +331,8 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
     return {
         state, calls, render, wallet, network, preferences, stores,
         Component: () => realPolling
-            ? createElement(swapContext.SwapDataProvider, null, createElement(SwapView, null, createElement(SendTransactionButton, props())))
+            ? createElement(swapContext.SwapDataProvider, null, createElement(SwapView, null,
+                state.hideWalletButton ? null : createElement(SendTransactionButton, props())))
             : createElement(SendTransactionButton, props()),
         get view() { return view },
         poll: async () => {
@@ -1187,4 +1195,87 @@ test('a network switch completing after unmount cannot start a deposit', async (
             else delete globalThis[key]
         }
     }
+})
+
+// Keep the actual swap provider and polling hook mounted while the real send
+// button disappears, as it does when a balance warning replaces the footer.
+async function mountWalletLockWorkflow(t) {
+    const dom = new JSDOM('<div id="root"></div>', { url: 'https://widget.test' })
+    const previous = Object.getOwnPropertyDescriptors(globalThis)
+    Object.assign(globalThis, { window: dom.window, document: dom.window.document,
+        localStorage: dom.window.localStorage, IS_REACT_ACT_ENVIRONMENT: true })
+    const flow = createWorkflow({ mounted: true, realPolling: true })
+    flow.state.apiActions = [{ type: 'transfer', step: 'publish', status: 'action_required', amount: '1', to_address: '0x456' }]
+    const requests = [], executions = []
+    flow.state.onWalletPrompt = () => {
+        const request = Promise.withResolvers()
+        requests.push(request)
+        return request.promise
+    }
+    const { SWRConfig } = require('swr')
+    const config = { provider: () => new Map(), revalidateOnFocus: false, revalidateOnReconnect: false }
+    const root = createRoot(document.getElementById('root'))
+    const render = () => act(async () => root.render(createElement(React.StrictMode, null,
+        createElement(SWRConfig, { value: config }, createElement(flow.Component)))))
+    const start = () => act(async () => { executions.push(flow.view.handleClick()) })
+    t.after(async () => {
+        await act(async () => {
+            root.unmount()
+            requests.forEach(request => request.reject({ code: 4001 }))
+            await Promise.all(executions)
+        })
+        dom.window.close()
+        for (const key of ['window', 'document', 'localStorage', 'IS_REACT_ACT_ENVIRONMENT']) {
+            if (previous[key]) Object.defineProperty(globalThis, key, previous[key])
+            else delete globalThis[key]
+        }
+    })
+    await render()
+    return { flow, render, start, requests, executions }
+}
+
+for (const outcome of ['rejected', 'submitted']) {
+    test(`ordinary wallet adjustment stays locked across footer unmount/remount until ${outcome}`, async t => {
+        const { flow, render, start, requests, executions } = await mountWalletLockWorkflow(t)
+        await start()
+        assert.equal(requests.length, 1)
+        assert.equal(flow.state.executionUpdates.canAdjustAmount(), false)
+        flow.state.hideWalletButton = true
+        await render()
+        assert.equal(flow.state.executionUpdates.canAdjustAmount(), false, 'unmount cannot cancel an open wallet request')
+        flow.state.hideWalletButton = false
+        await render()
+        assert.equal(flow.state.executionUpdates.canAdjustAmount(), false, 'the remounted idle hook cannot release the request lock')
+        await act(async () => {
+            if (outcome === 'rejected') requests[0].reject({ code: 4001 })
+            else requests[0].resolve()
+            await executions[0]
+        })
+        assert.equal(flow.state.executionUpdates.canAdjustAmount(), outcome === 'rejected')
+        assert.equal(flow.calls.success, 0, 'the closed view cannot invoke stale success callbacks')
+        assert.deepEqual(flow.calls.errors, [])
+        if (outcome === 'submitted') {
+            assert.deepEqual(flow.calls.storedTransactions, [[swapId, 'pending', '0xtransaction']])
+            // A terminal transaction failure can be adjusted: the workflow's
+            // lease must already be released, leaving only the progress guard.
+            flow.stores.useSwapTransactionStore.getState().swapTransactions[swapId].status = 'failed'
+            assert.equal(flow.state.executionUpdates.canAdjustAmount(), true)
+        }
+    })
+}
+
+test('an ordinary wallet retry cannot release the original unmounted request lock', async t => {
+    const { flow, render, start, requests, executions } = await mountWalletLockWorkflow(t)
+    await start()
+    flow.state.hideWalletButton = true
+    await render()
+    flow.state.hideWalletButton = false
+    await render()
+    await start()
+    assert.equal(requests.length, 2)
+    await act(async () => { requests[1].reject({ code: 4001 }); await executions[1] })
+    assert.equal(flow.state.executionUpdates.canAdjustAmount(), false, 'rejected retry cannot release the original request')
+    await act(async () => { requests[0].reject({ code: 4001 }); await executions[0] })
+    assert.equal(flow.state.executionUpdates.canAdjustAmount(), true)
+    assert.deepEqual(flow.calls.storedTransactions, [])
 })

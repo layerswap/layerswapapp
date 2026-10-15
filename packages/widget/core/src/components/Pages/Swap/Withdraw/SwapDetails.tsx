@@ -111,9 +111,7 @@ const SwapDetails: FC<Props> = ({
                 flow={flow}
                 summary={
                     swapBasicData.use_deposit_address &&
-                    resolved.showWithdrawScreen ? null : (
-                        <SwapSummary />
-                    )
+                    resolved.showWithdrawScreen ? null : <SwapSummary />
                 }
                 quote={
                     !swapBasicData.use_deposit_address && (

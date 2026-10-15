@@ -46,6 +46,13 @@ function loadSource(path, imports = {}) {
             return imports[name];
         }
         if (name === '@/components/utils/resolveSwapFlow') return loadSource('components/utils/resolveSwapFlow.ts');
+        if (name === '@/lib/amountPresets') return loadSource('lib/amountPresets.ts', {
+            '@/components/Input/Amount/helpers': loadSource('components/Input/Amount/helpers.ts', {
+                '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
+            }),
+            '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
+            '@layerswap/utils/known-ids': coreRequire('@layerswap/utils/known-ids'),
+        });
         // The send button's chain-switch helper is real logic, not presentation: load it
         // with the button's own lifecycle and rejection stubs instead of stubbing it away.
         if (name === './ensureSourceChain') {
@@ -132,6 +139,7 @@ test('switching gasless mode preserves the live execution lock while swap creati
             startFreshSwapAttempt: noop,
             markWalletExecutionStarted: noop,
             setWalletActionExecuting: noop,
+            acquireWalletExecution: () => noop,
             setSwapViewMounted: noop,
         }),
     };
@@ -649,6 +657,12 @@ function createSwapHistoryHarness(fetcher, { onCreate, selectedAccount } = {}) {
     const context = loadSource('context/swap.tsx', {
         '@layerswap/widget-types': widgetTypes,
         '@/helpers/depository': { shouldUseDepository: () => false },
+        '@/helpers/swapProgress': loadSource('helpers/swapProgress.ts', {
+            '@layerswap/widget-types': widgetTypes,
+            '@/lib/apiClients/layerSwapApiClient': api,
+            './gasless': gasless,
+        }),
+        '@/lib/preparePresetAmount': { preparePresetAmount: async values => values.amount },
         '@/hooks/useSwapPolling': polling,
         '@/hooks/useSwapStatusNotification': { useSwapStatusNotification: noop },
         '@/hooks/useGaslessAuthorization': { useGaslessAuthorization: () => ({}) },
@@ -662,7 +676,7 @@ function createSwapHistoryHarness(fetcher, { onCreate, selectedAccount } = {}) {
         ...walletHooks,
         '@/lib/apiClients/layerSwapApiClient': api,
         '@/components/utils/resolveSwapPhase': phases,
-        swr: { default: useSWR },
+        swr: { default: useSWR, useSWRConfig },
         './settings': { useInitialSettings: () => ({ swapId: 'first' }), useSettingsState: () => ({ networks: [network] }) },
         './swapAccounts': { useSelectedAccount: (_, name) => name === network.name ? selectedAccount : undefined },
         './callbackProvider': { useCallbacks: () => ({ onSwapCreate: noop, onSwapLifecycle: noop }) },
@@ -1303,9 +1317,9 @@ for (const failure of ['rejected', 'failed']) {
             }),
             '@/components/Widget/Index': { Widget: { Footer: childrenOnly } },
             '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
-            '@/hooks/useFee': { transformSwapDataToQuoteArgs: noop, useQuoteData: () => ({}) },
+            '@/hooks/useFee': { transformSwapDataToQuoteArgs: noop, useQuoteData: () => ({ minAllowedAmount: 0.001, maxAllowedAmount: 10 }) },
             '@/lib/gases/useOutOfGas': { default: () => ({ outOfGas: true }) },
-            formik: { useFormikContext: () => ({ setFieldValue: (_, value) => { formAmount = value; } }) },
+            formik: { useFormikContext: () => ({ values: {}, setValues: values => { formAmount = values.amount; } }) },
             '../Form/SecondaryComponents/validationError/AdjustAmountButton': {
                 AdjustAmountButton: ({ onEditAmount }) => React.createElement('button', { onClick: onEditAmount }, 'Adjust amount'),
             },
@@ -1332,7 +1346,7 @@ for (const failure of ['rejected', 'failed']) {
             await act(async () => root.render(React.createElement(SWRConfig, { value: { provider: () => new Map() } },
                 React.createElement(harness.Provider, null, React.createElement(Screen)))));
             await act(async () => walletView.handleClick());
-            assert.equal(walletRequests.length, 1);
+            assert.equal(walletRequests.length, 1, harness.state.swapError);
             assert.equal(walletRequests[0].amount, 1);
             assert.equal(harness.state.swapId, 'first', 'wallet failure retains the original attempt until inputs change');
             await act(async () => container.querySelector('button').click());
