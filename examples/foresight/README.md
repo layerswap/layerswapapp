@@ -4,10 +4,10 @@ A responsive prediction-market demo built with Next.js App Router, React, TypeSc
 
 ## Run locally
 
-Use Node.js 22 or newer.
+Use Node.js 22.x.
 
 ```bash
-npm install
+npm ci
 cp .env.example .env.local
 npm run dev
 ```
@@ -15,6 +15,12 @@ npm run dev
 Open http://localhost:3000. The complete market demo works without credentials. For a production preview, run `npm run build` followed by `npm start`.
 
 For the Cloudflare Tunnel at `https://test.plamo.world`, keep its service pointed at `http://localhost:3000`. The hostname is allowed in `next.config.ts` through `allowedDevOrigins`, which is required for development assets and the HMR WebSocket. If you change the tunnel hostname, update that entry. Allow the HTTPS origin in your Reown, Privy, and Layerswap dashboards as well. Wallet metadata uses the actual browser origin; `NEXT_PUBLIC_APP_URL` is the server-side fallback. During initial wallet-code loading, the app shows a branded status instead of a blank screen. For a shared demo without development compilation or HMR, run the production build with `npm run build` and `npm start` on the same port.
+
+## Deploy to Vercel
+
+Set the Vercel project's **Root Directory** to `examples/foresight` and use the **Next.js** framework preset. The app pins Node.js to 22.x to match `.nvmrc`. Add the public environment variables below in the project's settings before building.
+
+The included `vercel.json` runs `npm ci` and `npm run build` from this directory, using the committed `package-lock.json` and this app's dependency overrides. This example is intentionally outside the parent pnpm workspace. Without the explicit install command, Vercel detects the repository's pnpm lockfile, installs only the parent workspace projects, and fails with “No Next.js version detected” because this app's dependencies were skipped. Redeploy after applying these settings.
 
 ## Connect real services
 
