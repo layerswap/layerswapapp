@@ -98,22 +98,34 @@ const Withdraw: FC<{
     const { minAllowedAmount, maxAllowedAmount } = useQuoteData(quoteArgs, {
         skipLimits: isDepositAddressSwap(swapBasicData),
     });
-    const handleEditAmount = useCallback(() => {
-        if (!canAdjustAmount() || walletBalanceAmount == null || !swapBasicData) return;
+    const adjustedAmount = (() => {
+        if (!swapBasicData || walletBalanceAmount == null || !selectedSourceAccount?.address
+            || minAllowedAmount == null || !Number.isFinite(minAllowedAmount)
+            || maxAllowedAmount == null || !Number.isFinite(maxAllowedAmount)) return undefined;
         const maxAmount = resolveMaxAllowedAmount({
             walletBalance, gasAmount: gasData?.gas, gasReserve: gasData?.reserve,
             fromCurrency: swapBasicData.source_token, native_currency: gasData?.token ?? source_network?.token,
             limitsMaxAmount: maxAllowedAmount, depositMethod: 'wallet',
         });
-        if (maxAmount == null || maxAmount <= 0) return;
+        if (maxAmount == null || !Number.isFinite(maxAmount)) return undefined;
         const newAmount = truncateToDecimals(String(maxAmount), swapBasicData.source_token.decimals);
+        const amount = Number(newAmount);
+        // Only offer a reduction that can satisfy the route after token rounding.
+        return amount > 0 && amount >= minAllowedAmount && amount < Number(swapBasicData.requested_amount)
+            ? newAmount : undefined;
+    })();
+    const showAdjustAmount = adjustedAmount !== undefined && canAdjustAmount();
+
+    const handleEditAmount = useCallback(() => {
+        // Execution can start between rendering the action and clicking it.
+        if (!canAdjustAmount() || adjustedAmount === undefined || !swapBasicData) return;
         const maxFields = { amountMode: 'max' as const,
             amountPresetSource: amountPresetSource(swapBasicData.source_network.name, swapBasicData.source_token.symbol, selectedSourceAccount?.id, selectedSourceAccount?.address),
             amountPresetPending: true, amountPresetError: undefined };
         const nextValues: SwapFormValues = {
             ...values,
             ...maxFields,
-            amount: newAmount,
+            amount: adjustedAmount,
             from: swapBasicData.source_network as NetworkRoute,
             to: swapBasicData.destination_network as NetworkRoute,
             fromAsset: swapBasicData.source_token,
@@ -128,12 +140,10 @@ const Withdraw: FC<{
         void setValues(nextValues, true);
         setSubmitedFormValues(nextValues);
     }, [
-        walletBalanceAmount,
-        gasData?.gas,
-        gasData?.reserve,
+        adjustedAmount,
         swapBasicData,
         refuel,
-        setValues, values, canAdjustAmount, walletBalance, source_network, selectedSourceAccount, maxAllowedAmount,
+        setValues, values, canAdjustAmount, selectedSourceAccount,
         setSubmitedFormValues,
         startFreshSwapAttempt,
     ]);
@@ -193,7 +203,7 @@ const Withdraw: FC<{
                     refreshButton={
                         <>
                             <RefreshBalanceButton onRefresh={mutate} isLoading={isLoading} />
-                            <AdjustAmountButton onEditAmount={handleEditAmount} isLoading={quoteIsLoading || !canAdjustAmount()} />
+                            {showAdjustAmount && <AdjustAmountButton onEditAmount={handleEditAmount} isLoading={quoteIsLoading} />}
                         </>
                     }
                 />
@@ -211,10 +221,10 @@ const Withdraw: FC<{
                     warning={
                         <GasWarningView
                             adjustButton={
-                                <AdjustAmountButton
+                                showAdjustAmount && <AdjustAmountButton
                                     compact
                                     onEditAmount={handleEditAmount}
-                                    isLoading={quoteIsLoading || !canAdjustAmount()}
+                                    isLoading={quoteIsLoading}
                                 />
                             }
                         />
