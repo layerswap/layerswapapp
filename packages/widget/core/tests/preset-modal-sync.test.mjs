@@ -66,6 +66,16 @@ const passthrough = ({ children }) => children
 const gasHook = { default: () => ({ gasData: state.gas }) }
 const { default: useOutOfGas } = loadSource('lib/gases/useOutOfGas.ts', { './useSWRGas': gasHook })
 const errorDisplay = loadSource('components/Pages/Swap/Form/SecondaryComponents/validationError/ErrorDisplay.tsx', { react: React })
+const availabilityView = loadSource('components/Pages/Swap/Withdraw/Presentation/QuoteAvailabilityView.tsx', {
+  'lucide-react': { RouteOff: () => null },
+  '../../Form/SecondaryComponents/validationError/ErrorDisplay': errorDisplay,
+  '../../Form/SecondaryComponents/validationError/constants': { ICON_CLASSES_WARNING: '' },
+})
+const { SwapQuoteDetails } = loadSource('components/Pages/Swap/Withdraw/SwapQuoteDetails.tsx', {
+  './Presentation/QuoteAvailabilityView': availabilityView,
+  '../Form/FeeDetails/SwapQuote': { default: () => createElement('div', null, 'Quote details') },
+})
+
 const warningViews = loadSource('components/Pages/Swap/Withdraw/Presentation/BalanceWarningView.tsx', {
   '@/components/Icons/InfoIcon': { default: () => null },
   '../../Form/SecondaryComponents/validationError/ErrorDisplay': errorDisplay,
@@ -133,7 +143,8 @@ function Probe() {
     amountMode: formik.values.amountMode, setFieldValue: formik.setFieldValue,
     quote: { source_token: { ...token, price_in_usd: state.price } } })
   return createElement(React.Fragment, null, createElement(Controller), data.swapBasicData ? createElement(React.Fragment, null,
-    createElement(Summary), createElement(Withdraw, { type: 'widget' })) : null)
+    createElement(Summary), state.renderQuoteDetails && createElement('section', { 'data-testid': 'quote-details' },
+      createElement(SwapQuoteDetails, { swapBasicData: data.swapBasicData, quote: data.quote, quoteError: data.quoteError, quoteIsLoading: data.quoteIsLoading })), createElement(Withdraw, { type: 'widget' })) : null)
 }
 // Record committed DOM, including the first render before passive effects sync
 // Formik and the draft. Reading only after act() would miss a one-frame warning.
@@ -160,7 +171,7 @@ const decreaseBalance = () => {
 beforeEach(() => {
   container = document.createElement('div'); document.body.append(container); root = createRoot(container)
   Object.assign(state, { account: { id: 'wallet', address: 'source' }, formKey: 0, minimum: 0.00001, price: 2400,
-    events: [], commits: [], walletMounts: 0, walletUnmounts: 0,
+    renderQuoteDetails: false, events: [], commits: [], walletMounts: 0, walletUnmounts: 0,
     gas: { gas: 0.0000001, token }, gasRequest: undefined, gasError: undefined, balanceLoading: false,
     balances: [{ amount: 0.00182643, network: source.name, token: token.symbol, request_time: 1, isNativeCurrency: true }] })
   initialValues = { from: source, to: destination, fromAsset: token, toAsset: token, destination_address: 'destination',
@@ -361,6 +372,7 @@ test('a preset frozen for wallet execution still reports insufficient funds', as
 for (const mode of ['min', 'half', 'max']) {
   for (const isUsdMode of [false, true]) {
     test(`${mode} reports empty balance responses and recovers the review draft in ${isUsdMode ? 'USD' : 'token'} mode`, async () => {
+      state.renderQuoteDetails = true
       initialValues.amountMode = mode
       usdStore.setState({ isUsdMode })
       const resolvedBalances = state.balances
@@ -387,6 +399,7 @@ for (const mode of ['min', 'half', 'max']) {
         assert.equal(data.swapBasicData.amountPresetPending, false)
         assert.equal(data.quoteIsLoading, false)
         assert.equal(data.quoteError.message, 'Balance unavailable')
+        assert.equal(container.querySelector('[data-testid=quote-details]').textContent, 'Balance unavailable')
         assert.equal(summaryAmount(), amount)
         assert.equal(container.querySelector('button').disabled, true, 'cannot submit an unavailable preset')
         assert.doesNotMatch(container.textContent, /Preparing…/)
@@ -403,6 +416,9 @@ for (const mode of ['min', 'half', 'max']) {
       assert.equal(data.swapBasicData.amountPresetPending, false)
       assert.equal(data.swapBasicData.amountPresetError, undefined)
       assert.equal(container.querySelector('button').disabled, false)
+      // This fixture leaves the quote service unresolved after preset recovery.
+      assert.ok(container.querySelector('[data-testid=quote-details] [aria-label="Loading quote"]'))
+      assert.equal(container.querySelector('[data-testid=quote-details]').textContent, '')
       const reviewedAmount = formik.values.amount
 
       state.balances = failed.balances
@@ -420,4 +436,29 @@ for (const mode of ['min', 'half', 'max']) {
       if (isUsdMode) assert.equal(Number(usdStore.getState().usdAmount), Number((Number(formik.values.amount) * state.price).toFixed(2)))
     })
   }
+}
+
+for (const message of ['Insufficient ETH balance', 'Not enough ETH for network fees', 'Minimum is 0.001 ETH', 'Network fee unavailable']) {
+  test(`modal renders ${message} once and recovers after the error clears`, async () => {
+    const quote = { source_token: token }
+    await act(() => root.render(createElement(SwapQuoteDetails, {
+      quote, quoteError: { code: 'AMOUNT_PRESET_UNAVAILABLE', message },
+    })))
+    assert.equal(container.textContent, message, 'specific error replaces generic copy and stale quote')
+    await act(() => root.render(createElement(SwapQuoteDetails, { quote })))
+    assert.equal(container.textContent, 'Quote details')
+  })
+}
+for (const quoteError of [
+  { code: 'QUOTE_FAILED', message: 'Internal backend details' },
+  { code: 'AMOUNT_PRESET_UNAVAILABLE', message: '' },
+]) {
+  test(`modal retains generic fallback for ${quoteError.code} without a usable preset message`, async () => {
+    await act(() => root.render(createElement(SwapQuoteDetails, { quoteError })))
+    assert.match(container.textContent, /Unable to retrieve quote/)
+    assert.doesNotMatch(container.textContent, /Internal backend details/)
+    await act(() => root.render(createElement(SwapQuoteDetails)))
+    assert.ok(container.querySelector('[aria-label="Loading quote"]'))
+    assert.equal(container.textContent, '')
+  })
 }
