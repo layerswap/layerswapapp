@@ -88,10 +88,11 @@ export async function resolveStarknetWallet(props: ResolveStarknetWalletProps): 
         const rpcProvider = await RpcProvider.create({ nodeUrl: network!.rpcUrl })
 
         const walletProvider = (connector as any).wallet
-        const walletAccount = new WalletAccount({ provider: rpcProvider, walletProvider, address })
-
-        const accounts = await walletAccount.requestAccounts(true)
-        const account = accounts?.[0]
+        // Resolve the wallet's current account before constructing the signing account.
+        // A persisted address can be stale after switching accounts in the extension.
+        const walletAccount = await WalletAccount.connectSilent(rpcProvider, walletProvider)
+        const account = walletAccount.address
+        if (!account) throw new Error('No Starknet account returned by the wallet')
 
         const configuredName = connectorsConfigs.find(c => c.id === connector.id)?.name
         const connectorName = configuredName ?? connector.name

@@ -119,6 +119,7 @@ test('switching gasless mode preserves the live execution lock while swap creati
         }),
     };
     const { SendTransactionButton } = loadSource(`${withdraw}Wallet/Common/buttons.tsx`, {
+        '@/helpers/resolveSelectedWallet': loadSource('helpers/resolveSelectedWallet.ts'),
         '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
         ...walletHooks,
         '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: noop }) },
@@ -1181,6 +1182,12 @@ for (const failure of ['rejected', 'failed']) {
         let formAmount;
         const controllerImports = {
             ...walletHooks,
+            '@/stores/swapTransactionStore': stores,
+            '@/helpers/swapProgress': loadSource('helpers/swapProgress.ts', {
+                './gasless': gasless,
+                '@layerswap/widget-types': loadSource('../../types/src/SwapStatus.ts'),
+                '@/lib/apiClients/layerSwapApiClient': harness.api,
+            }),
             '@/context/swap': harness.context,
             '@/context/settings': { useInitialSettings: () => ({}), useSettingsState: () => ({ networks: [network] }) },
             '@/lib/swapLifecycle': lifecycle,
@@ -1189,6 +1196,7 @@ for (const failure of ['rejected', 'failed']) {
             '@/lib/gases/useSWRGas': { default: () => ({ gasData: { gas: 0.01 } }) },
         };
         const { SendTransactionButton } = loadSource(`${withdraw}Wallet/Common/buttons.tsx`, {
+            '@/helpers/resolveSelectedWallet': loadSource('helpers/resolveSelectedWallet.ts'),
             '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
             ...controllerImports,
             '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: noop }) },

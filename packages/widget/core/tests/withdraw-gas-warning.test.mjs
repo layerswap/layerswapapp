@@ -15,9 +15,14 @@ for (const [key, value] of Object.entries(globals)) {
 // Keep the real Withdraw, WalletTransferButton, gas predicate and lifecycle
 // effects; replace their contexts, presentation and the wallet execution seam.
 const mockUrl = `data:text/javascript,${encodeURIComponent(`
-  import { createElement } from ${JSON.stringify(import.meta.resolve('react'))}
+  import { createElement, useEffect } from ${JSON.stringify(import.meta.resolve('react'))}
   export const state = {}
-  export const useSwapDataState = () => ({ swapBasicData: state.swap })
+  export const BackendTransactionStatus = { Failed: 'failed' }
+  export const TransactionType = { Input: 'input' }
+  export const useSwapTransactionStore = selector => selector({ swapTransactions: state.transactions })
+  export const useGaslessAuthorizationStore = selector => selector({ authorizations: state.authorizations })
+  export const useDepositSignatureStore = selector => selector({ signatures: state.signatures })
+  export const useSwapDataState = () => ({ swapBasicData: state.swap, walletActionExecuting: state.locked, swapId: state.swapId, swapDetails: state.details, depositActionsResponse: state.actions })
   export const useSwapDataUpdate = () => ({ setSubmitedFormValues() {} })
   export const useSettingsState = () => ({ networks: [state.swap.source_network] })
   export const useSelectedAccount = () => ({ address: 'source' })
@@ -27,7 +32,7 @@ const mockUrl = `data:text/javascript,${encodeURIComponent(`
   export const useQuoteData = () => ({ minAllowedAmount: 0.001, maxAllowedAmount: state.maxAllowedAmount })
   export const transformSwapDataToQuoteArgs = () => ({})
   const passthrough = ({ children }) => children
-  export const WalletActionTransition = passthrough
+  export const useHydratedReducedMotion = () => false
   export const Widget = { Content: passthrough, Footer: passthrough }
   export const AnimatePresence = passthrough
   export const motion = { div: passthrough }
@@ -36,7 +41,10 @@ const mockUrl = `data:text/javascript,${encodeURIComponent(`
   export const ErrorDisplay = ({ title, message, action, footer }) => createElement('div', null, title, message, action, footer)
   export const AdjustAmountButton = () => createElement('button', null, 'Adjust amount')
   export const RefreshBalanceButton = () => createElement('button', null, 'Refresh balance')
-  export const WalletTransferAction = () => createElement('button', null, 'Send transaction')
+  export const WalletTransferAction = () => {
+    useEffect(() => { state.mounts++; return () => { state.unmounts++ } }, [])
+    return createElement('button', null, 'Send transaction')
+  }
 `)}`
 const gasUrl = `data:text/javascript,${encodeURIComponent(`
   import { state } from ${JSON.stringify(mockUrl)}
@@ -47,10 +55,11 @@ const mocked = [
   '/lib/balances/useBalance', '/context/settings', '/context/swapAccounts',
   '/validationError/ErrorDisplay', '/hooks/useFee', '/components/Icons/InfoIcon',
   '/validationError/RefreshBalanceButton', '/validationError/AdjustAmountButton',
-  '/Presentation/WalletActionTransition',
 ]
 const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
   const parent = context.parentURL ?? ''
+  if (parent.endsWith('/Presentation/WalletActionTransition.js') && (specifier === 'framer-motion' || specifier.endsWith('/useHydratedReducedMotion'))) return { url: mockUrl, shortCircuit: true }
+  if (parent.includes('/dist/esm/') && (specifier.endsWith('/stores/swapTransactionStore') || specifier.endsWith('/apiClients/layerSwapApiClient'))) return { url: mockUrl, shortCircuit: true }
   if (parent.endsWith('/Withdraw/Withdraw.js') && (['formik', 'framer-motion'].includes(specifier) || mocked.some(path => specifier.endsWith(path)))) {
     return { url: mockUrl, shortCircuit: true }
   }
@@ -72,7 +81,7 @@ beforeEach(() => {
   document.body.append(container)
   root = createRoot(container)
   Object.assign(state, {
-    events: [],
+    events: [], locked: false, mounts: 0, unmounts: 0, swapId: undefined, details: undefined, actions: undefined, transactions: {}, authorizations: {}, signatures: {},
     swap: { source_network: network, source_token: token, destination_network: { name: 'BASE_MAINNET' }, destination_token: token, requested_amount: '0.95', use_deposit_address: false },
     balances: [{ network: network.name, token: token.symbol, amount: 1, isNativeCurrency: true }],
     gasData: { gas: 0.1, token },
@@ -178,3 +187,39 @@ test('deposit-address swaps do not report wallet balance or gas blocks', async (
   assert.deepEqual(state.events, [])
   assert.doesNotMatch(container.textContent, /Insufficient balance/)
 })
+test('a balance refresh during execution does not replace the wallet flow or report a block', async () => {
+  await render()
+  const send = sendButton()
+  const mounts = state.mounts
+  const unmounts = state.unmounts
+  state.locked = true
+  state.balances[0].amount = 0.01
+  await render()
+  assert.equal(sendButton(), send)
+  assert.equal(state.mounts, mounts)
+  assert.equal(state.unmounts, unmounts)
+  assert.doesNotMatch(container.textContent, /Insufficient balance/)
+  assert.deepEqual(blocks(), [])
+
+  // A failed attempt that can safely be adjusted restores balance validation.
+  state.locked = false
+  await render()
+  assert.equal(sendButton(), undefined)
+  assert.deepEqual(blocks().map(event => event.reasonCode), ['insufficient_balance'])
+})
+
+
+for (const progress of ['local transaction', 'input confirmation', 'refund completion']) {
+  test(`${progress} prevents post-send balance blocks after the wallet request settles`, async () => {
+    await render()
+    state.swapId = 'submitted-swap'
+    state.balances[0].amount = 0.01
+    if (progress === 'local transaction') state.transactions[state.swapId] = { hash: '0x123', status: 'pending' }
+    if (progress === 'input confirmation') state.details = { transactions: [{ type: 'input', status: 'completed', transaction_hash: '0x123' }] }
+    if (progress === 'refund completion') state.details = { status: 'refunded' }
+    await render()
+    assert.ok(sendButton())
+    assert.doesNotMatch(container.textContent, /Insufficient balance/)
+    assert.deepEqual(blocks(), [])
+  })
+}

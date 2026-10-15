@@ -29,6 +29,7 @@ const walletErrors = loadSource('../../../wallets/core/src/lib/walletErrors.ts',
 const rejection = loadSource(`${walletPath}isUserRejection.ts`, { '@layerswap/wallet-core/errors': walletErrors })
 const gasless = loadSource('../src/helpers/gasless.ts')
 const depositActions = loadSource('../src/helpers/depositActions.ts')
+const selectedWallet = loadSource('../src/helpers/resolveSelectedWallet.ts')
 const swapProgress = loadSource('../src/helpers/swapProgress.ts', {
     './gasless': gasless,
     '@layerswap/widget-types': loadSource('../../types/src/SwapStatus.ts'),
@@ -196,6 +197,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         if (!scope.initialized) { callback(); scope.initialized = true }
     }
     const { SendTransactionButton, ButtonWrapper } = loadSource(`${walletPath}buttons.tsx`, {
+        '@/helpers/resolveSelectedWallet': selectedWallet,
         '@/helpers/depositActions': depositActions,
         '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: event => calls.lifecycle.push(event) }) },
         '@/lib/swapLifecycle': lifecycle,

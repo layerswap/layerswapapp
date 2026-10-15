@@ -1,3 +1,4 @@
+import { resolveSelectedWallet } from '@/helpers/resolveSelectedWallet';
 import { useCallbacks } from '@/context/callbackProvider';
 import { lifecycleContextFromSwap, lifecycleErrorDetails } from '@/lib/swapLifecycle';
 import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect';
@@ -178,7 +179,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const { balances } = useBalance(selectedSourceAccount?.address, networkWithTokens)
 
     const { wallets } = useWallet(swapBasicData.source_network, 'withdrawal')
-    const selectedWallet = wallets.find(wallet => wallet.id === selectedSourceAccount?.id)
+    const selectedWallet = resolveSelectedWallet(wallets, selectedSourceAccount)
     const { gasData } = useSWRGas(selectedSourceAccount?.address, networkWithTokens, swapBasicData.source_token, swapBasicData.requested_amount)
     const [actionStateText, setActionStateText] = useState<string | undefined>()
     const [loading, setLoading] = useState(false)

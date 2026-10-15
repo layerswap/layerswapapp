@@ -72,6 +72,32 @@ async function withTimeout<T>(promise: Promise<T>, ms: number, timeoutError: () 
     }
 }
 
+// Share a request while the UI waits, including across account changes on the
+// same EVM connector. A timeout releases our lock: some wallets never settle a
+// dismissed request, so retaining its promise forever would prevent recovery.
+// The provider can still answer a retry with -32002 if its prompt remains open.
+type PendingSwitch = { chainId: string; promise: Promise<void>; release: () => void }
+const pendingSwitches = new Map<string, PendingSwitch>()
+
+function requestChainSwitch(wallet: Wallet, chainId: string | number, switchChain: ChainSwitcher): PendingSwitch {
+    const key = JSON.stringify(wallet.metadata?.evmConnectorUid
+        ? [wallet.providerName, wallet.metadata.evmConnectorUid]
+        : [wallet.providerName, wallet.id])
+    const target = String(chainId)
+    const pending = pendingSwitches.get(key)
+    if (pending) {
+        if (pending.chainId === target) return pending
+        throw Object.assign(new Error('A network switch is already pending in your wallet. Complete it before switching again.'), { code: -32002 })
+    }
+    const release = () => {
+        if (pendingSwitches.get(key)?.promise === promise) pendingSwitches.delete(key)
+    }
+    const promise = Promise.resolve().then(() => switchChain(wallet, chainId)).finally(release)
+    const request = { chainId: target, promise, release }
+    pendingSwitches.set(key, request)
+    return request
+}
+
 type EnsureSourceChainOptions = {
     wallet: Wallet
     network: Network
@@ -110,7 +136,12 @@ export async function ensureSourceChain(options: EnsureSourceChainOptions): Prom
         if (!switchChain) throw new Error(`${wallet.providerName} cannot switch networks`)
         onSwitchStart?.()
         // The message is what the shared wallet error classifier reads as `timeout`.
-        await withTimeout(switchChain(wallet, chainId), timeoutMs, () => new Error(`Timed out switching to ${network.display_name}`))
+        const request = requestChainSwitch(wallet, chainId, switchChain)
+        try {
+            await withTimeout(request.promise, timeoutMs, () => new Error(`Timed out switching to ${network.display_name}; requested chain ${chainId}, wallet last reported ${wallet.chainId}. The wallet request may still be pending.`))
+        } finally {
+            request.release()
+        }
     } catch (error) {
         const rejected = isUserRejection(error)
         const details = lifecycleErrorDetails(error)
