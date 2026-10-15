@@ -34,8 +34,10 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
     const revision = swap?.amountPresetRevision ?? 0
     const previousRevision = useRef(revision)
     const liveSupported = walletFlow && !!wallet && !!account?.address && !!values.from && !!values.fromAsset && supportsLiveAmountPreset(values.from, values.fromAsset)
-    const { balances, error: balanceError } = useBalance(sameSource && liveSupported && !frozen ? account?.address : undefined, values.from, { refreshInterval: 20000, dedupeInterval: 20000 })
+    const { balances, error: balanceError, isLoading: balanceLoading } = useBalance(sameSource && liveSupported && !frozen ? account?.address : undefined, values.from, { refreshInterval: 20000, dedupeInterval: 20000 })
     const balance = balances?.find(b => b.network === values.from?.name && b.token === values.fromAsset?.symbol)
+    // Provider-wide failures can resolve to an empty list without an error.
+    const missingSettledBalance = !balanceLoading && balances !== undefined && !balance
     const { maxAllowedAmount, minAllowedAmount, limitsError } = useQuoteData(
         !frozen && sameSource && liveSupported ? transformFormValuesToQuoteArgs(values) : undefined,
     )
@@ -54,7 +56,7 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
     }),
     { refreshInterval: 60000, keepPreviousData: false, shouldRetryOnError: error => !(error instanceof AmountPresetUnavailableError), errorRetryCount: 3 })
     const retrying = !!error && isValidating
-    const message = balanceError || balance?.error ? 'Balance unavailable'
+    const message = balanceError || balance?.error || missingSettledBalance ? 'Balance unavailable'
         : limitsError ? 'Route limits unavailable'
         : error instanceof AmountPresetUnavailableError ? error.message
         : error && !retrying ? 'Network fee unavailable'

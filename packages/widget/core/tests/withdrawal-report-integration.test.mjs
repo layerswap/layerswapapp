@@ -21,6 +21,7 @@ const fixtureUrl = moduleUrl(`
   export const useSwapDataState = () => state.swap
   export const useSwapDataUpdate = () => ({
     setSwapId(id) { state.swap.swapId = id }, setQuoteLoading() {}, markWalletExecutionStarted() {},
+    acquireWalletExecution() { return () => {} },
     setWalletActionExecuting() {}, setSwapModalOpen(open) { state.swap.swapModalOpen = open },
     startFreshSwapAttempt() {
       state.freshAttempts++

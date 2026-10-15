@@ -157,7 +157,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const switchToStandardTransfer = useGaslessPreferenceStore(s => s.switchToStandardTransfer)
     const clearGaslessUnavailable = useGaslessPreferenceStore(s => s.clearGaslessUnavailable)
     const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess, onCancelWithdrawal } = useWalletWithdrawalState();
-    const { createSwap, setSwapId, setQuoteLoading, startFreshSwapAttempt, markWalletExecutionStarted } = useSwapDataUpdate()
+    const { createSwap, setSwapId, setQuoteLoading, startFreshSwapAttempt, markWalletExecutionStarted, acquireWalletExecution } = useSwapDataUpdate()
     const setSwapTransaction = useSwapTransactionStore(state => state.setSwapTransaction)
     const storedWalletTransaction = useSwapTransactionStore(
         state => swapId ? state.swapTransactions[swapId] : undefined,
@@ -252,6 +252,9 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 depositSignature: swapId ? useDepositSignatureStore.getState().signatures[swapId] : undefined,
             })
         let executionSwapId = forceNewSwap ? undefined : swapId
+        // An open wallet request can finish after this view unmounts. Its lock
+        // belongs to the workflow, independently of the polling hook's lifetime.
+        const releaseWalletExecution = acquireWalletExecution()
         try {
             if (!selectedSourceAccount) {
                 throw new Error('Selected source account is undefined')
@@ -500,6 +503,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             }
         }
         finally {
+            releaseWalletExecution()
             executionInFlight.current = false
             if (executionScope.current) setLoading(false)
         }

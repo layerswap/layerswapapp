@@ -21,6 +21,12 @@ const source = { name: 'BASE_MAINNET', token, tokens: [token] }
 const destination = { name: 'ARBITRUM_MAINNET', token, tokens: [token] }
 const settings = { sourceRoutes: [source], destinationRoutes: [destination] }
 const state = {}
+const { BalanceResolver } = loadSource('lib/balances/balanceResolver.ts', {
+  '@/lib/ErrorHandler': { ErrorHandler() {} },
+  '@layerswap/widget-types': { classifyNodeError: () => 'rpc', extractErrorDetails: error => ({ message: error.message }) },
+  '../knownIds': { default: { Networks: {} } },
+  '../widgetTelemetry': { widgetTelemetry: { beginOperation: () => () => {} } },
+})
 const context = createSwapContext({
   Client: class {}, getSwapId: () => undefined, getAccount: () => state.account,
   overrides: { '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts') },
@@ -33,7 +39,7 @@ const { default: Controller } = loadSource('components/Pages/Swap/Form/AmountPre
   '@/context/swapAccounts': { useSelectedAccount: () => state.account },
   '@/hooks/useWallet': { default: () => ({ wallets: [state.account] }) },
   '@/hooks/useFee': { transformFormValuesToQuoteArgs: values => values, useQuoteData: () => ({ maxAllowedAmount: 1, minAllowedAmount: state.minimum }) },
-  '@/lib/balances/useBalance': { useBalance: () => ({ balances: state.balances }) },
+  '@/lib/balances/useBalance': { useBalance: () => ({ balances: state.balances, isLoading: state.balanceLoading }) },
   '@/lib/amountPresets': amountPresets,
   '@/lib/resolvers/resolverService': { resolverService: { getGasResolver: () => ({ getGas: async () => {
     await state.gasRequest?.promise
@@ -151,7 +157,7 @@ beforeEach(() => {
   container = document.createElement('div'); document.body.append(container); root = createRoot(container)
   Object.assign(state, { account: { id: 'wallet', address: 'source' }, formKey: 0, minimum: 0.00001, price: 2400,
     events: [], commits: [], walletMounts: 0, walletUnmounts: 0,
-    gas: { gas: 0.0000001, token }, gasRequest: undefined, gasError: undefined,
+    gas: { gas: 0.0000001, token }, gasRequest: undefined, gasError: undefined, balanceLoading: false,
     balances: [{ amount: 0.00182643, network: source.name, token: token.symbol, request_time: 1, isNativeCurrency: true }] })
   initialValues = { from: source, to: destination, fromAsset: token, toAsset: token, destination_address: 'destination',
     depositMethod: 'wallet', amount: '0.00182505', amountMode: 'max',
@@ -347,3 +353,67 @@ test('a preset frozen for wallet execution still reports insufficient funds', as
   assert.match(state.commits[0], /Insufficient balance/)
   assert.deepEqual(blocks().map(event => event.reasonCode), ['insufficient_balance'])
 })
+
+for (const mode of ['min', 'half', 'max']) {
+  for (const isUsdMode of [false, true]) {
+    test(`${mode} reports empty balance responses and recovers the review draft in ${isUsdMode ? 'USD' : 'token'} mode`, async () => {
+      initialValues.amountMode = mode
+      usdStore.setState({ isUsdMode })
+      const resolvedBalances = state.balances
+      state.balances = undefined
+      state.balanceLoading = true
+      await render(); await openReview()
+      assert.equal(formik.values.amountPresetError, undefined, 'initial loading is not a balance failure')
+      assert.equal(data.swapBasicData.amountPresetPending, true)
+      const initialAmount = formik.values.amount
+
+      // Use the actual resolver: a provider-wide RPC failure resolves to an
+      // empty list rather than rejecting or attaching a per-token error.
+      const resolver = new BalanceResolver([{ supportsNetwork: () => true,
+        fetchBalance: async () => { throw new Error('Balance RPC unavailable') } }])
+      const failed = await resolver.getBalance(source, state.account.address)
+      assert.deepEqual(failed, { balances: [] })
+      state.balances = failed.balances
+      state.balanceLoading = false
+      await render()
+      const assertUnavailable = amount => {
+        assert.equal(formik.values.amountPresetPending, false)
+        assert.equal(formik.values.amountPresetError, 'Balance unavailable')
+        assert.equal(formik.values.amount, amount)
+        assert.equal(data.swapBasicData.amountPresetPending, false)
+        assert.equal(data.quoteIsLoading, false)
+        assert.equal(data.quoteError.message, 'Balance unavailable')
+        assert.equal(summaryAmount(), amount)
+        assert.equal(container.querySelector('button').disabled, true, 'cannot submit an unavailable preset')
+        assert.doesNotMatch(container.textContent, /Preparing…/)
+      }
+      assertUnavailable(initialAmount)
+
+      state.balanceLoading = true
+      await render()
+      assert.equal(formik.values.amountPresetError, undefined, 'a retry can wait while cached empty data is present')
+      assert.equal(data.swapBasicData.amountPresetPending, true)
+      state.balances = resolvedBalances
+      state.balanceLoading = false
+      await render()
+      assert.equal(data.swapBasicData.amountPresetPending, false)
+      assert.equal(data.swapBasicData.amountPresetError, undefined)
+      assert.equal(container.querySelector('button').disabled, false)
+      const reviewedAmount = formik.values.amount
+
+      state.balances = failed.balances
+      await render()
+      assertUnavailable(reviewedAmount)
+      state.minimum *= 2
+      state.balances = [{ ...resolvedBalances[0], amount: 0.0008, request_time: 3 }]
+      await render()
+      assert.equal(formik.values.amountMode, mode, 'recovery resumes the same preset')
+      assert.equal(data.swapBasicData.amountPresetError, undefined)
+      assert.equal(data.swapBasicData.amountPresetPending, false)
+      assert.notEqual(formik.values.amount, reviewedAmount)
+      assert.equal(summaryAmount(), formik.values.amount)
+      assert.equal(container.querySelector('button').disabled, false)
+      if (isUsdMode) assert.equal(Number(usdStore.getState().usdAmount), Number((Number(formik.values.amount) * state.price).toFixed(2)))
+    })
+  }
+}
