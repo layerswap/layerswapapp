@@ -72,7 +72,7 @@ export default function ConfiguredProvider({children}:{children:React.ReactNode}
   let content = <Session>{children}</Session>;
   if (adapter) content = <WagmiProvider config={adapter.wagmiConfig}><QueryClientProvider client={queryClient}>{content}</QueryClientProvider></WagmiProvider>;
   if (privyId) content = <PrivyProvider appId={privyId} clientId={process.env.NEXT_PUBLIC_PRIVY_CLIENT_ID || undefined} config={{
-    loginMethods:['email','google','apple'],
+    loginMethods:['email','google'],
     appearance:{theme:'light',accentColor:'#7655e8',logo:'/icon.svg'},
     defaultChain:base,supportedChains:[base,polygon,mainnet,arbitrum,optimism],
     embeddedWallets:{ethereum:{createOnLogin:'users-without-wallets'}},
