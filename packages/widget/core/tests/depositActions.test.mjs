@@ -18,6 +18,7 @@ function loadSource(path, imports = {}) {
     const module = { exports: {} }
     new Function('require', 'module', 'exports', outputText)(name => {
         if (name === 'react/jsx-runtime') return require(name)
+        if (name === '../components/utils/resolveSwapFlow.js' || name === '@/components/utils/resolveSwapFlow') return loadSource("../src/components/utils/resolveSwapFlow.ts");
         if (name in imports) return imports[name]
         throw new Error(`Unexpected dependency: ${name}`)
     }, module, module.exports)

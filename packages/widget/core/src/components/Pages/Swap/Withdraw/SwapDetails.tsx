@@ -2,8 +2,6 @@ import {
     ProcessingSectionView,
     SwapContentView,
 } from './Presentation/Page2Sections';
-import { shouldShowCompactSwapQuote } from '@/helpers/swapFlow';
-import { useIsGaslessActive } from '@/hooks/useIsGaslessActive';
 import SwapSummary from './Summary';
 import { SwapQuoteDetails } from './SwapQuoteDetails';
 import { Page2Contained } from './Presentation/Page2Contained';
@@ -40,7 +38,7 @@ const SwapDetails: FC<Props> = ({
     const {
         swapBasicData,
         swapDetails,
-        walletExecutionStarted,
+        flow,
         refuel,
         depositActionsResponse,
         quote,
@@ -58,7 +56,6 @@ const SwapDetails: FC<Props> = ({
         setSwapViewMounted(true);
         return () => setSwapViewMounted(false);
     }, [setSwapViewMounted]);
-    const isGaslessActive = useIsGaslessActive(swapBasicData);
 
     // Polls the gasless deposit (paymaster) authorization while it's in flight; self-gates on
     // the authorization marker, so it's a no-op for non-gasless swaps.
@@ -104,34 +101,20 @@ const SwapDetails: FC<Props> = ({
 
     if (!swapBasicData) return <SwapDetailsSceleton />;
 
-    const compactsDuringWalletExecution = shouldShowCompactSwapQuote({
-        swapData: swapBasicData,
-        isGaslessActive,
-    });
-    const compactQuote =
-        !swapBasicData.use_deposit_address &&
-        (!resolved.showWithdrawScreen ||
-            (compactsDuringWalletExecution && walletExecutionStarted));
+    const { compactQuote } = flow;
     const sourceAddress =
         swapDetails?.source_address || selectedSourceAccount?.address;
 
     return (
         <Container type={type} goBack={onBackClick}>
             <SwapContentView
-                transferStage={
-                    !compactsDuringWalletExecution
-                        ? resolved.showWithdrawScreen
-                            ? 'withdraw'
-                            : 'processing'
-                        : undefined
-                }
+                flow={flow}
                 summary={
                     swapBasicData.use_deposit_address &&
                     resolved.showWithdrawScreen ? null : (
                         <SwapSummary />
                     )
                 }
-                compactQuote={compactQuote}
                 quote={
                     !swapBasicData.use_deposit_address && (
                         <SwapQuoteDetails
