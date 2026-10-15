@@ -59,7 +59,7 @@ for (const result of ['switched', 'rejected', 'pending', 'timeout', 'failed', 'u
       : result === 'pending'
         ? Object.assign(new Error(PENDING_MESSAGE), { code: -32002 })
         : Object.assign(new Error('Switch failed'), { shortMessage: 'Chain not configured' })
-    const wallet = { chainId: 1, providerName: 'EVM' }
+    const wallet = { chainId: 1, providerName: 'EVM', id: result, address: '0x123' }
     const run = ensureSourceChain({
       wallet, network, context, path: 'SendTransactionButton', timeoutMs: 20,
       switchChain: result === 'unsupported' ? undefined : async (...args) => {
@@ -104,3 +104,47 @@ for (const result of ['switched', 'rejected', 'pending', 'timeout', 'failed', 'u
     if (result === 'failed') assert.equal(networkSwitchFailureReason(await run.catch(error => error)), 'Chain not configured')
   })
 }
+
+
+test('account changes on the same connector share its active chain switch', async () => {
+  const wallet = { chainId: 42161, providerName: 'EVM', id: 'MetaMask SDK', address: '0x456', metadata: { evmConnectorUid: 'shared-switch' } }
+  const robinhood = { name: 'ROBINHOOD', display_name: 'Robinhood', chain_id: '4663' }
+  let finish
+  let switches = 0
+  const switchChain = () => { switches++; return new Promise(resolve => { finish = resolve }) }
+  const options = { wallet, network: robinhood, context: {}, path: 'test', onLifecycle() {}, timeoutMs: 1000, switchChain }
+  const first = ensureSourceChain(options)
+  const otherAccount = { ...wallet, address: '0x789' }
+  const second = ensureSourceChain({ ...options, wallet: otherAccount })
+  await assert.rejects(ensureSourceChain({ ...options, wallet: otherAccount, network }), error => error.kind === 'pending')
+  assert.equal(switches, 1)
+  finish()
+  await Promise.all([first, second])
+})
+
+test('a never-settling wallet request can recover after a timeout', async () => {
+  const wallet = { chainId: 42161, providerName: 'EVM', id: 'MetaMask SDK', address: '0x456' }
+  const robinhood = { name: 'ROBINHOOD', display_name: 'Robinhood', chain_id: '4663' }
+  const options = { wallet, network: robinhood, context: {}, path: 'test', onLifecycle() {}, timeoutMs: 5 }
+  await assert.rejects(ensureSourceChain({ ...options, switchChain: () => new Promise(() => {}) }), error => error.kind === 'timeout')
+  let switches = 0
+  await ensureSourceChain({ ...options, switchChain: async () => { switches++ } })
+  assert.equal(switches, 1)
+})
+
+test('a late rejection does not clear a newer switch request', async () => {
+  const wallet = { chainId: 1, providerName: 'EVM', id: 'MetaMask SDK', address: '0x789' }
+  let rejectOld
+  const options = { wallet, network, context: {}, path: 'test', onLifecycle() {}, timeoutMs: 5 }
+  await assert.rejects(ensureSourceChain({ ...options, switchChain: () => new Promise((_, reject) => { rejectOld = reject }) }), error => error.kind === 'timeout')
+  let finish
+  let switches = 0
+  const retry = ensureSourceChain({ ...options, timeoutMs: 1000, switchChain: () => { switches++; return new Promise(resolve => { finish = resolve }) } })
+  rejectOld(Object.assign(new Error('User declined'), { code: 4001 }))
+  await Promise.resolve()
+  await Promise.resolve()
+  const concurrent = ensureSourceChain({ ...options, timeoutMs: 1000, switchChain: async () => { switches++ } })
+  finish()
+  await Promise.all([retry, concurrent])
+  assert.equal(switches, 1)
+})

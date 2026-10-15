@@ -200,3 +200,19 @@ test('lib/swapCreation has no runtime dependency on the API client', () => {
   assert.ok(runtimeImports.length > 0)
   assert.deepEqual(runtimeImports.filter(s => /apiClients|Models\//.test(s)), [])
 })
+
+for (const code of ['GREATER_THAN_MAX_ERROR', 'LESS_THAN_MIN_ERROR', 'ROUTE_NOT_FOUND_ERROR', 'PRICE_IMPACT_TOO_HIGH']) {
+  test(`${code} preserves the creation error without declaring gasless unavailable`, async () => {
+    const apiError = { code, message: 'Adjust the route or amount' }
+    for (const envelope of [true, false]) {
+      const error = Object.assign(new Error(apiError.message), { response: { data: { error: apiError } } })
+      const h = harness({ useGasless: true, request: async () => {
+        if (envelope) return { error: apiError }
+        throw error
+      } })
+      await assert.rejects(h.attempt, caught => caught === (envelope ? apiError : error))
+      assert.equal(h.gaslessUnavailable(), 0)
+      assert.deepEqual(h.lifecycle.at(-1).reasonCode, lifecycleErrorDetails(envelope ? apiError : error).reasonCode)
+    }
+  })
+}

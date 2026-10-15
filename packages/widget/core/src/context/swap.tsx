@@ -83,6 +83,7 @@ export type SwapContextData = {
     swapDetails: SwapDetails | undefined,
     swapId: string | undefined,
     walletExecutionStarted: boolean,
+    walletActionExecuting: boolean,
     swapModalOpen: boolean,
     // The single resolved swap status every reader renders and reports from (phase,
     // step statuses, client-detected input failures). Computed once here so no reader can
@@ -521,12 +522,13 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         swapDetails,
         swapId,
         walletExecutionStarted,
+        walletActionExecuting,
         swapModalOpen,
         resolved,
         flow,
         swapError,
         setSwapError
-    }), [withdrawType, swapTransaction, depositAddressIsFromAccount, error, swapDetailsError, depositActionsResponse, depositActionsError, approvalTransaction, quote, quoteIsLoading, quoteError, refuel, swapBasicData, swapDetails, swapId, walletExecutionStarted, swapModalOpen, resolved, flow, swapError]);
+    }), [withdrawType, swapTransaction, depositAddressIsFromAccount, error, swapDetailsError, depositActionsResponse, depositActionsError, approvalTransaction, quote, quoteIsLoading, quoteError, refuel, swapBasicData, swapDetails, swapId, walletExecutionStarted, walletActionExecuting, swapModalOpen, resolved, flow, swapError]);
 
     return (
         <SwapDataStateContext.Provider value={stateValue}>
