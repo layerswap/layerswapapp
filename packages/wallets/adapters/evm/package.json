@@ -51,9 +51,10 @@
     "@layerswap/wallet-core": "workspace:^",
     "@layerswap/utils": "workspace:^",
     "@layerswap/widget-types": "workspace:^",
-    "viem": "catalog:",
-    "wagmi": "catalog:",
-    "zustand": "catalog:"
+    "viem": "^2.38.0",
+    "wagmi": "^2.14.11",
+    "zustand": "catalog:",
+    "@wagmi/core": "^2.16.4"
   },
   "dependencies": {
     "@metamask/sdk": "^0.33.1",

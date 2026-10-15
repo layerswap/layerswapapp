@@ -31,7 +31,7 @@ export { WIDGET_PROTOCOL_MAJOR, widgetProtocolMajorOf } from "./protocol.js";
 // available for advanced integrators wiring their own loader.
 export { resolveSource } from "./loader.js";
 export type { ResolvedSource } from "./loader.js";
-export { initRemote, loadRemoteModule } from "./runtime.js";
+export { initRemote, loadRemoteModule, assertSharedLibraries } from "./runtime.js";
 export type { SharedLib } from "./runtime.js";
 
 // Manifest format + verification primitives.

@@ -41,9 +41,9 @@
     "@layerswap/wallet-core": "workspace:^",
     "@layerswap/utils": "workspace:^",
     "@layerswap/widget-types": "workspace:^",
-    "@wagmi/core": "catalog:",
-    "wagmi": "catalog:",
-    "viem": "catalog:",
+    "@wagmi/core": "^2.16.4",
+    "wagmi": "^2.14.11",
+    "viem": "^2.38.0",
     "zustand": "catalog:"
   },
   "dependencies": {

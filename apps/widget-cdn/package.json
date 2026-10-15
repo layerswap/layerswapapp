@@ -38,7 +38,8 @@
     "viem": "catalog:",
     "vm-browserify": "^1.1.2",
     "wagmi": "catalog:",
-    "zustand": "catalog:"
+    "zustand": "catalog:",
+    "@wagmi/core": "catalog:"
   },
   "devDependencies": {
     "@module-federation/enhanced": "^0.9.0",

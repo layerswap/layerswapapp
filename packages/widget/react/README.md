@@ -10,8 +10,8 @@ out of your app's bundle.
 pnpm add @layerswap/widget-react
 ```
 
-Requires React and React DOM 18 or 19. Install `wagmi` only if you want to pass
-your app's existing `wagmiConfig`. Config and callback types are included.
+Requires React and React DOM 18 or 19. Node-based builds/SSR require Node 18.20.x or Node 20.10+ (JSON import attributes). Config and callback types are included.
+For an existing wagmi app, use the `/wagmi` entry point described below; the default entry point keeps wallet SDKs out of the host bundle.
 
 ## Quick start
 
@@ -71,12 +71,18 @@ values describe the user's flow; they are not additional widget configuration op
 
 ## Use your existing wagmi config
 
-Pass your app's wagmi config to share its connected EVM account and chain:
+Use the dedicated entry point to share the host's actual wagmi, `@wagmi/core`,
+viem, and React Query modules with the CDN widget. It reuses the exact config
+passed to your host's `WagmiProvider`; it never creates another config.
+
+```bash
+npm install @layerswap/widget-react wagmi@2.19.5 @wagmi/core@2.22.1 viem@^2.38.0 @tanstack/react-query@^5.90.11
+```
 
 ```tsx
 'use client';
 
-import { LayerswapWidget } from '@layerswap/widget-react';
+import { LayerswapWidget } from '@layerswap/widget-react/wagmi';
 import { wagmiConfig } from './wagmi';
 
 export function SwapWidget() {
@@ -84,9 +90,45 @@ export function SwapWidget() {
 }
 ```
 
-Use the config your app already provides to `WagmiProvider`. The widget adds
-supported EVM chains that are missing from it and preserves your existing chain
-order and transports.
+`LayerswapDepositWidget` is available from the same entry point. Keep the widget
+under your host's `WagmiProvider` and `QueryClientProvider`. Supported peers are
+wagmi `>=2.14.11 <3`, core `>=2.16.4 <3`, viem `>=2.38.0 <3`, and React Query
+`>=5.90.11 <6`. Older viem versions can install alongside newer wagmi but fail
+at runtime because required actions are absent.
+
+Keep `@wagmi/core` on the version declared by your installed wagmi package:
+
+```bash
+node -p "require('wagmi/package.json').dependencies['@wagmi/core']"
+npm ls wagmi @wagmi/core
+```
+
+Do not upgrade core independently. With pnpm, also check `pnpm why @wagmi/core`:
+different optional-peer contexts can create duplicate copies of the same version.
+This workspace aligns the store shim to wagmi 2.x's 1.4.0 dependency to prevent that. The tested pairs are:
+
+| wagmi | core |
+| --- | --- |
+| 2.14.11 | 2.16.4 |
+| 2.14.16 | 2.16.7 |
+| 2.15.7 | 2.17.3 |
+| 2.16.9 | 2.20.3 |
+| 2.17.5 | 2.21.2 |
+| 2.18.2 / 2.19.5 | 2.22.1 |
+
+**Migration:** if you previously passed `wagmiConfig` to the root entry point,
+change the component import to `@layerswap/widget-react/wagmi`. The root entry
+point now rejects that configuration rather than silently running a separate
+wallet runtime. Types and other exports remain available from the root.
+
+The shared entry point rejects unsupported versions and duplicate core instances.
+Module Federation registers the host modules as already loaded, strict singletons,
+so a newer remote fallback cannot replace them. Always pass your config on the
+first render and reuse it; replacing an active config throws a clear error.
+
+The widget adds supported EVM chains that are missing from your config and
+preserves your existing chain order and transports. Keep workspace build versions
+pinned; public peer ranges are independent of those build pins.
 
 If the same wallet appears twice after a refresh, check whether your wagmi config
 combines a bare `injected()` connector with EIP-6963 discovery. The
@@ -211,3 +253,18 @@ used by your enabled providers, including any custom wagmi transports.
 
 For vanilla JavaScript, use `mountWidget` or `mountDepositWidget` from
 `@layerswap/widget-js`. They accept the same widget callbacks.
+
+## Compatibility verification
+
+After building wallet-evm and its workspace dependencies, run
+`node scripts/test-wagmi-compatibility.mjs` from the repository root. The script
+fetches integrity-checked package snapshots into a temporary directory and runs
+the EVM suite plus host-config interoperability tests for every listed pair.
+Existing connector SDKs stay on the adapter's workspace versions. Transactions
+and RPC requests are mocked; this does not certify live mobile wallet flows.
+
+Release the CDN build containing the `walletRuntime` expose before publishing
+the 1.1.0 loaders. The new shared entry point checks that capability and verifies
+actual remote function identities before mounting. An older remote fails with
+an explicit load error. The separately pinned example host can switch to the
+new entry point after those packages are published.

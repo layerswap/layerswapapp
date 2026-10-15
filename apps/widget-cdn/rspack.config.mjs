@@ -35,8 +35,9 @@ const depVersion = (pkg) => {
 const SHARED_SINGLETONS = {
   react: { singleton: true, requiredVersion: false, eager: false, version: depVersion('react') },
   'react-dom': { singleton: true, requiredVersion: false, eager: false, version: depVersion('react-dom') },
-  wagmi: { singleton: true, requiredVersion: false, eager: false, version: depVersion('wagmi') },
-  viem: { singleton: true, requiredVersion: false, eager: false, version: depVersion('viem') },
+  wagmi: { singleton: true, strictVersion: true, requiredVersion: '^2.14.11', eager: false, version: depVersion('wagmi') },
+  '@wagmi/core': { singleton: true, strictVersion: true, requiredVersion: '^2.16.4', eager: false, version: depVersion('@wagmi/core') },
+  viem: { singleton: true, strictVersion: true, requiredVersion: '^2.38.0', eager: false, version: depVersion('viem') },
   '@tanstack/react-query': { singleton: true, requiredVersion: false, eager: false, version: depVersion('@tanstack/react-query') },
   zustand: { singleton: true, requiredVersion: false, eager: false, version: depVersion('zustand') },
 };
@@ -197,9 +198,11 @@ export default (env, argv) => {
       }),
       new ModuleFederationPlugin({
         name: 'layerswap_widget',
+        shareStrategy: 'loaded-first',
         filename: 'remoteEntry.js',
         exposes: {
           './Widget': './src/Widget.tsx',
+          './walletRuntime': './src/walletRuntime.ts',
           // Imperative mount entry for framework-agnostic hosts. Owns its own
           // React root so non-React pages can embed it without a host framework.
           './mount': './src/mount.tsx',

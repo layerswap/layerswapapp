@@ -19,14 +19,10 @@ export function setEvmConfigInitParams(params: EvmConfigInitParams): void {
 
 export function provideExternalEvmConfig(cfg: Config): void {
     if (_config && _config !== cfg) {
-        // eslint-disable-next-line no-console
-        console.warn(
-            '[evm] External wagmi config ignored — the EVM package already created or adopted '
-            + 'a config before the external one was supplied. The widget will keep using the '
-            + 'existing config, so the host\'s config and the widget can hold divergent '
-            + 'connection state. Pass `wagmiConfig` before anything calls getEvmConfig().',
+        throw new Error(
+            '[layerswap/wallet-evm] A different wagmi config is already active. '
+            + 'Pass the host config on the first widget render and reuse that same instance.',
         )
-        return
     }
     _config = cfg
     _external = true

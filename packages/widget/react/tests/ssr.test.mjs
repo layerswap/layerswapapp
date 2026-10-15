@@ -33,3 +33,16 @@ test('server render with no fallback produces empty output without throwing', ()
   const html = renderToString(React.createElement(LayerswapWidget, {}));
   assert.equal(html, '');
 });
+
+
+test('shared wagmi entry point is SSR-safe and preserves the fallback', async () => {
+  const { LayerswapWidget: SharedWidget } = await import('../dist/esm/wagmi.js');
+  const { createConfig, http } = await import('wagmi');
+  const { mainnet } = await import('viem/chains');
+  const config = createConfig({ chains: [mainnet], transports: { [mainnet.id]: http() }, storage: null });
+  const html = renderToString(React.createElement(SharedWidget, {
+    wagmiConfig: config,
+    fallback: React.createElement('div', { id: 'shared-fallback' }, 'Loading'),
+  }));
+  assert.ok(html.includes('shared-fallback'));
+});

@@ -117,3 +117,10 @@ const vanillaCallbacks: VanillaWidgetProps = { callbacks: typedCallbacks };
 const reactCallbacks: RemoteWidgetProps = { callbacks: typedCallbacks };
 void vanillaCallbacks;
 void reactCallbacks;
+
+// The shared entry point requires the existing host config.
+import type { SharedWagmiWidgetProps, SharedWagmiDepositWidgetProps } from '../src/wagmi';
+const sharedWidget: SharedWagmiWidgetProps = { wagmiConfig };
+// @ts-expect-error Sharing modules without the host config would create another config.
+const missingHostConfig: SharedWagmiWidgetProps = {};
+const sharedDeposit: SharedWagmiDepositWidgetProps = { ...vanillaDepositProps, wagmiConfig };
