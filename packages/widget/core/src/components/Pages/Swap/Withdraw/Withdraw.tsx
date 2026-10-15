@@ -191,10 +191,10 @@ const Withdraw: FC<{
                     asset={swapBasicData?.source_token?.asset}
                     refreshing={showSpinner}
                     refreshButton={
-                        <div className="flex gap-2">
+                        <>
                             <RefreshBalanceButton onRefresh={mutate} isLoading={isLoading} />
                             <AdjustAmountButton onEditAmount={handleEditAmount} isLoading={quoteIsLoading || !canAdjustAmount()} />
-                        </div>
+                        </>
                     }
                 />
             ),
@@ -212,6 +212,7 @@ const Withdraw: FC<{
                         <GasWarningView
                             adjustButton={
                                 <AdjustAmountButton
+                                    compact
                                     onEditAmount={handleEditAmount}
                                     isLoading={quoteIsLoading || !canAdjustAmount()}
                                 />

@@ -444,9 +444,12 @@ function PreviewWallet({ snapshot: s }: { snapshot: Page2LoadedSnapshot }) {
                 asset={s.swap.source_token.asset}
                 refreshing={s.balanceWarning.refreshing}
                 refreshButton={
-                    <RefreshBalanceButtonView
-                        showSpinner={s.balanceWarning.refreshing}
-                    />
+                    <>
+                        <RefreshBalanceButtonView
+                            showSpinner={s.balanceWarning.refreshing}
+                        />
+                        <AdjustAmountButtonView disabled={s.quoteState.status === 'loading' || !!s.walletExecutionStarted} />
+                    </>
                 }
             />
         );
@@ -492,6 +495,7 @@ function PreviewWallet({ snapshot: s }: { snapshot: Page2LoadedSnapshot }) {
                 <GasWarningView
                     adjustButton={
                         <AdjustAmountButtonView
+                            compact
                             disabled={s.quoteState.status === 'loading'}
                         />
                     }
