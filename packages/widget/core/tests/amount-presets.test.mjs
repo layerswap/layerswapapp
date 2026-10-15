@@ -4,7 +4,7 @@ import { createRequire } from 'node:module'
 import React, { act, createElement, createContext, StrictMode } from 'react'
 import { Formik, useFormikContext } from 'formik'
 import { JSDOM } from 'jsdom'
-import { loadSource, amountPresets, maxHelpers, rounding } from './helpers/source.mjs'
+import { loadSource, amountPresets, amountMessages, formValidation, maxHelpers, rounding } from './helpers/source.mjs'
 
 const require = createRequire(import.meta.url)
 const dom = new JSDOM('<!doctype html><html><body></body></html>')
@@ -23,10 +23,12 @@ const { default: Controller } = loadSource('components/Pages/Swap/Form/AmountPre
   '@/hooks/useWallet': { default: () => ({ wallets: state.wallets }) },
   '@/hooks/useFee': { transformFormValuesToQuoteArgs: v => v, useQuoteData: () => {
     const { data } = useSWR('/limits', null)
-    return { maxAllowedAmount: data?.data?.max_amount ?? state.limit, minAllowedAmount: data?.data?.min_amount ?? state.minimum, limitsError: state.limitsError }
+    return { maxAllowedAmount: data?.data?.max_amount ?? state.limit, minAllowedAmount: data?.data?.min_amount ?? state.minimum, minAllowedAmountInUsd: state.minimum * state.usdPrice, limitsError: state.limitsError }
   } },
   '@/lib/balances/useBalance': { useBalance: () => ({ balances: state.balances, error: state.balanceError }) },
   '@/lib/amountPresets': amountPresets,
+  '@/lib/amountMessages': amountMessages,
+  '@/stores/usdModeStore': { useUsdModeStore: selector => usdStore(selector) },
   '@/lib/resolvers/resolverService': { resolverService: { getGasResolver: () => ({ getGas: async ({ amount }) => {
     state.probes.push(amount)
     if (state.deferred) return state.deferred.promise
@@ -43,6 +45,23 @@ const usdStore = require('zustand').create(set => ({ isUsdMode: true, usdAmount:
 const { useUsdTokenSync } = loadSource('hooks/useUsdTokenSync.ts', {
   react: React, '@/lib/amountPresets': amountPresets, '@/stores/usdModeStore': { useUsdModeStore: usdStore },
 })
+const { default: SubmitButton } = loadSource('components/Buttons/submitButton.tsx', {
+  '../Icons/spinIcon': { default: () => null }, clsx: { default: require('clsx') },
+})
+const { default: FormButton } = loadSource('components/Pages/Swap/Form/SecondaryComponents/FormButton.tsx', {
+  '@/components/Input/SourceWalletPicker': { FormSourceWalletButton: () => null },
+  '@/components/Buttons/submitButton': { default: SubmitButton },
+  '@/context/settings': { useInitialSettings: () => ({}) },
+  '@/components/Input/Address': { default: ({ children }) => children() },
+})
+function ValidationButton() {
+  const { values } = useFormikContext()
+  const isUsdMode = usdStore(s => s.isUsdMode)
+  const { message } = formValidation.resolveFormValidation({ values, minAllowedAmount: state.minimum,
+    maxAllowedAmount: state.limit, minAllowedAmountInUsd: state.minimum * state.usdPrice, isUsdMode })
+  return createElement(FormButton, { values, shouldConnectWallet: false, error: message,
+    disabled: !!message || values.amountPresetPending, isSubmitting: false })
+}
 const { default: ExchangeAmountField } = loadSource('components/Input/Amount/ExchangeAmountField.tsx', {
   react: React, formik: require('formik'),
   '../NumericInput': { default: props => { state.changeExchangeAmount = props.onChange; return null } },
@@ -63,7 +82,8 @@ function Probe() {
   formik = useFormikContext()
   mutate = useSWRConfig().mutate
   return createElement(React.Fragment, null, createElement(Controller), state.usdMode ? createElement(UsdProbe) : null,
-    state.exchangeInput ? createElement(ExchangeAmountField) : null, state.renderPresets ? createElement(PresetButtons) : null)
+    state.exchangeInput ? createElement(ExchangeAmountField) : null, state.renderPresets ? createElement(PresetButtons) : null,
+    state.renderValidation ? createElement(ValidationButton) : null)
 }
 const render = () => act(async () => root.render(createElement(StrictMode, null,
   createElement(SWRConfig, { value: config },
@@ -74,12 +94,13 @@ beforeEach(() => {
   container = document.createElement('div'); document.body.append(container); root = createRoot(container)
   Object.assign(state, { account: { id: 'wallet', address: 'source' }, wallets: [{ id: 'wallet' }],
     balances: [{ amount: 1, network: network.name, token: 'ETH', request_time: 1 }], gas: 0.01, reserve: 0,
-    usdMode: false, exchangeInput: false, renderPresets: false, providerGas: undefined, previewGas: undefined,
+    usdMode: false, exchangeInput: false, renderPresets: false, renderValidation: false, providerGas: undefined, previewGas: undefined,
     usdPrice: 2000, limit: 10, minimum: 0.001, probes: [], locked: false, revision: 0, preparedDraft: undefined, deferred: undefined, error: undefined, balanceError: undefined, limitsError: undefined })
   initialValues = { amountMode: 'max', amountPresetSource: amountPresets.amountPresetSource(network.name, 'ETH', 'wallet', 'source'),
     amount: '0.5', from: network, fromAsset: token, to: { name: 'BASE_MAINNET' }, toAsset: token,
     destination_address: 'dest', depositMethod: 'wallet' }
   config = { provider: () => new Map(), dedupingInterval: 0, revalidateOnFocus: false, revalidateOnReconnect: false, shouldRetryOnError: false, errorRetryInterval: 10 }
+  usdStore.setState({ isUsdMode: false, usdAmount: '' })
 })
 afterEach(async () => { await act(() => root.unmount()); container.remove() })
 after(() => {
@@ -155,7 +176,7 @@ test('fees exceeding the balance produce an unavailable amount, never a positive
   state.gas = 2
   await render()
   assert.equal(formik.values.amount, '0')
-  assert.match(formik.values.amountPresetError, /Insufficient balance/)
+  assert.equal(formik.values.amountPresetError, 'Not enough ETH for network fees')
 })
 
 test('the solver bounds oscillating amount-dependent fees and returns only a covered candidate', async () => {
@@ -333,7 +354,7 @@ test('Min follows rounded-up route minimums and never substitutes an unaffordabl
   state.balances = [{ ...state.balances[0], amount: 0.001, request_time: 2 }]
   await render()
   assert.equal(formik.values.amount, '0.002001')
-  assert.equal(formik.values.amountPresetError, 'Insufficient balance')
+  assert.equal(formik.values.amountPresetError, 'Insufficient ETH balance')
   state.minimum = 0.0030001
   await render()
   assert.equal(formik.values.amount, '0.003001')
@@ -366,7 +387,85 @@ test('50% below the route minimum stays 50% and is blocked without spending more
   state.minimum = 0.6
   await render()
   assert.equal(formik.values.amount, '0.4949')
-  assert.equal(formik.values.amountPresetError, 'Below minimum amount')
+  assert.equal(formik.values.amountPresetError, 'Minimum is 0.6 ETH')
+})
+
+const submitButton = () => container.querySelector('[data-attr="submit-swap"]')
+for (const isUsdMode of [false, true]) {
+  for (const mode of ['min', 'half', 'max']) {
+    test(`${mode}: zero USDC balance has the same button message in ${isUsdMode ? 'USD' : 'token'} mode`, async () => {
+      const usdc = { symbol: 'USDC', decimals: 6, price_in_usd: 1 }
+      Object.assign(initialValues, { amountMode: mode, fromAsset: usdc,
+        amountPresetSource: amountPresets.amountPresetSource(network.name, usdc.symbol, 'wallet', 'source') })
+      state.balances = [{ ...state.balances[0], token: usdc.symbol, amount: 0 }]
+      state.usdMode = true; state.usdPrice = 1; state.renderValidation = true
+      usdStore.setState({ isUsdMode })
+      await render()
+      assert.equal(submitButton().textContent, 'Insufficient USDC balance')
+      assert.equal(submitButton().disabled, true)
+      assert.equal(formik.values.amountMode, mode)
+      assert.equal(formik.values.amountPresetPending, false)
+      assert.equal(state.probes.length, 0, 'an empty source balance does not need a fee request')
+      state.balances = [{ ...state.balances[0], amount: 1, request_time: 2 }]
+      await render()
+      assert.equal(submitButton().textContent, 'Next')
+      assert.equal(submitButton().disabled, false)
+    })
+
+    test(`${mode}: the fee message identifies the fee token and recovers in ${isUsdMode ? 'USD' : 'token'} mode`, async () => {
+      initialValues.amountMode = mode
+      state.gas = 2; state.renderValidation = true; state.usdMode = true
+      usdStore.setState({ isUsdMode })
+      await render()
+      assert.equal(submitButton().textContent, 'Not enough ETH for network fees')
+      assert.equal(submitButton().disabled, true)
+      assert.equal(formik.values.amount, mode === 'min' ? '0.001' : '0')
+      state.gas = 0.01
+      await act(async () => { await mutate(key => Array.isArray(key) && key[0] === 'amount-preset') })
+      assert.equal(submitButton().textContent, 'Next')
+      assert.equal(submitButton().disabled, false)
+      assert.equal(formik.values.amountMode, mode)
+    })
+  }
+
+  for (const mode of ['half', 'max']) {
+    test(`${mode}: a positive amount below minimum shows the required value in ${isUsdMode ? 'USD' : 'token'} mode`, async () => {
+      initialValues.amountMode = mode
+      state.minimum = 1.0000001; state.renderValidation = true; state.usdMode = true
+      usdStore.setState({ isUsdMode })
+      await render()
+      assert.equal(submitButton().textContent, isUsdMode ? 'Minimum is $2000.01' : 'Minimum is 1.000001 ETH')
+      assert.equal(submitButton().disabled, true)
+      const chosenAmount = formik.values.amount
+      const probeCount = state.probes.length
+      await act(() => usd.handleToggle())
+      assert.equal(submitButton().textContent, isUsdMode ? 'Minimum is 1.000001 ETH' : 'Minimum is $2000.01')
+      assert.equal(formik.values.amount, chosenAmount)
+      assert.equal(formik.values.amountMode, mode)
+      assert.equal(state.probes.length, probeCount, 'display changes must not restart fee calculation')
+    })
+  }
+}
+
+test('a positive dust balance rounded to zero is not mislabeled as a network fee problem', async () => {
+  initialValues.amountMode = 'half'
+  state.balances = [{ ...state.balances[0], amount: 0.000001 }]
+  state.gas = 0; state.renderValidation = true
+  await render()
+  assert.equal(formik.values.amount, '0')
+  assert.equal(submitButton().textContent, 'Insufficient ETH balance')
+})
+
+test('editing zero after a preset clears its balance error and asks for an amount', async () => {
+  state.balances = [{ ...state.balances[0], amount: 0 }]
+  state.usdMode = true; state.renderValidation = true
+  usdStore.setState({ isUsdMode: true })
+  await render()
+  assert.equal(submitButton().textContent, 'Insufficient ETH balance')
+  await act(() => usd.handleUsdInputChange({ target: { value: '0' } }))
+  assert.equal(formik.values.amountMode, 'manual')
+  assert.equal(submitButton().textContent, 'Enter an amount')
+  assert.equal(submitButton().disabled, true)
 })
 
 test('half estimates fees for the half transfer and truncates its smallest token unit', async () => {

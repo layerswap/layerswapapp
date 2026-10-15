@@ -2,6 +2,7 @@ import { useContext, useEffect, useRef } from 'react'
 import { useFormikContext } from 'formik'
 import useSWR from 'swr'
 import type { SwapFormValues } from './SwapFormValues'
+import type { GasWithToken } from '@layerswap/widget-types'
 import { SwapDataStateContext, SwapDataUpdateContext } from '@/context/swap'
 import { useSelectedAccount } from '@/context/swapAccounts'
 import useWallet from '@/hooks/useWallet'
@@ -9,6 +10,8 @@ import { transformFormValuesToQuoteArgs, useQuoteData } from '@/hooks/useFee'
 import { useBalance } from '@/lib/balances/useBalance'
 import { calculatePresetAmount, amountPresetSource, isAmountPreset, isWalletAmountFlow, supportsLiveAmountPreset, AmountPresetUnavailableError, type AmountPreset } from '@/lib/amountPresets'
 import { resolverService } from '@/lib/resolvers/resolverService'
+import { minimumAmountMessage } from '@/lib/amountMessages'
+import { useUsdModeStore } from '@/stores/usdModeStore'
 
 /** Lives with Formik, including when the amount input unmounts in the deposit widget. */
 export default function AmountPresetController() {
@@ -38,7 +41,8 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
     const balance = balances?.find(b => b.network === values.from?.name && b.token === values.fromAsset?.symbol)
     // Provider-wide failures can resolve to an empty list without an error.
     const missingSettledBalance = !balanceLoading && balances !== undefined && !balance
-    const { maxAllowedAmount, minAllowedAmount, limitsError } = useQuoteData(
+    const isUsdMode = useUsdModeStore(s => s.isUsdMode)
+    const { maxAllowedAmount, minAllowedAmount, minAllowedAmountInUsd, limitsError } = useQuoteData(
         !frozen && sameSource && liveSupported ? transformFormValuesToQuoteArgs(values) : undefined,
     )
     // The chosen preset and both limits identify the calculation. The amount is
@@ -47,21 +51,38 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
         ? ['amount-preset', mode, source, values.depositMethod, balance?.amount, balance?.request_time, maxAllowedAmount, minAllowedAmount,
             values.to?.name, values.toAsset?.symbol, values.destination_address, !!values.refuel, revision]
         : null
-    const { data: amount, error, isValidating } = useSWR<string>(key, () => calculatePresetAmount({
-        mode, network: values.from!, token: values.fromAsset!, balance,
-        limit: maxAllowedAmount, minimum: minAllowedAmount, probeAmount: values.amount,
-        estimateGas: async amount => resolverService.getGasResolver().getGas({
-            address: account!.address, network: values.from!, token: values.fromAsset!, amount, wallet,
-        }),
-    }),
+    const { data: calculation, error, isValidating } = useSWR<{ amount: string; gas?: GasWithToken }>(key, async () => {
+        let gas: GasWithToken | undefined
+        const amount = await calculatePresetAmount({
+            mode, network: values.from!, token: values.fromAsset!, balance,
+            limit: maxAllowedAmount, minimum: minAllowedAmount, probeAmount: values.amount,
+            estimateGas: async amount => {
+                gas = await resolverService.getGasResolver().getGas({
+                    address: account!.address, network: values.from!, token: values.fromAsset!, amount, wallet,
+                })
+                return gas
+            },
+        })
+        // Keep the fee with its calculation so the message uses the same snapshot.
+        return { amount, gas }
+    },
     { refreshInterval: 60000, keepPreviousData: false, shouldRetryOnError: error => !(error instanceof AmountPresetUnavailableError), errorRetryCount: 3 })
+    const amount = calculation?.amount
+    const gas = calculation?.gas
+    const feeToken = gas?.token ?? values.from?.token
+    const feeExhaustsBalance = !!gas && balance?.amount != null && balance.amount > 0
+        && (!feeToken || feeToken.symbol === values.fromAsset?.symbol)
+        && gas.gas * 1.02 + (gas.reserve ?? 0) >= balance.amount
     const retrying = !!error && isValidating
     const message = balanceError || balance?.error || missingSettledBalance ? 'Balance unavailable'
         : limitsError ? 'Route limits unavailable'
         : error instanceof AmountPresetUnavailableError ? error.message
         : error && !retrying ? 'Network fee unavailable'
-        : amount !== undefined && (Number(amount) <= 0 || (minAllowedAmount != null && Number(amount) < minAllowedAmount))
-            ? (mode === 'half' ? 'Below minimum amount' : 'Insufficient balance') : undefined
+        : amount !== undefined && Number(amount) <= 0
+            ? feeExhaustsBalance ? `Not enough ${feeToken?.symbol ?? values.fromAsset?.symbol} for network fees`
+                : `Insufficient ${values.fromAsset?.symbol} balance`
+        : amount !== undefined && minAllowedAmount != null && Number(amount) < minAllowedAmount
+            ? minimumAmountMessage(minAllowedAmount, values.fromAsset, minAllowedAmountInUsd, isUsdMode) : undefined
     const pending = liveSupported && sameSource && !message && (amount === undefined || retrying)
 
     useEffect(() => {

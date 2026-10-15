@@ -71,11 +71,12 @@ export async function calculatePresetAmount({ network, token, balance, limit, mi
     if (limit == null || !Number.isFinite(limit) || limit < 0 || (mode === 'min' && (minimum == null || !Number.isFinite(minimum) || minimum <= 0)))
         throw new AmountPresetUnavailableError('Route limits unavailable')
     const upperBound = Math.min(balance.amount, limit)
+    const insufficientBalanceMessage = `Insufficient ${token.symbol} balance`
     const minAmount = resolvePresetAmount('min', 0, minimum ?? 0, token.decimals)
     if (mode === 'min' && Number(minAmount) > limit)
         throw new AmountPresetUnavailableError('Route limits unavailable', minAmount)
     if (upperBound === 0) {
-        if (mode === 'min') throw new AmountPresetUnavailableError('Insufficient balance', minAmount)
+        if (mode === 'min') throw new AmountPresetUnavailableError(insufficientBalanceMessage, minAmount)
         return '0'
     }
 
@@ -102,7 +103,9 @@ export async function calculatePresetAmount({ network, token, balance, limit, mi
             && (mode !== 'min' || candidate >= Number(minAmount))
         if (preserveAmount && candidate === probe && withinPreset) return amountText(candidate, token.decimals)
         if (mode === 'min' && target > payable)
-            throw new AmountPresetUnavailableError('Insufficient balance', minAmount)
+            throw new AmountPresetUnavailableError(balance.amount >= target && paysFeeInSource
+                ? `Not enough ${feeToken?.symbol ?? token.symbol} for network fees`
+                : insufficientBalanceMessage, minAmount)
         if (target === 0) return '0'
         // First establish the preset from the buffered spendable balance. Later
         // reads verify it instead of requiring exactly identical fee estimates.

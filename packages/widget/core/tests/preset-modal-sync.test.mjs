@@ -6,7 +6,7 @@ import { Formik, useFormikContext } from 'formik'
 import { JSDOM } from 'jsdom'
 import { create } from 'zustand'
 import { createSwapContext } from './helpers/swap-context.mjs'
-import { loadSource, amountPresets, maxHelpers, rounding } from './helpers/source.mjs'
+import { loadSource, amountPresets, amountMessages, maxHelpers, rounding } from './helpers/source.mjs'
 
 const require = createRequire(import.meta.url)
 const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://widget.example' })
@@ -41,6 +41,8 @@ const { default: Controller } = loadSource('components/Pages/Swap/Form/AmountPre
   '@/hooks/useFee': { transformFormValuesToQuoteArgs: values => values, useQuoteData: () => ({ maxAllowedAmount: 1, minAllowedAmount: state.minimum }) },
   '@/lib/balances/useBalance': { useBalance: () => ({ balances: state.balances, isLoading: state.balanceLoading }) },
   '@/lib/amountPresets': amountPresets,
+  '@/lib/amountMessages': amountMessages,
+  '@/stores/usdModeStore': { useUsdModeStore: selector => usdStore(selector) },
   '@/lib/resolvers/resolverService': { resolverService: { getGasResolver: () => ({ getGas: async () => {
     await state.gasRequest?.promise
     if (state.gasError) throw state.gasError
@@ -317,7 +319,7 @@ test('Min shows a genuine insufficient balance only after the recalculation sett
   assert.ok(state.commits.every(text => !text.includes('Insufficient balance')), state.commits.join('\n'))
   await act(() => state.gasRequest.resolve())
   assert.equal(data.swapBasicData.amountPresetPending, false)
-  assert.equal(data.swapBasicData.amountPresetError, 'Insufficient balance')
+  assert.equal(data.swapBasicData.amountPresetError, 'Insufficient ETH balance')
   assert.match(container.textContent, /Insufficient balance/)
   assert.deepEqual(blocks().map(event => event.reasonCode), ['insufficient_balance'])
 })

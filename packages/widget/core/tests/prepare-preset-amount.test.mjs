@@ -91,7 +91,7 @@ test('Min preparation returns a new required minimum for review and rejects an u
   const lowered = setup({ limits: { min_amount: 0.05, max_amount: 2 } })
   assert.equal(await lowered.preparePresetAmount({ ...values, amountMode: 'min', amount: '0.1' }, 'source', {}, [], false), '0.1')
   const insufficient = setup({ balance: 0.15, limits: { min_amount: 0.2, max_amount: 2 } })
-  await assert.rejects(insufficient.preparePresetAmount({ ...values, amountMode: 'min', amount: '0.1' }, 'source', {}, [], false), /Insufficient balance/)
+  await assert.rejects(insufficient.preparePresetAmount({ ...values, amountMode: 'min', amount: '0.1' }, 'source', {}, [], false), /Insufficient ETH balance/)
 })
 
 for (const flow of [

@@ -20,6 +20,17 @@ export const amountPresets = loadSource('lib/amountPresets.ts', {
     '@/components/Input/Amount/helpers': maxHelpers, '@/components/utils/RoundDecimals': rounding,
     '@layerswap/utils/known-ids': require('@layerswap/utils/known-ids'),
 })
+export const amountMessages = loadSource('lib/amountMessages.ts', {
+    '@/components/utils/RoundDecimals': rounding,
+    '@/components/utils/formatUsdAmount': require('@layerswap/utils/common'),
+})
+export const formValidation = loadSource('hooks/useFormValidation.ts', {
+    '@/lib/amountPresets': amountPresets,
+    '@/lib/amountMessages': amountMessages,
+    '@/components/utils/formatUsdAmount': require('@layerswap/utils/common'),
+    '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
+    '@/lib/address/Address': { Address: { isValid: () => true } },
+})
 export const swapProgress = loadSource('helpers/swapProgress.ts', {
     './gasless': loadSource('helpers/gasless.ts'),
     '@layerswap/widget-types': require('@layerswap/widget-types'),
