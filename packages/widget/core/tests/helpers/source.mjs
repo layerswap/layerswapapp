@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import ts from 'typescript'
+import { resolveDepositExecution } from '../../dist/esm/components/utils/resolveSwapFlow.js'
 const require = createRequire(import.meta.url)
 export function loadSource(path, imports = {}) {
     const { outputText } = ts.transpileModule(readFileSync(new URL(`../../src/${path}`, import.meta.url), 'utf8'), {
@@ -32,7 +33,9 @@ export const formValidation = loadSource('hooks/useFormValidation.ts', {
     '@/lib/address/Address': { Address: { isValid: () => true } },
 })
 export const swapProgress = loadSource('helpers/swapProgress.ts', {
-    './gasless': loadSource('helpers/gasless.ts'),
+    './gasless': loadSource('helpers/gasless.ts', {
+        '../components/utils/resolveSwapFlow.js': { resolveDepositExecution },
+    }),
     '@layerswap/widget-types': require('@layerswap/widget-types'),
     '@/lib/apiClients/layerSwapApiClient': { BackendTransactionStatus: { Failed: 'failed' }, TransactionType: { Input: 'input' } },
 })

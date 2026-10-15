@@ -6,6 +6,7 @@ import { Formik, useFormikContext } from 'formik'
 import { JSDOM } from 'jsdom'
 import { create } from 'zustand'
 import { createSwapContext } from './helpers/swap-context.mjs'
+import { resolveSwapFlow } from '../dist/esm/components/utils/resolveSwapFlow.js'
 import { loadSource, amountPresets, amountMessages, maxHelpers, rounding } from './helpers/source.mjs'
 
 const require = createRequire(import.meta.url)
@@ -75,6 +76,7 @@ const { default: SubmitButton } = loadSource('components/Buttons/submitButton.ts
 })
 const noop = () => null
 const { SendTransactionView } = loadSource('components/Pages/Swap/Withdraw/Presentation/WalletActionsView.tsx', {
+  '@/components/utils/resolveSwapFlow': { resolveSwapFlow },
   '@/components/Buttons/submitButton': { default: SubmitButton },
   '@/components/Icons/FailIcon': { default: noop }, '@/components/Icons/InfoIcon': { default: noop },
   '@/helpers/depositActions': { getActionableDepositAction: noop, isDepositWorkflowComplete: () => false },

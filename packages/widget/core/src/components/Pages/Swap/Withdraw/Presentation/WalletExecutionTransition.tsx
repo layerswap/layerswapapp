@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useIsPresent } from 'framer-motion';
 import type { ReactNode } from 'react';
 import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion';
 import { swapFlowTransition } from './swapFlowAnimation';
+import { StepsPanelProvider } from '../Processing/StepsComponent';
 
 export function WalletExecutionTransition({
     overview,
@@ -86,7 +87,7 @@ function ExecutionPanel({
                 aria-hidden={!isPresent}
                 inert={!isPresent}
             >
-                {children}
+                <StepsPanelProvider>{children}</StepsPanelProvider>
             </div>
         );
     }
@@ -104,7 +105,9 @@ function ExecutionPanel({
             aria-hidden={!isPresent}
             inert={!isPresent}
         >
-            <div className={`flex w-full flex-col gap-2 ${className ?? ''}`}>{children}</div>
+            <StepsPanelProvider>
+                <div className={`flex w-full flex-col gap-2 ${className ?? ''}`}>{children}</div>
+            </StepsPanelProvider>
         </motion.div>
     );
 }

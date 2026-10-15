@@ -12,7 +12,7 @@ for (const [key, value] of Object.entries({ window: dom.window, document: dom.wi
   Object.defineProperty(globalThis, key, { configurable: true, writable: true, value })
 const { createRoot } = await import('react-dom/client')
 const state = {}
-const transactionStore = create(() => ({ swapTransactions: {}, pendingSubmissions: {} }))
+const transactionStore = create(() => ({ swapTransactions: {}, pendingSubmissions: {}, stepTransactions: {} }))
 const stores = {
   useSwapTransactionStore: transactionStore,
   useGaslessAuthorizationStore: create(() => ({ authorizations: {} })),
