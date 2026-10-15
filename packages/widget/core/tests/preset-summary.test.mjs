@@ -3,7 +3,7 @@ import test from 'node:test'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { JSDOM } from 'jsdom'
-import { amountPresets, loadSource, rounding } from './helpers/source.mjs'
+import { loadSource, rounding } from './helpers/source.mjs'
 
 const SummaryView = loadSource('components/Pages/Swap/Withdraw/Presentation/SummaryView.tsx', {
     '@/components/utils/RoundDecimals': rounding,
@@ -41,7 +41,6 @@ function createSummary(initial = {}) {
         '@/lib/knownIds': { default: { Exchanges: { Coinbase: 'COINBASE' } } },
         '@/context/settings': { useInitialSettings: () => ({}) },
         '@/context/swapAccounts': { useSelectedAccount: () => ({ address: 'source' }) },
-        '@/lib/amountPresets': amountPresets,
     }).default
     return {
         state,
@@ -49,42 +48,37 @@ function createSummary(initial = {}) {
     }
 }
 
-const getBadges = document => [...document.querySelectorAll('.sr-only')]
-    .filter(node => node.textContent === 'Amount preset: ')
-    .map(node => node.parentElement)
-
 for (const isUsdMode of [false, true]) {
-    test(`preset badges stay beside source USD in ${isUsdMode ? 'USD' : 'token'} mode`, () => {
+    test(`review shows amounts without preset badges in ${isUsdMode ? 'USD' : 'token'} mode`, () => {
         const { state, render } = createSummary({ isUsdMode })
-        for (const [preset, label] of [['min', 'Min'], ['half', '50%'], ['max', 'Max']]) {
+        state.swapBasicData.amountMode = 'manual'
+        const manualSummary = render().body.innerHTML
+        for (const preset of ['min', 'half', 'max']) {
             state.swapBasicData.amountMode = preset
-            const badges = getBadges(render())
-            assert.equal(badges.length, 1)
-            assert.equal(badges[0].textContent, `Amount preset: ${label}`)
-            assert.equal(badges[0].parentElement.querySelector('[data-value="100"]').textContent, '$100')
-            assert.equal(badges[0].closest('button, a, [role="button"], [tabindex]'), null)
+            const document = render()
+            assert.equal(document.body.innerHTML, manualSummary)
+            assert.equal(document.querySelector('[data-value="100"]').textContent, '$100')
+            assert.match(document.body.textContent, /0.05 ETH/)
+            assert.doesNotMatch(document.body.textContent, /Amount preset:|Min|50%|Max/)
         }
     })
 }
 
-test('preset badge follows live review, confirmation lock, re-review and swap creation', () => {
+test('confirmation and swap creation do not change the preset review presentation', () => {
     const { state, render } = createSummary()
-    assert.equal(getBadges(render()).length, 1)
+    const review = render().body.innerHTML
     state.amountPresetLocked = true
-    assert.equal(getBadges(render()).length, 0)
+    assert.equal(render().body.innerHTML, review)
     state.amountPresetLocked = false
-    assert.equal(getBadges(render()).length, 1)
+    assert.equal(render().body.innerHTML, review)
     state.swapId = 'created-swap'
-    assert.equal(getBadges(render()).length, 0)
+    assert.equal(render().body.innerHTML, review)
 })
 
-test('manual and empty amounts have no preset badge', () => {
+test('empty source amounts omit their value and preset label', () => {
     const { state, render } = createSummary()
-    for (const mode of ['manual', undefined]) {
-        state.swapBasicData.amountMode = mode
-        assert.equal(getBadges(render()).length, 0)
-    }
-    state.swapBasicData.amountMode = 'max'
     state.swapBasicData.requested_amount = ''
-    assert.equal(getBadges(render()).length, 0)
+    const document = render()
+    assert.equal(document.querySelector('[data-value="100"]'), null)
+    assert.doesNotMatch(document.body.textContent, /Amount preset:|Min|50%|Max/)
 })

@@ -51,7 +51,6 @@
   --color-preset-selected: rgb(var(--ls-colors-preset-selected, var(--ls-colors-secondary-text, 163, 173, 194)));
   --color-preset-selected-text: rgb(var(--ls-colors-preset-selected-text, var(--ls-colors-secondary-700, 14, 21, 36)));
   --color-preset-text: rgb(var(--ls-colors-preset-text, var(--ls-colors-secondary-text, 163, 173, 194)));
-  --color-preset-badge-text: rgb(var(--ls-colors-preset-badge-text, var(--ls-colors-secondary-text, 163, 173, 194)));
 
   --color-coinbase-primary: rgb(74, 108, 238);
   --color-coinbase-diabled: rgb(25, 26, 69);

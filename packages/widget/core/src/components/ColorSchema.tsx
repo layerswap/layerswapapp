@@ -105,7 +105,6 @@ const ColorSchema: FC<Props> = ({ themeData }) => {
                     --ls-colors-preset-selected: ${presetColors.selectedBackground};
                     --ls-colors-preset-selected-text: ${presetColors.selectedText};
                     --ls-colors-preset-text: ${presetColors.text};
-                    --ls-colors-preset-badge-text: ${presetColors.badgeText};
 
                     --ls-colors-warning-foreground: ${mergedTheme.warning?.Foreground};
                     --ls-colors-warning-background: ${mergedTheme.warning?.Background};

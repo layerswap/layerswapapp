@@ -6,7 +6,6 @@ import { Address } from "@/lib/address/Address"
 import KnownInternalNames from "@/lib/knownIds"
 import { useInitialSettings } from "@/context/settings"
 import { useSelectedAccount } from "@/context/swapAccounts"
-import { isAmountPreset } from "@/lib/amountPresets"
 
 const SwapSummary: FC = () => {
 
@@ -15,7 +14,7 @@ const SwapSummary: FC = () => {
         account,
     } = useInitialSettings()
 
-    const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading, swapId, amountPresetLocked } = useSwapDataState()
+    const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading } = useSwapDataState()
 
     const { source_network, destination_network, source_token, destination_token, source_exchange } = swapBasicData || {}
     const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
@@ -70,7 +69,6 @@ const SwapSummary: FC = () => {
     return <Summary
         {...swapData}
         quoteIsLoading={quoteIsLoading}
-        amountPreset={!swapId && !amountPresetLocked && isAmountPreset(swapBasicData.amountMode) ? swapBasicData.amountMode : undefined}
     />
 }
 export default SwapSummary

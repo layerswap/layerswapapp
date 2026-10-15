@@ -27,23 +27,22 @@ const background = (theme, opacity) => rgb(theme.secondary[300]).map((channel, i
 
 for (const [catalog, palettes] of [['widget', themes.THEME_COLORS], ['playground', playground.exports.THEME_COLORS]]) {
     for (const [name, theme] of Object.entries(palettes)) {
-        test(`${catalog} ${name}: preset labels, badge and selection have sufficient contrast`, () => {
+        test(`${catalog} ${name}: preset labels and selection have sufficient contrast`, () => {
             const colors = presetColors.resolveAmountPresetColors(theme.secondary, theme.primary)
             const selected = rgb(colors.selectedBackground)
             const track = background(theme, 0.35)
             assert.ok(contrast(selected, rgb(colors.selectedText)) >= 4.5, 'Selected label contrast')
             assert.ok(contrast(selected, track) >= 3, 'Selection must stand out from the track')
             assert.ok(contrast(rgb(colors.text), track) >= 4.5, 'Unselected enabled label contrast')
-            assert.ok(contrast(rgb(colors.badgeText), background(theme, 0.6)) >= 4.5, 'Badge label contrast')
         })
     }
 }
 
-test('the default preset and badge colours remain exactly unchanged', () => {
+test('the default preset colours remain exactly unchanged', () => {
     const theme = themes.THEME_COLORS.default
     assert.deepEqual(presetColors.resolveAmountPresetColors(theme.secondary, theme.primary), {
         selectedBackground: '163, 173, 194', selectedText: '14, 21, 36',
-        text: '163, 173, 194', badgeText: '163, 173, 194',
+        text: '163, 173, 194',
     })
 })
 
@@ -52,7 +51,7 @@ test('ColorSchema emits the resolved colours and handles partial/default themes'
         const markup = renderToStaticMarkup(createElement(ColorSchema, { themeData: theme }))
         const palette = theme?.secondary ? theme : themes.THEME_COLORS.default
         const colors = presetColors.resolveAmountPresetColors(palette.secondary, palette.primary)
-        for (const [token, key] of [['selected', 'selectedBackground'], ['selected-text', 'selectedText'], ['text', 'text'], ['badge-text', 'badgeText']]) {
+        for (const [token, key] of [['selected', 'selectedBackground'], ['selected-text', 'selectedText'], ['text', 'text']]) {
             assert.ok(markup.includes(`--ls-colors-preset-${token}: ${colors[key]};`))
         }
     }
@@ -63,6 +62,6 @@ test('non-numeric custom CSS colours keep their original theme values', () => {
     const secondary = { ...theme.secondary, text: 'var(--custom-text)' }
     assert.deepEqual(presetColors.resolveAmountPresetColors(secondary, theme.primary), {
         selectedBackground: secondary.text, selectedText: secondary[700],
-        text: secondary.text, badgeText: secondary.text,
+        text: secondary.text,
     })
 })

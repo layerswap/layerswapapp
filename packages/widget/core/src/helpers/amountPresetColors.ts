@@ -32,20 +32,16 @@ export function resolveAmountPresetColors(secondary: ThemeColor, primary: ThemeC
         selectedBackground: secondary.text,
         selectedText: secondary[700],
         text: secondary.text,
-        badgeText: secondary.text,
     };
     const muted = parseRgb(secondary.text), strong = parseRgb(primary.text);
     const surface = parseRgb(secondary[500]), raised = parseRgb(secondary[300]);
     const selectedText = parseRgb(secondary[700]);
     if (!muted || !strong || !surface || !raised || !selectedText) return colors;
 
-    // Match the translucent backgrounds in MinMax and SummaryView.
+    // Match the translucent track in MinMax.
     const track = blend(raised, surface, 0.35);
-    const badge = blend(raised, surface, 0.6);
     if (contrast(muted, track) < 4.5 && contrast(strong, track) > contrast(muted, track))
         colors.text = primary.text;
-    if (contrast(muted, badge) < 4.5 && contrast(strong, badge) > contrast(muted, badge))
-        colors.badgeText = primary.text;
 
     // Only strengthen a weak selection, using the theme's own text colour.
     // Check the rounded RGB actually emitted to CSS, including against the track.

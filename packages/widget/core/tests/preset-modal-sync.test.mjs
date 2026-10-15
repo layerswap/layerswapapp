@@ -47,12 +47,11 @@ const { useUsdTokenSync } = loadSource('hooks/useUsdTokenSync.ts', {
 })
 const { default: Summary } = loadSource('components/Pages/Swap/Withdraw/Summary/index.tsx', {
   '@/context/swap': context,
-  './Summary': { default: props => createElement('span', { 'aria-label': 'Selected preset' }, props.amountPreset ?? '') },
+  './Summary': { default: props => createElement('span', { 'aria-label': 'Source amount' }, props.swap.requested_amount) },
   '@/lib/apiClients/layerSwapApiClient': { TransactionType: { Input: 'input', Output: 'output' } },
   '@/lib/address/Address': {}, '@/lib/knownIds': { default: { Exchanges: {} } },
   '@/context/settings': { useInitialSettings: () => ({}) },
   '@/context/swapAccounts': { useSelectedAccount: () => state.account },
-  '@/lib/amountPresets': amountPresets,
 })
 const passthrough = ({ children }) => children
 const gasHook = { default: () => ({ gasData: state.gas }) }
@@ -133,7 +132,7 @@ const render = () => act(async () => root.render(createElement(StrictMode, null,
   createElement(Profiler, { id: 'review', onRender: recordCommit },
     createElement(SWRConfig, { value: config }, createElement(context.SwapDataProvider, null,
       createElement(Formik, { key: state.formKey, initialValues, onSubmit() {} }, createElement(Probe))))))))
-const badge = () => container.querySelector('[aria-label="Selected preset"]').textContent
+const summaryAmount = () => container.querySelector('[aria-label="Source amount"]').textContent
 const openReview = () => act(() => {
   updates.setSubmitedFormValues(formik.values)
   updates.setSwapId(undefined)
@@ -178,7 +177,7 @@ for (const isUsdMode of [false, true]) {
       await remountForm()
       assert.equal(formik.values.amountMode, mode)
       assert.equal(data.swapBasicData.amountMode, mode)
-      assert.equal(badge(), mode)
+      assert.equal(summaryAmount(), data.swapBasicData.requested_amount)
       assert.equal(data.swapId, undefined)
       assert.equal(data.amountPresetLocked, false)
       await decreaseBalance()
@@ -189,7 +188,7 @@ for (const isUsdMode of [false, true]) {
       assert.notEqual(data.swapBasicData.requested_amount, before)
       assert.equal(data.swapBasicData.requested_amount, formik.values.amount)
       assert.equal(data.swapBasicData.amountPresetPending, false)
-      assert.equal(badge(), mode)
+      assert.equal(summaryAmount(), data.swapBasicData.requested_amount)
       const tokenAmount = formik.values.amount
       state.price = 1200
       await render()
@@ -207,7 +206,7 @@ for (const mode of ['max', 'half']) {
     await decreaseBalance()
     assert.ok(Number(data.swapBasicData.requested_amount) < Number(before))
     assert.equal(data.swapBasicData.requested_amount, formik.values.amount)
-    assert.equal(badge(), mode)
+    assert.equal(summaryAmount(), data.swapBasicData.requested_amount)
   })
   test(`${mode} cannot change the amount when a remounted form belongs to an already created swap`, async () => {
     initialValues.amountMode = mode
@@ -217,7 +216,7 @@ for (const mode of ['max', 'half']) {
     await remountForm(); await decreaseBalance()
     assert.equal(data.amountPresetLocked, true)
     assert.equal(data.swapBasicData.requested_amount, before)
-    assert.equal(badge(), '')
+    assert.equal(summaryAmount(), data.swapBasicData.requested_amount)
   })
 }
 
@@ -228,7 +227,7 @@ test('manual amounts stay fixed across a remount and external transfer', async (
   await remountForm(); await decreaseBalance()
   assert.equal(data.swapBasicData.requested_amount, before)
   assert.equal(formik.values.amountMode, 'manual')
-  assert.equal(badge(), '')
+  assert.equal(summaryAmount(), data.swapBasicData.requested_amount)
 })
 
 test('restoring a draft never applies its preset to a different funding account', async () => {
@@ -237,7 +236,7 @@ test('restoring a draft never applies its preset to a different funding account'
   await remountForm()
   assert.equal(formik.values.amountMode, 'manual')
   assert.equal(data.swapBasicData.amountMode, 'manual')
-  assert.equal(badge(), '')
+  assert.equal(summaryAmount(), data.swapBasicData.requested_amount)
 })
 
 test('a restored preset waits for a pending wallet operation before resuming balance updates', async () => {
@@ -248,11 +247,11 @@ test('a restored preset waits for a pending wallet operation before resuming bal
   await remountForm(); await decreaseBalance()
   assert.equal(data.amountPresetLocked, true)
   assert.equal(data.swapBasicData.requested_amount, before)
-  assert.equal(badge(), '')
+  assert.equal(summaryAmount(), data.swapBasicData.requested_amount)
   await act(() => release())
   assert.ok(Number(data.swapBasicData.requested_amount) < Number(before))
   assert.equal(data.swapBasicData.requested_amount, formik.values.amount)
-  assert.equal(badge(), 'max')
+  assert.equal(summaryAmount(), data.swapBasicData.requested_amount)
 })
 
 const blocks = () => state.events.filter(event => event.step === 'transfer_blocked')
