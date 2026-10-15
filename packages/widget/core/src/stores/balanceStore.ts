@@ -113,7 +113,7 @@ export const useBalanceStore = create<BalanceStore>()(
               set(state => ({
                 balances: {
                   ...state.balances,
-                  [key]: { ...state.balances[key], error, status: 'error' },
+                  [key]: { ...state.balances[key], error, status: 'error', promise: undefined },
                 },
                 lastFetchMap: {
                   ...state.lastFetchMap,

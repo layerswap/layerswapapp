@@ -52,6 +52,13 @@ const Summary: FC<SwapInfoProps> = (props) => {
             ? (sourcePriceInUsd * Number(requestedAmount)).toFixed(2)
             : undefined
     );
+    const sourceUsdValue = (
+        <NumFlowWithFallback
+            value={Number(requestedAmountInUsd) || 0}
+            prefix="$"
+            trend={0}
+        />
+    );
     const receiveAmountInUsd = receivedAmountInUsd?.toFixed(2) ?? (
         receiveAmount && destinationPriceInUsd
             ? (destinationPriceInUsd * receiveAmount).toFixed(2)
@@ -79,11 +86,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                     primary={
                         requestedAmount ? (
                             isUsdMode ? (
-                                <NumFlowWithFallback
-                                    value={Number(requestedAmountInUsd) || 0}
-                                    prefix="$"
-                                    trend={0}
-                                />
+                                sourceUsdValue
                             ) : (
                                 <span>
                                     {truncateDecimals(
@@ -106,11 +109,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                                     {` ${sourceCurrency.asset}`}
                                 </span>
                             ) : (
-                                <NumFlowWithFallback
-                                    value={Number(requestedAmountInUsd) || 0}
-                                    prefix="$"
-                                    trend={0}
-                                />
+                                sourceUsdValue
                             )
                         ) : null
                     }
