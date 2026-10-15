@@ -7,9 +7,10 @@
 
 Support wagmi ^2.14.11 and core ^2.16.4 peers. Raise the viem peer floor to
 ^2.38.0 because newer wagmi core imports actions absent from older viem 2.x.
-Keep workspace build versions pinned. Align the workspace's use-sync-external-store
+Keep workspace build versions pinned. Align Zustand's use-sync-external-store peer
 resolution to wagmi 2.x's 1.4.0 dependency so pnpm does not split the same core
-version into separate peer-context instances. Reject replacing an already active EVM
+version into separate peer-context instances. Leave SWR on its newer shim, which
+exports the ESM subpaths required by Node. Reject replacing an already active EVM
 config instead of leaving the widget and host on different configs.
 
 The React loader requires a separate release (it is ignored by Changesets).

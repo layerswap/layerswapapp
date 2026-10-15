@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createWalletRuntimeShare, assertRemoteWalletRuntime } from '../dist/esm/walletRuntimeShare.js';
+import { createWalletRuntimeShare, assertRemoteWalletRuntime, assertWalletConfig } from '../dist/esm/walletRuntimeShare.js';
 
 function fixture() {
   const createConfig = () => { throw new Error('Sharing must never create another config'); };
@@ -54,4 +54,13 @@ test('capability handshake checks functions from every host wallet module', () =
     assert.throws(() => assertRemoteWalletRuntime({ ...probe, [name]: () => {} }, shared), /different wallet runtime/);
   }
   assert.throws(() => assertRemoteWalletRuntime({}, shared), /different wallet runtime/);
+});
+
+test('wallet config validation rejects late additions, removal and replacement', () => {
+  const config = {};
+  assert.doesNotThrow(() => assertWalletConfig(undefined, false, undefined));
+  assert.doesNotThrow(() => assertWalletConfig(config, true, config));
+  assert.throws(() => assertWalletConfig(config, false, undefined), /Import the widget/);
+  assert.throws(() => assertWalletConfig(undefined, true, config), /requires the existing host/);
+  assert.throws(() => assertWalletConfig({}, true, config), /Keep wagmiConfig stable/);
 });

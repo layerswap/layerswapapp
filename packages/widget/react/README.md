@@ -105,7 +105,7 @@ npm ls wagmi @wagmi/core
 
 Do not upgrade core independently. With pnpm, also check `pnpm why @wagmi/core`:
 different optional-peer contexts can create duplicate copies of the same version.
-This workspace aligns the store shim to wagmi 2.x's 1.4.0 dependency to prevent that. The tested pairs are:
+This workspace aligns Zustand's store shim to wagmi 2.x's 1.4.0 dependency to prevent that. The tested pairs are:
 
 | wagmi | core |
 | --- | --- |

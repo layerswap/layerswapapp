@@ -66,7 +66,8 @@
     "wagmi": "catalog:",
     "@wagmi/core": "catalog:",
     "viem": "catalog:",
-    "@tanstack/react-query": "catalog:"
+    "@tanstack/react-query": "catalog:",
+    "jsdom": "^30.0.1"
   },
   "engines": {
     "node": "^18.20.0 || >=20.10.0"

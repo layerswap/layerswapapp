@@ -15,7 +15,7 @@ import {
 } from 'react';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { assertRemoteWalletRuntime } from './walletRuntimeShare.js';
+import { assertRemoteWalletRuntime, assertWalletConfig } from './walletRuntimeShare.js';
 import {
   resolveSource,
   initRemote,
@@ -104,6 +104,15 @@ function buildLoader<P>(expose: string, walletShare?: WalletRuntimeShare): () =>
   };
 }
 
+// Keep validation inside the boundary so invalid prop updates call onError
+// and remove the remote before it can consume an unshared or replaced config.
+function WalletConfigGuard({ config, shared, initialConfig, children }: {
+  config: unknown; shared: boolean; initialConfig: unknown; children: ReactNode;
+}) {
+  assertWalletConfig(config, shared, initialConfig);
+  return children;
+}
+
 function ReadySignal({ onReady }: { onReady?: () => void }) {
   useEffect(() => {
     // Runs once per Suspense resolve; the parent's ref guard prevents the
@@ -151,24 +160,20 @@ export function RemoteWidgetHost<P extends object>({
   // into a page-lifetime one. A fresh `lazy()` per mount lets the integrator
   // recover by remounting; dedup of the underlying fetch is handled by
   // `resolveSource()`'s single-flight, which never caches failures.
-  const LazyWidget = useMemo(() => lazy(async () => {
-    if (walletShare && (!('wagmiConfig' in widgetProps) || !widgetProps.wagmiConfig)) {
-      throw new Error('[layerswap/widget-react] The /wagmi entry point requires the existing host wagmiConfig.');
-    }
-    if ('wagmiConfig' in widgetProps && widgetProps.wagmiConfig && !walletShare) {
-      throw new Error('[layerswap/widget-react] Import the widget from @layerswap/widget-react/wagmi when passing wagmiConfig. This shares the host runtime instead of loading another wagmi instance.');
-    }
-    return buildLoader<P>(expose, walletShare)();
-  }), []);
+  const LazyWidget = useMemo(() => lazy(buildLoader<P>(expose, walletShare)), []);
+  const config = 'wagmiConfig' in widgetProps ? widgetProps.wagmiConfig : undefined;
+  const initialConfig = useRef(config);
 
   if (!mounted) return <>{fallback ?? null}</>;
 
   return (
     <WidgetErrorBoundary fallback={fallback ?? null} onError={onError}>
-      <Suspense fallback={fallback ?? null}>
-        <ReadySignal onReady={stableOnReady} />
-        <LazyWidget {...widgetProps} />
-      </Suspense>
+      <WalletConfigGuard config={config} shared={!!walletShare} initialConfig={initialConfig.current}>
+        <Suspense fallback={fallback ?? null}>
+          <ReadySignal onReady={stableOnReady} />
+          <LazyWidget {...widgetProps} />
+        </Suspense>
+      </WalletConfigGuard>
     </WidgetErrorBoundary>
   );
 }

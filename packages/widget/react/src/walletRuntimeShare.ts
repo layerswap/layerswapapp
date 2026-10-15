@@ -48,3 +48,16 @@ export function assertRemoteWalletRuntime(probe: Record<string, unknown>, shared
     }
   }
 }
+
+/** Validate every render, including updates after the remote has loaded. */
+export function assertWalletConfig(config: unknown, shared: boolean, initialConfig: unknown): void {
+  if (shared && !config) {
+    throw new Error('[layerswap/widget-react] The /wagmi entry point requires the existing host wagmiConfig.');
+  }
+  if (config && !shared) {
+    throw new Error('[layerswap/widget-react] Import the widget from @layerswap/widget-react/wagmi when passing wagmiConfig. This shares the host runtime instead of loading another wagmi instance.');
+  }
+  if (config !== initialConfig) {
+    throw new Error('[layerswap/widget-react] Keep wagmiConfig stable for the lifetime of the widget. Replacing the active wallet config is not supported.');
+  }
+}

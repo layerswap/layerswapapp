@@ -110,7 +110,7 @@ overrides:
   valibot@>=1.0.0 <1.4.2: 1.4.2
   webpack-dev-server@>=5.0.0 <5.2.6: 5.2.6
   yaml@>=2.0.0 <2.8.3: 2.8.3
-  use-sync-external-store: 1.4.0
+  zustand>use-sync-external-store: 1.4.0
 
 importers:
 
@@ -1270,6 +1270,9 @@ importers:
       '@wagmi/core':
         specifier: 'catalog:'
         version: 2.16.4(@tanstack/query-core@5.90.16)(@types/react@19.2.3)(immer@11.1.15)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@19.2.3))(viem@2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.6.5))
+      jsdom:
+        specifier: ^30.0.1
+        version: 30.0.1(@noble/hashes@2.4.0)
       react:
         specifier: 'catalog:'
         version: 19.2.3
@@ -10916,8 +10919,18 @@ packages:
       '@types/react':
         optional: true
 
+  use-sync-external-store@1.2.0:
+    resolution: {integrity: sha512-eEgnFxGQ1Ife9bzYs6VLi8/4X6CObHMw9Qr9tPY43iKwsPw8xE8+EFsf/2cFZ5S3esXgpWgtSCtLNS41F+sKPA==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0
+
   use-sync-external-store@1.4.0:
     resolution: {integrity: sha512-9WXSPC5fMv61vaupRkCKCxsPxBocVnwakBEkMIHHpkTTg6icbJtg6jzgtLDm4bl3cSHAca52rYWih0k4K3PfHw==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+
+  use-sync-external-store@1.7.0:
+    resolution: {integrity: sha512-6L+EeigHMQhdaIPNIFUKwfWJSwWFQ8gJbJ2DLOs5sDIegTwR9fRxvnM3uciHKjIZhFz+KAv2emhWMRvDmMcY8A==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
@@ -12576,7 +12589,7 @@ snapshots:
       '@tanstack/react-virtual': 3.13.18(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
-      use-sync-external-store: 1.4.0(react@19.2.3)
+      use-sync-external-store: 1.7.0(react@19.2.3)
 
   '@hot-wallet/sdk@1.0.11(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)':
     dependencies:
@@ -15024,7 +15037,7 @@ snapshots:
   '@radix-ui/react-use-is-hydrated@0.1.0(@types/react@19.2.3)(react@19.2.3)':
     dependencies:
       react: 19.2.3
-      use-sync-external-store: 1.4.0(react@19.2.3)
+      use-sync-external-store: 1.7.0(react@19.2.3)
     optionalDependencies:
       '@types/react': 19.2.3
 
@@ -25131,7 +25144,7 @@ snapshots:
     dependencies:
       dequal: 2.0.3
       react: 19.2.3
-      use-sync-external-store: 1.4.0(react@19.2.3)
+      use-sync-external-store: 1.7.0(react@19.2.3)
 
   symbol-tree@3.2.4: {}
 
@@ -25537,11 +25550,19 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.3
 
-  use-sync-external-store@1.4.0(react@18.3.1):
+  use-sync-external-store@1.2.0(react@18.3.1):
     dependencies:
       react: 18.3.1
 
+  use-sync-external-store@1.2.0(react@19.2.3):
+    dependencies:
+      react: 19.2.3
+
   use-sync-external-store@1.4.0(react@19.2.3):
+    dependencies:
+      react: 19.2.3
+
+  use-sync-external-store@1.7.0(react@19.2.3):
     dependencies:
       react: 19.2.3
 
@@ -25582,7 +25603,7 @@ snapshots:
     dependencies:
       derive-valtio: 0.1.0(valtio@1.13.2(@types/react@19.2.3)(react@18.3.1))
       proxy-compare: 2.6.0
-      use-sync-external-store: 1.4.0(react@18.3.1)
+      use-sync-external-store: 1.2.0(react@18.3.1)
     optionalDependencies:
       '@types/react': 19.2.3
       react: 18.3.1
@@ -25591,7 +25612,7 @@ snapshots:
     dependencies:
       derive-valtio: 0.1.0(valtio@1.13.2(@types/react@19.2.3)(react@19.2.3))
       proxy-compare: 2.6.0
-      use-sync-external-store: 1.4.0(react@19.2.3)
+      use-sync-external-store: 1.2.0(react@19.2.3)
     optionalDependencies:
       '@types/react': 19.2.3
       react: 19.2.3

@@ -81,7 +81,7 @@
     "valibot@>=1.0.0 <1.4.2": "1.4.2",
     "webpack-dev-server@>=5.0.0 <5.2.6": "5.2.6",
     "yaml@>=2.0.0 <2.8.3": "2.8.3",
-    "use-sync-external-store": "1.4.0"
+    "zustand>use-sync-external-store": "1.4.0"
   },
   "scripts": {
     "dev": "pnpm --filter @layerswap/bridge dev",
