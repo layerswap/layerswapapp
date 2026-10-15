@@ -195,6 +195,7 @@ export type SwapBasicData = {
     amountPresetSource?: string
     amountPresetError?: string
     amountPresetPending?: boolean
+    amountPresetBalance?: number
     source_network: Network,
     source_token: Token,
     source_exchange?: Exchange,

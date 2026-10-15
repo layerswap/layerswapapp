@@ -183,6 +183,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             amountPresetSource: values.amountPresetSource,
             amountPresetError: values.amountPresetError,
             amountPresetPending: values.amountPresetPending,
+            amountPresetBalance: values.amountPresetBalance,
             source_network: values.from,
             destination_network: values.to,
             source_token: values.fromAsset,
@@ -206,8 +207,9 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
                 requested_amount: values.amount ?? current.requested_amount,
                 amountMode: values.amountMode, amountPresetSource: values.amountPresetSource,
                 amountPresetError: values.amountPresetError, amountPresetPending: values.amountPresetPending,
+                amountPresetBalance: values.amountPresetBalance,
             }
-            if (Object.entries(patch).every(([key, value]) => current[key] === value)) return current
+            if (Object.entries(patch).every(([key, value]) => Object.is(current[key], value))) return current
             return { ...current, ...patch }
         })
         return true

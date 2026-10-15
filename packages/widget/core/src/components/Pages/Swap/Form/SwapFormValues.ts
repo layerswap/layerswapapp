@@ -9,6 +9,8 @@ export type SwapFormValues = {
   amountPresetSource?: string;
   amountPresetError?: string;
   amountPresetPending?: boolean;
+  /** Balance associated with the preset calculation, including pending/error results. */
+  amountPresetBalance?: number;
   destination_address?: string;
   //TODO: refactor
   fromAsset?: NetworkRouteToken & { manuallySet?: boolean };

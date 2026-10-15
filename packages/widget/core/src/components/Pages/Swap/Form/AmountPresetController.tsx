@@ -66,7 +66,7 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
     useEffect(() => {
         if (frozen) return
         if (!sameSource || !liveSupported) {
-            const next = { ...values, amountMode: 'manual' as const, amountPresetSource: undefined, amountPresetError: undefined, amountPresetPending: false }
+            const next = { ...values, amountMode: 'manual' as const, amountPresetSource: undefined, amountPresetError: undefined, amountPresetPending: false, amountPresetBalance: undefined }
             if (updates?.syncAmountPresetDraft(next) === false) return
             void setValues(next, true)
             return
@@ -77,10 +77,10 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
             ? swap?.swapBasicData?.requested_amount : undefined
         previousRevision.current = revision
         const unavailableAmount = error instanceof AmountPresetUnavailableError ? error.amount : undefined
-        const next = { ...values, amount: unavailableAmount ?? amount ?? preparedAmount ?? values.amount, amountPresetError: message, amountPresetPending: pending }
+        const next = { ...values, amount: unavailableAmount ?? amount ?? preparedAmount ?? values.amount, amountPresetError: message, amountPresetPending: pending, amountPresetBalance: balance?.amount }
         if (updates?.syncAmountPresetDraft(next) === false) return
-        if (next.amount !== values.amount || message !== values.amountPresetError || pending !== values.amountPresetPending)
+        if (next.amount !== values.amount || message !== values.amountPresetError || pending !== values.amountPresetPending || !Object.is(next.amountPresetBalance, values.amountPresetBalance))
             void setValues(next, true)
-    }, [amount, error, message, pending, sameSource, liveSupported, frozen, values, setValues, updates, revision, swap?.swapId, swap?.swapBasicData])
+    }, [amount, error, message, pending, balance?.amount, sameSource, liveSupported, frozen, values, setValues, updates, revision, swap?.swapId, swap?.swapBasicData])
     return null
 }

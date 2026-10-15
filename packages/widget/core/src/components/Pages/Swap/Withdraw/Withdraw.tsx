@@ -9,7 +9,7 @@ import { useBalance } from '@/lib/balances/useBalance';
 import useOutOfGas from '@/lib/gases/useOutOfGas';
 import useSWRGas from '@/lib/gases/useSWRGas';
 import { resolveMaxAllowedAmount } from '@/components/Input/Amount/helpers';
-import { amountPresetSource } from '@/lib/amountPresets';
+import { amountPresetSource, isAmountPreset } from '@/lib/amountPresets';
 import { truncateToDecimals } from '@/components/utils/RoundDecimals';
 import { NetworkRoute } from '@layerswap/widget-types';
 import { useFormikContext } from 'formik';
@@ -42,7 +42,7 @@ const Withdraw: FC<{
     onWalletWithdrawalSuccess?: () => void;
     onCancelWithdrawal?: () => void;
 }> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal }) => {
-    const { swapBasicData, swapDetails, refuel, quoteIsLoading } =
+    const { swapBasicData, swapDetails, swapId, amountPresetLocked, refuel, quoteIsLoading } =
         useSwapDataState();
     const { setSubmitedFormValues, startFreshSwapAttempt, canAdjustAmount } = useSwapDataUpdate();
 
@@ -143,7 +143,13 @@ const Withdraw: FC<{
         footerKey?: string;
     } = {};
 
-    const showInsufficientBalanceWarning =
+    // A balance notification reaches this view before the controller's effect
+    // publishes the new pending state. Compare the calculation's balance too,
+    // so that first commit cannot flash a warning against the previous amount.
+    // Settled failures and frozen/manual amounts still show genuine warnings.
+    const presetIsSyncing = !swapId && !amountPresetLocked && isAmountPreset(swapBasicData?.amountMode)
+        && (swapBasicData?.amountPresetPending || !Object.is(swapBasicData?.amountPresetBalance, walletBalanceAmount));
+    const showInsufficientBalanceWarning = !presetIsSyncing &&
         swapBasicData?.use_deposit_address === false &&
         swapBasicData?.requested_amount &&
         Number(swapBasicData?.requested_amount) &&
@@ -193,7 +199,7 @@ const Withdraw: FC<{
                 />
             ),
         };
-    } else if (swapBasicData?.use_deposit_address === false && outOfGas) {
+    } else if (swapBasicData?.use_deposit_address === false && outOfGas && !presetIsSyncing) {
         withdraw = {
             footerKey: 'outOfGas',
             footer: (
