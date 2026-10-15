@@ -4,7 +4,6 @@ import { Address } from "./address/Address";
 import { SwapBasicData } from "./apiClients/layerSwapApiClient";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { mergeExtendedSourceRoutes } from "./extendedRoutes/registry";
-import { formatTokenAmount } from "@/components/utils/formatTokenAmount";
 
 export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: InitialSettings, type: 'cross-chain' | 'exchange' | 'deposit-address', connectedAutofillNetworks?: Set<string>): SwapFormValues {
     const { destination_address, amount, fromAsset, toAsset, from, to, lockFromAsset, lockToAsset, depositMethod, fromExchange } = queryParams
@@ -128,7 +127,7 @@ export function generateSwapInitialValuesFromSwap(swapResponse: SwapBasicData, r
     const result: SwapFormValues = {
         from,
         to,
-        amount: formatTokenAmount(Number(requested_amount), { maximumFractionDigits: source_token.decimals, useGrouping: false }),
+        amount: requested_amount,
         fromAsset: fromCurrency,
         toAsset: toCurrency,
         destination_address,

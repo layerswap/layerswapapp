@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import React from 'react'
 import ts from 'typescript'
+import { formatTokenAmount } from '../../dist/esm/components/utils/formatTokenAmount.js'
 
 const require = createRequire(import.meta.url)
 const noop = () => {}
@@ -19,6 +20,7 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
     }
     const resolved = {}
     const imports = {
+        '@/components/utils/formatTokenAmount': { formatTokenAmount },
         '@/helpers/depository': { shouldUseDepository: () => false },
         react: React,
         'react/jsx-runtime': require('react/jsx-runtime'),
@@ -58,7 +60,7 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
         '@/hooks/useSwapPolling': { useSwapPolling: id => {
             if (!snapshots.has(id)) snapshots.set(id, { data: { swap: {
                 id, source_network: network, source_token: {}, destination_network: network,
-                destination_token: {}, requested_amount: '1', transactions: [], use_deposit_address: false,
+                destination_token: {}, requested_amount: 1, transactions: [], use_deposit_address: false,
             } } })
             return { data: id ? snapshots.get(id) : undefined, mutate: noop }
         } },

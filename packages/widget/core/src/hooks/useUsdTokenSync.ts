@@ -97,7 +97,7 @@ export function useUsdTokenSync({
             const precision = fromCurrency?.precision || 6;
             const tokenAmount = preciseUsd / sourceCurrencyPriceInUsd;
             const truncated = Math.trunc(tokenAmount * Math.pow(10, precision)) / Math.pow(10, precision);
-            newAmount = formatTokenAmount(truncated, { maximumFractionDigits: precision, useGrouping: false });
+            newAmount = formatTokenAmount(truncated, precision);
         }
         // Only mark as internal if the value actually changes;
         // otherwise the sync effect won't fire and the flag stays stuck.

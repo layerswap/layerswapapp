@@ -615,6 +615,7 @@ function createSwapHistoryHarness(fetcher, { onCreate, selectedAccount } = {}) {
     stores.useDepositSignatureStore.setState({ signatures: {} });
     const context = loadSource('context/swap.tsx', {
         '@layerswap/widget-types': widgetTypes,
+        '@/components/utils/formatTokenAmount': loadSource('components/utils/formatTokenAmount.ts'),
         '@/helpers/depository': { shouldUseDepository: () => false },
         '@/hooks/useSwapPolling': polling,
         '@/hooks/useSwapStatusNotification': { useSwapStatusNotification: noop },
@@ -957,7 +958,7 @@ for (const provider of ['Hyperliquid', 'Polymarket']) {
     for (const outcome of ['failure', 'success']) {
         test(`${provider} retry after reload preserves its swap and controller through withdrawal ${outcome}`, async () => {
             const swap = {
-                id: 'first', status: 'user_transfer_pending', requested_amount: '1',
+                id: 'first', status: 'user_transfer_pending', requested_amount: 1,
                 source_network: network, destination_network: network,
                 source_token: { ...token, asset: 'USDC', decimals: 6 },
                 destination_token: { ...token, asset: 'USDC', decimals: 6 },
@@ -1075,7 +1076,7 @@ for (const provider of ['Hyperliquid', 'Polymarket']) {
 for (const gaslessEnabled of [true, false]) {
     test(`fresh retry after reload preserves the source account with gasless ${gaslessEnabled}`, async () => {
         const swap = {
-            id: 'first', status: 'user_transfer_pending', requested_amount: '1',
+            id: 'first', status: 'user_transfer_pending', requested_amount: 1,
             source_network: network, destination_network: network,
             source_token: token, destination_token: token,
             destination_address: '0xdestination', use_deposit_address: false, transactions: [],

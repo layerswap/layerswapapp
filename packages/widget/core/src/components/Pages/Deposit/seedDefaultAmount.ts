@@ -20,5 +20,5 @@ export function seedDefaultAmount(
     const tokenAmount = defaultAmountUsd / price;
     const factor = Math.pow(10, precision);
     const truncated = Math.trunc(tokenAmount * factor) / factor;
-    return truncated > 0 ? formatTokenAmount(truncated, { maximumFractionDigits: precision, useGrouping: false }) : undefined;
+    return truncated > 0 ? formatTokenAmount(truncated, precision) : undefined;
 }
