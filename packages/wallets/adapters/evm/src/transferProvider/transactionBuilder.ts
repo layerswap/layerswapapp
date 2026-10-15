@@ -1,32 +1,18 @@
 import { TransferProps } from "@layerswap/widget-types";
-import { parseEther } from "viem"
-import { EVMGasProvider } from "../gasProviders"
+import { resolveEVMTransactionGasParameters } from "../gasProviders/resolveEVMTransactionGasParameters"
+import { resolveEVMTransactionRequest } from "./resolveEVMTransactionRequest"
 
 export const transactionBuilder = async (params: TransferProps) => {
-    const { amount, callData, depositAddress, network, selectedWallet, token } = params
+    const { network, selectedWallet } = params
+    const tx = resolveEVMTransactionRequest({ ...params, account: selectedWallet.address as `0x${string}` })
 
-    const tx = {
-        chainId: Number(network?.chain_id),
-        to: depositAddress as `0x${string}`,
-        value: parseEther(amount.toString()),
-        gas: undefined as any,
-        data: (callData || '0x') as `0x${string}`,
-        account: selectedWallet.address as `0x${string}`
-    }
+    const gasParameters = await resolveEVMTransactionGasParameters({
+        network,
+        account: tx.account,
+        to: tx.to,
+        data: tx.data,
+        value: tx.value,
+    })
 
-    try {
-        const gasData = await new EVMGasProvider().getGas({
-            address: selectedWallet.address,
-            network,
-            token,
-            amount
-        })
-
-        if (gasData?.gas) tx.gas = BigInt(gasData.gas)
-
-    } catch (error) {
-        console.log(error)
-    }
-
-    return tx
+    return gasParameters ? { ...tx, ...gasParameters } : tx
 }

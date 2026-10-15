@@ -9,7 +9,7 @@ import { useBalance } from '@/lib/balances/useBalance';
 import useOutOfGas from '@/lib/gases/useOutOfGas';
 import useSWRGas from '@/lib/gases/useSWRGas';
 import { resolveNativePayableAmount } from '@/components/Input/Amount/helpers';
-import { NetworkRoute } from '@layerswap/widget-types';
+import { NetworkRoute, NetworkType } from '@layerswap/widget-types';
 import { useFormikContext } from 'formik';
 import type { JSX } from 'react';
 import { FC, useCallback, useMemo } from 'react';
@@ -25,6 +25,7 @@ import { WalletActionTransition } from './Presentation/WalletActionTransition';
 import { lifecycleContextFromSwap } from '@/lib/swapLifecycle';
 import { useTransferBlocked } from '@/hooks/useTransferBlocked';
 import { type ObservedLifecycleEvent, useLifecycleObservation } from '@/hooks/useLifecycleObservation';
+import { getActionableDepositAction, isTransferAction } from '@/helpers/depositActions';
 
 // "Transfer screen shown": reported once while the screen is visible, before any swap exists.
 const AWAITING_WALLET_ACTION: ObservedLifecycleEvent = {
@@ -40,7 +41,7 @@ const Withdraw: FC<{
     onWalletWithdrawalSuccess?: () => void;
     onCancelWithdrawal?: () => void;
 }> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal }) => {
-    const { swapBasicData, swapDetails, refuel, quoteIsLoading } =
+    const { swapBasicData, swapDetails, depositActionsResponse, refuel, quoteIsLoading } =
         useSwapDataState();
     const { setSubmitedFormValues, startFreshSwapAttempt } = useSwapDataUpdate();
 
@@ -65,11 +66,26 @@ const Withdraw: FC<{
                 b?.token === swapBasicData?.source_token?.symbol,
         );
     const walletBalanceAmount = walletBalance?.amount;
+    const action = getActionableDepositAction(depositActionsResponse);
+    const transferAction = action && isTransferAction(action)
+        && source_network?.type === NetworkType.EVM
+        && (!action.network || action.network.name === source_network?.name)
+        && (!action.token || action.token.symbol === swapBasicData?.source_token.symbol)
+        && (!action.from_address || action.from_address.toLowerCase() === selectedSourceAccount?.address?.toLowerCase())
+        ? action : undefined;
+    const gasTransaction = transferAction?.to_address && transferAction.amount != null ? {
+        recipientAddress: transferAction.to_address,
+        callData: transferAction.call_data ?? '',
+        amountInBaseUnits: transferAction.amount_in_base_units,
+    } : undefined;
+    const gasEstimationAmount = gasTransaction ? transferAction?.amount : swapBasicData?.requested_amount;
     const { gasData } = useSWRGas(
         selectedSourceAccount?.address,
         source_network,
         swapBasicData?.source_token,
-        swapBasicData?.requested_amount,
+        gasEstimationAmount,
+        undefined,
+        { transaction: gasTransaction },
     );
     const { setFieldValue } = useFormikContext<SwapFormValues>();
 
@@ -92,11 +108,11 @@ const Withdraw: FC<{
     useLifecycleObservation(swapBasicData && !swapBasicData.use_deposit_address ? AWAITING_WALLET_ACTION : undefined, lifecycleContext)
 
     const handleEditAmount = useCallback(() => {
-        if (walletBalanceAmount == null || !gasData?.gas || !swapBasicData)
+        if (walletBalanceAmount == null || !gasData || !swapBasicData)
             return;
         const maxAmount = resolveNativePayableAmount(
             walletBalanceAmount,
-            gasData.gas,
+            gasData.maxFee ?? gasData.gas,
             gasData.reserve ?? 0,
             swapBasicData.source_token.decimals,
         );
@@ -123,6 +139,7 @@ const Withdraw: FC<{
     }, [
         walletBalanceAmount,
         gasData?.gas,
+        gasData?.maxFee,
         gasData?.reserve,
         swapBasicData,
         refuel,
@@ -151,10 +168,11 @@ const Withdraw: FC<{
         address: selectedSourceAccount?.address,
         network: source_network,
         token: swapBasicData?.source_token,
-        amount: swapBasicData?.requested_amount,
+        amount: gasEstimationAmount,
         balances,
         minAllowedAmount,
         maxAllowedAmount,
+        transaction: gasTransaction,
     });
 
     // The gas warning keeps WalletTransferButton available, so it is not a block.
@@ -193,7 +211,8 @@ const Withdraw: FC<{
         };
     } else if (swapBasicData?.use_deposit_address === false && outOfGas) {
         withdraw = {
-            footerKey: 'outOfGas',
+            // A changing gas warning must preserve the active wallet execution.
+            footerKey: 'transfer',
             footer: (
                 <WalletTransferButton
                     swapBasicData={swapBasicData}
