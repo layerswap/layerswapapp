@@ -357,10 +357,14 @@ test('Min selects the route minimum even when the balance is too low', async () 
   assert.equal(formik.values.amountMode, 'min')
 })
 
-test('50% is hidden without a connected wallet balance', async () => {
+test('50% stays visible but disabled without a connected wallet balance', async () => {
   state.account = undefined; state.wallets = []
   await render()
-  assert.equal(container.querySelector('[data-attr="half-amount"]'), null)
+  const half = container.querySelector('[data-attr="half-amount"]')
+  assert.equal(half.disabled, true)
+  assert.equal(half.getAttribute('aria-pressed'), null)
+  await act(() => half.click())
+  assert.equal(formik.values.amount, '0.5')
 })
 
 test('the group is disabled only until at least one preset becomes available', async () => {
@@ -372,12 +376,12 @@ test('the group is disabled only until at least one preset becomes available', a
 
   const group = container.querySelector('[role="group"][aria-label="Amount shortcuts"]')
   assert.equal(group.getAttribute('aria-disabled'), 'true')
-  assert.equal(group.querySelectorAll('button:disabled').length, 2)
+  assert.equal(group.querySelectorAll('button:disabled').length, 3)
 
   props.limitsMinAmount = 0.001
   await render()
   assert.equal(group.getAttribute('aria-disabled'), 'false')
-  assert.equal(group.querySelectorAll('button:disabled').length, 1)
+  assert.equal(group.querySelectorAll('button:disabled').length, 2)
   await act(() => container.querySelector('[data-attr="min-amount"]').click())
   assert.equal(formik.values.amountMode, 'fixed')
   assert.equal(formik.values.amount, '0.001')

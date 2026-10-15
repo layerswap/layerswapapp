@@ -561,7 +561,10 @@ for (const [name, flow, connected] of [
         if (!connected) { state.wallets = []; state.account = undefined }
         await render()
         assert.equal(container.querySelector('[role="group"]').getAttribute('aria-label'), 'Amount shortcuts')
-        assert.equal(container.querySelector('[data-attr="half-amount"]'), null)
+        const half = container.querySelector('[data-attr="half-amount"]')
+        assert.equal(half.disabled, true, 'Keep 50% visible without implying a known source balance')
+        await act(() => half.click())
+        assert.equal(formik.values.amount, '0.5', 'An unavailable 50% cannot change the amount')
         const button = container.querySelector(`[data-attr="${mode}-amount"]`)
         assert.equal(button.getAttribute('aria-pressed'), null, 'One-time buttons do not expose toggle state')
         await act(() => button.click())

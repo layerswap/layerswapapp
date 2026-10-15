@@ -42,7 +42,6 @@ const MinMax = (props: MinMaxProps) => {
     const walletFlow = isWalletAmountFlow({ depositMethod, fromExchange: values.fromExchange })
     const live = walletFlow && isWalletConnected && !!selectedSourceAccount?.address && supportsLiveAmountPreset(from, fromCurrency)
     const selectedPreset = live ? values.amountMode : undefined
-    const showHalf = walletFlow && isWalletConnected
     const { balances, mutate: mutateBalances } = useBalance(selectedSourceAccount?.address, from)
 
     const walletBalance = useMemo(() => {
@@ -140,7 +139,7 @@ const MinMax = (props: MinMaxProps) => {
 
     return (
         <LayoutGroup id={layoutId}>
-            <div role="group" aria-label={live ? 'Amount presets' : 'Amount shortcuts'} aria-disabled={allPresetsDisabled} className={`group/presets relative isolate inline-flex ${live ? 'gap-0.5 rounded-lg bg-secondary-300/35 p-0.5' : 'gap-1 py-0.5'} text-xs font-medium leading-4 transition-opacity duration-150 aria-disabled:opacity-40 motion-reduce:transition-none`} onMouseLeave={() => onActionHover(undefined)}>
+            <div role="group" aria-label={live ? 'Amount presets' : 'Amount shortcuts'} aria-disabled={allPresetsDisabled} className="group/presets relative isolate inline-flex gap-0.5 rounded-lg bg-secondary-300/35 p-0.5 text-xs font-medium leading-4 transition-opacity duration-150 aria-disabled:opacity-40 motion-reduce:transition-none" onMouseLeave={() => onActionHover(undefined)}>
                 <ActionButton
                     data-attr="min-amount"
                     label="Min"
@@ -152,15 +151,16 @@ const MinMax = (props: MinMaxProps) => {
                     onMouseLeave={() => onActionHover(undefined)}
                     onClick={e => selectPreset(e, 'min', minValue, minUsdFormatted)}
                 />
-                {showHalf ? <ActionButton
+                <ActionButton
                     data-attr="half-amount"
                     label="50%"
                     aria-pressed={live ? selectedPreset === 'half' : undefined}
+                    description={!walletFlow || !walletBalance ? '50% requires an available balance from a connected source wallet.' : undefined}
                     disabled={halfDisabled}
                     onMouseEnter={() => onActionHover(halfValue === undefined ? undefined : Number(halfValue))}
                     onMouseLeave={() => onActionHover(undefined)}
                     onClick={e => selectPreset(e, 'half', halfValue)}
-                /> : null}
+                />
                 <ActionButton
                     data-attr="max-amount"
                     label="Max"
@@ -199,7 +199,7 @@ const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProps>(({ l
             onClick={onClick}
             type="button"
             disabled={disabled}
-            className={`relative min-w-11 rounded-md px-2 py-0.5 text-preset-text transition-colors duration-150 ${rest['aria-pressed'] === undefined ? 'bg-secondary-300/35 enabled:hover:bg-secondary-300 enabled:hover:text-primary-text' : 'enabled:hover:aria-[pressed=false]:bg-secondary-300/50 enabled:hover:aria-[pressed=false]:text-primary-text aria-pressed:text-preset-selected-text'} enabled:cursor-pointer disabled:cursor-default focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-preset-text disabled:text-secondary-text/40 group-aria-disabled/presets:disabled:text-secondary-text motion-reduce:transition-none`}
+            className={`relative min-w-11 rounded-md px-2 py-0.5 transition-colors duration-150 ${selected ? 'text-preset-selected-text' : 'text-preset-text enabled:hover:bg-secondary-300/50 enabled:hover:text-primary-text enabled:active:bg-secondary-300'} enabled:cursor-pointer disabled:cursor-default disabled:pointer-events-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-preset-text disabled:text-secondary-text/40 group-aria-disabled/presets:disabled:text-secondary-text motion-reduce:transition-none`}
         >
             {selected ? <motion.span
                 aria-hidden="true"
@@ -212,7 +212,11 @@ const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProps>(({ l
         </button>
     );
     return <Tooltip disableHoverableContent>
-        <TooltipTrigger asChild>{button}</TooltipTrigger>
+        <TooltipTrigger asChild className="cursor-inherit">
+            <span tabIndex={disabled && description ? 0 : undefined} aria-label={disabled && description ? label : undefined} className="inline-flex rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-preset-text">
+                {button}
+            </span>
+        </TooltipTrigger>
         {description ? <TooltipContent className="pointer-events-none w-64 p-2 border-none! bg-secondary-300! text-xs rounded-xl!" side="top" align="start">
             <p>{description}</p>
         </TooltipContent> : null}
