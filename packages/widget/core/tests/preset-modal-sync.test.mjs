@@ -7,7 +7,7 @@ import { JSDOM } from 'jsdom'
 import { create } from 'zustand'
 import { createSwapContext } from './helpers/swap-context.mjs'
 import { resolveSwapFlow } from '../dist/esm/components/utils/resolveSwapFlow.js'
-import { loadSource, amountPresets, amountMessages, maxHelpers, rounding } from './helpers/source.mjs'
+import { loadSource, amountPresets, amountMessages, formValidation, maxHelpers, rounding } from './helpers/source.mjs'
 
 const require = createRequire(import.meta.url)
 const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://widget.example' })
@@ -40,6 +40,7 @@ const { default: Controller } = loadSource('components/Pages/Swap/Form/AmountPre
   '@/context/swapAccounts': { useSelectedAccount: () => state.account },
   '@/hooks/useWallet': { default: () => ({ wallets: [state.account] }) },
   '@/hooks/useFee': { transformFormValuesToQuoteArgs: values => values, useQuoteData: () => ({ maxAllowedAmount: 1, minAllowedAmount: state.minimum }) },
+  '@/hooks/useFormValidation': formValidation,
   '@/lib/balances/useBalance': { useBalance: () => ({ balances: state.balances, isLoading: state.balanceLoading }) },
   '@/lib/amountPresets': amountPresets,
   '@/lib/amountMessages': amountMessages,
