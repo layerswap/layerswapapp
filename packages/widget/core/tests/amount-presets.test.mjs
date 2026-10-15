@@ -499,13 +499,13 @@ for (const name of ['TON_MAINNET', 'PARADEX_MAINNET', 'PARADEX_TESTNET']) {
   test(`${name}: supported quick fills remain usable without advertising unavailable live updates`, async () => {
     await setupUnsupportedAdapter(name)
     await render()
-    assert.equal(container.querySelector('[data-attr="half-amount"]').disabled, true)
+    assert.equal(container.querySelector('[data-attr="half-amount"]').disabled, false)
     if (name === 'TON_MAINNET') assert.equal(container.querySelector('[data-attr="max-amount"]').disabled, true)
-    for (const mode of name === 'TON_MAINNET' ? ['min'] : ['min', 'max']) {
+    for (const mode of name === 'TON_MAINNET' ? ['min', 'half'] : ['min', 'half', 'max']) {
       const button = container.querySelector(`[data-attr="${mode}-amount"]`)
       assert.equal(button.disabled, false)
       await act(() => button.click())
-      assert.equal(formik.values.amount, mode === 'min' ? '1' : '10')
+      assert.equal(formik.values.amount, mode === 'min' ? '1' : mode === 'half' ? '5' : '10')
       assert.equal(formik.values.amountMode, 'fixed')
       assert.equal(formik.values.amountPresetSource, undefined)
       assert.equal(formik.values.amountPresetPending, false)
@@ -547,11 +547,13 @@ test('a temporary missing gas estimate on a supported adapter keeps Min selected
 
 for (const [name, flow, connected] of [
   ['manual transfer', { depositMethod: 'deposit_address' }, true],
+  ['manual transfer without a wallet', { depositMethod: 'deposit_address' }, false],
   ['exchange', { depositMethod: 'deposit_address', fromExchange: { name: 'exchange' } }, true],
+  ['exchange without a wallet', { depositMethod: 'deposit_address', fromExchange: { name: 'exchange' } }, false],
   ['no transfer method', { depositMethod: undefined }, false],
   ['disconnected wallet', { depositMethod: 'wallet' }, false],
 ]) {
-  for (const mode of ['min', 'max']) {
+  for (const mode of ['min', 'half', 'max']) {
     for (const isUsdMode of [false, true]) {
       test(`${name} ${mode} in ${isUsdMode ? 'USD' : 'token'} mode is a one-time shortcut`, async () => {
         Object.assign(initialValues, flow, { amountMode: 'manual', amountPresetSource: undefined })
@@ -561,14 +563,11 @@ for (const [name, flow, connected] of [
         if (!connected) { state.wallets = []; state.account = undefined }
         await render()
         assert.equal(container.querySelector('[role="group"]').getAttribute('aria-label'), 'Amount shortcuts')
-        const half = container.querySelector('[data-attr="half-amount"]')
-        assert.equal(half.disabled, true, 'Keep 50% visible without implying a known source balance')
-        await act(() => half.click())
-        assert.equal(formik.values.amount, '0.5', 'An unavailable 50% cannot change the amount')
         const button = container.querySelector(`[data-attr="${mode}-amount"]`)
+        assert.equal(button.disabled, false)
         assert.equal(button.getAttribute('aria-pressed'), null, 'One-time buttons do not expose toggle state')
         await act(() => button.click())
-        const chosenAmount = mode === 'min' ? '0.001' : '10'
+        const chosenAmount = mode === 'min' ? '0.001' : mode === 'half' ? (connected ? '0.5' : '5') : '10'
         assert.equal(formik.values.amount, chosenAmount)
         assert.equal(formik.values.amountMode, 'fixed')
         assert.equal(formik.values.amountPresetPending, false)
@@ -583,9 +582,9 @@ for (const [name, flow, connected] of [
         await act(() => usd.handleToggle())
         await act(() => usd.handleToggle())
         assert.equal(formik.values.amount, chosenAmount)
-        // Clicking again applies the latest limit; it does not toggle a binding.
+        // Clicking again applies the latest shortcut value; it does not toggle a binding.
         await act(() => button.click())
-        assert.equal(formik.values.amount, mode === 'min' ? '0.02' : '0.75')
+        assert.equal(formik.values.amount, mode === 'min' ? '0.02' : mode === 'half' ? (connected ? '0.2' : '0.375') : '0.75')
         assert.equal(formik.values.amountMode, 'fixed')
       })
     }

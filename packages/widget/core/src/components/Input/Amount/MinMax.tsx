@@ -85,8 +85,12 @@ const MinMax = (props: MinMaxProps) => {
 
     const minValue = limitsMinAmount === undefined ? undefined : resolvePresetAmount('min', 0, limitsMinAmount, fromCurrency.decimals);
     const maxValue = maxAllowedAmount === undefined ? undefined : resolvePresetAmount('max', maxAllowedAmount, 0, fromCurrency.decimals);
-    const halfValue = walletFlow && walletBalance && maxAllowedAmount !== undefined
-        ? resolvePresetAmount('half', maxAllowedAmount, 0, fromCurrency.decimals) : undefined;
+    // Live presets follow spendable funds. One-time shortcuts retain production's
+    // balance-first calculation, falling back to the route maximum (or zero).
+    const halfBase = live
+        ? (walletBalance ? maxAllowedAmount : undefined)
+        : walletBalance?.amount || maxAllowedAmount || 0;
+    const halfValue = halfBase === undefined ? undefined : resolvePresetAmount('half', halfBase, 0, fromCurrency.decimals);
 
     // A selected preset stays available so it can be turned off while data refreshes.
     const minDisabled = selectedPreset !== 'min' && minValue === undefined;
@@ -155,7 +159,7 @@ const MinMax = (props: MinMaxProps) => {
                     data-attr="half-amount"
                     label="50%"
                     aria-pressed={live ? selectedPreset === 'half' : undefined}
-                    description={!walletFlow || !walletBalance ? '50% requires an available balance from a connected source wallet.' : undefined}
+                    description={live ? undefined : 'Set 50% once, using your wallet balance when available or the maximum amount otherwise.'}
                     disabled={halfDisabled}
                     onMouseEnter={() => onActionHover(halfValue === undefined ? undefined : Number(halfValue))}
                     onMouseLeave={() => onActionHover(undefined)}
