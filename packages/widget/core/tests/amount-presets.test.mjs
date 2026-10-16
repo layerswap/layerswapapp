@@ -23,8 +23,9 @@ const { default: Controller } = loadSource('components/Pages/Swap/Form/AmountPre
   '@/hooks/useWallet': { default: () => ({ wallets: state.wallets }) },
   '@/hooks/useFee': { transformFormValuesToQuoteArgs: v => v, useQuoteData: () => {
     const { data } = useSWR('/limits', null)
-    return { maxAllowedAmount: data?.data?.max_amount ?? state.limit, minAllowedAmount: data?.data?.min_amount ?? state.minimum, minAllowedAmountInUsd: state.minimum * state.usdPrice, limitsError: state.limitsError }
+    return { maxAllowedAmount: data?.data?.max_amount ?? state.limit, minAllowedAmount: data?.data?.min_amount ?? state.minimum, minAllowedAmountInUsd: state.minimum * state.usdPrice, limitsError: state.limitsError, quoteError: state.quoteError }
   } },
+  '@/hooks/useFormValidation': formValidation,
   '@/lib/balances/useBalance': { useBalance: () => ({ balances: state.balances, error: state.balanceError }) },
   '@/lib/amountPresets': amountPresets,
   '@/lib/amountMessages': amountMessages,
@@ -58,7 +59,7 @@ function ValidationButton() {
   const { values } = useFormikContext()
   const isUsdMode = usdStore(s => s.isUsdMode)
   const { message } = formValidation.resolveFormValidation({ values, minAllowedAmount: state.minimum,
-    maxAllowedAmount: state.limit, minAllowedAmountInUsd: state.minimum * state.usdPrice, isUsdMode })
+    maxAllowedAmount: state.limit, minAllowedAmountInUsd: state.minimum * state.usdPrice, isUsdMode, quoteError: state.quoteError })
   return createElement(FormButton, { values, shouldConnectWallet: false, error: message,
     disabled: !!message || values.amountPresetPending, isSubmitting: false })
 }
@@ -95,7 +96,7 @@ beforeEach(() => {
   Object.assign(state, { account: { id: 'wallet', address: 'source' }, wallets: [{ id: 'wallet' }],
     balances: [{ amount: 1, network: network.name, token: 'ETH', request_time: 1 }], gas: 0.01, reserve: 0,
     usdMode: false, exchangeInput: false, renderPresets: false, renderValidation: false, providerGas: undefined, previewGas: undefined,
-    usdPrice: 2000, limit: 10, minimum: 0.001, probes: [], locked: false, revision: 0, preparedDraft: undefined, deferred: undefined, error: undefined, balanceError: undefined, limitsError: undefined })
+    usdPrice: 2000, limit: 10, minimum: 0.001, probes: [], locked: false, revision: 0, preparedDraft: undefined, deferred: undefined, error: undefined, balanceError: undefined, limitsError: undefined, quoteError: undefined })
   initialValues = { amountMode: 'max', amountPresetSource: amountPresets.amountPresetSource(network.name, 'ETH', 'wallet', 'source'),
     amount: '0.5', from: network, fromAsset: token, to: { name: 'BASE_MAINNET' }, toAsset: token,
     destination_address: 'dest', depositMethod: 'wallet' }
@@ -318,14 +319,54 @@ test('a temporary fee failure retries automatically with the same balance and ro
   assert.equal(formik.values.amountPresetPending, false)
 })
 
-for (const [field, message] of [['balanceError', 'Balance unavailable'], ['limitsError', 'Route limits unavailable']]) {
-  test(`${field} has its own compact error, without blaming a different service`, async () => {
-    state[field] = new Error('unavailable')
-    await render()
-    assert.equal(formik.values.amountPresetError, message)
-  })
+test('balance failures retain their own compact error', async () => {
+  state.balanceError = new Error('unavailable')
+  await render()
+  assert.equal(formik.values.amountPresetError, 'Balance unavailable')
+})
+
+for (const mode of ['max', 'half', 'min']) {
+  for (const [code, message, displayedMessage] of [
+    ['ROUTE_NOT_FOUND_ERROR', 'Route not found', 'Route not found'],
+    ['ROUTE_NOT_FOUND_ERROR', 'Rate not available', 'Rate not available'],
+    ['PRICE_IMPACT_TOO_HIGH', 'Provider price impact exceeded', 'Price impact too high'],
+    ['UNEXPECTED_ERROR', 'Internal error', 'Route not found'],
+  ]) {
+    for (const shape of ['api', 'axios']) {
+      test(`${mode} displays the same ${code}/${message} error as manual input (${shape})`, async () => {
+        initialValues.amountMode = mode
+        state.renderValidation = true
+        state.limitsError = shape === 'axios' ? { response: { data: { error: { code, message } } } } : { code, message }
+        const manualError = formValidation.resolveFormValidation({
+          values: { ...initialValues, amountMode: 'manual' }, quoteError: state.limitsError,
+        })
+        assert.equal(manualError.message, displayedMessage)
+        await render()
+        assert.equal(formik.values.amountPresetError, manualError.message)
+        assert.equal(container.querySelector('button').textContent, manualError.message)
+        assert.equal(container.querySelector('button').disabled, true)
+
+        state.limitsError = undefined
+        await render()
+        assert.equal(formik.values.amountPresetError, undefined)
+        assert.equal(formik.values.amountPresetPending, false)
+      })
+    }
+  }
 }
 
+
+test('Max preserves the manual-entry quote error when the limits request fails differently', async () => {
+  state.renderValidation = true
+  state.limit = undefined
+  state.minimum = undefined
+  state.limitsError = { code: 'ROUTE_NOT_FOUND_ERROR', message: 'Route not found' }
+  state.quoteError = { response: { data: { error: { code: 'ROUTE_NOT_FOUND_ERROR', message: 'Rate not available' } } } }
+  await render()
+  assert.equal(container.querySelector('button').textContent, 'Rate not available')
+  await act(() => formik.setValues({ ...formik.values, amountMode: 'manual' }))
+  assert.equal(container.querySelector('button').textContent, 'Rate not available')
+})
 
 test('50% follows half the spendable balance after fees and route caps, syncing the draft', async () => {
   initialValues.amountMode = 'half'
