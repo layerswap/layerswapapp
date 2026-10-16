@@ -1,4 +1,4 @@
-import { init, loadRemote } from '@module-federation/runtime';
+import { init, loadRemote, loadShare } from '@module-federation/runtime';
 
 const REMOTE_NAME = 'layerswap_widget';
 const HOST_NAME = 'layerswap_embed_host';
@@ -24,6 +24,10 @@ export type SharedLib = {
    * accepts any version. Defaults to `false`.
    */
   requiredVersion?: string | false;
+  /** Enforce the range instead of warning and accepting an incompatible singleton. */
+  strictVersion?: boolean;
+  /** The supplied module is already executing in the host; never choose a remote copy. */
+  loaded?: boolean;
 };
 
 /**
@@ -57,6 +61,7 @@ export function initRemote(remoteEntry: string, shared?: Record<string, SharedLi
   type InitArgs = Parameters<typeof init>[0];
   init({
     name: HOST_NAME,
+    shareStrategy: 'loaded-first',
     remotes: [
       {
         name: REMOTE_NAME,
@@ -71,11 +76,22 @@ export function initRemote(remoteEntry: string, shared?: Record<string, SharedLi
   initializedShareKey = shareKey;
 }
 
+/** Load host singletons before the remote and refuse an already-loaded competing copy. */
+export async function assertSharedLibraries(shared: Record<string, SharedLib>): Promise<void> {
+  for (const [name, entry] of Object.entries(shared)) {
+    if (!entry.loaded) continue;
+    const factory = await loadShare(name);
+    if (!factory || factory() !== entry.lib()) {
+      throw new Error(`[layerswap/widget-js] Another ${name} runtime is already active. Use one host runtime and initialize the shared widget before loading another remote.`);
+    }
+  }
+}
+
 /** Stable signature of a share configuration, for compatibility comparison. */
 function toShareKey(shared?: Record<string, SharedLib>): string {
   return JSON.stringify(
     Object.entries(shared ?? {})
-      .map(([name, s]) => [name, s.version, s.requiredVersion ?? false])
+      .map(([name, s]) => [name, s.version, s.requiredVersion ?? false, s.strictVersion ?? false, s.loaded ?? false])
       .sort((a, b) => String(a[0]).localeCompare(String(b[0]))),
   );
 }
@@ -85,14 +101,18 @@ function toShareMap(shared: Record<string, SharedLib>) {
     version: string;
     scope: string;
     lib: () => unknown;
-    shareConfig: { singleton: boolean; requiredVersion: string | false };
+    shareConfig: { singleton: boolean; requiredVersion: string | false; strictVersion: boolean };
+    loaded?: boolean;
+    strategy: 'loaded-first';
   }> = {};
   for (const [name, s] of Object.entries(shared)) {
     out[name] = {
       version: s.version,
       scope: 'default',
       lib: s.lib,
-      shareConfig: { singleton: true, requiredVersion: s.requiredVersion ?? false },
+      loaded: s.loaded,
+      strategy: 'loaded-first',
+      shareConfig: { singleton: true, requiredVersion: s.requiredVersion ?? false, strictVersion: s.strictVersion ?? false },
     };
   }
   return out;

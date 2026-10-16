@@ -15,9 +15,11 @@ import {
 } from 'react';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { assertRemoteWalletRuntime, assertWalletConfig } from './walletRuntimeShare.js';
 import {
   resolveSource,
   initRemote,
+  assertSharedLibraries,
   loadRemoteModule,
   type SharedLib,
 } from '@layerswap/widget-js';
@@ -37,6 +39,9 @@ export type RemoteHostCallbacks = {
   /** Fired when the remote fails to load or throws during render. */
   onError?: (error: unknown) => void;
 };
+
+/** Internal: only the /wagmi entry point supplies wallet runtime singletons. */
+export type WalletRuntimeShare = Record<string, SharedLib>;
 
 class WidgetErrorBoundary extends Component<
   { fallback: ReactNode; onError?: (error: unknown) => void; children: ReactNode },
@@ -80,13 +85,32 @@ function hostReactShare(): Record<string, SharedLib> {
   };
 }
 
-function buildLoader<P>(expose: string): () => Promise<{ default: ComponentType<P> }> {
+function buildLoader<P>(expose: string, walletShare?: WalletRuntimeShare): () => Promise<{ default: ComponentType<P> }> {
   return async () => {
     const { remoteEntry } = await resolveSource();
-    initRemote(remoteEntry, hostReactShare());
+    initRemote(remoteEntry, { ...hostReactShare(), ...walletShare });
+    if (walletShare) {
+      await assertSharedLibraries(walletShare);
+      let probe: () => Record<string, unknown>;
+      try {
+        probe = await loadRemoteModule<() => Record<string, unknown>>('walletRuntime');
+      } catch (cause) {
+        throw new Error('[layerswap/widget-react] The CDN build does not support the shared wallet runtime. Deploy the matching widget remote before using /wagmi.', { cause });
+      }
+      assertRemoteWalletRuntime(probe(), walletShare);
+    }
     const Widget = await loadRemoteModule<ComponentType<P>>(expose);
     return { default: Widget };
   };
+}
+
+// Keep validation inside the boundary so invalid prop updates call onError
+// and remove the remote before it can consume an unshared or replaced config.
+function WalletConfigGuard({ config, shared, initialConfig, children }: {
+  config: unknown; shared: boolean; initialConfig: unknown; children: ReactNode;
+}) {
+  assertWalletConfig(config, shared, initialConfig);
+  return children;
 }
 
 function ReadySignal({ onReady }: { onReady?: () => void }) {
@@ -110,10 +134,11 @@ function ReadySignal({ onReady }: { onReady?: () => void }) {
 export function RemoteWidgetHost<P extends object>({
   expose,
   widgetProps,
+  walletShare,
   fallback,
   onReady,
   onError,
-}: RemoteHostCallbacks & { expose: string; widgetProps: P }) {
+}: RemoteHostCallbacks & { expose: string; widgetProps: P; walletShare?: WalletRuntimeShare }) {
   // Hydration gate: `mounted` is false during SSR/prerender and the first
   // client render, so server HTML and hydration output agree, and the
   // browser-only loader never runs outside the browser.
@@ -135,16 +160,20 @@ export function RemoteWidgetHost<P extends object>({
   // into a page-lifetime one. A fresh `lazy()` per mount lets the integrator
   // recover by remounting; dedup of the underlying fetch is handled by
   // `resolveSource()`'s single-flight, which never caches failures.
-  const LazyWidget = useMemo(() => lazy(buildLoader<P>(expose)), []);
+  const LazyWidget = useMemo(() => lazy(buildLoader<P>(expose, walletShare)), []);
+  const config = 'wagmiConfig' in widgetProps ? widgetProps.wagmiConfig : undefined;
+  const initialConfig = useRef(config);
 
   if (!mounted) return <>{fallback ?? null}</>;
 
   return (
     <WidgetErrorBoundary fallback={fallback ?? null} onError={onError}>
-      <Suspense fallback={fallback ?? null}>
-        <ReadySignal onReady={stableOnReady} />
-        <LazyWidget {...widgetProps} />
-      </Suspense>
+      <WalletConfigGuard config={config} shared={!!walletShare} initialConfig={initialConfig.current}>
+        <Suspense fallback={fallback ?? null}>
+          <ReadySignal onReady={stableOnReady} />
+          <LazyWidget {...widgetProps} />
+        </Suspense>
+      </WalletConfigGuard>
     </WidgetErrorBoundary>
   );
 }

@@ -43,7 +43,7 @@
     "@layerswap/wallet-core": "workspace:^",
     "@layerswap/utils": "workspace:^",
     "@layerswap/widget-types": "workspace:^",
-    "@wagmi/core": "catalog:",
+    "@wagmi/core": "^2.16.4",
     "zustand": "catalog:"
   },
   "dependencies": {

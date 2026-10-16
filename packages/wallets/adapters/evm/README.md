@@ -127,3 +127,14 @@ MIT
 ## Repository
 
 [GitHub](https://github.com/layerswap/layerswapapp/tree/main/packages/wallets/evm)
+
+## Supported wagmi versions
+
+The provider accepts wagmi `^2.14.11` and `@wagmi/core` `^2.16.4`, with viem
+`^2.38.0`. Keep one resolved wagmi/core pair in the host dependency graph and
+pass the host's existing config to `createEVMProvider({ wagmiConfig })` before
+initialization. A different config cannot replace an active config.
+
+For CDN widgets, import components from `@layerswap/widget-react/wagmi` so the
+host's runtime modules are shared as well as its config. No wallet transaction
+or balance state is copied into another wagmi config.
