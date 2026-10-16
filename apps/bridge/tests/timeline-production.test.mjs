@@ -105,6 +105,13 @@ const network = { name: 'BASE_MAINNET', type: 'evm' };
 const token = { symbol: 'USDC', contract: '0xtoken', supports_gasless_deposit: true, gasless_standard: 'eip3009' };
 const wallet = { id: 'wallet', address: '0xsource', isActive: true, asSourceSupportedNetworks: [network.name] };
 const account = { id: wallet.id, address: wallet.address, provider: {} };
+const walletRequests = loadSource('../../../wallets/core/src/lib/walletConnect/walletRequestStore.ts');
+const walletRequestImports = {
+    '@layerswap/wallet-core': walletRequests,
+    '../../Presentation/WalletRequestRecovery': loadSource(`${withdraw}Presentation/WalletRequestRecovery.tsx`, {
+        '@layerswap/wallet-core': walletRequests,
+    }),
+};
 const walletHooks = {
     '@/hooks/useWallet': { default: () => ({ wallets: [wallet], provider: { connectedWallets: [wallet] } }) },
     '@/context/swapAccounts': { useSelectedAccount: () => account },
@@ -144,6 +151,7 @@ test('switching gasless mode preserves the live execution lock while swap creati
         }),
     };
     const { SendTransactionButton } = loadSource(`${withdraw}Wallet/Common/buttons.tsx`, {
+        ...walletRequestImports,
         '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
         ...walletHooks,
         '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: noop }) },
@@ -1283,6 +1291,7 @@ for (const failure of ['rejected', 'failed']) {
             '@/lib/gases/useSWRGas': { default: () => ({ gasData: { gas: 0.01 } }) },
         };
         const { SendTransactionButton } = loadSource(`${withdraw}Wallet/Common/buttons.tsx`, {
+            ...walletRequestImports,
             '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
             ...controllerImports,
             '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: noop }) },
