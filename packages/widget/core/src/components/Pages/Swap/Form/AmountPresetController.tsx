@@ -7,6 +7,7 @@ import { SwapDataStateContext, SwapDataUpdateContext } from '@/context/swap'
 import { useSelectedAccount } from '@/context/swapAccounts'
 import useWallet from '@/hooks/useWallet'
 import { transformFormValuesToQuoteArgs, useQuoteData } from '@/hooks/useFee'
+import { resolveQuoteError } from '@/hooks/useFormValidation'
 import { useBalance } from '@/lib/balances/useBalance'
 import { calculatePresetAmount, amountPresetSource, isAmountPreset, isWalletAmountFlow, supportsLiveAmountPreset, AmountPresetUnavailableError, type AmountPreset } from '@/lib/amountPresets'
 import { resolverService } from '@/lib/resolvers/resolverService'
@@ -42,7 +43,7 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
     // Provider-wide failures can resolve to an empty list without an error.
     const missingSettledBalance = !balanceLoading && balances !== undefined && !balance
     const isUsdMode = useUsdModeStore(s => s.isUsdMode)
-    const { maxAllowedAmount, minAllowedAmount, minAllowedAmountInUsd, limitsError } = useQuoteData(
+    const { maxAllowedAmount, minAllowedAmount, minAllowedAmountInUsd, limitsError, quoteError } = useQuoteData(
         !frozen && sameSource && liveSupported ? transformFormValuesToQuoteArgs(values) : undefined,
     )
     // The chosen preset and both limits identify the calculation. The amount is
@@ -75,7 +76,7 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
         && gas.gas * 1.02 + (gas.reserve ?? 0) >= balance.amount
     const retrying = !!error && isValidating
     const message = balanceError || balance?.error || missingSettledBalance ? 'Balance unavailable'
-        : limitsError ? 'Route limits unavailable'
+        : limitsError ? resolveQuoteError(quoteError ?? limitsError)?.message
         : error instanceof AmountPresetUnavailableError ? error.message
         : error && !retrying ? 'Network fee unavailable'
         : amount !== undefined && Number(amount) <= 0

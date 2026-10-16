@@ -108,6 +108,10 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
         }
     }
 
+    return resolveQuoteError(quoteError) ?? { message: '' };
+}
+
+export function resolveQuoteError(quoteError?: QuoteError) {
     const quoteErrorCode = quoteError?.response?.data?.error?.code || quoteError?.code;
     const quoteErrorMessage = quoteError?.response?.data?.error?.message || quoteError?.message;
     if (quoteError && quoteErrorCode !== "QUOTE_REQUIRES_NO_DEPOSIT_ADDRESS") {
@@ -120,5 +124,4 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
         return { message: 'Route not found', code: FORM_VALIDATION_ERROR_CODES.ROUTE_NOT_FOUND };
     }
 
-    return { message: '' };
 }
