@@ -1,4 +1,4 @@
-import type { GasWithToken, NetworkRoute, Token, TokenBalance } from '@layerswap/widget-types'
+import type { AmountCalculationSnapshot, GasWithToken, NetworkRoute, Token, TokenBalance } from '@layerswap/widget-types'
 import { resolveMaxAllowedAmount } from '@/components/Input/Amount/helpers'
 import { ceilToDecimals, truncateToDecimals } from '@/components/utils/RoundDecimals'
 import KnownInternalNames from '@layerswap/utils/known-ids'
@@ -114,4 +114,22 @@ export async function calculatePresetAmount({ network, token, balance, limit, mi
         candidate = target
     }
     throw new Error('Network fees are changing. Wait a moment and try again.')
+}
+
+/** Snapshot the actual calculation inputs, never the account/balance observed later. */
+export function amountCalculationSnapshot(amount: string, account: { id?: string; providerName?: string; address?: string } | undefined, balance: TokenBalance | undefined, gas?: GasWithToken, preset?: AmountPreset): AmountCalculationSnapshot {
+    return {
+        preset, amount, walletId: account?.id, walletProvider: account?.providerName, walletAddress: account?.address,
+        balance: balance?.amount, balanceNetwork: balance?.network, balanceToken: balance?.token,
+        balanceTimestamp: balance?.request_time, gas: gas?.gas, gasReserve: gas?.reserve, gasToken: gas?.token?.symbol,
+    }
+}
+
+/** Wallet-only changes preserve provenance; amount or known source-asset changes invalidate it. */
+export function matchingAmountCalculation(snapshot: AmountCalculationSnapshot | undefined, amount: string | undefined, network: string | undefined, token: string | undefined): AmountCalculationSnapshot | undefined {
+    if (!snapshot || snapshot.amount !== amount
+        || (snapshot.balanceNetwork !== undefined && snapshot.balanceNetwork !== network)
+        || (snapshot.balanceToken !== undefined && snapshot.balanceToken !== token)) return undefined
+    // Route-limit shortcuts may have no wallet balance metadata to compare.
+    return snapshot
 }

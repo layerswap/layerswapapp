@@ -28,7 +28,9 @@ const { preparePresetAmount } = loadSource('lib/preparePresetAmount.ts', {
   '@/hooks/useFee': { buildLimitsUrl: () => '/limits' },
   './apiClients/layerSwapApiClient': { default: class { async fetcher() { return { data: state.limits } } } },
   './extendedRoutes/registry': { resolveExtendedRoutePlan: () => undefined },
-  './extendedRoutes/transforms': {}, '@/stores/balanceStore': {}, './resolvers/resolverService': {},
+  './extendedRoutes/transforms': {},
+  '@/stores/balanceStore': { useBalanceStore: { getState: () => ({ fetchBalance: async () => ({ balances: [state.freshBalance] }) }) } },
+  './resolvers/resolverService': { resolverService: { getGasResolver: () => ({ getGas: async () => state.freshGas }) } },
   './amountPresets': amountPresets,
 })
 const context = createSwapContext({
@@ -50,8 +52,9 @@ const context = createSwapContext({
     '@/helpers/gasless': { isGaslessCapableRoute: () => false },
     '@/lib/extendedRoutes/registry': { resolveExtendedRoutePlan: () => undefined },
     '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
-    '@/lib/swapLifecycle': { lifecycleContextFromForm: () => ({}) },
+    '@/lib/swapLifecycle': { lifecycleContextFromForm: values => ({ requestedAmount: values.amount, amountMode: values.amountMode, amountCalculation: values.amountCalculation }), lifecycleBalanceContext: () => ({}) },
     '@/lib/swapCreation': swapCreation,
+    './callbackProvider': { useCallbacks: () => ({ onSwapCreate() {}, onSwapLifecycle: event => state.events.push(event) }) },
   },
 })
 const token = { symbol: 'ETH', decimals: 18 }
@@ -65,7 +68,7 @@ const render = key => act(() => root.render(createElement(context.SwapDataProvid
 beforeEach(async () => {
   transactionStore.setState({ swapTransactions: {}, pendingSubmissions: {} })
   container = document.createElement('div'); document.body.append(container); root = createRoot(container)
-  Object.assign(state, { account: { id: 'wallet', address: 'source' }, created: [], prepares: 0, preparation: Promise.withResolvers(), limits: undefined, publishedLimits: [] })
+  Object.assign(state, { account: { id: 'wallet', address: 'source' }, created: [], events: [], freshBalance: undefined, freshGas: undefined, prepares: 0, preparation: Promise.withResolvers(), limits: undefined, publishedLimits: [] })
   values = { from: network, to: network, fromAsset: token, toAsset: token, amount: '0.9', destination_address: 'destination',
     depositMethod: 'wallet', amountMode: 'max', amountPresetSource: amountPresets.amountPresetSource(network.name, token.symbol, 'wallet', 'source') }
   await render()
@@ -289,4 +292,41 @@ for (const [mode, fresh] of [['min', '1'], ['half', '0.4']]) {
     assert.equal(data.amountPresetLocked, true)
     assert.equal(updates.syncAmountPresetDraft({ ...values, amount: '0.1' }), false)
   })
+}
+
+test('created swap polling retains local manual/Max diagnostics only for the matching swap id', async () => {
+  const calculation = { amount: '0.9', walletId: 'wallet', walletAddress: 'source', balance: 1, balanceToken: 'ETH', balanceTimestamp: 'calculated-at' }
+  await act(async () => { await updates.createSwap({ ...values, amountMode: 'fixed', amountCalculation: calculation }, {}) })
+  await act(() => updates.setSwapId('created'))
+  assert.equal(data.swapBasicData.amountMode, 'fixed')
+  assert.deepEqual(data.swapBasicData.amountCalculation, calculation)
+  await act(() => updates.setSwapId('unrelated-restored-swap'))
+  assert.equal(data.swapBasicData.amountMode, undefined)
+  assert.equal(data.swapBasicData.amountCalculation, undefined)
+})
+
+for (const mode of ['max', 'half', 'min']) {
+  for (const scenario of ['higher balance', 'cheaper gas']) {
+    test(`${mode}: ${scenario} keeps snapshot and lifecycle amounts equal to the actual API send amount`, async () => {
+      state.limits = { min_amount: 0.1, max_amount: 10 }
+      state.freshBalance = { network: network.name, token: token.symbol, amount: scenario === 'higher balance' ? 4 : 2,
+        request_time: 'fresh-balance' }
+      state.freshGas = { gas: scenario === 'cheaper gas' ? 0.00001 : 0.01, reserve: 0, token }
+      const submitted = { ...values, amountMode: mode, amountCalculation: {
+        preset: mode, amount: values.amount, walletAddress: 'source', balance: 2, gas: 0.1, balanceTimestamp: 'reviewed-balance',
+      } }
+      await act(async () => { await updates.createSwap(submitted, {}) })
+      assert.equal(state.created.length, 1)
+      const sentAmount = state.created[0].amount
+      assert.equal(sentAmount, submitted.amount, 'Fresh extra funds must not increase the reviewed send')
+      const created = state.events.find(event => event.step === 'swap_created')
+      assert.equal(created.requestedAmount, sentAmount)
+      assert.equal(created.amountCalculation.amount, sentAmount)
+      assert.equal(created.amountCalculation.balanceTimestamp, 'fresh-balance')
+      assert.equal(created.amountCalculation.balance, state.freshBalance.amount)
+      assert.equal(created.amountCalculation.gas, state.freshGas.gas)
+      await act(() => updates.setSwapId('created'))
+      assert.equal(data.swapBasicData.amountCalculation.amount, sentAmount, 'Polling retains the matching sent-amount snapshot')
+    })
+  }
 }

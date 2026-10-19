@@ -774,3 +774,73 @@ test('editing a fixed shortcut in USD restores ordinary USD entry behavior', asy
   assert.equal(formik.values.amount, '0.1')
   assert.equal(usd.usdAmount, '100')
 })
+
+for (const change of ['wallet switch', 'disconnect']) {
+  for (const usdMode of [false, true]) {
+    test(`${change} preserves settled Max provenance until a real ${usdMode ? 'USD' : 'token'} edit`, async () => {
+      state.usdMode = usdMode
+      state.exchangeInput = !usdMode
+      usdStore.setState({ isUsdMode: usdMode })
+      await render()
+      const amount = formik.values.amount
+      const calculation = formik.values.amountCalculation
+      assert.equal(calculation.preset, 'max')
+      assert.equal(calculation.walletAddress, 'source')
+      assert.equal(calculation.balance, 1)
+      const probes = state.probes.length
+
+      if (change === 'wallet switch') {
+        state.account = { id: 'other-wallet', address: 'other-source' }
+        state.wallets = [{ id: 'other-wallet' }]
+      } else {
+        state.account = undefined
+        state.wallets = []
+      }
+      state.balances = [{ ...state.balances[0], amount: 0.2, request_time: 2 }]
+      await render()
+      assert.equal(formik.values.amountMode, 'fixed')
+      assert.equal(formik.values.amount, amount)
+      assert.deepEqual(formik.values.amountCalculation, calculation)
+      assert.deepEqual(state.draft.amountCalculation, calculation)
+      assert.equal(formik.values.amountPresetSource, undefined)
+      assert.equal(formik.values.amountPresetPending, false)
+      assert.equal(state.probes.length, probes, 'The old preset must not start a calculation for the new wallet')
+
+      state.account = { id: 'other-wallet', address: 'other-source' }
+      state.wallets = [{ id: 'other-wallet' }]
+      state.usdPrice = 1000
+      await render()
+      assert.equal(formik.values.amount, amount, 'Reconnection and price updates keep the reviewed token amount')
+      assert.deepEqual(formik.values.amountCalculation, calculation)
+
+      await act(() => usdMode
+        ? usd.handleUsdInputChange({ target: { value: '100' } })
+        : state.changeExchangeAmount({ target: { value: '0.123' } }))
+      assert.equal(formik.values.amountMode, 'manual')
+      assert.equal(formik.values.amountCalculation, undefined)
+      assert.equal(state.draft.amountCalculation, undefined)
+    })
+  }
+}
+
+test('Max -> wallet switch -> source-token change in USD clears the old calculation snapshot', async () => {
+  state.usdMode = true
+  usdStore.setState({ isUsdMode: true })
+  await render()
+  const calculation = formik.values.amountCalculation
+  assert.equal(calculation.preset, 'max')
+  assert.equal(calculation.balanceToken, 'ETH')
+
+  state.account = { id: 'other-wallet', address: 'other-source' }
+  state.wallets = [{ id: 'other-wallet' }]
+  await render()
+  assert.equal(formik.values.amountMode, 'fixed')
+  assert.deepEqual(formik.values.amountCalculation, calculation, 'Wallet-only changes retain original provenance')
+
+  await act(() => formik.setFieldValue('fromAsset', { symbol: 'USDC', decimals: 6, precision: 6, price_in_usd: 1 }))
+  assert.notEqual(formik.values.amount, calculation.amount, 'Changing the source token converts the USD amount')
+  assert.equal(formik.values.amountMode, 'fixed')
+  assert.equal(formik.values.amountCalculation, undefined, 'The ETH calculation cannot describe the new USDC amount')
+  assert.equal(state.draft.amountCalculation, undefined)
+  assert.equal(state.draft.fromAsset.symbol, 'USDC')
+})

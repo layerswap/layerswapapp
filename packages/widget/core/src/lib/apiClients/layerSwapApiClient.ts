@@ -1,3 +1,4 @@
+import type { AmountCalculationSnapshot } from '@layerswap/widget-types';
 import type { AmountMode } from '@/lib/amountPresets';
 import { SwapStatus, type Refuel } from '@layerswap/widget-types';
 import AppSettings from "../AppSettings";
@@ -192,6 +193,7 @@ export type SwapResponse = {
 export type SwapBasicData = {
     /** Local amount intent; never serialized as an API parameter. */
     amountMode?: AmountMode
+    amountCalculation?: AmountCalculationSnapshot;
     amountPresetSource?: string
     amountPresetError?: string
     amountPresetPending?: boolean

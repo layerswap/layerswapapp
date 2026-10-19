@@ -24,7 +24,7 @@ import {
 } from './Presentation/BalanceWarningView';
 import WalletTransferButton from './WalletTransferButton';
 import { WalletActionTransition } from './Presentation/WalletActionTransition';
-import { lifecycleContextFromSwap } from '@/lib/swapLifecycle';
+import { lifecycleBalanceContext, lifecycleContextFromSwap } from '@/lib/swapLifecycle';
 import { useTransferBlocked } from '@/hooks/useTransferBlocked';
 import { type ObservedLifecycleEvent, useLifecycleObservation } from '@/hooks/useLifecycleObservation';
 
@@ -42,7 +42,7 @@ const Withdraw: FC<{
     onWalletWithdrawalSuccess?: () => void;
     onCancelWithdrawal?: () => void;
 }> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal }) => {
-    const { swapBasicData, swapDetails, swapId, amountPresetLocked, refuel, quoteIsLoading } =
+    const { swapBasicData, swapDetails, swapId, amountPresetLocked, refuel, quoteIsLoading, resolved } =
         useSwapDataState();
     const { setSubmitedFormValues, startFreshSwapAttempt, canAdjustAmount } = useSwapDataUpdate();
 
@@ -55,7 +55,7 @@ const Withdraw: FC<{
         source_network?.name,
     );
 
-    const { balances, mutate, isLoading } = useBalance(
+    const { balances, mutate, isLoading, error: balanceError } = useBalance(
         selectedSourceAccount?.address,
         source_network,
     );
@@ -76,7 +76,11 @@ const Withdraw: FC<{
     const { setValues, values } = useFormikContext<SwapFormValues>();
 
     const lifecycleContext = useMemo(
-        () => swapBasicData ? lifecycleContextFromSwap(swapBasicData, swapDetails) : undefined,
+        () => swapBasicData ? {
+            ...lifecycleContextFromSwap(swapBasicData, swapDetails),
+            ...lifecycleBalanceContext(selectedSourceAccount, walletBalance, isLoading, balanceError, gasData),
+            phase: resolved.phase,
+        } : undefined,
         [
             swapBasicData?.destination_address,
             swapBasicData?.destination_network?.name,
@@ -85,6 +89,9 @@ const Withdraw: FC<{
             swapBasicData?.source_network?.name,
             swapBasicData?.source_token?.symbol,
             swapBasicData?.use_deposit_address,
+            swapBasicData?.amountMode, swapBasicData?.amountCalculation,
+            selectedSourceAccount?.id, selectedSourceAccount?.providerName, selectedSourceAccount?.address,
+            walletBalance, isLoading, balanceError, gasData, resolved.phase,
             swapDetails?.id,
             swapDetails?.source_address,
         ],
@@ -159,7 +166,7 @@ const Withdraw: FC<{
     // Settled failures and frozen/manual amounts still show genuine warnings.
     const presetIsSyncing = !swapId && !amountPresetLocked && isAmountPreset(swapBasicData?.amountMode)
         && (swapBasicData?.amountPresetPending || !Object.is(swapBasicData?.amountPresetBalance, walletBalanceAmount));
-    const showInsufficientBalanceWarning = !presetIsSyncing &&
+    const showInsufficientBalanceWarning = resolved.showWithdrawScreen && !presetIsSyncing &&
         swapBasicData?.use_deposit_address === false &&
         swapBasicData?.requested_amount &&
         Number(swapBasicData?.requested_amount) &&

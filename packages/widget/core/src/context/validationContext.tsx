@@ -80,7 +80,7 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
         noExchangeWithdrawalRoute
     })
 
-    const validationCode = formValidation.code
+    const validationCode = 'code' in formValidation ? formValidation.code : undefined
     useEffect(() => {
         widgetTelemetry.validation(validationCode)
     }, [validationCode])

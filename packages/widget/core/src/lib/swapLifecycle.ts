@@ -1,10 +1,11 @@
-import type { SwapLifecycleEvent } from '@layerswap/widget-types'
+import type { GasWithToken, SwapLifecycleEvent, TokenBalance } from '@layerswap/widget-types'
 import { getErrorOccurrenceId } from '@layerswap/widget-types'
 import { normalizeWalletErrorCode, walletErrorCodeFromChain } from '@layerswap/wallet-core/errors'
 import type { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
 import type { SwapBasicData, SwapDetails } from '@/lib/apiClients/layerSwapApiClient'
 import { SwapPhase, TERMINAL_PHASES } from '@/components/utils/swapPhase'
 import type { ResolvedSwapStatus } from '@/components/utils/resolveSwapPhase'
+import { matchingAmountCalculation } from '@/lib/amountPresets'
 
 export type PhaseLifecycleEvent = Pick<SwapLifecycleEvent, 'step' | 'stage' | 'outcome'>
 
@@ -85,6 +86,11 @@ export type SwapLifecycleContext = Partial<Pick<
     | 'swapId'
     | 'depositMethod'
     | 'requestedAmount'
+    | 'phase'
+    | 'amountMode' | 'amountCalculation'
+    | 'sourceWalletId' | 'sourceWalletProvider' | 'sourceWalletAddress'
+    | 'walletBalance' | 'walletBalanceNetwork' | 'walletBalanceToken' | 'walletBalanceTimestamp'
+    | 'walletBalanceLoading' | 'walletBalanceError' | 'estimatedGas' | 'gasReserve' | 'gasToken'
     | 'fromAddress'
     | 'toAddress'
     | 'sourceNetwork'
@@ -97,6 +103,10 @@ export function lifecycleContextFromForm(values: SwapFormValues): SwapLifecycleC
     return {
         depositMethod: values.depositMethod,
         requestedAmount: values.amount,
+        amountMode: values.amountMode ?? 'unknown',
+        amountCalculation: values.amountMode === 'manual' ? undefined : matchingAmountCalculation(
+            values.amountCalculation, values.amount, values.from?.name, values.fromAsset?.symbol,
+        ),
         toAddress: values.destination_address,
         sourceNetwork: values.from?.name,
         destinationNetwork: values.to?.name,
@@ -113,12 +123,33 @@ export function lifecycleContextFromSwap(
         swapId: details?.id,
         depositMethod: swap.use_deposit_address ? 'deposit_address' : 'wallet',
         requestedAmount: swap.requested_amount?.toString(),
+        amountMode: swap.amountMode ?? 'unknown',
+        amountCalculation: swap.amountMode === 'manual' ? undefined : matchingAmountCalculation(
+            swap.amountCalculation, swap.requested_amount?.toString(), swap.source_network?.name, swap.source_token?.symbol,
+        ),
         fromAddress: details?.source_address,
         toAddress: swap.destination_address,
         sourceNetwork: swap.source_network?.name,
         destinationNetwork: swap.destination_network?.name,
         sourceToken: swap.source_token?.symbol,
         destinationToken: swap.destination_token?.symbol,
+    }
+}
+
+/** The balance currently being checked, distinct from the preset calculation's snapshot. */
+export function lifecycleBalanceContext(
+    account: { id?: string; providerName?: string; address?: string } | undefined,
+    balance: TokenBalance | undefined,
+    loading: boolean,
+    error?: unknown,
+    gas?: GasWithToken,
+): SwapLifecycleContext {
+    return {
+        sourceWalletId: account?.id, sourceWalletProvider: account?.providerName, sourceWalletAddress: account?.address,
+        walletBalance: balance?.amount, walletBalanceNetwork: balance?.network, walletBalanceToken: balance?.token,
+        walletBalanceTimestamp: balance?.request_time, walletBalanceLoading: loading,
+        walletBalanceError: !!error || !!balance?.error,
+        estimatedGas: gas?.gas, gasReserve: gas?.reserve, gasToken: gas?.token?.symbol,
     }
 }
 

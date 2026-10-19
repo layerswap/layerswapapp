@@ -18,8 +18,8 @@ export function useTransferBlocked(
     reason?: string,
 ) {
     const { onSwapLifecycle } = useCallbacks()
-    const latest = useRef({ context, reason, onSwapLifecycle })
-    useClientLayoutEffect(() => { latest.current = { context, reason, onSwapLifecycle } }, [context, reason, onSwapLifecycle])
+    const latest = useRef({ context, reason, reasonCode, onSwapLifecycle })
+    useClientLayoutEffect(() => { latest.current = { context, reason, reasonCode, onSwapLifecycle } }, [context, reason, reasonCode, onSwapLifecycle])
     const reported = useRef<TransferBlockedReasonCode | undefined>(undefined)
 
     useEffect(() => {
@@ -34,6 +34,7 @@ export function useTransferBlocked(
         let disposed = false
         queueMicrotask(() => {
             if (disposed) return
+            if (latest.current.reasonCode !== reasonCode) return
             const { context: currentContext, reason: currentReason, onSwapLifecycle: emit } = latest.current
             emit({
                 step: 'transfer_blocked',

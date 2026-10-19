@@ -475,3 +475,32 @@ test('navigating straight from one open swap to another still hands over ownersh
     assert.notEqual(h.attrs().journey_id, original)
     h.controller.dispose()
 })
+
+test('amount mode and both wallet balance snapshots survive Faro serialization and context rotation', () => {
+    const h = harness()
+    const diagnostic = {
+        amountMode: 'max', sourceWalletId: 'passport', sourceWalletProvider: 'EVM', sourceWalletAddress: '0xcurrent',
+        walletBalance: 0, walletBalanceNetwork: 'BASE_MAINNET', walletBalanceToken: 'USDC',
+        walletBalanceTimestamp: '2026-10-19T01:02:00Z', walletBalanceLoading: false, walletBalanceError: false,
+        estimatedGas: 0.0001, gasReserve: 0, gasToken: 'ETH',
+        amountCalculation: { amount: '10', walletId: 'metamask', walletProvider: 'EVM', walletAddress: '0xcalculation',
+            balance: 10, balanceNetwork: 'BASE_MAINNET', balanceToken: 'USDC', balanceTimestamp: '2026-10-19T01:00:00Z', gas: 0.00009, gasReserve: 0, gasToken: 'ETH' },
+    }
+    h.controller.record(event('form_submitted', undefined, diagnostic))
+    h.controller.record(event('transfer_blocked', undefined, { ...diagnostic, outcome: 'blocked', reasonCode: 'insufficient_balance' }))
+    const row = h.records.at(-1)
+    assert.equal(row.attrs.amount_mode, 'max')
+    assert.equal(row.attrs.wallet_balance, 0)
+    assert.equal(row.attrs.wallet_balance_error, false)
+    assert.equal(row.attrs.source_wallet_address, '0xcurrent')
+    assert.equal(row.attrs.amount_calculation_wallet_address, '0xcalculation')
+    assert.equal(row.attrs.amount_calculation_balance, 10)
+    assert.equal(h.attrs().amount_mode, 'max')
+    assert.equal(h.attrs().wallet_balance, '0')
+    assert.equal(h.attrs().amount_calculation_balance_timestamp, '2026-10-19T01:00:00Z')
+    h.controller.record(event('form_submitted', undefined, { amountMode: 'manual' }))
+    assert.equal(h.attrs().amount_mode, 'manual')
+    assert.equal(h.attrs().amount_calculation_balance, undefined)
+    assert.equal(h.attrs().source_wallet_address, undefined)
+    h.controller.dispose()
+})

@@ -129,3 +129,19 @@ for (const [name, symbol] of [['TON_MAINNET', 'TON'], ['PARADEX_MAINNET', 'USDC'
     assert.deepEqual(calls, [])
   })
 }
+
+test('final preparation reports the fresh calculation balance and account instead of the old draft snapshot', async () => {
+  const { preparePresetAmount } = setup({ balance: 2, gas: 0.1 })
+  let snapshot
+  const amount = await preparePresetAmount({ ...values, amountMode: 'max', amountCalculation: { balance: 99, walletAddress: 'old' } },
+    'fresh-source', { id: 'fresh-wallet', providerName: 'EVM' }, [], false, undefined, value => { snapshot = value })
+  assert.equal(snapshot.preset, 'max')
+  assert.equal(snapshot.amount, amount)
+  assert.equal(snapshot.balance, 2)
+  assert.equal(snapshot.walletAddress, 'fresh-source')
+  assert.equal(snapshot.walletId, 'fresh-wallet')
+  assert.equal(snapshot.walletProvider, 'EVM')
+  assert.equal(snapshot.balanceNetwork, network.name)
+  assert.equal(snapshot.balanceToken, token.symbol)
+  assert.equal(snapshot.gas, 0.1)
+})

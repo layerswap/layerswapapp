@@ -19,6 +19,7 @@ after(() => hooks.deregister())
 const {
   lifecycleContextFromForm,
   lifecycleContextFromSwap,
+  lifecycleBalanceContext,
   lifecycleErrorDetails,
   resolveFlowClosedEvent,
   PHASE_LIFECYCLE_EVENTS,
@@ -37,6 +38,7 @@ test('normalizes form data into stable lifecycle fields', () => {
   }), {
     depositMethod: 'wallet',
     requestedAmount: '1.25',
+    amountMode: 'unknown', amountCalculation: undefined,
     toAddress: '0xdestination',
     sourceNetwork: 'ARBITRUM_MAINNET',
     destinationNetwork: 'BASE_MAINNET',
@@ -61,6 +63,7 @@ test('normalizes an active swap without losing its correlation fields', () => {
     swapId: 'swap-123',
     depositMethod: 'wallet',
     requestedAmount: '2',
+    amountMode: 'unknown', amountCalculation: undefined,
     fromAddress: '0xsource',
     toAddress: '0xdestination',
     sourceNetwork: 'ARBITRUM_MAINNET',
@@ -197,4 +200,55 @@ test('flow_closed after a refund is refunded, not succeeded', () => {
   assert.equal(resolveFlowClosedEvent({ phase: 'refunded' }).reasonCode, 'refunded_flow_closed')
   assert.equal(resolveFlowClosedEvent({ phase: 'refunded' }, { fail_reason: 'X' }).reasonCode, 'X')
   assert.equal(resolveFlowClosedEvent({ phase: 'pending_refund' }).outcome, 'abandoned')
+})
+
+test('amount diagnostics distinguish a Max calculation from a later wallet balance', () => {
+  const calculation = { amount: '9.8', walletId: 'metamask', walletAddress: '0xcalculation', balance: 10,
+    balanceToken: 'ETH', balanceNetwork: 'BASE_MAINNET', balanceTimestamp: '2026-10-19T01:00:00Z', gas: 0.1, gasReserve: 0.01, gasToken: 'ETH' }
+  const form = lifecycleContextFromForm({ from: { name: 'BASE_MAINNET' }, fromAsset: { symbol: 'ETH' }, amount: '9.8', amountMode: 'max', amountCalculation: calculation })
+  const current = lifecycleBalanceContext({ id: 'passport', providerName: 'EVM', address: '0xcurrent' },
+    { amount: 1, token: 'ETH', network: 'BASE_MAINNET', request_time: '2026-10-19T01:00:10Z' }, true, new Error('RPC body must not leak'),
+    { gas: 0.2, reserve: 0.02, token: { symbol: 'ETH' } })
+  assert.equal(form.amountMode, 'max')
+  assert.equal(form.amountCalculation.walletAddress, '0xcalculation')
+  assert.equal(form.amountCalculation.balance, 10)
+  const detached = lifecycleContextFromForm({ from: { name: 'BASE_MAINNET' }, fromAsset: { symbol: 'ETH' }, amount: '9.8', amountMode: 'fixed', amountCalculation: calculation })
+  assert.equal(detached.amountMode, 'fixed')
+  assert.deepEqual(detached.amountCalculation, calculation)
+  assert.equal(current.sourceWalletAddress, '0xcurrent')
+  assert.equal(current.sourceWalletId, 'passport')
+  assert.equal(current.walletBalance, 1)
+  assert.equal(current.walletBalanceLoading, true)
+  assert.equal(current.walletBalanceError, true)
+  assert.equal(current.estimatedGas, 0.2)
+  assert.ok(!JSON.stringify(current).includes('RPC body'))
+  const edited = lifecycleContextFromForm({ amount: '9', amountMode: 'manual', amountCalculation: calculation })
+  assert.equal(edited.amountMode, 'manual')
+  assert.equal(edited.amountCalculation, undefined)
+  assert.equal(lifecycleContextFromSwap({ requested_amount: '9.8', source_network: { name: 'BASE_MAINNET' }, source_token: { symbol: 'ETH' }, amountMode: 'max', amountCalculation: calculation }).amountCalculation, calculation)
+  assert.equal(lifecycleContextFromSwap({ requested_amount: '9.8', source_network: { name: 'BASE_MAINNET' }, source_token: { symbol: 'ETH' }, amountMode: 'fixed', amountCalculation: calculation }).amountCalculation, calculation)
+})
+
+for (const change of ['amount', 'network', 'token']) {
+  test(`form and swap diagnostics omit a fixed snapshot after changing ${change}`, () => {
+    const calculation = { preset: 'max', amount: '0.9898', walletAddress: 'original-wallet', balance: 1,
+      balanceNetwork: 'ETHEREUM_MAINNET', balanceToken: 'ETH' }
+    const form = { amountMode: 'fixed', amount: '0.9898', amountCalculation: calculation,
+      from: { name: 'ETHEREUM_MAINNET' }, fromAsset: { symbol: 'ETH' } }
+    if (change === 'amount') form.amount = '1979.6'
+    if (change === 'network') form.from = { name: 'BASE_MAINNET' }
+    if (change === 'token') form.fromAsset = { symbol: 'USDC' }
+    assert.equal(lifecycleContextFromForm(form).amountCalculation, undefined)
+    assert.equal(lifecycleContextFromSwap({ amountMode: 'fixed', amountCalculation: calculation,
+      requested_amount: form.amount, source_network: form.from, source_token: form.fromAsset }).amountCalculation, undefined)
+  })
+}
+
+test('route-limit shortcuts retain matching provenance without wallet balance metadata', () => {
+  const calculation = { preset: 'max', amount: '10' }
+  const form = { amountMode: 'fixed', amount: '10', amountCalculation: calculation,
+    from: { name: 'PARADEX_MAINNET' }, fromAsset: { symbol: 'USDC' } }
+  assert.deepEqual(lifecycleContextFromForm(form).amountCalculation, calculation)
+  assert.deepEqual(lifecycleContextFromSwap({ amountMode: 'fixed', amountCalculation: calculation,
+    requested_amount: '10', source_network: form.from, source_token: form.fromAsset }).amountCalculation, calculation)
 })

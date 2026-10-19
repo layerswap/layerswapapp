@@ -60,3 +60,6 @@ pr-review-assessment.md
 
 # Architecture
 .architecture
+
+# Local investigation exports containing production journey data
+/reviews/

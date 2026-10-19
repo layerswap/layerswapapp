@@ -267,6 +267,22 @@ export const SWAP_LIFECYCLE_TRACKING_STEPS = [
   'swap_created', 'awaiting_wallet_action', 'awaiting_user_deposit', ...SWAP_LIFECYCLE_ATTEMPT_START_STEPS,
 ] as const satisfies readonly SwapLifecycleStep[];
 
+/** The immutable inputs used by an amount shortcut/preset, separate from a later balance read. */
+export type AmountCalculationSnapshot = {
+  preset?: 'min' | 'half' | 'max';
+  amount: string;
+  walletId?: string;
+  walletProvider?: string;
+  walletAddress?: string;
+  balance?: number;
+  balanceNetwork?: string;
+  balanceToken?: string;
+  balanceTimestamp?: string;
+  gas?: number;
+  gasReserve?: number;
+  gasToken?: string;
+};
+
 export type SwapLifecycleEvent = {
   occurrenceId?: string;
   step: SwapLifecycleStep;
@@ -288,6 +304,21 @@ export type SwapLifecycleEvent = {
   phase?: string;
   depositMethod?: string;
   requestedAmount?: string;
+  /** Unknown for restored/prefilled amounts whose entry mode was not observed. */
+  amountMode?: 'manual' | 'fixed' | 'min' | 'half' | 'max' | 'unknown';
+  amountCalculation?: AmountCalculationSnapshot;
+  sourceWalletId?: string;
+  sourceWalletProvider?: string;
+  sourceWalletAddress?: string;
+  walletBalance?: number;
+  walletBalanceNetwork?: string;
+  walletBalanceToken?: string;
+  walletBalanceTimestamp?: string;
+  walletBalanceLoading?: boolean;
+  walletBalanceError?: boolean;
+  estimatedGas?: number;
+  gasReserve?: number;
+  gasToken?: string;
   fromAddress?: string;
   toAddress?: string;
   sourceNetwork?: string;

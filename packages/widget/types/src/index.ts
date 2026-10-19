@@ -43,6 +43,7 @@ export type {
   FailedTokenSummary,
   SwapStatusEvent,
   SwapLifecycleEvent,
+  AmountCalculationSnapshot,
   SwapLifecycleOutcome,
   SwapLifecycleStage,
   SwapLifecycleStep,

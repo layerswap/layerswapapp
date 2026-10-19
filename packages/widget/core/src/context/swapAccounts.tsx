@@ -185,7 +185,7 @@ export function useSelectedAccount(direction: SwapDirection, networkName: string
     if (values === undefined) {
         throw new Error('useSwapAccounts must be used within a SwapAccountsProvider');
     }
-    return direction === "from" ? values.sourceAccounts.find(acc => acc.provider.withdrawalSupportedNetworks?.some(n => n === networkName))
+    return direction === "from" ? selectedSourceAccountForNetwork(values.sourceAccounts, networkName)
         :
         values.destinationAccounts.find(acc => {
             if ('walletAutofillSupportedNetworks' in acc) {
@@ -193,6 +193,11 @@ export function useSelectedAccount(direction: SwapDirection, networkName: string
             }
             return acc.provider?.autofillSupportedNetworks?.some(n => n === networkName)
         });
+}
+
+/** Shared with submission diagnostics so it reports the same account the UI selected. */
+export function selectedSourceAccountForNetwork(accounts: AccountIdentityWithSupportedNetworks[], networkName: string | undefined) {
+    return accounts.find(acc => acc.provider.withdrawalSupportedNetworks?.includes(networkName ?? ''))
 }
 
 /**

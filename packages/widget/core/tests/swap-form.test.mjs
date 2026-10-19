@@ -18,9 +18,18 @@ for (const [key, value] of Object.entries(globals)) {
   Object.defineProperty(globalThis, key, { configurable: true, writable: true, value })
 }
 
+const fundingUrl = `data:text/javascript,${encodeURIComponent(`
+  export const state = { accounts: [], balances: {} };
+  export const useSwapAccounts = () => state.accounts;
+  export const selectedSourceAccountForNetwork = (accounts, network) => accounts.find(a => a.provider.withdrawalSupportedNetworks.includes(network));
+  export const getKey = (address, network) => address + ':' + network.name;
+  export const useBalanceStore = { getState: () => state };
+`)}`
+
 // The widget emits extensionless relative imports for bundlers; resolve those in Node.
 const hooks = registerHooks({
   resolve(specifier, context, nextResolve) {
+    if (specifier.endsWith('/context/swapAccounts') || specifier.endsWith('/stores/balanceStore')) return { url: fundingUrl, shortCircuit: true }
     if (specifier === './AmountPresetController') return { url: 'data:text/javascript,export default () => null', shortCircuit: true }
     if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
       return nextResolve(`${specifier}.js`, context)
@@ -30,6 +39,7 @@ const hooks = registerHooks({
 })
 
 // Import after installing the DOM so the provider uses its client layout effect.
+const { state: funding } = await import(fundingUrl)
 const { createRoot } = await import('react-dom/client')
 const { CallbackProvider, useCallbacks } = await import('../dist/esm/context/callbackProvider.js')
 const { captureWidgetInteraction } = await import('../dist/esm/lib/widgetTelemetry.js')
@@ -40,6 +50,7 @@ const MODES = ['cross-chain', 'exchange', 'deposit-address', 'deposit-widget-add
 let root
 let container
 beforeEach(() => {
+  funding.accounts = []; funding.balances = {}
   container = document.createElement('div')
   document.body.append(container)
   root = createRoot(container)
@@ -59,7 +70,8 @@ after(() => {
 
 /** Exposes Formik's submitForm and the provider's onSwapLifecycle to the test. */
 function Probe({ handle }) {
-  const { submitForm } = useFormikContext()
+  const { submitForm, setValues } = useFormikContext()
+  handle.setValues = setValues
   const { onSwapLifecycle } = useCallbacks()
   handle.submitForm = submitForm
   handle.onSwapLifecycle = onSwapLifecycle
@@ -162,4 +174,32 @@ test('a synchronous onSubmit still resolves Formik submission', async () => {
   const { handle } = await mount({ mode: 'cross-chain', submitAction: 'submit', onSubmit: () => { calls++ } })
   await act(async () => { await handle.submitForm() })
   assert.equal(calls, 1)
+})
+
+test('submission reports the final mode and the exact source balance; manual edits do not inherit Max provenance', async () => {
+  funding.accounts = [{ id: 'wallet-b', providerName: 'EVM', address: '0xb', provider: { withdrawalSupportedNetworks: ['A'] } }]
+  funding.balances['0xb:A'] = { status: 'success', data: { balances: [
+    { network: 'A', token: 'ETH', amount: 1, request_time: 'fresh-balance' },
+    { network: 'A', token: 'USDC', amount: 99, request_time: 'other-token' },
+  ] } }
+  const { lifecycle, handle } = await mount({ mode: 'cross-chain' })
+  const calculation = { amount: '9', walletId: 'wallet-a', walletAddress: '0xa', balance: 10, balanceToken: 'ETH', balanceTimestamp: 'old-balance' }
+  const values = { from: { name: 'A' }, to: { name: 'B' }, fromAsset: { symbol: 'ETH' }, amount: '9',
+    depositMethod: 'wallet', amountMode: 'max', amountCalculation: calculation }
+  await act(() => handle.setValues(values))
+  await act(async () => { await handle.submitForm() })
+  const max = lifecycle.at(-1)
+  assert.equal(max.amountMode, 'max')
+  assert.equal(max.sourceWalletAddress, '0xb')
+  assert.equal(max.walletBalance, 1)
+  assert.equal(max.walletBalanceToken, 'ETH')
+  assert.equal(max.walletBalanceTimestamp, 'fresh-balance')
+  assert.equal(max.amountCalculation.walletAddress, '0xa')
+  assert.equal(max.amountCalculation.balance, 10)
+  await act(() => handle.setValues({ ...values, amount: '0.5', amountMode: 'manual' }))
+  await act(async () => { await handle.submitForm() })
+  assert.equal(lifecycle.at(-1).amountMode, 'manual')
+  assert.equal(lifecycle.at(-1).amountCalculation, undefined)
+  assert.equal(lifecycle.at(-1).requestedAmount, '0.5')
+  assert.equal(lifecycle.at(-1).walletBalance, 1)
 })

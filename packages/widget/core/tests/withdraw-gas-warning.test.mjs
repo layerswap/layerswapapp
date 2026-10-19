@@ -17,7 +17,7 @@ for (const [key, value] of Object.entries(globals)) {
 const mockUrl = `data:text/javascript,${encodeURIComponent(`
   import { createElement } from ${JSON.stringify(import.meta.resolve('react'))}
   export const state = {}
-  export const useSwapDataState = () => ({ swapBasicData: state.swap, quoteIsLoading: state.quoteLoading })
+  export const useSwapDataState = () => ({ swapBasicData: state.swap, quoteIsLoading: state.quoteLoading, resolved: state.resolved })
   export const useSwapDataUpdate = () => ({ setSubmitedFormValues(values) { state.submitted = values }, startFreshSwapAttempt() { state.freshAttempts++ }, canAdjustAmount: () => !state.locked })
   export const useSettingsState = () => ({ networks: [state.swap.source_network] })
   export const useSelectedAccount = () => ({ address: 'source' })
@@ -72,6 +72,7 @@ beforeEach(() => {
   document.body.append(container)
   root = createRoot(container)
   Object.assign(state, {
+    resolved: { showWithdrawScreen: true, phase: 'awaiting_user_deposit' },
     events: [], locked: false, freshAttempts: 0, submitted: undefined, formValues: undefined, quoteLoading: false,
     swap: { source_network: network, source_token: token, destination_network: { name: 'BASE_MAINNET' }, destination_token: token, requested_amount: '0.95', use_deposit_address: false },
     balances: [{ network: network.name, token: token.symbol, amount: 1, isNativeCurrency: true }],
@@ -286,4 +287,32 @@ test('temporary quote loading retains a viable Adjust amount action in its loadi
   state.quoteLoading = false
   await render()
   assert.equal(adjustButton().disabled, false)
+})
+
+for (const phase of ['input_pending', 'output_pending', 'completed']) {
+  test(`${phase}: a depleted balance cannot show or emit an insufficient-balance block`, async () => {
+    state.resolved = { showWithdrawScreen: false, phase }
+    state.balances[0].amount = 0
+    await render()
+    assert.doesNotMatch(container.textContent, /^Insufficient balance$/m)
+    assert.deepEqual(blocks(), [])
+  })
+}
+
+test('balance blocks report the current source wallet and the exact token balance snapshot', async () => {
+  state.swap.amountMode = 'manual'
+  state.balances[0] = { ...state.balances[0], amount: 0.5, request_time: '2026-10-19T02:00:00Z' }
+  await render()
+  assert.equal(blocks().length, 1)
+  const block = blocks()[0]
+  assert.equal(block.amountMode, 'manual')
+  assert.equal(block.sourceWalletAddress, 'source')
+  assert.equal(block.walletBalance, 0.5)
+  assert.equal(block.walletBalanceToken, 'ETH')
+  assert.equal(block.walletBalanceNetwork, 'ETHEREUM_MAINNET')
+  assert.equal(block.walletBalanceTimestamp, '2026-10-19T02:00:00Z')
+  assert.equal(block.walletBalanceLoading, false)
+  assert.equal(block.walletBalanceError, false)
+  assert.equal(block.estimatedGas, 0.1)
+  assert.equal(block.phase, 'awaiting_user_deposit')
 })
