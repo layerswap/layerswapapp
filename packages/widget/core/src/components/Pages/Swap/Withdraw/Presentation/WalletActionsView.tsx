@@ -68,7 +68,7 @@ export const ButtonWrapper: FC<SubmitButtonProps> = ({ ...props }) => {
             buttonStyle="filled"
             size="medium"
             type="button"
-            className="text-base my-1"
+            className="text-base"
             {...props}
         >
             {props.children}
@@ -214,7 +214,6 @@ export function SendTransactionView({
         !loading && !showStepError && errorMessage && hasError ? (
             <div
                 data-wallet-action-message
-                className={workflowProgress ? 'pt-2' : undefined}
             >
                 {errorMessage}
             </div>
@@ -307,7 +306,7 @@ export function SendTransactionView({
                         />
                     )}
                     {gaslessUnavailable ? (
-                        <div className="space-y-2">
+                        <div className="flex flex-col gap-2">
                             {gaslessFailureStage === 'deposit' && (
                                 <ButtonWrapper
                                     icon={icon}

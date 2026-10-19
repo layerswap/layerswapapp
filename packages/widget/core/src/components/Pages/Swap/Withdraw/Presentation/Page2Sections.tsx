@@ -100,7 +100,7 @@ export function SwapContentView({
     ) : undefined;
 
     return (
-        <div className="w-full flex flex-col gap-2 text-secondary-text" data-swap-flow={flow?.kind} data-flow-evidence={flow?.evidence}>
+        <div className="w-full text-secondary-text" data-swap-flow={flow?.kind} data-flow-evidence={flow?.evidence}>
             <WalletExecutionTransition
                 animate={animateControls}
                 overview={overview}
@@ -119,7 +119,7 @@ export function WalletTransferView({
     children: ReactNode;
 }) {
     return (
-        <div className="space-y-2.5">
+        <div className="flex flex-col gap-2">
             {warning}
             {children}
         </div>
@@ -138,7 +138,7 @@ export function ProcessingSectionView({
     ) : null;
 
     return (
-        <div className="w-full">
+        <div className="flex w-full flex-col gap-2 empty:hidden">
             {children}
             {reducedMotion ? (
                 controls
@@ -166,8 +166,7 @@ function ProcessingActions({ children }: { children: ReactNode }) {
             aria-hidden={!isPresent}
             inert={!isPresent}
         >
-            {/* Collapse the retry controls and their spacing with the steps. */}
-            <div className="pt-3">{children}</div>
+            {children}
         </motion.div>
     );
 }
@@ -193,7 +192,7 @@ export function PendingSwapView({
 
 export function WalletSubmissionView({ children }: { children: ReactNode }) {
     return (
-        <div className="w-full space-y-2 flex flex-col justify-between h-full text-primary-text">
+        <div className="w-full gap-2 flex flex-col justify-between h-full text-primary-text">
             {children}
         </div>
     );

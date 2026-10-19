@@ -9,7 +9,6 @@ import { isDepositWorkflowComplete } from '@/helpers/depositActions';
 import { isBatchTransferAction } from '@/helpers/depositActions';
 import { isAtomicBatchEligible } from '@/helpers/atomicBatch';
 import { isExtendedSourceNetwork } from '@/lib/extendedRoutes/registry';
-import { acquireWalletExecution } from '@/lib/walletExecution';
 import { executeAtomicBatch } from '@/lib/atomicBatchExecution';
 import { resolverService } from '@/lib/resolvers/resolverService';
 import { isUserRejection } from './isUserRejection';
@@ -310,8 +309,6 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         const receipts = useSwapTransactionStore.getState()
         if (swapId && hasUnacknowledgedWalletAction({ transaction: receipts.swapTransactions[swapId],
             pendingSubmission: receipts.pendingSubmissions?.[swapId], transactionStatus: inputTransactionStatus })) return
-        const releaseExecution = acquireWalletExecution()
-        if (!releaseExecution) return
         executionInFlight.current = true
         // A backend-failed workflow (including an expired quote) needs a new swap.
         // Wallet rejections leave actions actionable and still retry the same swap.
@@ -506,7 +503,6 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     },
                     setSwapError: value => { if (!signal.aborted) setSwapError?.(value) },
                     onSuccess: () => {
-                        releaseExecution()
                         if (signal.aborted) {
                             return
                         }
@@ -614,7 +610,6 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         }
         finally {
             executionInFlight.current = false
-            releaseExecution()
             if (executionScope.current) setLoading(false)
         }
     }

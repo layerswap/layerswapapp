@@ -250,8 +250,20 @@ const standard: TimelineScenario = {
             { kind: 'send', pending: true, label: 'Confirm in your wallet' },
             { walletExecutionStarted: true, depositActions: [{ type: 'transfer' }] },
         ),
-        m(
+        milestoneWallet(
             10,
+            'submitted',
+            'Wallet returned a receipt',
+            'The wallet submitted the transfer; transaction status and swap polling have not caught up yet.',
+            { kind: 'send', submissionAccepted: true, disabled: true },
+            {
+                walletExecutionStarted: true,
+                storedWalletTransaction: { ...stored, kind: 'wallet-transfer' },
+                depositActions: [{ type: 'transfer', step: 'deposit', status: 'action_required' }],
+            },
+        ),
+        m(
+            12,
             'publishing',
             'Publishing deposit',
             'The wallet returned a hash and the source-chain lookup reports pending; the swap has not detected the input yet.',

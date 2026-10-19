@@ -55,7 +55,6 @@ export function getWalletWorkflowState(data: WalletProgressData) {
         (action) => action.status === 'failed',
     );
     const confirmingSubmission =
-        isMultiStepWorkflow &&
         data.submissionAccepted &&
         !hasError &&
         !workflowFailed;
@@ -82,10 +81,18 @@ export function getWalletProgress(data: WalletProgressData) {
         confirmingSubmission,
         showStepError,
     } = getWalletWorkflowState(data);
-    if (!isMultiStepWorkflow) return null;
+    if (!isMultiStepWorkflow) {
+        return confirmingSubmission ? getSubmittedTransactionProgress(data) : null;
+    }
     // Prepared actions describe what can run; they do not mean execution has started.
     if (data.walletExecutionStarted === false && !confirmingSubmission && !hasError) {
         return null;
+    }
+
+    // Transfer receipts need a confirmation panel even when their single deposit
+    // action has not caught up. Do not turn that action into an approval workflow.
+    if (confirmingSubmission && data.flow?.kind === 'wallet-transfer') {
+        return getSubmittedTransactionProgress(data);
     }
 
     const progress = getDepositWorkflowProgress({
@@ -112,10 +119,15 @@ export function getWalletProgress(data: WalletProgressData) {
 
     // A receipt can restore before action history. Keep confirmation visible
     // without inventing approval/signature steps or advancing the API phase.
-    return getSubmittedSwapProgress(data);
+    return getSubmittedTransactionProgress(data);
 }
 
-function getSubmittedSwapProgress(data: WalletProgressData): ProgressPanelData {
+function getSubmittedTransactionProgress(data: WalletProgressData): ProgressPanelData {
+    const progressSubject = {
+        deposit: 'Deposit',
+        transfer: 'Transfer',
+        swap: 'Swap',
+    }[data.flow?.processingTitle ?? 'swap'];
     const token = data.quote?.destination_token;
     const amount = data.quote?.receive_amount;
     const steps: StatusStep[] = [{
@@ -141,8 +153,8 @@ function getSubmittedSwapProgress(data: WalletProgressData): ProgressPanelData {
     }
 
     return {
-        title: 'Swap in progress',
-        label: 'Swap progress',
+        title: `${progressSubject} in progress`,
+        label: `${progressSubject} progress`,
         progress: 0,
         announcement: 'Confirming transaction.',
         steps,

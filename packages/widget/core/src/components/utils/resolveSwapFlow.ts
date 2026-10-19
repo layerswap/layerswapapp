@@ -82,8 +82,9 @@ export function resolveSwapFlow(input: ResolveSwapFlowInput): ResolvedSwapFlow {
     const manual = kind === 'manual-deposit' || kind === 'exchange-deposit';
     const walletSwap = kind === 'frontend-swap' || kind === 'atomic-batch';
     const submittedWalletSwap = walletSwap && !!input.transactionHash;
+    const submittedWalletTransfer = !manual && kind !== 'specialized-wallet' && !!input.transactionHash;
     const walletProgress = !manual && kind !== 'specialized-wallet' && (
-        submittedWalletSwap
+        submittedWalletTransfer
         || (actions?.filter(action => !!action.step).length ?? 0) > 1
         || (!!stepTransactions?.approve_permit2?.explorerUrl && !!actions?.some(action => action.step === 'approve_permit2'))
         || (!!quote?.destination_token && hasPublish)
@@ -111,7 +112,7 @@ export function resolveSwapFlow(input: ResolveSwapFlowInput): ResolvedSwapFlow {
         processingProgress,
         processingTitle: input.isDepositFlow ? 'deposit' : tokenSwap ? 'swap' : 'transfer',
         sharesExecutionTransaction,
-        compactQuote: !manual && (!showWithdrawScreen || workflowStarted),
+        compactQuote: !manual && (!showWithdrawScreen || workflowStarted || submittedWalletTransfer),
         transferStage: continuousWorkflow ? undefined : showWithdrawScreen ? 'withdraw' : 'processing',
     };
 }

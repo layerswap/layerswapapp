@@ -1739,6 +1739,20 @@ for (const [scenarioId, callCount, stepLabel] of [
     });
 }
 
+test('a standard transfer receipt replaces the full quote and submitted button before API catchup', () => {
+    assert.equal(phase(frontendMilestone('wallet-success', 'submitted').snapshot).phase, SwapPhase.AwaitingUserDeposit);
+    for (const mode of ['component', 'modal']) {
+        const view = fixtureDOM('wallet-success', 'submitted', mode);
+        assert.match(view.textContent, /Transfer in progress/);
+        assert.match(view.textContent, /Confirming transaction/);
+        assert.equal(view.querySelectorAll('[aria-label="Progress"] li').length, 2);
+        assert.equal(view.querySelector('[data-quote-layout]').dataset.quoteLayout, 'attached');
+        assert.equal(view.querySelector('[data-wallet-execution-panel="controls"] button'), null);
+        assert.ok(view.querySelector('[data-page2-quote-disclosure]').closest('[inert]'), 'quote details are collapsed and cannot be edited after submission');
+        assert.doesNotMatch(view.textContent, /Transaction submitted|Confirm in your wallet/);
+    }
+});
+
 test('a saved atomic receipt keeps confirmation visible until the API supplies progress', () => {
     for (const milestoneId of ['restored', 'receipt']) {
         const restored = frontendMilestone('atomic-batch-receipt', milestoneId);

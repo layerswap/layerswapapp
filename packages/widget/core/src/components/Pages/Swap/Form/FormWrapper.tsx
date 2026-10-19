@@ -223,6 +223,9 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                 })
             }
             if (walletWihdrawDone) {
+                // Keep the active swap's fee presentation stable through submission.
+                // The next form attempt gets the default after this modal closes.
+                useGaslessPreferenceStore.getState().resetGaslessPreference()
                 mutateBalances()
                 setWalletWihdrawDone(false)
             }
@@ -265,7 +268,6 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                                 <Suspense fallback={<SwapDetailsSceleton />}>
                                     <SwapDetails type="contained" onWalletWithdrawalSuccess={() => {
                                         setWalletWihdrawDone(true)
-                                        useGaslessPreferenceStore.getState().resetGaslessPreference()
                                         setFieldValue('amount', 0)
                                         mutateBalances()
                                     }} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />

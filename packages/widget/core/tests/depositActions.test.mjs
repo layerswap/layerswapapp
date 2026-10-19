@@ -32,7 +32,6 @@ const rejection = loadSource(`${walletPath}isUserRejection.ts`, { '@layerswap/wa
 const gasless = loadSource('../src/helpers/gasless.ts')
 const depositActions = loadSource('../src/helpers/depositActions.ts')
 const atomicActions = loadSource('../src/lib/atomicBatchActions.ts')
-const walletExecution = loadSource('../src/lib/walletExecution.ts')
 const atomicFixtures = JSON.parse(readFileSync(new URL('./fixtures/atomic-batch.json', import.meta.url)))
 const swapProgress = loadSource('../src/helpers/swapProgress.ts', {
     './gasless': gasless,
@@ -69,7 +68,6 @@ function createWorkflow({
     atomic = false,
     renderResolvedScreen = false,
     walletController = false,
-    realWalletExecution = false,
 } = {}) {
     let view
     const calls = { refresh: [], confirmations: [], sign: [], authorize: [], transfer: [], batches: [], executionStarts: [], quoteLoading: [], sleeps: [], storedTransactions: [], authorizations: [], signatures: [], errors: [], lifecycle: [], success: 0 }
@@ -348,7 +346,6 @@ function createWorkflow({
         '@/helpers/swapProgress': swapProgress,
         '@/helpers/atomicBatch': { isAtomicBatchEligible: () => state.atomicBatchEligible ?? false },
         '@/lib/extendedRoutes/registry': { isExtendedSourceNetwork: () => false },
-        '@/lib/walletExecution': realWalletExecution ? walletExecution : { acquireWalletExecution: () => () => {} },
         '@/lib/atomicBatchExecution': { executeAtomicBatch: async (ctx, action) => {
             if (!atomic) assert.fail('legacy workflow cannot execute a batch')
             calls.batches.push(action)
@@ -715,8 +712,8 @@ for (const atomic of [true, false]) test(`a changed creation quote ${atomic ? 'e
 })
 
 function createIndependentWalletWorkflows(firstOptions = {}) {
-    const first = createWorkflow({ ...firstOptions, realWalletExecution: true })
-    const second = createWorkflow({ realWalletExecution: true })
+    const first = createWorkflow(firstOptions)
+    const second = createWorkflow()
     const publish = { type: 'transfer', step: 'publish', status: 'action_required', amount: 1, to_address: '0x456' }
     for (const [flow, id] of [[first, 'first-swap'], [second, 'second-swap']]) {
         flow.state.swapId = id
@@ -727,7 +724,7 @@ function createIndependentWalletWorkflows(firstOptions = {}) {
     return { first, second }
 }
 
-test('wallet execution releases after submission while optional catchup remains pending', async () => {
+test('another swap can submit while optional catchup remains pending', async () => {
     const { first, second } = createIndependentWalletWorkflows()
     const catchup = Promise.withResolvers()
     const enteredCatchup = Promise.withResolvers()
@@ -749,12 +746,12 @@ test('wallet execution releases after submission while optional catchup remains 
         catchup.resolve()
         await execution
     }
-    await second.render().button.props.onClick()
+    await second.render().viewProps.handleClick()
     assert.equal(second.calls.transfer.length, 1, 'the recorded transaction still prevents duplicate submission')
 })
 
 for (const waitingFor of ['wallet prompt', 'approval confirmation']) {
-    test(`wallet execution excludes another swap during ${waitingFor}`, async () => {
+    test(`another swap can submit during an earlier swap's ${waitingFor}`, async () => {
         const { first, second } = createIndependentWalletWorkflows()
         const waiting = Promise.withResolvers()
         const enteredWait = Promise.withResolvers()
@@ -776,20 +773,22 @@ for (const waitingFor of ['wallet prompt', 'approval confirmation']) {
         try {
             await enteredWait.promise
             await second.render().button.props.onClick()
-            assert.deepEqual(second.calls.transfer, [], 'the ongoing wallet workflow retains the lock')
-            assert.deepEqual(second.calls.refresh, [])
+            assert.equal(second.calls.transfer.length, 1, 'independent swaps do not block each other')
+            assert.deepEqual(second.calls.storedTransactions, [['second-swap', '0xtransaction']])
+            assert.equal(second.render().viewProps.swapError, false)
             assert.equal(first.calls.success, 0)
         } finally {
             waiting.resolve()
             await execution
         }
-        await second.render().button.props.onClick()
+        await second.render().viewProps.handleClick()
         assert.equal(second.calls.transfer.length, 1)
+        assert.equal(second.render().viewProps.swapError, false)
         assert.deepEqual(second.calls.errors, [])
     })
 }
 
-test('wallet execution releases when a wallet response arrives after the screen closes', async () => {
+test('closing a swap with a pending wallet request does not block another swap', async () => {
     const dom = new JSDOM('<div id="root"></div>')
     const previous = Object.getOwnPropertyDescriptors(globalThis)
     Object.assign(globalThis, { window: dom.window, document: dom.window.document, IS_REACT_ACT_ENVIRONMENT: true })
@@ -810,13 +809,17 @@ test('wallet execution releases when a wallet response arrives after the screen 
         await act(async () => { execution = first.view.handleClick() })
         await act(async () => root.unmount())
         unmounted = true
+        await second.render().button.props.onClick()
+        assert.equal(second.calls.transfer.length, 1, 'the reopened modal can start an independent swap')
+        assert.deepEqual(second.calls.storedTransactions, [['second-swap', '0xtransaction']])
+        assert.equal(second.render().viewProps.swapError, false)
         walletResponse.resolve()
         await enteredCatchup.promise
         assert.equal(first.calls.success, 0, 'the closed screen receives no stale UI callback')
         assert.deepEqual(first.calls.storedTransactions, [['first-swap', '0xtransaction']])
 
-        await second.render().button.props.onClick()
-        assert.equal(second.calls.transfer.length, 1, 'the late successful handoff still releases the lock')
+        await second.render().viewProps.handleClick()
+        assert.equal(second.calls.transfer.length, 1, 'the late response does not replay the newer swap')
         assert.deepEqual(second.calls.errors, [])
     } finally {
         walletResponse.resolve()

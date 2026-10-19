@@ -65,6 +65,22 @@ test('ordinary transfers compact only after submission and reopen on a fresh att
     }
 })
 
+test('a standard transfer receipt shows compact confirmation while the swap API still awaits a deposit', () => {
+    for (const depositActions of [undefined, [{ type: 'transfer', step: 'deposit', status: 'action_required' }]]) {
+        const flow = resolve({
+            swapData: { ...swapData, destination_network: { name: 'ARBITRUM_MAINNET' } },
+            depositActions,
+            transaction: { kind: 'wallet-transfer' },
+            transactionHash: '0xsubmitted',
+            walletExecutionStarted: false,
+        })
+        assert.equal(flow.processingTitle, 'transfer')
+        assert.equal(flow.walletProgress, 'workflow')
+        assert.equal(flow.compactQuote, true)
+        assert.equal(flow.transferStage, 'withdraw', 'receipt presentation does not advance the fetched swap phase')
+    }
+})
+
 test('the frontend workflow keeps its execution slot through every processing outcome', () => {
     for (const phase of ['input_pending', 'output_pending', 'settling_output', 'completed', 'failed', 'expired', 'pending_refund', 'refunded']) {
         const flow = resolve({ depositActions: frontend, resolved: { phase, showWithdrawScreen: false } })

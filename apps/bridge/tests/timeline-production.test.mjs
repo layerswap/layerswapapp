@@ -48,7 +48,6 @@ function loadSource(path, imports = {}) {
         }
         if (name === '@/components/utils/resolveSwapFlow') return loadSource('components/utils/resolveSwapFlow.ts');
         if (name === '@/lib/swapExecution') return { recordSwapExecution: noop };
-        if (name === '@/lib/walletExecution') return { acquireWalletExecution: () => noop };
         if (name === '@/helpers/atomicBatch') return { isAtomicBatchEligible: () => false };
         if (name === '@/lib/extendedRoutes/registry') return { isExtendedSourceNetwork: () => false };
         if (name === '@/lib/atomicBatchExecution') return { executeAtomicBatch: () => assert.fail('legacy flow cannot submit an atomic batch') };

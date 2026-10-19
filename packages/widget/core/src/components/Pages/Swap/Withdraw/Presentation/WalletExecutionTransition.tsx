@@ -10,14 +10,17 @@ export function WalletExecutionTransition({
     controls,
     controlsKey = 'controls',
     animate = true,
+    gap = 8,
 }: {
     overview?: ReactNode;
     workflow?: ReactNode;
     controls?: ReactNode;
     controlsKey?: string;
     animate?: boolean;
+    gap?: 8 | 12;
 }) {
     const reducedMotion = useHydratedReducedMotion();
+    const gapClassName = gap === 12 ? 'gap-3' : 'gap-2';
     const panels = [
         overview && (
             <ExecutionPanel
@@ -25,8 +28,9 @@ export function WalletExecutionTransition({
                 kind="overview"
                 reducedMotion={reducedMotion}
                 animate={animate}
+                className={gapClassName}
             >
-                <div className="pb-2">{overview}</div>
+                {overview}
             </ExecutionPanel>
         ),
         workflow && (
@@ -35,6 +39,7 @@ export function WalletExecutionTransition({
                 kind="workflow"
                 reducedMotion={reducedMotion}
                 animate={animate}
+                className={gapClassName}
             >
                 {workflow}
             </ExecutionPanel>
@@ -45,7 +50,7 @@ export function WalletExecutionTransition({
                 kind="controls"
                 reducedMotion={reducedMotion}
                 animate={animate}
-                className={workflow ? 'pt-1' : undefined}
+                className={gapClassName}
             >
                 {controls}
             </ExecutionPanel>
@@ -53,7 +58,14 @@ export function WalletExecutionTransition({
     ];
 
     return (
-        <div className="w-full">
+        // The stack owns section spacing; empty panels stay mounted without reserving a gap.
+        <div
+            data-wallet-execution-stack
+            data-wallet-execution-empty={
+                (!overview && !workflow && !controls) || undefined
+            }
+            className={`flex w-full flex-col ${gapClassName}`}
+        >
             {reducedMotion ? (
                 panels
             ) : (
@@ -76,7 +88,7 @@ function ExecutionPanel({
     kind: 'overview' | 'workflow' | 'controls';
     reducedMotion: boolean;
     animate: boolean;
-    className?: string;
+    className: string;
 }) {
     const isPresent = useIsPresent();
 
@@ -86,6 +98,7 @@ function ExecutionPanel({
         return (
             <div
                 data-wallet-execution-panel={kind}
+                className={`flex w-full flex-col empty:hidden ${className}`}
                 aria-hidden={!isPresent}
                 inert={!isPresent}
             >
@@ -94,10 +107,17 @@ function ExecutionPanel({
         );
     }
 
+    // Release a departing panel's flex gap along with its height. Empty nested
+    // controls also release the gap while their controllers remain mounted.
+    // A warning or another sibling keeps the section gap.
+    const emptyFooterGapClassName =
+        className === 'gap-3'
+            ? '[&:not(:only-child)[inert]]:-mb-3 [&:not(:first-child):has([data-wallet-execution-empty]):not(:has(:not(:only-child):not([data-wallet-execution-empty]_*)))]:-mb-3'
+            : '[&:not(:only-child)[inert]]:-mb-2 [&:not(:first-child):has([data-wallet-execution-empty]):not(:has(:not(:only-child):not([data-wallet-execution-empty]_*)))]:-mb-2';
     return (
         <motion.div
             data-wallet-execution-panel={animate ? kind : undefined}
-            className="w-full overflow-hidden"
+            className={`flex w-full flex-col overflow-hidden empty:hidden motion-safe:transition-[margin-bottom] motion-safe:duration-300 motion-safe:ease-[cubic-bezier(0.42,0,0.58,1)] ${emptyFooterGapClassName} ${className}`}
             initial={!animate || reducedMotion ? false : { height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -107,9 +127,7 @@ function ExecutionPanel({
             aria-hidden={!isPresent}
             inert={!isPresent}
         >
-            <StepsPanelProvider>
-                <div className={`flex w-full flex-col gap-2 ${className ?? ''}`}>{children}</div>
-            </StepsPanelProvider>
+            <StepsPanelProvider>{children}</StepsPanelProvider>
         </motion.div>
     );
 }
