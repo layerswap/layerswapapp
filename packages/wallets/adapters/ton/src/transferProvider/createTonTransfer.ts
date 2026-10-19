@@ -28,29 +28,30 @@ export function createTonTransfer(): TransferProvider {
             if (!depositAddress) {
                 throw new Error('Deposit address not found')
             }
+            const walletAddress = wallet.address
 
             try {
                 const transaction = await transactionBuilder(
                     amount,
                     token,
                     depositAddress,
-                    wallet.address,
+                    walletAddress,
                     callData,
                     tonApiKey,
                 )
 
-                const res = await tonConnect.sendTransaction(transaction, {
+                const res = await tonConnect.sendTransaction({ ...transaction, from: walletAddress }, {
                     onRequestSent: openWalletAppForConfirmation,
                 })
                 const tonClient = createTonClient(tonApiKey)
 
-                const tx = await waitForTransaction(res.boc, tonClient)
+                const tx = await waitForTransaction(res.boc, walletAddress, tonClient)
 
-                if (tx?.hash) {
-                    return tx.hash.toString()
+                if (tx) {
+                    return tx.hash().toString('hex')
                 }
 
-                throw new Error("No transaction BOC returned")
+                throw new Error("Wallet accepted the transfer, but confirmation is still pending")
             } catch (error) {
                 throw toTransferError(error)
             }
