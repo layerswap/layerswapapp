@@ -32,7 +32,7 @@ export function useLifecycleObservation(observation: ObservedLifecycleEvent | un
         if (committed.current === transition) return
         const { observation: current, context: currentContext, onSwapLifecycle: emit } = latest.current
         if (!current) return
-        emit({ ...current, ...currentContext })
+        emit({ ...currentContext, ...current })
         committed.current = transition
     }, [transition])
 }

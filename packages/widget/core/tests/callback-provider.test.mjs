@@ -639,3 +639,16 @@ test('a deferred balance block after submission reaches neither the host nor wid
   assert.equal(host.filter(event => event.step === 'transfer_blocked').length, 1)
   assert.equal(telemetry.filter(event => event.attributes.step === 'transfer_blocked').length, 1)
 })
+
+test('an observation phase takes precedence over context and remains part of its identity', async () => {
+  const events = []
+  const callbacks = { onSwapLifecycle: event => events.push(event) }
+  const render = phase => act(() => root.render(createElement(CallbackProvider, { callbacks },
+    createElement(Observer, { observation: { ...AWAITING, phase }, context: { swapId: 'phase-test', phase: 'completed' } }))))
+  await render('awaiting_user_deposit')
+  assert.equal(events.at(-1).phase, 'awaiting_user_deposit')
+  const count = events.length
+  await render('input_pending')
+  assert.equal(events.length, count + 1)
+  assert.equal(events.at(-1).phase, 'input_pending')
+})

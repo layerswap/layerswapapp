@@ -17,7 +17,7 @@ export { LSAPIKnownErrorCode, type ApiError } from './ApiError';
 export { ApiResponse, EmptyApiResponse } from './ApiResponse';
 export {
   SWAP_LIFECYCLE_PHASE_STEPS, SWAP_LIFECYCLE_TRANSACTION_STEPS, SWAP_LIFECYCLE_REPEATABLE_STEPS,
-  SWAP_LIFECYCLE_ATTEMPT_START_STEPS, SWAP_LIFECYCLE_TRACKING_STEPS,
+  SWAP_LIFECYCLE_ATTEMPT_START_STEPS, SWAP_LIFECYCLE_TRACKING_STEPS, SWAP_LIFECYCLE_SUBMISSION_PROGRESS_STEPS,
 } from './logEvents';
 export { lifecycleObservationKey, lifecycleObservationFingerprint } from './lifecycleObservation';
 export type { SwapLifecycleObservationKey } from './lifecycleObservation';

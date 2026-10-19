@@ -125,7 +125,7 @@ export function lifecycleContextFromSwap(
         requestedAmount: swap.requested_amount?.toString(),
         amountMode: swap.amountMode ?? 'unknown',
         amountCalculation: swap.amountMode === 'manual' ? undefined : matchingAmountCalculation(
-            swap.amountCalculation, swap.requested_amount?.toString(), swap.source_network?.name, swap.source_token?.symbol,
+            swap.amountCalculation, swap.requested_amount?.toString(), swap.source_network?.name, swap.source_token?.symbol, details?.id ? 'api-number' : 'decimal',
         ),
         fromAddress: details?.source_address,
         toAddress: swap.destination_address,

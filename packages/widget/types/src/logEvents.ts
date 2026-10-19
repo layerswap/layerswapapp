@@ -257,6 +257,14 @@ export const SWAP_LIFECYCLE_ATTEMPT_START_STEPS = [
   'wallet_prompt_opened', 'retry_requested',
 ] as const satisfies readonly SwapLifecycleRepeatableStep[];
 
+/** Progress that suppresses stale insufficient-balance checks until an explicit retry. */
+export const SWAP_LIFECYCLE_SUBMISSION_PROGRESS_STEPS: ReadonlySet<SwapLifecycleStep> = new Set([
+  'transaction_submitted', 'gasless_authorization_submitted', 'input_transaction_detected',
+  'input_transfer_pending', 'input_transfer_confirmed', 'output_transfer_pending',
+  'output_transaction_detected', 'output_settling', 'swap_completed', 'refund_pending',
+  'refund_completed',
+] as const satisfies readonly SwapLifecycleStep[]);
+
 /**
  * Steps that show a widget instance watching a swap before its outcome: it
  * created the swap, showed it awaiting the user's transfer, or the user acted

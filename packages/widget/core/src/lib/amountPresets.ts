@@ -126,8 +126,12 @@ export function amountCalculationSnapshot(amount: string, account: { id?: string
 }
 
 /** Wallet-only changes preserve provenance; amount or known source-asset changes invalidate it. */
-export function matchingAmountCalculation(snapshot: AmountCalculationSnapshot | undefined, amount: string | undefined, network: string | undefined, token: string | undefined): AmountCalculationSnapshot | undefined {
-    if (!snapshot || snapshot.amount !== amount
+export function matchingAmountCalculation(snapshot: AmountCalculationSnapshot | undefined, amount: string | undefined, network: string | undefined, token: string | undefined, amountEncoding: 'decimal' | 'api-number' = 'decimal'): AmountCalculationSnapshot | undefined {
+    // Created swaps return JSON numbers, which can round or use exponent notation.
+    // Compare in that representation while retaining the exact calculation string.
+    const matchesApiAmount = amountEncoding === 'api-number' && amount !== undefined && amount !== ''
+        && Number.isFinite(Number(amount)) && Number(snapshot?.amount) === Number(amount)
+    if (!snapshot || (snapshot.amount !== amount && !matchesApiAmount)
         || (snapshot.balanceNetwork !== undefined && snapshot.balanceNetwork !== network)
         || (snapshot.balanceToken !== undefined && snapshot.balanceToken !== token)) return undefined
     // Route-limit shortcuts may have no wallet balance metadata to compare.

@@ -47,7 +47,7 @@ const context = createSwapContext({
     '@/stores/contractAddressStore': { useContractAddressStore: () => ({ checkContractStatus: async () => ({ sourceIsContract: false }) }) },
     '@/lib/preparePresetAmount': { preparePresetAmount: async (...args) => {
       state.prepares++
-      return state.limits ? preparePresetAmount(...args) : state.preparation.promise
+      return state.limits ? preparePresetAmount(...args) : state.preparation.promise.then(amount => ({ amount }))
     } },
     '@/helpers/gasless': { isGaslessCapableRoute: () => false },
     '@/lib/extendedRoutes/registry': { resolveExtendedRoutePlan: () => undefined },

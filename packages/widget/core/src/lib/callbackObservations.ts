@@ -1,5 +1,5 @@
 import {
-    SWAP_LIFECYCLE_ATTEMPT_START_STEPS, lifecycleObservationFingerprint, lifecycleObservationKey,
+    SWAP_LIFECYCLE_ATTEMPT_START_STEPS, SWAP_LIFECYCLE_SUBMISSION_PROGRESS_STEPS, lifecycleObservationFingerprint, lifecycleObservationKey,
     type SwapLifecycleEvent, type SwapLifecycleObservationKey, type SwapLifecycleStep,
 } from '@layerswap/widget-types'
 
@@ -45,10 +45,7 @@ export function createCallbackObservations() {
             // An explicit retry can follow a failed input; connection/switch/prompt
             // events alone must never re-arm a submitted swap's balance warning.
             if (event.step === 'retry_requested') submitted.delete(scope)
-            if (['transaction_submitted', 'gasless_authorization_submitted', 'input_transaction_detected',
-                'input_transfer_pending', 'input_transfer_confirmed', 'output_transfer_pending',
-                'output_transaction_detected', 'output_settling', 'swap_completed', 'refund_pending',
-                'refund_completed'].includes(event.step)) {
+            if (SWAP_LIFECYCLE_SUBMISSION_PROGRESS_STEPS.has(event.step)) {
                 submitted.set(scope, true)
                 evictLeastRecent(submitted)
             }

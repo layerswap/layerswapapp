@@ -10,8 +10,8 @@ import { resolverService } from './resolvers/resolverService'
 import { amountCalculationSnapshot, calculatePresetAmount, isAmountPreset, isWalletAmountFlow, supportsLiveAmountPreset } from './amountPresets'
 
 /** Fresh reads before creation. Never changes a created swap or its actions. */
-export async function preparePresetAmount(values: SwapFormValues, address: string | undefined, wallet: Wallet | undefined, sourceRoutes: NetworkRoute[], useGasless: boolean, publishLimits?: (key: string, response: ApiResponse<ExtendedLimits>) => Promise<unknown>, onCalculated?: (snapshot: AmountCalculationSnapshot) => void) {
-    if (!isWalletAmountFlow(values)) return values.amount ?? ''
+export async function preparePresetAmount(values: SwapFormValues, address: string | undefined, wallet: Wallet | undefined, sourceRoutes: NetworkRoute[], useGasless: boolean, publishLimits?: (key: string, response: ApiResponse<ExtendedLimits>) => Promise<unknown>): Promise<{ amount: string; snapshot?: AmountCalculationSnapshot }> {
+    if (!isWalletAmountFlow(values)) return { amount: values.amount ?? '' }
     const { from, fromAsset, to, toAsset } = values
     if (!from || !fromAsset || !to || !toAsset) throw new Error('Select a route to use an amount preset.')
     const mode = isAmountPreset(values.amountMode) ? values.amountMode : 'max'
@@ -57,6 +57,8 @@ export async function preparePresetAmount(values: SwapFormValues, address: strin
     })
     if (Number(amount) <= 0 || (limits && Number(amount) < limits.min_amount))
         throw new Error('Your available balance is below the minimum swap amount.')
-    onCalculated?.(amountCalculationSnapshot(amount, { id: wallet.id, address, providerName: wallet.providerName }, balance, gas, mode))
-    return amount
+    return {
+        amount,
+        snapshot: amountCalculationSnapshot(amount, { id: wallet.id, address, providerName: wallet.providerName }, balance, gas, mode),
+    }
 }

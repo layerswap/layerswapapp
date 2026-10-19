@@ -51,6 +51,14 @@ To keep volume bounded (`lib/faro-policy.ts`, `components/utils/logError.ts`):
 Full page and request URLs retain their query strings for diagnosis; only
 credential values are redacted.
 
+Amount diagnostics deliberately expand lifecycle telemetry: events can include the
+current source wallet address and token balance, plus the wallet address, balance,
+read timestamp, and gas estimate used to calculate a preset. Addresses may also
+appear in the existing `from_address` field. Calculation-time and current values
+are separate so an insufficient-balance report can identify which wallet supplied
+each balance. Created swaps retain the original exact decimal snapshot even when
+the API represents the requested amount as a rounded JSON number.
+
 ## Dashboards and investigation
 
 ### Publishing to production

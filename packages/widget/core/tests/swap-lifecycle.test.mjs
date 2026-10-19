@@ -252,3 +252,23 @@ test('route-limit shortcuts retain matching provenance without wallet balance me
   assert.deepEqual(lifecycleContextFromSwap({ amountMode: 'fixed', amountCalculation: calculation,
     requested_amount: '10', source_network: form.from, source_token: form.fromAsset }).amountCalculation, calculation)
 })
+
+for (const amount of ['0.123456789012345678', '0.0000001']) {
+  test(`created Max retains the exact ${amount} snapshot after API number serialization`, () => {
+    const calculation = { preset: 'max', amount, walletAddress: 'calculation-wallet', balance: 1,
+      balanceNetwork: 'ETHEREUM_MAINNET', balanceToken: 'ETH' }
+    const requestedAmount = JSON.parse(JSON.stringify({ amount: Number(amount) })).amount.toString()
+    assert.notEqual(requestedAmount, amount, 'the fixture reproduces API rounding or exponent notation')
+    const swap = { amountMode: 'max', amountCalculation: calculation, requested_amount: requestedAmount,
+      source_network: { name: 'ETHEREUM_MAINNET' }, source_token: { symbol: 'ETH', decimals: 18 } }
+    const context = lifecycleContextFromSwap(swap, { id: 'created-swap' })
+    assert.equal(context.amountCalculation, calculation)
+    assert.equal(context.amountCalculation.amount, amount, 'retain exact provenance instead of the API-rounded amount')
+    assert.equal(context.requestedAmount, requestedAmount)
+    assert.equal(lifecycleContextFromSwap(swap).amountCalculation, undefined, 'uncreated drafts still require exact amounts')
+    assert.equal(lifecycleContextFromForm({ amountMode: 'max', amountCalculation: calculation,
+      amount: requestedAmount, from: swap.source_network, fromAsset: swap.source_token }).amountCalculation, undefined)
+    assert.equal(lifecycleContextFromSwap({ ...swap, requested_amount: '0.5' }, { id: 'created-swap' }).amountCalculation, undefined)
+    assert.equal(lifecycleContextFromSwap({ ...swap, source_token: { symbol: 'USDC' } }, { id: 'created-swap' }).amountCalculation, undefined)
+  })
+}

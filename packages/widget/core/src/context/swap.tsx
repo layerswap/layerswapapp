@@ -621,9 +621,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             sourceAddress: selectedSourceAccount?.address,
         })
         return preparePresetAmount(values, selectedSourceAccount?.address, selectedWallet, sourceRoutes, useGasless,
-            (key, response) => mutateCache(key, response, { revalidate: false }),
-            snapshot => { values = { ...values, amountCalculation: snapshot } })
-            .then(amount => {
+            (key, response) => mutateCache(key, response, { revalidate: false }))
+            .then(({ amount, snapshot }) => {
                 if (source !== latestPresetSource.current) throw new Error('The source account changed. Select an amount preset again.')
                 if (Number(amount) < Number(values.amount) || (values.amountMode === 'min' && Number(amount) > Number(values.amount))) {
                     setSwapBasicFormData(current => current ? { ...current, requested_amount: amount, amountPresetPending: true } : current)
@@ -631,7 +630,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
                 }
                 // Confirmation fixes the reviewed amount. Extra balance or cheaper gas must
                 // not silently increase what the user is about to send.
-                return createSwapRequest(values, query, partner)
+                return createSwapRequest({ ...values, amountCalculation: snapshot }, query, partner)
             })
             .then(created => {
                 setPresetCreated(true)
