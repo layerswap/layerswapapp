@@ -44,7 +44,7 @@ const Processing: FC<Props> = ({
 }) => {
     const { boot, show, update } = useIntercom();
     const { onSwapLifecycle } = useCallbacks();
-    const { depositActionsResponse } = useSwapDataState();
+    const { depositActionsResponse, flow } = useSwapDataState();
     const { isDepositFlow } = useDepositSettings();
     const setSwapTransaction = useSwapTransactionStore(
         (state) => state.setSwapTransaction,
@@ -260,6 +260,7 @@ const Processing: FC<Props> = ({
 
     return (
         <ProcessingView
+            flow={flow}
             swapBasicData={swapBasicData}
             swapDetails={swapDetails}
             depositActions={depositActionsResponse}

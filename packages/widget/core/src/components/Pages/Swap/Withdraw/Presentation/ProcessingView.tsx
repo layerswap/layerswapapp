@@ -26,8 +26,10 @@ import { DepositWorkflowView } from './DepositWorkflowView';
 import shortenString from '@/components/utils/ShortenString';
 import type { SwapStepTransactions } from '@/stores/swapTransactionStore';
 import { getDepositActionLabel } from '@/helpers/depositActions';
+import { resolveSwapFlow, type ResolvedSwapFlow } from '@/components/utils/resolveSwapFlow';
 
 export function ProcessingView({
+    flow: resolvedFlow,
     swapBasicData,
     swapDetails,
     refuel,
@@ -45,6 +47,7 @@ export function ProcessingView({
     stepTransactions,
     quote,
 }: {
+    flow?: ResolvedSwapFlow;
     swapBasicData: SwapBasicData;
     swapDetails: SwapDetails;
     refuel?: Refuel;
@@ -71,20 +74,17 @@ export function ProcessingView({
     const swapOutputTransaction = swapDetails.transactions.find(
         (t) => t.type === TransactionType.Output,
     );
+    const flow = resolvedFlow ?? resolveSwapFlow({
+        swapData: swapBasicData, depositActions, stepTransactions, quote, resolved, isDepositFlow,
+        hasRefuel: !!refuel, transactionHash, outputTransactionHash: swapOutputTransaction?.transaction_hash,
+    });
     const swapRefuelTransaction = swapDetails.transactions.find(
         (t) => t.type === TransactionType.Refuel,
     );
     const swapRefundTransaction = swapDetails.transactions.find(
         (t) => t.type === TransactionType.Refund,
     );
-    // Same-network swaps already have their execution hash while the output
-    // receipt is still being polled. Its link belongs only to the receive step.
-    const sharesExecutionTransaction =
-        !isDepositFlow &&
-        !swapBasicData.use_deposit_address &&
-        source_network.name === destination_network.name &&
-        (!swapOutputTransaction?.transaction_hash ||
-            transactionHash === swapOutputTransaction.transaction_hash);
+    const { sharesExecutionTransaction } = flow;
     const inputExplorerUrl = sharesExecutionTransaction
         ? undefined
         : getExplorerUrl(input_tx_explorer, transactionHash);
@@ -324,6 +324,7 @@ export function ProcessingView({
     const { currentSteps, stepsProgressPercentage } = useMemo(() => {
         const allSteps: StatusStep[] = [
             {
+                id: 'input_transfer',
                 name: progressStates.input_transfer?.[
                     stepStatuses.input_transfer
                 ]?.name,
@@ -336,6 +337,7 @@ export function ProcessingView({
                 index: 1,
             },
             {
+                id: 'output_transfer',
                 name: progressStates.output_transfer?.[
                     stepStatuses.output_transfer
                 ]?.name,
@@ -349,6 +351,7 @@ export function ProcessingView({
                 index: 2,
             },
             {
+                id: 'refuel',
                 name: progressStates.refuel?.[stepStatuses.refuel]?.name,
                 status: stepStatuses.refuel,
                 description:
@@ -358,6 +361,7 @@ export function ProcessingView({
                 index: 3,
             },
             {
+                id: 'refund',
                 name: progressStates.refund?.[stepStatuses.refund]?.name,
                 status: stepStatuses.refund,
                 description:
@@ -371,6 +375,7 @@ export function ProcessingView({
         if (approval) {
             const approvalAction = depositActions?.find(action => action.step === 'approve_permit2');
             allSteps.unshift({
+                id: 'action:approve_permit2',
                 name: getDepositActionLabel({ step: 'approve_permit2' }),
                 status: approvalAction?.status === 'failed'
                     ? ProgressStatus.Failed
@@ -405,13 +410,7 @@ export function ProcessingView({
         readOnly,
     ]);
 
-    const hasSwapWorkflow = !!depositActions?.some(
-        (action) => action.step === 'publish',
-    );
-    const isTokenSwap =
-        !isDepositFlow &&
-        !swapBasicData.use_deposit_address &&
-        (hasSwapWorkflow || source_network.name === destination_network.name);
+    const isTokenSwap = flow.processingTitle === 'swap';
     const displayedElapsedTime = isTokenSwap ? null : elapsedTime;
     const statusTitle =
         isTokenSwap && showsEstimatedTime
@@ -424,15 +423,7 @@ export function ProcessingView({
     // Only a wallet-published swap has a publish step to carry into processing.
     // Sign-only gasless swaps and receipts without action history keep the
     // transaction timeline for the whole processing/completion lifecycle.
-    const showUnifiedProgress =
-        !isDepositFlow &&
-        !swapBasicData.use_deposit_address &&
-        hasSwapWorkflow &&
-        !refuel &&
-        (phase === SwapPhase.InputPending ||
-            phase === SwapPhase.OutputPending ||
-            phase === SwapPhase.SettlingOutput ||
-            phase === SwapPhase.Completed);
+    const showUnifiedProgress = flow.processingProgress === 'workflow';
 
     if (showUnifiedProgress) {
         return (

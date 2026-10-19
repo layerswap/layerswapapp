@@ -1,3 +1,4 @@
+import { resolveDepositExecution } from '../components/utils/resolveSwapFlow.js'
 import type { GaslessStandard } from '@layerswap/widget-types'
 import type { DepositAction, GaslessAuthorizationResult } from '@/lib/apiClients/layerSwapApiClient'
 import type { GaslessAuthorization } from '@/stores/swapTransactionStore'
@@ -28,13 +29,8 @@ export function isGaslessCapableRoute(input: GaslessCapabilityInput): boolean {
 // EIP-3009 supports both execution modes. A sign-only snapshot may precede
 // publication, so only explicit steps/standards identify the lane.
 export function isGaslessDepositWorkflow(actions: DepositAction[] | undefined): boolean | undefined {
-    if (!actions?.length) return undefined
-    if (actions.some(action => action.step === 'publish' || action.step === 'deposit'
-        || action.signing_standard === 'permit2_witness' || action.signing_standard === 'eip2612')) return false
-    if (actions.some(action => action.signing_standard === 'permit2')) return true
-    if (actions.some(action => action.type === 'sign' || action.step === 'sign'
-        || action.step === 'approve_permit2')) return undefined
-    return false
+    const { kind } = resolveDepositExecution(actions)
+    return kind === 'unresolved' ? undefined : kind === 'gasless-deposit'
 }
 
 export function isGaslessAuthorizationSubmitted(authorization: GaslessAuthorizationResult | undefined): boolean {

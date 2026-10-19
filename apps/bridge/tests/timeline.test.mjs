@@ -11,6 +11,7 @@ import { renderToStaticMarkup, renderToString } from 'react-dom/server';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
+const widgetRequire = createRequire(new URL('../../../packages/widget/core/package.json', import.meta.url));
 const temporary = mkdtempSync(join(directory, '.timeline-'));
 process.on('exit', () => rmSync(temporary, { recursive: true, force: true }));
 const dom = new JSDOM(
@@ -88,7 +89,7 @@ const { createRoot, hydrateRoot } = await import('react-dom/client');
 // Bundle the actual package export, using the same workspace package boundaries as Next.
 const result = await build({
     stdin: {
-        contents: `export { Page2Preview, resolveSwapPhase, SwapPhase } from '@layerswap/widget/internal';
+        contents: `export { Page2Preview, resolveSwapPhase, resolveSwapFlow, SwapPhase } from '@layerswap/widget/internal';
         export { TimelinePreview } from './features/timeline/TimelinePreview';
         export { scenarios, scenarioGroups, scenarioWidgets, EPOCH } from './features/timeline/fixtures';
         export { selectTime, selectScenario } from './features/timeline/model';
@@ -99,6 +100,7 @@ const result = await build({
         export { default as App } from './pages/_app';
         export { SendTransactionView, ConnectWalletView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/WalletActionsView.js';
         export { ProcessingView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/ProcessingView.js';
+        export { isDepositWorkflowComplete } from '../../packages/widget/core/dist/esm/helpers/depositActions.js';
         export { gaslessFailureMessage } from '../../packages/widget/core/dist/esm/helpers/gaslessFailureMessage.js';
         export { SpecializedWithdrawalView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/SpecializedWithdrawalView.js';
         export { default as ProductionSummary } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Summary/Summary.js';
@@ -123,7 +125,6 @@ const result = await build({
         'react-dom',
         'react-dom/*',
         'next/head',
-        'framer-motion',
     ],
     banner: {
         js: "import { createRequire as _createRequire } from 'node:module'; const require = _createRequire(import.meta.url);",
@@ -136,6 +137,10 @@ const result = await build({
         {
             name: 'workspace-packages',
             setup(builder) {
+                builder.onResolve({ filter: /^framer-motion$/ }, () => ({
+                    path: widgetRequire.resolve('framer-motion'),
+                    external: true,
+                }));
                 builder.onResolve({ filter: /^next\/(head|router)$/ }, (args) => ({
                     path: require.resolve(args.path),
                     external: true,
@@ -164,6 +169,8 @@ const {
     DepositHeaderView,
     DepositAddressFormButtonView,
     resolveSwapPhase,
+    resolveSwapFlow,
+    isDepositWorkflowComplete,
     SwapPhase,
     scenarios,
     scenarioGroups,
@@ -223,7 +230,18 @@ const phase = (s) =>
             'rejected',
         ].includes(s.gaslessAuthorization?.status) ? s.gaslessAuthorization.status : undefined,
         isDepositFlow: s.isDepositFlow,
+        depositCompleted: !s.swap.use_deposit_address && isDepositWorkflowComplete(s.depositActions ?? []),
     });
+
+const snapshotFlow = s => resolveSwapFlow({
+    swapData: s.swap, depositActions: s.depositActions, quote: s.quote,
+    stepTransactions: s.stepTransactions, gaslessAuthorization: s.gaslessAuthorization,
+    sourceProvider: s.sourceProvider ?? (s.wallet.kind === 'specialized' ? s.wallet.provider : undefined),
+    walletExecutionStarted: s.walletExecutionStarted, isDepositFlow: s.isDepositFlow,
+    hasRefuel: !!s.refuel, resolved: phase(s),
+    transactionHash: s.details.transactions.find(t => t.type === 'input')?.transaction_hash || s.gaslessAuthorization?.transaction?.transaction_hash || s.storedWalletTransaction?.hash,
+    outputTransactionHash: s.details.transactions.find(t => t.type === 'output')?.transaction_hash,
+});
 
 test('flow navigation includes every scenario once and keeps related cases together', () => {
     const visible = scenarioGroups.flatMap(group => group.scenarios);
@@ -406,6 +424,12 @@ test('every fixture renders in both modes without application providers or incom
                         preview(m.snapshot, m.at, mode),
                     );
                 }, `${scenario.id}/${m.id}`);
+                if (m.snapshot.kind === 'swap') {
+                    const flow = snapshotFlow(m.snapshot);
+                    assert.ok(html.includes(`data-swap-flow="${flow.kind}"`), `${scenario.id}/${m.id}: shared flow identity`);
+                    if (!m.snapshot.swap.use_deposit_address)
+                        assert.ok(html.includes(`data-quote-layout="${flow.compactQuote ? 'attached' : 'separate'}"`), `${scenario.id}/${m.id}: shared quote state`);
+                }
                 if (mode === 'modal') {
                     assert.match(html, m.snapshot.kind === 'deposit' ? /data-deposit-modal="true"/ : /data-page2-modal="true" data-state="open"/);
                 } else {
@@ -575,7 +599,7 @@ test('reduced-motion hydration matches the server markup in both modes', async (
     const errors = [];
     const quotes = scenarios.find((s) => s.id === 'quote-loading');
     for (const mode of ['component', 'modal']) {
-        for (const milestone of [scenarios[0].milestones[0], quotes.milestones.at(-1)]) {
+        for (const milestone of [scenarios[0].milestones[0], scenarios[0].milestones[4], scenarios[0].milestones.at(-1), quotes.milestones.at(-1)]) {
             const element = preview(milestone.snapshot, milestone.at, mode);
             container.innerHTML = renderToString(element);
             let root;
@@ -612,6 +636,9 @@ test('all mounted previews ignore clicks and keyboard activation without request
                         assert.equal(panel.style.height, 'auto', `${label}: reduced motion shows steps immediately`);
                         assert.equal(panel.style.opacity, '1', label);
                         assert.equal(panel.parentElement.closest('[data-steps-panel]'), null, `${label}: no nested panel animations`);
+                        const heading = panel.querySelector('[data-transfer-title]');
+                        assert.equal(heading.querySelector('[style]'), null, `${label}: reduced motion has no heading translation, blur or delay`);
+                        assert.equal(heading.textContent, heading.parentElement.getAttribute('aria-label'), `${label}: heading immediately reflects the latest state`);
                     }
                     const before = container.textContent;
                     displayed.set(m.id, before);
@@ -1225,7 +1252,7 @@ test('viewer filters scenario groups, resets selections and preserves strictly e
     assert.equal(button('← Previous').disabled, true);
     assert.equal(
         container
-            .querySelector('[aria-current="step"]')
+            .querySelector('button[aria-current="step"]')
             .textContent.includes('Confirming deposit'),
         true,
     );
@@ -1626,7 +1653,7 @@ const fixtureDOM = (scenario, milestone, mode) => {
 const processingElement = (s) => {
     const input = s.details.transactions.find(transaction => transaction.type === 'input');
     return React.createElement(ProcessingView, {
-        swapBasicData: s.swap, swapDetails: s.details, refuel: s.refuel,
+        swapBasicData: s.swap, swapDetails: s.details, refuel: s.refuel, flow: snapshotFlow(s),
         resolved: phase(s), depositActions: s.depositActions, quote: s.quote,
         stepTransactions: s.stepTransactions,
         isDepositFlow: s.isDepositFlow,
@@ -1791,9 +1818,12 @@ test('receive links appear when loading and stay mounted through completion', as
             const input = completed.details.transactions.find(transaction => transaction.type === 'input');
             for (const depositActions of [completed.depositActions, undefined]) {
                 const snapshot = {
-                    ...completed, depositActions, stepTransactions: { approve_permit2: approval },
+                    ...completed, depositActions,
+                    gaslessAuthorization: scenario === 'frontend-gasless-success' ? { status: 'published' } : undefined,
+                    stepTransactions: { approve_permit2: approval },
                     storedWalletTransaction: { hash: input.transaction_hash, status: 'pending', timestamp: 1 },
                 };
+                const knownAtomicWorkflow = !!depositActions?.some(action => action.step === 'publish') || !!snapshot.gaslessAuthorization;
                 let executionLink;
                 let receiveRow;
                 let approvalLink;
@@ -1806,14 +1836,17 @@ test('receive links appear when loading and stay mounted through completion', as
                     await act(async () => root.render(processingElement({ ...snapshot, details })));
                     const rows = [...document.querySelectorAll('li')];
                     const link = rows.at(-1).querySelector('a[data-step-transaction]');
-                    assert.equal(rows.at(-2).querySelector('a[data-step-transaction]'), null, 'the execution step never duplicates the link');
+                    const outputHash = details.transactions.find(transaction => transaction.type === 'output')?.transaction_hash;
+                    const inputLink = rows.at(-2).querySelector('a[data-step-transaction]');
+                    const expectsInputLink = !knownAtomicWorkflow && !outputHash;
+                    assert.equal(!!inputLink, expectsInputLink, 'missing action history retains the input link until a shared receipt is proven');
                     const currentApprovalLink = rows[0].querySelector('a[data-step-transaction]');
                     assert.equal(currentApprovalLink.href, approval.explorerUrl);
                     if (approvalLink) assert.equal(currentApprovalLink, approvalLink, 'the approval link remains mounted');
                     else approvalLink = currentApprovalLink;
-                    if (!hasLink) {
+                    if (!hasLink || (!knownAtomicWorkflow && !outputHash)) {
                         assert.equal(link, null, `${scenario}: the upcoming receive step has no link`);
-                        assert.equal(document.querySelectorAll('a[data-step-transaction]').length, 1, 'the approval link remains available');
+                        assert.equal(document.querySelectorAll('a[data-step-transaction]').length, expectsInputLink ? 2 : 1, 'approval and any known input receipt remain available');
                         continue;
                     }
                     assert.ok(link, `${scenario}: the loading or completed receive step has the execution link`);
@@ -2272,11 +2305,32 @@ test('compacting and attaching preserves one quote and recipient through repeate
     }
 });
 
+test('ordinary wallet transfers keep their full quote while waiting for confirmation on either route', () => {
+    for (const scenario of ['wallet-success', 'wallet-same-network']) {
+        for (const mode of ['component', 'modal']) {
+            for (const milestone of ['ready', 'preparing', 'confirm']) {
+                const view = fixtureDOM(scenario, milestone, mode);
+                assert.equal(view.querySelector('[data-quote-layout]').dataset.quoteLayout, 'separate');
+                assert.equal(view.querySelector('[aria-label="See details"]').closest('[inert], [aria-hidden="true"]'), null);
+                assert.equal(view.querySelector('[data-attr="edit-slippage"]').closest('[inert], [aria-hidden="true"]'), null);
+                assert.equal(view.querySelector('[data-steps-panel]'), null);
+                if (milestone === 'confirm') {
+                    const button = [...view.querySelectorAll('button')].find(button => button.textContent.includes('Confirm in your wallet'));
+                    assert.ok(button?.disabled, 'the original wallet confirmation button remains visible');
+                }
+            }
+            const submitted = fixtureDOM(scenario, 'publishing', mode);
+            assert.equal(submitted.querySelector('[data-quote-layout]').dataset.quoteLayout, 'attached');
+            assert.ok(submitted.querySelector('[data-steps-panel]'));
+        }
+    }
+});
+
 test('standard quotes compact and attach through completion while preserving recipient and quote identity', async () => {
     const container = document.getElementById('root');
     const root = createRoot(container);
     try {
-        for (const scenarioId of ['wallet-success', 'gasless-success', 'refuel']) {
+        for (const scenarioId of ['wallet-success', 'wallet-same-network', 'gasless-success', 'refuel']) {
             const scenario = scenarios.find(s => s.id === scenarioId);
             const ready = scenario.milestones.find(m => phase(m.snapshot).showWithdrawScreen);
             const processing = scenario.milestones.find(m => !phase(m.snapshot).showWithdrawScreen);

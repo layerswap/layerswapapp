@@ -1,3 +1,4 @@
+import { isAmountPreset, type AmountMode } from '@/lib/amountPresets';
 import { useCallback, useEffect, useRef } from "react";
 import { useUsdModeStore } from "@/stores/usdModeStore";
 
@@ -22,6 +23,7 @@ interface UseUsdTokenSyncArgs {
     } | undefined;
     fromCurrency: { symbol?: string; precision?: number; price_in_usd?: number } | undefined;
     amount: string | undefined;
+    amountMode?: AmountMode;
     setFieldValue: (field: string, value: any, shouldValidate?: boolean) => void;
 }
 
@@ -38,12 +40,14 @@ export function useUsdTokenSync({
     quote,
     fromCurrency,
     amount,
+    amountMode,
     setFieldValue,
 }: UseUsdTokenSyncArgs): UseUsdTokenSyncReturn {
     const isUsdMode = useUsdModeStore(s => s.isUsdMode);
     const usdAmount = useUsdModeStore(s => s.usdAmount);
     const setUsdAmount = useUsdModeStore(s => s.setUsdAmount);
     const toggleMode = useUsdModeStore(s => s.toggleMode);
+    const tokenAmountIsFixed = amountMode === 'fixed' || isAmountPreset(amountMode);
 
     useEffect(() => () => { setUsdAmount(''); didInitUsdRef.current = false; }, [setUsdAmount]);
 
@@ -110,16 +114,17 @@ export function useUsdTokenSync({
 
     // Recompute token amount when price changes in USD mode
     useEffect(() => {
-        if (!isUsdMode || !sourceCurrencyPriceInUsd || !usdAmount) {
+        if (tokenAmountIsFixed || !isUsdMode || !sourceCurrencyPriceInUsd || !usdAmount) {
             prevPriceRef.current = sourceCurrencyPriceInUsd;
             return;
         }
         if (prevPriceRef.current === sourceCurrencyPriceInUsd) return;
         prevPriceRef.current = sourceCurrencyPriceInUsd;
         computeAndSetTokenAmount(preciseUsdRef.current);
-    }, [sourceCurrencyPriceInUsd, isUsdMode, usdAmount, computeAndSetTokenAmount]);
+    }, [tokenAmountIsFixed, sourceCurrencyPriceInUsd, isUsdMode, usdAmount, computeAndSetTokenAmount]);
 
-    // Recompute token amount when source token changes in USD mode
+    // A source-token change ends its preset. Preserve USD through that transition;
+    // only same-token price updates remain token-authoritative for live presets.
     useEffect(() => {
         if (!isUsdMode || !sourceCurrencyPriceInUsd || !usdAmount) return;
         if (prevTokenSymbolRef.current === fromCurrency?.symbol) return;
@@ -153,7 +158,7 @@ export function useUsdTokenSync({
             didInitUsdRef.current = true;
             return;
         }
-        if (!amountChanged && !isInitialSync) return;
+        if (!amountChanged && !isInitialSync && !tokenAmountIsFixed) return;
         if (skipSync) {
             const amountNum = Number(amount);
             if (!isNaN(amountNum) && amountNum > 0 && sourceCurrencyPriceInUsd) {
@@ -178,7 +183,7 @@ export function useUsdTokenSync({
         preciseUsdRef.current = preciseUsd;
         setUsdAmount(preciseUsd.toFixed(2).replace(/\.?0+$/, ''));
         didInitUsdRef.current = true;
-    }, [amount, isUsdMode, sourceCurrencyPriceInUsd, setUsdAmount]);
+    }, [amount, tokenAmountIsFixed, isUsdMode, sourceCurrencyPriceInUsd, setUsdAmount]);
 
     // --- Toggle handler ---
 
@@ -203,11 +208,15 @@ export function useUsdTokenSync({
         const value = e.target.value.replace(',', '.');
         // Allow empty, or a valid USD amount: no leading zeros (except "0" itself), up to 2 decimals
         if (value !== '' && !/^(0|[1-9]\d*)\.?\d{0,2}$/.test(value)) return;
+        setFieldValue('amountMode', 'manual', false);
+        setFieldValue('amountPresetSource', undefined, false);
+        setFieldValue('amountPresetPending', false, false);
+        setFieldValue('amountPresetError', undefined, false);
         const numValue = Number(value) || 0;
         preciseUsdRef.current = numValue;
         setUsdAmount(value);
         computeAndSetTokenAmount(numValue);
-    }, [setUsdAmount, computeAndSetTokenAmount]);
+    }, [setFieldValue, setUsdAmount, computeAndSetTokenAmount]);
 
     return {
         sourceCurrencyPriceInUsd,

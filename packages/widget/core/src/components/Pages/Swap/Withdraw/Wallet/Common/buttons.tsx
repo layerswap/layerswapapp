@@ -1,3 +1,4 @@
+import { AmountPresetChangedError } from '@/lib/amountPresets';
 import { useCallbacks } from '@/context/callbackProvider';
 import { lifecycleContextFromSwap, lifecycleErrorDetails } from '@/lib/swapLifecycle';
 import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect';
@@ -150,14 +151,14 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     refuel,
     ...props
 }) => {
-    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, refuel: refuelData, swapError, setSwapError } = useSwapDataState()
+    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, flow, refuel: refuelData, swapError, setSwapError } = useSwapDataState()
     const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
     const gaslessFailureStage = useGaslessPreferenceStore(s => s.gaslessFailureStage)
     const gaslessEnabled = useGaslessPreferenceStore(s => s.gaslessEnabled)
     const switchToStandardTransfer = useGaslessPreferenceStore(s => s.switchToStandardTransfer)
     const clearGaslessUnavailable = useGaslessPreferenceStore(s => s.clearGaslessUnavailable)
     const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess, onCancelWithdrawal } = useWalletWithdrawalState();
-    const { createSwap, setSwapId, setQuoteLoading, startFreshSwapAttempt, markWalletExecutionStarted } = useSwapDataUpdate()
+    const { createSwap, setSwapId, setQuoteLoading, startFreshSwapAttempt, markWalletExecutionStarted, acquireWalletExecution } = useSwapDataUpdate()
     const setSwapTransaction = useSwapTransactionStore(state => state.setSwapTransaction)
     const storedWalletTransaction = useSwapTransactionStore(
         state => swapId ? state.swapTransactions[swapId] : undefined,
@@ -267,6 +268,9 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 depositSignature: swapId ? useDepositSignatureStore.getState().signatures[swapId] : undefined,
             })
         let executionSwapId = forceNewSwap ? undefined : swapId
+        // An open wallet request can finish after this view unmounts. Its lock
+        // belongs to the workflow, independently of the polling hook's lifetime.
+        const releaseWalletExecution = acquireWalletExecution()
         try {
             if (!selectedSourceAccount) {
                 throw new Error('Selected source account is undefined')
@@ -296,6 +300,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 setCriticalConfirmation(undefined)
 
                 const swapValues: SwapFormValues = {
+                    amountMode: swapBasicData.amountMode,
+                    amountPresetSource: swapBasicData.amountPresetSource,
                     amount: swapBasicData.requested_amount.toString(),
                     from: swapBasicData.source_network as NetworkRoute,
                     to: swapBasicData.destination_network as NetworkRoute,
@@ -475,6 +481,10 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         }
         catch (e) {
             if (signal.aborted) return
+            if (e instanceof AmountPresetChangedError) {
+                setSwapError?.(e.message)
+                return
+            }
             if (e instanceof NetworkSwitchError) {
                 // Keep the prepared swap intact; retry refreshes it before asking the wallet again.
                 setNetworkSwitch({ isPending: false, isError: true, error: e })
@@ -520,6 +530,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             }
         }
         finally {
+            releaseWalletExecution()
             executionInFlight.current = false
             if (executionScope.current) setLoading(false)
         }
@@ -597,6 +608,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     return (
         <SendTransactionView
             {...props}
+            flow={flow}
             quote={displayedQuote}
             quoteIsLoading={quoteIsLoading}
             quoteError={!!quoteError}

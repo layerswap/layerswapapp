@@ -5,6 +5,7 @@ import {
 } from '@/components/shadcn/accordion';
 import { ChevronDown } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { swapFlowTransition } from './swapFlowAnimation';
 export function QuoteView({
     isOpen,
     setIsOpen,
@@ -36,7 +37,7 @@ export function QuoteView({
                     {summary}
                 </div>
 
-                <AccordionContent className="rounded-2xl" animate={animate}>
+                <AccordionContent className="rounded-2xl" animate={animate} transition={swapFlowTransition}>
                     {details}
                     <div className="px-3.5 pb-3">
                         <button

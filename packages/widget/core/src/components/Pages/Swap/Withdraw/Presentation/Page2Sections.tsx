@@ -1,12 +1,9 @@
-import { motion, useIsPresent } from 'framer-motion';
+import { AnimatePresence, motion, useIsPresent } from 'framer-motion';
 import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion';
-import {
-    swapFlowTransition,
-    swapFlowTransitionStyle,
-} from './swapFlowAnimation';
+import { swapFlowTransition } from './swapFlowAnimation';
 import type { ReactNode } from 'react';
 import { WalletExecutionTransition } from './WalletExecutionTransition';
-import { StepsPanelProvider } from '../Processing/StepsComponent';
+import type { ResolvedSwapFlow } from '@/components/utils/resolveSwapFlow';
 
 export function SwapOverviewView({
     summary,
@@ -17,42 +14,47 @@ export function SwapOverviewView({
     quote?: ReactNode;
     compactQuote?: boolean;
 }) {
+    const reducedMotion = useHydratedReducedMotion();
+    const transition = reducedMotion ? { duration: 0 } : swapFlowTransition;
     return (
         <div
             className="w-full"
             data-quote-layout={compactQuote ? 'attached' : 'separate'}
         >
-            <div
-                className="relative z-10 rounded-2xl bg-secondary-500 transition-[border-radius] motion-reduce:transition-none"
-                style={{
-                    ...swapFlowTransitionStyle,
+            <motion.div
+                className="relative z-10 rounded-2xl bg-secondary-500"
+                initial={false}
+                transition={transition}
+                animate={{
                     borderBottomLeftRadius: compactQuote && quote ? 0 : 16,
                     borderBottomRightRadius: compactQuote && quote ? 0 : 16,
                 }}
             >
                 {summary}
-            </div>
-            <div
+            </motion.div>
+            <motion.div
                 data-quote-transition
                 hidden={!quote}
-                className="transition-[margin-top] motion-reduce:transition-none"
-                style={{
-                    ...swapFlowTransitionStyle,
+                initial={false}
+                transition={transition}
+                animate={{
                     marginTop: compactQuote ? 0 : 8,
                 }}
             >
-                <div
-                    className="overflow-hidden rounded-2xl bg-secondary-500 transition-[border-radius] motion-reduce:transition-none"
-                    style={{
-                        ...swapFlowTransitionStyle,
+                <motion.div
+                    className="overflow-hidden rounded-2xl bg-secondary-500"
+                    initial={false}
+                    transition={transition}
+                    animate={{
                         borderTopLeftRadius: compactQuote ? 0 : 16,
                         borderTopRightRadius: compactQuote ? 0 : 16,
                     }}
                 >
-                    <div
-                        className="grid transition-[grid-template-rows,opacity] motion-reduce:transition-none"
-                        style={{
-                            ...swapFlowTransitionStyle,
+                    <motion.div
+                        className="grid"
+                        initial={false}
+                        transition={transition}
+                        animate={{
                             gridTemplateRows: compactQuote ? '1fr' : '0fr',
                             opacity: compactQuote ? 1 : 0,
                         }}
@@ -61,22 +63,24 @@ export function SwapOverviewView({
                         <div className="min-h-0 overflow-hidden">
                             <div className="mx-3 border-t border-secondary-300" />
                         </div>
-                    </div>
+                    </motion.div>
                     {quote}
-                </div>
-            </div>
+                </motion.div>
+            </motion.div>
         </div>
     );
 }
 
 // Keep the overview and controller ancestors stable when the flow changes animation mode.
 export function SwapContentView({
+    flow,
     summary,
     quote,
-    compactQuote = false,
-    transferStage,
+    compactQuote = flow?.compactQuote ?? false,
+    transferStage = flow?.transferStage,
     children,
 }: {
+    flow?: ResolvedSwapFlow;
     summary: ReactNode;
     quote?: ReactNode;
     compactQuote?: boolean;
@@ -92,20 +96,14 @@ export function SwapContentView({
     ) : undefined;
 
     return (
-        <StepsPanelProvider>
-            <div className="w-full flex flex-col gap-2 text-secondary-text">
-                <WalletExecutionTransition
-                    animate={!!transferStage}
-                    overview={overview}
-                    workflow={
-                        transferStage === 'processing' ? children : undefined
-                    }
-                    controls={
-                        transferStage !== 'processing' ? children : undefined
-                    }
-                />
-            </div>
-        </StepsPanelProvider>
+        <div className="w-full flex flex-col gap-2 text-secondary-text" data-swap-flow={flow?.kind} data-flow-evidence={flow?.evidence}>
+            <WalletExecutionTransition
+                animate={!!transferStage}
+                overview={overview}
+                workflow={transferStage === 'processing' ? children : undefined}
+                controls={transferStage !== 'processing' ? children : undefined}
+            />
+        </div>
     );
 }
 export function WalletTransferView({
@@ -130,29 +128,42 @@ export function ProcessingSectionView({
     actions?: ReactNode;
 }) {
     const reducedMotion = useHydratedReducedMotion();
-    const isPresent = useIsPresent();
+    const controls = actions ? (
+        <ProcessingActions>{actions}</ProcessingActions>
+    ) : null;
 
     return (
         <div className="w-full">
             {children}
-            {actions && (
-                <motion.div
-                    data-processing-actions
-                    className="overflow-hidden"
-                    initial={false}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={
-                        reducedMotion ? { duration: 0 } : swapFlowTransition
-                    }
-                    aria-hidden={!isPresent}
-                    inert={!isPresent}
-                >
-                    {/* Collapse the retry controls and their spacing with the steps. */}
-                    <div className="pt-3">{actions}</div>
-                </motion.div>
+            {reducedMotion ? (
+                controls
+            ) : (
+                <AnimatePresence initial={false} propagate={!!actions}>
+                    {controls}
+                </AnimatePresence>
             )}
         </div>
+    );
+}
+
+function ProcessingActions({ children }: { children: ReactNode }) {
+    const reducedMotion = useHydratedReducedMotion();
+    const isPresent = useIsPresent();
+
+    return (
+        <motion.div
+            data-processing-actions
+            className="overflow-hidden"
+            initial={false}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={reducedMotion ? { duration: 0 } : swapFlowTransition}
+            aria-hidden={!isPresent}
+            inert={!isPresent}
+        >
+            {/* Collapse the retry controls and their spacing with the steps. */}
+            <div className="pt-3">{children}</div>
+        </motion.div>
     );
 }
 export function PendingSwapView({
