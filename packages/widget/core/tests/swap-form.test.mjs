@@ -32,7 +32,7 @@ const hooks = registerHooks({
 // Import after installing the DOM so the provider uses its client layout effect.
 const { createRoot } = await import('react-dom/client')
 const { CallbackProvider, useCallbacks } = await import('../dist/esm/context/callbackProvider.js')
-const { captureWidgetInteraction } = await import('../dist/esm/lib/widgetTelemetry.js')
+const { captureWidgetInteraction, widgetTelemetry } = await import('../dist/esm/lib/widgetTelemetry.js')
 const { default: SwapForm } = await import('../dist/esm/components/Pages/Swap/Form/SwapForm.js')
 
 const MODES = ['cross-chain', 'exchange', 'deposit-address', 'deposit-widget-address', 'deposit-widget-wallet']
@@ -175,6 +175,8 @@ test('existing captured actions identify Max/manual without changing form state'
   await act(async () => { await handle.submitForm() })
   assert.equal(lifecycle.at(-1).amountMode, 'max')
   captureWidgetInteraction({ target: input, type: 'change' })
+  assert.equal(widgetTelemetry.amountInputMethod({ step: 'form_submitted' }), 'max', 'capture cannot decide whether an edit will be accepted')
+  widgetTelemetry.recordAmountInput('manual')
   await act(async () => { await handle.submitForm() })
   assert.equal(lifecycle.at(-1).amountMode, 'manual', 'edits update the label even after form_edited events are deduplicated')
   await act(() => handle.setFieldValue('from', { name: 'OTHER' }, false))

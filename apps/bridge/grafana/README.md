@@ -52,10 +52,10 @@ Full page and request URLs retain their query strings for diagnosis; only
 credential values are redacted.
 
 Amount diagnostics use existing telemetry interactions to label `amount_mode` as
-`manual`, `min`, `half`, `max`, or `unknown`. A preset click or amount-field edit
-updates the label inside the current telemetry flow; source-asset changes clear
+`manual`, `min`, `half`, `max`, or `unknown`. Preset clicks, accepted amount
+edits and the guarded Adjust Amount action update the existing telemetry flow; source-asset changes clear
 it, and unrelated/restored swaps report `unknown`. This describes the last observed
-input action, not a captured Max calculation. No form or swap state is added.
+input action, not a captured Max calculation. No form or swap state is added. Rejected edits do not change the label.
 
 Insufficient-balance event rows include the selected wallet address and the token
 balance being checked, with network, token and read timestamp when available.

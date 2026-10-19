@@ -39,7 +39,6 @@ export function AdjustAmountButtonView({
     return (
         <button
             type="button"
-            data-attr="max-amount"
             onClick={onAdjust}
             disabled={disabled}
             className={`${buttonClasses} ${compact ? 'h-7 gap-1.5 px-2.5 rounded-lg text-xs' : defaultSizeClasses}`}

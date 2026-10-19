@@ -102,11 +102,13 @@ export function createWidgetTelemetry(clock = now, wallClock = Date.now) {
                 || (event.sourceToken && event.sourceToken !== flow.attributes.source_token)) return 'unknown'
             return flow.amountMode ?? 'unknown'
         },
+        recordAmountInput(method: NonNullable<SwapLifecycleEvent['amountMode']>) {
+            if (flow) flow.amountMode = method
+        },
         interaction(action: string, trigger: string, inForm: boolean, attributes: Attributes = {}) {
             if (flow && inForm) {
                 const preset = action === 'set_min_amount' ? 'min' : action === 'set_half_amount' ? 'half' : action === 'set_max_amount' ? 'max' : undefined
                 if (preset) flow.amountMode = preset
-                else if (attributes.amount_mode === 'manual') flow.amountMode = 'manual'
             }
             open()
             const alreadyEngaged = flow?.engaged
@@ -237,6 +239,5 @@ export function captureWidgetInteraction(event: { target: EventTarget | null; ty
     }
     const action = event.type === 'change' ? (inForm ? 'form_edited' : undefined)
         : element?.getAttribute('data-ls-action') ?? knownActions[element?.getAttribute('data-attr') ?? '']
-    if (action && /^[a-z][a-z0-9_]{0,63}$/.test(action)) widgetTelemetry.interaction(action, event.type, inForm,
-        event.type === 'change' && event.target.matches('input[name="amount"]') ? { amount_mode: 'manual' } : {})
+    if (action && /^[a-z][a-z0-9_]{0,63}$/.test(action)) widgetTelemetry.interaction(action, event.type, inForm)
 }

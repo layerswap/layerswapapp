@@ -1,3 +1,4 @@
+import { widgetTelemetry, captureWidgetInteraction } from '../dist/esm/lib/widgetTelemetry.js'
 import assert from 'node:assert/strict'
 import test, { beforeEach, afterEach, after } from 'node:test'
 import { createRequire } from 'node:module'
@@ -9,7 +10,7 @@ import { loadSource, amountPresets, amountMessages, formValidation, maxHelpers, 
 const require = createRequire(import.meta.url)
 const dom = new JSDOM('<!doctype html><html><body></body></html>')
 const previous = Object.getOwnPropertyDescriptors(globalThis)
-for (const [key, value] of Object.entries({ window: dom.window, document: dom.window.document, IS_REACT_ACT_ENVIRONMENT: true }))
+for (const [key, value] of Object.entries({ window: dom.window, document: dom.window.document, Element: dom.window.Element, IS_REACT_ACT_ENVIRONMENT: true }))
   Object.defineProperty(globalThis, key, { configurable: true, writable: true, value })
 const { createRoot } = await import('react-dom/client')
 const { default: useSWR, SWRConfig, useSWRConfig } = await import('swr')
@@ -44,6 +45,7 @@ const usdStore = require('zustand').create(set => ({ isUsdMode: true, usdAmount:
   setUsdAmount: usdAmount => set({ usdAmount }), toggleMode: () => set(s => ({ isUsdMode: !s.isUsdMode })),
 }))
 const { useUsdTokenSync } = loadSource('hooks/useUsdTokenSync.ts', {
+  '@/lib/widgetTelemetry': { widgetTelemetry },
   react: React, '@/lib/amountPresets': amountPresets, '@/stores/usdModeStore': { useUsdModeStore: usdStore },
 })
 const { default: SubmitButton } = loadSource('components/Buttons/submitButton.tsx', {
@@ -64,6 +66,7 @@ function ValidationButton() {
     disabled: !!message || values.amountPresetPending, isSubmitting: false })
 }
 const { default: ExchangeAmountField } = loadSource('components/Input/Amount/ExchangeAmountField.tsx', {
+  '@/lib/widgetTelemetry': { widgetTelemetry },
   react: React, formik: require('formik'),
   '../NumericInput': { default: props => { state.changeExchangeAmount = props.onChange; return null } },
   '@/components/utils/formatUsdAmount': { formatUsd: String },
@@ -106,7 +109,7 @@ beforeEach(() => {
 afterEach(async () => { await act(() => root.unmount()); container.remove() })
 after(() => {
   dom.window.close()
-  for (const key of ['window', 'document', 'IS_REACT_ACT_ENVIRONMENT']) {
+  for (const key of ['window', 'document', 'Element', 'IS_REACT_ACT_ENVIRONMENT']) {
     if (previous[key]) Object.defineProperty(globalThis, key, previous[key]); else delete globalThis[key]
   }
 })
@@ -773,4 +776,28 @@ test('editing a fixed shortcut in USD restores ordinary USD entry behavior', asy
   await render()
   assert.equal(formik.values.amount, '0.1')
   assert.equal(usd.usdAmount, '100')
+})
+
+test('rejected USD edits keep Max telemetry; only accepted input records manual', async () => {
+  state.usdMode = true; usdStore.setState({ isUsdMode: true }); await render()
+  const amount = formik.values.amount
+  const unmount = widgetTelemetry.mount(widgetTelemetry.createFlow({ source_network: network.name, source_token: token.symbol }))
+  const wrapper = document.createElement('div'); wrapper.setAttribute('data-ls-form', 'cross-chain')
+  const input = document.createElement('input'); input.name = 'amount'; wrapper.append(input); document.body.append(wrapper)
+  try {
+    widgetTelemetry.interaction('set_max_amount', 'click', true)
+    for (const value of ['1.234', '1.2.3', 'x']) {
+      input.value = value
+      captureWidgetInteraction({ target: input, type: 'change' })
+      await act(() => usd.handleUsdInputChange({ target: { value } }))
+      assert.equal(formik.values.amount, amount)
+      assert.equal(formik.values.amountMode, 'max')
+      assert.equal(widgetTelemetry.amountInputMethod({ step: 'form_submitted' }), 'max')
+    }
+    input.value = '1.23'
+    captureWidgetInteraction({ target: input, type: 'change' })
+    await act(() => usd.handleUsdInputChange({ target: { value: '1.23' } }))
+    assert.equal(formik.values.amountMode, 'manual')
+    assert.equal(widgetTelemetry.amountInputMethod({ step: 'form_submitted' }), 'manual')
+  } finally { wrapper.remove(); unmount() }
 })

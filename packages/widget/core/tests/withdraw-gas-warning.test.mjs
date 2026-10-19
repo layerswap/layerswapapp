@@ -1,3 +1,5 @@
+import { widgetTelemetry } from '../dist/esm/lib/widgetTelemetry.js'
+import { createPortal } from 'react-dom'
 import assert from 'node:assert/strict'
 import test, { after, afterEach, beforeEach } from 'node:test'
 import { registerHooks } from 'node:module'
@@ -199,7 +201,9 @@ test('Adjust amount cannot abandon an executing swap', async () => {
   assert.equal(state.freshAttempts, 0)
 })
 
-test('Adjust amount rechecks execution safety if the swap locks after render', async () => {
+test('Adjust amount rechecks execution safety if the swap locks after render', async t => {
+  t.after(widgetTelemetry.mount(widgetTelemetry.createFlow({ source_network: network.name })))
+  widgetTelemetry.recordAmountInput('manual')
   await render()
   const button = adjustButton()
   assert.ok(button)
@@ -207,6 +211,7 @@ test('Adjust amount rechecks execution safety if the swap locks after render', a
   await act(() => button.click())
   assert.equal(state.freshAttempts, 0)
   assert.equal(state.submitted, undefined)
+  assert.equal(widgetTelemetry.amountInputMethod({ step: 'form_submitted' }), 'manual')
 })
 
 function setTokenBalance(amount) {
@@ -290,4 +295,22 @@ test('temporary quote loading retains a viable Adjust amount action in its loadi
   state.quoteLoading = false
   await render()
   assert.equal(adjustButton().disabled, false)
+})
+
+test('portaled Adjust amount records Max after its guard without changing the adjustment', async () => {
+  const unmount = widgetTelemetry.mount(widgetTelemetry.createFlow({ source_network: network.name, source_token: token.symbol }))
+  const portal = document.createElement('div'); document.body.append(portal)
+  try {
+    widgetTelemetry.recordAmountInput('manual')
+    await act(() => root.render(createElement(StrictMode, null, createPortal(createElement(Withdraw, { type: 'widget' }), portal))))
+    const button = [...portal.querySelectorAll('button')].find(button => button.textContent === 'Adjust amount')
+    assert.ok(button)
+    assert.equal(button.closest('[data-ls-form]'), null)
+    assert.equal(widgetTelemetry.amountInputMethod({ step: 'form_submitted' }), 'manual')
+    await act(() => button.click())
+    assert.equal(widgetTelemetry.amountInputMethod({ step: 'form_submitted' }), 'max')
+    assert.equal(state.freshAttempts, 1)
+    assert.equal(state.submitted.amountMode, 'max')
+    assert.equal(state.submitted.amount, '0.898')
+  } finally { unmount(); portal.remove() }
 })
