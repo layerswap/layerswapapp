@@ -31,7 +31,7 @@ export function BalanceWarningView({
                 </>
             }
             message="If you recently added funds, refresh the balance or check your connected wallet"
-            footer={refreshButton}
+            footer={<div className="mt-3 flex flex-wrap items-center gap-2">{refreshButton}</div>}
         />
     );
 }

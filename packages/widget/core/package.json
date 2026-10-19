@@ -93,6 +93,7 @@
     "@tailwindcss/postcss": "^4.0.15",
     "@types/react": "catalog:",
     "chromatic": "^6.24.1",
+    "color": "4.2.3",
     "esbuild-plugin-path-alias": "^1.0.7",
     "jsdom": "^30.0.1",
     "postcss": "^8.5.10",

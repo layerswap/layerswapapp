@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 import { ChevronDown, CircleHelp, Clock } from 'lucide-react';
+import clsx from 'clsx';
+import { RouteSpeed, routeSpeedTextClass } from '@/lib/routeSpeed';
 import {
     Accordion,
     AccordionContent,
@@ -37,6 +39,7 @@ export function DepositQuoteDetailsView({
     maxDepositDisplay,
     feeDisplay,
     estTime,
+    routeSpeed = 'normal',
     onOpenCalculator,
     calculator,
 }: {
@@ -48,6 +51,8 @@ export function DepositQuoteDetailsView({
     maxDepositDisplay?: string | null;
     feeDisplay?: string | null;
     estTime?: string | null;
+    /** Colors the estimate yellow/red for slow routes (see `routeSpeed.ts`). */
+    routeSpeed?: RouteSpeed;
     onOpenCalculator?: () => void;
     calculator?: ReactNode;
 }) {
@@ -108,9 +113,22 @@ export function DepositQuoteDetailsView({
                                     {estTime && (
                                         <div className="inline-flex items-center gap-1 shrink-0">
                                             <div className="p-0.5">
-                                                <Clock className="h-4 w-4 text-secondary-text" />
+                                                <Clock
+                                                    className={clsx(
+                                                        'h-4 w-4',
+                                                        routeSpeedTextClass(
+                                                            routeSpeed,
+                                                            'text-secondary-text',
+                                                        ),
+                                                    )}
+                                                />
                                             </div>
-                                            <span className="text-primary-text">
+                                            <span
+                                                className={routeSpeedTextClass(
+                                                    routeSpeed,
+                                                    'text-primary-text',
+                                                )}
+                                            >
                                                 {estTime}
                                             </span>
                                         </div>

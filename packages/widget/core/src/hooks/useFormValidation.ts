@@ -1,8 +1,10 @@
+import { isAmountPreset } from '@/lib/amountPresets';
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues';
 import { QuoteError } from './useFee';
 import { Address } from '@/lib/address/Address';
-import { ceilUsd, floorUsd } from '@/components/utils/formatUsdAmount';
+import { floorUsd } from '@/components/utils/formatUsdAmount';
 import { isDepositAddressFlow } from '@/helpers/swapFlow';
+import { minimumAmountMessage } from '@/lib/amountMessages';
 
 interface Params {
     values: SwapFormValues;
@@ -53,7 +55,8 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
         return { message: 'Select destination asset' };
     }
     if (!depositAddressFlow) {
-        if (amount === undefined || isNaN(Number(amount))) {
+        if (isAmountPreset(values.amountMode) && values.amountPresetError) return { message: values.amountPresetError };
+        if (amount === undefined || amount === 0 || isNaN(Number(amount))) {
             return { message: 'Enter an amount' };
         }
         if (amount < 0) {
@@ -65,9 +68,7 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
             return { code: FORM_VALIDATION_ERROR_CODES.MAX_AMOUNT_ERROR, message: `Max amount is ${displayAmount}` };
         }
         if (minAllowedAmount != undefined && amount < minAllowedAmount) {
-            // In USD mode, ceil the USD limit so the displayed min, when entered, always satisfies the token limit
-            const displayAmount = isUsdMode && minAllowedAmountInUsd != undefined ? `$${ceilUsd(minAllowedAmountInUsd)}` : minAllowedAmount;
-            return { code: FORM_VALIDATION_ERROR_CODES.MIN_AMOUNT_ERROR, message: `Min amount is ${displayAmount}` };
+            return { code: FORM_VALIDATION_ERROR_CODES.MIN_AMOUNT_ERROR, message: minimumAmountMessage(minAllowedAmount, values.fromAsset, minAllowedAmountInUsd, isUsdMode) };
         }
         if (!/^[0-9]*[.,]?[0-9]*$/i.test(amount.toString())) {
             return { message: 'Invalid amount', code: FORM_VALIDATION_ERROR_CODES.INVALID_AMOUNT };
@@ -107,6 +108,10 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
         }
     }
 
+    return resolveQuoteError(quoteError) ?? { message: '' };
+}
+
+export function resolveQuoteError(quoteError?: QuoteError) {
     const quoteErrorCode = quoteError?.response?.data?.error?.code || quoteError?.code;
     const quoteErrorMessage = quoteError?.response?.data?.error?.message || quoteError?.message;
     if (quoteError && quoteErrorCode !== "QUOTE_REQUIRES_NO_DEPOSIT_ADDRESS") {
@@ -119,5 +124,4 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
         return { message: 'Route not found', code: FORM_VALIDATION_ERROR_CODES.ROUTE_NOT_FOUND };
     }
 
-    return { message: '' };
 }

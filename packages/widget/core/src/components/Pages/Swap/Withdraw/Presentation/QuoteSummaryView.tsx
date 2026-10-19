@@ -1,4 +1,6 @@
-import { swapFlowTransitionStyle } from './swapFlowAnimation';
+import { swapFlowTransition } from './swapFlowAnimation';
+import { motion } from 'framer-motion';
+import { useHydratedReducedMotion } from '@layerswap/ui-kit';
 import NumFlowWithFallback from '@/components/Common/NumFlowWithFallback';
 import {
     RecipientAddressView,
@@ -6,9 +8,8 @@ import {
 } from '@/components/Common/RecipientAddressView';
 import type { Quote } from '@/lib/apiClients/layerSwapApiClient';
 import { Address } from '@/lib/address/Address';
-import clsx from 'clsx';
 import { ChevronDown } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { SwapValues } from '../../Form/FeeDetails';
 export function QuoteSummaryView({
     quoteData,
@@ -37,15 +38,24 @@ export function QuoteSummaryView({
     detailsButton: ReactNode;
     compact?: boolean;
 }) {
+    const reducedMotion = useHydratedReducedMotion();
+    const transition = reducedMotion ? { duration: 0 } : swapFlowTransition;
+    // Preserve the full summary's contents while its grid collapses. A polling
+    // update can reset isOpen at the same time as compact; replacing the gas row
+    // with the taller disclosure row would otherwise jump before the collapse.
+    const [lastExpanded, setLastExpanded] = useState(isOpen);
+    if (!compact && lastExpanded !== isOpen) setLastExpanded(isOpen);
+    const summaryOpen = compact ? lastExpanded : isOpen;
+
     return (
-        <div
-            style={swapFlowTransitionStyle}
-            className={clsx(
-                'flex flex-col w-full p-2 transition-[padding-bottom,margin-bottom] motion-reduce:transition-none',
-                {
-                    '!pb-0 !-mb-1': !compact && isOpen,
-                },
-            )}
+        <motion.div
+            initial={false}
+            transition={transition}
+            animate={{
+                paddingBottom: !compact && isOpen ? '0rem' : '0.5rem',
+                marginBottom: !compact && isOpen ? '-0.25rem' : '0rem',
+            }}
+            className="flex flex-col w-full p-2"
         >
             {showDestinationAddress &&
                 values.destination_address &&
@@ -91,10 +101,11 @@ export function QuoteSummaryView({
                         )}
                 </div>
             </div>
-            <div
-                className="grid transition-[grid-template-rows,opacity] motion-reduce:transition-none"
-                style={{
-                    ...swapFlowTransitionStyle,
+            <motion.div
+                className="grid"
+                initial={false}
+                transition={transition}
+                animate={{
                     gridTemplateRows: compact ? '0fr' : '1fr',
                     opacity: compact ? 0 : 1,
                 }}
@@ -103,9 +114,9 @@ export function QuoteSummaryView({
             >
                 <div className="min-h-0 overflow-hidden">
                     {slippage}
-                    {isOpen && gasFee}
+                    {summaryOpen && gasFee}
                     <div
-                        className={`${isOpen ? 'hidden' : ''} flex flex-wrap items-center w-full justify-between gap-2 px-2 py-3`}
+                        className={`${summaryOpen ? 'hidden' : ''} flex flex-wrap items-center w-full justify-between gap-2 px-2 py-3`}
                     >
                         {detailsButton}
 
@@ -119,14 +130,14 @@ export function QuoteSummaryView({
                             }}
                             className="ml-auto flex shrink-0 items-center text-secondary-text text-sm whitespace-nowrap gap-0.5 hover:text-primary-text"
                             aria-label="See details"
-                            aria-expanded={!!isOpen}
+                            aria-expanded={!!summaryOpen}
                         >
                             <span>See details</span>
                             <ChevronDown className="h-3.5 w-3.5" />
                         </button>
                     </div>
                 </div>
-            </div>
-        </div>
+            </motion.div>
+        </motion.div>
     );
 }

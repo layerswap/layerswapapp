@@ -4,6 +4,7 @@ import { Network, Token } from '@layerswap/widget-types';
 import { formatFee } from './helpers';
 import { formatTokenAmount } from '@/components/utils/formatTokenAmount';
 import { formatVerboseHms, msToParts } from '@/components/utils/formatTime';
+import { resolveRouteSpeedFromMs } from '@/lib/routeSpeed';
 import FeeCalculator from './FeeCalculator';
 import { DepositQuoteDetailsView } from './DepositQuoteDetailsView';
 
@@ -90,6 +91,9 @@ const DepositQuoteDetails: FC<DepositQuoteDetailsProps> = ({
     const estTime = bestQuote
         ? formatVerboseHms(msToParts(bestQuote.avg_completion_milliseconds))
         : null;
+    const routeSpeed = resolveRouteSpeedFromMs(
+        bestQuote?.avg_completion_milliseconds,
+    );
 
     const showQuoteSkeleton = (isCreatingSwap || isQuoteLoading) && !bestQuote;
 
@@ -103,6 +107,7 @@ const DepositQuoteDetails: FC<DepositQuoteDetailsProps> = ({
             maxDepositDisplay={maxDepositDisplay}
             feeDisplay={feeDisplay}
             estTime={estTime}
+            routeSpeed={routeSpeed}
             onOpenCalculator={() => setShowCalculator(true)}
             calculator={
                 <FeeCalculator

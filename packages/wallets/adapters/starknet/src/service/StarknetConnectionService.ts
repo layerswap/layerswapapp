@@ -89,7 +89,8 @@ export async function resolveStarknetWallet(props: ResolveStarknetWalletProps): 
         const { RpcProvider, WalletAccount } = await import('starknet-rpc')
         const rpcProvider = await RpcProvider.create({ nodeUrl: network!.rpcUrl })
 
-        const walletAccount = new WalletAccount({ provider: rpcProvider, walletProvider: (connector as any).wallet, address })
+        const walletProvider = (connector as any).wallet
+        const walletAccount = new WalletAccount({ provider: rpcProvider, walletProvider, address })
 
         const accounts = await walletAccount.requestAccounts(true)
         const account = accounts?.[0]
@@ -100,6 +101,7 @@ export async function resolveStarknetWallet(props: ResolveStarknetWalletProps): 
         const wallet: Wallet = {
             id: connectorName,
             displayName: `${connectorName} - Starknet`,
+            version: getWalletVersion(walletProvider),
             address: account,
             addresses: [account],
             chainId: walletChain || '',
@@ -120,6 +122,16 @@ export async function resolveStarknetWallet(props: ResolveStarknetWalletProps): 
     } catch (e) {
         console.warn(`Failed to initialize wallet for ${connector.name}:`, e)
         return null
+    }
+}
+
+/** Optional diagnostics must never make connecting fail or invoke provider accessors. */
+function getWalletVersion(provider: unknown): string | undefined {
+    try {
+        const version = provider && Object.getOwnPropertyDescriptor(provider, 'version')?.value
+        return typeof version === 'string' && /^[a-zA-Z0-9][a-zA-Z0-9.+_-]{0,127}$/.test(version) ? version : undefined
+    } catch {
+        return undefined
     }
 }
 

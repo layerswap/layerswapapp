@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test, { after, afterEach, beforeEach } from 'node:test'
 import { registerHooks } from 'node:module'
+import { existsSync } from 'node:fs'
 import { extname } from 'node:path'
 import { JSDOM } from 'jsdom'
 import { act, createElement, StrictMode, useState } from 'react'
@@ -21,8 +22,10 @@ for (const [key, value] of Object.entries(globals)) {
 // The widget emits extensionless relative imports for bundlers; resolve those in Node.
 const hooks = registerHooks({
   resolve(specifier, context, nextResolve) {
+    if (specifier === './AmountPresetController') return { url: 'data:text/javascript,export default () => null', shortCircuit: true }
     if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
-      return nextResolve(`${specifier}.js`, context)
+      const file = new URL(`${specifier}.js`, context.parentURL)
+      return nextResolve(existsSync(file) ? `${specifier}.js` : `${specifier}/index.js`, context)
     }
     return nextResolve(specifier, context)
   },

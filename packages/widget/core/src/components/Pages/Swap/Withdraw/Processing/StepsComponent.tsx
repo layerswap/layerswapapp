@@ -14,11 +14,12 @@ import type { StatusStep } from './types';
 
 const VisibleStepsPanels = createContext<Set<symbol> | null>(null);
 
-/** Keep entrance state across the wallet-to-processing controller handoff. */
+/** Nested transitions share the outer execution slot's continuity, not its siblings'. */
 export function StepsPanelProvider({ children }: { children: ReactNode }) {
+    const outerPanels = useContext(VisibleStepsPanels);
     const panels = useRef(new Set<symbol>());
     return (
-        <VisibleStepsPanels.Provider value={panels.current}>
+        <VisibleStepsPanels.Provider value={outerPanels ?? panels.current}>
             {children}
         </VisibleStepsPanels.Provider>
     );
@@ -71,13 +72,9 @@ export function StepsPanel({
 export default function Steps({ steps }: { steps: StatusStep[] }) {
     return (
         <nav aria-label="Progress">
-            <ol role="list">
-                {steps.map((step, index) => (
-                    <Step
-                        key={index}
-                        step={step}
-                        isLastStep={index === steps.length - 1}
-                    />
+            <ol role="list" className="space-y-1">
+                {steps.map((step) => (
+                    <Step key={step.id} step={step} />
                 ))}
             </ol>
         </nav>
