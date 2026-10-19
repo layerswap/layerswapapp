@@ -366,6 +366,24 @@ test(`the real button resumes ${initialPublish ? 'known' : 'late'} publication f
 })
 }
 
+test('closing an unsubmitted swap preserves its gasless preference and failure state', async () => {
+  useGaslessPreferenceStore.getState().setGaslessEnabled(false)
+  useGaslessPreferenceStore.getState().reportGaslessUnavailable('deposit', 'Authorization unavailable')
+  const preference = useGaslessPreferenceStore.getState()
+  state.swap.swapBasicData = basic
+  state.swap.swapModalOpen = true
+
+  await act(async () => root.render(createElement(StrictMode, null,
+    createElement(SWRConfig, { value: swrConfig },
+      createElement(CallbackProvider, null,
+        createElement(ErrorProvider, null,
+          createElement(FormWrapper, { type: 'cross-chain' })))))))
+  await act(async () => state.closeModal(false))
+
+  assert.equal(state.swap.swapModalOpen, false)
+  assert.equal(useGaslessPreferenceStore.getState(), preference)
+})
+
 for (const initialPublish of [true, false]) {
 test(`a transient completed ${initialPublish ? 'known' : 'late'} publication preserves the contained form until wallet submission`, async t => {
   t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 10000 })
@@ -420,13 +438,13 @@ test(`a transient completed ${initialPublish ? 'known' : 'late'} publication pre
   await act(async () => { submission.resolve('published-hash'); await state.pending })
   assert.equal(state.successes, 1)
   assert.equal(amount(), '0', 'the confirmed wallet submission clears the form')
-  assert.equal(useGaslessPreferenceStore.getState().gaslessEnabled, false, 'submission keeps the active quote in its selected fee mode')
+  assert.equal(useGaslessPreferenceStore.getState().gaslessEnabled, true, 'successful submission restores the default for the next swap')
   assert.equal(state.balanceRefreshes, 1)
   assert.equal(useDepositSignatureStore.getState().signatures['swap-1'], undefined)
   assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].hash, 'published-hash')
   assert.equal(state.creations, 0)
   await act(async () => state.closeModal(false))
-  assert.equal(useGaslessPreferenceStore.getState().gaslessEnabled, true, 'closing the modal restores the default for the next swap')
+  assert.equal(useGaslessPreferenceStore.getState().gaslessEnabled, true, 'closing the modal preserves the reset preference')
   assert.deepEqual(errors, [])
 })
 }
