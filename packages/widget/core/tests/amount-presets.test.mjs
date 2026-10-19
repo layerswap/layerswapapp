@@ -44,6 +44,7 @@ const usdStore = require('zustand').create(set => ({ isUsdMode: true, usdAmount:
   setUsdAmount: usdAmount => set({ usdAmount }), toggleMode: () => set(s => ({ isUsdMode: !s.isUsdMode })),
 }))
 const { useUsdTokenSync } = loadSource('hooks/useUsdTokenSync.ts', {
+  '@/components/utils/formatTokenAmount': loadSource('components/utils/formatTokenAmount.ts'),
   react: React, '@/lib/amountPresets': amountPresets, '@/stores/usdModeStore': { useUsdModeStore: usdStore },
 })
 const { default: SubmitButton } = loadSource('components/Buttons/submitButton.tsx', {

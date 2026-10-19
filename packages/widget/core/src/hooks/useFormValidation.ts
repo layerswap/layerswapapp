@@ -70,7 +70,7 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
         if (minAllowedAmount != undefined && amount < minAllowedAmount) {
             return { code: FORM_VALIDATION_ERROR_CODES.MIN_AMOUNT_ERROR, message: minimumAmountMessage(minAllowedAmount, values.fromAsset, minAllowedAmountInUsd, isUsdMode) };
         }
-        if (!/^[0-9]*[.,]?[0-9]*$/i.test(amount.toString())) {
+        if (!/^[0-9]*[.,]?[0-9]*$/i.test(values.amount ?? '')) {
             return { message: 'Invalid amount', code: FORM_VALIDATION_ERROR_CODES.INVALID_AMOUNT };
         }
     }
