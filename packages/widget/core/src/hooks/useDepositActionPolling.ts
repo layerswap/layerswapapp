@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
 import type { ApiResponse } from '@layerswap/widget-types'
 import LayerSwapApiClient, { type DepositAction, type GaslessAuthorizationResult } from '@/lib/apiClients/layerSwapApiClient'
@@ -41,7 +41,7 @@ export function useDepositActionPolling(swapId: string | undefined, sourceAddres
         keepPreviousData: false,
     })
     const { watchApprovalTransaction, setWalletActionExecuting } = useSwapDataUpdate()
-    useEffect(() => {
+    useClientLayoutEffect(() => {
         setWalletActionExecuting(executing)
         return () => setWalletActionExecuting(false)
     }, [executing, setWalletActionExecuting])

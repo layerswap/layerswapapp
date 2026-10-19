@@ -22,7 +22,8 @@ import { type FC, type ReactNode } from 'react';
 import { ICON_CLASSES_WARNING } from '../../Form/SecondaryComponents/validationError/constants';
 import ErrorDismissButton from '../../Form/SecondaryComponents/validationError/ErrorDismissButton';
 import { ErrorDisplay } from '../../Form/SecondaryComponents/validationError/ErrorDisplay';
-import WalletMessage from '../messages/Message';
+import WalletMessage, { WalletMessageDetails } from '../messages/Message';
+import { walletDisconnectedMessage } from '../messages/walletErrorMessage';
 import { NetworkSwitchError, networkSwitchFailureReason } from '../Wallet/Common/ensureSourceChain';
 import type { ActionData } from '../Wallet/Common/sharedTypes';
 import type { SwapStepTransactions } from '@/stores/swapTransactionStore';
@@ -43,6 +44,10 @@ export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = (
             header='Network switch still waiting'
             details={`Your wallet is still asking to switch to ${network}. Confirm it there, then try again`}
         />
+    }
+    // Readiness lost the wallet; switching manually would not help.
+    if (kind === 'disconnected') {
+        return <WalletMessage {...walletDisconnectedMessage} />
     }
     if (kind === 'timeout') {
         return <WalletMessage
@@ -132,6 +137,7 @@ export type SendTransactionViewProps = SubmitButtonProps & {
     /** A wallet receipt keeps confirmation visible without advancing the API swap phase. */
     submissionAccepted?: boolean;
     networkSwitch?: ActionData;
+    walletRequestRecovery?: ReactNode;
     sourceNetworkName?: string;
     actionStateText?: string;
     actionButtonText?: string;
@@ -166,6 +172,7 @@ export function SendTransactionView({
     submissionAccepted,
     walletExecutionStarted,
     networkSwitch,
+    walletRequestRecovery,
     sourceNetworkName,
     actionStateText,
     actionButtonText,
@@ -224,7 +231,7 @@ export function SendTransactionView({
                 workflow={workflowProgress}
                 controls={
                     progress && (loading || confirmingSubmission) ? (
-                        message
+                        message || walletRequestRecovery ? <>{message}{walletRequestRecovery}</> : undefined
                     ) : (
                         <>
                             {message}
@@ -236,6 +243,7 @@ export function SendTransactionView({
                             >
                                 {actionStateText || 'Preparing…'}
                             </ButtonWrapper>
+                            {walletRequestRecovery}
                         </>
                     )
                 }

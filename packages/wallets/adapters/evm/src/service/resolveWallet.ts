@@ -83,6 +83,7 @@ export function resolveWallet<Network>(props: ResolveWalletProps<Network>): Wall
             connectorUid: connector.uid,
             deepLink: dynamicMetadata?.deepLink || (connector as LSConnector).deepLink,
             evmConnectorUid: connector.uid,
+            walletConnectTopic: (connector as LSConnector).getSessionTopic?.(),
         },
     }
 }

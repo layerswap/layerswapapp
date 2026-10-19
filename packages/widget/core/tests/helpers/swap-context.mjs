@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import React from 'react'
 import ts from 'typescript'
+import { amountPresets, swapProgress } from './source.mjs'
 
 const require = createRequire(import.meta.url)
 const noop = () => {}
@@ -14,16 +15,19 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
     const snapshots = new Map()
     const store = state => Object.assign(selector => selector(state), { getState: () => state })
     const emptyStores = {
-        useSwapTransactionStore: store({ swapTransactions, stepTransactions: {}, setSwapTransaction: noop, setSwapTransactionKind: noop }),
+        useSwapTransactionStore: store({ swapTransactions, pendingSubmissions: {}, stepTransactions: {}, setSwapTransaction: noop, setSwapTransactionKind: noop }),
         useGaslessAuthorizationStore: store({ authorizations: {} }),
-        useDepositSignatureStore: store({ removeDepositSignature: noop }),
+        useDepositSignatureStore: store({ signatures: {}, removeDepositSignature: noop }),
     }
     const resolved = {}
     const imports = {
+        '@/lib/amountPresets': amountPresets,
+        '@/lib/preparePresetAmount': { preparePresetAmount: () => { throw new Error('Unexpected preset preparation') } },
+        '@/helpers/swapProgress': swapProgress,
         '@/helpers/depository': { shouldUseDepository: () => false },
         react: React,
         'react/jsx-runtime': require('react/jsx-runtime'),
-        swr,
+        swr: { ...swr, useSWRConfig: swr.useSWRConfig ?? (() => ({ mutate: async () => undefined })) },
         '@layerswap/widget-types': { SwapStatus: { Created: 'created', UserTransferPending: 'user_transfer_pending' } },
         '@/lib/apiClients/layerSwapApiClient': {
             default: Client,
@@ -35,9 +39,12 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
             useInitialSettings: () => ({ swapId: getSwapId() }),
             useSettingsState: () => ({ sourceRoutes: [], destinationRoutes: [], networks: [] }),
         },
-        '@/hooks/useWallet': { default: () => ({ wallets: [{
-            ...getAccount(), addresses: getAccount().addresses ?? [getAccount().address], asSourceSupportedNetworks: [network.name],
-        }] }) },
+        '@/hooks/useWallet': { default: () => {
+            const account = getAccount()
+            return { wallets: account ? [{
+                ...account, addresses: account.addresses ?? [account.address], asSourceSupportedNetworks: [network.name],
+            }] : [] }
+        } },
         './swapAccounts': { useSelectedAccount: getAccount },
         '@/hooks/useFee': { transformSwapDataToQuoteArgs: noop, useQuoteData: () => ({}) },
         '@/stores/recentRoutesStore': { useRecentNetworksStore: store({ updateRecentNetworks: noop }) },
@@ -80,6 +87,10 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
     imports['@/stores/swapTransactionStore'] = {
         ...emptyStores, ...stores,
         ...overrides['@/stores/swapTransactionStore'],
+    }
+    imports['@/helpers/gasless'] = {
+        isGaslessAuthorizationSubmitted: () => false,
+        ...imports['@/helpers/gasless'],
     }
     const { outputText } = ts.transpileModule(readFileSync(new URL('../../src/context/swap.tsx', import.meta.url), 'utf8'), {
         compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },

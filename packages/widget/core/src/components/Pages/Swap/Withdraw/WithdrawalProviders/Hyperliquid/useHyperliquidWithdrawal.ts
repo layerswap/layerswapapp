@@ -1,3 +1,4 @@
+import { AmountPresetChangedError } from '@/lib/amountPresets';
 import { isUserRejection } from '@layerswap/wallet-core/errors';
 import { useCallback, useEffect, useRef, useState } from "react";
 import { WithdrawPageProps } from "../../Wallet/Common/sharedTypes";
@@ -55,7 +56,7 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
     const initialSettings = useInitialSettings()
     const { onWalletWithdrawalSuccess } = useWalletWithdrawalState()
     const { swapDetails } = useSwapDataState()
-    const { createSwap, setSwapId, startFreshSwapAttempt, mutateSwap } = useSwapDataUpdate()
+    const { createSwap, setSwapId, startFreshSwapAttempt, mutateSwap, acquireWalletExecution } = useSwapDataUpdate()
     const { executeTransfer } = useTransfer()
     const { onSwapLifecycle } = useCallbacks()
 
@@ -104,6 +105,7 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
             })
         }
         submittingRef.current = true
+        const releaseWalletExecution = acquireWalletExecution()
         setError(undefined)
         setRejected(false)
         setLoading(true)
@@ -117,6 +119,8 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
             if (!activeSwapId) {
                 startFreshSwapAttempt()
                 const swapValues: SwapFormValues = {
+                    amountMode: swapBasicData.amountMode,
+                    amountPresetSource: swapBasicData.amountPresetSource,
                     amount,
                     from: source_network as NetworkRoute,
                     to: destination_network as NetworkRoute,
@@ -196,6 +200,10 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
             onWalletWithdrawalSuccess?.()
         } catch (e) {
             if (!mountedRef.current) return
+            if (e instanceof AmountPresetChangedError) {
+                setError({ header: 'Amount updated', details: e.message })
+                return
+            }
             lastFailureWasUserRejection.current = isUserRejection(e)
             // A declined wallet prompt is a user action, not an error to log.
             if (lastFailureWasUserRejection.current) {
@@ -210,13 +218,15 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
                 setError({ header: (e as any)?.header ?? 'Withdrawal failed', details: (e as Error)?.message || 'Unexpected error occurred.' })
             }
         } finally {
+            // Keep adjustment locked through active requests, even if this view closes.
+            releaseWalletExecution()
             if (mountedRef.current) {
                 setLoading(false)
                 setProgress(undefined)
             }
             submittingRef.current = false
         }
-    }, [sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, networks, sourceRoutes, swapId, swapDetails, refuel, initialSettings, wallet, createSwap, setSwapId, startFreshSwapAttempt, mutateSwap, executeTransfer, onWalletWithdrawalSuccess, swapBasicData.requested_amount, error, rejected, onSwapLifecycle])
+    }, [sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, networks, sourceRoutes, swapId, swapDetails, refuel, initialSettings, wallet, createSwap, setSwapId, startFreshSwapAttempt, mutateSwap, acquireWalletExecution, executeTransfer, onWalletWithdrawalSuccess, swapBasicData.requested_amount, swapBasicData.amountMode, swapBasicData.amountPresetSource, error, rejected, onSwapLifecycle])
 
     return {
         handleWithdraw,

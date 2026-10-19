@@ -111,7 +111,7 @@ const result = await build({
         export { GasFeeView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Form/FeeDetails/SwapQuote/GasFeeView.js';
         export { ManualDepositButtonView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/ManualDepositButtonView.js';
         export { ConfirmationContent } from '../../packages/widget/core/dist/esm/components/Modal/ConfirmationContent.js';
-        export { CopyButtonView } from '@layerswap/ui-kit/components';
+        export { CopyButtonView } from '../../packages/ui-kit/dist/esm/components/index.js';
         export { SettingsStateContext } from '../../packages/widget/core/dist/esm/context/settings.js';`,
         resolveDir: resolve(directory, '..'),
         loader: 'tsx',
@@ -2269,11 +2269,13 @@ test('wallet execution exchanges the preparing button for persistent steps and r
         assert.equal(panel.style.height, 'auto', 'reduced motion shows the final height immediately');
         assert.equal(panel.style.opacity, '1');
         assert.equal(workflow.style.height, '', 'the wallet wrapper does not run a second height animation');
-        assert.equal(preparingButton.isConnected, false, 'the old preparing button is removed immediately');
+        // The controls panel stays available for wallet-request recovery while loading.
+        // Compare booleans so failures do not inspect React's cyclic JSDOM nodes.
+        assert.ok(container.querySelector('[data-wallet-execution-panel="controls"] button') === null, 'reduced motion removes the old button immediately');
 
         await act(async () => root.render(preview(signing.snapshot, signing.at)));
-        assert.equal(container.querySelector('[data-wallet-execution-panel="workflow"]'), workflow);
-        assert.equal(workflow.querySelector('[aria-label="Progress"]'), steps);
+        assert.ok(container.querySelector('[data-wallet-execution-panel="workflow"]') === workflow, 'signing preserves the workflow panel');
+        assert.ok(workflow.querySelector('[aria-label="Progress"]') === steps, 'signing preserves the progress list');
         assert.match(steps.textContent, /Sign in your wallet/);
 
         await act(async () => root.render(preview(preparing.snapshot, preparing.at)));

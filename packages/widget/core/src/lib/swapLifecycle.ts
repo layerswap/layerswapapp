@@ -1,6 +1,6 @@
 import type { SwapLifecycleEvent } from '@layerswap/widget-types'
 import { getErrorOccurrenceId } from '@layerswap/widget-types'
-import { normalizeWalletErrorCode, walletErrorCodeFromChain } from '@layerswap/wallet-core/errors'
+import { normalizeWalletErrorCode, walletErrorDetails } from '@layerswap/wallet-core/errors'
 import type { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
 import type { SwapBasicData, SwapDetails } from '@/lib/apiClients/layerSwapApiClient'
 import { SwapPhase, TERMINAL_PHASES } from '@/components/utils/swapPhase'
@@ -125,12 +125,13 @@ export function lifecycleContextFromSwap(
 export function lifecycleErrorDetails(error: unknown): Pick<SwapLifecycleEvent, 'reasonCode' | 'reason' | 'errorCode' | 'occurrenceId'> {
     const candidate = error as { message?: string; shortMessage?: string; response?: { data?: { error?: { code?: string; message?: string } } } }
     const apiError = candidate?.response?.data?.error
-    const errorCode = apiError?.code || walletErrorCodeFromChain(error)
+    const walletDetails = walletErrorDetails(error)
+    const errorCode = apiError?.code || walletDetails.code
     const details: Pick<SwapLifecycleEvent, 'reasonCode' | 'reason' | 'errorCode' | 'occurrenceId'> = {
         occurrenceId: getErrorOccurrenceId(error),
         // API codes are already bounded server-side; wallet/provider codes are normalized.
         reasonCode: apiError?.code || normalizeWalletErrorCode(error),
-        reason: apiError?.message || candidate?.shortMessage || candidate?.message || String(error),
+        reason: apiError?.message || walletDetails.message,
     }
     if (errorCode) details.errorCode = errorCode
     return details

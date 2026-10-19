@@ -1,3 +1,4 @@
+import { isAmountPreset } from '@/lib/amountPresets';
 import { type Wallet } from '@layerswap/widget-types';
 import { FC, useEffect, useMemo, useState } from "react";
 import ValidationError from "@/components/Pages/Swap/Form/SecondaryComponents/validationError";
@@ -50,7 +51,8 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
 
     const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
-    const { isQuoteLoading, quote, quoteTokenPrices, minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval });
+    const { isQuoteLoading: quoteLoading, quote, quoteTokenPrices, minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval });
+    const isQuoteLoading = quoteLoading || (isAmountPreset(values.amountMode) && !!values.amountPresetPending);
     useReportFormQuote(quote?.quote);
     const { formValidation } = useValidationContext();
 
@@ -115,8 +117,8 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                     {
                                         from && fromCurrency && minAllowedAmount && maxAmountFromApi &&
                                         <div className={clsx({
-                                            "hidden": !showQuickActions,
-                                            "block": showQuickActions,
+                                            "hidden": !showQuickActions && !isAmountPreset(values.amountMode),
+                                            "block": showQuickActions || isAmountPreset(values.amountMode),
                                         },
                                             "group-hover:block"
                                         )}>

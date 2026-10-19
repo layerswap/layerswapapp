@@ -268,6 +268,9 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                                 <Suspense fallback={<SwapDetailsSceleton />}>
                                     <SwapDetails type="contained" onWalletWithdrawalSuccess={() => {
                                         setWalletWihdrawDone(true)
+                                        setFieldValue('amountMode', 'manual')
+                                        setFieldValue('amountPresetPending', false)
+                                        setFieldValue('amountPresetError', undefined)
                                         setFieldValue('amount', 0)
                                         mutateBalances()
                                     }} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />

@@ -4,11 +4,13 @@ import { AdjustAmountButtonView } from '../../../Withdraw/Presentation/BalanceBu
 interface AdjustAmountButtonProps {
     onEditAmount: () => void;
     isLoading?: boolean;
+    compact?: boolean;
 }
 
 export const AdjustAmountButton: React.FC<AdjustAmountButtonProps> = ({
     onEditAmount,
     isLoading,
+    compact,
 }) => {
     const [editAmountLoading, setEditAmountLoading] = useState(false);
 
@@ -21,6 +23,6 @@ export const AdjustAmountButton: React.FC<AdjustAmountButtonProps> = ({
     const disabled = editAmountLoading || isLoading;
 
     return (
-        <AdjustAmountButtonView disabled={disabled} onAdjust={handleClick} />
+        <AdjustAmountButtonView disabled={disabled} onAdjust={handleClick} compact={compact} />
     );
 };

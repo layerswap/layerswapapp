@@ -10,7 +10,6 @@ import {
 import type { Compute, ExactPartial, Omit } from '@wagmi/core/internal'
 import type { EthereumProvider } from '@walletconnect/ethereum-provider'
 import {
-    type AddEthereumChainParameter,
     type Address,
     type ProviderConnectInfo,
     type ProviderRpcError,
@@ -18,9 +17,9 @@ import {
     SwitchChainError,
     UserRejectedRequestError,
     getAddress,
-    numberToHex,
 } from 'viem'
 import { EIP155_NAMESPACE } from '../../constants'
+import { ensureEvmChain } from '../../service/ensureEvmChain'
 
 type WalletConnectConnector = Connector & {
     onDisplayUri(uri: string): void
@@ -102,6 +101,7 @@ export function walletConnect(parameters: Params) {
             chainId: number
         }>
         getNamespaceChainsIds(): number[]
+        getSessionTopic(): string | undefined
         getRequestedChainsIds(): Promise<number[]>
         isChainsStale(): Promise<boolean>
         onConnect(connectInfo: ProviderConnectInfo): void
@@ -133,6 +133,8 @@ export function walletConnect(parameters: Params) {
         deepLink: mobile.native || mobile.universal,
         icon: icon,
         resolveURI: (uri: string) => getResolveUri(id, uri, mobile),
+        // Requests are recorded per session topic; wallets carry it to claim them.
+        getSessionTopic: () => provider_?.session?.topic,
         async setup() {
             const provider = await this.getProvider().catch(() => null)
             if (!provider) return
@@ -293,7 +295,7 @@ export function walletConnect(parameters: Params) {
                 provider_ = await providerPromise
                 provider_?.events.setMaxListeners(Number.POSITIVE_INFINITY)
             }
-            if (chainId) await this.switchChain?.({ chainId })
+            if (chainId && provider_?.chainId !== chainId) await this.switchChain?.({ chainId })
             return provider_!
         },
         async getChainId() {
@@ -322,92 +324,24 @@ export function walletConnect(parameters: Params) {
             }
         },
         async switchChain({ addEthereumChainParameter, chainId }) {
-            const provider = await this.getProvider()
-            if (!provider) throw new ProviderNotFoundError()
-
             const chain = config.chains.find((x) => x.id === chainId)
             if (!chain) throw new SwitchChainError(new ChainNotConfiguredError())
 
-            let removeChainChangedListener = () => { }
-            // Resolves once the wallet has both accepted the request and reported the new chain.
-            const requestSwitch = async () => {
-                removeChainChangedListener()
-                await Promise.all([
-                    new Promise<void>((resolve) => {
-                        const listener = ({
-                            chainId: currentChainId,
-                        }: { chainId?: number | undefined }) => {
-                            if (currentChainId === chainId) {
-                                removeChainChangedListener()
-                                resolve()
-                            }
-                        }
-                        removeChainChangedListener = () => config.emitter.off('change', listener)
-                        config.emitter.on('change', listener)
-                    }),
-                    provider.request({
-                        method: 'wallet_switchEthereumChain',
-                        params: [{ chainId: numberToHex(chainId) }],
-                    }),
-                ])
-            }
             try {
-                await requestSwitch()
-
-                const requestedChains = await this.getRequestedChainsIds()
-                this.setRequestedChainsIds([...requestedChains, chainId])
-
+                await ensureEvmChain({
+                    getProvider: () => this.getProvider(),
+                    chain,
+                    addEthereumChainParameter,
+                    onReady: async () => {
+                        const requestedChains = await this.getRequestedChainsIds()
+                        config.emitter.emit('change', { chainId })
+                        if (!requestedChains.includes(chainId)) await this.setRequestedChainsIds([...requestedChains, chainId])
+                    },
+                })
                 return chain
-            } catch (err) {
-                const error = err as RpcError
-
-                if (isUserRejection(error))
-                    throw new UserRejectedRequestError(error)
-                if (!isUnknownChainError(error)) throw error
-
-                // Only an unknown chain needs adding; pending prompts and transport
-                // failures must keep their original meaning for the caller.
-                try {
-                    let blockExplorerUrls: string[] | undefined
-                    if (addEthereumChainParameter?.blockExplorerUrls)
-                        blockExplorerUrls = addEthereumChainParameter.blockExplorerUrls
-                    else
-                        blockExplorerUrls = chain.blockExplorers?.default.url
-                            ? [chain.blockExplorers?.default.url]
-                            : []
-
-                    let rpcUrls: readonly string[]
-                    if (addEthereumChainParameter?.rpcUrls?.length)
-                        rpcUrls = addEthereumChainParameter.rpcUrls
-                    else rpcUrls = [...chain.rpcUrls.default.http]
-
-                    const addEthereumChain = {
-                        blockExplorerUrls,
-                        chainId: numberToHex(chainId),
-                        chainName: addEthereumChainParameter?.chainName ?? chain.name,
-                        iconUrls: addEthereumChainParameter?.iconUrls,
-                        nativeCurrency:
-                            addEthereumChainParameter?.nativeCurrency ?? chain.nativeCurrency,
-                        rpcUrls,
-                    } satisfies AddEthereumChainParameter
-
-                    await provider.request({
-                        method: 'wallet_addEthereumChain',
-                        params: [addEthereumChain],
-                    })
-                    // EIP-3085: adding a chain does not select it, and callers treat a resolved
-                    // switch as "the wallet is on this chain", so ask again unless it already moved.
-                    if (await this.getChainId() !== chainId) await requestSwitch()
-
-                    const requestedChains = await this.getRequestedChainsIds()
-                    this.setRequestedChainsIds([...requestedChains, chainId])
-                    return chain
-                } catch (error) {
-                    if (isUserRejection(error)) throw new UserRejectedRequestError(error as Error)
-                    throw error
-                }
-            } finally {
-                removeChainChangedListener()
+            } catch (error) {
+                if (isUserRejection(error)) throw new UserRejectedRequestError(error as Error)
+                throw error
             }
         },
         onAccountsChanged(accounts) {
@@ -502,24 +436,6 @@ export function walletConnect(parameters: Params) {
             return `${this.id}.requestedChains` as Properties['requestedChainsStorageKey']
         },
     }))
-}
-
-/** Wallets can relay the unknown-chain code through JSON-RPC or SDK wrappers. */
-function isUnknownChainError(error: unknown): boolean {
-    const queue: unknown[] = [error]
-    const seen = new Set<object>()
-    for (let index = 0; index < queue.length && index < 16; index++) {
-        const value = queue[index]
-        if (!value || typeof value !== 'object' || seen.has(value)) continue
-        seen.add(value)
-        const candidate = value as Record<string, unknown>
-        if (candidate.code === 4902 || candidate.code === '4902') return true
-        for (const key of ['cause', 'data', 'originalError', 'error']) {
-            const nested = candidate[key]
-            if (nested && typeof nested === 'object') queue.push(nested)
-        }
-    }
-    return false
 }
 
 function getResolveUri(
