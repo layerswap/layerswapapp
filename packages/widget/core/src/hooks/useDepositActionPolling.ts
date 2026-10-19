@@ -6,6 +6,7 @@ import { getActionableDepositAction, isDepositWorkflowComplete } from '@/helpers
 import { isGaslessAuthorizationSubmitted, isGaslessDepositWorkflow } from '@/helpers/gasless'
 import { useDepositSignatureStore, useGaslessAuthorizationStore } from '@/stores/swapTransactionStore'
 import { useSwapDataState, useSwapDataUpdate, type ApprovalTransaction } from '@/context/swap'
+import { recordSwapExecution } from '@/lib/swapExecution'
 import { useClientLayoutEffect } from './useClientLayoutEffect'
 
 const client = new LayerSwapApiClient()
@@ -17,8 +18,12 @@ export const depositActionsKey = (swapId: string, sourceAddress: string) =>
 export function useDepositActionPolling(swapId: string | undefined, sourceAddress: string | undefined, executing: boolean) {
     const key = swapId && sourceAddress ? depositActionsKey(swapId, sourceAddress) : null
     const { mutate, cache } = useSWRConfig()
+    const { approvalTransaction, swapBasicData } = useSwapDataState()
     const { data, error } = useSWR<ApiResponse<DepositAction[]>>(key, () => client.GetDepositActionsAsync(swapId!, sourceAddress), {
         dedupingInterval: 1000,
+        onSuccess: response => {
+            if (swapId && !response.error) recordSwapExecution(swapId, { swapData: swapBasicData, depositActions: response.data })
+        },
         keepPreviousData: false,
     })
     // A sign-only payload cannot distinguish self-paid from gasless execution.
@@ -35,7 +40,6 @@ export function useDepositActionPolling(swapId: string | undefined, sourceAddres
         refreshWhenHidden: true,
         keepPreviousData: false,
     })
-    const { approvalTransaction } = useSwapDataState()
     const { watchApprovalTransaction, setWalletActionExecuting } = useSwapDataUpdate()
     useEffect(() => {
         setWalletActionExecuting(executing)

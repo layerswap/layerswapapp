@@ -41,7 +41,10 @@ await build({
             export { SwapContentView, ProcessingSectionView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/Page2Sections.js';
             export { StepsPanel } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Processing/StepsComponent.js';
             export { ProcessingView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/ProcessingView.js';
+            export { Page2Preview } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/Page2Preview.js';
+            export { scenarios, EPOCH } from './features/timeline/fixtures.ts';
             export { resolveSwapPhase } from '../../packages/widget/core/dist/esm/components/utils/resolveSwapPhase.js';
+            export { resolveSwapFlow } from '../../packages/widget/core/dist/esm/components/utils/resolveSwapFlow.js';
             export { default as Steps } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Processing/StepsComponent.js';
             export { TransferStatusHeader } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/TransferStatusHeader.js';
             export { QuoteView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/QuoteView.js';
@@ -62,10 +65,31 @@ await build({
     format: 'esm',
     bundle: true,
     banner: { js: "import { createRequire as _createRequire } from 'node:module'; const require = _createRequire(import.meta.url);" },
-    external: ['react', 'react-dom', 'react-dom/*'],
+    external: ['react', 'react-dom', 'react-dom/*', 'next/head', 'next/router'],
     plugins: [{
         name: 'widget-motion',
         setup(builder) {
+            // Observe real processing mounts, including mounts that render no
+            // card yet. This catches preview/live lifecycle differences.
+            builder.onResolve({ filter: /^\.\/ProgressPanelView$/ }, args => {
+                if (args.importer.endsWith('/Presentation/ProcessingView.js')) {
+                    return { path: args.path, namespace: 'processing-mount-probe' };
+                }
+            });
+            builder.onLoad({ filter: /.*/, namespace: 'processing-mount-probe' }, () => ({
+                contents: `
+                    import React from 'react';
+                    import { ProgressPanelView as Actual } from ${JSON.stringify(fileURLToPath(new URL('../../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/ProgressPanelView.js', import.meta.url)))};
+                    export function ProgressPanelView(props) {
+                        return React.createElement(React.Profiler, {
+                            id: 'processing', onRender: (_, phase) => {
+                                if (phase === 'mount') globalThis.__timelineProcessingMounts = (globalThis.__timelineProcessingMounts ?? 0) + 1;
+                            },
+                        }, React.createElement(Actual, props));
+                    }
+                `,
+                resolveDir: join(directory, '..'),
+            }));
             builder.onResolve({ filter: /^framer-motion$/ }, () => ({
                 path: widgetRequire.resolve('framer-motion'), external: true,
             }));
@@ -74,7 +98,7 @@ await build({
     mainFields: ['module', 'main'],
     logLevel: 'silent',
 });
-const { SwapContentView, ProcessingSectionView, StepsPanel, ProcessingView, resolveSwapPhase, Steps, TransferStatusHeader, QuoteView, QuoteSummaryView, DepositWorkflowView, WalletExecutionTransition, WalletActionTransition, SendTransactionView, RetryView, DepositLayoutView, DepositAddressTransition } = await import(pathToFileURL(outfile));
+const { SwapContentView, ProcessingSectionView, StepsPanel, ProcessingView, Page2Preview, scenarios, EPOCH, resolveSwapPhase, resolveSwapFlow, Steps, TransferStatusHeader, QuoteView, QuoteSummaryView, DepositWorkflowView, WalletExecutionTransition, WalletActionTransition, SendTransactionView, RetryView, DepositLayoutView, DepositAddressTransition } = await import(pathToFileURL(outfile));
 function loadWidgetSource(path, imports) {
     const { outputText } = ts.transpileModule(readFileSync(new URL(`../../../packages/widget/core/src/${path}`, import.meta.url), 'utf8'), {
         compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
@@ -181,6 +205,144 @@ test('quote compaction and progress entry exchange space on the same animation f
         }
     } finally {
         await act(() => root.unmount());
+    }
+});
+
+for (const actionsArriveEarly of [false, true]) test(`atomic creation ${actionsArriveEarly ? 'with prefetched details' : 'mounting processing for the first time'} animates progress with the quote and controls`, async () => {
+    const root = createRoot(container);
+    const originalBounds = dom.window.HTMLElement.prototype.getBoundingClientRect;
+    dom.window.HTMLElement.prototype.getBoundingClientRect = function () {
+        if (!this.hasAttribute('data-steps-panel')) return originalBounds.call(this);
+        const height = this.style.height.endsWith('px') ? parseFloat(this.style.height) : 184;
+        return { x: 0, y: 0, top: 0, left: 0, right: 472, bottom: height, width: 472, height };
+    };
+    const network = { name: 'BASE_MAINNET', type: 'evm' };
+    const token = { symbol: 'USDC', asset: 'USDC', contract: '0xtoken', decimals: 6 };
+    const swap = { source_network: network, destination_network: network, source_token: token, destination_token: token, use_deposit_address: false };
+    const details = { status: 'user_transfer_pending', transactions: [] };
+    const quote = { destination_token: token, receive_amount: 100 };
+    const actions = [{ type: 'send_calls', step: 'publish', status: 'action_required', calls: [{}, {}] }];
+    // The production Processing controller returns null until creation supplies
+    // swap details. Its first non-empty render can already be the wallet prompt.
+    const ProcessingController = ({ available, ...props }) => available
+        ? React.createElement(ProcessingView, props)
+        : null;
+    const scene = (active, actionsReady = true) => {
+        const depositActions = actionsReady ? actions : undefined;
+        const resolved = resolveSwapPhase({ swapDetails: details });
+        const flow = resolveSwapFlow({ swapData: swap, depositActions, quote, walletExecutionStarted: active, resolved });
+        const walletProgress = {
+            walletExecutionStarted: active,
+            loading: true,
+            actionStateText: active ? 'Confirm in your wallet' : 'Preparing swap…',
+        };
+        return React.createElement(SwapContentView, {
+            flow,
+            stage: 'withdraw',
+            summary: 'Summary',
+            quote: React.createElement(QuoteSummaryView, {
+                compact: flow.compactQuote, isOpen: false, quoteData: { quote: {} }, values: {},
+                showDestinationAddress: false,
+                slippage: React.createElement('div', { 'data-slippage': true }, 'Slippage'),
+                detailsButton: 'Fees',
+            }),
+            progress: React.createElement(ProcessingController, {
+                available: actionsReady,
+                flow, swapBasicData: swap, swapDetails: details, quote, depositActions, resolved, walletProgress,
+            }),
+        }, React.createElement(SendTransactionView, {
+            flow, quote, depositActions, ...walletProgress, showProgress: false,
+        }));
+    };
+    try {
+        await act(() => root.render(scene(false, false)));
+        await settle();
+        assert.equal(container.querySelector('[data-steps-panel]'), null);
+        assert.equal(container.querySelector('[data-wallet-execution-panel="controls"] button').textContent, 'Preparing swap…');
+        if (actionsArriveEarly) {
+            await act(() => root.render(scene(false, true)));
+            await settle();
+            assert.equal(container.querySelector('[data-steps-panel]'), null, 'loading with returned calls is still preparation');
+            assert.equal(container.querySelector('[data-quote-layout]').dataset.quoteLayout, 'separate');
+        }
+        const preparing = container.querySelector('[data-wallet-execution-panel="controls"] button');
+        assert.equal(preparing.textContent, 'Preparing swap…', 'preparation retains its busy control until execution starts');
+        await act(() => root.render(scene(true)));
+        const steps = container.querySelector('[data-steps-panel]');
+        assert.equal(container.querySelector('[data-quote-layout]').dataset.quoteLayout, 'attached');
+        assert.ok(preparing.closest('[inert]'), 'preparation exits on the same render that progress enters');
+        // JSDOM has no default computed padding for Motion's auto-height measurement.
+        steps.style.padding = '0px';
+        assert.equal(steps.style.height, '0px', 'a previously empty slot must not reveal the full card immediately');
+        assert.equal(steps.style.opacity, '0');
+        await act(() => new Promise(resolve => setTimeout(resolve, 100)));
+        const height = parseFloat(steps.style.height);
+        assert.ok(height > 0 && height < 184, `progress should expand through intermediate heights, got ${steps.style.height}`);
+        const extras = container.querySelector('[data-slippage]').parentElement.parentElement;
+        assert.ok(Math.abs(Number(extras.style.opacity) + Number(steps.style.opacity) - 1) < 0.03);
+        const controls = preparing.closest('[data-wallet-execution-panel="controls"]');
+        assert.notEqual(controls.style.height, 'auto', 'preparation releases its height while progress expands');
+        assert.ok(Math.abs(Number(controls.style.opacity) + Number(steps.style.opacity) - 1) < 0.03);
+        await settle();
+        assert.equal(steps.style.height, 'auto');
+        assert.equal(container.querySelector('[data-wallet-execution-panel="controls"] button'), null);
+        await act(() => root.render(scene(false)));
+        assert.equal(container.querySelector('[data-steps-panel]'), steps);
+        assert.ok(steps.hasAttribute('inert'));
+        await act(() => new Promise(resolve => setTimeout(resolve, 100)));
+        const exitingHeight = parseFloat(steps.style.height);
+        assert.ok(exitingHeight > 0 && exitingHeight < 184, 'rewinding collapses the same card before removing it');
+        await settle();
+        assert.equal(container.querySelector('[data-steps-panel]'), null);
+    } finally {
+        await act(() => root.unmount());
+        dom.window.HTMLElement.prototype.getBoundingClientRect = originalBounds;
+    }
+});
+
+for (const mode of ['component', 'modal']) test(`the ${mode} timeline mounts processing at swap creation and animates its first card`, async () => {
+    const root = createRoot(container);
+    const originalBounds = dom.window.HTMLElement.prototype.getBoundingClientRect;
+    dom.window.HTMLElement.prototype.getBoundingClientRect = function () {
+        if (!this.hasAttribute('data-steps-panel')) return originalBounds.call(this);
+        const height = this.style.height.endsWith('px') ? parseFloat(this.style.height) : 184;
+        return { x: 0, y: 0, top: 0, left: 0, right: 472, bottom: height, width: 472, height };
+    };
+    const scenario = scenarios.find(scenario => scenario.id === 'atomic-batch-success');
+    const scene = id => {
+        const milestone = scenario.milestones.find(milestone => milestone.id === id);
+        return React.createElement(Page2Preview, { snapshot: milestone.snapshot, now: EPOCH + milestone.at * 1000, mode });
+    };
+    globalThis.__timelineProcessingMounts = 0;
+    try {
+        await act(() => root.render(scene('ready')));
+        await settle();
+        assert.equal(globalThis.__timelineProcessingMounts, 0, 'a quote before creation has no processing view');
+        await act(() => root.render(scene('preparing')));
+        await settle();
+        assert.equal(globalThis.__timelineProcessingMounts, 0, 'preparation must not pre-mount processing');
+        const preparing = [...container.querySelectorAll('button')].find(button => button.textContent === 'Preparing swap…');
+        assert.ok(preparing);
+        await act(() => root.render(scene('confirming')));
+        assert.equal(globalThis.__timelineProcessingMounts, 1, 'the creation response mounts processing for the first time');
+        const panel = container.querySelector('[data-steps-panel]');
+        panel.style.padding = '0px';
+        assert.equal(panel.style.height, '0px', 'the first mount must animate even though the preview is read-only');
+        assert.ok(preparing.closest('[inert]'));
+        await act(() => new Promise(resolve => setTimeout(resolve, 100)));
+        assert.ok(parseFloat(panel.style.height) > 0 && parseFloat(panel.style.height) < 184);
+        await settle();
+        assert.equal(panel.style.height, 'auto');
+        assert.equal(preparing.isConnected, false);
+        assert.equal(container.querySelector('[data-quote-layout]').dataset.quoteLayout, 'attached');
+        await act(() => root.render(scene('submitted')));
+        await settle();
+        assert.equal(globalThis.__timelineProcessingMounts, 1, 'later updates keep the same processing view');
+        assert.equal(container.querySelector('[data-steps-panel]'), panel);
+    } finally {
+        await act(() => root.unmount());
+        dom.window.HTMLElement.prototype.getBoundingClientRect = originalBounds;
+        delete globalThis.__timelineProcessingMounts;
     }
 });
 

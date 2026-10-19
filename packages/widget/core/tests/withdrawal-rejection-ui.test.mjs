@@ -73,7 +73,7 @@ const swapBasicData = {
 
 let unsubscribeStore
 beforeEach(() => {
-  useSwapTransactionStore.setState({ swapTransactions: {}, stepTransactions: {}, pendingSubmissions: {} })
+  useSwapTransactionStore.setState(useSwapTransactionStore.getInitialState(), true)
   Object.assign(state, {
     events: [], errors: [], transfers: [], published: [], successes: 0, error: undefined,
     refreshes: [], actionRefreshes: [], reconciled: [], freshAttempts: 0, creations: 0, selectedSwapId: 'swap-1',
@@ -94,9 +94,22 @@ beforeEach(() => {
 })
 afterEach(() => unsubscribeStore())
 
+test('a saved flow kind does not trigger reconciliation before the first withdrawal', async () => {
+  useSwapTransactionStore.getState().setSwapTransactionKind('swap-1', 'wallet-transfer')
+  const hash = await executeProviderWithdrawal({
+    swapId: 'swap-1', sourceAddress: 'source',
+    prepare: async () => 'prepared',
+    execute: async prepared => { assert.equal(prepared, 'prepared'); return 'submitted-hash' },
+    onReconcile: () => assert.fail('identity alone does not prove a submission'),
+  })
+  assert.equal(hash, 'submitted-hash')
+  assert.deepEqual(state.refreshes, [])
+  assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].kind, 'wallet-transfer')
+})
+
 async function reloadTransactionStore() {
   const persisted = localStorage.getItem('swapTransactions')
-  useSwapTransactionStore.setState({ swapTransactions: {}, stepTransactions: {}, pendingSubmissions: {} })
+  useSwapTransactionStore.setState(useSwapTransactionStore.getInitialState(), true)
   localStorage.setItem('swapTransactions', persisted)
   await useSwapTransactionStore.persist.rehydrate()
 }
@@ -242,8 +255,9 @@ test('recording a transaction clears its pending submission atomically and prese
     assert.equal(transitions[0].pending, undefined)
     assert.equal(transitions[0].transaction.hash, 'hash')
     assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, { 'swap-2': true })
-    assert.deepEqual(JSON.parse(localStorage.getItem('swapTransactions')).state, {
-      swapTransactions: { 'swap-1': { hash: 'hash', timestamp: transitions[0].transaction.timestamp } },
+    const receipts = JSON.parse(localStorage.getItem('swapTransactions')).state
+    assert.deepEqual(receipts, {
+      swapTransactions: { 'swap-1': { kind: 'transaction', hash: 'hash', timestamp: transitions[0].transaction.timestamp } },
       stepTransactions: {},
       pendingSubmissions: { 'swap-2': true },
     })
@@ -268,7 +282,7 @@ test('existing persisted transactions hydrate with an empty pending submission m
     state: { swapTransactions: { 'swap-1': transaction } }, version: 0,
   }))
   await useSwapTransactionStore.persist.rehydrate()
-  assert.deepEqual(useSwapTransactionStore.getState().swapTransactions, { 'swap-1': transaction })
+  assert.deepEqual(useSwapTransactionStore.getState().swapTransactions, { 'swap-1': { kind: 'transaction', ...transaction } })
   assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, {})
   useSwapTransactionStore.getState().markSubmissionPending('swap-2')
   assert.equal(useSwapTransactionStore.getState().pendingSubmissions['swap-2'], true)

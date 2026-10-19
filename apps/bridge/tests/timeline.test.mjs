@@ -237,6 +237,7 @@ const phase = (s) =>
     });
 
 const snapshotFlow = s => resolveSwapFlow({
+    transaction: s.storedWalletTransaction,
     swapData: s.swap, depositActions: s.depositActions, quote: s.quote,
     stepTransactions: s.stepTransactions, gaslessAuthorization: s.gaslessAuthorization,
     sourceProvider: s.sourceProvider ?? (s.wallet.kind === 'specialized' ? s.wallet.provider : undefined),
@@ -1692,12 +1693,21 @@ for (const [scenarioId, callCount, stepLabel] of [
         assert.equal(confirming.depositActions.length, 1);
         assert.equal(confirming.depositActions[0].type, 'send_calls');
         assert.equal(confirming.depositActions[0].calls.length, callCount);
-        assert.equal(scenario.milestones.filter(milestone => milestone.snapshot.wallet.pending).length, 1);
+        assert.equal(scenario.milestones.filter(milestone => milestone.snapshot.wallet.pending && milestone.snapshot.walletExecutionStarted).length, 1);
+        assert.equal(scenario.milestones.some(milestone => milestone.id === 'prepared'), false, 'creation does not require another start click');
 
         for (const mode of ['component', 'modal']) {
-            const prepared = fixtureDOM(scenarioId, 'prepared', mode);
-            const action = [...prepared.querySelectorAll('button')].find(button => button.textContent === stepLabel);
-            assert.ok(action, `${scenarioId}: batch start label`);
+            const ready = fixtureDOM(scenarioId, 'ready', mode);
+            const action = [...ready.querySelectorAll('button')].find(button => button.textContent === 'Approve and swap');
+            assert.ok(action, `${scenarioId}: batch start label before creation`);
+            assert.equal(ready.querySelector('[aria-label="Progress"]'), null, 'batch availability cannot show execution progress');
+            assert.doesNotMatch(ready.textContent, /Swap in progress|Confirming transaction/);
+            assert.equal(ready.querySelector('[data-quote-layout]').dataset.quoteLayout, 'separate');
+            const preparing = fixtureDOM(scenarioId, 'preparing', mode);
+            assert.equal(preparing.querySelector('[aria-label="Progress"]'), null, 'loading with returned calls cannot start progress');
+            assert.equal(preparing.querySelector('[data-quote-layout]').dataset.quoteLayout, 'separate');
+            const busyButton = [...preparing.querySelectorAll('button')].find(button => button.textContent === 'Preparing swap…');
+            assert.ok(busyButton?.disabled, 'the same click remains busy through preparation');
             const prompt = fixtureDOM(scenarioId, 'confirming', mode);
             const rows = prompt.querySelectorAll('[aria-label="Progress"] li');
             assert.equal(rows.length, 2);
@@ -1720,6 +1730,7 @@ for (const [scenarioId, callCount, stepLabel] of [
             assert.doesNotMatch(confirmation.textContent, /Checking wallet submission|Transaction submitted/);
 
             const completed = fixtureDOM(scenarioId, 'completed', mode);
+            assert.equal(completed.querySelector('[data-swap-flow]').dataset.swapFlow, 'atomic-batch');
             assert.equal(completed.querySelectorAll('[aria-label="Progress"] li').length, 2);
             assert.match(completed.textContent, /Transfer complete/);
             assert.match(completed.textContent, /Received 0.0396 ETH/);
@@ -1728,22 +1739,71 @@ for (const [scenarioId, callCount, stepLabel] of [
     });
 }
 
-test('atomic recovery guards the request and receipt until the API supplies progress', () => {
+test('a saved atomic receipt keeps confirmation visible until the API supplies progress', () => {
     for (const milestoneId of ['restored', 'receipt']) {
-        const restored = frontendMilestone('atomic-batch-recovery', milestoneId);
+        const restored = frontendMilestone('atomic-batch-receipt', milestoneId);
+        assert.equal(restored.snapshot.walletExecutionStarted, false, 'reopening loses the local execution flag');
         assert.equal(phase(restored.snapshot).phase, SwapPhase.AwaitingUserDeposit);
         for (const mode of ['component', 'modal']) {
-            const view = fixtureDOM('atomic-batch-recovery', milestoneId, mode);
+            const view = fixtureDOM('atomic-batch-receipt', milestoneId, mode);
             assert.match(view.textContent, /Confirming transaction/);
             assert.equal(view.querySelectorAll('[aria-label="Progress"] li').length, 2);
+            assert.equal(view.querySelector('[data-quote-layout]').dataset.quoteLayout, 'attached');
             assert.equal(view.querySelector('[data-wallet-execution-panel="controls"]'), null);
             assert.doesNotMatch(view.textContent, /Transfer complete|Try again|Checking wallet submission|Transaction submitted/);
         }
     }
-    const receipt = frontendMilestone('atomic-batch-recovery', 'receipt').snapshot.storedWalletTransaction;
-    assert.deepEqual(Object.keys(receipt).sort(), ['hash', 'timestamp']);
-    assert.equal(phase(frontendMilestone('atomic-batch-recovery', 'input').snapshot).phase, SwapPhase.InputPending);
-    assert.equal(phase(frontendMilestone('atomic-batch-recovery', 'completed').snapshot).phase, SwapPhase.Completed);
+    const receipt = frontendMilestone('atomic-batch-receipt', 'receipt').snapshot.storedWalletTransaction;
+    assert.deepEqual(Object.keys(receipt).sort(), ['hash', 'kind', 'timestamp']);
+    assert.equal(receipt.kind, 'atomic-batch');
+    assert.equal(phase(frontendMilestone('atomic-batch-receipt', 'input').snapshot).phase, SwapPhase.InputPending);
+    assert.equal(phase(frontendMilestone('atomic-batch-receipt', 'completed').snapshot).phase, SwapPhase.Completed);
+});
+
+test('receipt recovery keeps one progress card as action history and API transactions arrive', async () => {
+    const container = document.getElementById('root');
+    for (const mode of ['component', 'modal']) {
+        const root = createRoot(container);
+        try {
+            let panel;
+            for (const milestoneId of ['restored', 'receipt', 'input', 'finalizing', 'completed']) {
+                const milestone = frontendMilestone('atomic-batch-receipt', milestoneId);
+                await act(async () => root.render(preview(milestone.snapshot, milestone.at, mode)));
+                panel ??= container.querySelector('[data-steps-panel]');
+                assert.ok(panel);
+                assert.equal(container.querySelector('[data-steps-panel]'), panel, `${mode}: ${milestoneId}`);
+                assert.equal(panel.closest('[inert]'), null);
+                assert.equal(container.querySelector('[data-quote-layout]').dataset.quoteLayout, 'attached');
+                const visibleAction = [...container.querySelectorAll('button')].find(button =>
+                    !button.closest('[inert]') && /Swap now|Preparing|Transaction submitted|Try again/.test(button.textContent));
+                assert.equal(visibleAction, undefined, `${mode}: ${milestoneId} must not ask for another submission`);
+            }
+        } finally {
+            await act(async () => root.unmount());
+        }
+    }
+});
+
+test('restored batch snapshots distinguish confirmed identity from an ambiguous publication', () => {
+    const completed = frontendMilestone('atomic-batch-approved', 'completed').snapshot;
+    const snapshot = {
+        ...completed,
+        depositActions: [{ step: 'publish', status: 'completed' }],
+        storedWalletTransaction: { kind: 'atomic-batch' },
+    };
+    for (const mode of ['component', 'modal']) {
+        const view = document.createElement('div');
+        view.innerHTML = renderToStaticMarkup(preview(snapshot, 70, mode));
+        assert.equal(view.querySelector('[data-swap-flow]').dataset.swapFlow, 'atomic-batch');
+        assert.equal(view.querySelectorAll('[aria-label="Progress"] li').length, 2);
+        assert.match(view.textContent, /Transfer complete/);
+
+        for (const storedWalletTransaction of [undefined, { kind: 'transaction', hash: 'legacy-hash', timestamp: 1 }]) {
+            view.innerHTML = renderToStaticMarkup(preview({ ...snapshot, storedWalletTransaction }, 70, mode));
+            assert.equal(view.querySelector('[data-swap-flow]').dataset.swapFlow, 'unresolved');
+            assert.equal(view.querySelector('[data-flow-evidence]').dataset.flowEvidence, 'ambiguous-publication');
+        }
+    }
 });
 
 test('atomic rejection can retry while a reverted batch uses the fetched failed outcome', () => {
@@ -1781,8 +1841,8 @@ test('atomic batch scenarios are selectable in both canvas and timeline layouts'
         assert.equal(container.querySelectorAll('[data-milestone-id]').length, scenario.milestones.length);
         await chooseLayout(container, 'Timeline');
         assert.equal(container.querySelector('#scenario-title').textContent, scenario.label);
-        await act(async () => container.querySelector('aside button[aria-label="Atomic batch: recover submission"]').click());
-        assert.equal(container.querySelector('#scenario-title').textContent, 'Atomic batch: recover submission');
+        await act(async () => container.querySelector('aside button[aria-label="Atomic batch: saved receipt"]').click());
+        assert.equal(container.querySelector('#scenario-title').textContent, 'Atomic batch: saved receipt');
         assert.match(container.querySelector('[data-page2-preview]').textContent, /Confirming transaction/);
         assert.deepEqual(forbidden, []);
     } finally {

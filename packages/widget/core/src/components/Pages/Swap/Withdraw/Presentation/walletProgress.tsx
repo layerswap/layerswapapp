@@ -8,6 +8,9 @@ import { getCurrentDepositActionIndex } from '@/helpers/depositActions';
 import { WalletMessageDetails } from '../messages/Message';
 import { getDepositWorkflowProgress } from './DepositWorkflowView';
 import type { ResolvedSwapFlow } from '@/components/utils/resolveSwapFlow';
+import { truncateDecimals } from '@/components/utils/RoundDecimals';
+import { ProgressStatus, type StatusStep } from '../Processing/types';
+import type { ProgressPanelData } from './ProgressPanelView';
 
 export type WalletProgressData = {
     flow?: ResolvedSwapFlow;
@@ -15,6 +18,7 @@ export type WalletProgressData = {
     depositActions?: DepositAction[];
     stepTransactions?: SwapStepTransactions;
     loading?: boolean;
+    walletExecutionStarted?: boolean;
     submissionAccepted?: boolean;
     error?: boolean;
     swapError?: boolean;
@@ -79,8 +83,12 @@ export function getWalletProgress(data: WalletProgressData) {
         showStepError,
     } = getWalletWorkflowState(data);
     if (!isMultiStepWorkflow) return null;
+    // Prepared actions describe what can run; they do not mean execution has started.
+    if (data.walletExecutionStarted === false && !confirmingSubmission && !hasError) {
+        return null;
+    }
 
-    return getDepositWorkflowProgress({
+    const progress = getDepositWorkflowProgress({
         actions: data.depositActions,
         stepTransactions: data.stepTransactions,
         readOnly: data.readOnly,
@@ -97,4 +105,46 @@ export function getWalletProgress(data: WalletProgressData) {
         receiveAmount: data.quote?.receive_amount,
         showDeliveryStep: data.showSwapProgress,
     });
+
+    if (progress || !confirmingSubmission) {
+        return progress;
+    }
+
+    // A receipt can restore before action history. Keep confirmation visible
+    // without inventing approval/signature steps or advancing the API phase.
+    return getSubmittedSwapProgress(data);
+}
+
+function getSubmittedSwapProgress(data: WalletProgressData): ProgressPanelData {
+    const token = data.quote?.destination_token;
+    const amount = data.quote?.receive_amount;
+    const steps: StatusStep[] = [{
+        id: 'input_transfer',
+        name: 'Confirming transaction',
+        status: ProgressStatus.Current,
+        isLoading: true,
+        readOnly: data.readOnly,
+        index: 1,
+    }];
+
+    if (token) {
+        const receiveAmount = amount == null
+            ? ''
+            : `${truncateDecimals(amount, token.precision ?? token.decimals)} `;
+        steps.push({
+            id: 'output_transfer',
+            name: `Receive ${receiveAmount}${token.asset}`,
+            status: ProgressStatus.Upcoming,
+            readOnly: data.readOnly,
+            index: 2,
+        });
+    }
+
+    return {
+        title: 'Swap in progress',
+        label: 'Swap progress',
+        progress: 0,
+        announcement: 'Confirming transaction.',
+        steps,
+    };
 }

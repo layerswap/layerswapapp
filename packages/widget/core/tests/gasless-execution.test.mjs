@@ -133,7 +133,7 @@ test('the re-sign after an expired authorization opens a second wallet prompt', 
   assert.equal(validBefore, 456)
   assert.deepEqual(submitted, [], 'a signature is not evidence of submission')
   completeGaslessSubmission(ctx, { status: 'published', transaction: { transaction_hash: '0xgasless', status: 'pending' } }, validBefore)
-  assert.deepEqual(submitted, [['swap-gasless-api', '0xgasless']])
+  assert.deepEqual(submitted, [['swap-gasless-api', '0xgasless', 'gasless-deposit']])
   assert.equal(lifecycle.at(-1).step, 'gasless_authorization_submitted')
 })
 
@@ -217,7 +217,7 @@ test('an ambiguous EIP-3009 signature becomes gasless only after authoritative s
   assert.deepEqual(useDepositSignatureStore.getState().signatures[ctx.swapData.id], { validBefore: 123 })
   assert.deepEqual(submitted, [])
   completeGaslessSubmission(ctx, { status: 'published', transaction: { transaction_hash: '0xgasless', status: 'pending' } }, 123)
-  assert.deepEqual(submitted, [[ctx.swapData.id, '0xgasless']])
+  assert.deepEqual(submitted, [[ctx.swapData.id, '0xgasless', 'gasless-deposit']])
   assert.equal(useGaslessAuthorizationStore.getState().authorizations[ctx.swapData.id].kind, 'gasless')
   assert.equal(useDepositSignatureStore.getState().signatures[ctx.swapData.id], undefined)
 })
@@ -229,7 +229,7 @@ test('authoritative gasless submission seeds the API cache without persisting it
   const authorization = { status: 'published', transaction: { transaction_hash: '0xgasless', status: 'pending' } }
   completeGaslessSubmission(ctx, authorization, 123)
   assert.deepEqual(cached, [authorization])
-  assert.deepEqual(submitted, [[ctx.swapData.id, '0xgasless']])
+  assert.deepEqual(submitted, [[ctx.swapData.id, '0xgasless', 'gasless-deposit']])
   assert.deepEqual(useGaslessAuthorizationStore.getState().authorizations[ctx.swapData.id], { kind: 'gasless', validBefore: 123 })
 })
 

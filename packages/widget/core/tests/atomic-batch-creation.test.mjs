@@ -34,10 +34,9 @@ const fixture = JSON.parse(readFileSync(new URL('./fixtures/atomic-batch.json', 
 const store = state => Object.assign(selector => selector(state), { getState: () => state })
 const flush = async () => { for (let i = 0; i < 10; i++) await Promise.resolve() }
 
-async function setup({ capability = async () => 'supported', gasless = false, native = false, depositAddress = false, coordination = true } = {}) {
+async function setup({ capability = async () => 'supported', gasless = false, native = false, depositAddress = false } = {}) {
     let update, state, wallet = { id: 'Selected', providerName: 'EVM', address: fixture.account, addresses: [fixture.account],
         asSourceSupportedNetworks: [fixture.network.name], chainId: 42161 }
-    let outstanding
     const requests = [], checks = []
     const preferences = { gaslessEnabled: gasless }
     const network = fixture.network
@@ -57,7 +56,6 @@ async function setup({ capability = async () => 'supported', gasless = false, na
             '@/helpers/swapFlow': pure('../src/helpers/swapFlow.ts'),
             '@/stores/contractAddressStore': { useContractAddressStore: () => ({ checkContractStatus: async () => ({ sourceIsContract: false }) }) },
             '@/stores/gaslessPreferenceStore': { useGaslessPreferenceStore: store(preferences) },
-            '@/stores/atomicBatchStore': { useAtomicBatchStore: store({ batches: {} }), getAtomicBatch: id => outstanding?.swapId === id ? outstanding : undefined, supportsWebLocks: () => coordination },
             '@/lib/extendedRoutes/registry': { resolveExtendedRoutePlan: () => undefined },
             '@/lib/resolvers/resolverService': { resolverService: { getTransferResolver: () => ({ getAtomicBatchProvider: () => ({
                 getCapabilities: async ctx => { checks.push(ctx); return capability(ctx) },
@@ -73,8 +71,7 @@ async function setup({ capability = async () => 'supported', gasless = false, na
     await render()
     await act(() => update.setSubmitedFormValues(values))
     return { requests, checks, values, preferences, get update() { return update }, get state() { return state }, root,
-        changeWallet: async changes => { wallet = { ...wallet, ...changes }; await render() },
-        block: () => { outstanding = { swapId: 'unresolved' } } }
+        changeWallet: async changes => { wallet = { ...wallet, ...changes }; await render() } }
 }
 
 for (const capability of ['supported', 'ready', 'unsupported']) test(`creation opts in only for ${capability} capability`, async () => {
@@ -117,16 +114,6 @@ for (const change of ['account', 'chain', 'mode', 'away-and-back']) test(`stale 
     } finally { await act(() => h.root.unmount()) }
 })
 
-test('an unrelated wallet request does not block fresh swap creation', async () => {
-    const h = await setup()
-    try {
-        h.block()
-        await h.update.createSwap(h.values, {})
-        await act(() => h.update.startFreshSwapAttempt())
-        assert.equal(h.requests.length, 1)
-    } finally { await act(() => h.root.unmount()) }
-})
-
 test('switching source routes refreshes creation with stable wallet, account and settings references', async () => {
     const h = await setup()
     const nextNetwork = { ...fixture.network, name: 'BASE_MAINNET', chain_id: '8453' }
@@ -143,11 +130,11 @@ test('switching source routes refreshes creation with stable wallet, account and
     } finally { await act(() => h.root.unmount()) }
 })
 
-test('creation keeps the ordinary rail when the browser cannot coordinate batches', async () => {
-    const h = await setup({ coordination: false })
+test('atomic creation does not require browser coordination', async () => {
+    const h = await setup()
     try {
         await act(async () => { await h.update.createSwap(h.values, {}) })
-        assert.equal(h.checks.length, 0)
-        assert.equal(h.requests[0].use_atomic_batch, undefined)
+        assert.equal(h.checks.length, 1)
+        assert.equal(h.requests[0].use_atomic_batch, true)
     } finally { await act(() => h.root.unmount()) }
 })

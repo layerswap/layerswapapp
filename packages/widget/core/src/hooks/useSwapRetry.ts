@@ -5,7 +5,6 @@ import { hasSwapExecutionProgress, hasUnacknowledgedWalletAction } from '@/helpe
 import { gaslessFailureMessage } from './useGaslessAuthorization'
 import { useResolvedSwapStatus } from './useResolvedSwapStatus'
 import type { SwapFailureReason } from '@/components/utils/resolveSwapPhase'
-import { getAtomicBatch } from '@/stores/atomicBatchStore'
 import { useSwapTransactionStore, useGaslessAuthorizationStore, useDepositSignatureStore } from '@/stores/swapTransactionStore'
 
 export type { SwapFailureReason } from '@/components/utils/resolveSwapPhase'
@@ -20,7 +19,7 @@ type UseSwapRetryResult = {
 }
 
 export function useSwapRetry(): UseSwapRetryResult {
-    const { swapDetails, depositActionsResponse, atomicBatch, gaslessAuthorization, inputTransactionStatus } = useSwapDataState()
+    const { swapDetails, depositActionsResponse, gaslessAuthorization, inputTransactionStatus } = useSwapDataState()
     const { startFreshSwapAttempt } = useSwapDataUpdate()
     const swapId = swapDetails?.id
     const transaction = useSwapTransactionStore(state => swapId ? state.swapTransactions[swapId] : undefined)
@@ -31,10 +30,10 @@ export function useSwapRetry(): UseSwapRetryResult {
     const hasProgress = hasSwapExecutionProgress({ swapDetails, depositActions: depositActionsResponse, gaslessAuthorization })
     const unacknowledgedAction = hasUnacknowledgedWalletAction({ transaction, pendingSubmission, authorizationReceipt,
         signatureReceipt, transactionStatus: inputTransactionStatus, gaslessAuthorization, depositActions: depositActionsResponse })
-    const canRetry = !!swapId && !!failureReason && !hasProgress && !atomicBatch && !unacknowledgedAction
+    const canRetry = !!swapId && !!failureReason && !hasProgress && !unacknowledgedAction
 
     const restart = useCallback((standardTransfer: boolean) => {
-        if (!swapId || !failureReason || getAtomicBatch(swapId)) return
+        if (!swapId || !failureReason) return
         if (standardTransfer && failureReason !== 'gasless_deposit_failed') return
         if (useGaslessAuthorizationStore.getState().authorizations[swapId] !== authorizationReceipt
             || useDepositSignatureStore.getState().signatures[swapId] !== signatureReceipt) return

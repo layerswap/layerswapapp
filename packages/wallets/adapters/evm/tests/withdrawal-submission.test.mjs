@@ -138,19 +138,26 @@ function createWithdrawal(providerName, failure, split = { spot: '100000000000',
     }
 }
 
-function createProviderExecution() {
+function createProviderExecution(t) {
     const saved = new Map()
     const storage = {
         getItem: key => saved.get(key) ?? null,
         setItem: (key, value) => saved.set(key, value),
         removeItem: key => saved.delete(key),
     }
+    const previousStorage = Object.getOwnPropertyDescriptor(globalThis, 'localStorage')
+    Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: storage })
+    t.after(() => {
+        if (previousStorage) Object.defineProperty(globalThis, 'localStorage', previousStorage)
+        else delete globalThis.localStorage
+    })
     const statuses = { Pending: 'pending', Failed: 'failed' }
-    const { useSwapTransactionStore: store } = loadProvider('../../../../widget/core/src/stores/swapTransactionStore.tsx', {
+    const transactionStore = loadProvider('../../../../widget/core/src/stores/swapTransactionStore.tsx', {
         zustand: { create },
         'zustand/middleware': { persist, createJSONStorage: () => createJSONStorage(() => storage) },
         '../lib/apiClients/layerSwapApiClient': { BackendTransactionStatus: statuses },
     })
+    const { useSwapTransactionStore: store } = transactionStore
     const { executeProviderWithdrawal } = loadProvider('../../../../widget/core/src/components/Pages/Swap/Withdraw/WithdrawalProviders/executeProviderWithdrawal.ts', {
         '@layerswap/wallet-core/errors': { isUserRejection: () => false },
         '@/lib/apiClients/layerSwapApiClient': {
@@ -161,8 +168,7 @@ function createProviderExecution() {
             TransactionType: { Input: 'input' },
         },
         '@/helpers/swapProgress': { hasSwapExecutionProgress: () => false },
-        '@/stores/atomicBatchStore': { getAtomicBatch: () => undefined },
-        '@/stores/swapTransactionStore': { useSwapTransactionStore: store },
+        '@/stores/swapTransactionStore': transactionStore,
     })
     return {
         store,
@@ -182,7 +188,7 @@ function createProviderExecution() {
 for (const reload of [false, true]) {
     test(`Polymarket retries a disabled-provider refusal on the same swap${reload ? ' after reload' : ''}`, async t => {
         const flow = createWithdrawal('Polymarket', undefined, undefined, { submitRelayerTransaction: polymarketRelayer.submitRelayerTransaction })
-        const execution = createProviderExecution()
+        const execution = createProviderExecution(t)
         let submissions = 0
         t.mock.method(globalThis, 'fetch', async (_url, init) => {
             assert.equal(init.method, 'POST')
@@ -215,7 +221,7 @@ for (const [label, response] of [
 ]) {
     test(`Polymarket keeps ${label} blocked after reload`, async t => {
         const flow = createWithdrawal('Polymarket', undefined, undefined, { submitRelayerTransaction: polymarketRelayer.submitRelayerTransaction })
-        const execution = createProviderExecution()
+        const execution = createProviderExecution(t)
         let submissions = 0
         t.mock.method(globalThis, 'fetch', async () => { submissions++; return response() })
 

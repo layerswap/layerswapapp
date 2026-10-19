@@ -14,7 +14,7 @@ import { useSelectedAccount } from '@/context/swapAccounts';
 import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
 import { useSwapRetry } from '@/hooks/useSwapRetry';
 import type { JSX } from 'react';
-import { FC, useCallback, useEffect, useRef } from 'react';
+import { FC, useCallback, useEffect } from 'react';
 import { lifecycleContextFromSwap } from '@/lib/swapLifecycle';
 import ManualWithdraw from './ManualWithdraw';
 import { RetryView } from './Presentation/RetryView';
@@ -43,15 +43,7 @@ const SwapDetails: FC<Props> = ({
         quote,
         quoteIsLoading,
         quoteError,
-        atomicBatch,
     } = useSwapDataState();
-    const announcedBatches = useRef(new Set<string>())
-    const inputHash = swapDetails?.transactions?.find(tx => tx.type === 'input')?.transaction_hash
-    useEffect(() => {
-        if (!atomicBatch || !inputHash || !onWalletWithdrawalSuccess || announcedBatches.current.has(atomicBatch.attempt)) return
-        announcedBatches.current.add(atomicBatch.attempt)
-        onWalletWithdrawalSuccess()
-    }, [atomicBatch, inputHash, onWalletWithdrawalSuccess])
     const selectedSourceAccount = useSelectedAccount(
         'from',
         swapBasicData?.source_network.name,

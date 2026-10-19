@@ -56,6 +56,7 @@ import { ConnectWalletView, SendTransactionView } from './WalletActionsView';
 import { NetworkSwitchError } from '../Wallet/Common/ensureSourceChain';
 import type { ActionData } from '../Wallet/Common/sharedTypes';
 import type { Network } from '@layerswap/widget-types';
+import { useState } from 'react';
 
 /** Maps synthetic state to the same presenters used by the live controllers. */
 export function Page2Preview({
@@ -127,6 +128,9 @@ export function Page2LoadedPreview({
     now: number;
     onQuoteExpandedChange?: (expanded: boolean) => void;
 }) {
+    // Opening a snapshot is settled; navigating an existing preview runs the
+    // same entrance as live swap creation, including a newly mounted workflow.
+    const [initialSnapshot] = useState(s);
     const input = s.details.transactions.find(
         (t) => t.type === TransactionType.Input,
     );
@@ -156,6 +160,7 @@ export function Page2LoadedPreview({
     const flow = resolveSwapFlow({
         swapData: s.swap,
         depositActions: s.depositActions,
+        transaction: s.storedWalletTransaction,
         stepTransactions: s.stepTransactions,
         quote: s.quote,
         gaslessAuthorization: s.gaslessAuthorization,
@@ -186,6 +191,8 @@ export function Page2LoadedPreview({
     const authTx = s.gaslessAuthorization?.transaction;
     const progress = (
         <ProcessingView
+            available={!!s.swapId}
+            animateOnMount={s !== initialSnapshot && !!s.walletExecutionStarted}
             flow={flow}
             walletProgress={previewWalletProgress(s)}
             swapBasicData={s.swap}
@@ -542,6 +549,7 @@ function previewWalletProgress(s: Page2LoadedSnapshot) {
         stepTransactions: s.stepTransactions,
         readOnly: true,
         loading: state.pending,
+        walletExecutionStarted: s.walletExecutionStarted,
         submissionAccepted: state.submissionAccepted,
         actionStateText: state.label,
         error: !!state.error,

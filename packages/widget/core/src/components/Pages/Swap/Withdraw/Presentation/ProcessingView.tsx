@@ -14,7 +14,7 @@ import {
 import { SwapFailReasons } from '@/Models/RangeError';
 import { SwapStatus, type Refuel } from '@layerswap/widget-types';
 import { CircleCheck, Undo2 } from 'lucide-react';
-import { useMemo, type ReactNode } from 'react';
+import { useMemo, type ComponentProps, type ReactNode } from 'react';
 import { ProgressPanelView, type ProgressPanelData } from './ProgressPanelView';
 import { getWalletProgress, type WalletProgressData } from './walletProgress';
 import {
@@ -29,6 +29,13 @@ import { getDepositActionLabel } from '@/helpers/depositActions';
 import { resolveSwapFlow, type ResolvedSwapFlow } from '@/components/utils/resolveSwapFlow';
 
 export function ProcessingView({
+    available = true,
+    ...props
+}: ComponentProps<typeof ProcessingContentView> & { available?: boolean }) {
+    return available ? <ProcessingContentView {...props} /> : null;
+}
+
+function ProcessingContentView({
     flow: resolvedFlow,
     swapBasicData,
     swapDetails,
@@ -47,6 +54,7 @@ export function ProcessingView({
     stepTransactions,
     quote,
     walletProgress,
+    animateOnMount = !!walletProgress?.walletExecutionStarted,
 }: {
     flow?: ResolvedSwapFlow;
     swapBasicData: SwapBasicData;
@@ -66,6 +74,7 @@ export function ProcessingView({
     stepTransactions?: SwapStepTransactions;
     quote?: SwapQuote;
     walletProgress?: WalletProgressData;
+    animateOnMount?: boolean;
 }) {
     const { source_network, destination_network, destination_token } =
         swapBasicData;
@@ -505,5 +514,8 @@ export function ProcessingView({
         };
     }
 
-    return <ProgressPanelView data={progress} />;
+    return <ProgressPanelView
+        data={progress}
+        animateOnMount={animateOnMount}
+    />;
 }

@@ -7,7 +7,7 @@ import LayerSwapApiClient, {
     SwapDetails,
     GaslessAuthorizationResult,
 } from "@/lib/apiClients/layerSwapApiClient";
-import { useDepositSignatureStore, useGaslessAuthorizationStore, useSwapTransactionStore } from "@/stores/swapTransactionStore";
+import { useDepositSignatureStore, useGaslessAuthorizationStore, useSwapTransactionStore, type SwapExecutionKind } from "@/stores/swapTransactionStore";
 import { getExplorerUrl } from '@/lib/address/explorerUrl';
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 import { isUserRejection } from "./isUserRejection";
@@ -30,7 +30,7 @@ export type DepositExecutionContext = {
     signal?: AbortSignal
     layerswapApiClient: LayerSwapApiClient
     setActionStateText: (text?: string) => void
-    setSwapTransaction: (id: string, hash: string) => void
+    setSwapTransaction: (id: string, hash: string, kind?: SwapExecutionKind) => void
     cacheGaslessAuthorization: (authorization: GaslessAuthorizationResult) => void
     invalidateGaslessAuthorization: () => Promise<void>
     setSwapError?: (value: string | null) => void
@@ -114,7 +114,7 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
     // Save the approval receipt even if the screen closed during the wallet request.
     // It must not replace the execution transaction or mark the swap as submitted.
     if (action.step === 'approve_permit2') {
-        useSwapTransactionStore.getState().setStepTransaction(
+        await useSwapTransactionStore.getState().setStepTransaction(
             swapData.id,
             action.step,
             hash,
@@ -123,8 +123,8 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
         return hash
     }
 
+    await setSwapTransaction(swapData.id, hash, action.step === 'publish' ? 'frontend-swap' : 'wallet-transfer')
     onSuccess()
-    setSwapTransaction(swapData.id, hash)
     useDepositSignatureStore.getState().removeDepositSignature(swapData.id)
     try {
         await layerswapApiClient.SwapCatchup(swapData.id, hash)
@@ -259,7 +259,7 @@ export const completeGaslessSubmission = (ctx: DepositExecutionContext, authoriz
     ctx.cacheGaslessAuthorization(authorization)
     useDepositSignatureStore.getState().removeDepositSignature(swapData.id)
     const hash = authorization.transaction?.transaction_hash
-    if (hash) setSwapTransaction(swapData.id, hash)
+    if (hash) setSwapTransaction(swapData.id, hash, 'gasless-deposit')
     onSuccess()
 }
 

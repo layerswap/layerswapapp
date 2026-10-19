@@ -48,7 +48,7 @@ export function useSwapHistoryData(addresses?: string[], networks?: string[]) {
     const storeSwapIds = useMemo(() => {
         const thirtyMinutesAgo = Date.now() - 30 * 60 * 1000
         return Object.entries(swapTransactions || {})
-            .filter(([, tx]) => tx.timestamp >= thirtyMinutesAgo)
+            .filter(([, tx]) => tx.timestamp != null && tx.timestamp >= thirtyMinutesAgo)
             .map(([id]) => id)
             .sort()
             .join(',')

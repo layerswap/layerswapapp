@@ -149,7 +149,7 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
                     swapBasicData={swapBasicData}
                     refuel={refuel}
                     onTransferComplete={(hash: string) => {
-                        if (swapId) useSwapTransactionStore.getState().setSwapTransaction(swapId, hash)
+                        if (swapId) useSwapTransactionStore.getState().setSwapTransaction(swapId, hash, 'wallet-transfer')
                         onSwapLifecycle({
                             step: 'transaction_submitted',
                             stage: 'input_transfer',

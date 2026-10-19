@@ -128,6 +128,7 @@ export type SendTransactionViewProps = SubmitButtonProps & {
     quoteIsLoading?: boolean;
     quoteError?: boolean;
     loading?: boolean;
+    walletExecutionStarted?: boolean;
     /** A wallet receipt keeps confirmation visible without advancing the API swap phase. */
     submissionAccepted?: boolean;
     networkSwitch?: ActionData;
@@ -163,6 +164,7 @@ export function SendTransactionView({
     quoteError,
     loading,
     submissionAccepted,
+    walletExecutionStarted,
     networkSwitch,
     sourceNetworkName,
     actionStateText,
@@ -188,20 +190,22 @@ export function SendTransactionView({
     ...props
 }: SendTransactionViewProps) {
     const walletProgress = {
-        flow, quote, depositActions, stepTransactions, loading, submissionAccepted,
+        flow, quote, depositActions, stepTransactions, loading, submissionAccepted, walletExecutionStarted,
         error, swapError, gaslessUnavailable, errorMessage, actionStateText,
         showSwapProgress, readOnly,
     };
-    const { isMultiStepWorkflow, hasError, workflowFailed, confirmingSubmission, showStepError } =
+    const { hasError, workflowFailed, confirmingSubmission, showStepError } =
         getWalletWorkflowState(walletProgress);
     const workflowCompleted = isDepositWorkflowComplete(depositActions ?? []);
     const actionableAction = getActionableDepositAction(depositActions);
     const primaryActionText = props.isDisabled && actionButtonText ? actionButtonText : actionableAction
         ? getDepositActionLabel(actionableAction)
         : actionButtonText || 'Swap now';
-    const progress = showProgress ? getWalletProgress(walletProgress) : null;
-    const workflowProgress = progress
-        ? <ProgressPanelView data={progress} />
+    // The shared processing slot can render the card, but these controls must
+    // still follow the same progress visibility when showProgress is false.
+    const progress = getWalletProgress(walletProgress);
+    const workflowProgress = showProgress && progress
+        ? <ProgressPanelView data={progress} animateOnMount={walletExecutionStarted && !readOnly} />
         : undefined;
     const networkSwitchMessage = networkSwitch && (networkSwitch.isPending || networkSwitch.isError)
         ? <ChangeNetworkMessage data={networkSwitch} network={sourceNetworkName ?? ''} />
@@ -220,7 +224,7 @@ export function SendTransactionView({
             <WalletExecutionTransition
                 workflow={workflowProgress}
                 controls={
-                    isMultiStepWorkflow && (loading || confirmingSubmission) ? (
+                    progress && (loading || confirmingSubmission) ? (
                         message
                     ) : (
                         <>

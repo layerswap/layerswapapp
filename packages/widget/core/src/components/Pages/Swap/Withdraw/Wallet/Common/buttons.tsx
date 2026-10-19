@@ -7,7 +7,9 @@ import { hasSwapExecutionProgress, hasUnacknowledgedWalletAction } from '@/helpe
 import { gaslessAuthorizationKey, isGaslessCapableRoute, isGaslessDepositWorkflow } from '@/helpers/gasless';
 import { isDepositWorkflowComplete } from '@/helpers/depositActions';
 import { isBatchTransferAction } from '@/helpers/depositActions';
-import { acquireWalletExecution, getAtomicBatch } from '@/stores/atomicBatchStore';
+import { isAtomicBatchEligible } from '@/helpers/atomicBatch';
+import { isExtendedSourceNetwork } from '@/lib/extendedRoutes/registry';
+import { acquireWalletExecution } from '@/lib/walletExecution';
 import { executeAtomicBatch } from '@/lib/atomicBatchExecution';
 import { resolverService } from '@/lib/resolvers/resolverService';
 import { isUserRejection } from './isUserRejection';
@@ -159,7 +161,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     refuel,
     ...props
 }) => {
-    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, flow, refuel: refuelData, swapError, setSwapError, atomicBatch, gaslessAuthorization, inputTransactionStatus } = useSwapDataState()
+    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, flow, refuel: refuelData, swapError, setSwapError, walletExecutionStarted, gaslessAuthorization, inputTransactionStatus, atomicBatchSupported } = useSwapDataState()
     const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
     const gaslessFailureStage = useGaslessPreferenceStore(s => s.gaslessFailureStage)
     const gaslessEnabled = useGaslessPreferenceStore(s => s.gaslessEnabled)
@@ -257,6 +259,17 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     })
     const desiredGasless = gaslessEnabled && gaslessCapable
     const currentGasless = isGaslessDepositWorkflow(depositActions)
+    const canCreateAtomicBatch = !swapId && atomicBatchSupported && isAtomicBatchEligible({
+        network: swapBasicData.source_network,
+        token: swapBasicData.source_token,
+        depositMethod: swapBasicData.use_deposit_address ? 'deposit_address' : 'wallet',
+        useGasless: desiredGasless,
+        sourceIsSupported: !!selectedWallet?.asSourceSupportedNetworks?.includes(swapBasicData.source_network.name),
+        sourceAddress: selectedSourceAccount?.address,
+        sourceExchange: swapBasicData.source_exchange,
+        extended: isExtendedSourceNetwork(swapBasicData.source_network.name),
+    })
+    const initialActionButtonText = actionButtonText || (canCreateAtomicBatch ? 'Approve and swap' : undefined)
     const walletActionFeedback = useMemo(() => ({
         swapId,
         loading,
@@ -293,7 +306,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         const executionGaslessEnabled = useGaslessPreferenceStore.getState().gaslessEnabled
         const executionDesiredGasless = executionGaslessEnabled && gaslessCapable
         const signal = executionScope.current?.signal
-        if (!signal || signal.aborted || executionInFlight.current || getAtomicBatch(swapId)) return
+        if (!signal || signal.aborted || executionInFlight.current) return
         const receipts = useSwapTransactionStore.getState()
         if (swapId && hasUnacknowledgedWalletAction({ transaction: receipts.swapTransactions[swapId],
             pendingSubmission: receipts.pendingSubmissions?.[swapId], transactionStatus: inputTransactionStatus })) return
@@ -493,7 +506,6 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     },
                     setSwapError: value => { if (!signal.aborted) setSwapError?.(value) },
                     onSuccess: () => {
-                        // Submission has finished, even if its screen closed. Catchup must not own the wallet lock.
                         releaseExecution()
                         if (signal.aborted) {
                             return
@@ -643,7 +655,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const switchToStandard = () => {
         // A signature or submission can arrive after render but before this click.
         // Keep the preference and existing swap intact while either can move funds.
-        if (executionInFlight.current || getAtomicBatch(swapId) || hasRecordedWalletAction() || hasSwapExecutionProgress({
+        if (executionInFlight.current || hasRecordedWalletAction() || hasSwapExecutionProgress({
             swapDetails,
             depositActions,
             gaslessAuthorization,
@@ -683,13 +695,13 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             quoteIsLoading={quoteIsLoading}
             quoteError={!!quoteError}
             loading={loading}
-            submissionAccepted={!!atomicBatch?.id || !!storedWalletTransaction?.hash}
-            isDisabled={!!atomicBatch || !!storedWalletTransaction?.hash}
+            submissionAccepted={!!storedWalletTransaction?.hash}
+            walletExecutionStarted={walletExecutionStarted}
+            isDisabled={!!storedWalletTransaction?.hash}
             networkSwitch={networkSwitch}
             sourceNetworkName={swapBasicData.source_network.display_name}
             actionStateText={actionStateText}
-            actionButtonText={atomicBatch ? 'Checking wallet submission'
-                : storedWalletTransaction?.hash ? 'Transaction submitted' : actionButtonText}
+            actionButtonText={storedWalletTransaction?.hash ? 'Transaction submitted' : initialActionButtonText}
             showSwapProgress={!swapBasicData.use_deposit_address && !desiredGasless
                 && swapBasicData.source_network.type === 'evm' && !!swapBasicData.source_token.contract
                 && swapBasicData.source_network.name === swapBasicData.destination_network?.name}

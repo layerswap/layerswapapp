@@ -118,6 +118,7 @@ const snapshot = (
         use_deposit_address: false,
     },
     details: details(),
+    swapId: details().id,
     quote,
     sourceAddress: account,
     quoteState: { status: 'ready', expanded: false, gasFeeInUsd: 0.42 },
@@ -148,6 +149,7 @@ const output = transaction(TransactionType.Output, {
     created_date: date(90),
 });
 const stored = {
+    kind: 'transaction' as const,
     hash,
     timestamp: EPOCH + 10_000,
 };
@@ -2249,7 +2251,7 @@ const atomic = (
         walletExecutionStarted: true,
         ...patch,
     });
-const atomicReceipt = { hash, timestamp: EPOCH + 20_000 };
+const atomicReceipt = { kind: 'atomic-batch' as const, hash, timestamp: EPOCH + 20_000 };
 const atomicInput = transaction(TransactionType.Input, {
     timestamp: date(30),
     created_date: date(30),
@@ -2351,16 +2353,24 @@ const atomicBatchScenarios: TimelineScenario[] = [
                     0,
                     'ready',
                     'Quote ready',
-                    'Review the quote before preparing the atomic swap.',
-                    frontend({ swapId: undefined }),
+                    'Approve and swap starts preparation and opens the wallet confirmation automatically.',
+                    frontend({
+                        swapId: undefined,
+                        actionButtonText: 'Approve and swap',
+                        walletExecutionStarted: false,
+                    }),
                     SwapPhase.AwaitingUserDeposit,
                 ),
                 m(
                     5,
-                    'prepared',
-                    'Atomic swap prepared',
-                    description,
-                    atomic(allowance, { walletExecutionStarted: false }),
+                    'preparing',
+                    'Preparing swap',
+                    'The initial click prepares the batch. The quote stays expanded and the button stays busy until wallet execution starts.',
+                    frontend({
+                        swapId: undefined,
+                        walletExecutionStarted: false,
+                        wallet: { kind: 'send', pending: true, label: 'Preparing swap…' },
+                    }),
                     SwapPhase.AwaitingUserDeposit,
                 ),
                 m(
@@ -2381,8 +2391,9 @@ const atomicBatchScenarios: TimelineScenario[] = [
                     20,
                     'submitted',
                     'Confirming swap transaction',
-                    'The wallet accepted the batch. Approval and swap stay in one confirmation step while the input is detected.',
+                    'The successful wallet receipt supplies the transaction hash. Approval and swap stay in one confirmation step while the API detects the input.',
                     atomic(allowance, {
+                        storedWalletTransaction: atomicReceipt,
                         wallet: { kind: 'send', disabled: true, submissionAccepted: true },
                     }),
                     SwapPhase.AwaitingUserDeposit,
@@ -2392,8 +2403,8 @@ const atomicBatchScenarios: TimelineScenario[] = [
         }),
     ),
     {
-        id: 'atomic-batch-recovery',
-        label: 'Atomic batch: recover submission',
+        id: 'atomic-batch-receipt',
+        label: 'Atomic batch: saved receipt',
         group: 'token-swap',
         section: 'errors-and-retries',
         milestones: [
@@ -2401,8 +2412,11 @@ const atomicBatchScenarios: TimelineScenario[] = [
                 0,
                 'restored',
                 'Confirming original transaction',
-                'The page reopened with the original batch ID. Its confirmation continues without requesting another transaction.',
+                'The page reopened with the saved transaction hash and kind. The API still determines its current progress.',
                 atomic('approval-required', {
+                    walletExecutionStarted: false,
+                    depositActions: undefined,
+                    storedWalletTransaction: atomicReceipt,
                     wallet: { kind: 'send', disabled: true, submissionAccepted: true },
                 }),
                 SwapPhase.AwaitingUserDeposit,
@@ -2410,9 +2424,10 @@ const atomicBatchScenarios: TimelineScenario[] = [
             m(
                 20,
                 'receipt',
-                'Transaction receipt recovered',
-                'The transaction hash is recovered as a helper. Without fetched input evidence it cannot advance the swap phase or permit another submission.',
+                'Waiting for input detection',
+                'The saved transaction hash remains a helper. Fetched input evidence determines when the swap phase advances.',
                 atomic('approval-required', {
+                    walletExecutionStarted: false,
                     storedWalletTransaction: atomicReceipt,
                     wallet: { kind: 'send', disabled: true, submissionAccepted: true },
                 }),
@@ -2495,9 +2510,9 @@ const atomicBatchScenarios: TimelineScenario[] = [
                 10,
                 'submitted',
                 'Confirming swap transaction',
-                'Approval and swap stay in one confirmation step while the transaction is checked.',
+                'The active submission waits for the wallet receipt.',
                 atomic('approval-required', {
-                    wallet: { kind: 'send', disabled: true, submissionAccepted: true },
+                    wallet: { kind: 'send', pending: true, label: 'Confirming swap…' },
                 }),
                 SwapPhase.AwaitingUserDeposit,
             ),

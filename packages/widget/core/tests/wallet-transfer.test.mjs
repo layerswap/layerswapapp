@@ -146,7 +146,7 @@ for (const result of ['success', 'rejected', 'expired-again', 'refresh-failed', 
     assert.equal(operations[0].attributes.outcome, result === 'success' ? 'succeeded' : result === 'rejected' ? 'rejected' : 'failed')
     assert.equal(operations[0].attributes.reason_code, retried ? undefined : 'deposit_action_refresh_failed')
     assert.equal(successes, result === 'success' ? 1 : 0)
-    assert.deepEqual(published, result === 'success' ? [['swap-stellar', 'stellar-hash']] : [])
+    assert.deepEqual(published, result === 'success' ? [['swap-stellar', 'stellar-hash', 'wallet-transfer']] : [])
     assert.deepEqual(catchups, result === 'success' ? [['swap-stellar', 'stellar-hash']] : [])
   })
 }
@@ -222,6 +222,6 @@ for (const hash of ['transaction-hash', '', undefined]) {
     assert.equal(operations[0].attributes.outcome, hash ? 'succeeded' : 'failed')
     assert.equal(operations[0].attributes.reason_code, hash ? undefined : 'missing_transaction_hash')
     assert.equal(successes, hash ? 1 : 0)
-    assert.deepEqual(published, hash ? [['swap-standard', hash]] : [])
+    assert.deepEqual(published, hash ? [['swap-standard', hash, 'wallet-transfer']] : [])
   })
 }

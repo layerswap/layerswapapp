@@ -1,4 +1,5 @@
 import { SwapStatus } from '@layerswap/widget-types';
+import type { SwapTransaction } from '@/stores/swapTransactionStore'
 import { SwapResponse, TransactionType } from '@/lib/apiClients/layerSwapApiClient'
 
 const INCOMPLETE_STATUSES: string[] = [
@@ -12,19 +13,20 @@ const INCOMPLETE_STATUSES: string[] = [
 
 const hasUserActivity = (
     sr: SwapResponse,
-    storeTransactions: Record<string, unknown>
+    storeTransactions: Record<string, SwapTransaction>
 ): boolean => {
     const hasInputTx = !!sr.swap?.transactions?.some(
         (t: { type: TransactionType }) => t.type === TransactionType.Input
     )
     const swapId = sr.swap?.id
-    const hasStoreTx = !!(swapId && storeTransactions[swapId])
+    const transaction = swapId ? storeTransactions[swapId] : undefined
+    const hasStoreTx = !!transaction?.hash
     return hasInputTx || hasStoreTx
 }
 
 export const shouldDisplay = (
     sr: SwapResponse,
-    storeTransactions: Record<string, unknown>
+    storeTransactions: Record<string, SwapTransaction>
 ): boolean => {
     const status = sr.swap?.status as string | undefined
     if (!status || !INCOMPLETE_STATUSES.includes(status)) return true

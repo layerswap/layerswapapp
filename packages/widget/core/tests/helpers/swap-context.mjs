@@ -14,7 +14,7 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
     const snapshots = new Map()
     const store = state => Object.assign(selector => selector(state), { getState: () => state })
     const emptyStores = {
-        useSwapTransactionStore: store({ swapTransactions, stepTransactions: {}, setSwapTransaction: noop }),
+        useSwapTransactionStore: store({ swapTransactions, stepTransactions: {}, setSwapTransaction: noop, setSwapTransactionKind: noop }),
         useGaslessAuthorizationStore: store({ authorizations: {} }),
         useDepositSignatureStore: store({ removeDepositSignature: noop }),
     }
@@ -68,15 +68,18 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
             return { data: id ? snapshots.get(id) : undefined, mutate: noop }
         } },
         '@/hooks/useSwapStatusNotification': { useSwapStatusNotification: noop },
-        '@/hooks/useAtomicBatchTracking': { useAtomicBatchTracking: noop },
         '@/hooks/useAtomicBatchCapability': { useAtomicBatchCapability: () => false },
         '@/hooks/useClientLayoutEffect': { useClientLayoutEffect: React.useLayoutEffect },
-        '@/stores/atomicBatchStore': { useAtomicBatchStore: store({ batches: {} }), getAtomicBatch: noop, supportsWebLocks: () => true },
         '@/helpers/atomicBatch': { isAtomicBatchEligible: () => false },
         '@/lib/resolvers/resolverService': {},
         '@/lib/swapLifecycle': {},
         '@/lib/swapCreation': {},
+        '@/lib/swapExecution': { recordSwapExecution: noop },
         ...overrides,
+    }
+    imports['@/stores/swapTransactionStore'] = {
+        ...emptyStores, ...stores,
+        ...overrides['@/stores/swapTransactionStore'],
     }
     const { outputText } = ts.transpileModule(readFileSync(new URL('../../src/context/swap.tsx', import.meta.url), 'utf8'), {
         compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },

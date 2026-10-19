@@ -2,6 +2,7 @@ import useSWR from 'swr'
 import type { ApiResponse } from '@layerswap/widget-types'
 import LayerSwapApiClient, { DepositAction, GaslessAuthorizationResult, GaslessAuthorizationStatus } from '@/lib/apiClients/layerSwapApiClient'
 import { useGaslessAuthorizationStore } from '@/stores/swapTransactionStore'
+import { recordSwapExecution } from '@/lib/swapExecution'
 import { gaslessAuthorizationKey, isGaslessAuthorizationForWorkflow } from '@/helpers/gasless'
 
 const apiClient = new LayerSwapApiClient()
@@ -29,6 +30,9 @@ export function useGaslessAuthorizationStatus(swapId: string | undefined, deposi
         active ? gaslessAuthorizationKey(swapId) : null,
         () => apiClient.GetGaslessAuthorizationAsync(swapId!),
         {
+            onSuccess: response => {
+                if (swapId && !response.error) recordSwapExecution(swapId, { depositActions, gaslessAuthorization: response.data })
+            },
             refreshInterval: response => isTerminalGaslessStatus(response?.data?.status) ? 0 : POLL_INTERVAL_MS,
             errorRetryCount: 5,
             revalidateOnFocus: false,

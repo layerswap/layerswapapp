@@ -20,6 +20,7 @@ function loadSource(path, imports = {}) {
         if (name === 'react/jsx-runtime') return require(name)
         if (name === '../components/utils/resolveSwapFlow.js' || name === '@/components/utils/resolveSwapFlow') return loadSource("../src/components/utils/resolveSwapFlow.ts");
         if (name in imports) return imports[name]
+        if (name === '@/lib/swapExecution') return { recordSwapExecution: () => {} }
         throw new Error(`Unexpected dependency: ${name}`)
     }, module, module.exports)
     return module.exports
@@ -31,7 +32,7 @@ const rejection = loadSource(`${walletPath}isUserRejection.ts`, { '@layerswap/wa
 const gasless = loadSource('../src/helpers/gasless.ts')
 const depositActions = loadSource('../src/helpers/depositActions.ts')
 const atomicActions = loadSource('../src/lib/atomicBatchActions.ts')
-const atomicStore = loadSource('../src/stores/atomicBatchStore.ts', { zustand: require('zustand') })
+const walletExecution = loadSource('../src/lib/walletExecution.ts')
 const atomicFixtures = JSON.parse(readFileSync(new URL('./fixtures/atomic-batch.json', import.meta.url)))
 const swapProgress = loadSource('../src/helpers/swapProgress.ts', {
     './gasless': gasless,
@@ -202,6 +203,7 @@ function createWorkflow({
         ? ({ children, onClick, isDisabled }) => createElement('button', { onClick, disabled: isDisabled }, children)
         : noop
     const progressPanel = loadSource('../src/components/Pages/Swap/Withdraw/Presentation/ProgressPanelView.tsx', {
+        'framer-motion': { AnimatePresence: ({ children }) => children },
         '../Processing/StepsComponent': {
             default: Steps,
             StepsPanel: ({ children }) => createElement(Fragment, null, children),
@@ -216,6 +218,8 @@ function createWorkflow({
     })
     const walletProgress = loadSource('../src/components/Pages/Swap/Withdraw/Presentation/walletProgress.tsx', {
         '@/helpers/depositActions': depositActions,
+        '@/components/utils/RoundDecimals': loadSource('../src/components/utils/RoundDecimals.ts'),
+        '../Processing/types': progressTypes,
         './DepositWorkflowView': workflowView,
         '../messages/Message': { WalletMessageDetails: ({ children }) => children },
     })
@@ -329,7 +333,7 @@ function createWorkflow({
         '@/components/Pages/Swap/Form/SecondaryComponents/validationError/constants': {},
         '@/lib/balances/useBalance': { useBalance: () => ({}) },
         '@/lib/gases/useSWRGas': { default: () => ({}) },
-        '@/context/depositSettings': { useDepositSettings: () => ({}) },
+        '@/context/depositSettings': { useDepositSettings: () => state.depositSettings ?? {} },
         './depositExecution': execution,
         './ensureSourceChain': sourceChain,
         '../../Presentation/WalletActionsView': mounted ? { ...walletViews, SendTransactionView: props => {
@@ -343,7 +347,8 @@ function createWorkflow({
         '../../Processing/types': progressTypes,
         '@/helpers/swapProgress': swapProgress,
         '@/helpers/atomicBatch': { isAtomicBatchEligible: () => state.atomicBatchEligible ?? false },
-        '@/stores/atomicBatchStore': realWalletExecution ? atomicStore : { acquireWalletExecution: () => () => {}, getAtomicBatch: noop },
+        '@/lib/extendedRoutes/registry': { isExtendedSourceNetwork: () => false },
+        '@/lib/walletExecution': realWalletExecution ? walletExecution : { acquireWalletExecution: () => () => {} },
         '@/lib/atomicBatchExecution': { executeAtomicBatch: async (ctx, action) => {
             if (!atomic) assert.fail('legacy workflow cannot execute a batch')
             calls.batches.push(action)
@@ -480,22 +485,25 @@ for (const name of ['zero_allowance', 'allowance_reset', 'sufficient_allowance']
     assert.deepEqual(flow.calls.errors, [])
 })
 
-test('wallet acceptance keeps the confirmation view without permitting another submission', () => {
+test('the button keeps an atomic submission loading until its receipt is available', async () => {
     const flow = createWorkflow({ atomic: true })
-    flow.state.depositActionsResponse = [atomicFixtures.actions.zero_allowance]
-    flow.state.atomicBatch = { swapId }
-    assert.equal(flow.render().viewProps.isDisabled, true)
-    assert.equal(flow.render().viewProps.submissionAccepted, false, 'an unresolved wallet prompt has no acceptance receipt')
-
-    flow.state.atomicBatch = { swapId, id: 'wallet-batch-id' }
+    flow.state.apiActions = [atomicFixtures.actions.zero_allowance]
+    flow.state.depositActionsResponse = flow.state.apiActions
+    const response = Promise.withResolvers()
+    flow.state.onWalletPrompt = () => response.promise
+    flow.render()
+    await flow.poll()
+    const pending = flow.render().button.props.onClick()
+    for (let i = 0; i < 20; i++) await Promise.resolve()
+    assert.equal(flow.render().viewProps.loading, true)
+    assert.equal(flow.render().viewProps.submissionAccepted, false)
+    await flow.render().viewProps.handleClick()
+    assert.equal(flow.calls.batches.length, 1, 'the active button ignores repeated clicks')
+    response.resolve()
+    await pending
+    flow.stores.useSwapTransactionStore.getState().swapTransactions[swapId] = { kind: 'atomic-batch', hash: '0xtransaction' }
     assert.equal(flow.render().viewProps.submissionAccepted, true)
     assert.equal(flow.render().viewProps.isDisabled, true)
-
-    flow.state.atomicBatch = undefined
-    flow.stores.useSwapTransactionStore.getState().swapTransactions[swapId] = { hash: '0xtransaction' }
-    assert.equal(flow.render().viewProps.submissionAccepted, true)
-    assert.equal(flow.render().viewProps.isDisabled, true)
-    assert.deepEqual(flow.calls.batches, [])
     assert.deepEqual(flow.calls.transfer, [])
 })
 
@@ -572,14 +580,36 @@ for (const rejectedError of [walletErrors.userRejectedError(), { code: 4001 }]) 
     })
 }
 
-test('wallet capabilities alone never promise an approval before the server provides the calls', () => {
+test('an eligible batch starts with Approve and swap before creation and follows the returned calls', async () => {
     const flow = createWorkflow()
     flow.state.swapId = undefined
     flow.state.swapDetails = undefined
     flow.state.depositActionsResponse = undefined
     flow.state.atomicBatchSupported = true
     flow.state.atomicBatchEligible = true
+    assert.equal(flow.render().button.props.children, 'Approve and swap')
+    assert.equal(flow.render().steps, undefined, 'batch availability does not start execution progress')
+
+    flow.state.depositSettings = { actionButtonText: 'Deposit' }
+    assert.equal(flow.render().button.props.children, 'Deposit')
+    flow.state.depositSettings = undefined
+
+    flow.state.atomicBatchSupported = false
     assert.equal(flow.render().button.props.children, 'Swap now')
+    flow.state.atomicBatchSupported = true
+    flow.state.atomicBatchEligible = false
+    assert.equal(flow.render().button.props.children, 'Swap now')
+    flow.state.atomicBatchEligible = true
+    flow.state.swapId = swapId
+    assert.equal(flow.render().button.props.children, 'Sign to swap', 'capabilities cannot reclassify an existing swap')
+
+    flow.state.depositActionsResponse = await atomicActions.resolveAtomicDepositActions(
+        atomicFixtures.deposit_actions.sufficient_allowance,
+        async () => atomicFixtures.next_actions.sufficient_allowance,
+    )
+    flow.state.apiActions = flow.state.depositActionsResponse
+    await flow.poll()
+    assert.equal(flow.render().button.props.children, 'Confirm swap', 'known sufficient allowance uses the actual call label')
 })
 
 for (const route of ['same-network token swap', 'bridge', 'native token', 'manual deposit']) {

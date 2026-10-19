@@ -1,24 +1,26 @@
 import type { DepositAction, GaslessAuthorizationResult, SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
-import type { GaslessAuthorization, SwapStepTransactions } from '@/stores/swapTransactionStore';
+import type { GaslessAuthorization, SwapStepTransactions, SwapTransaction, SwapExecutionKind } from '@/stores/swapTransactionStore';
 import type { ResolvedSwapStatus } from './resolveSwapPhase';
 
 export type SwapFlowKind =
     | 'manual-deposit'
     | 'exchange-deposit'
     | 'specialized-wallet'
-    | 'wallet-transfer'
-    | 'frontend-swap'
-    | 'gasless-deposit'
+    | SwapExecutionKind
     | 'unresolved';
 
 export type SwapFlowEvidence =
     | 'deposit-method' | 'source-provider' | 'publish-step' | 'deposit-step'
     | 'frontend-signature' | 'gasless-signature' | 'gasless-authorization'
-    | 'legacy-transfer' | 'missing-actions' | 'ambiguous-signature' | 'unknown-actions';
+    | 'atomic-calls' | 'atomic-approval' | 'atomic-transaction' | 'stored-transaction'
+    | 'legacy-transfer' | 'missing-actions' | 'ambiguous-signature' | 'ambiguous-publication' | 'unknown-actions';
+
+type DepositExecutionKind = SwapExecutionKind | 'unresolved';
 
 export type ResolveSwapFlowInput = {
-    swapData?: Pick<SwapBasicData, 'use_deposit_address' | 'source_exchange' | 'source_network' | 'destination_network'>;
+    swapData?: Pick<SwapBasicData, 'use_deposit_address' | 'source_exchange' | 'source_network' | 'destination_network' | 'source_token'>;
     depositActions?: DepositAction[];
+    transaction?: Pick<SwapTransaction, 'kind'>;
     stepTransactions?: SwapStepTransactions;
     quote?: Pick<SwapQuote, 'destination_token'>;
     gaslessAuthorization?: Pick<GaslessAuthorization, 'kind'>
@@ -53,6 +55,8 @@ export function resolveSwapFlow(input: ResolveSwapFlowInput): ResolvedSwapFlow {
     const sourceType = swapData?.source_network?.type;
     const sourceProvider = input.sourceProvider
         ?? (sourceType === 'hyperliquid' || sourceType === 'polymarket' ? sourceType : undefined);
+    const sourceCannotBatch = (!!sourceType && sourceType !== 'evm')
+        || (!!swapData?.source_token?.symbol && !swapData.source_token.contract);
     const hasPublish = !!actions?.some(action => action.step === 'publish');
     let kind: SwapFlowKind;
     let evidence: SwapFlowEvidence;
@@ -64,17 +68,30 @@ export function resolveSwapFlow(input: ResolveSwapFlowInput): ResolvedSwapFlow {
         evidence = 'source-provider';
     } else {
         ({ kind, evidence } = resolveDepositExecution(actions, input.gaslessAuthorization));
+        const storedKind = input.transaction?.kind;
+        if (storedKind && storedKind !== 'transaction' && kind === 'unresolved'
+            && (evidence !== 'ambiguous-publication' || storedKind === 'atomic-batch' || storedKind === 'frontend-swap')) {
+            kind = storedKind;
+            evidence = storedKind === 'atomic-batch' ? 'atomic-transaction' : 'stored-transaction';
+        } else if (evidence === 'ambiguous-publication' && sourceCannotBatch) {
+            kind = 'frontend-swap';
+            evidence = 'publish-step';
+        }
     }
 
     const manual = kind === 'manual-deposit' || kind === 'exchange-deposit';
+    const walletSwap = kind === 'frontend-swap' || kind === 'atomic-batch';
+    const submittedWalletSwap = walletSwap && !!input.transactionHash;
     const walletProgress = !manual && kind !== 'specialized-wallet' && (
-        (actions?.filter(action => !!action.step).length ?? 0) > 1
+        submittedWalletSwap
+        || (actions?.filter(action => !!action.step).length ?? 0) > 1
         || (!!stepTransactions?.approve_permit2?.explorerUrl && !!actions?.some(action => action.step === 'approve_permit2'))
         || (!!quote?.destination_token && hasPublish)
     ) ? 'workflow' : 'controls';
-    const continuousWorkflow = kind === 'frontend-swap' && walletProgress === 'workflow' && !input.isDepositFlow;
+    const continuousWorkflow = walletSwap && walletProgress === 'workflow' && !input.isDepositFlow;
+    const workflowStarted = continuousWorkflow && (!!input.walletExecutionStarted || submittedWalletSwap);
     const showWithdrawScreen = input.resolved?.showWithdrawScreen ?? true;
-    const processingProgress = kind === 'frontend-swap' && hasPublish && !input.hasRefuel && !input.isDepositFlow
+    const processingProgress = walletSwap && hasPublish && !input.hasRefuel && !input.isDepositFlow
         && ['input_pending', 'output_pending', 'settling_output', 'completed'].includes(input.resolved?.phase ?? '')
         ? 'workflow' : 'transfers';
     const source = swapData?.source_network?.name;
@@ -83,9 +100,9 @@ export function resolveSwapFlow(input: ResolveSwapFlowInput): ResolvedSwapFlow {
     const sharesExecutionTransaction = !manual && !input.isDepositFlow && sameNetwork
         && (input.outputTransactionHash
             ? input.outputTransactionHash === input.transactionHash
-            : kind === 'frontend-swap' || kind === 'gasless-deposit');
+            : walletSwap || kind === 'gasless-deposit');
     const tokenSwap = !manual && !input.isDepositFlow
-        && (kind === 'frontend-swap' || (kind === 'gasless-deposit' && sameNetwork) || sharesExecutionTransaction);
+        && (walletSwap || (kind === 'gasless-deposit' && sameNetwork) || sharesExecutionTransaction);
 
     return {
         kind, evidence, sourceProvider,
@@ -94,7 +111,7 @@ export function resolveSwapFlow(input: ResolveSwapFlowInput): ResolvedSwapFlow {
         processingProgress,
         processingTitle: input.isDepositFlow ? 'deposit' : tokenSwap ? 'swap' : 'transfer',
         sharesExecutionTransaction,
-        compactQuote: !manual && (!showWithdrawScreen || (continuousWorkflow && !!input.walletExecutionStarted)),
+        compactQuote: !manual && (!showWithdrawScreen || workflowStarted),
         transferStage: continuousWorkflow ? undefined : showWithdrawScreen ? 'withdraw' : 'processing',
     };
 }
@@ -102,11 +119,24 @@ export function resolveSwapFlow(input: ResolveSwapFlowInput): ResolvedSwapFlow {
 export function resolveDepositExecution(
     actions: DepositAction[] | undefined,
     gaslessAuthorization?: ResolveSwapFlowInput['gaslessAuthorization'],
-): { kind: 'wallet-transfer' | 'frontend-swap' | 'gasless-deposit' | 'unresolved'; evidence: SwapFlowEvidence } {
+): { kind: DepositExecutionKind; evidence: SwapFlowEvidence } {
     const hasPublish = !!actions?.some(action => action.step === 'publish');
-    let kind: 'wallet-transfer' | 'frontend-swap' | 'gasless-deposit' | 'unresolved';
+    const publicationWithoutHistory = actions?.length === 1 && hasPublish
+        && !(actions[0].type === 'transfer' && actions[0].status === 'action_required');
+    let kind: DepositExecutionKind;
     let evidence: SwapFlowEvidence;
-    if (hasPublish) {
+    if (actions?.some(action => action.type === 'send_calls')) {
+        kind = 'atomic-batch';
+        evidence = 'atomic-calls';
+    } else if (actions?.some(action => action.step === 'approve')) {
+        kind = 'atomic-batch';
+        evidence = 'atomic-approval';
+    } else if (publicationWithoutHistory) {
+        // Only an actionable transfer has been disambiguated by next_action at the API boundary.
+        // A sufficient-allowance batch and a legacy publish can share other placeholders.
+        kind = 'unresolved';
+        evidence = 'ambiguous-publication';
+    } else if (hasPublish) {
         kind = 'frontend-swap';
         evidence = 'publish-step';
     } else if (actions?.some(action => action.step === 'deposit')) {

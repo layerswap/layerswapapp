@@ -31,7 +31,9 @@ export function isGaslessCapableRoute(input: GaslessCapabilityInput): boolean {
 // EIP-3009 supports both execution modes. A sign-only snapshot may precede
 // publication, so only explicit steps/standards identify the lane.
 export function isGaslessDepositWorkflow(actions: DepositAction[] | undefined): boolean | undefined {
-    const { kind } = resolveDepositExecution(actions)
+    const { kind, evidence } = resolveDepositExecution(actions)
+    // Publication proves a self-paid rail even when its atomic/legacy identity is missing.
+    if (evidence === 'ambiguous-publication') return false
     return kind === 'unresolved' ? undefined : kind === 'gasless-deposit'
 }
 
