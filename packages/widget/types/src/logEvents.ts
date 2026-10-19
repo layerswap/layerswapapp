@@ -257,14 +257,6 @@ export const SWAP_LIFECYCLE_ATTEMPT_START_STEPS = [
   'wallet_prompt_opened', 'retry_requested',
 ] as const satisfies readonly SwapLifecycleRepeatableStep[];
 
-/** Progress that suppresses stale insufficient-balance checks until an explicit retry. */
-export const SWAP_LIFECYCLE_SUBMISSION_PROGRESS_STEPS: ReadonlySet<SwapLifecycleStep> = new Set([
-  'transaction_submitted', 'gasless_authorization_submitted', 'input_transaction_detected',
-  'input_transfer_pending', 'input_transfer_confirmed', 'output_transfer_pending',
-  'output_transaction_detected', 'output_settling', 'swap_completed', 'refund_pending',
-  'refund_completed',
-] as const satisfies readonly SwapLifecycleStep[]);
-
 /**
  * Steps that show a widget instance watching a swap before its outcome: it
  * created the swap, showed it awaiting the user's transfer, or the user acted
@@ -274,22 +266,6 @@ export const SWAP_LIFECYCLE_SUBMISSION_PROGRESS_STEPS: ReadonlySet<SwapLifecycle
 export const SWAP_LIFECYCLE_TRACKING_STEPS = [
   'swap_created', 'awaiting_wallet_action', 'awaiting_user_deposit', ...SWAP_LIFECYCLE_ATTEMPT_START_STEPS,
 ] as const satisfies readonly SwapLifecycleStep[];
-
-/** The immutable inputs used by an amount shortcut/preset, separate from a later balance read. */
-export type AmountCalculationSnapshot = {
-  preset?: 'min' | 'half' | 'max';
-  amount: string;
-  walletId?: string;
-  walletProvider?: string;
-  walletAddress?: string;
-  balance?: number;
-  balanceNetwork?: string;
-  balanceToken?: string;
-  balanceTimestamp?: string;
-  gas?: number;
-  gasReserve?: number;
-  gasToken?: string;
-};
 
 export type SwapLifecycleEvent = {
   occurrenceId?: string;
@@ -312,21 +288,13 @@ export type SwapLifecycleEvent = {
   phase?: string;
   depositMethod?: string;
   requestedAmount?: string;
-  /** Unknown for restored/prefilled amounts whose entry mode was not observed. */
-  amountMode?: 'manual' | 'fixed' | 'min' | 'half' | 'max' | 'unknown';
-  amountCalculation?: AmountCalculationSnapshot;
-  sourceWalletId?: string;
-  sourceWalletProvider?: string;
+  /** Last explicit input method, not the form's automatic behavior mode. */
+  amountMode?: 'manual' | 'min' | 'half' | 'max' | 'unknown';
   sourceWalletAddress?: string;
   walletBalance?: number;
   walletBalanceNetwork?: string;
   walletBalanceToken?: string;
   walletBalanceTimestamp?: string;
-  walletBalanceLoading?: boolean;
-  walletBalanceError?: boolean;
-  estimatedGas?: number;
-  gasReserve?: number;
-  gasToken?: string;
   fromAddress?: string;
   toAddress?: string;
   sourceNetwork?: string;

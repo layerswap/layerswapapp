@@ -19,11 +19,10 @@ for (const [key, value] of Object.entries(globals)) {
 }
 
 const fundingUrl = `data:text/javascript,${encodeURIComponent(`
-  export const state = { accounts: [], balances: {} };
-  export const useSwapAccounts = () => state.accounts;
-  export const selectedSourceAccountForNetwork = (accounts, network) => accounts.find(a => a.provider.withdrawalSupportedNetworks.includes(network));
+  export const funding = { accounts: [], balances: {} };
+  export const useSwapAccounts = () => funding.accounts;
   export const getKey = (address, network) => address + ':' + network.name;
-  export const useBalanceStore = { getState: () => state };
+  export const useBalanceStore = { getState: () => funding };
 `)}`
 
 // The widget emits extensionless relative imports for bundlers; resolve those in Node.
@@ -39,7 +38,7 @@ const hooks = registerHooks({
 })
 
 // Import after installing the DOM so the provider uses its client layout effect.
-const { state: funding } = await import(fundingUrl)
+const { funding } = await import(fundingUrl)
 const { createRoot } = await import('react-dom/client')
 const { CallbackProvider, useCallbacks } = await import('../dist/esm/context/callbackProvider.js')
 const { captureWidgetInteraction } = await import('../dist/esm/lib/widgetTelemetry.js')
@@ -70,8 +69,7 @@ after(() => {
 
 /** Exposes Formik's submitForm and the provider's onSwapLifecycle to the test. */
 function Probe({ handle }) {
-  const { submitForm, setValues } = useFormikContext()
-  handle.setValues = setValues
+  const { submitForm } = useFormikContext()
   const { onSwapLifecycle } = useCallbacks()
   handle.submitForm = submitForm
   handle.onSwapLifecycle = onSwapLifecycle
@@ -85,13 +83,13 @@ function Host({ handle, callbacks, form }) {
   return createElement(CallbackProvider, { callbacks }, showForm ? form : null)
 }
 
-async function mount({ mode, onSubmit = async () => {}, submitAction = 'continue' }) {
+async function mount({ mode, onSubmit = async () => {}, submitAction = 'continue', initialValues = { from: { name: 'A' }, to: { name: 'B' } } }) {
   const telemetry = []
   const lifecycle = []
   const handle = {}
   const form = createElement(
     SwapForm,
-    { mode, submitPath: 't', submitAction, initialValues: { from: { name: 'A' }, to: { name: 'B' } }, onSubmit },
+    { mode, submitPath: 't', submitAction, initialValues, onSubmit },
     createElement(Probe, { handle }),
   )
   await act(async () => {
@@ -176,30 +174,18 @@ test('a synchronous onSubmit still resolves Formik submission', async () => {
   assert.equal(calls, 1)
 })
 
-test('submission reports the final mode and the exact source balance; manual edits do not inherit Max provenance', async () => {
-  funding.accounts = [{ id: 'wallet-b', providerName: 'EVM', address: '0xb', provider: { withdrawalSupportedNetworks: ['A'] } }]
-  funding.balances['0xb:A'] = { status: 'success', data: { balances: [
-    { network: 'A', token: 'ETH', amount: 1, request_time: 'fresh-balance' },
-    { network: 'A', token: 'USDC', amount: 99, request_time: 'other-token' },
+test('submission identifies the last explicit input and the selected wallet token balance', async () => {
+  funding.accounts = [{ address: 'selected-wallet', provider: { withdrawalSupportedNetworks: ['A'] } }]
+  funding.balances['selected-wallet:A'] = { data: { balances: [
+    { amount: 99, network: 'A', token: 'OTHER' }, { amount: 0, network: 'A', token: 'ETH', request_time: 'read-time' },
   ] } }
-  const { lifecycle, handle } = await mount({ mode: 'cross-chain' })
-  const calculation = { amount: '9', walletId: 'wallet-a', walletAddress: '0xa', balance: 10, balanceToken: 'ETH', balanceTimestamp: 'old-balance' }
-  const values = { from: { name: 'A' }, to: { name: 'B' }, fromAsset: { symbol: 'ETH' }, amount: '9',
-    depositMethod: 'wallet', amountMode: 'max', amountCalculation: calculation }
-  await act(() => handle.setValues(values))
+  const { handle, lifecycle } = await mount({ mode: 'cross-chain', initialValues: { depositMethod: 'wallet',
+    from: { name: 'A' }, fromAsset: { symbol: 'ETH' }, amountMode: 'manual', amountInput: { method: 'max', network: 'A', token: 'ETH' } } })
   await act(async () => { await handle.submitForm() })
-  const max = lifecycle.at(-1)
-  assert.equal(max.amountMode, 'max')
-  assert.equal(max.sourceWalletAddress, '0xb')
-  assert.equal(max.walletBalance, 1)
-  assert.equal(max.walletBalanceToken, 'ETH')
-  assert.equal(max.walletBalanceTimestamp, 'fresh-balance')
-  assert.equal(max.amountCalculation.walletAddress, '0xa')
-  assert.equal(max.amountCalculation.balance, 10)
-  await act(() => handle.setValues({ ...values, amount: '0.5', amountMode: 'manual' }))
-  await act(async () => { await handle.submitForm() })
-  assert.equal(lifecycle.at(-1).amountMode, 'manual')
-  assert.equal(lifecycle.at(-1).amountCalculation, undefined)
-  assert.equal(lifecycle.at(-1).requestedAmount, '0.5')
-  assert.equal(lifecycle.at(-1).walletBalance, 1)
+  const row = lifecycle.find(event => event.step === 'form_submitted')
+  assert.equal(row.amountMode, 'max')
+  assert.equal(row.sourceWalletAddress, 'selected-wallet')
+  assert.equal(row.walletBalance, 0)
+  assert.equal(row.walletBalanceToken, 'ETH')
+  assert.equal(row.walletBalanceTimestamp, 'read-time')
 })

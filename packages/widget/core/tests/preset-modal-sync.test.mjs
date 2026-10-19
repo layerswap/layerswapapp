@@ -131,7 +131,7 @@ const { default: Withdraw } = loadSource('components/Pages/Swap/Withdraw/Withdra
   './Presentation/BalanceWarningView': warningViews,
   './WalletTransferButton': { default: WalletTransferButton },
   './Presentation/WalletActionTransition': { WalletActionTransition: passthrough },
-  '@/lib/swapLifecycle': { lifecycleContextFromSwap: swap => ({ amount: swap.requested_amount, amountMode: swap.amountMode, amountCalculation: swap.amountCalculation }), lifecycleBalanceContext: () => ({}) },
+  '@/lib/swapLifecycle': { lifecycleContextFromSwap: swap => ({ amount: swap.requested_amount }), lifecycleBalanceContext: () => ({}) },
   '@/hooks/useTransferBlocked': loadSource('hooks/useTransferBlocked.ts', callbackImports),
   '@/hooks/useLifecycleObservation': loadSource('hooks/useLifecycleObservation.ts', callbackImports),
 })
@@ -254,17 +254,10 @@ test('manual amounts stay fixed across a remount and external transfer', async (
 
 test('restoring a draft never applies its preset to a different funding account', async () => {
   await render(); await openReview()
-  const amount = data.swapBasicData.requested_amount
-  const calculation = formik.values.amountCalculation
-  assert.equal(calculation.preset, 'max')
-  assert.equal(calculation.walletAddress, state.account.address)
   state.account = { ...state.account, address: 'different-source' }
   await remountForm()
-  assert.equal(formik.values.amountMode, 'fixed')
-  assert.equal(data.swapBasicData.amountMode, 'fixed')
-  assert.equal(data.swapBasicData.requested_amount, amount)
-  assert.deepEqual(formik.values.amountCalculation, calculation)
-  assert.deepEqual(data.swapBasicData.amountCalculation, calculation)
+  assert.equal(formik.values.amountMode, 'manual')
+  assert.equal(data.swapBasicData.amountMode, 'manual')
   assert.equal(summaryAmount(), data.swapBasicData.requested_amount)
 })
 

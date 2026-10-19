@@ -1,5 +1,3 @@
-import { AMOUNT_SNAPSHOT_KEYS } from '../faro-amount-snapshots.mjs'
-import { SWAP_LIFECYCLE_PHASE_STEPS, SWAP_LIFECYCLE_TRANSACTION_STEPS, SWAP_LIFECYCLE_REPEATABLE_STEPS } from '@layerswap/widget-types'
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { createRequire } from 'node:module'
@@ -478,86 +476,24 @@ test('navigating straight from one open swap to another still hands over ownersh
     h.controller.dispose()
 })
 
-test('amount snapshots survive diagnostic event serialization but never enter session context', () => {
-    const h = harness()
-    const diagnostic = {
-        amountMode: 'max', sourceWalletId: 'passport', sourceWalletProvider: 'EVM', sourceWalletAddress: '0xcurrent',
-        walletBalance: 0, walletBalanceNetwork: 'BASE_MAINNET', walletBalanceToken: 'USDC',
-        walletBalanceTimestamp: '2026-10-19T01:02:00Z', walletBalanceLoading: false, walletBalanceError: false,
-        estimatedGas: 0.0001, gasReserve: 0, gasToken: 'ETH',
-        amountCalculation: { amount: '10', walletId: 'metamask', walletProvider: 'EVM', walletAddress: '0xcalculation',
-            balance: 10, balanceNetwork: 'BASE_MAINNET', balanceToken: 'USDC', balanceTimestamp: '2026-10-19T01:00:00Z', gas: 0.00009, gasReserve: 0, gasToken: 'ETH' },
-    }
-    h.controller.record(event('form_submitted', undefined, diagnostic))
-    h.controller.record(event('transfer_blocked', undefined, { ...diagnostic, outcome: 'blocked', reasonCode: 'insufficient_balance' }))
-    const row = h.records.at(-1)
-    assert.equal(row.attrs.amount_mode, 'max')
-    assert.equal(row.attrs.wallet_balance, 0)
-    assert.equal(row.attrs.wallet_balance_error, false)
-    assert.equal(row.attrs.source_wallet_address, '0xcurrent')
-    assert.equal(row.attrs.amount_calculation_wallet_address, '0xcalculation')
-    assert.equal(row.attrs.amount_calculation_balance, 10)
-    assert.equal(h.attrs().amount_mode, 'max')
-    assert.equal(h.attrs().wallet_balance, undefined)
-    assert.equal(h.attrs().amount_calculation_balance_timestamp, undefined)
-    h.controller.record(event('form_submitted', undefined, { amountMode: 'manual' }))
-    assert.equal(h.attrs().amount_mode, 'manual')
-    assert.equal(h.attrs().amount_calculation_balance, undefined)
-    assert.equal(h.attrs().source_wallet_address, undefined)
-    h.controller.dispose()
-})
-
-const amountDiagnostic = {
-    amountMode: 'max', sourceWalletId: 'wallet', sourceWalletAddress: '0xcurrent', walletBalance: 0,
-    estimatedGas: 0.01, amountCalculation: { amount: '1', walletAddress: '0xcalculation', balance: 1 },
-}
-
-test('only submission and insufficient-balance event rows retain amount snapshots', () => {
-    const allowed = new Set(['form_submitted', 'transaction_submitted', 'gasless_authorization_submitted'])
-    for (const step of [...SWAP_LIFECYCLE_PHASE_STEPS, ...SWAP_LIFECYCLE_TRANSACTION_STEPS, ...SWAP_LIFECYCLE_REPEATABLE_STEPS]) {
-        const h = harness()
-        h.controller.record(event(step, 'swap', amountDiagnostic))
-        const row = h.records.find(record => record.attrs.step === step)
-        assert.ok(row, step)
-        assert.equal(row.attrs.wallet_balance, allowed.has(step) ? 0 : undefined, step)
-        assert.equal(row.attrs.amount_calculation_amount, allowed.has(step) ? '1' : undefined, step)
-        assert.equal(row.attrs.amount_mode, 'max', step)
-        for (const key of AMOUNT_SNAPSHOT_KEYS) assert.equal(h.attrs()[key], undefined, `${step}: ${key}`)
-        h.controller.dispose()
-    }
-    for (const reasonCode of ['insufficient_balance', 'unsupported_wallet']) {
-        const h = harness()
-        h.controller.record(event('transfer_blocked', 'swap', { ...amountDiagnostic, reasonCode }))
-        assert.equal(h.records.at(-1).attrs.wallet_balance, reasonCode === 'insufficient_balance' ? 0 : undefined)
-        h.controller.dispose()
-    }
-})
-
-test('stall events never inherit snapshots from a submission or balance block', t => {
+test('amount input and balance telemetry is retained on diagnostic rows, never session metadata or stalls', t => {
     t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 1000 })
-    for (const step of ['transaction_submitted', 'gasless_authorization_submitted', 'transfer_blocked']) {
-        const h = harness()
-        h.controller.record(event(step, 'swap', { ...amountDiagnostic, reasonCode: 'insufficient_balance' }))
-        t.mock.timers.tick(15 * 60_000 + 1)
-        const row = h.records.at(-1)
-        assert.equal(row.attrs.step, 'suspected_stall')
-        for (const key of AMOUNT_SNAPSHOT_KEYS) {
-            assert.equal(row.attrs[key], undefined, key)
-            assert.equal(row.meta.session.attributes[key], undefined, key)
-        }
-        h.controller.dispose()
-    }
-})
-
-test('session writers reject snapshots and clear them on persisted session adoption', () => {
     const h = harness()
-    const snapshot = Object.fromEntries([...AMOUNT_SNAPSHOT_KEYS].map(key => [key, 'old-value']))
-    h.write({ ...snapshot, swap_id: 'swap', amount_mode: 'max' }, true)
-    for (const key of AMOUNT_SNAPSHOT_KEYS) assert.equal(h.attrs()[key], undefined, key)
-    h.api.setSession({ id: 'adopted-session', attributes: { ...snapshot, custom_host: 'keep' } })
-    assert.equal(h.attrs().swap_id, 'swap')
+    const diagnostic = { amountMode: 'max', sourceWalletAddress: 'wallet-used', walletBalance: 0,
+        walletBalanceNetwork: 'BASE', walletBalanceToken: 'ETH', walletBalanceTimestamp: 'read-time' }
+    h.controller.record(event('form_submitted', undefined, diagnostic))
+    h.controller.record(event('transfer_blocked', 'swap', { ...diagnostic, reasonCode: 'insufficient_balance' }))
+    assert.equal(h.records.at(-1).attrs.wallet_balance, 0)
+    assert.equal(h.records.at(-1).attrs.source_wallet_address, 'wallet-used')
+    assert.equal(h.records.at(-1).attrs.amount_mode, 'max')
+    for (const key of ['source_wallet_address', 'wallet_balance', 'wallet_balance_network', 'wallet_balance_token', 'wallet_balance_timestamp']) {
+        assert.equal(h.attrs()[key], undefined, key)
+    }
     assert.equal(h.attrs().amount_mode, 'max')
-    assert.equal(h.attrs().custom_host, 'keep')
-    for (const key of AMOUNT_SNAPSHOT_KEYS) assert.equal(h.attrs()[key], undefined, key)
+    t.mock.timers.tick(10 * 60_000 + 1)
+    assert.equal(h.records.at(-1).attrs.step, 'suspected_stall')
+    assert.equal(h.records.at(-1).attrs.wallet_balance, undefined)
+    h.controller.record(event('awaiting_wallet_action', 'swap', diagnostic))
+    assert.equal(h.records.at(-1).attrs.wallet_balance, undefined)
     h.controller.dispose()
 })

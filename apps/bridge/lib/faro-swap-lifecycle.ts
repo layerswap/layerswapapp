@@ -1,4 +1,3 @@
-import { withoutAmountSnapshots } from './faro-amount-snapshots.mjs'
 import {
     SWAP_LIFECYCLE_ATTEMPT_START_STEPS, createRandomId, lifecycleObservationFingerprint, lifecycleObservationKey,
     type SwapLifecycleEvent, type SwapLifecycleObservationKey, type SwapLifecycleStep,
@@ -9,7 +8,7 @@ const ATTEMPT_START_STEPS = new Set<SwapLifecycleStep>(SWAP_LIFECYCLE_ATTEMPT_ST
 const MAX_TRACKED_SWAPS = 64
 
 function getLifecycleAttributes(event: SwapLifecycleEvent): Record<string, unknown> {
-    const includeSnapshots = event.step === 'form_submitted' || event.step === 'transaction_submitted'
+    const includeBalance = event.step === 'form_submitted' || event.step === 'transaction_submitted'
         || event.step === 'gasless_authorization_submitted'
         || (event.step === 'transfer_blocked' && event.reasonCode === 'insufficient_balance')
     return {
@@ -34,31 +33,12 @@ function getLifecycleAttributes(event: SwapLifecycleEvent): Record<string, unkno
         deposit_method: event.depositMethod,
         requested_amount: event.requestedAmount,
         amount_mode: event.amountMode,
-        ...(includeSnapshots ? {
-            source_wallet_id: event.sourceWalletId,
-            source_wallet_provider: event.sourceWalletProvider,
+        ...(includeBalance ? {
             source_wallet_address: event.sourceWalletAddress,
             wallet_balance: event.walletBalance,
             wallet_balance_network: event.walletBalanceNetwork,
             wallet_balance_token: event.walletBalanceToken,
             wallet_balance_timestamp: event.walletBalanceTimestamp,
-            wallet_balance_loading: event.walletBalanceLoading,
-            wallet_balance_error: event.walletBalanceError,
-            estimated_gas: event.estimatedGas,
-            gas_reserve: event.gasReserve,
-            gas_token: event.gasToken,
-            amount_calculation_preset: event.amountCalculation?.preset,
-            amount_calculation_amount: event.amountCalculation?.amount,
-            amount_calculation_wallet_id: event.amountCalculation?.walletId,
-            amount_calculation_wallet_provider: event.amountCalculation?.walletProvider,
-            amount_calculation_wallet_address: event.amountCalculation?.walletAddress,
-            amount_calculation_balance: event.amountCalculation?.balance,
-            amount_calculation_balance_network: event.amountCalculation?.balanceNetwork,
-            amount_calculation_balance_token: event.amountCalculation?.balanceToken,
-            amount_calculation_balance_timestamp: event.amountCalculation?.balanceTimestamp,
-            amount_calculation_gas: event.amountCalculation?.gas,
-            amount_calculation_gas_reserve: event.amountCalculation?.gasReserve,
-            amount_calculation_gas_token: event.amountCalculation?.gasToken,
         } : {}),
         from_address: event.fromAddress,
         to_address: event.toAddress,
@@ -284,7 +264,7 @@ export function createSwapLifecycleTelemetry({ captureEvent, setSwapContext }: {
         // A lifecycle transition replaces the previous transition context so
         // stale reasons/hashes do not leak into unrelated later console logs.
         const ownsContext = activeLifecycleRef.current === state && !state.departed
-        const contextApplied = !ownsContext || setSwapContext(withoutAmountSnapshots(enrichedAttributes), { replaceAttributes: true })
+        const contextApplied = !ownsContext || setSwapContext(enrichedAttributes, { replaceAttributes: true })
         // The writer re-syncs once a session exists, so emission continues; the
         // row itself records that surrounding signals may lack swap context.
         const accepted = captureEvent('swap_lifecycle', contextApplied
@@ -321,7 +301,7 @@ export function createSwapLifecycleTelemetry({ captureEvent, setSwapContext }: {
             const stalledAt = Date.now()
             const stalledSequence = state.sequence + 1
             const stalledAttributes = {
-                ...withoutAmountSnapshots(attributes),
+                ...getLifecycleAttributes({ ...event, step: 'suspected_stall' }),
                 step: 'suspected_stall',
                 outcome: 'stalled',
                 reason_code: `${event.step}_timeout`,

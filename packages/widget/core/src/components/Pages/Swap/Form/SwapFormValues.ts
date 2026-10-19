@@ -1,12 +1,11 @@
-import type { AmountCalculationSnapshot } from '@layerswap/widget-types';
-import type { AmountMode } from '@/lib/amountPresets';
+import type { AmountInput, AmountMode } from '@/lib/amountPresets';
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import { Exchange } from "@/Models/Exchange";
 
 export type SwapFormValues = {
   amount?: string;
+  amountInput?: AmountInput;
   amountMode?: AmountMode;
-  amountCalculation?: AmountCalculationSnapshot;
   /** Scope of the user's amount preset; changing the funding account or asset resets it. */
   amountPresetSource?: string;
   amountPresetError?: string;

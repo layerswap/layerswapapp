@@ -164,25 +164,6 @@ silent baseline; swaps created in the widget may report their first eligible
 status. Unchanged statuses are not repeated on wallet retries or modal remounts.
 Use `onSwapLifecycle` for UI progress, wallet actions, and refund phases.
 
-Lifecycle amount diagnostics distinguish the final `amountMode` (`manual`,
-`fixed`, `min`, `half`, `max`, or `unknown`) from the earlier `amountCalculation`
-snapshot. That snapshot records the preset, calculated amount, source wallet,
-balance/token/network/timestamp, and estimated gas/reserve used by the calculation.
-`sourceWallet*` and `walletBalance*` on submissions and balance blocks describe the
-account and balance observed at that later check, including loading/error flags.
-Compare the two snapshots to detect an account or balance change after Max.
-Switching wallets detaches a settled preset as a fixed amount and preserves its
-original calculation snapshot; it does not classify the amount as manual input.
-In USD mode, this also keeps the token amount fixed across subsequent price
-changes after switching or disconnecting a wallet. Previously, automatic preset
-detachment used manual mode, which allowed the token amount to follow USD prices.
-Editing the USD amount explicitly restores ordinary USD entry behavior.
-Retained calculation snapshots are cleared when the amount or source asset changes;
-lifecycle events also omit snapshots that no longer match the current transfer.
-Manual edits discard calculation provenance; restored swaps without local history
-report `unknown`. Balance blocks after submission/input progress are suppressed;
-an explicit retry can report a genuine balance block again.
-
 Telemetry and lifecycle events overlap, so you usually only need telemetry for
 analytics. Recognized wallet rejections are lifecycle outcomes, not error reports.
 Callbacks are not awaited; handle rejected promises inside asynchronous logging

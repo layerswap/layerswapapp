@@ -5,9 +5,7 @@ import { useCallbacks } from '@/context/callbackProvider'
 import type { SwapLifecycleContext } from '@/lib/swapLifecycle'
 
 /** Identity fields of an effect-driven observation; context (swapId, addresses, …) is passed separately and never re-triggers emission. */
-// Phase can enrich a block's context, but it is still part of a phase
-// observation's identity and must participate in transition deduplication.
-export type ObservedLifecycleEvent = Omit<SwapLifecycleEvent, Exclude<keyof SwapLifecycleContext, 'phase'>>
+export type ObservedLifecycleEvent = Omit<SwapLifecycleEvent, keyof SwapLifecycleContext>
 
 /**
  * Emits an effect-driven lifecycle observation once per transition of its
@@ -32,7 +30,7 @@ export function useLifecycleObservation(observation: ObservedLifecycleEvent | un
         if (committed.current === transition) return
         const { observation: current, context: currentContext, onSwapLifecycle: emit } = latest.current
         if (!current) return
-        emit({ ...currentContext, ...current })
+        emit({ ...current, ...currentContext })
         committed.current = transition
     }, [transition])
 }

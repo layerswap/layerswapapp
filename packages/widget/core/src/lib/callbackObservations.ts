@@ -1,5 +1,5 @@
 import {
-    SWAP_LIFECYCLE_ATTEMPT_START_STEPS, SWAP_LIFECYCLE_SUBMISSION_PROGRESS_STEPS, lifecycleObservationFingerprint, lifecycleObservationKey,
+    SWAP_LIFECYCLE_ATTEMPT_START_STEPS, lifecycleObservationFingerprint, lifecycleObservationKey,
     type SwapLifecycleEvent, type SwapLifecycleObservationKey, type SwapLifecycleStep,
 } from '@layerswap/widget-types'
 
@@ -23,35 +23,10 @@ function evictLeastRecent(map: Map<unknown, unknown>) {
 /** Host callbacks observe transitions, while user actions always remain repeatable. */
 export function createCallbackObservations() {
     const lifecycle = new Map<string | undefined, Map<SwapLifecycleObservationKey, string>>()
-    const submitted = new Map<string | undefined, boolean>()
-    let activeSwapId: string | undefined
-    const reset = () => {
-        lifecycle.clear()
-        // Navigation ends the id-less fallback scope, not known swaps' progress.
-        activeSwapId = undefined
-        submitted.delete(undefined)
-    }
+    const reset = () => lifecycle.clear()
 
     return {
         reset,
-        /** Runs before either telemetry sink: a deferred balance check cannot undo a send. */
-        allowTransferBlock(event: SwapLifecycleEvent): boolean {
-            if (event.step === 'form_submitted') {
-                activeSwapId = undefined
-                submitted.delete(undefined)
-            }
-            if (event.step === 'swap_created') activeSwapId = event.swapId
-            const scope = event.swapId ?? activeSwapId
-            // An explicit retry can follow a failed input; connection/switch/prompt
-            // events alone must never re-arm a submitted swap's balance warning.
-            if (event.step === 'retry_requested') submitted.delete(scope)
-            if (SWAP_LIFECYCLE_SUBMISSION_PROGRESS_STEPS.has(event.step)) {
-                submitted.set(scope, true)
-                evictLeastRecent(submitted)
-            }
-            return !(event.step === 'transfer_blocked' && event.reasonCode === 'insufficient_balance'
-                && touch(submitted, scope))
-        },
         lifecycle(event: SwapLifecycleEvent): boolean {
             if (event.step === 'form_submitted') reset()
             if (ATTEMPT_START_STEPS.has(event.step)) lifecycle.delete(event.swapId)

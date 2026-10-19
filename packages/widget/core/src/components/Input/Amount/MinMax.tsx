@@ -15,7 +15,7 @@ import { ceilUsd, floorUsd } from "@/components/utils/formatUsdAmount";
 import { truncateToDecimals, isScientific } from "@/components/utils/RoundDecimals";
 import { useHydratedReducedMotion } from "@/hooks/useHydratedReducedMotion";
 
-import { amountCalculationSnapshot, amountPresetSource, isWalletAmountFlow, resolvePresetAmount, supportsLiveAmountPreset, type AmountPreset } from '@/lib/amountPresets';
+import { amountPresetSource, isWalletAmountFlow, resolvePresetAmount, supportsLiveAmountPreset, type AmountPreset } from '@/lib/amountPresets';
 
 type MinMaxProps = {
     fromCurrency: NetworkRouteToken,
@@ -114,8 +114,7 @@ const MinMax = (props: MinMaxProps) => {
             }
             setUsdAmount(usdValue);
         }
-        void setValues({ ...values, amount: sanitizedValue, amountMode: live ? mode : 'fixed',
-            amountCalculation: amountCalculationSnapshot(sanitizedValue, selectedSourceAccount, walletBalance, previewGas, mode),
+        void setValues({ ...values, amount: sanitizedValue, amountInput: { method: mode, network: from.name, token: fromCurrency.symbol }, amountMode: live ? mode : 'fixed',
             amountPresetSource: live ? amountPresetSource(from.name, fromCurrency.symbol, selectedSourceAccount?.id, selectedSourceAccount?.address) : undefined,
             amountPresetPending: live, amountPresetError: undefined, amountPresetBalance: undefined }, true)
         onActionHover(undefined)
@@ -129,7 +128,7 @@ const MinMax = (props: MinMaxProps) => {
         e.preventDefault()
         e.stopPropagation()
         if (selectedPreset === mode) {
-            void setValues({ ...values, amountMode: 'manual', amountCalculation: undefined, amountPresetSource: undefined, amountPresetPending: false, amountPresetError: undefined }, true)
+            void setValues({ ...values, amountMode: 'manual', amountPresetSource: undefined, amountPresetPending: false, amountPresetError: undefined }, true)
             onActionHover(undefined)
             return
         }

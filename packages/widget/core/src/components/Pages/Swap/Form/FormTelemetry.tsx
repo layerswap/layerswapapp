@@ -19,8 +19,8 @@ export default function FormTelemetry({ mode }: { mode: SwapFormMode }) {
     const method = values.depositMethod
     useClientLayoutEffect(() => {
         widgetTelemetry.update(flow, { form_mode: mode, source_network: source, destination_network: destination,
-            source_token: sourceToken, destination_token: destinationToken, deposit_method: method, amount_mode: values.amountMode ?? 'unknown' })
-    }, [flow, mode, source, destination, sourceToken, destinationToken, method, values.amountMode])
+            source_token: sourceToken, destination_token: destinationToken, deposit_method: method })
+    }, [flow, mode, source, destination, sourceToken, destinationToken, method])
     useClientLayoutEffect(() => widgetTelemetry.mount(flow), [flow])
     return null
 }

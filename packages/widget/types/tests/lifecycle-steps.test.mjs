@@ -3,7 +3,7 @@ import test from 'node:test'
 import { readFileSync } from 'node:fs'
 import {
   SWAP_LIFECYCLE_ATTEMPT_START_STEPS, SWAP_LIFECYCLE_PHASE_STEPS, SWAP_LIFECYCLE_REPEATABLE_STEPS,
-  SWAP_LIFECYCLE_TRANSACTION_STEPS, SWAP_LIFECYCLE_SUBMISSION_PROGRESS_STEPS, lifecycleObservationFingerprint, lifecycleObservationKey,
+  SWAP_LIFECYCLE_TRANSACTION_STEPS, lifecycleObservationFingerprint, lifecycleObservationKey,
 } from '../dist/esm/index.js'
 
 const categories = {
@@ -66,14 +66,5 @@ test('the cross-consumer fixture only uses known steps and its expectations resp
       if (lifecycleObservationKey(sequence.events[index]) !== undefined) continue
       assert(host.includes(index) && faro.includes(index), `${name}: unslotted ${sequence.events[index].step} at ${index} is always delivered`)
     }
-  }
-})
-
-test('submission progress is a shared set of known lifecycle steps', () => {
-  for (const step of SWAP_LIFECYCLE_SUBMISSION_PROGRESS_STEPS) assert(allSteps.includes(step), step)
-  assert(SWAP_LIFECYCLE_SUBMISSION_PROGRESS_STEPS.has('transaction_submitted'))
-  assert(SWAP_LIFECYCLE_SUBMISSION_PROGRESS_STEPS.has('gasless_authorization_submitted'))
-  for (const step of ['wallet_prompt_opened', 'network_switch_started', 'retry_requested', 'transfer_failed']) {
-    assert.equal(SWAP_LIFECYCLE_SUBMISSION_PROGRESS_STEPS.has(step), false, step)
   }
 })

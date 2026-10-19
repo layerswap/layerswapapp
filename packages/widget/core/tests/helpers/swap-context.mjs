@@ -19,10 +19,9 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
         useGaslessAuthorizationStore: store({ authorizations: {} }),
         useDepositSignatureStore: store({ signatures: {}, removeDepositSignature: noop }),
     }
-    const resolved = { showWithdrawScreen: true, phase: 'awaiting_user_deposit' }
+    const resolved = {}
     const imports = {
         '@/lib/amountPresets': amountPresets,
-        '@/stores/balanceStore': { getKey: (address, network) => `${address}:${network.name}`, useBalanceStore: { getState: () => ({ balances: {} }) } },
         '@/lib/preparePresetAmount': { preparePresetAmount: () => { throw new Error('Unexpected preset preparation') } },
         '@/helpers/swapProgress': swapProgress,
         '@/helpers/depository': { shouldUseDepository: () => false },
@@ -70,7 +69,7 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
             return { data: id ? snapshots.get(id) : undefined, mutate: noop }
         } },
         '@/hooks/useSwapStatusNotification': { useSwapStatusNotification: noop },
-        '@/lib/swapLifecycle': { lifecycleBalanceContext: () => ({}) },
+        '@/lib/swapLifecycle': {},
         '@/lib/swapCreation': {},
         ...overrides,
     }

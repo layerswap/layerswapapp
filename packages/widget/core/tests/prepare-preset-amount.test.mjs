@@ -31,7 +31,7 @@ const setup = ({ balance = 1, gas = 0.1, limits = { min_amount: 0.001, max_amoun
 test('creation preparation bypasses cached balances, refreshes matching limits and estimates the payable amount', async () => {
   const { preparePresetAmount, calls } = setup()
   const wallet = { id: 'wallet' }
-  const { amount } = await preparePresetAmount(values, 'source', wallet, [], false)
+  const amount = await preparePresetAmount(values, 'source', wallet, [], false)
   assert.equal(amount, '0.898')
   assert.deepEqual(calls.find(([name]) => name === 'balance'), ['balance', 'source', network.name, { ignoreCache: true }])
   const limits = calls.find(([name]) => name === 'limits')[1]
@@ -45,7 +45,7 @@ test('creation preparation bypasses cached balances, refreshes matching limits a
 
 test('creation preparation respects fresh route caps and refuses amounts below the minimum', async () => {
   const capped = setup({ limits: { min_amount: 0.1, max_amount: 0.5 } })
-  assert.equal((await capped.preparePresetAmount(values, 'source', {}, [], false)).amount, '0.5')
+  assert.equal(await capped.preparePresetAmount(values, 'source', {}, [], false), '0.5')
   const tooSmall = setup({ balance: 0.01 })
   await assert.rejects(tooSmall.preparePresetAmount(values, 'source', {}, [], false), /below the minimum/)
 })
@@ -68,28 +68,28 @@ test('a failed real balance-store refresh can be retried instead of reusing its 
 
 test('the confirmation check keeps the reviewed amount when a small fee increase fits the reserve', async () => {
   const { preparePresetAmount, calls } = setup({ gas: 0.10001 })
-  assert.equal((await preparePresetAmount({ ...values, amount: '0.898' }, 'source', {}, [], false)).amount, '0.898')
+  assert.equal(await preparePresetAmount({ ...values, amount: '0.898' }, 'source', {}, [], false), '0.898')
   assert.equal(calls.filter(([name]) => name === 'gas').length, 1)
 })
 
 test('the confirmation check lowers an amount when the fresh fee exceeds the reserve', async () => {
   const { preparePresetAmount } = setup({ gas: 0.12 })
-  assert.equal((await preparePresetAmount({ ...values, amount: '0.898' }, 'source', {}, [], false)).amount, '0.8776')
+  assert.equal(await preparePresetAmount({ ...values, amount: '0.898' }, 'source', {}, [], false), '0.8776')
 })
 
 
 test('50% preparation refreshes spendable balance and never increases a reviewed amount', async () => {
   const decreased = setup({ balance: 0.8, gas: 0.1 })
-  assert.equal((await decreased.preparePresetAmount({ ...values, amountMode: 'half', amount: '0.449' }, 'source', {}, [], false)).amount, '0.349')
+  assert.equal(await decreased.preparePresetAmount({ ...values, amountMode: 'half', amount: '0.449' }, 'source', {}, [], false), '0.349')
   const increased = setup({ balance: 2, gas: 0.01 })
-  assert.equal((await increased.preparePresetAmount({ ...values, amountMode: 'half', amount: '0.449' }, 'source', {}, [], false)).amount, '0.449')
+  assert.equal(await increased.preparePresetAmount({ ...values, amountMode: 'half', amount: '0.449' }, 'source', {}, [], false), '0.449')
 })
 
 test('Min preparation returns a new required minimum for review and rejects an unfundable minimum', async () => {
   const raised = setup({ limits: { min_amount: 0.2, max_amount: 2 } })
-  assert.equal((await raised.preparePresetAmount({ ...values, amountMode: 'min', amount: '0.1' }, 'source', {}, [], false)).amount, '0.2')
+  assert.equal(await raised.preparePresetAmount({ ...values, amountMode: 'min', amount: '0.1' }, 'source', {}, [], false), '0.2')
   const lowered = setup({ limits: { min_amount: 0.05, max_amount: 2 } })
-  assert.equal((await lowered.preparePresetAmount({ ...values, amountMode: 'min', amount: '0.1' }, 'source', {}, [], false)).amount, '0.1')
+  assert.equal(await lowered.preparePresetAmount({ ...values, amountMode: 'min', amount: '0.1' }, 'source', {}, [], false), '0.1')
   const insufficient = setup({ balance: 0.15, limits: { min_amount: 0.2, max_amount: 2 } })
   await assert.rejects(insufficient.preparePresetAmount({ ...values, amountMode: 'min', amount: '0.1' }, 'source', {}, [], false), /Insufficient ETH balance/)
 })
@@ -103,7 +103,7 @@ for (const flow of [
   for (const mode of ['min', 'half', 'max', 'fixed']) {
     test(`${JSON.stringify(flow)} ${mode}: preparation preserves the submitted amount without live reads`, async () => {
       const { preparePresetAmount, calls } = setup({ limits: { min_amount: 1, max_amount: 2 } })
-      assert.equal((await preparePresetAmount({ ...values, ...flow, amountMode: mode }, undefined, undefined, [], false)).amount, values.amount)
+      assert.equal(await preparePresetAmount({ ...values, ...flow, amountMode: mode }, undefined, undefined, [], false), values.amount)
       assert.deepEqual(calls, [])
     })
   }
@@ -113,7 +113,7 @@ test('fresh confirmation limits reach the live cache before the revised amount r
   const limits = { min_amount: 0.2, max_amount: 2 }
   const { preparePresetAmount } = setup({ limits })
   let published
-  const { amount } = await preparePresetAmount({ ...values, amountMode: 'min', amount: '0.1' }, 'source', {}, [], false,
+  const amount = await preparePresetAmount({ ...values, amountMode: 'min', amount: '0.1' }, 'source', {}, [], false,
     async (key, response) => { published = { key, response } })
   assert.equal(amount, '0.2')
   assert.deepEqual(published, { key: 'limits', response: { data: limits } })
@@ -129,18 +129,3 @@ for (const [name, symbol] of [['TON_MAINNET', 'TON'], ['PARADEX_MAINNET', 'USDC'
     assert.deepEqual(calls, [])
   })
 }
-
-test('final preparation reports the fresh calculation balance and account instead of the old draft snapshot', async () => {
-  const { preparePresetAmount } = setup({ balance: 2, gas: 0.1 })
-  const { amount, snapshot } = await preparePresetAmount({ ...values, amountMode: 'max', amountCalculation: { balance: 99, walletAddress: 'old' } },
-    'fresh-source', { id: 'fresh-wallet', providerName: 'EVM' }, [], false)
-  assert.equal(snapshot.preset, 'max')
-  assert.equal(snapshot.amount, amount)
-  assert.equal(snapshot.balance, 2)
-  assert.equal(snapshot.walletAddress, 'fresh-source')
-  assert.equal(snapshot.walletId, 'fresh-wallet')
-  assert.equal(snapshot.walletProvider, 'EVM')
-  assert.equal(snapshot.balanceNetwork, network.name)
-  assert.equal(snapshot.balanceToken, token.symbol)
-  assert.equal(snapshot.gas, 0.1)
-})

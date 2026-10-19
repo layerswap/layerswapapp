@@ -9,24 +9,18 @@ import useWallet from '@/hooks/useWallet'
 import { transformFormValuesToQuoteArgs, useQuoteData } from '@/hooks/useFee'
 import { resolveQuoteError } from '@/hooks/useFormValidation'
 import { useBalance } from '@/lib/balances/useBalance'
-import { calculatePresetAmount, amountCalculationSnapshot, matchingAmountCalculation, amountPresetSource, isAmountPreset, isWalletAmountFlow, supportsLiveAmountPreset, AmountPresetUnavailableError, type AmountPreset } from '@/lib/amountPresets'
+import { calculatePresetAmount, amountPresetSource, isAmountPreset, isWalletAmountFlow, supportsLiveAmountPreset, AmountPresetUnavailableError, type AmountPreset } from '@/lib/amountPresets'
 import { resolverService } from '@/lib/resolvers/resolverService'
 import { minimumAmountMessage } from '@/lib/amountMessages'
 import { useUsdModeStore } from '@/stores/usdModeStore'
 
 /** Lives with Formik, including when the amount input unmounts in the deposit widget. */
 export default function AmountPresetController() {
-    const { values, setValues } = useFormikContext<SwapFormValues>()
+    const { values } = useFormikContext<SwapFormValues>()
     const updates = useContext(SwapDataUpdateContext)
     useEffect(() => {
-        if (isAmountPreset(values.amountMode)) return
-        const amountCalculation = values.amountMode === 'manual' ? undefined : matchingAmountCalculation(
-            values.amountCalculation, values.amount, values.from?.name, values.fromAsset?.symbol,
-        )
-        const next = amountCalculation === values.amountCalculation ? values : { ...values, amountCalculation }
-        if (updates?.syncAmountPresetDraft(next) === false) return
-        if (next !== values) void setValues(next, false)
-    }, [values, updates, setValues])
+        if (!isAmountPreset(values.amountMode)) updates?.syncAmountPresetDraft(values)
+    }, [values, updates])
     return isAmountPreset(values.amountMode) ? <ActiveAmountPreset mode={values.amountMode} /> : null
 }
 
@@ -58,7 +52,7 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
         ? ['amount-preset', mode, source, values.depositMethod, balance?.amount, balance?.request_time, maxAllowedAmount, minAllowedAmount,
             values.to?.name, values.toAsset?.symbol, values.destination_address, !!values.refuel, revision]
         : null
-    const { data: calculation, error, isValidating } = useSWR<{ amount: string; gas?: GasWithToken; snapshot: ReturnType<typeof amountCalculationSnapshot> }>(key, async () => {
+    const { data: calculation, error, isValidating } = useSWR<{ amount: string; gas?: GasWithToken }>(key, async () => {
         let gas: GasWithToken | undefined
         const amount = await calculatePresetAmount({
             mode, network: values.from!, token: values.fromAsset!, balance,
@@ -71,7 +65,7 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
             },
         })
         // Keep the fee with its calculation so the message uses the same snapshot.
-        return { amount, gas, snapshot: amountCalculationSnapshot(amount, account, balance, gas, mode) }
+        return { amount, gas }
     },
     { refreshInterval: 60000, keepPreviousData: false, shouldRetryOnError: error => !(error instanceof AmountPresetUnavailableError), errorRetryCount: 3 })
     const amount = calculation?.amount
@@ -95,14 +89,8 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
     useEffect(() => {
         if (frozen) return
         if (!sameSource || !liveSupported) {
-            // Detaching a wallet does not turn an unchanged preset amount into
-            // manual input. Keep its original calculation for later diagnostics,
-            // but never attach that provenance to a different asset or amount.
-            const amountCalculation = matchingAmountCalculation(
-                values.amountCalculation, values.amount, values.from?.name, values.fromAsset?.symbol,
-            )
-            const amountMode = !walletFlow || (sameSource && !liveSupported) || amountCalculation ? 'fixed' as const : 'manual' as const
-            const next = { ...values, amountMode, amountCalculation, amountPresetSource: undefined, amountPresetError: undefined, amountPresetPending: false, amountPresetBalance: undefined }
+            const amountMode = !walletFlow || (sameSource && !liveSupported) ? 'fixed' as const : 'manual' as const
+            const next = { ...values, amountMode, amountPresetSource: undefined, amountPresetError: undefined, amountPresetPending: false, amountPresetBalance: undefined }
             if (updates?.syncAmountPresetDraft(next) === false) return
             void setValues(next, true)
             return
@@ -113,10 +101,10 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
             ? swap?.swapBasicData?.requested_amount : undefined
         previousRevision.current = revision
         const unavailableAmount = error instanceof AmountPresetUnavailableError ? error.amount : undefined
-        const next = { ...values, amount: unavailableAmount ?? amount ?? preparedAmount ?? values.amount, amountPresetError: message, amountPresetPending: pending, amountPresetBalance: balance?.amount, amountCalculation: calculation?.snapshot }
+        const next = { ...values, amount: unavailableAmount ?? amount ?? preparedAmount ?? values.amount, amountPresetError: message, amountPresetPending: pending, amountPresetBalance: balance?.amount }
         if (updates?.syncAmountPresetDraft(next) === false) return
-        if (next.amount !== values.amount || message !== values.amountPresetError || pending !== values.amountPresetPending || !Object.is(next.amountPresetBalance, values.amountPresetBalance) || next.amountCalculation !== values.amountCalculation)
+        if (next.amount !== values.amount || message !== values.amountPresetError || pending !== values.amountPresetPending || !Object.is(next.amountPresetBalance, values.amountPresetBalance))
             void setValues(next, true)
-    }, [amount, calculation?.snapshot, error, message, pending, balance?.amount, sameSource, liveSupported, walletFlow, frozen, values, setValues, updates, revision, swap?.swapId, swap?.swapBasicData])
+    }, [amount, error, message, pending, balance?.amount, sameSource, liveSupported, walletFlow, frozen, values, setValues, updates, revision, swap?.swapId, swap?.swapBasicData])
     return null
 }

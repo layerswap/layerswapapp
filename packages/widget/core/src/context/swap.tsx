@@ -34,10 +34,9 @@ import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
 import { isDepositAddressFlow, isDepositAddressSwap, wantsFrontendSwap } from '@/helpers/swapFlow';
 import { useSwapPolling } from '@/hooks/useSwapPolling';
 import { useSwapStatusNotification } from '@/hooks/useSwapStatusNotification';
-import { lifecycleBalanceContext, lifecycleContextFromForm } from '@/lib/swapLifecycle';
+import { lifecycleContextFromForm } from '@/lib/swapLifecycle';
 import { createSwapAttempt } from '@/lib/swapCreation';
 import { hasSwapExecutionProgress } from '@/helpers/swapProgress';
-import { getKey, useBalanceStore } from '@/stores/balanceStore';
 import { preparePresetAmount } from '@/lib/preparePresetAmount';
 import { isAmountPreset, isWalletAmountFlow, amountPresetSource, AmountPresetChangedError } from '@/lib/amountPresets';
 
@@ -111,7 +110,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const presetPreparation = useRef(false)
     const [preparingPreset, setPreparingPreset] = useState(false)
     const [presetCreated, setPresetCreated] = useState(false)
-    const [createdAmountContext, setCreatedAmountContext] = useState<{ swapId: string; amountMode: SwapFormValues['amountMode']; amountCalculation: SwapFormValues['amountCalculation'] }>()
+    const [createdAmountInput, setCreatedAmountInput] = useState<{ swapId: string; input: SwapFormValues['amountInput'] }>()
     const [amountPresetRevision, setAmountPresetRevision] = useState(0)
     const [quoteIsLoading, setQuoteLoading] = useState<boolean>(false)
     const [withdrawType, setWithdrawType] = useState<WithdrawType>()
@@ -176,7 +175,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
 
     const setSubmitedFormValues = useCallback((values: NonNullable<SwapFormValues>) => {
         if (isAmountPreset(values.amountMode) && !isWalletAmountFlow(values)) {
-            values = { ...values, amountMode: 'fixed', amountCalculation: undefined, amountPresetSource: undefined, amountPresetPending: false, amountPresetError: undefined, amountPresetBalance: undefined }
+            values = { ...values, amountMode: 'fixed', amountPresetSource: undefined, amountPresetPending: false, amountPresetError: undefined, amountPresetBalance: undefined }
         }
         if (!values.from || !values.to || !values.fromAsset || !values.toAsset || !values.destination_address)
             throw new Error("Form data is missing")
@@ -186,8 +185,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
 
         setPresetCreated(false)
         setSwapBasicFormData({
-            amountMode: values.amountMode,
-            amountCalculation: values.amountCalculation,
+            amountMode: values.amountMode, amountInput: values.amountInput,
             amountPresetSource: values.amountPresetSource,
             amountPresetError: values.amountPresetError,
             amountPresetPending: values.amountPresetPending,
@@ -213,9 +211,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
                 || current.source_token.symbol !== values.fromAsset?.symbol) return current
             const patch = {
                 requested_amount: values.amount ?? current.requested_amount,
-                amountMode: values.amountMode,
-                amountCalculation: values.amountCalculation,
-                amountPresetSource: values.amountPresetSource,
+                amountMode: values.amountMode, amountInput: values.amountInput, amountPresetSource: values.amountPresetSource,
                 amountPresetError: values.amountPresetError, amountPresetPending: values.amountPresetPending,
                 amountPresetBalance: values.amountPresetBalance,
             }
@@ -273,8 +269,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         if (swapId && data?.data) {
             if (!data.data.swap) return undefined
             const base = extendedSwapData?.swapBasicData ?? baseSwapData
-            const displayed = base && createdAmountContext?.swapId === swapId
-                ? { ...base, amountMode: createdAmountContext.amountMode, amountCalculation: createdAmountContext.amountCalculation } : base
+            const displayed = base && createdAmountInput?.swapId === swapId
+                ? { ...base, amountInput: createdAmountInput.input } : base
             // Retain local preset intent for an explicit fresh retry; the backend amount
             // and actions remain authoritative for this created swap.
             return displayed && presetCreated && isAmountPreset(swapBasicFormData?.amountMode)
@@ -282,7 +278,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
                 : displayed
         }
         return swapBasicFormData
-    }, [data, swapBasicFormData, swapId, baseSwapData, extendedSwapData, presetCreated, createdAmountContext])
+    }, [data, swapBasicFormData, swapId, baseSwapData, extendedSwapData, presetCreated, createdAmountInput])
 
     const startFreshSwapAttempt = useCallback(() => {
         // Preserve the displayed inputs before detaching the stale attempt. This also makes
@@ -291,7 +287,6 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             ...swapBasicData,
             amountMode: current?.amountMode,
             amountPresetSource: current?.amountPresetSource,
-            amountCalculation: current?.amountCalculation,
         }))
         setPresetCreated(false)
         setSwapTransaction(undefined)
@@ -459,9 +454,6 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const createSwapRequest = useCallback(async (values: SwapFormValues, query: InitialSettings, partner?: Partner) => {
         if (!values)
             throw new Error("No swap data")
-        if (isAmountPreset(values.amountMode) && !isWalletAmountFlow(values)) {
-            values = { ...values, amountMode: 'fixed', amountCalculation: undefined }
-        }
 
         const { to, fromAsset: fromCurrency, toAsset: toCurrency, from, refuel, fromExchange, depositMethod, amount, destination_address } = values
         const depositAddressFlow = isDepositAddressFlow(depositMethod, fromExchange)
@@ -470,11 +462,6 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         if (!depositAddressFlow && !amount)
             throw new Error("Form data is missing")
 
-        const balanceEntry = !depositAddressFlow && selectedSourceAccount
-            ? useBalanceStore.getState().balances[getKey(selectedSourceAccount.address, from)] : undefined
-        const fundingBalance = balanceEntry?.data?.balances?.find(b => b.network === from.name && b.token === fromCurrency.symbol)
-        const fundingContext = lifecycleBalanceContext(!depositAddressFlow ? selectedSourceAccount : undefined,
-            fundingBalance, balanceEntry?.status === 'loading', balanceEntry?.error)
         return createSwapAttempt(async () => {
             const sourceWalletIsSupported = selectedWallet && WalletIsSupportedForSource({
                 sourceNetwork: from,
@@ -574,14 +561,11 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             }
         }, {
             path: 'SwapDataProvider.createSwap',
-            lifecycleContext: {
-                ...lifecycleContextFromForm(values),
-                ...fundingContext,
-            },
+            lifecycleContext: lifecycleContextFromForm(values),
             onLifecycle: onSwapLifecycle,
             onGaslessUnavailable: () => useGaslessPreferenceStore.getState().reportGaslessUnavailable('create'),
         }).then(created => {
-            setCreatedAmountContext({ swapId: created.swap.id, amountMode: values.amountMode, amountCalculation: values.amountCalculation })
+            setCreatedAmountInput({ swapId: created.swap.id, input: values.amountInput })
             return created
         })
     }, [selectedSourceAccount, selectedWallet, onSwapCreate, onSwapLifecycle, updateRecentTokens, swapDetails?.id, networks, sourceRoutes])
@@ -622,7 +606,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         })
         return preparePresetAmount(values, selectedSourceAccount?.address, selectedWallet, sourceRoutes, useGasless,
             (key, response) => mutateCache(key, response, { revalidate: false }))
-            .then(({ amount, snapshot }) => {
+            .then(amount => {
                 if (source !== latestPresetSource.current) throw new Error('The source account changed. Select an amount preset again.')
                 if (Number(amount) < Number(values.amount) || (values.amountMode === 'min' && Number(amount) > Number(values.amount))) {
                     setSwapBasicFormData(current => current ? { ...current, requested_amount: amount, amountPresetPending: true } : current)
@@ -630,7 +614,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
                 }
                 // Confirmation fixes the reviewed amount. Extra balance or cheaper gas must
                 // not silently increase what the user is about to send.
-                return createSwapRequest({ ...values, amountCalculation: snapshot }, query, partner)
+                return createSwapRequest(values, query, partner)
             })
             .then(created => {
                 setPresetCreated(true)

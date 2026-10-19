@@ -1,4 +1,3 @@
-import { AMOUNT_SNAPSHOT_KEYS } from './faro-amount-snapshots.mjs'
 import { BaseInstrumentation, type Faro } from '@grafana/faro-web-sdk'
 
 type SessionAPI = Pick<Faro['api'], 'getSession' | 'setSession'>
@@ -40,7 +39,7 @@ export function createSwapContextWriter(
         const differentSwap = attributes.swap_id && latest.swap_id && attributes.swap_id !== latest.swap_id
         if (replace || differentSwap) latest = {}
         for (const [key, value] of Object.entries(attributes)) {
-            if (SWAP_CONTEXT_KEYS.has(key) && !AMOUNT_SNAPSHOT_KEYS.has(key)) latest[key] = value
+            if (SWAP_CONTEXT_KEYS.has(key) && !EVENT_ONLY_BALANCE_KEYS.has(key)) latest[key] = value
         }
         return sync()
     }
@@ -68,16 +67,17 @@ export function createWalletContextWriter(
     return attributes => { latest = { ...attributes }; return sync() }
 }
 
-// Snapshot keys remain owned for cleanup of persisted metadata, but are never written.
 // Include historical/persisted keys, not just keys seen since this page loaded.
 // Other owners (Faro's previousSession) must survive. Note: the SDK overwrites
 // `isSampled` on every attribute resync (sessionManagerUtils.js:72-75); the
 // sampler in faro-sampling.ts is what keeps that value stable.
+const EVENT_ONLY_BALANCE_KEYS = new Set(['source_wallet_address', 'wallet_balance', 'wallet_balance_network', 'wallet_balance_token', 'wallet_balance_timestamp'])
+
 const SWAP_CONTEXT_KEYS = new Set([
     'schema_version', 'step', 'stage', 'outcome', 'path', 'swap_id', 'previous_swap_id',
     'reason_code', 'reason', 'action', 'provider', 'transaction_hash', 'input_transaction_hash',
     'output_transaction_hash', 'refund_transaction_hash', 'status', 'phase', 'deposit_method',
-    'amount_mode', ...AMOUNT_SNAPSHOT_KEYS,
+    'amount_mode', ...EVENT_ONLY_BALANCE_KEYS,
     'requested_amount', 'from_address', 'to_address', 'source_network', 'destination_network',
     'source_token', 'destination_token', 'confirmations', 'max_confirmations', 'journey_id',
     'sequence', 'attempt', 'previous_step', 'previous_outcome', 'previous_step_duration_ms',
@@ -97,7 +97,7 @@ export function updateSessionContext(
     if (replace) for (const key of owned) delete attributes[key]
     for (const [key, value] of Object.entries(incoming)) {
         // Explicit ownership prevents collisions and accidental provider dumps.
-        if (owned.has(key) && (owner !== 'swap' || !AMOUNT_SNAPSHOT_KEYS.has(key))) attributes[key] = value
+        if (owned.has(key) && (owner !== 'swap' || !EVENT_ONLY_BALANCE_KEYS.has(key))) attributes[key] = value
     }
     const previous = current.attributes ?? {}
     if (Object.keys(previous).length === Object.keys(attributes).length

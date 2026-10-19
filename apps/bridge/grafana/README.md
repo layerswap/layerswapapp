@@ -51,18 +51,15 @@ To keep volume bounded (`lib/faro-policy.ts`, `components/utils/logError.ts`):
 Full page and request URLs retain their query strings for diagnosis; only
 credential values are redacted.
 
-Detailed amount snapshots are sent only on `form_submitted`,
-`transaction_submitted`, `gasless_authorization_submitted`, and `transfer_blocked`
-with reason `insufficient_balance`. These event rows can include the current
-source wallet address and token balance, plus the wallet address, balance, read
-timestamp and gas estimate used to calculate a preset. Calculation-time and
-current values identify which wallet supplied each balance. Created swaps retain
-the original exact decimal snapshot even when the API rounds its JSON number.
-
-Snapshots are excluded from session context, other lifecycle events and stall
-reports; persisted snapshot metadata is cleared on session adoption. `amount_mode`
-and existing correlation fields remain in session context. Existing `from_address`
-collection is unchanged.
+Amount diagnostics record `amount_mode` as the last explicit amount input method
+(`manual`, `min`, `half`, `max`, or `unknown`), independently of automatic form mode
+changes. Restored/prefilled amounts and a changed preset source asset report
+`unknown`. The selected wallet address and token balance (network, token and read
+timestamp) are included when available on form/transaction submission and
+insufficient-balance events only. They identify the balance checked at that point,
+not a captured calculation-time Max balance. Balance fields never enter session
+context or stall events. This instrumentation does not change transfers, presets,
+USD conversion, screen visibility or event suppression.
 
 ## Dashboards and investigation
 
