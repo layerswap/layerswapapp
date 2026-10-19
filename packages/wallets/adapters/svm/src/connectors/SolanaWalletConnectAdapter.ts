@@ -90,6 +90,11 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
         return this._connecting
     }
 
+    /** Topic of the connected session; requests sent on it are recorded under it. */
+    get sessionTopic(): string | undefined {
+        return this._session?.topic
+    }
+
     get readyState(): WalletReadyState {
         return this._readyState
     }

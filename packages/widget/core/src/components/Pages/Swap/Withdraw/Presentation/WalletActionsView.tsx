@@ -23,9 +23,11 @@ import { ICON_CLASSES_WARNING } from '../../Form/SecondaryComponents/validationE
 import ErrorDismissButton from '../../Form/SecondaryComponents/validationError/ErrorDismissButton';
 import { ErrorDisplay } from '../../Form/SecondaryComponents/validationError/ErrorDisplay';
 import WalletMessage, { WalletMessageDetails } from '../messages/Message';
+import { walletDisconnectedMessage } from '../messages/walletErrorMessage';
 import { NetworkSwitchError, networkSwitchFailureReason } from '../Wallet/Common/ensureSourceChain';
 import type { ActionData } from '../Wallet/Common/sharedTypes';
 import type { SwapStepTransactions } from '@/stores/swapTransactionStore';
+import { resolveSwapFlow, type ResolvedSwapFlow } from '@/components/utils/resolveSwapFlow';
 export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = ({ data, network }) => {
     if (data.isPending) {
         return <WalletMessage
@@ -42,6 +44,10 @@ export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = (
             header='Network switch still waiting'
             details={`Your wallet is still asking to switch to ${network}. Confirm it there, then try again`}
         />
+    }
+    // Readiness lost the wallet; switching manually would not help.
+    if (kind === 'disconnected') {
+        return <WalletMessage {...walletDisconnectedMessage} />
     }
     if (kind === 'timeout') {
         return <WalletMessage
@@ -120,12 +126,14 @@ export function ConnectWalletView({
     );
 }
 export type SendTransactionViewProps = SubmitButtonProps & {
+    flow?: ResolvedSwapFlow;
     errorMessage?: ReactNode;
     quote?: SwapQuote;
     quoteIsLoading?: boolean;
     quoteError?: boolean;
     loading?: boolean;
     networkSwitch?: ActionData;
+    walletRequestRecovery?: ReactNode;
     sourceNetworkName?: string;
     actionStateText?: string;
     actionButtonText?: string;
@@ -148,6 +156,7 @@ export type SendTransactionViewProps = SubmitButtonProps & {
     onCancelWithdrawal?: () => void;
 };
 export function SendTransactionView({
+    flow,
     icon = <WalletIcon className="stroke-2 w-6 h-6" />,
     errorMessage,
     quote,
@@ -155,6 +164,7 @@ export function SendTransactionView({
     quoteError,
     loading,
     networkSwitch,
+    walletRequestRecovery,
     sourceNetworkName,
     actionStateText,
     actionButtonText,
@@ -177,12 +187,7 @@ export function SendTransactionView({
     onCancelWithdrawal,
     ...props
 }: SendTransactionViewProps) {
-    const isMultiStepWorkflow =
-        (depositActions?.filter((action) => !!action.step).length ?? 0) > 1 ||
-        (!!stepTransactions?.approve_permit2?.explorerUrl &&
-            !!depositActions?.some(action => action.step === 'approve_permit2')) ||
-        (!!quote?.destination_token &&
-            !!depositActions?.some((action) => action.step === 'publish'));
+    const isMultiStepWorkflow = (flow ?? resolveSwapFlow({ depositActions, stepTransactions, quote })).walletProgress === 'workflow';
     const workflowCompleted = isDepositWorkflowComplete(depositActions ?? []);
     const workflowFailed = depositActions?.some(action => action.status === 'failed');
     const actionableAction = getActionableDepositAction(depositActions);
@@ -226,7 +231,7 @@ export function SendTransactionView({
                 workflow={workflowProgress}
                 controls={
                     isMultiStepWorkflow && loading ? (
-                        message
+                        <>{message}{walletRequestRecovery}</>
                     ) : (
                         <>
                             {message}
@@ -238,6 +243,7 @@ export function SendTransactionView({
                             >
                                 {actionStateText || 'Preparing…'}
                             </ButtonWrapper>
+                            {walletRequestRecovery}
                         </>
                     )
                 }
@@ -371,4 +377,3 @@ export function SendTransactionView({
         />
     );
 }
-

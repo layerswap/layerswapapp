@@ -2,8 +2,9 @@ import assert from 'node:assert/strict'
 import test, { after } from 'node:test'
 import { registerHooks } from 'node:module'
 import { extname } from 'node:path'
-import { BaseError, UserRejectedRequestError, UnauthorizedProviderError, TransactionRejectedRpcError } from 'viem'
-import { isUserRejection } from '@layerswap/wallet-core/errors'
+import { BaseError, UserRejectedRequestError, UnauthorizedProviderError, TransactionRejectedRpcError, createWalletClient, custom } from 'viem'
+import { optimism } from 'viem/chains'
+import { isUserRejection, normalizeWalletErrorCode, walletErrorDetails } from '@layerswap/wallet-core/errors'
 import { isEvmUserRejection, resolveError } from '../dist/esm/evmUtils/resolveError.js'
 
 // The built package keeps the bundler's extensionless relative imports.
@@ -17,7 +18,45 @@ const hooks = registerHooks({
 })
 after(() => hooks.deregister())
 
-test('EVM signing preserves legacy nested cancellation codes without broadening shared classification', () => {
+test('transaction RPC failures wrapped by viem are not reported as user rejection', async () => {
+    const { toTransferError } = await import('../dist/esm/transferProvider/toTransferError.js')
+    for (const [code, message, reason] of [
+        [-32080, 'RPC 0xa Custom eth_getBlockByNumber: RPC endpoint returned HTTP client error.', 'network_error'],
+        [-32080, 'RPC 0xa Custom eth_getBlockByNumber: RPC endpoint returned HTTP server error.', 'network_error'],
+        // MetaMask Mobile relays its RPC failure over WalletConnect as CAIP-25 5000.
+        [5000, 'RPC 0xa Custom eth_getBlockByNumber: RPC endpoint returned HTTP client error.', 'network_error'],
+        [5000, 'MetaMask Tx Signature: [REDACTED]', 'user_rejected'],
+        [-1, 'Provider failure', 'unknown_error'],
+        [4001, 'User rejected the request.', 'user_rejected'],
+        [-1, 'User rejected the request.', 'user_rejected'],
+    ]) {
+        const calls = []
+        const client = createWalletClient({
+            chain: optimism,
+            transport: custom({ request: async ({ method }) => {
+                calls.push(method)
+                if (method === 'eth_chainId') return '0xa'
+                throw Object.assign(new Error(message), { code })
+            } }, { retryCount: 0 }),
+        })
+        const original = await client.sendTransaction({
+            account: '0x0000000000000000000000000000000000000001',
+            to: '0x0000000000000000000000000000000000000002',
+            value: 6640000000000n,
+        }).then(() => assert.fail('must throw'), error => error)
+        assert.equal(original.name, 'TransactionExecutionError')
+        assert.deepEqual(calls, ['eth_chainId', 'eth_sendTransaction'])
+        const mapped = toTransferError(original)
+        assert.equal(mapped.cause, original)
+        assert.equal(mapped.name, reason === 'user_rejected' ? 'TransactionRejected' : 'UnexpectedErrorMessage')
+        assert.equal(normalizeWalletErrorCode(mapped), reason)
+        assert.equal(isEvmUserRejection(original), reason === 'user_rejected')
+        assert.ok(walletErrorDetails(mapped).message.includes(message))
+        if (code === -32080) assert.equal(walletErrorDetails(mapped).code, '-32080')
+    }
+})
+
+test('EVM signing does not infer cancellation from nested unknown-error codes', () => {
     for (const error of [
         { cause: { code: -1 } },
         { data: { code: -1 } },
@@ -25,8 +64,8 @@ test('EVM signing preserves legacy nested cancellation codes without broadening 
         { cause: { cause: { cause: { code: -1 } } } },
     ]) {
         assert.equal(isUserRejection(error), false)
-        assert.equal(isEvmUserRejection(error), true)
-        assert.equal(resolveError(error), 'transaction_rejected')
+        assert.equal(isEvmUserRejection(error), false)
+        assert.notEqual(resolveError(error), 'transaction_rejected')
     }
 })
 
@@ -75,7 +114,7 @@ test('a decline relayed with a nested -32000 is a rejection, not insufficient fu
 test('EVM transfer errors carry the UI label, a string message, the original cause and an explicit reason', async () => {
     const { toTransferError } = await import('../dist/esm/transferProvider/toTransferError.js')
     const { createEVMTransferProvider } = await import('../dist/esm/transferProvider/createEVMTransferProvider.js')
-    const legacy = { cause: { code: -1 } }
+    const legacy = { cause: { code: -1, message: 'User rejected the request.' } }
     const provider = createEVMTransferProvider({}, () => true, async () => { throw legacy })
     const thrown = await provider.executeTransfer({ selectedWallet: {} }).then(() => assert.fail('must throw'), error => error)
     assert.equal(thrown.name, 'TransactionRejected')
@@ -83,7 +122,7 @@ test('EVM transfer errors carry the UI label, a string message, the original cau
     assert.equal(thrown.cause, legacy)
     assert.equal(typeof thrown.message, 'string')
     assert.equal(isUserRejection(thrown), true)
-    assert.equal(isUserRejection(legacy), false, 'the legacy shape is only a decline at the adapter boundary')
+    assert.equal(isUserRejection(legacy), true, 'decline text establishes rejection, not the -1 code')
 
     for (const original of [{ code: 4001 }, new BaseError('Signing failed', { cause: new UserRejectedRequestError(new Error('Request declined')) })]) {
         const mapped = toTransferError(original)

@@ -1,3 +1,4 @@
+import { isAmountPreset } from '@/lib/amountPresets';
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { Form, FormikHelpers, useFormikContext } from "formik";
 import { Partner } from "@/Models/Partner";
@@ -52,7 +53,8 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
     const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
-    const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isQuoteLoading, quote, quoteTokenPrices } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval });
+    const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isQuoteLoading: quoteLoading, quote, quoteTokenPrices } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval });
+    const isQuoteLoading = quoteLoading || (isAmountPreset(values.amountMode) && !!values.amountPresetPending);
     useReportFormQuote(quote?.quote);
 
     const toAsset = values.toAsset;
