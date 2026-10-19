@@ -134,11 +134,11 @@ export function ProcessingSectionView({
 }) {
     const reducedMotion = useHydratedReducedMotion();
     const controls = actions ? (
-        <ProcessingActions>{actions}</ProcessingActions>
+        <ProcessingActions hasContent={!!children}>{actions}</ProcessingActions>
     ) : null;
 
     return (
-        <div className="flex w-full flex-col gap-2 empty:hidden">
+        <div className="flex w-full flex-col empty:hidden">
             {children}
             {reducedMotion ? (
                 controls
@@ -151,7 +151,7 @@ export function ProcessingSectionView({
     );
 }
 
-function ProcessingActions({ children }: { children: ReactNode }) {
+function ProcessingActions({ children, hasContent }: { children: ReactNode; hasContent: boolean }) {
     const reducedMotion = useHydratedReducedMotion();
     const isPresent = useIsPresent();
 
@@ -166,7 +166,8 @@ function ProcessingActions({ children }: { children: ReactNode }) {
             aria-hidden={!isPresent}
             inert={!isPresent}
         >
-            {children}
+            {/* Keep section spacing inside the height animation so it collapses on exit. */}
+            <div className={hasContent ? 'pt-2' : undefined}>{children}</div>
         </motion.div>
     );
 }
