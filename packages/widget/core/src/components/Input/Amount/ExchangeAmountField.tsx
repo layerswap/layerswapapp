@@ -71,7 +71,6 @@ const ExchangeAmountField = forwardRef(function ExchangeAmountField(
                     void setValues({
                         ...values,
                         amount: e.target.value,
-                        amountInput: { method: 'manual' },
                         amountMode: 'manual',
                         amountPresetSource: undefined,
                         amountPresetPending: false,

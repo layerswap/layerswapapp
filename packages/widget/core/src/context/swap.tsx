@@ -110,7 +110,6 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const presetPreparation = useRef(false)
     const [preparingPreset, setPreparingPreset] = useState(false)
     const [presetCreated, setPresetCreated] = useState(false)
-    const [createdAmountInput, setCreatedAmountInput] = useState<{ swapId: string; input: SwapFormValues['amountInput'] }>()
     const [amountPresetRevision, setAmountPresetRevision] = useState(0)
     const [quoteIsLoading, setQuoteLoading] = useState<boolean>(false)
     const [withdrawType, setWithdrawType] = useState<WithdrawType>()
@@ -185,7 +184,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
 
         setPresetCreated(false)
         setSwapBasicFormData({
-            amountMode: values.amountMode, amountInput: values.amountInput,
+            amountMode: values.amountMode,
             amountPresetSource: values.amountPresetSource,
             amountPresetError: values.amountPresetError,
             amountPresetPending: values.amountPresetPending,
@@ -211,7 +210,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
                 || current.source_token.symbol !== values.fromAsset?.symbol) return current
             const patch = {
                 requested_amount: values.amount ?? current.requested_amount,
-                amountMode: values.amountMode, amountInput: values.amountInput, amountPresetSource: values.amountPresetSource,
+                amountMode: values.amountMode, amountPresetSource: values.amountPresetSource,
                 amountPresetError: values.amountPresetError, amountPresetPending: values.amountPresetPending,
                 amountPresetBalance: values.amountPresetBalance,
             }
@@ -268,9 +267,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const swapBasicData = useMemo(() => {
         if (swapId && data?.data) {
             if (!data.data.swap) return undefined
-            const base = extendedSwapData?.swapBasicData ?? baseSwapData
-            const displayed = base && createdAmountInput?.swapId === swapId
-                ? { ...base, amountInput: createdAmountInput.input } : base
+            const displayed = extendedSwapData?.swapBasicData ?? baseSwapData
             // Retain local preset intent for an explicit fresh retry; the backend amount
             // and actions remain authoritative for this created swap.
             return displayed && presetCreated && isAmountPreset(swapBasicFormData?.amountMode)
@@ -278,7 +275,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
                 : displayed
         }
         return swapBasicFormData
-    }, [data, swapBasicFormData, swapId, baseSwapData, extendedSwapData, presetCreated, createdAmountInput])
+    }, [data, swapBasicFormData, swapId, baseSwapData, extendedSwapData, presetCreated])
 
     const startFreshSwapAttempt = useCallback(() => {
         // Preserve the displayed inputs before detaching the stale attempt. This also makes
@@ -564,9 +561,6 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             lifecycleContext: lifecycleContextFromForm(values),
             onLifecycle: onSwapLifecycle,
             onGaslessUnavailable: () => useGaslessPreferenceStore.getState().reportGaslessUnavailable('create'),
-        }).then(created => {
-            setCreatedAmountInput({ swapId: created.swap.id, input: values.amountInput })
-            return created
         })
     }, [selectedSourceAccount, selectedWallet, onSwapCreate, onSwapLifecycle, updateRecentTokens, swapDetails?.id, networks, sourceRoutes])
 

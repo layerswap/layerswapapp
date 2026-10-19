@@ -132,7 +132,6 @@ export function generateSwapInitialValuesFromSwap(swapResponse: SwapBasicData, r
         // well as its amount so the controller can keep that draft synchronized.
         // Created swaps remain protected by the swap provider's execution lock.
         amountMode: swapResponse.amountMode,
-        amountInput: swapResponse.amountInput,
         amountPresetSource: swapResponse.amountPresetSource,
         fromAsset: fromCurrency,
         toAsset: toCurrency,

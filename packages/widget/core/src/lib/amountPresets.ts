@@ -6,8 +6,6 @@ import KnownInternalNames from '@layerswap/utils/known-ids'
 export type AmountPreset = 'min' | 'half' | 'max'
 // Quick fills keep the chosen token amount fixed, including in USD display mode.
 export type AmountMode = 'manual' | 'fixed' | AmountPreset
-/** Telemetry only: last explicit input, independent of automatic mode changes. */
-export type AmountInput = { method: 'manual' | AmountPreset; network?: string; token?: string }
 
 export function isWalletAmountFlow(values: { depositMethod?: string; fromExchange?: unknown }): boolean {
     return values.depositMethod === 'wallet' && !values.fromExchange

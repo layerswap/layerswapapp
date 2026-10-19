@@ -51,15 +51,17 @@ To keep volume bounded (`lib/faro-policy.ts`, `components/utils/logError.ts`):
 Full page and request URLs retain their query strings for diagnosis; only
 credential values are redacted.
 
-Amount diagnostics record `amount_mode` as the last explicit amount input method
-(`manual`, `min`, `half`, `max`, or `unknown`), independently of automatic form mode
-changes. Restored/prefilled amounts and a changed preset source asset report
-`unknown`. The selected wallet address and token balance (network, token and read
-timestamp) are included when available on form/transaction submission and
-insufficient-balance events only. They identify the balance checked at that point,
-not a captured calculation-time Max balance. Balance fields never enter session
-context or stall events. This instrumentation does not change transfers, presets,
-USD conversion, screen visibility or event suppression.
+Amount diagnostics use existing telemetry interactions to label `amount_mode` as
+`manual`, `min`, `half`, `max`, or `unknown`. A preset click or amount-field edit
+updates the label inside the current telemetry flow; source-asset changes clear
+it, and unrelated/restored swaps report `unknown`. This describes the last observed
+input action, not a captured Max calculation. No form or swap state is added.
+
+Insufficient-balance event rows include the selected wallet address and the token
+balance being checked, with network, token and read timestamp when available.
+The new fields are excluded from session context, and balances from stall events.
+No balances are fetched for telemetry. Transfer, preset, USD and reporting behavior
+is unchanged; this PR does not claim to fix an insufficient-funds bug.
 
 ## Dashboards and investigation
 

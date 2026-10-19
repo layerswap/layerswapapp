@@ -24,7 +24,7 @@ import {
 } from './Presentation/BalanceWarningView';
 import WalletTransferButton from './WalletTransferButton';
 import { WalletActionTransition } from './Presentation/WalletActionTransition';
-import { lifecycleBalanceContext, lifecycleContextFromSwap } from '@/lib/swapLifecycle';
+import { lifecycleContextFromSwap } from '@/lib/swapLifecycle';
 import { useTransferBlocked } from '@/hooks/useTransferBlocked';
 import { type ObservedLifecycleEvent, useLifecycleObservation } from '@/hooks/useLifecycleObservation';
 
@@ -77,7 +77,9 @@ const Withdraw: FC<{
 
     const lifecycleContext = useMemo(
         () => swapBasicData ? { ...lifecycleContextFromSwap(swapBasicData, swapDetails),
-            ...lifecycleBalanceContext(selectedSourceAccount?.address, walletBalance) } : undefined,
+            sourceWalletAddress: selectedSourceAccount?.address, walletBalance: walletBalance?.amount,
+            walletBalanceNetwork: walletBalance?.network, walletBalanceToken: walletBalance?.token,
+            walletBalanceTimestamp: walletBalance?.request_time } : undefined,
         [
             swapBasicData?.destination_address,
             swapBasicData?.destination_network?.name,
@@ -86,7 +88,7 @@ const Withdraw: FC<{
             swapBasicData?.source_network?.name,
             swapBasicData?.source_token?.symbol,
             swapBasicData?.use_deposit_address,
-            swapBasicData?.amountInput, selectedSourceAccount?.address, walletBalance,
+            selectedSourceAccount?.address, walletBalance,
             swapDetails?.id,
             swapDetails?.source_address,
         ],
@@ -122,7 +124,6 @@ const Withdraw: FC<{
         // Execution can start between rendering the action and clicking it.
         if (!canAdjustAmount() || adjustedAmount === undefined || !swapBasicData) return;
         const maxFields = { amountMode: 'max' as const,
-            amountInput: { method: 'max' as const, network: swapBasicData.source_network.name, token: swapBasicData.source_token.symbol },
             amountPresetSource: amountPresetSource(swapBasicData.source_network.name, swapBasicData.source_token.symbol, selectedSourceAccount?.id, selectedSourceAccount?.address),
             amountPresetPending: true, amountPresetError: undefined };
         const nextValues: SwapFormValues = {

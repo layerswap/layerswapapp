@@ -131,7 +131,7 @@ const { default: Withdraw } = loadSource('components/Pages/Swap/Withdraw/Withdra
   './Presentation/BalanceWarningView': warningViews,
   './WalletTransferButton': { default: WalletTransferButton },
   './Presentation/WalletActionTransition': { WalletActionTransition: passthrough },
-  '@/lib/swapLifecycle': { lifecycleContextFromSwap: swap => ({ amount: swap.requested_amount }), lifecycleBalanceContext: () => ({}) },
+  '@/lib/swapLifecycle': { lifecycleContextFromSwap: swap => ({ amount: swap.requested_amount }) },
   '@/hooks/useTransferBlocked': loadSource('hooks/useTransferBlocked.ts', callbackImports),
   '@/hooks/useLifecycleObservation': loadSource('hooks/useLifecycleObservation.ts', callbackImports),
 })

@@ -114,7 +114,7 @@ const MinMax = (props: MinMaxProps) => {
             }
             setUsdAmount(usdValue);
         }
-        void setValues({ ...values, amount: sanitizedValue, amountInput: { method: mode, network: from.name, token: fromCurrency.symbol }, amountMode: live ? mode : 'fixed',
+        void setValues({ ...values, amount: sanitizedValue, amountMode: live ? mode : 'fixed',
             amountPresetSource: live ? amountPresetSource(from.name, fromCurrency.symbol, selectedSourceAccount?.id, selectedSourceAccount?.address) : undefined,
             amountPresetPending: live, amountPresetError: undefined, amountPresetBalance: undefined }, true)
         onActionHover(undefined)

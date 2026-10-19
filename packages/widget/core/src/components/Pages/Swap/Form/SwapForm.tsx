@@ -2,11 +2,9 @@ import { isAmountPreset } from '@/lib/amountPresets';
 import { Formik, type FormikConfig, type FormikProps } from 'formik'
 import { useCallback, type ReactNode } from 'react'
 import { useCallbacks } from '@/context/callbackProvider'
-import { lifecycleBalanceContext, lifecycleContextFromForm } from '@/lib/swapLifecycle'
+import { lifecycleContextFromForm } from '@/lib/swapLifecycle'
 import type { SwapFormValues } from './SwapFormValues'
 import FormTelemetry from './FormTelemetry'
-import { useSwapAccounts } from '@/context/swapAccounts'
-import { getKey, useBalanceStore } from '@/stores/balanceStore'
 import AmountPresetController from './AmountPresetController'
 
 /**
@@ -35,13 +33,8 @@ type Props = Omit<FormikConfig<SwapFormValues>, 'onSubmit' | 'children'> & {
  */
 export default function SwapForm({ mode, submitPath, submitAction = 'submit', onSubmit, children, ...formik }: Props) {
     const { onSwapLifecycle } = useCallbacks()
-    const accounts = useSwapAccounts('from')
     const handleSubmit = useCallback<FormikConfig<SwapFormValues>['onSubmit']>((values, helpers) => {
         if (isAmountPreset(values.amountMode) && (values.amountPresetPending || values.amountPresetError)) return Promise.resolve()
-        const account = values.depositMethod === 'wallet' && !values.fromExchange
-            ? accounts.find(a => a.provider.withdrawalSupportedNetworks?.includes(values.from?.name ?? '')) : undefined
-        const balances = account && values.from ? useBalanceStore.getState().balances[getKey(account.address, values.from)]?.data?.balances : undefined
-        const balance = balances?.find(b => b.network === values.from?.name && b.token === values.fromAsset?.symbol)
         onSwapLifecycle({
             step: 'form_submitted',
             stage: 'form',
@@ -49,11 +42,10 @@ export default function SwapForm({ mode, submitPath, submitAction = 'submit', on
             path: submitPath,
             action: submitAction,
             ...lifecycleContextFromForm(values),
-            ...lifecycleBalanceContext(account?.address, balance),
         })
         // Always hand Formik a promise so isSubmitting resets even for a synchronous onSubmit.
         return Promise.resolve(onSubmit(values, helpers))
-    }, [onSwapLifecycle, onSubmit, submitPath, submitAction, accounts])
+    }, [onSwapLifecycle, onSubmit, submitPath, submitAction])
     return (
         <Formik {...formik} onSubmit={handleSubmit}>
             {props => (

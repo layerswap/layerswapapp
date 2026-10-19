@@ -163,6 +163,10 @@ test('insufficient balance still replaces Send and reports a real block once', a
   assert.equal(sendButton(), undefined)
   assert.match(container.textContent, /Insufficient balance/)
   assert.deepEqual(blocks().map(event => event.reasonCode), ['insufficient_balance'])
+  assert.equal(blocks()[0].sourceWalletAddress, 'source')
+  assert.equal(blocks()[0].walletBalance, 0.5)
+  assert.equal(blocks()[0].walletBalanceToken, token.symbol)
+  assert.equal(blocks()[0].walletBalanceNetwork, network.name)
 
   state.balances[0].amount = 1
   await render()

@@ -504,7 +504,6 @@ test('editing zero after a preset clears its balance error and asks for an amoun
   await render()
   assert.equal(submitButton().textContent, 'Insufficient ETH balance')
   await act(() => usd.handleUsdInputChange({ target: { value: '0' } }))
-  assert.equal(formik.values.amountInput.method, 'manual')
   assert.equal(formik.values.amountMode, 'manual')
   assert.equal(submitButton().textContent, 'Enter an amount')
   assert.equal(submitButton().disabled, true)
@@ -563,7 +562,6 @@ for (const mode of ['min', 'max']) {
       assert.equal(formik.values.amountMode, 'fixed')
       // Exercise the actual exchange field handler, without pre-clearing preset intent.
       await act(async () => state.changeExchangeAmount({ target: { name: 'amount', type: 'text', value: entered } }))
-      assert.equal(formik.values.amountInput.method, 'manual')
       assert.equal(formik.values.amount, entered)
       assert.equal(formik.values.amountMode, 'manual')
       assert.equal(formik.values.amountPresetSource, undefined)
@@ -709,7 +707,6 @@ for (const [name, flow, connected] of [
         assert.equal(button.disabled, false)
         assert.equal(button.getAttribute('aria-pressed'), null, 'One-time buttons do not expose toggle state')
         await act(() => button.click())
-        assert.deepEqual(formik.values.amountInput, { method: mode, network: network.name, token: token.symbol })
         const chosenAmount = mode === 'min' ? '0.001' : mode === 'half' ? (connected ? '0.5' : '5') : '10'
         assert.equal(formik.values.amount, chosenAmount)
         assert.equal(formik.values.amountMode, 'fixed')

@@ -489,7 +489,7 @@ test('amount input and balance telemetry is retained on diagnostic rows, never s
     for (const key of ['source_wallet_address', 'wallet_balance', 'wallet_balance_network', 'wallet_balance_token', 'wallet_balance_timestamp']) {
         assert.equal(h.attrs()[key], undefined, key)
     }
-    assert.equal(h.attrs().amount_mode, 'max')
+    assert.equal(h.attrs().amount_mode, undefined)
     t.mock.timers.tick(10 * 60_000 + 1)
     assert.equal(h.records.at(-1).attrs.step, 'suspected_stall')
     assert.equal(h.records.at(-1).attrs.wallet_balance, undefined)

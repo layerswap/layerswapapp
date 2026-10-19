@@ -312,7 +312,6 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
                 const swapValues: SwapFormValues = {
                     amountMode: swapBasicData.amountMode,
-                    amountInput: swapBasicData.amountInput,
                     amountPresetSource: swapBasicData.amountPresetSource,
                     amount: swapBasicData.requested_amount.toString(),
                     from: swapBasicData.source_network as NetworkRoute,

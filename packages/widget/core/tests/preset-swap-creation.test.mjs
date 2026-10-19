@@ -290,14 +290,3 @@ for (const [mode, fresh] of [['min', '1'], ['half', '0.4']]) {
     assert.equal(updates.syncAmountPresetDraft({ ...values, amount: '0.1' }), false)
   })
 }
-
-test('input-method telemetry stays local to the created swap and is not sent to the API', async () => {
-  const input = { method: 'max', network: network.name, token: token.symbol }
-  const submitted = { ...values, amountMode: 'manual', amountInput: input }
-  await act(async () => { await updates.createSwap(submitted, {}); updates.setSwapId('created') })
-  assert.deepEqual(data.swapBasicData.amountInput, input)
-  assert.equal(state.created[0].amount, submitted.amount)
-  assert.equal(state.created[0].amountInput, undefined)
-  await act(() => updates.setSwapId('unrelated'))
-  assert.equal(data.swapBasicData.amountInput, undefined)
-})

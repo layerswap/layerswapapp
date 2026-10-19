@@ -6,7 +6,7 @@ type Attributes = WidgetTelemetryAttributes
 type Flow = {
     id: string; started: number; attributes: Attributes; opened: boolean; engaged: boolean;
     submitted: boolean; prompted: boolean; transferSubmitted: boolean; deposited: boolean; completed: boolean;
-    attempts: number; swapId?: string; validation?: string;
+    attempts: number; swapId?: string; validation?: string; amountMode?: SwapLifecycleEvent['amountMode'];
     observations: Map<SwapLifecycleObservationKey, string>;
 }
 
@@ -90,8 +90,24 @@ export function createWidgetTelemetry(clock = now, wallClock = Date.now) {
             queueMicrotask(() => { if (flow === current) open() })
             return () => { flow = removeEntry(mounts, entry)?.flow }
         },
-        update(current: Flow, attributes: Attributes) { current.attributes = { ...attributes } },
+        update(current: Flow, attributes: Attributes) {
+            if (current.attributes.source_network !== attributes.source_network || current.attributes.source_token !== attributes.source_token)
+                current.amountMode = undefined
+            current.attributes = { ...attributes }
+        },
+        amountInputMethod(event: SwapLifecycleEvent): SwapLifecycleEvent['amountMode'] {
+            if (!flow || (event.swapId && event.swapId !== flow.swapId && event.step !== 'swap_created')
+                || (event.step === 'swap_created' && !flow.submitted)
+                || (event.sourceNetwork && event.sourceNetwork !== flow.attributes.source_network)
+                || (event.sourceToken && event.sourceToken !== flow.attributes.source_token)) return 'unknown'
+            return flow.amountMode ?? 'unknown'
+        },
         interaction(action: string, trigger: string, inForm: boolean, attributes: Attributes = {}) {
+            if (flow && inForm) {
+                const preset = action === 'set_min_amount' ? 'min' : action === 'set_half_amount' ? 'half' : action === 'set_max_amount' ? 'max' : undefined
+                if (preset) flow.amountMode = preset
+                else if (attributes.amount_mode === 'manual') flow.amountMode = 'manual'
+            }
             open()
             const alreadyEngaged = flow?.engaged
             if (flow && inForm && !flow.engaged) {
@@ -221,5 +237,6 @@ export function captureWidgetInteraction(event: { target: EventTarget | null; ty
     }
     const action = event.type === 'change' ? (inForm ? 'form_edited' : undefined)
         : element?.getAttribute('data-ls-action') ?? knownActions[element?.getAttribute('data-attr') ?? '']
-    if (action && /^[a-z][a-z0-9_]{0,63}$/.test(action)) widgetTelemetry.interaction(action, event.type, inForm)
+    if (action && /^[a-z][a-z0-9_]{0,63}$/.test(action)) widgetTelemetry.interaction(action, event.type, inForm,
+        event.type === 'change' && event.target.matches('input[name="amount"]') ? { amount_mode: 'manual' } : {})
 }

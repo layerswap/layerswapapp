@@ -18,17 +18,9 @@ for (const [key, value] of Object.entries(globals)) {
   Object.defineProperty(globalThis, key, { configurable: true, writable: true, value })
 }
 
-const fundingUrl = `data:text/javascript,${encodeURIComponent(`
-  export const funding = { accounts: [], balances: {} };
-  export const useSwapAccounts = () => funding.accounts;
-  export const getKey = (address, network) => address + ':' + network.name;
-  export const useBalanceStore = { getState: () => funding };
-`)}`
-
 // The widget emits extensionless relative imports for bundlers; resolve those in Node.
 const hooks = registerHooks({
   resolve(specifier, context, nextResolve) {
-    if (specifier.endsWith('/context/swapAccounts') || specifier.endsWith('/stores/balanceStore')) return { url: fundingUrl, shortCircuit: true }
     if (specifier === './AmountPresetController') return { url: 'data:text/javascript,export default () => null', shortCircuit: true }
     if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
       return nextResolve(`${specifier}.js`, context)
@@ -38,7 +30,6 @@ const hooks = registerHooks({
 })
 
 // Import after installing the DOM so the provider uses its client layout effect.
-const { funding } = await import(fundingUrl)
 const { createRoot } = await import('react-dom/client')
 const { CallbackProvider, useCallbacks } = await import('../dist/esm/context/callbackProvider.js')
 const { captureWidgetInteraction } = await import('../dist/esm/lib/widgetTelemetry.js')
@@ -49,7 +40,6 @@ const MODES = ['cross-chain', 'exchange', 'deposit-address', 'deposit-widget-add
 let root
 let container
 beforeEach(() => {
-  funding.accounts = []; funding.balances = {}
   container = document.createElement('div')
   document.body.append(container)
   root = createRoot(container)
@@ -69,11 +59,12 @@ after(() => {
 
 /** Exposes Formik's submitForm and the provider's onSwapLifecycle to the test. */
 function Probe({ handle }) {
-  const { submitForm } = useFormikContext()
+  const { submitForm, setFieldValue } = useFormikContext()
   const { onSwapLifecycle } = useCallbacks()
   handle.submitForm = submitForm
+  handle.setFieldValue = setFieldValue
   handle.onSwapLifecycle = onSwapLifecycle
-  return createElement('input', { 'data-testid': 'amount' })
+  return createElement('input', { name: 'amount', 'data-testid': 'amount' })
 }
 
 /** The form can be unmounted while the provider (and its telemetry registration) stays. */
@@ -83,13 +74,13 @@ function Host({ handle, callbacks, form }) {
   return createElement(CallbackProvider, { callbacks }, showForm ? form : null)
 }
 
-async function mount({ mode, onSubmit = async () => {}, submitAction = 'continue', initialValues = { from: { name: 'A' }, to: { name: 'B' } } }) {
+async function mount({ mode, onSubmit = async () => {}, submitAction = 'continue' }) {
   const telemetry = []
   const lifecycle = []
   const handle = {}
   const form = createElement(
     SwapForm,
-    { mode, submitPath: 't', submitAction, initialValues, onSubmit },
+    { mode, submitPath: 't', submitAction, initialValues: { from: { name: 'A' }, to: { name: 'B' } }, onSubmit },
     createElement(Probe, { handle }),
   )
   await act(async () => {
@@ -174,18 +165,21 @@ test('a synchronous onSubmit still resolves Formik submission', async () => {
   assert.equal(calls, 1)
 })
 
-test('submission identifies the last explicit input and the selected wallet token balance', async () => {
-  funding.accounts = [{ address: 'selected-wallet', provider: { withdrawalSupportedNetworks: ['A'] } }]
-  funding.balances['selected-wallet:A'] = { data: { balances: [
-    { amount: 99, network: 'A', token: 'OTHER' }, { amount: 0, network: 'A', token: 'ETH', request_time: 'read-time' },
-  ] } }
-  const { handle, lifecycle } = await mount({ mode: 'cross-chain', initialValues: { depositMethod: 'wallet',
-    from: { name: 'A' }, fromAsset: { symbol: 'ETH' }, amountMode: 'manual', amountInput: { method: 'max', network: 'A', token: 'ETH' } } })
+test('existing captured actions identify Max/manual without changing form state', async () => {
+  const { handle, lifecycle } = await mount({ mode: 'cross-chain' })
+  const input = container.querySelector('[data-testid="amount"]')
+  const max = document.createElement('button')
+  max.setAttribute('data-attr', 'max-amount')
+  input.parentElement.append(max)
+  captureWidgetInteraction({ target: max, type: 'click' })
   await act(async () => { await handle.submitForm() })
-  const row = lifecycle.find(event => event.step === 'form_submitted')
-  assert.equal(row.amountMode, 'max')
-  assert.equal(row.sourceWalletAddress, 'selected-wallet')
-  assert.equal(row.walletBalance, 0)
-  assert.equal(row.walletBalanceToken, 'ETH')
-  assert.equal(row.walletBalanceTimestamp, 'read-time')
+  assert.equal(lifecycle.at(-1).amountMode, 'max')
+  captureWidgetInteraction({ target: input, type: 'change' })
+  await act(async () => { await handle.submitForm() })
+  assert.equal(lifecycle.at(-1).amountMode, 'manual', 'edits update the label even after form_edited events are deduplicated')
+  await act(() => handle.setFieldValue('from', { name: 'OTHER' }, false))
+  await act(async () => { await handle.submitForm() })
+  assert.equal(lifecycle.at(-1).amountMode, 'unknown', 'source changes discard old input history')
+  await act(() => handle.onSwapLifecycle({ step: 'transfer_blocked', swapId: 'restored', stage: 'wallet_action', outcome: 'blocked', path: 'test' }))
+  assert.equal(lifecycle.at(-1).amountMode, 'unknown', 'unrelated swaps never inherit form input history')
 })

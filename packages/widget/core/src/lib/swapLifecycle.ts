@@ -1,4 +1,4 @@
-import type { SwapLifecycleEvent, TokenBalance } from '@layerswap/widget-types'
+import type { SwapLifecycleEvent } from '@layerswap/widget-types'
 import { getErrorOccurrenceId } from '@layerswap/widget-types'
 import { normalizeWalletErrorCode, walletErrorCodeFromChain } from '@layerswap/wallet-core/errors'
 import type { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
@@ -85,8 +85,7 @@ export type SwapLifecycleContext = Partial<Pick<
     | 'swapId'
     | 'depositMethod'
     | 'requestedAmount'
-    | 'amountMode' | 'sourceWalletAddress' | 'walletBalance'
-    | 'walletBalanceNetwork' | 'walletBalanceToken' | 'walletBalanceTimestamp'
+    | 'sourceWalletAddress' | 'walletBalance' | 'walletBalanceNetwork' | 'walletBalanceToken' | 'walletBalanceTimestamp'
     | 'fromAddress'
     | 'toAddress'
     | 'sourceNetwork'
@@ -95,22 +94,10 @@ export type SwapLifecycleContext = Partial<Pick<
     | 'destinationToken'
 >>
 
-/** Method of the last explicit input; do not infer typing from an automatic mode change. */
-function amountInputMethod(input: SwapFormValues['amountInput'], network?: string, token?: string): SwapLifecycleEvent['amountMode'] {
-    return input?.method === 'manual' || (input?.network === network && input?.token === token)
-        ? input?.method ?? 'unknown' : 'unknown'
-}
-
-export function lifecycleBalanceContext(address: string | undefined, balance: TokenBalance | undefined): SwapLifecycleContext {
-    return { sourceWalletAddress: address, walletBalance: balance?.amount,
-        walletBalanceNetwork: balance?.network, walletBalanceToken: balance?.token, walletBalanceTimestamp: balance?.request_time }
-}
-
 export function lifecycleContextFromForm(values: SwapFormValues): SwapLifecycleContext {
     return {
         depositMethod: values.depositMethod,
         requestedAmount: values.amount,
-        amountMode: amountInputMethod(values.amountInput, values.from?.name, values.fromAsset?.symbol),
         toAddress: values.destination_address,
         sourceNetwork: values.from?.name,
         destinationNetwork: values.to?.name,
@@ -127,7 +114,6 @@ export function lifecycleContextFromSwap(
         swapId: details?.id,
         depositMethod: swap.use_deposit_address ? 'deposit_address' : 'wallet',
         requestedAmount: swap.requested_amount?.toString(),
-        amountMode: amountInputMethod(swap.amountInput, swap.source_network?.name, swap.source_token?.symbol),
         fromAddress: details?.source_address,
         toAddress: swap.destination_address,
         sourceNetwork: swap.source_network?.name,

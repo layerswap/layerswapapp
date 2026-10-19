@@ -19,7 +19,6 @@ after(() => hooks.deregister())
 const {
   lifecycleContextFromForm,
   lifecycleContextFromSwap,
-  lifecycleBalanceContext,
   lifecycleErrorDetails,
   resolveFlowClosedEvent,
   PHASE_LIFECYCLE_EVENTS,
@@ -38,7 +37,6 @@ test('normalizes form data into stable lifecycle fields', () => {
   }), {
     depositMethod: 'wallet',
     requestedAmount: '1.25',
-    amountMode: 'unknown',
     toAddress: '0xdestination',
     sourceNetwork: 'ARBITRUM_MAINNET',
     destinationNetwork: 'BASE_MAINNET',
@@ -63,7 +61,6 @@ test('normalizes an active swap without losing its correlation fields', () => {
     swapId: 'swap-123',
     depositMethod: 'wallet',
     requestedAmount: '2',
-    amountMode: 'unknown',
     fromAddress: '0xsource',
     toAddress: '0xdestination',
     sourceNetwork: 'ARBITRUM_MAINNET',
@@ -200,23 +197,4 @@ test('flow_closed after a refund is refunded, not succeeded', () => {
   assert.equal(resolveFlowClosedEvent({ phase: 'refunded' }).reasonCode, 'refunded_flow_closed')
   assert.equal(resolveFlowClosedEvent({ phase: 'refunded' }, { fail_reason: 'X' }).reasonCode, 'X')
   assert.equal(resolveFlowClosedEvent({ phase: 'pending_refund' }).outcome, 'abandoned')
-})
-
-test('input method is telemetry only and survives automatic wallet-switch mode changes', () => {
-  const values = { amount: '0.5', amountMode: 'manual', amountInput: { method: 'max', network: 'BASE', token: 'ETH' },
-    from: { name: 'BASE' }, fromAsset: { symbol: 'ETH' } }
-  assert.equal(lifecycleContextFromForm(values).amountMode, 'max')
-  assert.equal(values.amountMode, 'manual')
-  assert.equal(lifecycleContextFromForm({ ...values, amountInput: { method: 'manual' } }).amountMode, 'manual')
-  assert.equal(lifecycleContextFromForm({ ...values, fromAsset: { symbol: 'USDC' } }).amountMode, 'unknown')
-  assert.equal(lifecycleContextFromForm({ ...values, amountInput: undefined }).amountMode, 'unknown')
-  const swap = { amountInput: values.amountInput, requested_amount: '0.5', source_network: values.from, source_token: values.fromAsset }
-  assert.equal(lifecycleContextFromSwap(swap).amountMode, 'max')
-})
-
-test('balance telemetry records the wallet and exact token balance read, including zero', () => {
-  assert.deepEqual(lifecycleBalanceContext('selected-wallet', { amount: 0, network: 'BASE', token: 'ETH', request_time: 'read-time' }), {
-    sourceWalletAddress: 'selected-wallet', walletBalance: 0, walletBalanceNetwork: 'BASE', walletBalanceToken: 'ETH', walletBalanceTimestamp: 'read-time',
-  })
-  assert.equal(lifecycleBalanceContext(undefined, undefined).walletBalance, undefined)
 })

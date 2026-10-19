@@ -1,4 +1,4 @@
-import type { AmountInput, AmountMode } from '@/lib/amountPresets';
+import type { AmountMode } from '@/lib/amountPresets';
 import { SwapStatus, type Refuel } from '@layerswap/widget-types';
 import AppSettings from "../AppSettings";
 import { InitializeUnauthInstance, InitializeAuthInstance } from "../axiosInterceptor"
@@ -191,7 +191,6 @@ export type SwapResponse = {
 
 export type SwapBasicData = {
     /** Local amount intent; never serialized as an API parameter. */
-    amountInput?: AmountInput;
     amountMode?: AmountMode
     amountPresetSource?: string
     amountPresetError?: string

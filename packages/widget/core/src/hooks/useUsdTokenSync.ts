@@ -208,7 +208,6 @@ export function useUsdTokenSync({
         const value = e.target.value.replace(',', '.');
         // Allow empty, or a valid USD amount: no leading zeros (except "0" itself), up to 2 decimals
         if (value !== '' && !/^(0|[1-9]\d*)\.?\d{0,2}$/.test(value)) return;
-        setFieldValue('amountInput', { method: 'manual' }, false);
         setFieldValue('amountMode', 'manual', false);
         setFieldValue('amountPresetSource', undefined, false);
         setFieldValue('amountPresetPending', false, false);
