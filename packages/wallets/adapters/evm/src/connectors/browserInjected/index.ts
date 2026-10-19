@@ -1,5 +1,6 @@
 import { createConnector } from 'wagmi'
 import { injected } from '@wagmi/connectors'
+import { explicitInjectedProviderDetected } from '../explicitInjectedProviderDetected'
 
 export function browserInjected(): ReturnType<typeof createConnector> {
     return createConnector((config) => {
@@ -8,7 +9,7 @@ export function browserInjected(): ReturnType<typeof createConnector> {
         return {
             ...injectedConnector,
             connect(...params) {
-                if (typeof window !== 'undefined' && !window.ethereum) {
+                if (typeof window !== 'undefined' && !explicitInjectedProviderDetected()) {
                     window.open('https://metamask.io/', 'inst_metamask')
                 }
                 return injectedConnector.connect(...params)

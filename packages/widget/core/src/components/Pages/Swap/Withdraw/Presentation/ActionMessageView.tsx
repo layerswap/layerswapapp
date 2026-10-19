@@ -1,7 +1,9 @@
 import { isUserRejection } from '../Wallet/Common/isUserRejection';
+import { normalizeWalletErrorCode } from '@layerswap/wallet-core/errors';
 import { ActionMessageType, type Network } from '@layerswap/widget-types';
-import { WalletUnknownError } from '../messages/Message';
+import WalletMessage, { WalletUnknownError } from '../messages/Message';
 import { ActionMessages } from '../messages/TransactionMessages';
+import { walletErrorMessage } from '../messages/walletErrorMessage';
 export type ActionMessageViewProps = {
     error?: { name: string; message?: string };
     isLoading?: boolean;
@@ -59,10 +61,15 @@ export function ActionMessageView({
                 network={error?.message || sourceNetwork.display_name}
             />
         );
-    } else if (swapError) {
+    }
+    // A generic swap flag must not hide an actionable wallet failure.
+    if (error) {
+        const message = walletErrorMessage(normalizeWalletErrorCode(error), sourceNetwork);
+        if (message) return <WalletMessage {...message} />;
+    }
+    if (swapError) {
         return <ActionMessages.SwapErrorMessage />;
     } else if (error) {
-        if (!error.message) return <WalletUnknownError expanded={expanded} />;
         return <WalletUnknownError expanded={expanded} />;
     } else return <></>;
 }

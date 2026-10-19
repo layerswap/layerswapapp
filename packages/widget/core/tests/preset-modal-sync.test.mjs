@@ -98,6 +98,9 @@ const { SendTransactionView } = loadSource('components/Pages/Swap/Withdraw/Prese
   '../../Form/SecondaryComponents/validationError/ErrorDismissButton': { default: noop },
   '../../Form/SecondaryComponents/validationError/ErrorDisplay': errorDisplay,
   '../messages/Message': {}, '../Wallet/Common/ensureSourceChain': {},
+  '../messages/walletErrorMessage': loadSource('components/Pages/Swap/Withdraw/messages/walletErrorMessage.ts', {
+    '@layerswap/widget-types': require('@layerswap/widget-types'),
+  }),
 })
 const callbackImports = {
   react: React,

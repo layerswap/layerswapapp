@@ -84,11 +84,19 @@ export interface WalletConnectionService<TDeps = never, Network = NetworkWithTok
     disconnectWallets?(): Promise<void>
 }
 
+export type EnsureWalletChainOptions = {
+    signal?: AbortSignal
+    /** Called only when live wallet state requires a network switch. */
+    onSwitchStart?: () => void
+}
+
 export type WalletConnectionProvider = {
     connectWallet: (props: { connector: InternalConnector }) => Promise<Wallet | undefined> | undefined,
     disconnectWallets?: () => Promise<void> | undefined | void,
     switchAccount?: (connector: Wallet, address: string) => Promise<void>,
     switchChain?: (connector: Wallet, chainId: string | number) => Promise<void>
+    /** Resolves only after the selected connection is ready on this chain. Owns its deadline. */
+    ensureChain?: (wallet: Wallet, chainId: string | number, options?: EnsureWalletChainOptions) => Promise<void>
     isNotAvailableCondition?: (connector: string, network: string, purpose?: "withdrawal" | "autofill" | "asSource") => boolean,
     requestAdditionalConnectors?: (params?: RequestAdditionalConnectorsParams) => Promise<RequestAdditionalConnectorsResult>,
 
