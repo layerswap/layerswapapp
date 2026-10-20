@@ -27,9 +27,13 @@ export async function executeProviderWithdrawal<T>({ swapId, sourceAddress, prep
     const store = useSwapTransactionStore.getState()
     const transaction = store.swapTransactions[swapId]
 
+    // Successful hashless submissions resume processing even before the backend
+    // indexes their deposit. They must never open another wallet request.
+    if (transaction?.providerSubmissionAccepted && !transaction.hash) return ''
+
     const recordSubmission = async (hash: string) => {
         if (hash) await store.setSwapTransaction(swapId, hash, 'wallet-transfer')
-        else await store.markSubmissionPending(swapId)
+        else await store.setProviderSubmissionAccepted(swapId)
         return hash
     }
 

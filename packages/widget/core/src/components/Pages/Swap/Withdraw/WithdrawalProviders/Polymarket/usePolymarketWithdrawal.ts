@@ -19,6 +19,7 @@ import { ErrorHandler } from "@/lib/ErrorHandler";
 import { truncateToDecimals } from "@/components/utils/RoundDecimals";
 import { useCallbacks } from "@/context/callbackProvider";
 import { lifecycleContextFromSwap } from "@/lib/swapLifecycle";
+import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 
 /** Deposit-action kinds that carry the depository deposit (address + calldata). */
 const DEPOSIT_ACTION_TYPES = ['transfer', 'manual_transfer']
@@ -84,6 +85,13 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
     const submittingRef = useRef(false)
     // Keep a lazily created swap even before its context state has caught up.
     const preparedSwapRef = useRef<{ swapId: string } | undefined>(undefined)
+    // Exit transitions retain this controller after processing starts. Keep its
+    // button busy from the accepted receipt, even after local loading is cleared.
+    const submissionAccepted = useSwapTransactionStore(state => {
+        const activeSwapId = swapId ?? preparedSwapRef.current?.swapId
+        const transaction = activeSwapId ? state.swapTransactions[activeSwapId] : undefined
+        return !!transaction?.providerSubmissionAccepted || !!transaction?.hash
+    })
     // The flow widens the async window (deploy + sign + submit); avoid setting state after unmount.
     const mountedRef = useRef(true)
     useEffect(() => {
@@ -232,7 +240,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
 
     return {
         handleWithdraw,
-        loading,
+        loading: loading || submissionAccepted,
         progress,
         error,
         rejected,

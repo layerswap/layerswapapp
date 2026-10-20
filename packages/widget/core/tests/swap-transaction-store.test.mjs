@@ -103,6 +103,30 @@ test('empty transaction hashes cannot submit a swap or resolve an unknown wallet
     assert.deepEqual(store.getState().pendingSubmissions, { 'swap-1': true })
 })
 
+test('an accepted provider withdrawal persists without a hash and clears only its uncertain submission', async () => {
+    store.getState().markSubmissionPending('accepted')
+    store.getState().markSubmissionPending('uncertain')
+    store.getState().setProviderSubmissionAccepted('accepted')
+    const receipt = store.getState().swapTransactions.accepted
+    assert.equal(receipt.providerSubmissionAccepted, true)
+    assert.equal(receipt.kind, 'wallet-transfer')
+    assert.equal(receipt.hash, undefined)
+    assert.ok(receipt.timestamp > 0)
+    assert.deepEqual(store.getState().pendingSubmissions, { uncertain: true })
+
+    const saved = storage.get('swapTransactions')
+    store.setState(store.getInitialState(), true)
+    storage.set('swapTransactions', saved)
+    await store.persist.rehydrate()
+    assert.deepEqual(store.getState().swapTransactions.accepted, receipt)
+    assert.equal(store.getState().swapTransactions.uncertain, undefined)
+    assert.deepEqual(store.getState().pendingSubmissions, { uncertain: true })
+
+    store.getState().setSwapTransaction('accepted', 'indexed-hash')
+    assert.equal(store.getState().swapTransactions.accepted.hash, 'indexed-hash')
+    assert.equal(store.getState().swapTransactions.accepted.providerSubmissionAccepted, undefined)
+})
+
 test('execution kinds survive rehydration without creating submission receipts', async () => {
     const kinds = ['wallet-transfer', 'frontend-swap', 'atomic-batch', 'gasless-deposit']
     for (const kind of kinds) {

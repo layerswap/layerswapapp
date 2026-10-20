@@ -8,6 +8,8 @@ export type SwapTransaction = {
     kind: SwapExecutionKind | 'transaction';
     hash?: string;
     timestamp?: number;
+    // A provider accepted the withdrawal but cannot supply a source transaction hash.
+    providerSubmissionAccepted?: true;
 };
 
 export type SwapStepTransaction = { hash: string; timestamp: number; explorerUrl: string };
@@ -23,6 +25,7 @@ type SwapTransactionStore = {
     pendingSubmissions: Record<string, true>;
     markSubmissionPending: (id: string) => void;
     clearPendingSubmission: (id: string) => void;
+    setProviderSubmissionAccepted: (id: string) => void;
     setSwapTransactionKind: (id: string, kind: SwapExecutionKind) => void;
     setSwapTransaction: (id: string, hash: string, kind?: SwapExecutionKind) => void;
     removeSwapTransaction: (id: string) => void;
@@ -98,6 +101,12 @@ function transactionReceipts(value: unknown): PersistedTransactionReceipts {
             || entry.kind === 'atomic-batch' || entry.kind === 'gasless-deposit' ? entry.kind : undefined;
         if (receipt) {
             swapTransactions[id] = { kind: kind ?? 'transaction', ...receipt };
+        } else if (entry.providerSubmissionAccepted === true) {
+            swapTransactions[id] = {
+                kind: kind ?? 'wallet-transfer',
+                providerSubmissionAccepted: true,
+                timestamp: savedTimestamp(entry.timestamp),
+            };
         } else if (kind) {
             swapTransactions[id] = { kind };
         }
@@ -161,6 +170,22 @@ export const useSwapTransactionStore = create<SwapTransactionStore>()(
             clearPendingSubmission: id => set(state => {
                 const { [id]: removed, ...pendingSubmissions } = state.pendingSubmissions;
                 return { pendingSubmissions };
+            }),
+            setProviderSubmissionAccepted: id => set(state => {
+                const current = state.swapTransactions[id];
+                const { [id]: removed, ...pendingSubmissions } = state.pendingSubmissions;
+                return {
+                    swapTransactions: {
+                        ...state.swapTransactions,
+                        [id]: {
+                            ...current,
+                            kind: current?.kind ?? 'wallet-transfer',
+                            providerSubmissionAccepted: true,
+                            timestamp: current?.timestamp ?? Date.now(),
+                        },
+                    },
+                    pendingSubmissions,
+                };
             }),
             setSwapTransactionKind: (id, kind) => set(state => {
                 const current = state.swapTransactions[id];

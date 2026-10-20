@@ -21,6 +21,8 @@ export type ResolveSwapPhaseInput = {
     // The server reports every wallet deposit step completed. It holds only while the latest
     // deposit-actions response says so, unlike a stored transaction this client broadcast.
     depositCompleted?: boolean;
+    // A successful provider response can precede backend detection and have no hash.
+    providerSubmissionAccepted?: boolean;
     // Keep a successful wallet handoff mounted until execution handles its response.
     walletActionExecuting?: boolean;
     isDepositFlow?: boolean;
@@ -59,6 +61,7 @@ export type ResolvedSwapStatus = {
 export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStatus {
     const { swapDetails, refuel, inputTxStatusFromApi, gaslessFailureStatus } = input;
     const depositSubmitted = !!input.depositCompleted
+        || !!input.providerSubmissionAccepted
         || inputTxStatusFromApi === TransactionStatus.Pending
         || inputTxStatusFromApi === TransactionStatus.Completed;
 

@@ -78,4 +78,7 @@ test('history requires submission evidence, not just a saved execution kind', ()
     assert.equal(shouldDisplay({ swap: { id: 'swap', status: 'user_transfer_pending', transactions: [] } }, {
         swap: { kind: 'atomic-batch', batch: { attempt: 'original' }, timestamp: 1 },
     }), false)
+    assert.equal(shouldDisplay({ swap: { id: 'swap', status: 'user_transfer_pending', transactions: [] } }, {
+        swap: { kind: 'wallet-transfer', providerSubmissionAccepted: true, timestamp: 1 },
+    }), true)
 })

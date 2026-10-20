@@ -416,7 +416,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
 
     // Inputs to the resolved status that only the client observes: the gasless authorization
     // outcome and source-chain status of an input transaction the swap has not listed yet.
-    // Shared SWR responses supply these facts; user receipts supply only lookup identifiers.
+    // Shared SWR responses supply transaction status. Provider acceptance receipts
+    // cover successful withdrawals that cannot supply a transaction hash yet.
     const { isDepositFlow } = useDepositSettings()
     const gaslessAuthorization = useGaslessAuthorizationStatus(swapId, depositActionsResponse)
     const { failureStatus: gaslessFailureStatus } = useGaslessAuthorization(swapDetails, depositActionsResponse, gaslessAuthorization)
@@ -464,11 +465,12 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             // Initiated can be unsigned. Fetched submission advances the phase,
             // while execution consumes that response before releasing its controller.
             depositCompleted: depositCompleted || isGaslessAuthorizationSubmitted(gaslessAuthorization),
+            providerSubmissionAccepted: storedWalletTransaction?.providerSubmissionAccepted,
             walletActionExecuting,
             isDepositFlow,
             gaslessFailureStatus,
         }),
-        [swapDetails, refuel, inputTxStatusFromApi, depositCompleted, walletActionExecuting,
+        [swapDetails, refuel, inputTxStatusFromApi, depositCompleted, storedWalletTransaction?.providerSubmissionAccepted, walletActionExecuting,
             isDepositFlow, gaslessFailureStatus, gaslessAuthorization],
     )
 

@@ -77,6 +77,27 @@ test('server-reported deposit completion shows processing only while the server 
   assert.equal(actionRequired.phase, SwapPhase.AwaitingUserDeposit)
 })
 
+test('an accepted provider withdrawal starts processing without a hash, while an uncertain submission does not', () => {
+  const accepted = resolve(pendingSwap(), { providerSubmissionAccepted: true })
+  assert.equal(accepted.phase, SwapPhase.InputPending)
+  assert.equal(accepted.showWithdrawScreen, false)
+  assert.equal(accepted.stepStatuses.input_transfer, 'current')
+  assert.equal(accepted.stepStatuses.output_transfer, 'upcoming')
+  const uncertain = resolve(pendingSwap(), { pendingSubmission: true })
+  assert.equal(uncertain.phase, SwapPhase.AwaitingUserDeposit)
+  assert.equal(uncertain.showWithdrawScreen, true)
+
+  for (const swap of [
+    pendingSwap({ status: 'failed' }), pendingSwap({ status: 'expired' }),
+    pendingSwap({ status: 'pending_refund' }), pendingSwap({ status: 'refunded' }),
+    pendingSwap({ transactions: [inputTx({ status: 'failed' })] }),
+    pendingSwap({ status: 'completed', transactions: [inputTx(), { type: 'output', transaction_hash: '0x2', amount: 1 }] }),
+  ]) {
+    assert.equal(resolve(swap, { providerSubmissionAccepted: true }).phase, resolve(swap).phase,
+      'backend outcomes remain authoritative after provider acceptance')
+  }
+})
+
 test('active wallet handoff retains its controls without overriding fetched progress', () => {
   for (const swap of [
     pendingSwap(),

@@ -7,11 +7,20 @@ import { act, createElement } from 'react'
 import { userRejectedError } from '@layerswap/wallet-core/errors'
 import { createSwapContext } from './helpers/swap-context.mjs'
 
-const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://widget.test' })
+const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://widget.test', pretendToBeVisual: true })
 const previous = Object.getOwnPropertyDescriptors(globalThis)
-for (const [key, value] of Object.entries({ window: dom.window, document: dom.window.document, localStorage: dom.window.localStorage, IS_REACT_ACT_ENVIRONMENT: true })) {
+const surfaces = {
+  window: dom.window, document: dom.window.document, localStorage: dom.window.localStorage,
+  HTMLElement: dom.window.HTMLElement, Element: dom.window.Element, SVGElement: dom.window.SVGElement,
+  getComputedStyle: dom.window.getComputedStyle,
+  requestAnimationFrame: dom.window.requestAnimationFrame.bind(dom.window),
+  cancelAnimationFrame: dom.window.cancelAnimationFrame.bind(dom.window),
+  IS_REACT_ACT_ENVIRONMENT: true,
+}
+for (const [key, value] of Object.entries(surfaces)) {
   Object.defineProperty(globalThis, key, { configurable: true, writable: true, value })
 }
+dom.window.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} })
 const fixtureUrl = 'data:text/javascript,' + encodeURIComponent(`
   export const state = { events: [], errors: [] }
   export const useSwapDataState = () => ({ swapDetails: state.swapDetails, depositActionsResponse: state.depositActions })
@@ -40,8 +49,9 @@ const fixtureUrl = 'data:text/javascript,' + encodeURIComponent(`
 `)
 const apiUrl = 'data:text/javascript,' + encodeURIComponent(`
   import { state } from ${JSON.stringify(fixtureUrl)}
-  export const BackendTransactionStatus = { Pending: 'pending', Failed: 'failed' }
-  export const TransactionType = { Input: 'input' }
+  export const BackendTransactionStatus = { Pending: 'pending', Failed: 'failed', Completed: 'completed', Initiated: 'initiated' }
+  export const TransactionStatus = { Pending: 'pending', Failed: 'failed', Completed: 'completed' }
+  export const TransactionType = { Input: 'input', Output: 'output', Refuel: 'refuel', Refund: 'refund' }
   export default class {
     GetSwapAsync(...args) { state.refreshes.push(args); return state.getSwap(...args) }
     GetDepositActionsAsync(...args) { state.actionRefreshes.push(args); return state.getDepositActions(...args) }
@@ -61,7 +71,7 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
 after(() => {
   hooks.deregister()
   dom.window.close()
-  for (const key of ['window', 'document', 'localStorage', 'IS_REACT_ACT_ENVIRONMENT']) {
+  for (const key of Object.keys(surfaces)) {
     if (previous[key]) Object.defineProperty(globalThis, key, previous[key])
     else delete globalThis[key]
   }
@@ -80,7 +90,11 @@ function ExecutionProbe() {
 Object.defineProperty(state, 'executing', { get: () => !state.executionUpdates.canAdjustAmount() })
 const { useHyperliquidWithdrawal } = await import('../dist/esm/components/Pages/Swap/Withdraw/WithdrawalProviders/Hyperliquid/useHyperliquidWithdrawal.js')
 const { usePolymarketWithdrawal } = await import('../dist/esm/components/Pages/Swap/Withdraw/WithdrawalProviders/Polymarket/usePolymarketWithdrawal.js')
-const { useSwapTransactionStore } = await import('../dist/esm/stores/swapTransactionStore.js')
+const stores = await import('../dist/esm/stores/swapTransactionStore.js')
+const { useSwapTransactionStore } = stores
+const phases = await import('../dist/esm/components/utils/resolveSwapPhase.js')
+const { getExplorerUrl } = await import('../dist/esm/lib/address/explorerUrl.js')
+const { WalletExecutionTransition } = await import('../dist/esm/components/Pages/Swap/Withdraw/Presentation/WalletExecutionTransition.js')
 const providerExecutionUrl = new URL('../dist/esm/components/Pages/Swap/Withdraw/WithdrawalProviders/executeProviderWithdrawal.js', import.meta.url)
 const { executeProviderWithdrawal } = await import(providerExecutionUrl)
 const swapBasicData = {
@@ -103,7 +117,7 @@ beforeEach(async () => {
   })
   unsubscribeStore = useSwapTransactionStore.subscribe((current, previous) => {
     for (const [id, transaction] of Object.entries(current.swapTransactions)) {
-      if (transaction !== previous.swapTransactions[id]) {
+      if (transaction.hash && transaction.hash !== previous.swapTransactions[id]?.hash) {
         state.published.push([id, transaction.hash])
       }
     }
@@ -233,7 +247,7 @@ test('an unrelated backend failure cannot clear a pending submission without a r
   assert.equal(useSwapTransactionStore.getState().pendingSubmissions['swap-1'], true)
 })
 
-test('a successful hashless provider response is reconciled after reload before another wallet request', async () => {
+test('a successful hashless provider response resumes after reload without another wallet request', async () => {
   const request = {
     swapId: 'swap-1', sourceAddress: 'source', onReconcile: async () => {},
     prepare: async () => 'prepared',
@@ -243,20 +257,20 @@ test('a successful hashless provider response is reconciled after reload before 
     },
   }
   assert.equal(await executeProviderWithdrawal(request), '')
-  assert.deepEqual(useSwapTransactionStore.getState().swapTransactions, {})
-  assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, { 'swap-1': true })
+  const receipt = useSwapTransactionStore.getState().swapTransactions['swap-1']
+  assert.equal(receipt.providerSubmissionAccepted, true)
+  assert.equal(receipt.hash, undefined)
+  assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, {})
   await reloadTransactionStore()
-  state.getSwap = async id => ({ data: { swap: { id, transactions: [
-    { type: 'input', status: 'pending', transaction_hash: 'indexed-withdrawal' },
-  ] } } })
+  state.getSwap = async () => assert.fail('a successful submission does not depend on backend indexing')
   assert.equal(await executeProviderWithdrawal({
     ...request,
-    prepare: async () => assert.fail('the accepted request must be reconciled'),
+    prepare: async () => assert.fail('the accepted request must be retained'),
     execute: async () => assert.fail('never send the withdrawal twice'),
-  }), 'indexed-withdrawal')
-  assert.deepEqual(state.refreshes, [['swap-1', 'source']])
+  }), '')
+  assert.deepEqual(state.refreshes, [])
   assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, {})
-  assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].hash, 'indexed-withdrawal')
+  assert.deepEqual(useSwapTransactionStore.getState().swapTransactions['swap-1'], receipt)
 })
 
 test('recording a transaction clears its pending submission atomically and preserves other swaps', () => {
@@ -316,6 +330,91 @@ async function mountWithdrawal(useWithdrawal, props = {}) {
   const root = createRoot(document.createElement('div'))
   await act(async () => root.render(createElement(Probe)))
   return { get result() { return result }, unmount: () => act(async () => root.unmount()) }
+}
+
+for (const [useWithdrawal, providerType] of [
+  [useHyperliquidWithdrawal, 'hyperliquid'], [usePolymarketWithdrawal, 'polymarket'],
+]) {
+  test(`${useWithdrawal.name} stays loading during the real exit transition and resumes processing after reload`, async () => {
+    const transfer = Promise.withResolvers()
+    const entered = Promise.withResolvers()
+    state.executeTransfer = async params => {
+      params.onSubmissionStateChange('preparing')
+      params.onSubmissionStateChange('submitting')
+      entered.resolve()
+      return transfer.promise
+    }
+    const details = { ...swapBasicData, source_network: { ...swapBasicData.source_network, type: providerType },
+      id: 'swap-1', status: 'user_transfer_pending', transactions: [], use_deposit_address: false }
+    let response = { data: { swap: details } }
+    const context = createSwapContext({
+      Client: class {}, getSwapId: () => 'swap-1', getAccount: () => undefined, stores,
+      swr: { default: () => ({}) },
+      overrides: {
+        '@/components/utils/resolveSwapPhase': phases,
+        '@/hooks/useSwapPolling': { useSwapPolling: () => ({ data: response, mutate() {} }) },
+      },
+    })
+    let observed, withdrawal
+    const buttonStates = []
+    function Controls() {
+      withdrawal = useWithdrawal({ swapId: 'swap-1', swapBasicData, refuel: false })
+      buttonStates.push(withdrawal.loading)
+      return createElement('button', { disabled: withdrawal.loading }, withdrawal.loading ? 'Withdrawing' : 'Withdraw')
+    }
+    function Screen() {
+      observed = context.useSwapDataState()
+      state.executionUpdates = context.useSwapDataUpdate()
+      return createElement(WalletExecutionTransition, {
+        controlsKey: observed.resolved.showWithdrawScreen ? 'withdraw' : 'processing',
+        controls: observed.resolved.showWithdrawScreen ? createElement(Controls) : null,
+        workflow: !observed.resolved.showWithdrawScreen ? createElement('output', null, 'Processing') : null,
+      })
+    }
+    const container = document.createElement('div')
+    const render = () => act(async () => executionRoot.render(createElement(context.SwapDataProvider, null, createElement(Screen))))
+    await act(async () => executionRoot.unmount())
+    executionRoot = createRoot(container)
+    await render()
+    assert.equal(container.querySelector('button')?.disabled, false)
+    let pending
+    try {
+      await act(async () => { pending = withdrawal.handleWithdraw(); await entered.promise })
+      assert.equal(container.querySelector('button')?.textContent, 'Withdrawing')
+      assert.equal(container.querySelector('button')?.disabled, true)
+      assert.equal(observed.resolved.phase, 'awaiting_user_deposit', 'an in-flight request is not accepted yet')
+      const submittingRenderCount = buttonStates.length
+      await act(async () => { transfer.resolve(''); await pending })
+      assert.equal(state.successes, 1)
+      assert.equal(container.querySelector('output')?.textContent, 'Processing')
+      assert.ok(container.querySelector('button'), 'the real exit transition retains the outgoing controls')
+      assert.equal(container.querySelector('button').disabled, true, 'the outgoing button stays disabled until its exit finishes')
+      assert.equal(container.querySelector('button').textContent, 'Withdrawing')
+      assert.equal(observed.resolved.phase, 'input_pending')
+      assert.equal(observed.flow.kind, 'specialized-wallet')
+      assert.ok(buttonStates.slice(submittingRenderCount).every(loading => loading), 'the active button never returns after acceptance')
+      assert.equal(state.executionUpdates.canAdjustAmount(), false, 'accepted withdrawals keep the submitted amount locked')
+      const receipt = useSwapTransactionStore.getState().swapTransactions['swap-1']
+      assert.equal(getExplorerUrl('https://explorer.test/tx/{0}', receipt.hash), '', 'no transaction link without a hash')
+
+      await act(async () => executionRoot.unmount())
+      await reloadTransactionStore()
+      executionRoot = createRoot(container)
+      await render()
+      assert.equal(container.textContent, 'Processing')
+      assert.equal(observed.resolved.phase, 'input_pending')
+      assert.equal(state.transfers.length, 1)
+      assert.equal(state.successes, 1, 'reopening does not replay submission success')
+      assert.equal(state.executionUpdates.canAdjustAmount(), false)
+
+      response = { data: { swap: { ...details, transactions: [{ type: 'input', status: 'completed',
+        transaction_hash: 'indexed-withdrawal', confirmations: 1, max_confirmations: 1 }] } } }
+      await render()
+      assert.equal(observed.resolved.phase, 'output_pending', 'backend confirmation continues the normal processing flow')
+    } finally {
+      await act(async () => { transfer.resolve(''); await pending })
+    }
+  })
 }
 
 test('Hyperliquid passes the deposit action amount and its token to the provider', async () => {
@@ -381,7 +480,8 @@ for (const reload of [false, true]) {
       assert.deepEqual(state.refreshes, [])
       assert.equal(state.successes, 1)
       assert.deepEqual(state.published, [])
-      assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, { 'swap-1': true }, 'hashless success remains a request awaiting API reconciliation')
+      assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, {})
+      assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].providerSubmissionAccepted, true)
     } finally {
       await mounted.unmount()
     }
@@ -812,10 +912,11 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
           assert.equal(event.provider, 'test-wallet')
         }
         assert.deepEqual(state.published, hash ? [['swap-1', hash]] : [])
-        assert.equal(useSwapTransactionStore.getState().pendingSubmissions['swap-1'], hash ? undefined : true)
+        assert.equal(useSwapTransactionStore.getState().pendingSubmissions['swap-1'], undefined)
+        assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].providerSubmissionAccepted, hash ? undefined : true)
         assert.equal(state.successes, 1)
         assert.deepEqual(state.errors, [])
-        assert.equal(mounted.result.loading, false)
+        assert.equal(mounted.result.loading, true, 'accepted withdrawals stay busy while the outgoing view is retained')
         assert.equal(mounted.result.error, undefined)
         assert.equal(mounted.result.rejected, false)
       } finally {
@@ -838,6 +939,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
       ])
       assert.equal(state.transfers[0][0].depositAddress, 'new-deposit')
       assert.deepEqual(state.published, [])
+      assert.equal(mounted.result.loading, true, 'the newly created swap receipt keeps the outgoing view busy')
     } finally {
       await mounted.unmount()
     }

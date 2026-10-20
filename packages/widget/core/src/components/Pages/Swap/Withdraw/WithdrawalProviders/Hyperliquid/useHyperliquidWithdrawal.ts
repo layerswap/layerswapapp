@@ -18,6 +18,7 @@ import { executeProviderWithdrawal, getProviderDepositActions } from "../execute
 import { ErrorHandler } from "@/lib/ErrorHandler";
 import { useCallbacks } from "@/context/callbackProvider";
 import { lifecycleContextFromSwap } from "@/lib/swapLifecycle";
+import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 
 const getDepositAction = (actions: DepositAction[] | undefined): TransferDepositAction | undefined =>
     actions?.find((a): a is TransferDepositAction => a.type === 'transfer' || a.type === 'manual_transfer')
@@ -82,6 +83,13 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
     const submittingRef = useRef(false)
     // Keep a lazily created swap even before its context state has caught up.
     const preparedSwapRef = useRef<{ swapId: string } | undefined>(undefined)
+    // Exit transitions retain this controller after processing starts. Keep its
+    // button busy from the accepted receipt, even after local loading is cleared.
+    const submissionAccepted = useSwapTransactionStore(state => {
+        const activeSwapId = swapId ?? preparedSwapRef.current?.swapId
+        const transaction = activeSwapId ? state.swapTransactions[activeSwapId] : undefined
+        return !!transaction?.providerSubmissionAccepted || !!transaction?.hash
+    })
     // The flow widens the async window (sign + submit + poll); avoid setting state after unmount.
     const mountedRef = useRef(true)
     useEffect(() => {
@@ -230,7 +238,7 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
 
     return {
         handleWithdraw,
-        loading,
+        loading: loading || submissionAccepted,
         progress,
         error,
         rejected,
