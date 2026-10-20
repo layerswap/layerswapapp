@@ -53,13 +53,14 @@ credential values are redacted.
 
 Amount diagnostics use existing telemetry interactions to label `amount_mode` as
 `manual`, `min`, `half`, `max`, or `unknown`. Preset clicks, accepted amount
-edits and the guarded Adjust Amount action update the existing telemetry flow; source-asset changes clear
-it, and unrelated/restored swaps report `unknown`. This describes the last observed
+edits and the guarded Adjust Amount action update the existing telemetry flow; source-asset, source-wallet and deposit-method changes
+clear it, and unrelated/restored swaps report `unknown`. This describes the last observed
 input action, not a captured Max calculation. No form or swap state is added. Rejected edits do not change the label.
 
 Insufficient-balance event rows include the selected wallet address and the token
 balance being checked, with network, token and read timestamp when available.
-The new fields are excluded from session context, and balances from stall events.
+Balances appear only on insufficient-balance blocks, including in public callbacks;
+they are absent from submission, awaiting-wallet-action, session and stall data.
 No balances are fetched for telemetry. Transfer, preset, USD and reporting behavior
 is unchanged; this PR does not claim to fix an insufficient-funds bug.
 

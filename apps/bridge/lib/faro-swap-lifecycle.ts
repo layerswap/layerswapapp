@@ -8,9 +8,7 @@ const ATTEMPT_START_STEPS = new Set<SwapLifecycleStep>(SWAP_LIFECYCLE_ATTEMPT_ST
 const MAX_TRACKED_SWAPS = 64
 
 function getLifecycleAttributes(event: SwapLifecycleEvent): Record<string, unknown> {
-    const includeBalance = event.step === 'form_submitted' || event.step === 'transaction_submitted'
-        || event.step === 'gasless_authorization_submitted'
-        || (event.step === 'transfer_blocked' && event.reasonCode === 'insufficient_balance')
+    const includeBalance = event.step === 'transfer_blocked' && event.reasonCode === 'insufficient_balance'
     return {
         schema_version: 1,
         step: event.step,

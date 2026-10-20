@@ -22,7 +22,7 @@ const mockUrl = `data:text/javascript,${encodeURIComponent(`
   export const useSwapDataState = () => ({ swapBasicData: state.swap, quoteIsLoading: state.quoteLoading })
   export const useSwapDataUpdate = () => ({ setSubmitedFormValues(values) { state.submitted = values }, startFreshSwapAttempt() { state.freshAttempts++ }, canAdjustAmount: () => !state.locked })
   export const useSettingsState = () => ({ networks: [state.swap.source_network] })
-  export const useSelectedAccount = () => ({ address: 'source' })
+  export const useSelectedAccount = () => ({ address: state.walletAddress ?? 'source' })
   export const useBalance = () => ({ balances: state.balances, mutate() {}, isLoading: false })
   export const useFormikContext = () => ({ values: {}, setValues(values) { state.formValues = values } })
   export const useCallbacks = () => ({ onSwapLifecycle: event => state.events.push(event) })
@@ -74,7 +74,7 @@ beforeEach(() => {
   document.body.append(container)
   root = createRoot(container)
   Object.assign(state, {
-    events: [], locked: false, freshAttempts: 0, submitted: undefined, formValues: undefined, quoteLoading: false,
+    events: [], walletAddress: undefined, locked: false, freshAttempts: 0, submitted: undefined, formValues: undefined, quoteLoading: false,
     swap: { source_network: network, source_token: token, destination_network: { name: 'BASE_MAINNET' }, destination_token: token, requested_amount: '0.95', use_deposit_address: false },
     balances: [{ network: network.name, token: token.symbol, amount: 1, isNativeCurrency: true }],
     gasData: { gas: 0.1, token },
@@ -165,6 +165,10 @@ test('insufficient balance still replaces Send and reports a real block once', a
   assert.equal(sendButton(), undefined)
   assert.match(container.textContent, /Insufficient balance/)
   assert.deepEqual(blocks().map(event => event.reasonCode), ['insufficient_balance'])
+  const awaiting = state.events.find(event => event.step === 'awaiting_wallet_action')
+  for (const key of ['sourceWalletAddress', 'walletBalance', 'walletBalanceNetwork', 'walletBalanceToken', 'walletBalanceTimestamp']) {
+    assert.equal(key in awaiting, false, `awaiting callback must not expose ${key}`)
+  }
   assert.equal(blocks()[0].sourceWalletAddress, 'source')
   assert.equal(blocks()[0].walletBalance, 0.5)
   assert.equal(blocks()[0].walletBalanceToken, token.symbol)
@@ -313,4 +317,18 @@ test('portaled Adjust amount records Max after its guard without changing the ad
     assert.equal(state.submitted.amountMode, 'max')
     assert.equal(state.submitted.amount, '0.898')
   } finally { unmount(); portal.remove() }
+})
+
+test('an insufficient-balance warning after wallet switching records the selected wallet balance', async () => {
+  await render()
+  assert.deepEqual(blocks(), [])
+  state.walletAddress = 'wallet-B'
+  state.balances = [{ ...state.balances[0], amount: 0.25, request_time: 'wallet-B-read' }]
+  await render()
+  assert.equal(blocks().length, 1)
+  assert.equal(blocks()[0].sourceWalletAddress, 'wallet-B')
+  assert.equal(blocks()[0].walletBalance, 0.25)
+  assert.equal(blocks()[0].walletBalanceToken, token.symbol)
+  assert.equal(blocks()[0].walletBalanceNetwork, network.name)
+  assert.equal(blocks()[0].walletBalanceTimestamp, 'wallet-B-read')
 })

@@ -6,7 +6,7 @@ type Attributes = WidgetTelemetryAttributes
 type Flow = {
     id: string; started: number; attributes: Attributes; opened: boolean; engaged: boolean;
     submitted: boolean; prompted: boolean; transferSubmitted: boolean; deposited: boolean; completed: boolean;
-    attempts: number; swapId?: string; validation?: string; amountMode?: SwapLifecycleEvent['amountMode'];
+    attempts: number; swapId?: string; validation?: string; amountMode?: SwapLifecycleEvent['amountMode']; walletKey?: string;
     observations: Map<SwapLifecycleObservationKey, string>;
 }
 
@@ -90,9 +90,11 @@ export function createWidgetTelemetry(clock = now, wallClock = Date.now) {
             queueMicrotask(() => { if (flow === current) open() })
             return () => { flow = removeEntry(mounts, entry)?.flow }
         },
-        update(current: Flow, attributes: Attributes) {
-            if (current.attributes.source_network !== attributes.source_network || current.attributes.source_token !== attributes.source_token)
+        update(current: Flow, attributes: Attributes, walletKey?: string) {
+            if (current.attributes.source_network !== attributes.source_network || current.attributes.source_token !== attributes.source_token
+                || current.attributes.deposit_method !== attributes.deposit_method || current.walletKey !== walletKey)
                 current.amountMode = undefined
+            current.walletKey = walletKey
             current.attributes = { ...attributes }
         },
         amountInputMethod(event: SwapLifecycleEvent): SwapLifecycleEvent['amountMode'] {

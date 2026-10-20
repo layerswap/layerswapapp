@@ -77,10 +77,7 @@ const Withdraw: FC<{
     const { setValues, values } = useFormikContext<SwapFormValues>();
 
     const lifecycleContext = useMemo(
-        () => swapBasicData ? { ...lifecycleContextFromSwap(swapBasicData, swapDetails),
-            sourceWalletAddress: selectedSourceAccount?.address, walletBalance: walletBalance?.amount,
-            walletBalanceNetwork: walletBalance?.network, walletBalanceToken: walletBalance?.token,
-            walletBalanceTimestamp: walletBalance?.request_time } : undefined,
+        () => swapBasicData ? lifecycleContextFromSwap(swapBasicData, swapDetails) : undefined,
         [
             swapBasicData?.destination_address,
             swapBasicData?.destination_network?.name,
@@ -89,7 +86,6 @@ const Withdraw: FC<{
             swapBasicData?.source_network?.name,
             swapBasicData?.source_token?.symbol,
             swapBasicData?.use_deposit_address,
-            selectedSourceAccount?.address, walletBalance,
             swapDetails?.id,
             swapDetails?.source_address,
         ],
@@ -185,7 +181,10 @@ const Withdraw: FC<{
     useTransferBlocked(
         swapBasicData?.use_deposit_address === false && showInsufficientBalanceWarning ? 'insufficient_balance'
         : undefined,
-        lifecycleContext, 'Withdraw')
+        { ...lifecycleContext,
+            sourceWalletAddress: selectedSourceAccount?.address, walletBalance: walletBalance?.amount,
+            walletBalanceNetwork: walletBalance?.network, walletBalanceToken: walletBalance?.token,
+            walletBalanceTimestamp: walletBalance?.request_time }, 'Withdraw')
 
     if (
         swapBasicData?.use_deposit_address === false &&

@@ -481,7 +481,11 @@ test('amount input and balance telemetry is retained on diagnostic rows, never s
     const h = harness()
     const diagnostic = { amountMode: 'max', sourceWalletAddress: 'wallet-used', walletBalance: 0,
         walletBalanceNetwork: 'BASE', walletBalanceToken: 'ETH', walletBalanceTimestamp: 'read-time' }
-    h.controller.record(event('form_submitted', undefined, diagnostic))
+    for (const step of ['form_submitted', 'transaction_submitted', 'gasless_authorization_submitted', 'awaiting_wallet_action']) {
+        h.controller.record(event(step, undefined, diagnostic))
+        assert.equal(h.records.at(-1).attrs.wallet_balance, undefined, step)
+        assert.equal(h.records.at(-1).attrs.source_wallet_address, undefined, step)
+    }
     h.controller.record(event('transfer_blocked', 'swap', { ...diagnostic, reasonCode: 'insufficient_balance' }))
     assert.equal(h.records.at(-1).attrs.wallet_balance, 0)
     assert.equal(h.records.at(-1).attrs.source_wallet_address, 'wallet-used')
