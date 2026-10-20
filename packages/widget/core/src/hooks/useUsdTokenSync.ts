@@ -1,6 +1,7 @@
 import { isAmountPreset, type AmountMode } from '@/lib/amountPresets';
 import { useCallback, useEffect, useRef } from "react";
 import { useUsdModeStore } from "@/stores/usdModeStore";
+import { formatTokenAmount } from "@/components/utils/formatTokenAmount";
 
 // Module-level coordination flag.
 // When MinMax sets a known USD value from API limits alongside the token amount,
@@ -100,7 +101,7 @@ export function useUsdTokenSync({
             const precision = fromCurrency?.precision || 6;
             const tokenAmount = preciseUsd / sourceCurrencyPriceInUsd;
             const truncated = Math.trunc(tokenAmount * Math.pow(10, precision)) / Math.pow(10, precision);
-            newAmount = truncated.toString();
+            newAmount = formatTokenAmount(truncated, precision);
         }
         // Only mark as internal if the value actually changes;
         // otherwise the sync effect won't fire and the flag stays stuck.

@@ -12,6 +12,9 @@ import { SolanaWalletConnectAdapter } from '../connectors/SolanaWalletConnectAda
 import { svmAdapterManager } from './svmAdapterManager'
 import { useSvmStore } from './svmStore'
 
+const walletConnectTopic = (adapter: unknown) =>
+    adapter instanceof SolanaWalletConnectAdapter ? adapter.sessionTopic : undefined
+
 const SOLANA_WC_MODAL_NAME = 'WalletConnect'
 const SOLANA_HIDDEN_WC_NAME = 'Hidden WalletConnect'
 const SVM_NS = solanaWalletConnectChain.namespace
@@ -154,7 +157,7 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
             autofillSupportedNetworks: supported,
             withdrawalSupportedNetworks: supported,
             networkIcon: this.getNetworkIcon(),
-            metadata: { deepLink: dynamicMeta?.deepLink },
+            metadata: { deepLink: dynamicMeta?.deepLink, walletConnectTopic: walletConnectTopic(svmAdapterManager.getAdapter(snapshot.name)) },
         }
     }
 
@@ -347,7 +350,7 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
                 autofillSupportedNetworks: supported,
                 withdrawalSupportedNetworks: supported,
                 networkIcon: this.getNetworkIcon(),
-                metadata: { deepLink: wcDeepLink },
+                metadata: { deepLink: wcDeepLink, walletConnectTopic: walletConnectTopic(connectedAdapter) },
             }
             return wallet
         } catch (e) {

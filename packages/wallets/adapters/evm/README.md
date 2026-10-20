@@ -5,14 +5,23 @@ EVM (Ethereum Virtual Machine) wallet provider for the Layerswap Widget. Support
 ## Installation
 
 ```bash
-npm install @layerswap/wallet-evm wagmi viem @tanstack/react-query
+npm install @layerswap/wallet-evm wagmi@2.14.11 @wagmi/core@2.16.4 @wagmi/connectors@5.7.7 viem@^2.21.16 @tanstack/react-query
 # or
-yarn add @layerswap/wallet-evm wagmi viem @tanstack/react-query
+yarn add @layerswap/wallet-evm wagmi@2.14.11 @wagmi/core@2.16.4 @wagmi/connectors@5.7.7 viem@^2.21.16 @tanstack/react-query
 # or
-pnpm add @layerswap/wallet-evm wagmi viem @tanstack/react-query
+pnpm add @layerswap/wallet-evm wagmi@2.14.11 @wagmi/core@2.16.4 @wagmi/connectors@5.7.7 viem@^2.21.16 @tanstack/react-query
 ```
 
+`wagmi`, `@wagmi/core`, `@wagmi/connectors`, and `viem` are peer dependencies
+supplied by the host application. Keep their versions aligned with the host's
+Wagmi installation. The adapter uses development dependencies for local builds
+and tests; it does not declare a separate runtime dependency on these packages.
+
 ## Quick Start
+
+The default MetaMask connector uses `@metamask/connect-evm` through a Wagmi 2
+connector. The existing Wagmi and Viem requirements are unchanged; CDN hosts do
+not need to upgrade them for this migration.
 
 ```tsx
 import { LayerswapProvider, Swap } from "@layerswap/widget";
@@ -62,6 +71,20 @@ const evmProvider = createEVMProvider({
 
 When your application already owns a Wagmi config, pass the same config to
 Layerswap so the host UI and widget share connections:
+
+Layerswap preserves the host's Wagmi 2 config and connectors. Updating the
+widget's default MetaMask connector does not replace a host-owned legacy
+MetaMask connection. A host that supplies its own connectors controls their SDK
+and session lifecycle.
+
+Configure the chains you intend to use before initializing a host-owned
+MetaMask Connect client. Its supported RPC networks are captured at client
+creation; extending a Wagmi config later does not extend an existing SDK client.
+
+The new SDK owns its session storage. An existing legacy mobile session may
+require connecting again after deployment; do not copy old SDK session data or
+clear unrelated wallet storage. Verify both a fresh connection and a reload of
+the new session on mobile before promoting the release.
 
 ```tsx
 const evmProvider = createEVMProvider({

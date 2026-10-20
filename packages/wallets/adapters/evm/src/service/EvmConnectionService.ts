@@ -1,15 +1,16 @@
 import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
-import type { RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, WalletConnectionService } from "@layerswap/wallet-core/types";
+import type { EnsureWalletChainOptions, RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, WalletConnectionService } from "@layerswap/wallet-core/types";
 import type { WalletModalConnector } from "@layerswap/wallet-core/types"
 import type { Connector } from 'wagmi'
-import { numberToHex, type Chain } from 'viem'
 import { connect, disconnect, getConnections, switchAccount as wagmiSwitchAccount, type Connection, } from '@wagmi/core'
 import { buildDeepLink, clearPendingDynamicWcMetadata, isWalletConnectRegistryConnector, mapConnectError, setDynamicWcMetadata, setPendingMetadataForRegistry, subscribeDisplayUri, type WalletConnectWalletBase } from "@layerswap/wallet-core"
 import type { AppNetworkAdapter } from "@layerswap/utils"
 import { evmConnectorNameResolver, resolveEVMWalletConnectorIcon } from '../evmUtils'
 import { EIP155_NAMESPACE, name as PROVIDER_NAME, HIDDEN_WALLETCONNECT_ID } from '../constants'
 import type { LSConnector } from '../connectors/types'
-import { getEvmConfig, isExternalEvmConfig } from './getEvmConfig'
+import { getEvmConfig } from './getEvmConfig'
+import { ensureEvmChain, type ChainProvider } from './ensureEvmChain'
+import { confirmConnectorChain } from './confirmConnectorChain'
 import { computeEvmNetworkBuckets, type EvmAdditionalSupportedNetworks, type EvmNetworkBuckets } from './networkBuckets'
 import { resolveSupportedNetworks } from './resolveSupportedNetworks'
 import { resolveWallet } from './resolveWallet'
@@ -206,29 +207,31 @@ export class EvmConnectionService<Network> implements WalletConnectionService<Ru
     }
 
     async switchChain(wallet: Wallet, chainId: string | number): Promise<void> {
-        const connector = this.resolveWalletConnector(wallet)
-        if (!connector) throw new Error('Connector not found')
-        const id = Number(chainId)
+        await this.ensureChain(wallet, chainId)
+    }
 
-        // wagmi connectors validate the target against a snapshot of
-        // `config.chains` captured at connector setup. With an adopted host
-        // config, the host created its connectors before syncLayerswapChains
-        // appended the Layerswap chains, so that snapshot is stale and
-        // connector.switchChain throws ChainNotConfiguredError even though
-        // the wallet can switch. Drive the EIP-1193 provider directly instead
-        // — wagmi still picks up the resulting `chainChanged` event.
-        if (isExternalEvmConfig()) {
-            const chain = getEvmConfig().chains.find(c => c.id === id)
-            if (!chain) throw new Error(`Chain ${id} is not configured`)
-            await switchChainViaEip1193(connector, chain)
-            return
-        }
+    async ensureChain(wallet: Wallet, chainId: string | number, options: EnsureWalletChainOptions = {}): Promise<void> {
+        options.signal?.throwIfAborted()
+        const config = getEvmConfig()
+        const connector = resolveWalletConnector(config, wallet)
+        const chain = config.chains.find(c => c.id === Number(chainId))
+        if (!chain) throw new Error(`Chain ${chainId} is not configured`)
 
-        if (connector.switchChain) {
-            await connector.switchChain({ chainId: id })
-        } else {
-            throw new Error('Switch chain method is not available on the connector')
-        }
+        // Use the selected provider's EIP-1193 protocol for every connector. This
+        // also uses the current chain registry for host-supplied wagmi configs,
+        // rather than a connector's initialization-time snapshot or SDK retry loop.
+        await ensureEvmChain({
+            ...options,
+            chain,
+            account: wallet.address,
+            getProvider: () => connector.getProvider() as Promise<ChainProvider | undefined>,
+            assertConnected: () => {
+                if (resolveWalletConnector(config, wallet).uid !== connector.uid) {
+                    throw Object.assign(new Error('Selected wallet changed. Please try again.'), { reasonCode: 'wallet_disconnected' })
+                }
+            },
+            onReady: () => confirmConnectorChain(connector, chain.id),
+        })
     }
 
     async connectWallet(props: { connector: WalletModalConnector }): Promise<Wallet | undefined> {
@@ -392,45 +395,6 @@ export class EvmConnectionService<Network> implements WalletConnectionService<Ru
             unsubscribeDisplayUri?.()
             if (isRegistry) clearPendingDynamicWcMetadata(EIP155_NAMESPACE)
         }
-    }
-}
-
-type Eip1193Provider = {
-    request(args: { method: string; params?: unknown }): Promise<unknown>
-}
-
-/**
- * Chain switching over the raw EIP-1193 provider, mirroring what wagmi's
- * injected connector does after its (snapshot-based) chain lookup:
- * `wallet_switchEthereumChain`, falling back to `wallet_addEthereumChain`
- * when the wallet doesn't know the chain (error 4902), then switching again
- * for wallets that don't auto-switch after adding.
- */
-async function switchChainViaEip1193(connector: Connector, chain: Chain): Promise<void> {
-    const provider = await connector.getProvider() as Eip1193Provider | undefined
-    if (!provider?.request) throw new Error('Connector provider is not available')
-    const hexChainId = numberToHex(chain.id)
-    const requestSwitch = () => provider.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: hexChainId }],
-    })
-    try {
-        await requestSwitch()
-    } catch (error) {
-        const code = (error as { code?: number })?.code
-            ?? (error as { data?: { originalError?: { code?: number } } })?.data?.originalError?.code
-        if (code !== 4902) throw error
-        await provider.request({
-            method: 'wallet_addEthereumChain',
-            params: [{
-                chainId: hexChainId,
-                chainName: chain.name,
-                nativeCurrency: chain.nativeCurrency,
-                rpcUrls: chain.rpcUrls?.default?.http ?? [],
-                blockExplorerUrls: chain.blockExplorers?.default ? [chain.blockExplorers.default.url] : undefined,
-            }],
-        })
-        await requestSwitch()
     }
 }
 

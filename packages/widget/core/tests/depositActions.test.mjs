@@ -132,7 +132,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         React.useLayoutEffect(() => { state.executionUpdates.setSwapViewMounted(true) }, [])
         return children
     }
-    const lifecycle = { lifecycleContextFromSwap: () => ({}), lifecycleErrorDetails: () => ({}) }
+    const lifecycle = { lifecycleContextFromSwap: () => ({}), lifecycleErrorDetails: error => ({ reasonCode: error?.reasonCode }) }
     const sourceChain = loadSource(`${walletPath}ensureSourceChain.ts`, {
         '@/lib/swapLifecycle': lifecycle, './isUserRejection': rejection,
     })
@@ -192,6 +192,9 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         '../../Form/SecondaryComponents/validationError/ErrorDismissButton': { default: noop },
         '../../Form/SecondaryComponents/validationError/ErrorDisplay': { ErrorDisplay },
         '../messages/Message': { default: noop },
+        '../messages/walletErrorMessage': loadSource('../src/components/Pages/Swap/Withdraw/messages/walletErrorMessage.ts', {
+            '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
+        }),
         '../Wallet/Common/ensureSourceChain': sourceChain,
     })
     const useFakeLayoutEffect = callback => {
@@ -266,7 +269,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         '@layerswap/utils': { sleep: async () => {} },
         '@/components/utils/numbers': { isDiffByPercent: () => false },
         '@/context/withdrawalContext': { useWalletWithdrawalState: () => ({ onWalletWithdrawalSuccess: () => calls.success++ }) },
-        '@/context/swapAccounts': { useSelectedAccount: () => ({ id: wallet.id, address: wallet.address, provider: { switchChain: state.switchChain } }) },
+        '@/context/swapAccounts': { useSelectedAccount: () => ({ id: wallet.id, address: wallet.address, provider: { switchChain: state.switchChain, ensureChain: state.ensureChain } }) },
         '@/lib/ErrorHandler': { ErrorHandler: error => calls.errors.push(error) },
         '@/lib/fees': loadSource('../src/lib/fees.ts'),
         '@/components/Icons/InfoIcon': { default: noop },
@@ -276,6 +279,8 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         '@/context/depositSettings': { useDepositSettings: () => ({}) },
         './depositExecution': execution,
         './ensureSourceChain': sourceChain,
+        '@layerswap/wallet-core': { walletRequestStore: { getSnapshot: () => null } },
+        '../../Presentation/WalletRequestRecovery': { WalletRequestRecovery: () => null },
         '../../Presentation/WalletActionsView': mounted ? { ...walletViews, SendTransactionView: props => { view = props; return null } } : walletViews,
         '../../Processing/StepsComponent': { default: Steps },
         '../../Processing/types': progressTypes,
@@ -329,7 +334,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         }
     }
     return {
-        state, calls, render, wallet, network, preferences, stores,
+        state, calls, render, wallet, network, preferences, stores, walletViews,
         Component: () => realPolling
             ? createElement(swapContext.SwapDataProvider, null, createElement(SwapView, null,
                 state.hideWalletButton ? null : createElement(SendTransactionButton, props())))
@@ -831,6 +836,10 @@ test('completed prerequisites allow resuming a late publish action', async () =>
 for (const includesActions of [true, false]) {
     test(`critical confirmation uses the created quote before polling, with initial actions ${includesActions}`, async () => {
         const flow = createWorkflow()
+        flow.network.chain_id = '10'
+        flow.wallet.chainId = 1
+        let switches = 0
+        flow.state.switchChain = async () => { switches++; flow.wallet.chainId = 10 }
         flow.state.swapId = undefined
         flow.state.swapDetails = undefined
         flow.state.depositActionsResponse = undefined
@@ -854,12 +863,14 @@ for (const includesActions of [true, false]) {
         assert.equal(confirmation.warning, 'By continuing, you agree to receive as low as 75 TEST ($ 75.00)')
         assert.equal(confirmation.button.props.children, 'Continue anyway')
         assert.equal(flow.calls.transfer.length, 0, 'confirmation precedes wallet execution')
+        assert.equal(switches, 0, 'price confirmation must not open the wallet to switch networks')
         assert.deepEqual(flow.calls.executionStarts, [], 'keep the full quote until the changed amount is accepted')
 
         await confirmation.button.props.onClick()
         assert.equal(creates, 1, 'continuing never replaces the confirmed swap')
         assert.deepEqual(flow.calls.refresh, [['quoted-swap', sourceAddress]])
         assert.equal(flow.calls.transfer.length, 1)
+        assert.equal(switches, 1)
         assert.equal(flow.calls.transfer[0].swapId, 'quoted-swap')
         assert.deepEqual(flow.calls.executionStarts, ['quoted-swap'])
         assert.deepEqual(flow.calls.errors, [])
@@ -1114,7 +1125,92 @@ test('the mounted controller and real polling resume a mined partial approval wi
 })
 
 
-test('network switching finishes before deposit actions refresh and execute', async t => {
+test('a new swap is prepared before any network-switch request', async () => {
+    const flow = createWorkflow()
+    flow.state.swapId = undefined
+    flow.state.swapDetails = undefined
+    flow.state.depositActionsResponse = undefined
+    flow.network.chain_id = '10'
+    flow.wallet.chainId = 1
+    const prepared = Promise.withResolvers()
+    let switches = 0
+    flow.state.createSwap = () => prepared.promise
+    flow.state.switchChain = async () => { switches++; flow.wallet.chainId = 10 }
+    const execution = flow.render().button.props.onClick()
+    assert.equal(switches, 0)
+    assert.deepEqual(flow.calls.sign, [])
+    prepared.resolve({ swap: { id: 'prepared-swap', metadata: {} }, quote: {}, deposit_actions: actionsFor('prepared') })
+    await execution
+    assert.equal(switches, 1)
+    assert.deepEqual(flow.calls.sign, ['prepared'])
+    assert.deepEqual(flow.calls.errors, [])
+})
+
+test('failed preparation never asks the wallet to switch networks', async () => {
+    const flow = createWorkflow()
+    flow.network.chain_id = '10'
+    flow.wallet.chainId = 1
+    flow.state.refreshError = new Error('Refresh unavailable')
+    flow.state.switchChain = () => assert.fail('no wallet request before preparation succeeds')
+    await flow.render().button.props.onClick()
+    assert.deepEqual(flow.calls.sign, [])
+    assert.deepEqual(flow.calls.transfer, [])
+    assert.ok(flow.calls.lifecycle.every(event => event.step !== 'network_switch_started'))
+})
+
+test('each prepared action checks live readiness before its wallet prompt', async () => {
+    const flow = createWorkflow()
+    flow.network.chain_id = '10'
+    flow.wallet.chainId = 10 // a matching React snapshot must not bypass the adapter
+    flow.state.rejectSigning = false
+    const order = []
+    flow.state.ensureChain = async (wallet, chainId, options) => {
+        assert.equal(wallet, flow.wallet)
+        assert.equal(chainId, '10')
+        assert.equal(options.signal.aborted, false)
+        order.push('ready')
+    }
+    flow.state.onWalletPrompt = step => { order.push(step) }
+    await flow.render().button.props.onClick()
+    assert.deepEqual(order, ['ready', 'sign', 'ready', 'publish'])
+    assert.equal(flow.calls.success, 1)
+})
+
+test('readiness failure between signature and publication prevents the transaction', async () => {
+    const flow = createWorkflow()
+    flow.network.chain_id = '10'
+    flow.state.rejectSigning = false
+    let checks = 0
+    flow.state.ensureChain = async () => {
+        if (++checks === 2) throw Object.assign(new Error('Selected wallet disconnected'), { reasonCode: 'wallet_disconnected' })
+    }
+    await flow.render().button.props.onClick()
+    assert.deepEqual(flow.calls.sign, ['fresh'])
+    assert.deepEqual(flow.calls.transfer, [])
+    assert.equal(flow.calls.success, 0)
+    // The readiness slot shows reconnect guidance, not the generic swap error.
+    const { networkSwitch } = flow.render().viewProps
+    assert.equal(networkSwitch.isError, true)
+    assert.equal(networkSwitch.error.kind, 'disconnected')
+    assert.equal(flow.state.swapError, '')
+    const message = flow.walletViews.ChangeNetworkMessage({ data: networkSwitch, network: 'Optimism' })
+    assert.equal(message.props.header, 'Wallet disconnected')
+    assert.ok(flow.calls.lifecycle.some(event => event.step === 'network_switch_failed' && event.reasonCode === 'wallet_disconnected'))
+})
+
+test('readiness follows the prepared transaction network', async () => {
+    const flow = createWorkflow()
+    flow.network.chain_id = '10'
+    flow.state.apiActions = [{ type: 'transfer', step: 'deposit', status: 'action_required', amount: 1,
+        to_address: '0x456', network: { ...flow.network, chain_id: '1' } }]
+    const targets = []
+    flow.state.ensureChain = async (_wallet, chainId) => { targets.push(chainId) }
+    await flow.render().button.props.onClick()
+    assert.deepEqual(targets, ['1'])
+    assert.equal(flow.calls.transfer.length, 1)
+})
+
+test('deposit actions refresh before switching, then signing follows without another refresh', async t => {
     t.mock.timers.enable({ apis: ['setTimeout'] })
     const flow = createWorkflow()
     flow.network.chain_id = '10'
@@ -1128,7 +1224,8 @@ test('network switching finishes before deposit actions refresh and execute', as
         wallet.chainId = 10
     }
     const execution = flow.render().button.props.onClick()
-    assert.deepEqual(flow.calls.refresh, [])
+    for (let i = 0; i < 20; i++) await Promise.resolve()
+    assert.deepEqual(flow.calls.refresh, [[swapId, sourceAddress]])
     assert.deepEqual(flow.calls.sign, [])
     assert.equal(flow.render().viewProps.networkSwitch.isPending, false)
     t.mock.timers.tick(1000)
@@ -1148,7 +1245,7 @@ test('a rejected network switch preserves the workflow and retries before signin
     flow.state.switchChain = async () => { throw { code: 4001 } }
     await flow.render().button.props.onClick()
     assert.equal(flow.state.swapId, swapId)
-    assert.deepEqual(flow.calls.refresh, [])
+    assert.deepEqual(flow.calls.refresh, [[swapId, sourceAddress]])
     assert.deepEqual(flow.calls.sign, [])
     assert.deepEqual(flow.calls.errors, [])
     assert.equal(flow.render().viewProps.networkSwitch.error.kind, 'rejected')
@@ -1180,7 +1277,7 @@ test('a network switch completing after unmount cannot start a deposit', async (
         await act(async () => root.unmount())
         unmounted = true
         await act(async () => { switched.resolve(); await pending })
-        assert.deepEqual(flow.calls.refresh, [])
+        assert.deepEqual(flow.calls.refresh, [[swapId, sourceAddress]])
         assert.deepEqual(flow.calls.sign, [])
         assert.deepEqual(flow.calls.transfer, [])
         assert.deepEqual(flow.calls.errors, [])

@@ -16,9 +16,8 @@ import SecondaryButton from '@/components/Buttons/secondaryButton';
 import { getExplorerUrl, shortenString } from '@layerswap/utils';
 import useWallet from '@/hooks/useWallet';
 import { Address } from '@/lib/address/Address';
-import { AddressIcon } from '@layerswap/ui-kit';
-import { WalletIconView } from '@layerswap/ui-kit';
-import { ExtendedAddress } from '@layerswap/ui-kit';
+import { AddressIcon, WalletIconView, ExtendedAddress } from '@layerswap/ui-kit';
+import { formatTokenAmount } from '@/components/utils/formatTokenAmount';
 
 type Props = {
     swapResponse: SwapResponse
@@ -49,7 +48,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
             const swapType = (source_exchange || destination_exchange) ? 'exchange' : 'cross-chain'
             const newSwapData = generateSwapInitialValuesFromSwap({
                 ...swap,
-                requested_amount: swap.requested_amount.toString()
+                requested_amount: formatTokenAmount(swap.requested_amount, swap.source_token.decimals)
             }, false, settings, swapType)
             setSubmitedFormValues(newSwapData)
 

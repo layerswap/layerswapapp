@@ -108,6 +108,7 @@ export function createEvmConnection<Network>(
                 disconnectWallets: evmConnectionService.disconnectWallets.bind(evmConnectionService),
                 switchAccount: evmConnectionService.switchAccount.bind(evmConnectionService),
                 switchChain: evmConnectionService.switchChain.bind(evmConnectionService),
+                ensureChain: evmConnectionService.ensureChain.bind(evmConnectionService),
                 isNotAvailableCondition: evmConnectionService.isNotAvailable.bind(evmConnectionService),
                 requestAdditionalConnectors: evmConnectionService.requestAdditionalConnectors.bind(evmConnectionService),
 

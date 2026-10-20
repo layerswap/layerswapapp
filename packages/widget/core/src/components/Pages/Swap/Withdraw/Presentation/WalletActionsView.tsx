@@ -23,6 +23,7 @@ import { ICON_CLASSES_WARNING } from '../../Form/SecondaryComponents/validationE
 import ErrorDismissButton from '../../Form/SecondaryComponents/validationError/ErrorDismissButton';
 import { ErrorDisplay } from '../../Form/SecondaryComponents/validationError/ErrorDisplay';
 import WalletMessage, { WalletMessageDetails } from '../messages/Message';
+import { walletDisconnectedMessage } from '../messages/walletErrorMessage';
 import { NetworkSwitchError, networkSwitchFailureReason } from '../Wallet/Common/ensureSourceChain';
 import type { ActionData } from '../Wallet/Common/sharedTypes';
 import type { SwapStepTransactions } from '@/stores/swapTransactionStore';
@@ -43,6 +44,10 @@ export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = (
             header='Network switch still waiting'
             details={`Your wallet is still asking to switch to ${network}. Confirm it there, then try again`}
         />
+    }
+    // Readiness lost the wallet; switching manually would not help.
+    if (kind === 'disconnected') {
+        return <WalletMessage {...walletDisconnectedMessage} />
     }
     if (kind === 'timeout') {
         return <WalletMessage
@@ -128,6 +133,7 @@ export type SendTransactionViewProps = SubmitButtonProps & {
     quoteError?: boolean;
     loading?: boolean;
     networkSwitch?: ActionData;
+    walletRequestRecovery?: ReactNode;
     sourceNetworkName?: string;
     actionStateText?: string;
     actionButtonText?: string;
@@ -158,6 +164,7 @@ export function SendTransactionView({
     quoteError,
     loading,
     networkSwitch,
+    walletRequestRecovery,
     sourceNetworkName,
     actionStateText,
     actionButtonText,
@@ -224,7 +231,7 @@ export function SendTransactionView({
                 workflow={workflowProgress}
                 controls={
                     isMultiStepWorkflow && loading ? (
-                        message
+                        <>{message}{walletRequestRecovery}</>
                     ) : (
                         <>
                             {message}
@@ -236,6 +243,7 @@ export function SendTransactionView({
                             >
                                 {actionStateText || 'Preparing…'}
                             </ButtonWrapper>
+                            {walletRequestRecovery}
                         </>
                     )
                 }

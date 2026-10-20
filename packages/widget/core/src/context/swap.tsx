@@ -36,6 +36,7 @@ import { useSwapPolling } from '@/hooks/useSwapPolling';
 import { useSwapStatusNotification } from '@/hooks/useSwapStatusNotification';
 import { lifecycleContextFromForm } from '@/lib/swapLifecycle';
 import { createSwapAttempt } from '@/lib/swapCreation';
+import { formatTokenAmount } from '@/components/utils/formatTokenAmount';
 import { hasSwapExecutionProgress } from '@/helpers/swapProgress';
 import { preparePresetAmount } from '@/lib/preparePresetAmount';
 import { isAmountPreset, isWalletAmountFlow, amountPresetSource, AmountPresetChangedError } from '@/lib/amountPresets';
@@ -257,7 +258,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         return {
             ...swap,
             source_token,
-            requested_amount: swap.requested_amount.toString(),
+            requested_amount: formatTokenAmount(swap.requested_amount, source_token.decimals),
             refuel: !!data.data.refuel,
         }
     }, [data, swapId, sourceRoutes])
