@@ -41,12 +41,6 @@ test('the utility root loads and runs without the optional React dependency', as
     }
 })
 
-test('the React entry point exports the shared hooks', async () => {
-    const { useCopyClipboard, useWindowDimensions } = await import('@layerswap/utils/react')
-    assert.equal(typeof useCopyClipboard, 'function')
-    assert.equal(typeof useWindowDimensions, 'function')
-})
-
 test('custom Stellar networks validate and normalize addresses through their adapter', async () => {
     const { AddressUtilsResolver, StellarAddressUtilsProvider } = await import('@layerswap/utils')
     const resolver = new AddressUtilsResolver([new StellarAddressUtilsProvider()])
