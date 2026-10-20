@@ -19,6 +19,7 @@ const stores = {
   useDepositSignatureStore: create(() => ({ signatures: {}, removeDepositSignature() {} })),
 }
 const swapCreation = loadSource('lib/swapCreation.ts', {
+  './routeValidationErrors': loadSource('lib/routeValidationErrors.ts'),
   '@layerswap/widget-types': { getErrorOccurrenceId: () => 'test-error' },
   '@/lib/ErrorHandler': { ErrorHandler: () => {} },
   './swapLifecycle': { lifecycleErrorDetails: () => ({}) },

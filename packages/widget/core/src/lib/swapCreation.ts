@@ -1,3 +1,4 @@
+import { ROUTE_VALIDATION_ERROR_CODES } from './routeValidationErrors'
 import type { SwapLifecycleEvent } from '@layerswap/widget-types'
 import { getErrorOccurrenceId } from '@layerswap/widget-types'
 import type { ApiResponse } from '@layerswap/widget-types'
@@ -41,7 +42,7 @@ export type SwapCreationHooks = {
 function isRouteValidationError(error: unknown): boolean {
     const value = error as { code?: string; response?: { data?: { error?: { code?: string } } } } | undefined
     const code = value?.response?.data?.error?.code ?? value?.code
-    return !!code && ['GREATER_THAN_MAX_ERROR', 'LESS_THAN_MIN_ERROR', 'ROUTE_NOT_FOUND_ERROR', 'PRICE_IMPACT_TOO_HIGH'].includes(code)
+    return !!code && ROUTE_VALIDATION_ERROR_CODES.has(code)
 }
 
 /**

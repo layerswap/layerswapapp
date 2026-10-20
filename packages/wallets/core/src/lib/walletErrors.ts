@@ -205,6 +205,7 @@ const MESSAGE_RULES: Record<TextTier, NameRules> = {
         // user_rejected is decided by isDeclineText, ahead of these rules.
         [/insufficient funds|insufficient balance|exceeds balance|not enough/i, 'insufficient_funds'],
         [/cannot estimate gas|gas required exceeds|intrinsic gas|estimateGas/i, 'gas_estimation_failed'],
+        // Keep contract reverts ahead of wallet revocation: a contract can revert with "authorization revoked".
         [/execution reverted|revert/i, 'contract_reverted'],
         [/authorization revoked/i, 'unauthorized'],
         [/nonce too low|nonce has already|replacement transaction underpriced|already known/i, 'nonce_or_replacement'],

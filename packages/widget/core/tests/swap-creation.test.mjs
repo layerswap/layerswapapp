@@ -17,6 +17,7 @@ const hooks = registerHooks({
 after(() => hooks.deregister())
 
 const { createSwapAttempt, requestSwap, announceCreatedSwap } = await import('../dist/esm/lib/swapCreation.js')
+const { ROUTE_VALIDATION_ERROR_CODES } = await import('../dist/esm/lib/routeValidationErrors.js')
 const { lifecycleErrorDetails } = await import('../dist/esm/lib/swapLifecycle.js')
 const { registerWidgetErrorLogger } = await import('../dist/esm/lib/ErrorHandler.js')
 
@@ -201,7 +202,7 @@ test('lib/swapCreation has no runtime dependency on the API client', () => {
   assert.deepEqual(runtimeImports.filter(s => /apiClients|Models\//.test(s)), [])
 })
 
-for (const code of ['GREATER_THAN_MAX_ERROR', 'LESS_THAN_MIN_ERROR', 'ROUTE_NOT_FOUND_ERROR', 'PRICE_IMPACT_TOO_HIGH']) {
+for (const code of ROUTE_VALIDATION_ERROR_CODES) {
   test(`${code} preserves the creation error without declaring gasless unavailable`, async () => {
     const apiError = { code, message: 'Adjust the route or amount' }
     for (const envelope of [true, false]) {

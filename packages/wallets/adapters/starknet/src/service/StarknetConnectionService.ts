@@ -104,7 +104,7 @@ export async function resolveStarknetWallet(props: ResolveStarknetWalletProps): 
             address: account,
             addresses: [account],
             chainId: walletChain || '',
-            icon: walletIconResolver(address, resolveStarknetWalletIcon({ icon: connector.icon })),
+            icon: walletIconResolver(account, resolveStarknetWalletIcon({ icon: connector.icon })),
             providerName: name,
             metadata: {
                 starknetAccount: walletAccount,

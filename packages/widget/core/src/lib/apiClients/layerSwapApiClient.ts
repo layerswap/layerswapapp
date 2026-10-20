@@ -10,13 +10,7 @@ import { NetworkWithTokens, Network, Token } from "@layerswap/widget-types";
 import { Exchange } from "../../Models/Exchange";
 import { ErrorHandler } from "@/lib/ErrorHandler";
 import { startApiOperation } from '../widgetTelemetry';
-
-const IGNORED_API_ERROR_CODES = [
-    'ROUTE_NOT_FOUND_ERROR',
-    'PRICE_IMPACT_TOO_HIGH',
-    'GREATER_THAN_MAX_ERROR',
-    'LESS_THAN_MIN_ERROR'
-];
+import { ROUTE_VALIDATION_ERROR_CODES } from '../routeValidationErrors';
 
 export default class LayerSwapApiClient {
     static apiBaseEndpoint?: string = AppSettings.LayerswapApiUri;
@@ -125,7 +119,7 @@ type RequestOptions = {
 function reportApiError(endpoint: string, reason: any, options?: RequestOptions) {
     if (options?.expectedStatuses?.includes(reason?.response?.status)) return;
     const errorCode = reason?.response?.data?.error?.code;
-    if (IGNORED_API_ERROR_CODES.includes(errorCode)) return;
+    if (ROUTE_VALIDATION_ERROR_CODES.has(errorCode)) return;
 
     let error: Error;
     if (reason instanceof Error) {

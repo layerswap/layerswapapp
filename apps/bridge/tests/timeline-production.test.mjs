@@ -679,6 +679,7 @@ function createSwapHistoryHarness(fetcher, { onCreate, selectedAccount } = {}) {
         './depositSettings': { useDepositSettings: () => ({}) },
         '@/lib/swapLifecycle': { lifecycleContextFromForm: () => ({}) },
         '@/lib/swapCreation': loadSource('lib/swapCreation.ts', {
+            './routeValidationErrors': loadSource('lib/routeValidationErrors.ts'),
             '@layerswap/widget-types': { getErrorOccurrenceId: noop },
             '@/lib/ErrorHandler': { ErrorHandler: error => assert.fail(error.message) },
             './swapLifecycle': { lifecycleErrorDetails: () => ({}) },

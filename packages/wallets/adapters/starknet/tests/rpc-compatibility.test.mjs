@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
+import { normalizeWalletErrorCode } from '@layerswap/wallet-core/errors'
 import { config, hash, WalletAccount } from 'starknet-rpc'
 import { StarknetBalanceProvider } from '../dist/esm/starknetBalanceProvider.js'
 import { StarknetNftProvider } from '../dist/esm/starknetNftProvider.js'
@@ -237,4 +238,18 @@ test('restoration persists a changed account and updates the active selection wi
     assert.equal(service.buildProvider().activeWallet.address, current)
     await service.hydrateStoredWallets()
     assert.equal(useStarknetStore.getState().connectedWallets.length, 1)
+})
+
+test('silent account access with no authorized accounts gives unlock/reconnect guidance without submission', async t => {
+    mockRpc(t, '0.10.0')
+    const { wallet, walletRequests } = await connectWallet()
+    wallet.metadata.starknetAccount.requestAccounts = async () => []
+    const calls = [{ contractAddress: token.contract, entrypoint: 'transfer', calldata: [] }]
+    await assert.rejects(createStarknetTransfer().executeTransfer({ selectedWallet: wallet, callData: JSON.stringify(calls) }, wallet), error => {
+        assert.match(error.message, /No authorized Starknet account.*Unlock your wallet and reconnect/)
+        assert.doesNotMatch(error.message, /account changed/)
+        assert.equal(normalizeWalletErrorCode(error), 'unauthorized')
+        return true
+    })
+    assert.equal(walletRequests.some(request => request.type === 'wallet_addInvokeTransaction'), false)
 })

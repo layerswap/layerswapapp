@@ -40,6 +40,9 @@ export function createStarknetTransfer(): TransferProvider {
                 // wallet may still describe the previous account. execute() itself does
                 // not specify a sender, so verify the extension's active account too.
                 const accounts = await account.requestAccounts(true)
+                if (!accounts?.length) {
+                    throw Object.assign(new Error('No authorized Starknet account is available. Unlock your wallet and reconnect before sending.'), { reasonCode: 'unauthorized' })
+                }
                 if (!sameAddress(accounts?.[0], selectedWallet.address)
                     || !sameAddress(account.address, selectedWallet.address)) {
                     throw new Error('Starknet account changed. Reconnect your wallet before sending.')
