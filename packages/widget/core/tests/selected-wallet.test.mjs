@@ -3,9 +3,13 @@ import test from 'node:test'
 import { readFileSync } from 'node:fs'
 import ts from 'typescript'
 import { createRequire } from 'node:module'
+import { Address as WidgetAddress } from './helpers/address.mjs'
 const { outputText } = ts.transpileModule(readFileSync(new URL('../src/helpers/resolveSelectedWallet.ts', import.meta.url), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS } })
 const module = { exports: {} }
-new Function('module', 'exports', outputText)(module, module.exports)
+new Function('require', 'module', 'exports', outputText)(name => {
+    assert.equal(name, '@/lib/address/Address')
+    return { Address: WidgetAddress }
+}, module, module.exports)
 const { resolveSelectedWallet } = module.exports
 const first = { id: 'Braavos', providerName: 'Starknet', address: '0x111', addresses: ['0x111'] }
 const second = { ...first, address: '0x222', addresses: ['0x222'] }
@@ -60,6 +64,10 @@ test('TON snapshot formats preserve the selected wallet across restoration', () 
         const wallet = service.resolveWallet({ address: format, appName: 'tonkeeper' })
         assert.deepEqual(wallet.addresses, [selected.address])
         assert.equal(resolveSelectedWallet([wallet], selected), wallet)
+        const retainedSelection = { ...selected, address: format }
+        const resolved = resolveSelectedWallet([restored], retainedSelection)
+        assert.ok(resolved, 'Equivalent retained TON selections must resolve')
+        assert.ok(WidgetAddress.equals(resolved.address, restored.address, null, restored.providerName))
     }
     const other = service.resolveWallet({ address: `0:${'34'.repeat(32)}`, appName: 'tonkeeper' })
     assert.equal(resolveSelectedWallet([other], selected), undefined)

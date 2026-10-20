@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { Address } from '../../../packages/widget/core/tests/helpers/address.mjs';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -151,7 +152,7 @@ test('switching gasless mode preserves the live execution lock while swap creati
         }),
     };
     const { SendTransactionButton } = loadSource(`${withdraw}Wallet/Common/buttons.tsx`, {
-        '@/helpers/resolveSelectedWallet': loadSource('helpers/resolveSelectedWallet.ts'),
+        '@/helpers/resolveSelectedWallet': loadSource('helpers/resolveSelectedWallet.ts', { '@/lib/address/Address': { Address } }),
         ...walletRequestImports,
         '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
         ...walletHooks,
@@ -1300,7 +1301,7 @@ for (const failure of ['rejected', 'failed']) {
             '@/lib/gases/useSWRGas': { default: () => ({ gasData: { gas: 0.01 } }) },
         };
         const { SendTransactionButton } = loadSource(`${withdraw}Wallet/Common/buttons.tsx`, {
-            '@/helpers/resolveSelectedWallet': loadSource('helpers/resolveSelectedWallet.ts'),
+            '@/helpers/resolveSelectedWallet': loadSource('helpers/resolveSelectedWallet.ts', { '@/lib/address/Address': { Address } }),
             ...walletRequestImports,
             '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
             ...controllerImports,

@@ -12,9 +12,8 @@ export type StarknetConnectorSnapshot = {
 
 interface StarknetStoreState {
     connectedWallets: Wallet[]
-    connectWallet: (wallet: Wallet) => void
+    replaceConnectorWallet: (connectorId: string, wallet: Wallet, activate?: boolean) => void
     starknetAccounts?: StarknetAccountMap
-    addAccount: (connectorId: string, l1Address: string) => void
     removeAccount: (address: string) => void
     activeWalletAddress?: string
     setActiveWallet: (address: string) => void
@@ -29,13 +28,6 @@ export const useStarknetStore = create<StarknetStoreState>()(
         (set) => ({
             connectedWallets: [],
             setActiveWallet: (address) => set({ activeWalletAddress: address }),
-            addAccount: (connectorId, l1Address) =>
-                set((state) => ({
-                    starknetAccounts: {
-                        ...state.starknetAccounts,
-                        [connectorId]: l1Address,
-                    },
-                })),
             removeAccount: (address) =>
                 set((state) => {
                     const updatedAccounts = Object.entries(state.starknetAccounts || {}).reduce(
@@ -62,11 +54,21 @@ export const useStarknetStore = create<StarknetStoreState>()(
                         activeWalletAddress: newActiveAddress,
                     }
                 }),
-            connectWallet: (wallet) => set((state) => {
-                if (state.connectedWallets.find(w => w.providerName === wallet.providerName && w.id === wallet.id && w.address === wallet.address)) {
-                    return state
+            // One authorized account per connector. Connect and restoration must
+            // replace the signer, persisted address and selection in one notification.
+            replaceConnectorWallet: (connectorId, wallet, activate = false) => set(state => {
+                const previousAddress = state.starknetAccounts?.[connectorId]
+                const connectedWallets = state.connectedWallets.filter(existing =>
+                    existing.id !== wallet.id || existing.providerName !== wallet.providerName)
+                const replaceActive = activate || !state.activeWalletAddress
+                    || state.activeWalletAddress.toLowerCase() === previousAddress?.toLowerCase()
+                    || state.connectedWallets.some(existing => !connectedWallets.includes(existing)
+                        && existing.address.toLowerCase() === state.activeWalletAddress?.toLowerCase())
+                return {
+                    connectedWallets: [...connectedWallets, wallet],
+                    starknetAccounts: { ...state.starknetAccounts, [connectorId]: wallet.address },
+                    activeWalletAddress: replaceActive ? wallet.address : state.activeWalletAddress,
                 }
-                return { connectedWallets: [...state.connectedWallets, wallet] }
             }),
 
             connectors: [],

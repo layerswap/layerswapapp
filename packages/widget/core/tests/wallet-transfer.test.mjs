@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { Address } from './helpers/address.mjs'
 import test, { after } from 'node:test'
 import { createRequire, registerHooks } from 'node:module'
 import { readFileSync } from 'node:fs'
@@ -151,7 +152,12 @@ for (const result of ['success', 'rejected', 'expired-again', 'refresh-failed', 
   })
 }
 
-const { toTransferError: starknetTransferError } = loadAdapterSource('../../../wallets/adapters/starknet/src/transferProvider/toTransferError.ts', {})
+const starknetAccount = loadAdapterSource('../../../wallets/adapters/starknet/src/service/starknetAccount.ts', {
+  '@layerswap/utils': { Address },
+})
+const { toTransferError: starknetTransferError } = loadAdapterSource('../../../wallets/adapters/starknet/src/transferProvider/toTransferError.ts', {
+  '../service/starknetAccount': starknetAccount,
+})
 
 for (const [label, thrown, expected] of [
   ['adapter-declared decline', userRejectedError({ cause: { code: 4001 } }), { step: 'wallet_action_rejected', outcome: 'rejected', reasonCode: 'user_rejected', reason: 'Transaction rejected', errorCode: '4001' }],

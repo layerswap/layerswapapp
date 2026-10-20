@@ -222,30 +222,6 @@ const Withdraw: FC<{
                 />
             ),
         };
-    } else if (swapBasicData?.use_deposit_address === false && outOfGas && canCheckBalance) {
-        withdraw = {
-            footerKey: 'transfer',
-            footer: (
-                <WalletTransferButton
-                    swapBasicData={swapBasicData}
-                    swapId={swapDetails?.id}
-                    refuel={!!refuel}
-                    onWalletWithdrawalSuccess={onWalletWithdrawalSuccess}
-                    warning={
-                        <GasWarningView
-                            adjustButton={
-                                showAdjustAmount && <AdjustAmountButton
-                                    compact
-                                    onEditAmount={handleEditAmount}
-                                    isLoading={quoteIsLoading}
-                                />
-                            }
-                        />
-                    }
-                    onCancelWithdrawal={onCancelWithdrawal}
-                />
-            ),
-        };
     } else if (swapBasicData?.use_deposit_address === false) {
         withdraw = {
             footerKey: 'transfer',
@@ -255,6 +231,17 @@ const Withdraw: FC<{
                     swapId={swapDetails?.id}
                     refuel={!!refuel}
                     onWalletWithdrawalSuccess={onWalletWithdrawalSuccess}
+                    warning={outOfGas && canCheckBalance ? (
+                        <GasWarningView
+                            adjustButton={
+                                showAdjustAmount && <AdjustAmountButton
+                                    compact
+                                    onEditAmount={handleEditAmount}
+                                    isLoading={quoteIsLoading}
+                                />
+                            }
+                        />
+                    ) : undefined}
                     onCancelWithdrawal={onCancelWithdrawal}
                 />
             ),
