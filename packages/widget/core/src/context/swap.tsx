@@ -43,6 +43,7 @@ import { resolverService } from '@/lib/resolvers/resolverService';
 import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect';
 import { useAtomicBatchCapability } from '@/hooks/useAtomicBatchCapability';
 import { hasSwapExecutionProgress, hasUnacknowledgedWalletAction } from '@/helpers/swapProgress';
+import { formatTokenAmount } from '@/components/utils/formatTokenAmount';
 import { preparePresetAmount } from '@/lib/preparePresetAmount';
 import { isAmountPreset, isWalletAmountFlow, amountPresetSource, AmountPresetChangedError } from '@/lib/amountPresets';
 
@@ -282,7 +283,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         return {
             ...swap,
             source_token,
-            requested_amount: swap.requested_amount.toString(),
+            requested_amount: formatTokenAmount(swap.requested_amount, source_token.decimals),
             refuel: !!data.data.refuel,
         }
     }, [data, swapId, sourceRoutes])
