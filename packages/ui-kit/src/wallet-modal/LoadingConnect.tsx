@@ -47,8 +47,8 @@ export const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: Wallet
                                 </>
                             ) : (
                                 <>
-                                    <p className="text-base font-medium">{isMobilePlatform ? 'Approve connection in your wallet' : 'Approve connection in your wallet pop-up'}</p>
-                                    <p className="text-sm font-normal text-secondary-text">{isMobilePlatform ? "Don't see the request? Check your wallet app." : "Don't see a pop-up? Check your browser windows."}</p>
+                                    <p className="text-base font-medium">{isMobilePlatform || selectedConnector.showQrCode === false ? 'Approve connection in your wallet' : 'Approve connection in your wallet pop-up'}</p>
+                                    <p className="text-sm font-normal text-secondary-text">{isMobilePlatform || selectedConnector.showQrCode === false ? "Don't see the request? Check your wallet app." : "Don't see a pop-up? Check your browser windows."}</p>
                                 </>
                             )}
                         </div>
