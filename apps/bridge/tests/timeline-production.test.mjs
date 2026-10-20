@@ -690,6 +690,8 @@ function createSwapHistoryHarness(fetcher, { onCreate, selectedAccount } = {}) {
     const execution = loadSource('lib/swapExecution.ts', {
         '@/stores/swapTransactionStore': stores,
         '@/components/utils/resolveSwapFlow': { resolveSwapFlow },
+        '@/lib/apiClients/layerSwapApiClient': api,
+        '@/helpers/atomicBatch': loadSource('helpers/atomicBatch.ts'),
     });
     const polling = loadSource('hooks/useSwapPolling.ts', {
         swr: { default: useSWR },

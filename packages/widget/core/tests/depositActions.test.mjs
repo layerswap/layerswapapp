@@ -1665,6 +1665,22 @@ test('current pending work and completed execution still lock replacement', () =
     }
 })
 
+test('an uncertain atomic submission blocks a replacement after the gasless preference changes', async () => {
+    const flow = createWorkflow({ atomic: true })
+    flow.state.sourceToken = { contract: '0xtoken', supports_gasless_deposit: true, gasless_standard: 'eip3009' }
+    flow.state.apiActions = [atomicFixtures.actions.zero_allowance]
+    flow.state.depositActionsResponse = flow.state.apiActions
+    flow.stores.useSwapTransactionStore.getState().swapTransactions[swapId] = { kind: 'atomic-batch' }
+    flow.stores.useSwapTransactionStore.getState().pendingSubmissions[swapId] = true
+    flow.preferences.gaslessEnabled = true
+    flow.state.createSwap = () => assert.fail('An uncertain atomic submission cannot be replaced')
+    await flow.render().button.props.onClick()
+    assert.deepEqual(flow.calls.batches, [])
+    assert.deepEqual(flow.calls.refresh, [])
+    assert.deepEqual(flow.calls.sign, [])
+    assert.deepEqual(flow.calls.transfer, [])
+})
+
 test('enabling gasless after rejecting self-paid signing creates a new swap with future pending steps', async () => {
     const flow = createWorkflow()
     flow.state.sourceToken = { contract: '0xtoken', supports_gasless_deposit: true, gasless_standard: 'eip3009' }

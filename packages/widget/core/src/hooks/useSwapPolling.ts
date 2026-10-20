@@ -28,7 +28,7 @@ export function useSwapPolling(swapId: string | undefined, initialSwapData?: Swa
     const { data, mutate } = result
     useEffect(() => {
         const swap = data?.data?.swap
-        if (swap) recordSwapExecution(swap.id, { swapData: swap, depositActions: data?.data?.deposit_actions })
+        if (swap && !data?.error) recordSwapExecution(swap.id, { swapData: swap, depositActions: data?.data?.deposit_actions })
         const fingerprint = swap && [swap.id, swap.status,
             ...(swap.transactions?.map(t => `${t.type}:${t.status}:${t.confirmations >= t.max_confirmations}:${t.transaction_hash}:${t.amount}`) ?? []),
         ].join('|')

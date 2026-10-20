@@ -17,8 +17,11 @@ export function isAtomicBatchEligible(input: {
 }
 
 export function getAtomicBatchExpiry(action: Pick<BatchTransferDepositAction, 'valid_before' | 'expires_at'>): number {
-    const expiry = action.expires_at === undefined ? undefined : Date.parse(action.expires_at) / 1000
-    if (expiry !== undefined && !Number.isSafeInteger(expiry)) throw new Error('Invalid atomic batch expiry')
+    const expiryMilliseconds = action.expires_at === undefined ? undefined : Date.parse(action.expires_at)
+    if (expiryMilliseconds !== undefined && !Number.isSafeInteger(expiryMilliseconds)) {
+        throw new Error('Invalid atomic batch expiry')
+    }
+    const expiry = expiryMilliseconds === undefined ? undefined : Math.floor(expiryMilliseconds / 1000)
     const validBefore = action.valid_before
     if (validBefore !== undefined && !Number.isSafeInteger(validBefore)) throw new Error('Invalid atomic batch expiry')
     if (validBefore === undefined && expiry === undefined) throw new Error('Invalid atomic batch expiry')

@@ -24,7 +24,9 @@ async function waitForBatchReceipt(provider: AtomicBatchProvider, context: Atomi
             const outcome = resolveAtomicBatchOutcome(result, Number(context.network.chain_id), id)
             if (outcome.state === 'confirmed') return outcome.hash
             if (outcome.state === 'failed' || outcome.state === 'not_submitted') {
-                throw new Error('The wallet batch was not executed successfully.')
+                throw Object.assign(new Error('The wallet batch was not executed successfully.'), {
+                    atomicSubmission: 'not_submitted',
+                })
             }
             await new Promise(resolve => setTimeout(resolve, 2000))
         }
@@ -53,9 +55,17 @@ export async function executeAtomicBatch(ctx: DepositExecutionContext, action: B
     signal?.throwIfAborted()
     const context: AtomicBatchContext = { network, wallet: selectedWallet, account }
     const lifecycle = { ...lifecycleContextFromSwap(swapBasicData, swapData), path: 'AtomicBatch', action: 'approve_and_swap', provider: selectedWallet.providerName }
+    const store = useSwapTransactionStore.getState()
+    if (store.pendingSubmissions[swapData.id]) {
+        throw new Error('This swap may already be submitted. Check its status before retrying.')
+    }
     let hash: string
     try {
         ctx.setActionStateText(`${getDepositActionLabel(action)} in your wallet`)
+        // Keep deduplication after a lost response, timeout or screen closure.
+        // A batch ID remains local; only a definite outcome releases this marker.
+        store.markSubmissionPending(swapData.id)
+        store.setSwapTransactionKind(swapData.id, 'atomic-batch')
         const result = await provider.submit({ ...context, calls, validBefore, signal,
             onWalletPrompt: () => onLifecycle({ ...lifecycle, step: 'wallet_prompt_opened', stage: 'wallet_action', outcome: 'pending' }) })
         if (!result || typeof result.id !== 'string' || !result.id.trim()) throw new Error('Wallet returned no batch ID')
@@ -64,6 +74,11 @@ export async function executeAtomicBatch(ctx: DepositExecutionContext, action: B
         hash = await waitForBatchReceipt(provider, context, result.id)
     } catch (error) {
         const rejected = isUserRejection(error)
+        const notSubmitted = error !== null && typeof error === 'object'
+            && 'atomicSubmission' in error && error.atomicSubmission === 'not_submitted'
+        if (rejected || notSubmitted) {
+            store.clearPendingSubmission(swapData.id)
+        }
         onLifecycle({ ...lifecycle, ...lifecycleErrorDetails(error),
             step: rejected ? 'wallet_action_rejected' : 'wallet_action_failed', stage: 'wallet_action', outcome: rejected ? 'rejected' : 'failed' })
         throw error

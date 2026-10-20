@@ -21,7 +21,7 @@ type SwapTransactionStore = {
     // Prerequisite receipts never prove a submitted swap.
     stepTransactions: Record<string, SwapStepTransactions>;
     setStepTransaction: (id: string, step: DepositActionStep, hash: string, explorerUrl: string) => void;
-    // Provider withdrawals whose outcome is unknown must be reconciled before retrying.
+    // Provider withdrawals and atomic batches with unknown outcomes must be reconciled before retrying.
     pendingSubmissions: Record<string, true>;
     markSubmissionPending: (id: string) => void;
     clearPendingSubmission: (id: string) => void;

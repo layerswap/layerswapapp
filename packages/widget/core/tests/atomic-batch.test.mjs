@@ -23,6 +23,7 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
 const { getAtomicBatchExpiry, validateAtomicBatch, resolveAtomicBatchOutcome, isAtomicBatchEligible } = await import('../dist/esm/helpers/atomicBatch.js')
 const { getActionableDepositAction, getDepositActionLabel, getDepositActionDescription } = await import('../dist/esm/helpers/depositActions.js')
 const { executeAtomicBatch } = await import('../dist/esm/lib/atomicBatchExecution.js')
+const { hasUnacknowledgedWalletAction } = await import('../dist/esm/helpers/swapProgress.js')
 const { useSwapTransactionStore: store } = await import('../dist/esm/stores/swapTransactionStore.js')
 const fixtures = JSON.parse(readFileSync(new URL('./fixtures/atomic-batch.json', import.meta.url)))
 const hash = `0x${'a'.repeat(64)}`, finalHash = `0x${'b'.repeat(64)}`
@@ -67,7 +68,8 @@ for (const [name, action] of Object.entries(fixtures.actions)) test(`preserves b
         assert.deepEqual(request.calls.map(call => call.to), action.calls.map(call => call.to))
         assert.deepEqual(request.calls.map(call => call.data), action.calls.map(call => call.data))
         assert.deepEqual(request.calls.map(call => call.value), action.calls.map(call => BigInt(call.value)))
-        assert.deepEqual(store.getState().swapTransactions, {}, 'opening the wallet creates no recovery record')
+        assert.deepEqual(store.getState().swapTransactions['atomic-swap'], { kind: 'atomic-batch' })
+        assert.deepEqual(store.getState().pendingSubmissions, { 'atomic-swap': true }, 'the request is guarded before wallet submission')
         return { id: batchId }
     }, getStatus: async (request, id) => {
         assert.equal(id, batchId)
@@ -83,6 +85,7 @@ for (const [name, action] of Object.entries(fixtures.actions)) test(`preserves b
     })
     assert.equal(store.getState().stepTransactions['atomic-swap'].publish.explorerUrl, `https://arbiscan.io/tx/${finalHash}`)
     assert.equal(ctx.successes, 1)
+    assert.deepEqual(store.getState().pendingSubmissions, {})
     assert.deepEqual(ctx.catchups, [['atomic-swap', finalHash]])
     assert.ok(!JSON.stringify([...storage]).includes(batchId))
 })
@@ -133,6 +136,22 @@ test('supports either expiry field on its own and uses the earlier transaction d
     assert.equal(getAtomicBatchExpiry({ valid_before: 1999999995, expires_at: '2033-05-18T03:33:20Z' }), 1999999995)
 })
 
+for (const validBefore of [undefined, 1999999995, 2000000005]) {
+    test(`fractional ISO expiry is accepted with transaction deadline ${validBefore}`, async () => {
+        const action = { ...fixtures.actions.zero_allowance, valid_before: validBefore,
+            expires_at: '2033-05-18T03:33:20.1234567Z' }
+        const expected = Math.min(validBefore ?? Infinity, 2000000000)
+        assert.equal(getAtomicBatchExpiry(action), expected)
+        const ctx = context(action)
+        await submit(ctx, { submit: async request => {
+            assert.equal(request.validBefore, expected)
+            return { id: batchId }
+        } })
+        assert.equal(ctx.successes, 1)
+        assert.throws(() => validateAtomicBatch(action, fixtures.swap, fixtures.account, fixtures.account, expected * 1000), /Batch expired/)
+    })
+}
+
 test('backend swap sender remains mandatory when the send_calls payload omits sender and chain', () => {
     const action = { ...fixtures.actions.sufficient_allowance, from_address: undefined, network: undefined }
     assert.equal(validateAtomicBatch(action, fixtures.swap, fixtures.account, fixtures.account).length, 1)
@@ -179,7 +198,8 @@ test('pending receipts keep the submission active without persisting the wallet 
     let polls = 0
     const pending = submit(ctx, { getStatus: async () => ++polls === 1 ? status(100, []) : status(200, [receipt(finalHash)]) })
     await flush()
-    assert.deepEqual(store.getState().swapTransactions, {})
+    assert.deepEqual(store.getState().swapTransactions['atomic-swap'], { kind: 'atomic-batch' })
+    assert.equal(store.getState().pendingSubmissions['atomic-swap'], true)
     assert.equal(ctx.successes, 0)
     assert.deepEqual(ctx.catchups, [])
     t.mock.timers.tick(2000)
@@ -202,7 +222,8 @@ test('a transient status outage retries the same wallet ID within the active sub
         },
     })
     await flush()
-    assert.deepEqual(store.getState().swapTransactions, {})
+    assert.deepEqual(store.getState().swapTransactions['atomic-swap'], { kind: 'atomic-batch' })
+    assert.equal(store.getState().pendingSubmissions['atomic-swap'], true)
     t.mock.timers.tick(2000)
     await pending
     assert.equal(submissions, 1)
@@ -212,8 +233,7 @@ test('a transient status outage retries the same wallet ID within the active sub
 
 for (const [name, error] of [
     ['rejection', { code: 4001 }], ['proven non-submission', { atomicSubmission: 'not_submitted' }],
-    ['lost response', new Error('Connection lost')],
-]) test(`${name} leaves no pending atomic record`, async () => {
+]) test(`${name} releases the pending marker and permits retry`, async () => {
     store.getState().setSwapTransactionKind('atomic-swap', 'atomic-batch')
     const ctx = context()
     await assert.rejects(submit(ctx, { submit: async () => { throw error } }))
@@ -221,21 +241,66 @@ for (const [name, error] of [
     assert.deepEqual(store.getState().pendingSubmissions, {})
     assert.equal(ctx.successes, 0)
     assert.deepEqual(ctx.catchups, [])
+    await submit(ctx)
+    assert.equal(ctx.successes, 1)
+})
+
+test('a lost response preserves deduplication after reload and blocks another wallet request', async () => {
+    const ctx = context()
+    await assert.rejects(submit(ctx, { submit: async () => { throw new Error('Connection lost') } }), /Connection lost/)
+    const saved = storage.get('swapTransactions')
+    store.setState(store.getInitialState(), true)
+    storage.set('swapTransactions', saved)
+    await store.persist.rehydrate()
+    assert.equal(store.getState().pendingSubmissions['atomic-swap'], true)
+    assert.equal(hasUnacknowledgedWalletAction({
+        transaction: store.getState().swapTransactions['atomic-swap'],
+        pendingSubmission: store.getState().pendingSubmissions['atomic-swap'],
+        depositActions: ctx.depositActions,
+    }), true)
+    await assert.rejects(submit(context(), { submit: () => assert.fail('An uncertain submission cannot open the wallet again') }), /may already be submitted/)
+    assert.ok(!saved.includes(batchId))
+    assert.equal(ctx.successes, 0)
+})
+
+test('same-swap requests are guarded synchronously while independent swaps can submit', async () => {
+    const first = context()
+    const accepted = Promise.withResolvers()
+    const pending = submit(first, { submit: () => accepted.promise })
+    try {
+        await assert.rejects(submit(context(), { submit: () => assert.fail('Duplicate submission') }), /may already be submitted/)
+        const independent = context()
+        independent.swapData.id = 'another-swap'
+        await submit(independent)
+        assert.equal(independent.successes, 1)
+        assert.deepEqual(store.getState().pendingSubmissions, { 'atomic-swap': true })
+        accepted.resolve({ id: batchId })
+        await pending
+        assert.equal(first.successes, 1)
+        assert.deepEqual(store.getState().pendingSubmissions, {})
+    } finally {
+        accepted.resolve({ id: batchId })
+        await pending
+    }
 })
 
 test('a malformed wallet response cannot be saved as a transaction', async () => {
     const ctx = context()
     await assert.rejects(submit(ctx, { submit: async () => ({}) }), /no batch ID/)
-    assert.deepEqual(store.getState().swapTransactions, {})
+    assert.deepEqual(store.getState().swapTransactions['atomic-swap'], { kind: 'atomic-batch' })
+    assert.equal(store.getState().pendingSubmissions['atomic-swap'], true)
     assert.equal(ctx.successes, 0)
 })
 
 for (const code of [400, 500]) test(`unsuccessful wallet status ${code} cannot create a successful receipt`, async () => {
     const ctx = context()
     await assert.rejects(submit(ctx, { getStatus: async () => status(code, code === 500 ? [receipt(hash, 'reverted')] : []) }), /not executed successfully/)
-    assert.deepEqual(store.getState().swapTransactions, {})
+    assert.deepEqual(store.getState().swapTransactions['atomic-swap'], { kind: 'atomic-batch' })
+    assert.deepEqual(store.getState().pendingSubmissions, {})
     assert.equal(ctx.successes, 0)
     assert.deepEqual(ctx.catchups, [])
+    await submit(ctx)
+    assert.equal(ctx.successes, 1)
 })
 
 test('an accepted submission records its receipt after the screen closes', async () => {
@@ -267,7 +332,9 @@ test('a hung receipt request times out and its late response cannot save a trans
     await rejected
     resolveStatus(status())
     await flush()
-    assert.deepEqual(store.getState().swapTransactions, {})
+    assert.deepEqual(store.getState().swapTransactions['atomic-swap'], { kind: 'atomic-batch' })
+    assert.equal(store.getState().pendingSubmissions['atomic-swap'], true)
+    await assert.rejects(submit(context(), { submit: () => assert.fail('Timeout cannot permit resubmission') }), /may already be submitted/)
     assert.deepEqual(ctx.catchups, [])
 })
 

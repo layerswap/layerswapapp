@@ -18,6 +18,7 @@ for (const [key, value] of Object.entries(globals)) {
 // Keep the HTTP/browser graph out while exercising real SWR, hooks and persistence.
 const apiModule = 'data:text/javascript,' + encodeURIComponent(`
   export const TransactionType = { Input: 'input' };
+  export const BackendTransactionStatus = { Pending: 'pending', Completed: 'completed', Failed: 'failed' };
   export const requests = [];
   let response = { status: 'initiated' };
   export function setResponse(value) { response = value; }

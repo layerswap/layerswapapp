@@ -19,6 +19,8 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
     }
     if (specifier.endsWith('/lib/apiClients/layerSwapApiClient')) return {
         url: 'data:text/javascript,' + encodeURIComponent(`
+            export const TransactionType = { Input: 'input' }
+            export const BackendTransactionStatus = { Pending: 'pending', Completed: 'completed', Failed: 'failed' }
             export default class Client {
                 fetcher = key => globalThis.__depositTransport(key)
                 GetDepositActionsAsync(id, address) {
