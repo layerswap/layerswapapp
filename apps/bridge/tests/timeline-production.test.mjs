@@ -151,6 +151,7 @@ test('switching gasless mode preserves the live execution lock while swap creati
         }),
     };
     const { SendTransactionButton } = loadSource(`${withdraw}Wallet/Common/buttons.tsx`, {
+        '@/helpers/resolveSelectedWallet': loadSource('helpers/resolveSelectedWallet.ts'),
         ...walletRequestImports,
         '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
         ...walletHooks,
@@ -1258,7 +1259,7 @@ for (const failure of ['rejected', 'failed']) {
         });
         const store = value => Object.assign(selector => selector(value), { getState: () => value });
         const stores = {
-            useSwapTransactionStore: store({ swapTransactions: {}, stepTransactions: {}, setSwapTransaction: (...args) => records.push(args) }),
+            useSwapTransactionStore: store({ swapTransactions: {}, pendingSubmissions: {}, stepTransactions: {}, setSwapTransaction: (...args) => records.push(args) }),
             useGaslessAuthorizationStore: store({ authorizations: {} }),
             useDepositSignatureStore: store({ signatures: {}, removeDepositSignature: noop }),
         };
@@ -1284,6 +1285,12 @@ for (const failure of ['rejected', 'failed']) {
         let formAmount;
         const controllerImports = {
             ...walletHooks,
+            '@/stores/swapTransactionStore': stores,
+            '@/helpers/swapProgress': loadSource('helpers/swapProgress.ts', {
+                './gasless': gasless,
+                '@layerswap/widget-types': loadSource('../../types/src/SwapStatus.ts'),
+                '@/lib/apiClients/layerSwapApiClient': harness.api,
+            }),
             '@/context/swap': harness.context,
             '@/context/settings': { useInitialSettings: () => ({}), useSettingsState: () => ({ networks: [network] }) },
             '@/lib/swapLifecycle': lifecycle,
@@ -1292,6 +1299,7 @@ for (const failure of ['rejected', 'failed']) {
             '@/lib/gases/useSWRGas': { default: () => ({ gasData: { gas: 0.01 } }) },
         };
         const { SendTransactionButton } = loadSource(`${withdraw}Wallet/Common/buttons.tsx`, {
+            '@/helpers/resolveSelectedWallet': loadSource('helpers/resolveSelectedWallet.ts'),
             ...walletRequestImports,
             '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
             ...controllerImports,
@@ -1321,6 +1329,7 @@ for (const failure of ['rejected', 'failed']) {
         });
         const { default: Withdraw } = loadSource(`${withdraw}Withdraw.tsx`, {
             ...controllerImports,
+            '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput: noop } },
             '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
             '@/components/Input/Amount/helpers': loadSource('components/Input/Amount/helpers.ts', {
                 '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),

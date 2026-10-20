@@ -1,3 +1,4 @@
+import { resolveSelectedWallet } from '@/helpers/resolveSelectedWallet';
 import { NetworkType, type TransferBlockedReasonCode } from '@layerswap/widget-types';
 import { FC, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { PublishedSwapTransactions, SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
@@ -238,7 +239,7 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
 
     const { provider, wallets } = useWallet(swapData.source_network, "withdrawal")
     const { balances } = useBalance(selectedSourceAccount?.address, networkWithTokens)
-    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
+    const wallet = resolveSelectedWallet(wallets, selectedSourceAccount)
     const { executeTransfer } = useTransfer()
     const { signGaslessDeposit, isGaslessSupported } = useGasless()
     const rpcHealth = useRpcHealth(swapData.source_network)

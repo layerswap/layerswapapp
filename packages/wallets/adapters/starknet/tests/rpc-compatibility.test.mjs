@@ -4,7 +4,9 @@ import { config, hash, WalletAccount } from 'starknet-rpc'
 import { StarknetBalanceProvider } from '../dist/esm/starknetBalanceProvider.js'
 import { StarknetNftProvider } from '../dist/esm/starknetNftProvider.js'
 import { StarknetGasProvider } from '../dist/esm/starknetGasProvider.js'
-import { resolveStarknetWallet } from '../dist/esm/service/StarknetConnectionService.js'
+import { useStarknetStore } from '../dist/esm/service/starknetStore.js'
+import { starknetConnectorManager } from '../dist/esm/service/starknetConnectorManager.js'
+import { StarknetConnectionService, resolveStarknetWallet } from '../dist/esm/service/StarknetConnectionService.js'
 import { createStarknetTransfer } from '../dist/esm/transferProvider/createStarknetTransfer.js'
 
 const address = '0x123'
@@ -157,4 +159,82 @@ test('rejects unsupported RPC versions before requesting a balance', async t => 
     const requests = mockRpc(t, '0.8.1')
     await assert.rejects(new StarknetBalanceProvider().fetchBalance(address, network), /not compatible/)
     assert.deepEqual(requests.map(r => r.method), ['starknet_specVersion'])
+})
+
+test('hydration constructs the signing account from the current wallet account, not the persisted address', async t => {
+    mockRpc(t, '0.10.0')
+    const current = '0x456'
+    const wallet = await resolveStarknetWallet({
+        name: 'Starknet', address: '0x123',
+        network: { id: network.name, chainId, rpcUrl: network.node_url },
+        withdrawalSupportedNetworks: [network.name], disconnectWallets: async () => {},
+        connector: { id: 'braavos', name: 'Braavos', icon: '', wallet: {
+            on() {}, request: async () => [current],
+        } },
+    })
+    assert.equal(wallet.address, current)
+    assert.equal(wallet.metadata.starknetAccount.address, current)
+})
+
+test('a changed extension account prevents submission from the stale selected Starknet account', async t => {
+    mockRpc(t, '0.10.0')
+    const { wallet, walletRequests } = await connectWallet()
+    wallet.metadata.starknetAccount.requestAccounts = async () => ['0x456']
+    const calls = [{ contractAddress: token.contract, entrypoint: 'transfer', calldata: [] }]
+    await assert.rejects(createStarknetTransfer().executeTransfer({ selectedWallet: wallet, callData: JSON.stringify(calls) }, wallet), /Starknet account changed/)
+    assert.equal(walletRequests.some(request => request.type === 'wallet_addInvokeTransaction'), false)
+})
+
+test('wallet execute failures preserve the original error and selected signer/call context', async t => {
+    mockRpc(t, '0.10.0')
+    const { wallet } = await connectWallet()
+    const original = Object.assign(new Error('Execute failed'), { code: 163, data: { revert_error: { revert_reason: 'contract failure' } } })
+    wallet.metadata.starknetAccount.execute = async () => { throw original }
+    const calls = [{ contractAddress: token.contract, entrypoint: 'transfer', calldata: ['secret-calldata'] }]
+    await assert.rejects(createStarknetTransfer().executeTransfer({ selectedWallet: wallet, callData: JSON.stringify(calls) }, wallet), error => {
+        assert.equal(error.message, 'Execute failed')
+        assert.equal(error.cause.cause, original)
+        assert.match(error.cause.message, /Ready X/)
+        assert.match(error.cause.message, /selected account 0x123/)
+        assert.match(error.cause.message, /0x456.transfer/)
+        assert.doesNotMatch(error.cause.message, /secret-calldata/)
+        return true
+    })
+})
+
+for (const callData of ['null', '[]', '[{}]', '"invalid"']) {
+    test(`invalid Starknet calls ${callData} do not open an execution prompt`, async t => {
+        mockRpc(t, '0.10.0')
+        const { wallet, walletRequests } = await connectWallet()
+        await assert.rejects(createStarknetTransfer().executeTransfer({ selectedWallet: wallet, callData }, wallet), /Invalid Starknet transfer calls/)
+        assert.equal(walletRequests.some(request => request.type === 'wallet_addInvokeTransaction'), false)
+    })
+}
+
+
+test('a different Starknet connector cannot sign for the selected wallet even at the same address', async t => {
+    mockRpc(t, '0.10.0')
+    const { wallet, walletRequests } = await connectWallet()
+    const calls = [{ contractAddress: token.contract, entrypoint: 'transfer', calldata: [] }]
+    await assert.rejects(createStarknetTransfer().executeTransfer({ selectedWallet: { ...wallet, id: 'Braavos' }, callData: JSON.stringify(calls) }, wallet), /does not match the signing wallet/)
+    assert.equal(walletRequests.some(request => request.type === 'wallet_addInvokeTransaction'), false)
+})
+
+test('restoration persists a changed account and updates the active selection without retrying stale wallets', async t => {
+    mockRpc(t, '0.10.0')
+    const previousState = useStarknetStore.getState()
+    t.after(() => useStarknetStore.setState(previousState, true))
+    const current = '0x456'
+    const connector = { id: 'braavos', name: 'Braavos', icon: '', wallet: {
+        on() {}, request: async () => [current],
+    } }
+    t.mock.method(starknetConnectorManager, 'getConnectors', () => [connector])
+    useStarknetStore.setState({ starknetAccounts: { braavos: address }, activeWalletAddress: address, connectedWallets: [] })
+    const service = new StarknetConnectionService()
+    t.mock.method(service, 'getStarknetNetwork', () => ({ id: network.name, chainId, rpcUrl: network.node_url }))
+    await service.hydrateStoredWallets()
+    assert.equal(useStarknetStore.getState().starknetAccounts.braavos, current)
+    assert.equal(service.buildProvider().activeWallet.address, current)
+    await service.hydrateStoredWallets()
+    assert.equal(useStarknetStore.getState().connectedWallets.length, 1)
 })

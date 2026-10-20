@@ -26,6 +26,8 @@ import {
 import WalletTransferButton from './WalletTransferButton';
 import { WalletActionTransition } from './Presentation/WalletActionTransition';
 import { lifecycleContextFromSwap } from '@/lib/swapLifecycle';
+import { hasSwapExecutionProgress } from '@/helpers/swapProgress';
+import { useSwapTransactionStore, useGaslessAuthorizationStore, useDepositSignatureStore } from '@/stores/swapTransactionStore';
 import { useTransferBlocked } from '@/hooks/useTransferBlocked';
 import { type ObservedLifecycleEvent, useLifecycleObservation } from '@/hooks/useLifecycleObservation';
 
@@ -43,7 +45,7 @@ const Withdraw: FC<{
     onWalletWithdrawalSuccess?: () => void;
     onCancelWithdrawal?: () => void;
 }> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal }) => {
-    const { swapBasicData, swapDetails, swapId, amountPresetLocked, refuel, quoteIsLoading } =
+    const { swapBasicData, swapDetails, swapId, amountPresetLocked, refuel, quoteIsLoading, depositActionsResponse, walletActionExecuting } =
         useSwapDataState();
     const { setSubmitedFormValues, startFreshSwapAttempt, canAdjustAmount } = useSwapDataUpdate();
 
@@ -161,7 +163,13 @@ const Withdraw: FC<{
     // Settled failures and frozen/manual amounts still show genuine warnings.
     const presetIsSyncing = !swapId && !amountPresetLocked && isAmountPreset(swapBasicData?.amountMode)
         && (swapBasicData?.amountPresetPending || !Object.is(swapBasicData?.amountPresetBalance, walletBalanceAmount));
-    const showInsufficientBalanceWarning = !presetIsSyncing &&
+    const storedWalletTransaction = useSwapTransactionStore(state => swapId ? state.swapTransactions[swapId] : undefined);
+    const pendingSubmission = useSwapTransactionStore(state => swapId ? state.pendingSubmissions[swapId] : undefined);
+    const gaslessAuthorization = useGaslessAuthorizationStore(state => swapId ? state.authorizations[swapId] : undefined);
+    const depositSignature = useDepositSignatureStore(state => swapId ? state.signatures[swapId] : undefined);
+    const hasProgress = hasSwapExecutionProgress({ swapDetails, depositActions: depositActionsResponse, storedWalletTransaction, gaslessAuthorization, depositSignature });
+    const canCheckBalance = !presetIsSyncing && !walletActionExecuting && !pendingSubmission && !hasProgress;
+    const showInsufficientBalanceWarning = canCheckBalance &&
         swapBasicData?.use_deposit_address === false &&
         swapBasicData?.requested_amount &&
         Number(swapBasicData?.requested_amount) &&
@@ -214,9 +222,9 @@ const Withdraw: FC<{
                 />
             ),
         };
-    } else if (swapBasicData?.use_deposit_address === false && outOfGas && !presetIsSyncing) {
+    } else if (swapBasicData?.use_deposit_address === false && outOfGas && canCheckBalance) {
         withdraw = {
-            footerKey: 'outOfGas',
+            footerKey: 'transfer',
             footer: (
                 <WalletTransferButton
                     swapBasicData={swapBasicData}

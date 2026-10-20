@@ -88,10 +88,11 @@ export async function resolveStarknetWallet(props: ResolveStarknetWalletProps): 
         const rpcProvider = await RpcProvider.create({ nodeUrl: network!.rpcUrl })
 
         const walletProvider = (connector as any).wallet
-        const walletAccount = new WalletAccount({ provider: rpcProvider, walletProvider, address })
-
-        const accounts = await walletAccount.requestAccounts(true)
-        const account = accounts?.[0]
+        // Resolve the wallet's current account before constructing the signing account.
+        // A persisted address can be stale after switching accounts in the extension.
+        const walletAccount = await WalletAccount.connectSilent(rpcProvider, walletProvider)
+        const account = walletAccount.address
+        if (!account) throw new Error('No Starknet account returned by the wallet')
 
         const configuredName = connectorsConfigs.find(c => c.id === connector.id)?.name
         const connectorName = configuredName ?? connector.name
@@ -346,14 +347,14 @@ export class StarknetConnectionService<Network> implements WalletConnectionServi
             name: PROVIDER_NAME,
             connector: starknetConnector,
             network: starknetNetwork,
-            disconnectWallets: () => this.disconnectWallets(starknetConnector.id, result?.account),
+            disconnectWallets: () => this.disconnectWallets(starknetConnector.id, resolvedWallet?.address ?? result?.account),
             address: result.account,
             withdrawalSupportedNetworks: this.getSupportedNetworks(),
             autofillSupportedNetworks: this.getSupportedNetworks(),
             asSourceSupportedNetworks: this.getSupportedNetworks(),
         })
 
-        store.addAccount(starknetConnector.id, result.account)
+        store.addAccount(starknetConnector.id, resolvedWallet?.address ?? result.account)
         if (resolvedWallet) {
             store.connectWallet(resolvedWallet)
             store.setActiveWallet(resolvedWallet.address)
@@ -378,18 +379,29 @@ export class StarknetConnectionService<Network> implements WalletConnectionServi
         for (const connector of connectors) {
             const address = starknetAccounts[connector.id]
             if (!address || !this.connectorIsAvailable(connector)) continue
+            let hydratedAddress = address
             const wallet = await resolveStarknetWallet({
                 name: PROVIDER_NAME,
                 connector,
                 network: starknetNetwork,
-                disconnectWallets: () => starknetConnectorManager.disconnectAll().then(() => useStarknetStore.getState().removeAccount(address)),
+                disconnectWallets: () => starknetConnectorManager.disconnectAll().then(() => useStarknetStore.getState().removeAccount(hydratedAddress)),
                 withdrawalSupportedNetworks: this.getSupportedNetworks(),
                 autofillSupportedNetworks: this.getSupportedNetworks(),
                 asSourceSupportedNetworks: this.getSupportedNetworks(),
                 address,
             })
             if (wallet?.address) {
-                useStarknetStore.getState().connectWallet(wallet)
+                hydratedAddress = wallet.address
+                // Silent resolution may return a different extension account than
+                // the persisted one. Persist it and move the active selection too,
+                // otherwise restoration keeps retrying the stale address.
+                useStarknetStore.setState(state => ({
+                    starknetAccounts: { ...state.starknetAccounts, [connector.id]: wallet.address },
+                    activeWalletAddress: state.activeWalletAddress?.toLowerCase() === address.toLowerCase()
+                        ? wallet.address : state.activeWalletAddress,
+                    connectedWallets: [...state.connectedWallets.filter(existing =>
+                        existing.id !== wallet.id || existing.providerName !== wallet.providerName), wallet],
+                }))
             }
         }
     }

@@ -7,7 +7,7 @@ import { JSDOM } from 'jsdom'
 import { create } from 'zustand'
 import { createSwapContext } from './helpers/swap-context.mjs'
 import { resolveSwapFlow } from '../dist/esm/components/utils/resolveSwapFlow.js'
-import { loadSource, amountPresets, amountMessages, formValidation, maxHelpers, rounding } from './helpers/source.mjs'
+import { loadSource, amountPresets, amountMessages, formValidation, maxHelpers, rounding, swapProgress } from './helpers/source.mjs'
 
 const require = createRequire(import.meta.url)
 const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://widget.example' })
@@ -121,6 +121,12 @@ const { default: WalletTransferButton } = loadSource('components/Pages/Swap/With
   } },
 })
 const { default: Withdraw } = loadSource('components/Pages/Swap/Withdraw/Withdraw.tsx', {
+  '@/helpers/swapProgress': swapProgress,
+  '@/stores/swapTransactionStore': {
+    useSwapTransactionStore: selector => selector({ swapTransactions: {}, pendingSubmissions: {} }),
+    useGaslessAuthorizationStore: selector => selector({ authorizations: {} }),
+    useDepositSignatureStore: selector => selector({ signatures: {} }),
+  },
   '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput() {} } },
   react: React, formik: require('formik'), '@/context/swap': context,
   '@/components/utils/RoundDecimals': rounding, '@/components/Input/Amount/helpers': maxHelpers,
@@ -365,15 +371,15 @@ test('a manual amount reports insufficient funds immediately', async () => {
   assert.deepEqual(blocks().map(event => event.reasonCode), ['insufficient_balance'])
 })
 
-test('a preset frozen for wallet execution still reports insufficient funds', async () => {
+test('a preset frozen for wallet execution preserves the amount without reporting a balance block', async () => {
   await render(); await openReview()
   await act(() => updates.acquireWalletExecution())
   const before = data.swapBasicData.requested_amount
   state.commits = []
   await setBalance(0.0004)
   assert.equal(data.swapBasicData.requested_amount, before)
-  assert.match(state.commits[0], /Insufficient balance/)
-  assert.deepEqual(blocks().map(event => event.reasonCode), ['insufficient_balance'])
+  assert.ok(state.commits.every(text => !text.includes('Insufficient balance')))
+  assert.deepEqual(blocks(), [])
 })
 
 for (const mode of ['min', 'half', 'max']) {
