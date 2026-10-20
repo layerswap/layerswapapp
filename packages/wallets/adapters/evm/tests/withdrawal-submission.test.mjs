@@ -209,8 +209,19 @@ for (const reload of [false, true]) {
 
         assert.equal(await execution.execute(flow), '')
         assert.equal(submissions, 2, 'the refused withdrawal can submit again')
-        assert.deepEqual(execution.store.getState().swapTransactions, {}, 'a provider request without a hash is not a transaction receipt')
-        assert.deepEqual(execution.store.getState().pendingSubmissions, { 'swap-1': true }, 'reconcile the accepted provider request before retry')
+        const receipt = execution.store.getState().swapTransactions['swap-1']
+        assert.equal(receipt.kind, 'wallet-transfer')
+        assert.equal(receipt.providerSubmissionAccepted, true, 'the successful provider response establishes acceptance without a hash')
+        assert.equal(receipt.hash, undefined)
+        assert.ok(receipt.timestamp > 0)
+        assert.deepEqual(execution.store.getState().pendingSubmissions, {})
+
+        const acceptedEvents = [...flow.events]
+        await execution.reload()
+        assert.deepEqual(execution.store.getState().swapTransactions['swap-1'], receipt)
+        assert.equal(await execution.execute(flow), '')
+        assert.equal(submissions, 2, 'an accepted withdrawal cannot submit again after reload')
+        assert.deepEqual(flow.events, acceptedEvents, 'resuming acceptance must not request another signature')
     })
 }
 

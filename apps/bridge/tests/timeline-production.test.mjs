@@ -1256,10 +1256,13 @@ for (const provider of ['Hyperliquid', 'Polymarket']) {
                 },
             };
             const rejection = { isUserRejection: error => error?.code === 4001 };
+            const providerStores = {
+                useSwapTransactionStore: Object.assign(selector => selector(transactions), { getState: () => transactions }),
+            };
             const providerExecution = loadSource(`${withdraw}WithdrawalProviders/executeProviderWithdrawal.ts`, {
                 '@layerswap/wallet-core/errors': rejection,
                 '@/lib/apiClients/layerSwapApiClient': harness.api,
-                '@/stores/swapTransactionStore': { useSwapTransactionStore: { getState: () => transactions } },
+                '@/stores/swapTransactionStore': providerStores,
                 '@/helpers/swapProgress': loadSource('helpers/swapProgress.ts', {
                     './gasless': gasless,
                     '@layerswap/widget-types': loadSource('../../types/src/SwapStatus.ts'),
@@ -1268,6 +1271,7 @@ for (const provider of ['Hyperliquid', 'Polymarket']) {
             });
             const name = `use${provider}Withdrawal`;
             const { [name]: useWithdrawal } = loadSource(`${withdraw}WithdrawalProviders/${provider}/${name}.ts`, {
+                '@/stores/swapTransactionStore': providerStores,
                 ...walletHooks,
                 '@/context/swap': swapContext,
                 '@/context/withdrawalContext': { useWalletWithdrawalState: () => ({ onWalletWithdrawalSuccess: () => { successes++; } }) },
