@@ -34,6 +34,8 @@ const depVersion = (pkg) => {
 // Versions that must match between host and remote (catalog-aligned).
 const SHARED_SINGLETONS = {
   react: { singleton: true, requiredVersion: false, eager: false, version: depVersion('react') },
+  'react/jsx-runtime': { singleton: true, requiredVersion: false, eager: false, version: depVersion('react') },
+  'react/jsx-dev-runtime': { singleton: true, requiredVersion: false, eager: false, version: depVersion('react') },
   'react-dom': { singleton: true, requiredVersion: false, eager: false, version: depVersion('react-dom') },
   wagmi: { singleton: true, requiredVersion: false, eager: false, version: depVersion('wagmi') },
   viem: { singleton: true, requiredVersion: false, eager: false, version: depVersion('viem') },
