@@ -1,5 +1,6 @@
 import { walletConnect as customWalletConnect } from "../connectors/resolveConnectors/walletConnect"
-import { coinbaseWallet, metaMask, walletConnect } from "@wagmi/connectors";
+import { coinbaseWallet, walletConnect } from "@wagmi/connectors";
+import { metaMaskConnect } from '../connectors/metaMaskConnect';
 import { isMobile } from "@layerswap/utils"
 import { browserInjected } from "../connectors/browserInjected";
 import type { CreateConnectorFn } from "wagmi";
@@ -36,8 +37,8 @@ export const buildEVMConnectors = (
         customStoragePrefix: 'walletConnect',
     })
     const hiddenWalletConnectConnector = createHiddenWalletConnectConnector(walletConnectConfigs)
-    const metaMaskConnector = metaMask({
-        dappMetadata: {
+    const metaMaskConnector = metaMaskConnect({
+        dapp: {
             name: walletConnectConfigs.name,
             url: walletConnectConfigs.url,
             iconUrl: walletConnectConfigs.icons[0],

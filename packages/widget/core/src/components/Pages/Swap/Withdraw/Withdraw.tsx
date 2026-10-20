@@ -1,3 +1,4 @@
+import { widgetTelemetry } from '@/lib/widgetTelemetry';
 import { truncateDecimals } from '@/components/utils/RoundDecimals';
 import { Widget } from '@/components/Widget/Index';
 import { useSettingsState } from '@/context/settings';
@@ -119,6 +120,7 @@ const Withdraw: FC<{
     const handleEditAmount = useCallback(() => {
         // Execution can start between rendering the action and clicking it.
         if (!canAdjustAmount() || adjustedAmount === undefined || !swapBasicData) return;
+        widgetTelemetry.recordAmountInput('max');
         const maxFields = { amountMode: 'max' as const,
             amountPresetSource: amountPresetSource(swapBasicData.source_network.name, swapBasicData.source_token.symbol, selectedSourceAccount?.id, selectedSourceAccount?.address),
             amountPresetPending: true, amountPresetError: undefined };
@@ -179,7 +181,10 @@ const Withdraw: FC<{
     useTransferBlocked(
         swapBasicData?.use_deposit_address === false && showInsufficientBalanceWarning ? 'insufficient_balance'
         : undefined,
-        lifecycleContext, 'Withdraw')
+        { ...lifecycleContext,
+            sourceWalletAddress: selectedSourceAccount?.address, walletBalance: walletBalance?.amount,
+            walletBalanceNetwork: walletBalance?.network, walletBalanceToken: walletBalance?.token,
+            walletBalanceTimestamp: walletBalance?.request_time }, 'Withdraw')
 
     if (
         swapBasicData?.use_deposit_address === false &&

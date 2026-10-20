@@ -6,7 +6,7 @@ type Attributes = WidgetTelemetryAttributes
 type Flow = {
     id: string; started: number; attributes: Attributes; opened: boolean; engaged: boolean;
     submitted: boolean; prompted: boolean; transferSubmitted: boolean; deposited: boolean; completed: boolean;
-    attempts: number; swapId?: string; validation?: string;
+    attempts: number; swapId?: string; validation?: string; amountMode?: SwapLifecycleEvent['amountMode']; walletKey?: string;
     observations: Map<SwapLifecycleObservationKey, string>;
 }
 
@@ -90,8 +90,28 @@ export function createWidgetTelemetry(clock = now, wallClock = Date.now) {
             queueMicrotask(() => { if (flow === current) open() })
             return () => { flow = removeEntry(mounts, entry)?.flow }
         },
-        update(current: Flow, attributes: Attributes) { current.attributes = { ...attributes } },
+        update(current: Flow, attributes: Attributes, walletKey?: string) {
+            if (current.attributes.source_network !== attributes.source_network || current.attributes.source_token !== attributes.source_token
+                || current.attributes.deposit_method !== attributes.deposit_method || current.walletKey !== walletKey)
+                current.amountMode = undefined
+            current.walletKey = walletKey
+            current.attributes = { ...attributes }
+        },
+        amountInputMethod(event: SwapLifecycleEvent): SwapLifecycleEvent['amountMode'] {
+            if (!flow || (event.swapId && event.swapId !== flow.swapId && event.step !== 'swap_created')
+                || (event.step === 'swap_created' && !flow.submitted)
+                || (event.sourceNetwork && event.sourceNetwork !== flow.attributes.source_network)
+                || (event.sourceToken && event.sourceToken !== flow.attributes.source_token)) return 'unknown'
+            return flow.amountMode ?? 'unknown'
+        },
+        recordAmountInput(method: NonNullable<SwapLifecycleEvent['amountMode']>) {
+            if (flow) flow.amountMode = method
+        },
         interaction(action: string, trigger: string, inForm: boolean, attributes: Attributes = {}) {
+            if (flow && inForm) {
+                const preset = action === 'set_min_amount' ? 'min' : action === 'set_half_amount' ? 'half' : action === 'set_max_amount' ? 'max' : undefined
+                if (preset) flow.amountMode = preset
+            }
             open()
             const alreadyEngaged = flow?.engaged
             if (flow && inForm && !flow.engaged) {

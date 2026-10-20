@@ -1,6 +1,8 @@
+import { widgetTelemetry } from '@/lib/widgetTelemetry';
 import { isAmountPreset, type AmountMode } from '@/lib/amountPresets';
 import { useCallback, useEffect, useRef } from "react";
 import { useUsdModeStore } from "@/stores/usdModeStore";
+import { formatTokenAmount } from "@/components/utils/formatTokenAmount";
 
 // Module-level coordination flag.
 // When MinMax sets a known USD value from API limits alongside the token amount,
@@ -100,7 +102,7 @@ export function useUsdTokenSync({
             const precision = fromCurrency?.precision || 6;
             const tokenAmount = preciseUsd / sourceCurrencyPriceInUsd;
             const truncated = Math.trunc(tokenAmount * Math.pow(10, precision)) / Math.pow(10, precision);
-            newAmount = truncated.toString();
+            newAmount = formatTokenAmount(truncated, precision);
         }
         // Only mark as internal if the value actually changes;
         // otherwise the sync effect won't fire and the flag stays stuck.
@@ -208,6 +210,7 @@ export function useUsdTokenSync({
         const value = e.target.value.replace(',', '.');
         // Allow empty, or a valid USD amount: no leading zeros (except "0" itself), up to 2 decimals
         if (value !== '' && !/^(0|[1-9]\d*)\.?\d{0,2}$/.test(value)) return;
+        widgetTelemetry.recordAmountInput('manual');
         setFieldValue('amountMode', 'manual', false);
         setFieldValue('amountPresetSource', undefined, false);
         setFieldValue('amountPresetPending', false, false);

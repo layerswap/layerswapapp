@@ -53,6 +53,8 @@ const { default: Controller } = loadSource('components/Pages/Swap/Form/AmountPre
 })
 const usdStore = create(set => ({ isUsdMode: false, usdAmount: '', setUsdAmount: usdAmount => set({ usdAmount }) }))
 const { useUsdTokenSync } = loadSource('hooks/useUsdTokenSync.ts', {
+  '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput() {} } },
+  '@/components/utils/formatTokenAmount': loadSource('components/utils/formatTokenAmount.ts'),
   react: React, '@/lib/amountPresets': amountPresets, '@/stores/usdModeStore': { useUsdModeStore: usdStore },
 })
 const { default: Summary } = loadSource('components/Pages/Swap/Withdraw/Summary/index.tsx', {
@@ -98,6 +100,9 @@ const { SendTransactionView } = loadSource('components/Pages/Swap/Withdraw/Prese
   '../../Form/SecondaryComponents/validationError/ErrorDismissButton': { default: noop },
   '../../Form/SecondaryComponents/validationError/ErrorDisplay': errorDisplay,
   '../messages/Message': {}, '../Wallet/Common/ensureSourceChain': {},
+  '../messages/walletErrorMessage': loadSource('components/Pages/Swap/Withdraw/messages/walletErrorMessage.ts', {
+    '@layerswap/widget-types': require('@layerswap/widget-types'),
+  }),
 })
 const callbackImports = {
   react: React,
@@ -116,6 +121,7 @@ const { default: WalletTransferButton } = loadSource('components/Pages/Swap/With
   } },
 })
 const { default: Withdraw } = loadSource('components/Pages/Swap/Withdraw/Withdraw.tsx', {
+  '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput() {} } },
   react: React, formik: require('formik'), '@/context/swap': context,
   '@/components/utils/RoundDecimals': rounding, '@/components/Input/Amount/helpers': maxHelpers,
   '@/lib/amountPresets': amountPresets,
