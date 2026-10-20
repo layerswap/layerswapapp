@@ -22,7 +22,8 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
   if (['/context/swap', '/lib/ErrorHandler', '/lib/address/Address'].some(path => specifier.endsWith(path))) {
     return { url: fixtures, shortCircuit: true }
   }
-  if (specifier === './Message' && context.parentURL?.endsWith('/messages/TransactionMessages.js')) {
+  if ((specifier === './Message' && context.parentURL?.endsWith('/messages/TransactionMessages.js')) ||
+      (specifier === '../messages/Message' && context.parentURL?.endsWith('/Presentation/ActionMessageView.js'))) {
     return { url: messageWrapper, shortCircuit: true }
   }
   if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
@@ -32,6 +33,64 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
 } })
 after(() => hooks.deregister())
 const { ActionMessage } = await import('../dist/esm/components/Pages/Swap/Withdraw/Wallet/Common/actionMessage.js')
+const { ActionMessageView } = await import('../dist/esm/components/Pages/Swap/Withdraw/Presentation/ActionMessageView.js')
+
+const renderError = (error, overrides = {}) => renderToStaticMarkup(createElement(ActionMessageView, {
+  error, sourceNetwork: { display_name: 'Optimism', type: 'evm' },
+  selectedSourceAddress: 'source', swapError: true, ...overrides,
+}))
+
+test('a nested wallet RPC failure shows network recovery instead of the generic swap error', () => {
+  const error = Object.assign(new Error('An unknown RPC error occurred.', {
+    cause: { name: 'UnknownRpcError', code: -1, cause: {
+      code: -32080, message: 'RPC 0xa Custom eth_getBlockByNumber: RPC endpoint returned HTTP client error.',
+    } },
+  }), { name: 'UnexpectedErrorMessage' })
+  const html = renderError(error)
+  assert.match(html, /Network connection failed/)
+  assert.match(html, /RPC URL/)
+  assert.match(html, /Optimism network settings/)
+  assert.match(html, /try again/)
+  assert.doesNotMatch(html, /Something went wrong|rejected|eth_getBlockByNumber|-32080|assets were not moved/)
+  const otherNetwork = renderError(error, { sourceNetwork: { display_name: 'Stellar', type: 'stellar' } })
+  assert.match(otherNetwork, /Stellar/)
+  assert.doesNotMatch(otherNetwork, /RPC URL|Optimism/)
+})
+
+test('a wallet RPC failure relayed over WalletConnect as 5000 is not shown as a rejection', () => {
+  // MetaMask Mobile answers with CAIP-25 5000; viem wraps it in UserRejectedRequestError.
+  const error = Object.assign(new Error('User rejected the request.', {
+    cause: { code: 5000, message: 'RPC 0xa Custom eth_getBlockByNumber: RPC endpoint returned HTTP client error.' },
+  }), { name: 'UserRejectedRequestError', code: 4001 })
+  const html = renderError(error)
+  assert.match(html, /Network connection failed/)
+  assert.match(html, /Optimism network settings/)
+  assert.match(html, /remove any others/)
+  assert.doesNotMatch(html, /rejected|eth_getBlockByNumber|5000/)
+})
+
+test('recognized wallet failures give specific recovery guidance', () => {
+  for (const [error, header, guidance] of [
+    [{ code: -32603 }, /Wallet request failed/, /Check your wallet for details/],
+    [{ code: 4900 }, /Wallet disconnected/, /reconnect/],
+    [{ code: -32002 }, /Request already pending/, /complete or reject/],
+    [new Error('Request timed out'), /Wallet response timed out/, /submitted transaction before trying again/],
+  ]) {
+    const html = renderError(error)
+    assert.match(html, header)
+    assert.match(html, guidance)
+    assert.doesNotMatch(html, /Something went wrong|assets were not moved/)
+  }
+})
+
+test('wallet recovery preserves rejection, loading, gasless and unknown-error precedence', () => {
+  assert.match(renderError({ code: 4001 }), /Transaction rejected/)
+  assert.match(renderError({ code: 4001 }, { isSignatureError: true }), /Signing rejected/)
+  assert.match(renderError({ code: 'NETWORK_ERROR' }, { isLoading: true }), /Confirm in wallet/)
+  assert.match(renderError({ code: 'NETWORK_ERROR' }, { gaslessUnavailable: true }), /Gasless transfer unavailable/)
+  assert.match(renderError(new Error('Unknown problem')), /Something went wrong/)
+  assert.match(renderError(new Error('Unknown problem'), { swapError: false }), /Wallet error/)
+})
 
 for (const [name, expectedHeader] of [
   ['TransactionRejected', 'Transaction rejected'],

@@ -105,6 +105,13 @@ const network = { name: 'BASE_MAINNET', type: 'evm' };
 const token = { symbol: 'USDC', contract: '0xtoken', supports_gasless_deposit: true, gasless_standard: 'eip3009' };
 const wallet = { id: 'wallet', address: '0xsource', isActive: true, asSourceSupportedNetworks: [network.name] };
 const account = { id: wallet.id, address: wallet.address, provider: {} };
+const walletRequests = loadSource('../../../wallets/core/src/lib/walletConnect/walletRequestStore.ts');
+const walletRequestImports = {
+    '@layerswap/wallet-core': walletRequests,
+    '../../Presentation/WalletRequestRecovery': loadSource(`${withdraw}Presentation/WalletRequestRecovery.tsx`, {
+        '@layerswap/wallet-core': walletRequests,
+    }),
+};
 const walletHooks = {
     '@/hooks/useWallet': { default: () => ({ wallets: [wallet], provider: { connectedWallets: [wallet] } }) },
     '@/context/swapAccounts': { useSelectedAccount: () => account },
@@ -144,6 +151,7 @@ test('switching gasless mode preserves the live execution lock while swap creati
         }),
     };
     const { SendTransactionButton } = loadSource(`${withdraw}Wallet/Common/buttons.tsx`, {
+        ...walletRequestImports,
         '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
         ...walletHooks,
         '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: noop }) },
@@ -656,6 +664,7 @@ function createSwapHistoryHarness(fetcher, { onCreate, selectedAccount } = {}) {
     stores.useDepositSignatureStore.setState({ signatures: {} });
     const context = loadSource('context/swap.tsx', {
         '@layerswap/widget-types': widgetTypes,
+        '@/components/utils/formatTokenAmount': loadSource('components/utils/formatTokenAmount.ts'),
         '@/helpers/depository': { shouldUseDepository: () => false },
         '@/helpers/swapProgress': loadSource('helpers/swapProgress.ts', {
             '@layerswap/widget-types': widgetTypes,
@@ -1051,7 +1060,7 @@ for (const provider of ['Hyperliquid', 'Polymarket']) {
     for (const outcome of ['failure', 'success']) {
         test(`${provider} retry after reload preserves its swap and controller through withdrawal ${outcome}`, async () => {
             const swap = {
-                id: 'first', status: 'user_transfer_pending', requested_amount: '1',
+                id: 'first', status: 'user_transfer_pending', requested_amount: 1,
                 source_network: network, destination_network: network,
                 source_token: { ...token, asset: 'USDC', decimals: 6 },
                 destination_token: { ...token, asset: 'USDC', decimals: 6 },
@@ -1169,7 +1178,7 @@ for (const provider of ['Hyperliquid', 'Polymarket']) {
 for (const gaslessEnabled of [true, false]) {
     test(`fresh retry after reload preserves the source account with gasless ${gaslessEnabled}`, async () => {
         const swap = {
-            id: 'first', status: 'user_transfer_pending', requested_amount: '1',
+            id: 'first', status: 'user_transfer_pending', requested_amount: 1,
             source_network: network, destination_network: network,
             source_token: token, destination_token: token,
             destination_address: '0xdestination', use_deposit_address: false, transactions: [],
@@ -1221,7 +1230,7 @@ for (const failure of ['rejected', 'failed']) {
         const nativeToken = { symbol: 'ETH', asset: 'ETH', decimals: 18, precision: 6 };
         const makeResponse = (id, amount) => ({ data: {
             swap: {
-                id, status: 'user_transfer_pending', requested_amount: amount,
+                id, status: 'user_transfer_pending', requested_amount: Number(amount),
                 source_network: network, destination_network: network,
                 source_token: nativeToken, destination_token: nativeToken,
                 destination_address: '0xdestination', use_deposit_address: false, transactions: [], metadata: {},
@@ -1283,6 +1292,7 @@ for (const failure of ['rejected', 'failed']) {
             '@/lib/gases/useSWRGas': { default: () => ({ gasData: { gas: 0.01 } }) },
         };
         const { SendTransactionButton } = loadSource(`${withdraw}Wallet/Common/buttons.tsx`, {
+            ...walletRequestImports,
             '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
             ...controllerImports,
             '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: noop }) },

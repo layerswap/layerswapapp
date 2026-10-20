@@ -51,12 +51,14 @@
     "@layerswap/wallet-core": "workspace:^",
     "@layerswap/utils": "workspace:^",
     "@layerswap/widget-types": "workspace:^",
+    "@wagmi/connectors": "catalog:",
+    "@wagmi/core": "catalog:",
     "viem": "catalog:",
     "wagmi": "catalog:",
     "zustand": "catalog:"
   },
   "dependencies": {
-    "@metamask/sdk": "^0.33.1",
+    "@metamask/connect-evm": "2.1.1",
     "@walletconnect/ethereum-provider": "catalog:",
     "ethers": "5.7.2",
     "js-sha3": "^0.8.0"
@@ -66,6 +68,8 @@
     "@layerswap/utils": "workspace:^",
     "@layerswap/widget-types": "workspace:^",
     "@tailwindcss/postcss": "^4.0.15",
+    "@wagmi/connectors": "catalog:",
+    "@wagmi/core": "catalog:",
     "tailwindcss": "^4.0.15",
     "zustand": "catalog:"
   },
