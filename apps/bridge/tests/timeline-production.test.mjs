@@ -1329,6 +1329,7 @@ for (const failure of ['rejected', 'failed']) {
             '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
             '@/hooks/useFee': { transformSwapDataToQuoteArgs: noop, useQuoteData: () => ({ minAllowedAmount: 0.001, maxAllowedAmount: 10 }) },
             '@/lib/gases/useOutOfGas': { default: () => ({ outOfGas: true }) },
+            '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput: noop } },
             formik: { useFormikContext: () => ({ values: {}, setValues: values => { formAmount = values.amount; } }) },
             '../Form/SecondaryComponents/validationError/AdjustAmountButton': {
                 AdjustAmountButton: ({ onEditAmount }) => React.createElement('button', { onClick: onEditAmount }, 'Adjust amount'),
