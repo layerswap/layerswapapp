@@ -60,3 +60,6 @@ pr-review-assessment.md
 
 # Architecture
 .architecture
+# Local investigations and review reports
+reviews/
+pr-review-report.md
