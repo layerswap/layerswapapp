@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import test, { after } from 'node:test'
+import test, { after, afterEach } from 'node:test'
 import { createRequire, registerHooks } from 'node:module'
 import { readFileSync } from 'node:fs'
 import { extname } from 'node:path'
@@ -10,7 +10,7 @@ import { userRejectedError, walletActionError } from '@layerswap/wallet-core/err
 const hooks = registerHooks({
   resolve(specifier, context, nextResolve) {
     if (specifier.endsWith('/lib/apiClients/layerSwapApiClient')) {
-      return { url: 'data:text/javascript,export const BackendTransactionStatus = { Pending: "pending" }', shortCircuit: true }
+      return { url: 'data:text/javascript,export const BackendTransactionStatus = { Pending: "pending", Failed: "failed" }; export const TransactionType = { Input: "input" }', shortCircuit: true }
     }
     if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
       return nextResolve(`${specifier}.js`, context)
@@ -51,11 +51,12 @@ for (const [callData, expectedMemo] of [[null, ''], [undefined, ''], ['', ''], [
     const memos = []
     const { createTronTransfer } = loadAdapterSource('../../../wallets/adapters/tron/src/transferProvider/createTronTransfer.ts', {
       tronweb: { TronWeb: class {
-        transactionBuilder = { addUpdateData: async (transaction, data, format) => {
+        transactionBuilder = { addUpdateData: async (transaction, data, format, options) => {
+          assert.deepEqual(options, { txLocal: true })
           memos.push([data, format])
           return transaction
         } }
-        trx = { sendRawTransaction: async () => ({ result: true }) }
+        trx = { sendRawTransaction: async () => callData === 'swap memo' ? ({ result: false, code: 'DUP_TRANSACTION_ERROR' }) : callData === '0x' ? ({ result: false, code: 5 }) : ({ result: true }) }
       } },
       './transactionBuilder': { buildInitialTransaction: async () => ({ txID: 'tron-hash' }) },
       './toTransferError': { toTransferError: error => error },
@@ -75,7 +76,7 @@ for (const [callData, expectedData] of [[null, '0x'], [undefined, '0x'], ['', '0
   test(`EVM normalizes deposit calldata ${JSON.stringify(callData)} at the adapter boundary`, async () => {
     const { transactionBuilder } = loadAdapterSource('../../../wallets/adapters/evm/src/transferProvider/transactionBuilder.ts', {
       viem: { parseEther: () => 0n },
-      '../gasProviders': { EVMGasProvider: class { async getGas() { return {} } } },
+      '../gasProviders/estimateTransferFee': { estimateTransferFee: async () => ({ gas: 21000n, fee: 1n, fees: { gasPrice: 1n }, client: { getBalance: async () => 100n } }) },
     })
     const ctx = calldataContext(callData, { name: 'ETHEREUM_MAINNET', type: 'evm', chain_id: '1' })
     await executeWalletTransfer(ctx, async props => {
@@ -225,3 +226,84 @@ for (const hash of ['transaction-hash', '', undefined]) {
     assert.deepEqual(published, hash ? [['swap-standard', 'pending', hash]] : [])
   })
 }
+
+const { useSwapTransactionStore } = await import('../dist/esm/stores/swapTransactionStore.js')
+afterEach(() => useSwapTransactionStore.setState({ pendingSubmissions: {} }))
+for (const outcome of ['mined', 'unknown', 'unavailable']) test(`timeout retry reconciles before wallet send: ${outcome}`, async t => {
+  const id = `timeout-${outcome}`
+  t.after(() => {
+    useSwapTransactionStore.getState().clearPendingSubmission(id)
+    useSwapTransactionStore.getState().removeSwapTransaction(id)
+  })
+  let calls = 0, successes = 0
+  const published = []
+  const ctx = {
+    ...calldataContext('0x1234', { name: 'ETHEREUM_MAINNET' }),
+    swapData: { id, metadata: {} },
+    onSuccess: () => { successes++ },
+    setSwapTransaction: (...args) => published.push(args),
+    layerswapApiClient: {
+      GetSwapAsync: async () => {
+        if (outcome === 'unavailable') throw new Error('API unavailable')
+        return { data: { swap: { id, transactions: outcome === 'mined'
+          ? [{ type: 'input', status: 'completed', transaction_hash: 'mined-hash' }] : [] } } }
+      },
+    },
+  }
+  const send = async () => { calls++; throw Object.assign(new Error('Timeout'), { code: 163 }) }
+  await assert.rejects(executeWalletTransfer(ctx, send), /Timeout/)
+  assert.equal(useSwapTransactionStore.getState().pendingSubmissions[id], true)
+  if (outcome === 'mined') {
+    assert.equal(await executeWalletTransfer(ctx, send), 'mined-hash')
+    assert.deepEqual(published, [[id, 'completed', 'mined-hash']])
+    assert.equal(successes, 1)
+    assert.equal(useSwapTransactionStore.getState().pendingSubmissions[id], undefined)
+  } else {
+    await assert.rejects(executeWalletTransfer(ctx, send), outcome === 'unknown' ? /may already have been submitted/ : /API unavailable/)
+    assert.equal(useSwapTransactionStore.getState().pendingSubmissions[id], true)
+    assert.equal(successes, 0)
+  }
+  assert.equal(calls, 1)
+})
+
+test('a preparation RPC timeout cannot leave an uncertain broadcast marker', async () => {
+  const ctx = { ...calldataContext('0x', { name: 'ETHEREUM_MAINNET' }), swapData: { id: 'prepare-timeout', metadata: {} } }
+  await assert.rejects(executeWalletTransfer(ctx, async props => {
+    props.onSubmissionStateChange('preparing')
+    throw new Error('RPC timeout')
+  }), /RPC timeout/)
+  assert.equal(useSwapTransactionStore.getState().pendingSubmissions['prepare-timeout'], undefined)
+})
+
+for (const phase of ['preparing', 'not_submitted']) test(`a definitive ${phase} failure remains retryable`, async () => {
+  const id = `definite-${phase}`
+  const ctx = { ...calldataContext('0x', { name: 'ETHEREUM_MAINNET' }), swapData: { id, metadata: {} } }
+  await assert.rejects(executeWalletTransfer(ctx, async props => {
+    props.onSubmissionStateChange(phase)
+    throw new Error('RPC timeout')
+  }), /RPC timeout/)
+  assert.equal(useSwapTransactionStore.getState().pendingSubmissions[id], undefined)
+})
+
+test('late preparing progress cannot downgrade an uncertain submitted request', async () => {
+  const id = 'late-preparation'
+  const ctx = { ...calldataContext('0x', { name: 'ETHEREUM_MAINNET' }), swapData: { id, metadata: {} } }
+  await assert.rejects(executeWalletTransfer(ctx, async props => {
+    props.onSubmissionStateChange('submitting')
+    props.onSubmissionStateChange('preparing')
+    throw new Error('Response timeout')
+  }), /Response timeout/)
+  assert.equal(useSwapTransactionStore.getState().pendingSubmissions[id], true)
+})
+
+test('a timeout after refreshing an expired request also requires reconciliation', async () => {
+  const id = 'refreshed-timeout'
+  const ctx = { ...calldataContext('original', { name: 'STELLAR_MAINNET' }), swapData: { id, metadata: {} },
+    layerswapApiClient: { GetDepositActionsAsync: async () => ({ data: [{ type: 'transfer', amount: 1, to_address: 'deposit', call_data: 'fresh' }] }) },
+  }
+  await assert.rejects(executeWalletTransfer(ctx, async props => {
+    if (props.callData === 'original') throw Object.assign(new Error('Expired'), { name: ActionMessageType.TransactionExpired })
+    throw new Error('Response timeout')
+  }), /Response timeout/)
+  assert.equal(useSwapTransactionStore.getState().pendingSubmissions[id], true)
+})

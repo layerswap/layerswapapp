@@ -156,3 +156,12 @@ test('Hyperliquid and Polymarket declines are declared with the original error a
         assert.equal(typeof thrown.message, 'string')
     }
 })
+
+test('transfer UI does not label RPC throttling or preflight reverts as insufficient funds', async () => {
+    const { toTransferError } = await import('../dist/esm/transferProvider/toTransferError.js')
+    for (const original of [
+        { code: -32002, message: 'endpoint returned too many errors' },
+        { code: 4200, message: 'HTTP 429' },
+        { name: 'EstimateGasExecutionError', cause: { code: -32000, message: 'execution reverted' } },
+    ]) assert.equal(toTransferError(original).name, 'UnexpectedErrorMessage')
+})

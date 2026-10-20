@@ -1,3 +1,5 @@
+import { reconcileWalletSubmission } from './reconcileWalletSubmission';
+import { normalizeWalletErrorCode } from '@layerswap/wallet-core/errors';
 import { type SwapLifecycleEvent, type Wallet, ActionMessageType } from '@layerswap/widget-types';
 import LayerSwapApiClient, {
     BackendTransactionStatus,
@@ -45,6 +47,18 @@ const isExpiredTransaction = (error: unknown) => (error as Error)?.name === Acti
 export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClick: WalletTransfer, action: DepositAction | undefined = getActionableDepositAction(ctx.depositActions)): Promise<string> => {
     const { swapData, swapBasicData, selectedWallet, sourceAddress, layerswapApiClient, setActionStateText, setSwapTransaction, onSuccess, onLifecycle, signal } = ctx
 
+    const submissionStore = useSwapTransactionStore.getState()
+    const known = submissionStore.swapTransactions[swapData.id]
+    if (submissionStore.pendingSubmissions[swapData.id] || (known?.hash && known.status !== BackendTransactionStatus.Failed)) {
+        setActionStateText('Checking deposit status')
+        const result = await reconcileWalletSubmission({
+            swapId: swapData.id, sourceAddress: sourceAddress ?? selectedWallet.address,
+            api: layerswapApiClient, setSwapTransaction, onSuccess,
+        })
+        if (result.outcome === 'submitted') return result.hash
+        // Refresh the action on the next deliberate retry after confirmed failure.
+        throw new Error('The previous transaction failed. Try again to refresh the transfer.')
+    }
     if (!action || !isTransferAction(action)) throw new Error('No transfer action')
     const transferProps = resolveTransactionData(swapData, action, swapBasicData, selectedWallet)
     const lifecycleContext = lifecycleContextFromSwap(swapBasicData, swapData)
@@ -55,24 +69,44 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
     const finishTelemetry = widgetTelemetry.beginOperation('wallet_transfer', {
         swap_id: swapData.id, provider: selectedWallet.providerName, timing_kind: 'user_wait_included',
     })
-    const requestWallet = (props: TransferProps, { retriesExpiry }: { retriesExpiry: boolean }) => {
+    let submissionPhase: 'preparing' | 'submitting' | 'not_submitted' | undefined
+    const requestWallet = async (props: TransferProps, { retriesExpiry }: { retriesExpiry: boolean }) => {
         if (signal?.aborted) {
             finishTelemetry('cancelled')
             signal.throwIfAborted()
         }
-        return executeWalletOperation({
-            context: {
-                ...lifecycleContext,
-                path: 'WalletTransfer',
-                action: action.step === 'approve_permit2' ? 'approve_permit2' : 'send_transaction',
-                provider: selectedWallet.providerName,
-            },
-            onLifecycle,
-            // Keep one timing operation across the Stellar refresh and both wallet requests.
-            onSettled: finishTelemetry,
-            reportsSubmission: action.step !== 'approve_permit2',
-            shouldReportError: error => !(retriesExpiry && isExpiredTransaction(error)),
-        }, () => onClick(props))
+        submissionPhase = undefined
+        try {
+            return await executeWalletOperation({
+                context: {
+                    ...lifecycleContext,
+                    path: 'WalletTransfer',
+                    action: action.step === 'approve_permit2' ? 'approve_permit2' : 'send_transaction',
+                    provider: selectedWallet.providerName,
+                },
+                onLifecycle,
+                // Keep one timing operation across the Stellar refresh and both wallet requests.
+                onSettled: finishTelemetry,
+                reportsSubmission: action.step !== 'approve_permit2',
+                shouldReportError: error => !(retriesExpiry && isExpiredTransaction(error)),
+            }, () => onClick({
+                ...props,
+                onSubmissionStateChange: state => {
+                    if (submissionPhase === 'submitting' && state !== 'not_submitted') return
+                    submissionPhase = state
+                    props.onSubmissionStateChange?.(state)
+                },
+            }))
+        } catch (error) {
+            const reason = normalizeWalletErrorCode(error)
+            const uncertain = reason === 'timeout' || reason === 'network_error'
+                || (submissionPhase === 'submitting' && reason === 'unknown_error')
+                || (error as Error)?.message === 'Wallet returned no transaction hash'
+            if (action.step !== 'approve_permit2' && submissionPhase !== 'preparing' && submissionPhase !== 'not_submitted' && uncertain) {
+                submissionStore.markSubmissionPending(swapData.id)
+            }
+            throw error
+        }
     }
 
     try {
@@ -121,8 +155,9 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
         return hash
     }
 
-    onSuccess()
     setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, hash)
+    submissionStore.clearPendingSubmission(swapData.id)
+    onSuccess()
     useDepositSignatureStore.getState().removeDepositSignature(swapData.id)
     try {
         await layerswapApiClient.SwapCatchup(swapData.id, hash)

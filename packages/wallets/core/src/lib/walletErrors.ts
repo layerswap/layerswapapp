@@ -10,6 +10,8 @@ type ErrorCandidate = {
     /** viem BaseError carries the cause text here. */
     details?: string
     cause?: unknown
+    status?: number
+    statusCode?: number
 }
 
 const RAW_CODE_LIMIT = 128
@@ -200,9 +202,12 @@ function isDeclineText(text: string, code?: string): boolean {
     return (isServerErrorCode(code) ? SERVER_ERROR_DECLINE_TEXT : DECLINE_TEXT).test(text)
 }
 
+const TRANSPORT_FAILURE_TEXT = /(?:HTTP|status(?: code)?|response)[^\n]{0,24}\b429\b|too many requests|endpoint returned too many errors|RPC.*cooldown/i
+
 const MESSAGE_RULES: Record<TextTier, NameRules> = {
     descriptive: [
         // user_rejected is decided by isDeclineText, ahead of these rules.
+        [TRANSPORT_FAILURE_TEXT, 'network_error'],
         [/insufficient funds|insufficient balance|exceeds balance|not enough/i, 'insufficient_funds'],
         [/cannot estimate gas|gas required exceeds|intrinsic gas|estimateGas/i, 'gas_estimation_failed'],
         [/execution reverted|revert/i, 'contract_reverted'],
@@ -223,13 +228,13 @@ const MESSAGE_RULES: Record<TextTier, NameRules> = {
 // ---- Candidate collection: a bounded tree walk over the edges wallets and
 // ---- SDKs actually use to nest the real failure (viem/ethers `cause`,
 // ---- JSON-RPC `data`, ethers v5 `error`, MetaMask `originalError`).
-const NESTED_KEYS = ['cause', 'data', 'originalError', 'error', 'info'] as const
+const NESTED_KEYS = ['cause', 'data', 'originalError', 'error', 'info', 'response'] as const
 
 function isErrorLike(value: unknown): value is ErrorCandidate {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return false
     return 'code' in value || 'message' in value || 'name' in value || 'cause' in value || 'reasonCode' in value
         || 'error' in value || 'originalError' in value || 'shortMessage' in value
-        || 'data' in value || 'info' in value || 'details' in value
+        || 'data' in value || 'info' in value || 'details' in value || 'status' in value || 'statusCode' in value || 'response' in value
 }
 
 /** Innermost first: deeper nodes describe the raw failure, wrappers add noise. */
@@ -356,6 +361,13 @@ export function normalizeWalletErrorCode(error: unknown): WalletErrorReasonCode 
     if (caip25Failure) return caip25Failure
     for (const candidate of chain) {
         if (codeReason(candidate, 'definitive') === 'user_rejected' || nameReason(candidate, 'definitive') === 'user_rejected') return 'user_rejected'
+    }
+    // Some wallets reuse request-pending/unsupported-method codes for HTTP
+    // failures. Concrete transport evidence wins over those wrapper labels.
+    for (const candidate of chain) {
+        const status = candidate.status ?? candidate.statusCode
+        if (status === 429
+            || TRANSPORT_FAILURE_TEXT.test(textOf(candidate))) return 'network_error'
     }
     for (const candidate of chain) {
         const reason = codeReason(candidate, 'definitive') ?? nameReason(candidate, 'definitive')

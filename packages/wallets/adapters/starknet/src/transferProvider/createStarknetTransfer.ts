@@ -34,7 +34,9 @@ export function createStarknetTransfer(): TransferProvider {
 
                 return transaction_hash
             } catch (error) {
-                throw toTransferError(error)
+                const failure = toTransferError(error)
+                failure.cause = new Error(`Starknet execute failed (connector: ${wallet.id}, provider: ${wallet.providerName})`, { cause: error })
+                throw failure
             }
         }
     }

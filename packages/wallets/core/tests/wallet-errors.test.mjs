@@ -276,3 +276,21 @@ test('errorMessage reads Error, string and plain { message } errors, and falls b
     assert.equal(errorMessage(null), 'null')
     assert.equal(errorMessage(7), '7')
 })
+
+test('RPC throttling and cooldown override misleading wallet codes', () => {
+    for (const error of [
+        { code: -32002, message: 'eth_getBlockByNumber: endpoint returned too many errors' },
+        { code: 4200, message: 'Unsupported method', cause: { message: 'HTTP 429' } },
+        { code: 4200, response: { status: 429 } },
+        { code: 5000, message: 'HTTP 429' },
+    ]) assert.equal(normalizeWalletErrorCode(error), 'network_error')
+    assert.equal(normalizeWalletErrorCode({ code: -32002, message: 'Request already pending' }), 'request_pending')
+    assert.equal(normalizeWalletErrorCode({ code: 4200, message: 'Unsupported method' }), 'unsupported_method')
+})
+
+test('generic HTTP server failures do not override a definitive wallet cause', () => {
+    for (const status of [500, 502, 503]) {
+        assert.equal(normalizeWalletErrorCode({ response: { status }, cause: { code: 'INSUFFICIENT_FUNDS', message: 'insufficient funds' } }), 'insufficient_funds')
+        assert.equal(normalizeWalletErrorCode({ response: { status }, cause: { code: 'CALL_EXCEPTION', message: 'execution reverted' } }), 'contract_reverted')
+    }
+})
