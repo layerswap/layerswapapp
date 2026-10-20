@@ -216,15 +216,6 @@ export class TonConnectionService<Network> implements WalletConnectionService<Ru
 
 
 /**
- * Display-name overrides for wallets where the TonConnect registry's `name`
- * field is ambiguous (e.g. Telegram's bot wallet is published as just "Wallet").
- * Mirrors how `@tonconnect/ui-react`'s modal labels them.
- */
-const TON_WALLET_DISPLAY_NAMES: Record<string, string> = {
-    'telegram-wallet': 'Wallet in Telegram',
-}
-
-/**
  * The TonConnect registry sometimes contains multiple entries that resolve to
  * the same wallet — most notably OKX, which publishes both `okxWallet` and
  * `okxTonWallet` with the same `jsBridgeKey: "okxTonWallet"`. Collapse to the
@@ -251,11 +242,10 @@ function walletInfoToInternalConnector(info: WalletInfo, wallets: readonly Walle
     const isInjected = isTonWalletInstalled(info, wallets)
     const hasBrowserExtension = isInjectable
     const isMobileSupported = isWalletInfoRemote(info)
-    const displayName = TON_WALLET_DISPLAY_NAMES[info.appName] ?? info.name
 
     return {
         id: info.appName,
-        name: displayName,
+        name: info.name,
         icon: info.imageUrl,
         type: isInjected ? 'injected' : 'other',
         hasBrowserExtension,
