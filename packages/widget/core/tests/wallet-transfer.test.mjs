@@ -250,7 +250,7 @@ for (const outcome of ['mined', 'unknown', 'unavailable']) test(`timeout retry r
       },
     },
   }
-  const send = async () => { calls++; throw Object.assign(new Error('Timeout'), { code: 163 }) }
+  const send = async props => { calls++; props.onSubmissionStateChange('submitting'); throw Object.assign(new Error('Timeout'), { code: 163 }) }
   await assert.rejects(executeWalletTransfer(ctx, send), /Timeout/)
   assert.equal(useSwapTransactionStore.getState().pendingSubmissions[id], true)
   if (outcome === 'mined') {
@@ -275,11 +275,11 @@ test('a preparation RPC timeout cannot leave an uncertain broadcast marker', asy
   assert.equal(useSwapTransactionStore.getState().pendingSubmissions['prepare-timeout'], undefined)
 })
 
-for (const phase of ['preparing', 'not_submitted']) test(`a definitive ${phase} failure remains retryable`, async () => {
+for (const phase of [undefined, 'preparing', 'not_submitted']) test(`a definitive ${phase} failure remains retryable`, async () => {
   const id = `definite-${phase}`
   const ctx = { ...calldataContext('0x', { name: 'ETHEREUM_MAINNET' }), swapData: { id, metadata: {} } }
   await assert.rejects(executeWalletTransfer(ctx, async props => {
-    props.onSubmissionStateChange(phase)
+    if (phase) props.onSubmissionStateChange(phase)
     throw new Error('RPC timeout')
   }), /RPC timeout/)
   assert.equal(useSwapTransactionStore.getState().pendingSubmissions[id], undefined)
@@ -303,7 +303,21 @@ test('a timeout after refreshing an expired request also requires reconciliation
   }
   await assert.rejects(executeWalletTransfer(ctx, async props => {
     if (props.callData === 'original') throw Object.assign(new Error('Expired'), { name: ActionMessageType.TransactionExpired })
+    props.onSubmissionStateChange('submitting')
     throw new Error('Response timeout')
   }), /Response timeout/)
   assert.equal(useSwapTransactionStore.getState().pendingSubmissions[id], true)
 })
+
+for (const error of [Object.assign(new Error('HTTP 429'), { code: 4200 }), new Error('Failed to fetch')]) {
+  test(`an unphased preparation failure remains retryable: ${error.message}`, async () => {
+    const id = `unphased-${error.message}`
+    const ctx = { ...calldataContext('0x', { name: 'SOLANA_MAINNET' }), swapData: { id, metadata: {} } }
+    let calls = 0
+    const send = async () => { calls++; throw error }
+    await assert.rejects(executeWalletTransfer(ctx, send), e => e === error)
+    assert.equal(useSwapTransactionStore.getState().pendingSubmissions[id], undefined)
+    await assert.rejects(executeWalletTransfer(ctx, send), e => e === error)
+    assert.equal(calls, 2)
+  })
+}

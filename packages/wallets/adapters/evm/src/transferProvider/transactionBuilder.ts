@@ -2,7 +2,7 @@ import type { TransferProps } from '@layerswap/widget-types'
 import { parseEther, type PublicClient } from 'viem'
 import { estimateTransferFee } from '../gasProviders/estimateTransferFee'
 
-export const transactionBuilder = async (params: TransferProps, walletClient?: PublicClient) => {
+export const transactionBuilder = async (params: TransferProps, readClient?: PublicClient) => {
     const { amount, callData, depositAddress, network, selectedWallet } = params
     const tx = {
         chainId: Number(network.chain_id),
@@ -12,9 +12,9 @@ export const transactionBuilder = async (params: TransferProps, walletClient?: P
         account: selectedWallet.address as `0x${string}`,
     }
     // Direct consumers can still hand intent to their own wallet. The bundled
-    // adapter supplies the selected connector's RPC for exact fee budgeting.
-    if (!walletClient) return tx
-    const estimate = await estimateTransferFee(network, tx, walletClient)
+    // adapter supplies a chain-bound public client for exact fee budgeting.
+    if (!readClient) return tx
+    const estimate = await estimateTransferFee(network, tx, readClient)
     const balance = await estimate.client.getBalance({ address: tx.account, blockTag: 'latest' })
     if (tx.value + estimate.fee > balance) {
         throw Object.assign(new Error('Insufficient funds for the transfer and network fee. Reduce the amount and try again.'), {

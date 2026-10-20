@@ -514,6 +514,10 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 return
             }
             const error = e as Error;
+            if (error.name === 'SubmissionStatusUnknown') {
+                setSwapError?.(error.message)
+                return
+            }
             if (!useGaslessPreferenceStore.getState().gaslessUnavailable) {
                 setSwapError?.(error.message || 'Could not complete the swap action')
             }

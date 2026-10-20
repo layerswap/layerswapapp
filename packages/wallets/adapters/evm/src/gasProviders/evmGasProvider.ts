@@ -1,5 +1,5 @@
 import { ErrorHandler, NetworkType, type GasProvider, type GasProps, type Network } from '@layerswap/widget-types'
-import { encodeFunctionData, erc20Abi, formatUnits, parseUnits, type Address, type Hex } from 'viem'
+import { encodeFunctionData, erc20Abi, formatUnits, type Address, type Hex } from 'viem'
 import NetworkSettings from '../NetworkSettings'
 import { estimateTransferFee } from './estimateTransferFee'
 
@@ -8,14 +8,14 @@ export class EVMGasProvider implements GasProvider {
         return network.type === NetworkType.EVM && !!network.token
     }
 
-    getGas = async ({ address, network, token, amount, recipientAddress = '0x2fc617e933a52713247ce25730f6695920b3befe' }: GasProps) => {
+    getGas = async ({ address, network, token, recipientAddress = '0x2fc617e933a52713247ce25730f6695920b3befe' }: GasProps) => {
         if (!network?.token || !address || !network.chain_id) return
         try {
             // Before creation the backend memo/target are unavailable. Reserve for a
             // full 32-byte nonzero sequence, then validate the actual action at send.
             const memo = 'ff'.repeat(32)
             const data = token.contract
-                ? `${encodeFunctionData({ abi: erc20Abi, functionName: 'transfer', args: [recipientAddress as Address, parseUnits((amount ?? 0).toLocaleString('en-US', { useGrouping: false, maximumFractionDigits: token.decimals }), token.decimals)] })}${memo}` as Hex
+                ? `${encodeFunctionData({ abi: erc20Abi, functionName: 'transfer', args: [recipientAddress as Address, 1000n] })}${memo}` as Hex
                 : `0x${memo}` as Hex
             const estimate = await estimateTransferFee(network, {
                 account: address as Address,

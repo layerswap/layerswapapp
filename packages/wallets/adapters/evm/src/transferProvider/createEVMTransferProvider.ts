@@ -4,7 +4,7 @@ import { sendTransaction, Config } from '@wagmi/core'
 import { toTransferError } from "./toTransferError"
 import { resolveWalletConnector } from '../service/resolveWalletConnector'
 
-type TransactionBuilder = (params: TransferProps) => Promise<any>
+type TransactionBuilder = (params: TransferProps, connector: ReturnType<typeof resolveWalletConnector>) => Promise<any>
 
 export function createEVMTransferProvider(
     config: Config,
@@ -20,8 +20,8 @@ export function createEVMTransferProvider(
             let tx: Awaited<ReturnType<TransactionBuilder>> | undefined
             try {
                 params.onSubmissionStateChange?.('preparing')
-                tx = await buildTransaction(params)
                 const connector = resolveWalletConnector(config, selectedWallet)
+                tx = await buildTransaction(params, connector)
                 params.onSubmissionStateChange?.('submitting')
                 const hash = await sendTransaction(config, { ...tx, connector })
 

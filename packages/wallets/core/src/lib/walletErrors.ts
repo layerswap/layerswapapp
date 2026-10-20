@@ -202,7 +202,7 @@ function isDeclineText(text: string, code?: string): boolean {
     return (isServerErrorCode(code) ? SERVER_ERROR_DECLINE_TEXT : DECLINE_TEXT).test(text)
 }
 
-const TRANSPORT_FAILURE_TEXT = /(?:HTTP|status(?: code)?|response)[^\n]{0,24}\b429\b|too many requests|endpoint returned too many errors|RPC.*cooldown/i
+const TRANSPORT_FAILURE_TEXT = /(?:HTTP|status(?: code)?|response)[^\n]{0,24}\b429\b|too many requests|endpoint returned too many errors|\bRPC\b[^\n]{0,48}\bcooldown\b/i
 
 const MESSAGE_RULES: Record<TextTier, NameRules> = {
     descriptive: [

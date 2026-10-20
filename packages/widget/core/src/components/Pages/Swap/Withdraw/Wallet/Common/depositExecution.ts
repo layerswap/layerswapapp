@@ -99,8 +99,9 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
             }))
         } catch (error) {
             const reason = normalizeWalletErrorCode(error)
-            const uncertain = reason === 'timeout' || reason === 'network_error'
-                || (submissionPhase === 'submitting' && reason === 'unknown_error')
+            // Transport failures alone do not prove that a wallet was asked to
+            // send. Older adapters may fail while preparing without reporting a phase.
+            const uncertain = (submissionPhase === 'submitting' && (reason === 'timeout' || reason === 'network_error' || reason === 'unknown_error'))
                 || (error as Error)?.message === 'Wallet returned no transaction hash'
             if (action.step !== 'approve_permit2' && submissionPhase !== 'preparing' && submissionPhase !== 'not_submitted' && uncertain) {
                 submissionStore.markSubmissionPending(swapData.id)

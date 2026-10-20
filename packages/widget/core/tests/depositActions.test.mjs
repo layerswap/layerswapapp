@@ -1429,6 +1429,8 @@ for (const failed of [true, false]) {
             ? [{ type: 'input', status: 'failed', transaction_hash: 'failed-input' }] : [] } } })
         await flow.render().viewProps.handleClick()
         assert.equal(flow.stores.useSwapTransactionStore.getState().pendingSubmissions[swapId], true, 'ordinary retry cannot assume an empty/failed response is proof')
+        assert.deepEqual(flow.calls.errors, [], 'status uncertainty is not a withdrawal error or gas miscalculation')
+        assert.match(flow.state.swapError, /may already have been submitted/)
         await flow.render().viewProps.confirmNotSubmitted()
         assert.equal(flow.calls.statusChecks.length, 2)
         assert.equal(flow.stores.useSwapTransactionStore.getState().pendingSubmissions[swapId], undefined)

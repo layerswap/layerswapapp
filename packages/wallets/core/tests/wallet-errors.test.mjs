@@ -294,3 +294,14 @@ test('generic HTTP server failures do not override a definitive wallet cause', (
         assert.equal(normalizeWalletErrorCode({ response: { status }, cause: { code: 'CALL_EXCEPTION', message: 'execution reverted' } }), 'contract_reverted')
     }
 })
+
+for (const message of ['RPC endpoint cooldown', 'RPC provider in cooldown']) {
+    test(`RPC cooldown is transport evidence: ${message}`, () => {
+        assert.equal(normalizeWalletErrorCode({ code: -32002, message }), 'network_error')
+    })
+}
+for (const message of [`RPC ${'x'.repeat(60)} cooldown`, 'RPC request pending\nSeparate cooldown warning', 'RPC request pending, cooldownish']) {
+    test(`unrelated cooldown text does not override pending: ${message}`, () => {
+        assert.equal(normalizeWalletErrorCode({ code: -32002, message }), 'request_pending')
+    })
+}

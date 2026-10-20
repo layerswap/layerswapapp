@@ -8,8 +8,8 @@ import NetworkSettings from '../NetworkSettings'
 export type TransferRequest = { account: Address; to: Address; data: Hex; value: bigint }
 
 /** Use one gas/fee policy for Max and the request ultimately sent to the wallet. */
-export async function estimateTransferFee(network: Network, request: TransferRequest, walletClient?: PublicClient): Promise<{ client: PublicClient; gas: bigint; fees: FeeValues; l1Fee: bigint; fee: bigint }> {
-    const client: PublicClient = walletClient ?? createPublicClient({
+export async function estimateTransferFee(network: Network, request: TransferRequest, readClient?: PublicClient): Promise<{ client: PublicClient; gas: bigint; fees: FeeValues; l1Fee: bigint; fee: bigint }> {
+    const client: PublicClient = readClient ?? createPublicClient({
         chain: resolveChain(network),
         transport: resolveFallbackTransport(network.nodes),
     })
@@ -28,7 +28,7 @@ export async function estimateTransferFee(network: Network, request: TransferReq
     }
     const feePerGas = fees.maxFeePerGas ?? fees.gasPrice
     if (feePerGas == null) throw new Error('Network fee unavailable')
-    const [gas, l1Fee] = await Promise.all([
+    const [estimatedGas, l1Fee] = await Promise.all([
         client.estimateGas({ ...request, ...fees }),
         network.metadata?.evm_oracle_contract
             ? client.extend(publicActionsL2()).estimateL1Fee({
@@ -38,5 +38,8 @@ export async function estimateTransferFee(network: Network, request: TransferReq
             })
             : Promise.resolve(0n),
     ])
+    // Contract execution can change between estimation and inclusion. Budget
+    // the same 20% gas headroom in Max and the final wallet request, rounded up.
+    const gas = (estimatedGas * 120n + 99n) / 100n
     return { client, gas, fees, l1Fee, fee: gas * feePerGas + l1Fee }
 }

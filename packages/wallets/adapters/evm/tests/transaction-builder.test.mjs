@@ -65,13 +65,13 @@ for (const legacy of [true, false]) test(`fee estimation preserves units and L1 
         '../NetworkSettings': { default: { KnownSettings: {} } },
     })
     const result = await estimateTransferFee({ name: 'BOB', metadata: { evm_oracle_contract: '0xoracle' } }, request)
-    assert.equal(result.gas, 23000n)
-    assert.equal(result.fee, 23000n * (legacy ? 50n : 100n) + 12345n)
+    assert.equal(result.gas, 27600n)
+    assert.equal(result.fee, 27600n * (legacy ? 50n : 100n) + 12345n)
     assert.deepEqual(executionRequest, { ...request, ...(legacy ? { gasPrice: 50n } : { maxFeePerGas: 100n, maxPriorityFeePerGas: 1n }) })
     assert.deepEqual(l1Request, { ...request, chain: undefined, gasPriceOracleAddress: '0xoracle' })
 })
 
-for (const contract of [undefined, '0x0000000000000000000000000000000000000003']) test(`Max uses the shared fee policy and token quantity: contract=${!!contract}`, async () => {
+for (const contract of [undefined, '0x0000000000000000000000000000000000000003']) for (const amount of [undefined, 0, 5435]) test(`Max fee probe is independent of typed amount: contract=${!!contract}, amount=${amount}`, async () => {
     let request
     const token = { symbol: contract ? 'USDT' : 'ETH', decimals: contract ? 6 : 18, contract }
     const native = { symbol: 'ETH', decimals: 18 }
@@ -82,7 +82,7 @@ for (const contract of [undefined, '0x0000000000000000000000000000000000000003']
     const result = await new EVMGasProvider().getGas({
         address: params.selectedWallet.address,
         recipientAddress: params.depositAddress,
-        network: { chain_id: '60808', name: 'BOB', token: native }, token, amount: 5435,
+        network: { chain_id: '60808', name: 'BOB', token: native }, token, amount,
     })
     assert.equal(result.gas, 0.000021140474973262)
     assert.equal(result.token, native)
@@ -92,13 +92,14 @@ for (const contract of [undefined, '0x0000000000000000000000000000000000000003']
     if (contract) {
         const { decodeFunctionData, erc20Abi } = require('viem')
         const decoded = decodeFunctionData({ abi: erc20Abi, data: request.data.slice(0, -64) })
-        assert.deepEqual(decoded.args, [params.depositAddress, 5435000000n])
+        assert.deepEqual(decoded.args, [params.depositAddress, 1000n])
     }
 })
 
 for (const fail of [true, false]) test(`wallet receives the estimated fields and failures retain fee diagnostics: fail=${fail}`, async () => {
     const tx = { chainId: 1, account: params.selectedWallet.address, to: params.depositAddress, value: 1n, data: '0x12', gas: 23000n, maxFeePerGas: 100n, maxPriorityFeePerGas: 1n }
     const phases = []
+    let resolutions = 0
     const original = Object.assign(new Error('HTTP 429'), { code: 4200 })
     const { createEVMTransferProvider } = load('../src/transferProvider/createEVMTransferProvider.ts', {
         '@wagmi/core': { sendTransaction: async (_, request) => {
@@ -107,9 +108,9 @@ for (const fail of [true, false]) test(`wallet receives the estimated fields and
             return 'hash'
         } },
         './toTransferError': { toTransferError: error => new Error(error.message, { cause: error }) },
-        '../service/resolveWalletConnector': { resolveWalletConnector: () => 'selected-connector' },
+        '../service/resolveWalletConnector': { resolveWalletConnector: () => { resolutions++; return 'selected-connector' } },
     })
-    const transfer = createEVMTransferProvider({}, () => true, async () => tx).executeTransfer({
+    const transfer = createEVMTransferProvider({}, () => true, async (_, connector) => { assert.equal(connector, 'selected-connector'); return tx }).executeTransfer({
         ...params, onSubmissionStateChange: phase => phases.push(phase),
     })
     if (fail) await assert.rejects(transfer, error => {
@@ -119,6 +120,7 @@ for (const fail of [true, false]) test(`wallet receives the estimated fields and
     })
     else assert.equal(await transfer, 'hash')
     assert.deepEqual(phases, ['preparing', 'submitting'])
+    assert.equal(resolutions, 1)
 })
 
 test('direct transaction intent does not depend on application RPC availability', async () => {
@@ -130,7 +132,7 @@ test('direct transaction intent does not depend on application RPC availability'
     assert.equal(tx.gas, undefined)
 })
 
-test('final estimation uses the supplied wallet RPC and requires no pending block support', async () => {
+test('final estimation uses the supplied chain-bound read client and requires no pending block support', async () => {
     const calls = []
     const walletClient = {
         getBlock: async ({ blockTag }) => { assert.equal(blockTag, 'latest'); calls.push('block'); return { baseFeePerGas: 20n } },
@@ -148,32 +150,43 @@ test('final estimation uses the supplied wallet RPC and requires no pending bloc
         account: params.selectedWallet.address, to: params.depositAddress, data: '0x', value: 1n,
     }, walletClient)
     assert.equal(result.client, walletClient)
-    assert.equal(result.fee, 2114000n)
+    assert.equal(result.fee, 2536800n)
     assert.deepEqual(calls, ['block'])
 })
 
-test('bundled transfer prepares with the selected connector provider', async () => {
-    const connector = { getProvider: async args => { assert.deepEqual(args, { chainId: 60808 }); return walletProvider } }
-    const walletProvider = { request() {} }
-    const walletClient = { source: 'selected-wallet' }
+for (const failure of [undefined, 'network_error', 'timeout', 'unsupported_method', 'insufficient_funds']) for (const walletChain of [60808, 1]) test(`bundled transfer reads requested chain, with checked wallet fallback: failure=${failure}, walletChain=${walletChain}`, async () => {
+    const nodes = ['https://chain-rpc.invalid']
+    const request = { ...params, network: { ...params.network, nodes } }
+    const readClient = { source: 'chain-rpc' }
     const config = {}
-    let builds = 0
+    let builds = 0, walletReads = 0
+    const original = new Error(failure ?? 'unused')
+    const walletClient = { source: 'wallet-rpc' }
+    const connector = { getProvider: async () => ({ request: async ({ method }) => { assert.equal(method, 'eth_chainId'); walletReads++; return `0x${walletChain.toString(16)}` } }) }
     const { createEvmTransfer } = load('../src/transferProvider/createEvmTransfer.ts', {
         viem: {
-            custom: provider => { assert.equal(provider, walletProvider); return provider },
-            createPublicClient: ({ transport }) => { assert.equal(transport, walletProvider); return walletClient },
+            createPublicClient: ({ chain, transport }) => {
+                assert.equal(chain.id, 60808); return transport === nodes ? readClient : walletClient
+            },
+            custom: provider => provider,
         },
-        '../evmUtils/resolveChain': { default: () => ({ id: 60808 }) },
-        '../service/resolveWalletConnector': { resolveWalletConnector: (actual, wallet) => {
-            assert.equal(actual, config); assert.equal(wallet, params.selectedWallet); return connector
-        } },
+        '@layerswap/wallet-core/errors': { normalizeWalletErrorCode: error => { assert.equal(error, original); return failure } },
+        '../evmUtils/resolveChain': { default: network => { assert.equal(network, request.network); return { id: 60808 } } },
+        '../evmUtils/resolveTransports': { resolveFallbackTransport: actual => { assert.equal(actual, nodes); return actual } },
         '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
         '../service/getEvmConfig': { getEvmConfig: () => config },
-        './createEVMTransferProvider': { createEVMTransferProvider: (_, __, build) => ({ executeTransfer: build }) },
-        './transactionBuilder': { transactionBuilder: async (request, client) => {
-            assert.equal(request, params); assert.equal(client, walletClient); builds++; return 'hash'
+        './createEVMTransferProvider': { createEVMTransferProvider: (actual, _, build) => {
+            assert.equal(actual, config); return { executeTransfer: props => build(props, connector) }
+        } },
+        './transactionBuilder': { transactionBuilder: async (props, client) => {
+            assert.equal(props, request); builds++;
+            if (client === readClient && failure) throw original
+            assert.equal(client, failure ? walletClient : readClient); return 'hash'
         } },
     })
-    assert.equal(await createEvmTransfer().executeTransfer(params), 'hash')
-    assert.equal(builds, 1)
+    const fallback = failure && failure !== 'insufficient_funds'
+    if (failure && (!fallback || walletChain !== 60808)) await assert.rejects(createEvmTransfer().executeTransfer(request), error => error === original)
+    else assert.equal(await createEvmTransfer().executeTransfer(request), 'hash')
+    assert.equal(builds, fallback && walletChain === 60808 ? 2 : 1)
+    assert.equal(walletReads, fallback ? 1 : 0)
 })
