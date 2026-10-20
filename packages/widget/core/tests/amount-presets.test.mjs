@@ -157,7 +157,7 @@ for (const change of ['manual input', 'account', 'token', 'network', 'disconnect
     await render()
     const amount = formik.values.amount
     await act(async () => { state.deferred.resolve({ gas: 0.1, token }); await state.deferred.promise })
-    assert.equal(formik.values.amountMode, 'manual')
+    assert.equal(formik.values.amountMode, ['account', 'disconnect'].includes(change) ? 'fixed' : 'manual')
     assert.equal(formik.values.amount, amount)
   })
 }
@@ -220,6 +220,79 @@ for (const [mode, amount] of [['min', '0.001'], ['half', '0.4949'], ['max', '0.9
     assert.equal(formik.values.amountPresetSource, undefined)
   })
 }
+
+test('preset source asset matching requires a source, network and token', () => {
+  const source = amountPresets.amountPresetSource(network.name, token.symbol, 'wallet', 'source')
+  assert.equal(amountPresets.presetSourceMatchesAsset(source, network.name, token.symbol), true)
+  for (const [key, name, symbol] of [
+    [undefined, undefined, undefined], [undefined, network.name, token.symbol],
+    [source, undefined, token.symbol], [source, network.name, undefined],
+    [source, 'OTHER_NETWORK', token.symbol], [source, network.name, 'OTHER_TOKEN'],
+    ['invalid', network.name, token.symbol],
+  ]) assert.equal(amountPresets.presetSourceMatchesAsset(key, name, symbol), false)
+})
+
+for (const [mode, amount] of [['min', '0.001'], ['half', '0.4949'], ['max', '0.9898']]) {
+  test(`${mode}: wallet switching preserves tokens through USD price changes`, async () => {
+    initialValues.amountMode = mode
+    state.usdMode = true
+    usdStore.setState({ isUsdMode: true })
+    await render()
+    assert.equal(formik.values.amount, amount)
+    state.account = { id: 'other-wallet', address: 'other-source' }
+    state.wallets = [{ id: 'other-wallet' }]
+    await render()
+    for (const price of [1960, 4000]) {
+      state.usdPrice = price
+      await render()
+      assert.equal(formik.values.amount, amount)
+      assert.equal(formik.values.amountMode, 'fixed')
+      assert.equal(formik.values.amountPresetSource, undefined)
+      assert.equal(Number(usd.usdAmount), Number((Number(amount) * price).toFixed(2)))
+      assert.equal(state.draft.amount, amount)
+    }
+  })
+}
+
+test('Max then wallet and source-token switches restore USD price tracking', async () => {
+  state.usdMode = true
+  usdStore.setState({ isUsdMode: true })
+  await render()
+  state.account = { ...state.account, address: 'other-source' }
+  await render()
+  assert.equal(formik.values.amountMode, 'fixed')
+  assert.equal(formik.values.amount, '0.9898')
+  await act(() => formik.setFieldValue('fromAsset', {
+    symbol: 'OTHER', decimals: 6, precision: 6, price_in_usd: 4000,
+  }))
+  assert.equal(formik.values.amount, '0.4949')
+  await act(() => formik.setFieldValue('fromAsset', { ...formik.values.fromAsset, price_in_usd: 2000 }))
+  assert.equal(formik.values.amount, '0.9898')
+  assert.equal(formik.values.amountMode, 'manual')
+  assert.equal(usd.usdAmount, '1979.6')
+})
+
+test('token change in token mode then Max and wallet switch stays fixed after USD toggle and price change', async () => {
+  state.usdMode = true
+  await render()
+  const other = { symbol: 'OTHER', decimals: 6, precision: 6, price_in_usd: 1000 }
+  await act(() => formik.setFieldValue('fromAsset', other))
+  state.balances = [{ amount: 1, network: network.name, token: 'OTHER', request_time: 2 }]
+  await act(() => formik.setValues({ ...formik.values, amountMode: 'max',
+    amountPresetSource: amountPresets.amountPresetSource(network.name, 'OTHER', 'wallet', 'source') }))
+  assert.equal(formik.values.amountMode, 'max')
+  state.account = { ...state.account, address: 'wallet-B' }
+  await render()
+  const amount = formik.values.amount
+  assert.equal(formik.values.amountMode, 'fixed')
+  await act(() => usd.handleToggle())
+  assert.equal(formik.values.amountMode, 'fixed')
+  assert.equal(formik.values.amount, amount)
+  await act(() => formik.setFieldValue('fromAsset', { ...other, price_in_usd: 500 }))
+  assert.equal(formik.values.amountMode, 'fixed')
+  assert.equal(formik.values.amount, amount)
+  assert.equal(Number(usd.usdAmount), Number(amount) * 500)
+})
 
 test('small balances stay plain decimals and cannot be rounded above the available token units', async () => {
   const result = await amountPresets.calculatePresetAmount({ network, token: { ...token, decimals: 9 },

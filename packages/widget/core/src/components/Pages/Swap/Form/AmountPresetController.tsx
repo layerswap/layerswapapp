@@ -9,7 +9,7 @@ import useWallet from '@/hooks/useWallet'
 import { transformFormValuesToQuoteArgs, useQuoteData } from '@/hooks/useFee'
 import { resolveQuoteError } from '@/hooks/useFormValidation'
 import { useBalance } from '@/lib/balances/useBalance'
-import { calculatePresetAmount, amountPresetSource, isAmountPreset, isWalletAmountFlow, supportsLiveAmountPreset, AmountPresetUnavailableError, type AmountPreset } from '@/lib/amountPresets'
+import { calculatePresetAmount, amountPresetSource, presetSourceMatchesAsset, isAmountPreset, isWalletAmountFlow, supportsLiveAmountPreset, AmountPresetUnavailableError, type AmountPreset } from '@/lib/amountPresets'
 import { resolverService } from '@/lib/resolvers/resolverService'
 import { minimumAmountMessage } from '@/lib/amountMessages'
 import { useUsdModeStore } from '@/stores/usdModeStore'
@@ -89,7 +89,9 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
     useEffect(() => {
         if (frozen) return
         if (!sameSource || !liveSupported) {
-            const amountMode = !walletFlow || (sameSource && !liveSupported) ? 'fixed' as const : 'manual' as const
+            // Detaching a preset from a wallet must not turn its tokens into a USD target.
+            const sameAsset = presetSourceMatchesAsset(values.amountPresetSource, values.from?.name, values.fromAsset?.symbol)
+            const amountMode = !walletFlow || (sameSource && !liveSupported) || sameAsset ? 'fixed' as const : 'manual' as const
             const next = { ...values, amountMode, amountPresetSource: undefined, amountPresetError: undefined, amountPresetPending: false, amountPresetBalance: undefined }
             if (updates?.syncAmountPresetDraft(next) === false) return
             void setValues(next, true)

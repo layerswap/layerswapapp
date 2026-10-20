@@ -28,6 +28,16 @@ export function amountPresetSource(network?: string, token?: string, accountId?:
     return JSON.stringify([network, token, accountId, address])
 }
 
+export function presetSourceMatchesAsset(source: string | undefined, network?: string, token?: string): boolean {
+    if (!source || !network || !token) return false
+    try {
+        const [sourceNetwork, sourceToken] = JSON.parse(source)
+        return sourceNetwork === network && sourceToken === token
+    } catch {
+        return false
+    }
+}
+
 export class AmountPresetChangedError extends Error {
     constructor() {
         super('Your balance, network fee, or route limits changed. Review the updated amount and quote, then continue.')

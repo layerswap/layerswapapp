@@ -258,10 +258,12 @@ test('manual amounts stay fixed across a remount and external transfer', async (
 
 test('restoring a draft never applies its preset to a different funding account', async () => {
   await render(); await openReview()
+  const amount = data.swapBasicData.requested_amount
   state.account = { ...state.account, address: 'different-source' }
   await remountForm()
-  assert.equal(formik.values.amountMode, 'manual')
-  assert.equal(data.swapBasicData.amountMode, 'manual')
+  assert.equal(formik.values.amountMode, 'fixed')
+  assert.equal(data.swapBasicData.amountMode, 'fixed')
+  assert.equal(data.swapBasicData.requested_amount, amount)
   assert.equal(summaryAmount(), data.swapBasicData.requested_amount)
 })
 

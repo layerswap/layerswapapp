@@ -127,12 +127,17 @@ export function useUsdTokenSync({
     // A source-token change ends its preset. Preserve USD through that transition;
     // only same-token price updates remain token-authoritative for live presets.
     useEffect(() => {
-        if (!isUsdMode || !sourceCurrencyPriceInUsd || !usdAmount) return;
+        if (!isUsdMode) {
+            prevTokenSymbolRef.current = fromCurrency?.symbol;
+            return;
+        }
+        if (!sourceCurrencyPriceInUsd || !usdAmount) return;
         if (prevTokenSymbolRef.current === fromCurrency?.symbol) return;
         prevTokenSymbolRef.current = fromCurrency?.symbol;
         prevPriceRef.current = sourceCurrencyPriceInUsd;
+        if (amountMode === 'fixed') setFieldValue('amountMode', 'manual', false);
         computeAndSetTokenAmount(preciseUsdRef.current);
-    }, [fromCurrency?.symbol, isUsdMode, sourceCurrencyPriceInUsd, usdAmount, computeAndSetTokenAmount]);
+    }, [fromCurrency?.symbol, isUsdMode, sourceCurrencyPriceInUsd, usdAmount, computeAndSetTokenAmount, amountMode, setFieldValue]);
 
     // Sync usdAmount when formik amount changes externally (e.g. quick action buttons).
     // The ref-based guards ensure only truly external changes trigger the sync.
