@@ -46,6 +46,14 @@ function loadSource(path, imports = {}) {
             if (name === '@/stores/swapTransactionStore') return { getAtomicBatch: noop, ...imports[name] };
             return imports[name];
         }
+        if (path === `${withdraw}SwapDetails.tsx`) {
+            if (name === './Page2Controller') return { Page2Controller: ({ children }) => children({ controls: imports['@/hooks/useResolvedSwapStatus'].useResolvedSwapStatus().showWithdrawScreen ? React.createElement(imports['./Withdraw'].default) : null }) };
+            if (name === './Processing/Processing') return { useProcessingController: props => props };
+            if (name === './Presentation/ProcessingView') return { getProcessingProgress: props => props };
+            if (name === './Presentation/Page2Presenter') return { Page2Presenter: ({ controls, footer, renderFooter, progress, ...props }) => React.createElement(sections.SwapContentView, { ...props, progress: React.createElement(imports['./Processing'].default, { inputFailureMessage: progress?.inputFailureMessage }) }, controls, footer ? renderFooter(footer) : null) };
+        }
+        if (name === './WalletExecutionTransition') return transition;
+        if (name === '../Wallet/Common/actionMessage') return { useActionMessage: () => null };
         if (name === '@/components/utils/resolveSwapFlow') return loadSource('components/utils/resolveSwapFlow.ts');
         if (name === '@/lib/swapExecution') return { recordSwapExecution: noop };
         if (name === '@/helpers/atomicBatch') return { isAtomicBatchEligible: () => false };
@@ -215,7 +223,7 @@ test('switching gasless mode preserves the live execution lock while swap creati
         './SwapQuoteDetails': { SwapQuoteDetails: empty },
         './Presentation/Page2Contained': { Page2Contained: childrenOnly },
         '@/components/Common/Sceletons': { SwapDetailsSceleton: empty },
-        '@/components/Widget/Index': { Widget: childrenOnly },
+        '@/components/Widget/Index': { Widget: Object.assign(childrenOnly, { Footer: childrenOnly }) },
         '@/context/callbackProvider': { useCallbacks: () => ({ onBackClick: noop, onSwapLifecycle: noop }) },
         '@/lib/swapLifecycle': { lifecycleContextFromSwap: () => ({}) },
         '@/context/swap': swapHooks,
@@ -282,7 +290,7 @@ for (const [label, depositActions, compactDuringExecution] of [
             },
             './Presentation/Page2Contained': { Page2Contained: childrenOnly },
             '@/components/Common/Sceletons': { SwapDetailsSceleton: empty },
-            '@/components/Widget/Index': { Widget: childrenOnly },
+            '@/components/Widget/Index': { Widget: Object.assign(childrenOnly, { Footer: childrenOnly }) },
             '@/context/callbackProvider': { useCallbacks: () => ({ onBackClick: noop, onSwapLifecycle: noop }) },
             '@/lib/swapLifecycle': {},
             '@/context/swap': { useSwapDataState: () => context, useSwapDataUpdate: () => ({ setSwapViewMounted: noop }) },
@@ -389,7 +397,7 @@ test('live recipient visibility preserves disconnected destinations and respects
         './SwapQuoteDetails': quoteDetails,
         './Presentation/Page2Contained': { Page2Contained: childrenOnly },
         '@/components/Common/Sceletons': { SwapDetailsSceleton: empty },
-        '@/components/Widget/Index': { Widget: childrenOnly },
+        '@/components/Widget/Index': { Widget: Object.assign(childrenOnly, { Footer: childrenOnly }) },
         '@/context/callbackProvider': { useCallbacks: () => ({ onBackClick: noop, onSwapLifecycle: noop }) },
         '@/lib/swapLifecycle': {},
         '@/context/swap': { useSwapDataState: () => context, useSwapDataUpdate: () => ({
@@ -946,7 +954,7 @@ test('switching off gasless after rejection keeps a sign-only quote expanded thr
         },
         './Presentation/Page2Contained': { Page2Contained: childrenOnly },
         '@/components/Common/Sceletons': { SwapDetailsSceleton: empty },
-        '@/components/Widget/Index': { Widget: childrenOnly },
+        '@/components/Widget/Index': { Widget: Object.assign(childrenOnly, { Footer: childrenOnly }) },
         '@/context/callbackProvider': { useCallbacks: () => ({ onBackClick: noop, onSwapLifecycle: noop }) },
         '@/lib/swapLifecycle': {},
         '@/context/swap': harness.context,
@@ -1623,7 +1631,7 @@ function createRetryHarness({
         'react-use-intercom': { useIntercom: () => ({ boot: noop, show: noop, update: noop }) },
         '../Failed': { default: empty },
         '../Presentation/ProcessingView': { ProcessingView: empty },
-        '../Wallet/Common/actionMessage': { ActionMessage: empty },
+        '../Wallet/Common/actionMessage': { ActionMessage: empty, useActionMessage: empty },
         '@/stores/gaslessPreferenceStore': { useGaslessPreferenceStore },
         '@/context/swap': swapHooks,
         '@/lib/swapLifecycle': { lifecycleContextFromSwap: () => ({}), PHASE_LIFECYCLE_EVENTS: {} },
@@ -1643,7 +1651,7 @@ function createRetryHarness({
         '@/hooks/useResolvedSwapStatus': statusHook,
         '@/hooks/useSwapRetry': { useSwapRetry },
         '@/components/Common/Sceletons': { SwapDetailsSceleton: empty },
-        '@/components/Widget/Index': { Widget: childrenOnly },
+        '@/components/Widget/Index': { Widget: Object.assign(childrenOnly, { Footer: childrenOnly }) },
         './Presentation/Page2Sections': sections,
         './Presentation/Page2Contained': { Page2Contained: childrenOnly },
         './Presentation/RetryView': loadSource(`${withdraw}Presentation/RetryView.tsx`, {

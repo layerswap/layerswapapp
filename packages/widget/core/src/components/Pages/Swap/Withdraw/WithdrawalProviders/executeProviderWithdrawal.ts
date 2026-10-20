@@ -15,7 +15,8 @@ export async function getProviderDepositActions(swapId: string, sourceAddress?: 
     return response.data
 }
 
-export async function executeProviderWithdrawal<T>({ swapId, sourceAddress, prepare, execute, onReconcile }: {
+export async function executeProviderWithdrawal<T>({ swapId, sourceAddress, prepare, execute, onReconcile, signal }: {
+    signal?: AbortSignal
     swapId: string
     sourceAddress: string
     prepare: () => Promise<T>
@@ -40,6 +41,8 @@ export async function executeProviderWithdrawal<T>({ swapId, sourceAddress, prep
     // Reconciliation and preparation share the session lock, so concurrent retries
     // cannot both confirm a failure and start a new withdrawal.
     activeWithdrawals.add(swapId)
+    let markedForExecution = false
+    let executionStarted = false
     let phase: Parameters<SubmissionCallback>[0] | 'reconciling' | undefined = 'reconciling'
     try {
         if (store.pendingSubmissions[swapId] || transaction?.hash) {
@@ -76,9 +79,13 @@ export async function executeProviderWithdrawal<T>({ swapId, sourceAddress, prep
         // Preparation does not leave a submission marker on reload.
         phase = 'preparing'
         const prepared = await prepare()
+        signal?.throwIfAborted()
         // Providers that do not report submission progress remain conservative.
         phase = undefined
+        markedForExecution = true
         await store.markSubmissionPending(swapId)
+        signal?.throwIfAborted()
+        executionStarted = true
         const hash = await execute(prepared, state => {
             // Only a definitive refusal can reverse submission; late progress cannot.
             if (phase === 'submitting' && state !== 'not_submitted') return
@@ -89,7 +96,7 @@ export async function executeProviderWithdrawal<T>({ swapId, sourceAddress, prep
         // Record even if the screen closed, before any UI success callback can fail.
         return recordSubmission(hash)
     } catch (error) {
-        if (phase === 'preparing' || (phase === undefined && isUserRejection(error))) {
+        if ((markedForExecution && !executionStarted) || phase === 'preparing' || (phase === undefined && isUserRejection(error))) {
             await store.clearPendingSubmission(swapId)
         }
         throw error

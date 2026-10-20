@@ -40,6 +40,8 @@ await build({
         contents: `
             export { SwapContentView, ProcessingSectionView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/Page2Sections.js';
             export { StepsPanel } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Processing/StepsComponent.js';
+            export { Page2Presenter } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/Page2Presenter.js';
+            export { getProcessingProgress } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/ProcessingView.js';
             export { ProcessingView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/ProcessingView.js';
             export { Page2Preview } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/Page2Preview.js';
             export { scenarios, EPOCH } from './features/timeline/fixtures.ts';
@@ -52,7 +54,7 @@ await build({
             export { DepositWorkflowView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/DepositWorkflowView.js';
             export { WalletExecutionTransition } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/WalletExecutionTransition.js';
             export { WalletActionTransition } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/WalletActionTransition.js';
-            export { SendTransactionView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/WalletActionsView.js';
+            export { getSendTransactionPresentation, SendTransactionView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/WalletActionsView.js';
             export { RetryView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/RetryView.js';
             export { DepositLayoutView } from '../../packages/widget/core/dist/esm/components/Pages/Deposit/DepositLayoutView.js';
             export { DepositAddressTransition } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Form/DepositAddressForm/DepositAddressTransition.js';
@@ -69,27 +71,6 @@ await build({
     plugins: [{
         name: 'widget-motion',
         setup(builder) {
-            // Observe real processing mounts, including mounts that render no
-            // card yet. This catches preview/live lifecycle differences.
-            builder.onResolve({ filter: /^\.\/ProgressPanelView$/ }, args => {
-                if (args.importer.endsWith('/Presentation/ProcessingView.js')) {
-                    return { path: args.path, namespace: 'processing-mount-probe' };
-                }
-            });
-            builder.onLoad({ filter: /.*/, namespace: 'processing-mount-probe' }, () => ({
-                contents: `
-                    import React from 'react';
-                    import { ProgressPanelView as Actual } from ${JSON.stringify(fileURLToPath(new URL('../../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/ProgressPanelView.js', import.meta.url)))};
-                    export function ProgressPanelView(props) {
-                        return React.createElement(React.Profiler, {
-                            id: 'processing', onRender: (_, phase) => {
-                                if (phase === 'mount') globalThis.__timelineProcessingMounts = (globalThis.__timelineProcessingMounts ?? 0) + 1;
-                            },
-                        }, React.createElement(Actual, props));
-                    }
-                `,
-                resolveDir: join(directory, '..'),
-            }));
             builder.onResolve({ filter: /^framer-motion$/ }, () => ({
                 path: widgetRequire.resolve('framer-motion'), external: true,
             }));
@@ -98,7 +79,7 @@ await build({
     mainFields: ['module', 'main'],
     logLevel: 'silent',
 });
-const { SwapContentView, ProcessingSectionView, StepsPanel, ProcessingView, Page2Preview, scenarios, EPOCH, resolveSwapPhase, resolveSwapFlow, Steps, TransferStatusHeader, QuoteView, QuoteSummaryView, DepositWorkflowView, WalletExecutionTransition, WalletActionTransition, SendTransactionView, RetryView, DepositLayoutView, DepositAddressTransition } = await import(pathToFileURL(outfile));
+const { Page2Presenter, getProcessingProgress, getSendTransactionPresentation, SwapContentView, ProcessingSectionView, StepsPanel, ProcessingView, Page2Preview, scenarios, EPOCH, resolveSwapPhase, resolveSwapFlow, Steps, TransferStatusHeader, QuoteView, QuoteSummaryView, DepositWorkflowView, WalletExecutionTransition, WalletActionTransition, SendTransactionView, RetryView, DepositLayoutView, DepositAddressTransition } = await import(pathToFileURL(outfile));
 function loadWidgetSource(path, imports) {
     const { outputText } = ts.transpileModule(readFileSync(new URL(`../../../packages/widget/core/src/${path}`, import.meta.url), 'utf8'), {
         compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
@@ -107,12 +88,19 @@ function loadWidgetSource(path, imports) {
     new Function('require', 'module', 'exports', outputText)(name => {
         if (name === 'react' || name === 'react/jsx-runtime') return widgetRequire(name);
         if (name === '../components/utils/resolveSwapFlow.js') return loadWidgetSource('components/utils/resolveSwapFlow.ts', {});
+        if (path.endsWith('SwapDetails.tsx')) {
+            if (name === './Page2Controller') return { Page2Controller: ({ children }) => children({ controls: imports['@/hooks/useResolvedSwapStatus'].useResolvedSwapStatus().showWithdrawScreen ? React.createElement(imports['./Withdraw'].default) : null }) };
+            if (name === './Processing/Processing') return { useProcessingController: props => props };
+            if (name === './Presentation/ProcessingView') return { getProcessingProgress: props => props };
+            if (name === './Presentation/Page2Presenter') return { Page2Presenter: ({ controls, ...props }) => React.createElement(SwapContentView, { ...props, progress: React.createElement(imports['./Processing'].default) }, controls) };
+        }
         if (name in imports) return imports[name];
         throw new Error(`Unexpected dependency: ${name}`);
     }, module, module.exports);
     return module.exports;
 }
 const container = document.getElementById('root');
+const surface = node => node?.closest('[data-wallet-execution-panel="workflow"]') ?? node;
 const settle = () => act(() => new Promise(resolve => setTimeout(resolve, 400)));
 const view = (processing, manual = false) => React.createElement(SwapContentView, {
     summary: (!manual || processing) && React.createElement('div', null, 'Summary'),
@@ -138,7 +126,7 @@ test('standard transfer retains inert controls until their exit finishes alongsi
         await settle();
         assert.equal(container.querySelector('[data-wallet-execution-panel="controls"]'), null);
         assert.equal(container.querySelector('[data-steps-panel]'), steps);
-        assert.equal(steps.style.opacity, '1');
+        assert.equal(surface(steps).style.opacity, '1');
         await act(() => root.render(view(false)));
         assert.equal(container.querySelector('[data-steps-panel]'), steps);
         assert.ok(steps.closest('[inert]'));
@@ -168,6 +156,26 @@ test('reversing an unfinished standard transfer transition settles on the latest
     }
 });
 
+for (const gap of [8, 12]) test(`progress collapses its ${gap}px spacing with its section`, async () => {
+    const root = createRoot(container);
+    const scene = active => React.createElement(WalletExecutionTransition, {
+        gap, overview: 'Summary', workflow: active ? React.createElement(StepsPanel, null, 'Confirming transaction') : null,
+    });
+    try {
+        await act(() => root.render(scene(false)));
+        assert.equal(container.querySelector('[data-steps-panel]'), null);
+        for (const active of [true, false, true]) {
+            await act(() => root.render(scene(active)));
+            const panel = surface(container.querySelector('[data-steps-panel]'));
+            assert.equal(panel.firstElementChild.style.paddingTop, `${gap}px`);
+            assert.ok(panel.classList.contains('overflow-hidden'));
+            if (!active) assert.ok(panel.hasAttribute('inert'));
+            await settle();
+            assert.equal(!!container.querySelector('[data-steps-panel]'), active);
+        }
+    } finally { await act(() => root.unmount()); }
+});
+
 test('quote compaction and progress entry exchange space on the same animation frames', async () => {
     const root = createRoot(container);
     const scene = processing => React.createElement(SwapContentView, {
@@ -192,7 +200,7 @@ test('quote compaction and progress entry exchange space on the same animation f
             const steps = container.querySelector('[data-steps-panel]');
             for (let frame = 0; frame < 3; frame++) {
                 await act(() => new Promise(resolve => setTimeout(resolve, 65)));
-                const progress = Number(steps.style.opacity);
+                const progress = Number(surface(steps).style.opacity);
                 assert.ok(progress > 0 && progress < 1, 'sample while the handoff is in flight');
                 assert.ok(Math.abs(Number(extras.style.opacity) + progress - 1) < 0.03,
                     'quote rows must collapse as the steps enter, and expand as they exit');
@@ -212,7 +220,7 @@ for (const actionsArriveEarly of [false, true]) test(`atomic creation ${actionsA
     const root = createRoot(container);
     const originalBounds = dom.window.HTMLElement.prototype.getBoundingClientRect;
     dom.window.HTMLElement.prototype.getBoundingClientRect = function () {
-        if (!this.hasAttribute('data-steps-panel')) return originalBounds.call(this);
+        if (this.dataset.walletExecutionPanel !== 'workflow') return originalBounds.call(this);
         const height = this.style.height.endsWith('px') ? parseFloat(this.style.height) : 184;
         return { x: 0, y: 0, top: 0, left: 0, right: 472, bottom: height, width: 472, height };
     };
@@ -222,11 +230,6 @@ for (const actionsArriveEarly of [false, true]) test(`atomic creation ${actionsA
     const details = { status: 'user_transfer_pending', transactions: [] };
     const quote = { destination_token: token, receive_amount: 100 };
     const actions = [{ type: 'send_calls', step: 'publish', status: 'action_required', calls: [{}, {}] }];
-    // The production Processing controller returns null until creation supplies
-    // swap details. Its first non-empty render can already be the wallet prompt.
-    const ProcessingController = ({ available, ...props }) => available
-        ? React.createElement(ProcessingView, props)
-        : null;
     const scene = (active, actionsReady = true) => {
         const depositActions = actionsReady ? actions : undefined;
         const resolved = resolveSwapPhase({ swapDetails: details });
@@ -236,8 +239,11 @@ for (const actionsArriveEarly of [false, true]) test(`atomic creation ${actionsA
             loading: true,
             actionStateText: active ? 'Confirm in your wallet' : 'Preparing swap…',
         };
-        return React.createElement(SwapContentView, {
+        const send = getSendTransactionPresentation({ flow, quote, depositActions, ...walletProgress });
+        return React.createElement(Page2Presenter, {
             flow,
+            controls: null,
+            footer: send.controls,
             stage: 'withdraw',
             summary: 'Summary',
             quote: React.createElement(QuoteSummaryView, {
@@ -246,13 +252,8 @@ for (const actionsArriveEarly of [false, true]) test(`atomic creation ${actionsA
                 slippage: React.createElement('div', { 'data-slippage': true }, 'Slippage'),
                 detailsButton: 'Fees',
             }),
-            progress: React.createElement(ProcessingController, {
-                available: actionsReady,
-                flow, swapBasicData: swap, swapDetails: details, quote, depositActions, resolved, walletProgress,
-            }),
-        }, React.createElement(SendTransactionView, {
-            flow, quote, depositActions, ...walletProgress, showProgress: false,
-        }));
+            progress: actionsReady ? getProcessingProgress({ flow, swapBasicData: swap, swapDetails: details, quote, depositActions, resolved, walletProgress }) : null,
+        });
     };
     try {
         await act(() => root.render(scene(false, false)));
@@ -272,25 +273,25 @@ for (const actionsArriveEarly of [false, true]) test(`atomic creation ${actionsA
         assert.equal(container.querySelector('[data-quote-layout]').dataset.quoteLayout, 'attached');
         assert.ok(preparing.closest('[inert]'), 'preparation exits on the same render that progress enters');
         // JSDOM has no default computed padding for Motion's auto-height measurement.
-        steps.style.padding = '0px';
-        assert.equal(steps.style.height, '0px', 'a previously empty slot must not reveal the full card immediately');
-        assert.equal(steps.style.opacity, '0');
+        surface(steps).style.padding = '0px';
+        assert.equal(surface(steps).style.height, '0px', 'a previously empty slot must not reveal the full card immediately');
+        assert.equal(surface(steps).style.opacity, '0');
         await act(() => new Promise(resolve => setTimeout(resolve, 100)));
-        const height = parseFloat(steps.style.height);
-        assert.ok(height > 0 && height < 184, `progress should expand through intermediate heights, got ${steps.style.height}`);
+        const height = parseFloat(surface(steps).style.height);
+        assert.ok(height > 0 && height < 184, `progress should expand through intermediate heights, got ${surface(steps).style.height}`);
         const extras = container.querySelector('[data-slippage]').parentElement.parentElement;
-        assert.ok(Math.abs(Number(extras.style.opacity) + Number(steps.style.opacity) - 1) < 0.03);
+        assert.ok(Math.abs(Number(extras.style.opacity) + Number(surface(steps).style.opacity) - 1) < 0.03);
         const controls = preparing.closest('[data-wallet-execution-panel="controls"]');
         assert.notEqual(controls.style.height, 'auto', 'preparation releases its height while progress expands');
-        assert.ok(Math.abs(Number(controls.style.opacity) + Number(steps.style.opacity) - 1) < 0.03);
+        assert.ok(Math.abs(Number(controls.style.opacity) + Number(surface(steps).style.opacity) - 1) < 0.03);
         await settle();
-        assert.equal(steps.style.height, 'auto');
+        assert.equal(surface(steps).style.height, 'auto');
         assert.equal(container.querySelector('[data-wallet-execution-panel="controls"] button'), null);
         await act(() => root.render(scene(false)));
         assert.equal(container.querySelector('[data-steps-panel]'), steps);
-        assert.ok(steps.hasAttribute('inert'));
+        assert.ok(!!steps.closest('[inert]'));
         await act(() => new Promise(resolve => setTimeout(resolve, 100)));
-        const exitingHeight = parseFloat(steps.style.height);
+        const exitingHeight = parseFloat(surface(steps).style.height);
         assert.ok(exitingHeight > 0 && exitingHeight < 184, 'rewinding collapses the same card before removing it');
         await settle();
         assert.equal(container.querySelector('[data-steps-panel]'), null);
@@ -300,11 +301,11 @@ for (const actionsArriveEarly of [false, true]) test(`atomic creation ${actionsA
     }
 });
 
-for (const mode of ['component', 'modal']) test(`the ${mode} timeline mounts processing at swap creation and animates its first card`, async () => {
+for (const mode of ['component', 'modal']) test(`the ${mode} timeline reveals progress at swap creation and preserves the surface`, async () => {
     const root = createRoot(container);
     const originalBounds = dom.window.HTMLElement.prototype.getBoundingClientRect;
     dom.window.HTMLElement.prototype.getBoundingClientRect = function () {
-        if (!this.hasAttribute('data-steps-panel')) return originalBounds.call(this);
+        if (this.dataset.walletExecutionPanel !== 'workflow') return originalBounds.call(this);
         const height = this.style.height.endsWith('px') ? parseFloat(this.style.height) : 184;
         return { x: 0, y: 0, top: 0, left: 0, right: 472, bottom: height, width: 472, height };
     };
@@ -313,36 +314,34 @@ for (const mode of ['component', 'modal']) test(`the ${mode} timeline mounts pro
         const milestone = scenario.milestones.find(milestone => milestone.id === id);
         return React.createElement(Page2Preview, { snapshot: milestone.snapshot, now: EPOCH + milestone.at * 1000, mode });
     };
-    globalThis.__timelineProcessingMounts = 0;
     try {
         await act(() => root.render(scene('ready')));
         await settle();
-        assert.equal(globalThis.__timelineProcessingMounts, 0, 'a quote before creation has no processing view');
+        assert.equal(container.querySelector('[data-steps-panel]'), null, 'a quote before creation has no progress section');
         await act(() => root.render(scene('preparing')));
         await settle();
-        assert.equal(globalThis.__timelineProcessingMounts, 0, 'preparation must not pre-mount processing');
+        assert.equal(container.querySelector('[data-steps-panel]'), null, 'preparation keeps progress absent');
         const preparing = [...container.querySelectorAll('button')].find(button => button.textContent === 'Preparing swap…');
         assert.ok(preparing);
         await act(() => root.render(scene('confirming')));
-        assert.equal(globalThis.__timelineProcessingMounts, 1, 'the creation response mounts processing for the first time');
+        assert.equal(container.querySelectorAll('[data-steps-panel]').length, 1, 'creation reveals one progress surface');
         const panel = container.querySelector('[data-steps-panel]');
-        panel.style.padding = '0px';
-        assert.equal(panel.style.height, '0px', 'the first mount must animate even though the preview is read-only');
+        surface(panel).style.padding = '0px';
+        assert.equal(surface(panel).style.height, '0px', 'the first mount must animate even though the preview is read-only');
         assert.ok(preparing.closest('[inert]'));
         await act(() => new Promise(resolve => setTimeout(resolve, 100)));
-        assert.ok(parseFloat(panel.style.height) > 0 && parseFloat(panel.style.height) < 184);
+        assert.ok(parseFloat(surface(panel).style.height) > 0 && parseFloat(surface(panel).style.height) < 184);
         await settle();
-        assert.equal(panel.style.height, 'auto');
+        assert.equal(surface(panel).style.height, 'auto');
         assert.equal(preparing.isConnected, false);
         assert.equal(container.querySelector('[data-quote-layout]').dataset.quoteLayout, 'attached');
         await act(() => root.render(scene('submitted')));
         await settle();
-        assert.equal(globalThis.__timelineProcessingMounts, 1, 'later updates keep the same processing view');
+        assert.equal(container.querySelectorAll('[data-steps-panel]').length, 1, 'later updates keep one progress surface');
         assert.equal(container.querySelector('[data-steps-panel]'), panel);
     } finally {
         await act(() => root.unmount());
         dom.window.HTMLElement.prototype.getBoundingClientRect = originalBounds;
-        delete globalThis.__timelineProcessingMounts;
     }
 });
 
@@ -492,7 +491,7 @@ test('wallet prompts, transaction confirmation and completion update one persist
                 assert.equal(panel.querySelector('[aria-label="Progress"]'), steps);
                 assert.equal(container.querySelector('[data-quote-transition]'), quoteNode);
                 assert.equal(panel.closest('[inert]'), null);
-                assert.equal(panel.style.opacity, '1');
+                assert.equal(surface(panel).style.opacity, '1');
             }
             if (stage === 'completed') {
                 assert.match(panel.textContent, /Transfer complete/);
@@ -534,7 +533,7 @@ test('live token-swap handoff stays visible when submission resets the form gasl
         './SwapQuoteDetails': { SwapQuoteDetails: () => React.createElement('div', null, 'Receive at least') },
         './Presentation/Page2Contained': { Page2Contained: childrenOnly },
         '@/components/Common/Sceletons': { SwapDetailsSceleton: empty },
-        '@/components/Widget/Index': { Widget: childrenOnly },
+        '@/components/Widget/Index': { Widget: Object.assign(childrenOnly, { Footer: childrenOnly }) },
         '@/context/callbackProvider': { useCallbacks: () => ({ onBackClick: noop, onSwapLifecycle: noop }) },
         '@/context/swap': { useSwapDataState: () => ({ ...context, flow: resolveSwapFlow({ swapData: context.swapBasicData, depositActions: context.depositActionsResponse, walletExecutionStarted: context.walletExecutionStarted, resolved: { showWithdrawScreen } }) }), useSwapDataUpdate: () => ({ setSwapViewMounted: noop }) },
         '@/context/swapAccounts': { useSelectedAccount: () => ({ address: '0xsource' }) },
@@ -577,8 +576,8 @@ test('live token-swap handoff stays visible when submission resets the form gasl
             flushSync(() => root.render(scene()));
             const panels = [...container.querySelectorAll('[data-steps-panel]')].filter(panel => !panel.closest('[inert]'));
             assert.equal(panels.length, 1);
-            assert.equal(panels[0].style.height, 'auto', 'the existing progress must not collapse and re-enter on submission');
-            assert.equal(panels[0].style.opacity, '1');
+            assert.equal(surface(panels[0]).style.height, 'auto', 'the existing progress must not collapse and re-enter on submission');
+            assert.equal(surface(panels[0]).style.opacity, '1');
             assert.ok(outerSlot.contains(panels[0]), 'processing remains in the same execution slot');
             assert.match(panels[0].textContent, /Confirming transaction/);
         });
@@ -609,29 +608,29 @@ test('deposit screen height tweens in both directions without double-animating c
         const panel = container.querySelector('header').nextElementSibling.nextElementSibling;
         // JSDOM has no layout or default computed padding; Framer uses both
         // when resolving the initial auto height into pixels.
-        panel.style.padding = '0px';
+        surface(panel).style.padding = '0px';
         await settle();
         await act(() => measure(400));
         await settle();
-        assert.equal(panel.style.height, '400px');
+        assert.equal(surface(panel).style.height, '400px');
 
         await act(() => root.render(scene('address')));
         await act(() => measure(600));
         await act(() => new Promise(resolve => setTimeout(resolve, 70)));
-        assert.ok(parseFloat(panel.style.height) > 400 && parseFloat(panel.style.height) < 600, `screen entry should tween, got ${panel.style.height}`);
+        assert.ok(parseFloat(surface(panel).style.height) > 400 && parseFloat(surface(panel).style.height) < 600, `screen entry should tween, got ${surface(panel).style.height}`);
         await settle();
-        assert.equal(panel.style.height, '600px');
+        assert.equal(surface(panel).style.height, '600px');
 
         await act(() => measure(500));
         await act(() => new Promise(resolve => setTimeout(resolve, 40)));
-        assert.equal(panel.style.height, '500px', 'in-screen quote changes track the content without a second tween');
+        assert.equal(surface(panel).style.height, '500px', 'in-screen quote changes track the content without a second tween');
 
         await act(() => root.render(scene('methods')));
         await act(() => measure(400));
         await act(() => new Promise(resolve => setTimeout(resolve, 70)));
-        assert.ok(parseFloat(panel.style.height) > 400 && parseFloat(panel.style.height) < 500, `rewinding should tween, got ${panel.style.height}`);
+        assert.ok(parseFloat(surface(panel).style.height) > 400 && parseFloat(surface(panel).style.height) < 500, `rewinding should tween, got ${surface(panel).style.height}`);
         await settle();
-        assert.equal(panel.style.height, '400px');
+        assert.equal(surface(panel).style.height, '400px');
     } finally {
         await act(() => root.unmount());
         dom.window.HTMLElement.prototype.getBoundingClientRect = originalBounds;
@@ -703,13 +702,13 @@ test('steps in a different execution slot enter while the outgoing panel collaps
         await act(() => {
             flushSync(() => root.render(scene(true)));
             const incoming = container.querySelector('[aria-label="Processing"]');
-            assert.equal(incoming.style.opacity, '0', 'a sibling slot must not inherit visible-panel state');
-            assert.equal(incoming.style.height, '0px');
+            assert.equal(surface(incoming).style.opacity, '0', 'a sibling slot must not inherit visible-panel state');
+            assert.equal(surface(incoming).style.height, '0px');
         });
         assert.ok(outgoing.closest('[inert]'));
         await settle();
         assert.equal(container.querySelectorAll('[data-steps-panel]').length, 1);
-        assert.equal(container.querySelector('[aria-label="Processing"]').style.opacity, '1');
+        assert.equal(surface(container.querySelector('[aria-label="Processing"]')).style.opacity, '1');
         for (const processing of [false, true, false, true]) {
             await act(() => root.render(scene(processing)));
         }

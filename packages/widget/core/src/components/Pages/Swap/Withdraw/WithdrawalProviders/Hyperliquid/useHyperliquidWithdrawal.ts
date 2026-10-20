@@ -50,7 +50,7 @@ const logWithdrawalError = (error: unknown, ctx: { swapId?: string; fromAddress?
  * Ambiguous submissions are reconciled against the existing swap before another
  * withdrawal can be considered.
  */
-export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: WithdrawPageProps) {
+export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: WithdrawPageProps, active = true) {
     const { source_network, source_token, destination_network, destination_token, destination_address } = swapBasicData
 
     const { networks, sourceRoutes } = useSettingsState()
@@ -97,8 +97,27 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
         return () => { mountedRef.current = false }
     }, [])
 
+    const executionScope = useRef<AbortController | null>(null);
+    useEffect(() => {
+        const scope = new AbortController();
+        executionScope.current = scope;
+        preparedSwapRef.current = undefined;
+        return () => { scope.abort(); };
+    }, [sourceAddress, selectedSourceAccount?.id, selectedSourceAccount?.providerName, selectedSourceAccount?.provider?.name, wallet?.metadata?.evmConnectorUid, wallet?.metadata?.walletConnectTopic, source_network.name]);
+    const wasActive = useRef(active);
+    useEffect(() => {
+        const becameEligible = active && !wasActive.current;
+        wasActive.current = active;
+        if (!becameEligible || submittingRef.current) return;
+        preparedSwapRef.current = undefined;
+        setError(undefined);
+        setRejected(false);
+        setProgress(undefined);
+    }, [active]);
+
     const handleWithdraw = useCallback(async () => {
-        if (submittingRef.current) return
+        const signal = executionScope.current?.signal;
+        if (!signal || signal.aborted || submittingRef.current) return
         if (rejected || error) {
             onSwapLifecycle({
                 step: 'retry_requested',
@@ -139,6 +158,7 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
                     depositMethod: 'wallet',
                 }
                 const newSwap = await createSwap(swapValues, initialSettings)
+                signal.throwIfAborted();
                 activeSwapId = newSwap?.swap?.id
                 if (!activeSwapId) throw new Error('Swap ID is undefined')
                 depositActions = newSwap.deposit_actions
@@ -161,19 +181,24 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
             if (!Number.isFinite(A) || A <= 0) throw new Error('Invalid amount')
 
             const { depositActions, activeSwapId } = await resolveSwap(amount)
+            signal.throwIfAborted();
             lifecycleSwapId = activeSwapId
             await executeProviderWithdrawal({
+                signal,
                 swapId: activeSwapId,
                 sourceAddress,
                 onReconcile: response => mutateSwap(response, false),
                 prepare: async () => {
+                    signal.throwIfAborted();
                     const actions = depositActions?.length ? depositActions : await getProviderDepositActions(activeSwapId, sourceAddress)
                     const action = getDepositAction(actions)
                     if (!action?.to_address) throw new Error('No deposit address')
                     if (!action.amount_in_base_units) throw new Error('No withdrawal amount')
                     return action
                 },
-                execute: (action, onSubmissionStateChange) => executeWalletOperation({
+                execute: (action, onSubmissionStateChange) => {
+                    signal.throwIfAborted();
+                    return executeWalletOperation({
                     context: {
                         ...lifecycleContextFromSwap(swapBasicData, swapDetails),
                         swapId: activeSwapId,
@@ -183,7 +208,7 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
                     },
                     onLifecycle: onSwapLifecycle,
                     allowEmptyHash: true,
-                    isActive: () => mountedRef.current,
+                    isActive: () => mountedRef.current && !signal.aborted,
                 }, () => executeTransfer({
                     swapId: activeSwapId,
                     onSubmissionStateChange,
@@ -199,15 +224,16 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
                     amountInBaseUnits: action.amount_in_base_units,
                     callData: '',
                     selectedWallet: wallet!,
-                }, wallet, (info) => { if (mountedRef.current) setProgress(info) })),
+                }, wallet, (info) => { if (mountedRef.current && !signal.aborted) setProgress(info) }));
+                },
             })
 
-            if (!mountedRef.current) return
+            if (!mountedRef.current || signal.aborted) return
 
             // Submission is already recorded, including when no source hash is returned.
             onWalletWithdrawalSuccess?.()
         } catch (e) {
-            if (!mountedRef.current) return
+            if (!mountedRef.current || signal.aborted) return
             if (e instanceof AmountPresetChangedError) {
                 setError({ header: 'Amount updated', details: e.message })
                 return

@@ -53,7 +53,7 @@ const logWithdrawalError = (error: unknown, ctx: { swapId?: string; fromAddress?
  * pending input transaction so the standard Processing screen takes over (no real source hash:
  * the backend detects the depository deposit).
  */
-export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: WithdrawPageProps) {
+export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: WithdrawPageProps, active = true) {
     const { source_network, source_token, destination_network, destination_token, destination_address } = swapBasicData
 
     const { networks, sourceRoutes } = useSettingsState()
@@ -99,8 +99,27 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
         return () => { mountedRef.current = false }
     }, [])
 
+    const executionScope = useRef<AbortController | null>(null);
+    useEffect(() => {
+        const scope = new AbortController();
+        executionScope.current = scope;
+        preparedSwapRef.current = undefined;
+        return () => { scope.abort(); };
+    }, [sourceAddress, selectedSourceAccount?.id, selectedSourceAccount?.providerName, selectedSourceAccount?.provider?.name, wallet?.metadata?.evmConnectorUid, wallet?.metadata?.walletConnectTopic, source_network.name]);
+    const wasActive = useRef(active);
+    useEffect(() => {
+        const becameEligible = active && !wasActive.current;
+        wasActive.current = active;
+        if (!becameEligible || submittingRef.current) return;
+        preparedSwapRef.current = undefined;
+        setError(undefined);
+        setRejected(false);
+        setProgress(undefined);
+    }, [active]);
+
     const handleWithdraw = useCallback(async () => {
-        if (submittingRef.current) return
+        const signal = executionScope.current?.signal;
+        if (!signal || signal.aborted || submittingRef.current) return
         if (rejected || error) {
             onSwapLifecycle({
                 step: 'retry_requested',
@@ -141,6 +160,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
                     depositMethod: 'wallet',
                 }
                 const newSwap = await createSwap(swapValues, initialSettings)
+                signal.throwIfAborted();
                 activeSwapId = newSwap?.swap?.id
                 if (!activeSwapId) throw new Error('Swap ID is undefined')
                 depositActions = newSwap.deposit_actions
@@ -165,18 +185,23 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
             if (!Number.isFinite(A) || A <= 0) throw new Error('Invalid amount')
 
             const { depositActions, activeSwapId } = await resolveSwap(amount)
+            signal.throwIfAborted();
             lifecycleSwapId = activeSwapId
             await executeProviderWithdrawal({
+                signal,
                 swapId: activeSwapId,
                 sourceAddress,
                 onReconcile: response => mutateSwap(response, false),
                 prepare: async () => {
+                    signal.throwIfAborted();
                     const actions = depositActions?.length ? depositActions : await getProviderDepositActions(activeSwapId, sourceAddress)
                     const action = getDepositAction(actions)
                     if (!action) throw new Error('No depository deposit action')
                     return action
                 },
-                execute: ({ depository, depositCallData }, onSubmissionStateChange) => executeWalletOperation({
+                execute: ({ depository, depositCallData }, onSubmissionStateChange) => {
+                    signal.throwIfAborted();
+                    return executeWalletOperation({
                     context: {
                         ...lifecycleContextFromSwap(swapBasicData, swapDetails),
                         swapId: activeSwapId,
@@ -186,7 +211,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
                     },
                     onLifecycle: onSwapLifecycle,
                     allowEmptyHash: true,
-                    isActive: () => mountedRef.current,
+                    isActive: () => mountedRef.current && !signal.aborted,
                 }, () => executeTransfer({
                     swapId: activeSwapId,
                     onSubmissionStateChange,
@@ -201,15 +226,16 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
                     amount: A,
                     callData: depositCallData,
                     selectedWallet: wallet!,
-                }, wallet, (info) => { if (mountedRef.current) setProgress(info) })),
+                }, wallet, (info) => { if (mountedRef.current && !signal.aborted) setProgress(info) }));
+                },
             })
 
-            if (!mountedRef.current) return
+            if (!mountedRef.current || signal.aborted) return
 
             // Submission is already recorded before the UI hand-off.
             onWalletWithdrawalSuccess?.()
         } catch (e) {
-            if (!mountedRef.current) return
+            if (!mountedRef.current || signal.aborted) return
             if (e instanceof AmountPresetChangedError) {
                 setError({ header: 'Amount updated', details: e.message })
                 return

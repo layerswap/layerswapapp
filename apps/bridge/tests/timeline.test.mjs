@@ -646,6 +646,8 @@ test('reduced-motion hydration matches the server markup in both modes', async (
     assert.deepEqual(forbidden, []);
 });
 
+const surface = node => node?.closest('[data-wallet-execution-panel="workflow"]') ?? node;
+
 test('all mounted previews ignore clicks and keyboard activation without requests, persistence or reports', async () => {
     const container = document.getElementById('root');
     const root = createRoot(container);
@@ -664,8 +666,8 @@ test('all mounted previews ignore clicks and keyboard activation without request
                         const panel = progress.closest('[data-steps-panel]');
                         const label = `${scenario.id}/${m.id}/${mode}`;
                         assert.ok(panel, `${label}: every flow uses the shared steps animation`);
-                        assert.equal(panel.style.height, 'auto', `${label}: reduced motion shows steps immediately`);
-                        assert.equal(panel.style.opacity, '1', label);
+                        assert.equal(surface(panel).style.height, 'auto', `${label}: reduced motion shows steps immediately`);
+                        assert.equal(surface(panel).style.opacity, '1', label);
                         assert.equal(panel.parentElement.closest('[data-steps-panel]'), null, `${label}: no nested panel animations`);
                         const heading = panel.querySelector('[data-transfer-title]');
                         assert.equal(heading.querySelector('[style]'), null, `${label}: reduced motion has no heading translation, blur or delay`);
@@ -2266,9 +2268,9 @@ test('wallet execution exchanges the preparing button for persistent steps and r
         const workflow = container.querySelector('[data-wallet-execution-panel="workflow"]');
         const steps = workflow.querySelector('[aria-label="Progress"]');
         const panel = workflow.querySelector('[data-steps-panel]');
-        assert.equal(panel.style.height, 'auto', 'reduced motion shows the final height immediately');
-        assert.equal(panel.style.opacity, '1');
-        assert.equal(workflow.style.height, '', 'the wallet wrapper does not run a second height animation');
+        assert.equal(surface(panel).style.height, 'auto', 'reduced motion shows the final height immediately');
+        assert.equal(surface(panel).style.opacity, '1');
+        assert.equal(panel.style.height, '', 'the progress surface does not run a second height animation');
         // The controls panel stays available for wallet-request recovery while loading.
         // Compare booleans so failures do not inspect React's cyclic JSDOM nodes.
         assert.ok(container.querySelector('[data-wallet-execution-panel="controls"] button') === null, 'reduced motion removes the old button immediately');
@@ -2286,8 +2288,8 @@ test('wallet execution exchanges the preparing button for persistent steps and r
     }
 
     const initial = fixtureDOM('frontend-permit2', 'approving').querySelector('[data-steps-panel]');
-    assert.equal(initial.style.height, 'auto', 'opening an existing workflow does not start it collapsed');
-    assert.equal(initial.style.opacity, '1');
+    assert.equal(surface(initial).style.height, 'auto', 'opening an existing workflow does not start it collapsed');
+    assert.equal(surface(initial).style.opacity, '1');
 });
 
 test('completed token swaps use the actual output and do not invent missing action history', async () => {
@@ -2604,7 +2606,7 @@ test('manual network and exchange deposits use the shared instructions-to-progre
                     assert.equal(!!controls, !processing);
                     if (processing) {
                         assert.equal(overview.style.height, 'auto');
-                        assert.equal(steps.style.height, 'auto');
+                        assert.equal(surface(steps).style.height, 'auto');
                         assert.match(steps.textContent, /Processing your deposit/);
                         assert.doesNotMatch(container.textContent, /Copy the deposit address/);
                     } else {
@@ -2636,7 +2638,7 @@ test('gasless failure reasons replace the generic failed-step description withou
                 assert.equal(failedStep.textContent, `The transfer failed${reason}`);
                 assert.equal(container.textContent.split(reason).length - 1, 1, 'show the specific reason only once');
                 assert.doesNotMatch(container.textContent, /Something went wrong while processing|please contact our support|Gasless deposit failed/);
-                const actions = container.querySelector('[data-processing-actions]');
+                const actions = container.querySelector('[data-wallet-execution-panel="controls"]');
                 assert.equal(actions.textContent, 'Try againSwitch to standard transfer', 'retry area contains only its actions');
             }
             const retry = frontendMilestone('gasless-expired', 'retry');

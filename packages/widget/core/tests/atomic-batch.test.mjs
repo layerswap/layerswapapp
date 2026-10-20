@@ -20,7 +20,7 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
     if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) return nextResolve(`${specifier}.js`, context)
     return nextResolve(specifier, context)
 } })
-const { validateAtomicBatch, resolveAtomicBatchOutcome, isAtomicBatchEligible } = await import('../dist/esm/helpers/atomicBatch.js')
+const { getAtomicBatchExpiry, validateAtomicBatch, resolveAtomicBatchOutcome, isAtomicBatchEligible } = await import('../dist/esm/helpers/atomicBatch.js')
 const { getActionableDepositAction, getDepositActionLabel, getDepositActionDescription } = await import('../dist/esm/helpers/depositActions.js')
 const { executeAtomicBatch } = await import('../dist/esm/lib/atomicBatchExecution.js')
 const { useSwapTransactionStore: store } = await import('../dist/esm/stores/swapTransactionStore.js')
@@ -92,11 +92,45 @@ test('validates sender, chain, expiry, address, calldata and integer values befo
         { from_address: `0x${'4'.repeat(40)}` }, { network: { ...fixtures.network, chain_id: '1' } },
         { valid_before: 1 }, { type: 'transfer' }, { status: 'waiting' }, { calls: [] },
         { valid_before: undefined, expires_at: undefined }, { expires_at: 'invalid' },
-        { valid_before: 2000000001 },
+        { valid_before: 2000000000.5 }, { valid_before: '2000000000' }, { valid_before: null },
         ...['-1', '1.1', '1e18', '0x', 9007199254740993, '01', `0x${(2n ** 256n).toString(16)}`].map(value => ({ calls: [{ ...fixtures.actions.sufficient_allowance.calls[0], value }] })),
         { calls: [{ ...fixtures.actions.sufficient_allowance.calls[0], to: '0x123' }] },
         { calls: [{ ...fixtures.actions.sufficient_allowance.calls[0], data: '0x123' }] },
     ]) assert.throws(() => validateAtomicBatch({ ...fixtures.actions.zero_allowance, ...change }, fixtures.swap, fixtures.account, fixtures.account))
+})
+
+test('accepts the API action expiry five seconds before its transaction deadline', () => {
+    assert.equal(getAtomicBatchExpiry({ valid_before: 1792511077, expires_at: '2026-10-20T15:44:32+00:00' }), 1792511072)
+})
+
+test('submits with the earlier cutoff while preserving the backend calldata', async () => {
+    const validBefore = 2000000000
+    const action = { ...fixtures.actions.zero_allowance, valid_before: validBefore,
+        expires_at: new Date((validBefore - 5) * 1000).toISOString() }
+    const ctx = context(action)
+    let submissions = 0
+    await submit(ctx, { submit: async request => {
+        submissions++
+        assert.equal(request.validBefore, validBefore - 5)
+        assert.deepEqual(request.calls.map(call => call.data), action.calls.map(call => call.data))
+        return { id: batchId }
+    } })
+    assert.equal(submissions, 1)
+    assert.equal(ctx.successes, 1)
+})
+
+for (const earlier of ['expires_at', 'valid_before']) test(`rejects a batch when only ${earlier} has expired`, () => {
+    const now = 1792511073
+    const action = { ...fixtures.actions.zero_allowance,
+        valid_before: earlier === 'valid_before' ? now - 1 : now + 4,
+        expires_at: new Date((earlier === 'expires_at' ? now - 1 : now + 4) * 1000).toISOString() }
+    assert.throws(() => validateAtomicBatch(action, fixtures.swap, fixtures.account, fixtures.account, now * 1000), /Batch expired/)
+})
+
+test('supports either expiry field on its own and uses the earlier transaction deadline', () => {
+    assert.equal(getAtomicBatchExpiry({ valid_before: 2000000000 }), 2000000000)
+    assert.equal(getAtomicBatchExpiry({ expires_at: '2033-05-18T03:33:20Z' }), 2000000000)
+    assert.equal(getAtomicBatchExpiry({ valid_before: 1999999995, expires_at: '2033-05-18T03:33:20Z' }), 1999999995)
 })
 
 test('backend swap sender remains mandatory when the send_calls payload omits sender and chain', () => {

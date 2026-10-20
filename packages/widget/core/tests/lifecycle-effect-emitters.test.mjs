@@ -86,7 +86,7 @@ test('input_transaction_detected re-runs only for a new hash, never for later co
 test('transfer_blocked is not reported for states that keep the send button', () => {
   // A swap or deposit-actions error leaves TransferTokenButton's send button rendered ("Try again").
   const text = readFileSync(join(srcDir, 'components/Pages/Swap/Withdraw/Wallet/index.tsx'), 'utf8')
-  const start = text.indexOf('const blockedReason', text.indexOf('const TransferTokenButton'))
-  const reasons = text.slice(start, text.indexOf('useTransferBlocked(blockedReason', start))
+  const start = text.indexOf('const blockedReason', text.indexOf('export function useTransferTokenController'))
+  const reasons = text.slice(start, text.indexOf('useTransferBlocked(active ? blockedReason', start))
   assert.deepEqual([...reasons.matchAll(/'([a-z_]+)'/g)].map(m => m[1]).filter(r => r !== 'unhealthy'), ['rpc_unhealthy', 'gasless_unavailable'])
 })

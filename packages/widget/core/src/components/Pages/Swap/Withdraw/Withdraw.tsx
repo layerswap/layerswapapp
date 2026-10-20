@@ -37,11 +37,7 @@ const AWAITING_WALLET_ACTION: ObservedLifecycleEvent = {
     action: 'send_from_wallet',
 }
 
-const Withdraw: FC<{
-    type: 'widget' | 'contained';
-    onWalletWithdrawalSuccess?: () => void;
-    onCancelWithdrawal?: () => void;
-}> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal }) => {
+export function useWithdrawBalance(active = true) {
     const { swapBasicData, swapDetails, swapId, amountPresetLocked, refuel, quoteIsLoading } =
         useSwapDataState();
     const { setSubmitedFormValues, startFreshSwapAttempt, canAdjustAmount } = useSwapDataUpdate();
@@ -56,7 +52,7 @@ const Withdraw: FC<{
     );
 
     const { balances, mutate, isLoading } = useBalance(
-        selectedSourceAccount?.address,
+        active ? selectedSourceAccount?.address : undefined,
         source_network,
     );
     const walletBalance =
@@ -68,10 +64,10 @@ const Withdraw: FC<{
         );
     const walletBalanceAmount = walletBalance?.amount;
     const { gasData } = useSWRGas(
-        selectedSourceAccount?.address,
+        active ? selectedSourceAccount?.address : undefined,
         source_network,
         swapBasicData?.source_token,
-        swapBasicData?.requested_amount,
+        swapBasicData?.requested_amount, undefined, { enabled: active },
     );
     const { setValues, values } = useFormikContext<SwapFormValues>();
 
@@ -91,9 +87,9 @@ const Withdraw: FC<{
     )
 
     // The swap id and source address arrive after creation; they enrich the report but never repeat it.
-    useLifecycleObservation(swapBasicData && !swapBasicData.use_deposit_address ? AWAITING_WALLET_ACTION : undefined, lifecycleContext)
+    useLifecycleObservation(active && swapBasicData && !swapBasicData.use_deposit_address ? AWAITING_WALLET_ACTION : undefined, lifecycleContext)
 
-    const quoteArgs = transformSwapDataToQuoteArgs(swapBasicData, !!refuel);
+    const quoteArgs = active ? transformSwapDataToQuoteArgs(swapBasicData, !!refuel) : undefined;
     // Limits feed useOutOfGas, which only matters for wallet withdrawals — skip them in deposit address flow
     const { minAllowedAmount, maxAllowedAmount } = useQuoteData(quoteArgs, {
         skipLimits: isDepositAddressSwap(swapBasicData),
@@ -148,10 +144,9 @@ const Withdraw: FC<{
         startFreshSwapAttempt,
     ]);
 
-    let withdraw: {
-        footer?: JSX.Element | JSX.Element[];
-        footerKey?: string;
-    } = {};
+    let warning: JSX.Element | null = null;
+    let actionKey = 'transfer';
+    let blocked = false;
 
     // A balance notification reaches this view before the controller's effect
     // publishes the new pending state. Compare the calculation's balance too,
@@ -166,7 +161,7 @@ const Withdraw: FC<{
         Number(walletBalanceAmount) < Number(swapBasicData?.requested_amount);
 
     const { outOfGas } = useOutOfGas({
-        address: selectedSourceAccount?.address,
+        address: active ? selectedSourceAccount?.address : undefined,
         network: source_network,
         token: swapBasicData?.source_token,
         amount: swapBasicData?.requested_amount,
@@ -177,7 +172,7 @@ const Withdraw: FC<{
 
     // The gas warning keeps WalletTransferButton available, so it is not a block.
     useTransferBlocked(
-        swapBasicData?.use_deposit_address === false && showInsufficientBalanceWarning ? 'insufficient_balance'
+        active && swapBasicData?.use_deposit_address === false && showInsufficientBalanceWarning ? 'insufficient_balance'
         : undefined,
         lifecycleContext, 'Withdraw')
 
@@ -193,9 +188,9 @@ const Withdraw: FC<{
                   )
                 : undefined;
         const showSpinner = isLoading;
-        withdraw = {
-            footerKey: 'insufficient',
-            footer: (
+        actionKey = 'insufficient';
+        blocked = true;
+        warning = (
                 <BalanceWarningView
                     amount={balanceAmount}
                     asset={swapBasicData?.source_token?.asset}
@@ -207,60 +202,26 @@ const Withdraw: FC<{
                         </>
                     }
                 />
-            ),
-        };
+        );
     } else if (swapBasicData?.use_deposit_address === false && outOfGas && !presetIsSyncing) {
-        withdraw = {
-            footerKey: 'outOfGas',
-            footer: (
-                <WalletTransferButton
-                    showProgress={false}
-                    swapBasicData={swapBasicData}
-                    swapId={swapDetails?.id}
-                    refuel={!!refuel}
-                    onWalletWithdrawalSuccess={onWalletWithdrawalSuccess}
-                    warning={
-                        <GasWarningView
-                            adjustButton={
-                                showAdjustAmount && <AdjustAmountButton
-                                    compact
-                                    onEditAmount={handleEditAmount}
-                                    isLoading={quoteIsLoading}
-                                />
-                            }
-                        />
-                    }
-                    onCancelWithdrawal={onCancelWithdrawal}
-                />
-            ),
-        };
-    } else if (swapBasicData?.use_deposit_address === false) {
-        withdraw = {
-            footerKey: 'transfer',
-            footer: (
-                <WalletTransferButton
-                    showProgress={false}
-                    swapBasicData={swapBasicData}
-                    swapId={swapDetails?.id}
-                    refuel={!!refuel}
-                    onWalletWithdrawalSuccess={onWalletWithdrawalSuccess}
-                    onCancelWithdrawal={onCancelWithdrawal}
-                />
-            ),
-        };
+        actionKey = 'outOfGas';
+        warning = <GasWarningView adjustButton={showAdjustAmount && <AdjustAmountButton compact onEditAmount={handleEditAmount} isLoading={quoteIsLoading} />} />;
     }
+    return { warning, actionKey, blocked };
+}
 
-    return (
-        <>
-            {withdraw?.footer && (
-                <Widget.Footer sticky={type == 'widget'}>
-                    <WalletActionTransition actionKey={withdraw.footerKey}>
-                        {withdraw.footer}
-                    </WalletActionTransition>
-                </Widget.Footer>
-            )}
-        </>
-    );
+const Withdraw: FC<{
+    type: 'widget' | 'contained';
+    onWalletWithdrawalSuccess?: () => void;
+    onCancelWithdrawal?: () => void;
+}> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal }) => {
+    const { swapBasicData, swapDetails, refuel } = useSwapDataState();
+    const { warning, actionKey, blocked } = useWithdrawBalance();
+    if (!swapBasicData) return null;
+    return <Widget.Footer sticky={type === 'widget'}>
+        <WalletActionTransition actionKey={actionKey}>
+            {blocked ? warning : <WalletTransferButton swapBasicData={swapBasicData} swapId={swapDetails?.id} refuel={!!refuel} warning={warning} showProgress={false} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal} />}
+        </WalletActionTransition>
+    </Widget.Footer>;
 };
-
 export default Withdraw;

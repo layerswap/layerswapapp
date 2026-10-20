@@ -38,7 +38,7 @@ const fixtureUrl = 'data:text/javascript,' + encodeURIComponent(`
   export const useSettingsState = () => ({ networks: [], sourceRoutes: [] })
   export const useInitialSettings = () => ({})
   export const useWalletWithdrawalState = () => ({ onWalletWithdrawalSuccess() { state.successes++; state.onSuccess?.() } })
-  export const useSelectedAccount = () => ({ id: 'wallet', address: 'source' })
+  export const useSelectedAccount = () => ({ id: 'wallet', address: state.sourceAddress ?? 'source', provider: state.provider })
   export default () => ({ wallets: [{ id: 'wallet', address: 'source', providerName: 'test-wallet' }] })
   export const useTransfer = () => ({ executeTransfer: async (...args) => {
     state.transfers.push(args)
@@ -106,7 +106,7 @@ let unsubscribeStore, executionRoot
 beforeEach(async () => {
   useSwapTransactionStore.setState(useSwapTransactionStore.getInitialState(), true)
   Object.assign(state, {
-    events: [], errors: [], transfers: [], published: [], successes: 0, error: undefined,
+    events: [], errors: [], transfers: [], published: [], successes: 0, error: undefined, sourceAddress: 'source', provider: undefined,
     refreshes: [], actionRefreshes: [], reconciled: [], freshAttempts: 0, creations: 0, selectedSwapId: 'swap-1',
     swapDetails: { id: 'swap-1' }, onSuccess: undefined, executionLocks: [],
     depositActions: [{ type: 'transfer', to_address: 'deposit', call_data: '0x', amount_in_base_units: '1000000' }],
@@ -323,13 +323,14 @@ test('existing persisted transactions hydrate with an empty pending submission m
 
 async function mountWithdrawal(useWithdrawal, props = {}) {
   let result
+  let active = true
   function Probe() {
-    result = useWithdrawal({ swapId: 'swap-1', swapBasicData, refuel: false, ...props })
+    result = useWithdrawal({ swapId: 'swap-1', swapBasicData, refuel: false, ...props }, active)
     return null
   }
   const root = createRoot(document.createElement('div'))
   await act(async () => root.render(createElement(Probe)))
-  return { get result() { return result }, unmount: () => act(async () => root.unmount()) }
+  return { get result() { return result }, rerender: () => act(() => root.render(createElement(Probe))), setActive: value => { active = value; return act(() => root.render(createElement(Probe))); }, unmount: () => act(async () => root.unmount()) }
 }
 
 for (const [useWithdrawal, providerType] of [
@@ -974,6 +975,72 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
       assert.equal(state.creations, 0)
       assert.equal(state.events.filter(event => event.step === 'transaction_submitted').length, 1)
     } finally {
+      await mounted.unmount()
+    }
+  })
+
+  for (const change of ['account', 'provider', 'source']) {
+    test(`${useWithdrawal.name} records a late receipt after ${change} cancellation without a stale handoff`, async () => {
+      const transfer = Promise.withResolvers()
+      state.executeTransfer = () => transfer.promise
+      const props = { swapBasicData }
+      const mounted = await mountWithdrawal(useWithdrawal, props)
+      let pending
+      try {
+        await act(() => { pending = mounted.result.handleWithdraw() })
+        if (change === 'account') state.sourceAddress = 'different-account'
+        if (change === 'provider') state.provider = { name: 'different-provider' }
+        if (change === 'source') props.swapBasicData = { ...swapBasicData, source_network: { name: 'different-source' } }
+        await mounted.rerender()
+        await act(async () => { transfer.resolve('late-receipt'); await pending })
+        assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].hash, 'late-receipt')
+        assert.equal(state.successes, 0)
+        assert.deepEqual(state.events.map(event => event.step), ['wallet_prompt_opened'])
+        assert.deepEqual(state.errors, [])
+      } finally {
+        transfer.resolve('late-receipt')
+        await pending
+        await mounted.unmount()
+      }
+    })
+  }
+
+  test(`${useWithdrawal.name} provider snapshot updates preserve the active operation`, async () => {
+    state.provider = { name: 'same-provider' }
+    const transfer = Promise.withResolvers()
+    state.executeTransfer = () => transfer.promise
+    const mounted = await mountWithdrawal(useWithdrawal)
+    let pending
+    try {
+      await act(() => { pending = mounted.result.handleWithdraw() })
+      state.provider = { name: 'same-provider' }
+      await mounted.rerender()
+      await act(async () => { transfer.resolve('snapshot-receipt'); await pending })
+      assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].hash, 'snapshot-receipt')
+      assert.equal(state.successes, 1)
+      assert.deepEqual(state.errors, [])
+    } finally {
+      transfer.resolve('snapshot-receipt')
+      await pending
+      await mounted.unmount()
+    }
+  })
+
+  test(`${useWithdrawal.name} hiding controls keeps an active operation alive`, async () => {
+    const transfer = Promise.withResolvers()
+    state.executeTransfer = () => transfer.promise
+    const mounted = await mountWithdrawal(useWithdrawal)
+    let pending
+    try {
+      await act(() => { pending = mounted.result.handleWithdraw() })
+      await mounted.setActive(false)
+      await act(async () => { transfer.resolve('submitted-while-hidden'); await pending })
+      assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].hash, 'submitted-while-hidden')
+      assert.equal(state.successes, 1)
+      assert.deepEqual(state.errors, [])
+    } finally {
+      transfer.resolve('submitted-while-hidden')
+      await pending
       await mounted.unmount()
     }
   })

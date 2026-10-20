@@ -1,3 +1,4 @@
+import { Page2Presenter } from './Page2Presenter';
 import { WidgetFooterView } from '@/components/Widget/Footer';
 import { CopyButtonView } from '@layerswap/ui-kit/components';
 import { ConfirmationContent } from '@/components/Modal/ConfirmationContent';
@@ -8,18 +9,15 @@ import { QuoteAvailabilityView } from './QuoteAvailabilityView';
 import { ManualSourceSelectorView } from './ManualSourceSelectorView';
 import { DepositQRCodeView } from './DepositQRCodeView';
 import { ManualDepositButtonView } from './ManualDepositButtonView';
-import {
-    SwapContentView,
-    WalletSubmissionView,
-    WalletTransferView,
-    ProcessingSectionView,
-    PendingSwapView,
-} from './Page2Sections';
+import { WalletTransferView, PendingSwapView } from './Page2Sections';
 import { Page2PreviewFrame, type Page2PreviewMode } from './Page2PreviewFrame';
 import { ElapsedTime } from '@/components/Common/ElapsedTime';
 import { SwapDetailsSceleton } from '@/components/Common/Sceletons';
 import { resolveSwapPhase } from '@/components/utils/resolveSwapPhase';
-import { resolveSwapFlow, type ResolvedSwapFlow } from '@/components/utils/resolveSwapFlow';
+import {
+    resolveSwapFlow,
+    type ResolvedSwapFlow,
+} from '@/components/utils/resolveSwapFlow';
 import { isDepositWorkflowComplete } from '@/helpers/depositActions';
 import { gaslessFailureMessage } from '@/helpers/gaslessFailureMessage';
 import { isGaslessAuthorizationSubmitted } from '@/helpers/gasless';
@@ -27,7 +25,7 @@ import { TransactionType } from '@/lib/apiClients/layerSwapApiClient';
 import { resolvePriceImpactValues } from '@/lib/fees';
 import { ReadOnlyPreview } from './ReadOnlyPreview';
 import { ActionMessages } from '../messages/TransactionMessages';
-import { ActionMessageView } from './ActionMessageView';
+import { getActionMessage } from './ActionMessageView';
 import {
     AdjustAmountButtonView,
     RefreshBalanceButtonView,
@@ -42,21 +40,23 @@ import type {
     Page2Snapshot,
     Page2WalletState,
 } from './Page2Snapshot';
-import { ProcessingView } from './ProcessingView';
+import { getProcessingProgress } from './ProcessingView';
 import { QuoteDetailsSummary } from './QuoteDetailsSummary';
 import { QuoteSummaryView } from './QuoteSummaryView';
 import { QuoteUpdated } from './QuoteUpdatedView';
 import { QuoteView } from './QuoteView';
 import { RPCUnhealthyView } from './RPCUnhealthyView';
 import { RetryView } from './RetryView';
-import { WalletActionTransition } from './WalletActionTransition';
 import { SpecializedWithdrawalView } from './SpecializedWithdrawalView';
 import SummaryView from './SummaryView';
-import { ConnectWalletView, SendTransactionView } from './WalletActionsView';
+import {
+    ConnectWalletView,
+    getSendTransactionPresentation,
+} from './WalletActionsView';
 import { NetworkSwitchError } from '../Wallet/Common/ensureSourceChain';
 import type { ActionData } from '../Wallet/Common/sharedTypes';
 import type { Network } from '@layerswap/widget-types';
-import { useState } from 'react';
+import { type ReactNode } from 'react';
 
 /** Maps synthetic state to the same presenters used by the live controllers. */
 export function Page2Preview({
@@ -130,7 +130,6 @@ export function Page2LoadedPreview({
 }) {
     // Opening a snapshot is settled; navigating an existing preview runs the
     // same entrance as live swap creation, including a newly mounted workflow.
-    const [initialSnapshot] = useState(s);
     const input = s.details.transactions.find(
         (t) => t.type === TransactionType.Input,
     );
@@ -146,8 +145,10 @@ export function Page2LoadedPreview({
         swapDetails: s.details,
         refuel: s.refuel,
         inputTxStatusFromApi: s.inputTxStatusFromApi,
-        depositCompleted: isGaslessAuthorizationSubmitted(s.gaslessAuthorization)
-            || (!s.swap.use_deposit_address && isDepositWorkflowComplete(s.depositActions ?? [])),
+        depositCompleted:
+            isGaslessAuthorizationSubmitted(s.gaslessAuthorization) ||
+            (!s.swap.use_deposit_address &&
+                isDepositWorkflowComplete(s.depositActions ?? [])),
         walletActionExecuting: s.wallet.kind === 'send' && !!s.wallet.pending,
         gaslessFailureStatus: gaslessFailed
             ? (s.gaslessAuthorization?.status as
@@ -164,11 +165,16 @@ export function Page2LoadedPreview({
         stepTransactions: s.stepTransactions,
         quote: s.quote,
         gaslessAuthorization: s.gaslessAuthorization,
-        sourceProvider: s.sourceProvider ?? (s.wallet.kind === 'specialized' ? s.wallet.provider : undefined),
+        sourceProvider:
+            s.sourceProvider ??
+            (s.wallet.kind === 'specialized' ? s.wallet.provider : undefined),
         walletExecutionStarted: s.walletExecutionStarted,
         isDepositFlow: s.isDepositFlow,
         hasRefuel: !!s.refuel,
-        transactionHash: input?.transaction_hash || s.gaslessAuthorization?.transaction?.transaction_hash || s.storedWalletTransaction?.hash,
+        transactionHash:
+            input?.transaction_hash ||
+            s.gaslessAuthorization?.transaction?.transaction_hash ||
+            s.storedWalletTransaction?.hash,
         outputTransactionHash: output?.transaction_hash,
         resolved,
     });
@@ -189,140 +195,115 @@ export function Page2LoadedPreview({
         />
     );
     const authTx = s.gaslessAuthorization?.transaction;
-    const progress = (
-        <ProcessingView
-            available={!!s.swapId}
-            animateOnMount={s !== initialSnapshot && !!s.walletExecutionStarted}
-            flow={flow}
-            walletProgress={previewWalletProgress(s)}
-            swapBasicData={s.swap}
-            swapDetails={s.details}
-            depositActions={s.depositActions}
-            stepTransactions={s.stepTransactions}
-            quote={s.quote}
-            refuel={s.refuel}
-            resolved={resolved}
-            inputFailureMessage={
-                gaslessFailed
-                    ? gaslessFailureMessage(s.gaslessAuthorization?.status)
-                    : undefined
-            }
-            isDepositFlow={s.isDepositFlow}
-            readOnly
-            transactionHash={
-                input?.transaction_hash ||
-                authTx?.transaction_hash ||
-                s.storedWalletTransaction?.hash
-            }
-            inputConfirmations={input?.confirmations ?? authTx?.confirmations}
-            inputMaxConfirmations={
-                input?.max_confirmations ?? authTx?.max_confirmations
-            }
-            elapsedTime={
-                s.quote?.avg_completion_time ? (
-                    <ElapsedTime
-                        swapDetails={s.details}
-                        elapsedMs={
-                            input?.timestamp
-                                ? Math.max(0, now - Date.parse(input.timestamp))
-                                : 0
-                        }
-                    />
-                ) : null
-            }
-            failedPanel={
-                <FailedView
-                    status={s.details.status}
-                    isDepositFlow={s.isDepositFlow}
-                />
-            }
-        />
-    );
-    let content;
+    const processingProgress = getProcessingProgress({
+        flow: flow,
+        walletProgress: previewWalletProgress(s),
+        swapBasicData: s.swap,
+        swapDetails: s.details,
+        depositActions: s.depositActions,
+        stepTransactions: s.stepTransactions,
+        quote: s.quote,
+        refuel: s.refuel,
+        resolved: resolved,
+        inputFailureMessage: gaslessFailed
+            ? gaslessFailureMessage(s.gaslessAuthorization?.status)
+            : undefined,
+        isDepositFlow: s.isDepositFlow,
+        readOnly: true,
+        transactionHash:
+            input?.transaction_hash ||
+            authTx?.transaction_hash ||
+            s.storedWalletTransaction?.hash,
+        inputConfirmations: input?.confirmations ?? authTx?.confirmations,
+        inputMaxConfirmations:
+            input?.max_confirmations ?? authTx?.max_confirmations,
+        elapsedTime: s.quote?.avg_completion_time ? (
+            <ElapsedTime
+                swapDetails={s.details}
+                elapsedMs={
+                    input?.timestamp
+                        ? Math.max(0, now - Date.parse(input.timestamp))
+                        : 0
+                }
+            />
+        ) : null,
+        failedPanel: (
+            <FailedView
+                status={s.details.status}
+                isDepositFlow={s.isDepositFlow}
+            />
+        ),
+    });
+    const progress = s.swapId ? processingProgress : null;
+    let controls: ReactNode = null;
+    let footer: ReactNode = null;
     if (!resolved.showWithdrawScreen) {
-        content = resolved.failureReason ? (
-            <ProcessingSectionView
-                actions={
-                    <RetryView
-                        canSwitchToStandard={
-                            resolved.failureReason === 'gasless_deposit_failed'
+        footer = resolved.failureReason ? (
+            <RetryView
+                canSwitchToStandard={
+                    resolved.failureReason === 'gasless_deposit_failed'
+                }
+            />
+        ) : null;
+    } else if (s.swap.use_deposit_address) {
+        controls = (
+            <ManualInstructionsView
+                swapBasicData={s.swap}
+                quote={s.quote}
+                loading={s.manual?.loading}
+                depositAddress={s.manual?.address}
+                sourceSelector={
+                    <ManualSourceSelectorView
+                        network={
+                            s.manual?.selectedNetwork ?? s.swap.source_network
                         }
+                        withdrawalNetworks={s.manual?.withdrawalNetworks}
+                    />
+                }
+                recipient={s.recipient}
+                qr={
+                    <DepositQRCodeView
+                        depositAddress={s.manual?.address}
+                        showQR={s.manual?.qrOpen}
+                    />
+                }
+                amountCopy={
+                    <CopyButtonView
+                        isCopied={s.manual?.amountCopied}
+                        iconClassName="text-secondary-text"
+                    />
+                }
+                addressCopy={
+                    <CopyButtonView
+                        isCopied={s.manual?.addressCopied}
+                        className="flex"
+                    />
+                }
+                quoteDetails={
+                    <PreviewQuote
+                        snapshot={s}
+                        onExpandedChange={onQuoteExpandedChange}
                     />
                 }
             />
-        ) : undefined;
-    } else if (s.swap.use_deposit_address) {
-        content = (
-            <>
-                <ManualInstructionsView
-                    swapBasicData={s.swap}
-                    quote={s.quote}
-                    loading={s.manual?.loading}
-                    depositAddress={s.manual?.address}
-                    sourceSelector={
-                        <ManualSourceSelectorView
-                            network={
-                                s.manual?.selectedNetwork ??
-                                s.swap.source_network
-                            }
-                            withdrawalNetworks={s.manual?.withdrawalNetworks}
-                        />
-                    }
-                    recipient={s.recipient}
-                    qr={
-                        <DepositQRCodeView
-                            depositAddress={s.manual?.address}
-                            showQR={s.manual?.qrOpen}
-                        />
-                    }
-                    amountCopy={
-                        <CopyButtonView
-                            isCopied={s.manual?.amountCopied}
-                            iconClassName="text-secondary-text"
-                        />
-                    }
-                    addressCopy={
-                        <CopyButtonView
-                            isCopied={s.manual?.addressCopied}
-                            className="flex"
-                        />
-                    }
-                    quoteDetails={
-                        <PreviewQuote
-                            snapshot={s}
-                            onExpandedChange={onQuoteExpandedChange}
-                        />
-                    }
-                />
-                <WidgetFooterView sticky={false}>
-                    <ManualDepositButtonView copied={s.manual?.addressCopied} />
-                </WidgetFooterView>
-            </>
         );
+        footer = <ManualDepositButtonView copied={s.manual?.addressCopied} />;
     } else {
-        content = (
-            <>
-                <WidgetFooterView sticky={false}>
-                    <WalletActionTransition
-                        actionKey={
-                            s.balanceWarning?.kind === 'balance'
-                                ? 'insufficient'
-                                : s.balanceWarning?.kind === 'gas'
-                                  ? 'outOfGas'
-                                  : 'transfer'
-                        }
-                    >
-                        <WalletTransferView>
-                            <PreviewWallet snapshot={s} flow={flow} />
-                        </WalletTransferView>
-                    </WalletActionTransition>
-                </WidgetFooterView>
-            </>
-        );
+        footer = getPreviewWallet({ snapshot: s, flow });
     }
     return (
-        <SwapContentView
+        <Page2Presenter
             progress={progress}
+            controls={controls}
+            footer={footer}
+            actionKey={
+                resolved.showWithdrawScreen
+                    ? (s.balanceWarning?.kind ?? s.wallet.kind)
+                    : 'retry'
+            }
+            renderFooter={(children) => (
+                <WidgetFooterView sticky={false}>{children}</WidgetFooterView>
+            )}
             stage={resolved.showWithdrawScreen ? 'withdraw' : 'processing'}
             flow={flow}
             summary={
@@ -339,9 +320,7 @@ export function Page2LoadedPreview({
                     />
                 )
             }
-        >
-            {content}
-        </SwapContentView>
+        />
     );
 }
 
@@ -447,7 +426,13 @@ function PreviewQuote({
     );
 }
 
-function PreviewWallet({ snapshot: s, flow }: { snapshot: Page2LoadedSnapshot; flow: ResolvedSwapFlow }) {
+function getPreviewWallet({
+    snapshot: s,
+    flow,
+}: {
+    snapshot: Page2LoadedSnapshot;
+    flow: ResolvedSwapFlow;
+}) {
     const state = s.wallet;
     if (s.balanceWarning?.kind === 'balance')
         return (
@@ -460,7 +445,12 @@ function PreviewWallet({ snapshot: s, flow }: { snapshot: Page2LoadedSnapshot; f
                         <RefreshBalanceButtonView
                             showSpinner={s.balanceWarning.refreshing}
                         />
-                        <AdjustAmountButtonView disabled={s.quoteState.status === 'loading' || !!s.walletExecutionStarted} />
+                        <AdjustAmountButtonView
+                            disabled={
+                                s.quoteState.status === 'loading' ||
+                                !!s.walletExecutionStarted
+                            }
+                        />
                     </>
                 }
             />
@@ -501,46 +491,39 @@ function PreviewWallet({ snapshot: s, flow }: { snapshot: Page2LoadedSnapshot; f
                 connectButton={<ConnectWalletView />}
             />
         );
+    const send = getSendTransactionPresentation({
+        ...previewWalletProgress(s),
+        flow,
+        swapId: s.swapId,
+        quoteIsLoading: s.quoteState.status === 'loading',
+        quoteError: s.quoteState.status === 'error',
+        isDisabled: state.disabled,
+        networkSwitch: previewNetworkSwitch(
+            state.networkSwitch,
+            s.swap.source_network,
+        ),
+        sourceNetworkName: s.swap.source_network.display_name,
+        actionButtonText: s.actionButtonText,
+        criticalMarketPriceImpact: !!state.critical,
+        showCriticalMarketPriceImpactButtons: state.critical === 'confirmation',
+        priceImpactValues: s.quote
+            ? resolvePriceImpactValues(s.quote, s.refuel)
+            : undefined,
+        gaslessFailureStage: state.gaslessFailureStage,
+    });
+    if (s.balanceWarning?.kind !== 'gas') return send.controls;
     return (
-        <>
-            {s.balanceWarning?.kind === 'gas' && (
-                <GasWarningView
-                    adjustButton={
-                        <AdjustAmountButtonView
-                            compact
-                            disabled={s.quoteState.status === 'loading'}
-                        />
-                    }
-                />
-            )}
-            <WalletSubmissionView>
-                <SendTransactionView
-                    showProgress={false}
-                    {...previewWalletProgress(s)}
-                    flow={flow}
-                    swapId={s.swapId}
-                    quoteIsLoading={s.quoteState.status === 'loading'}
-                    quoteError={s.quoteState.status === 'error'}
-                    isDisabled={state.disabled}
-                    networkSwitch={previewNetworkSwitch(
-                        state.networkSwitch,
-                        s.swap.source_network,
-                    )}
-                    sourceNetworkName={s.swap.source_network.display_name}
-                    actionButtonText={s.actionButtonText}
-                    criticalMarketPriceImpact={!!state.critical}
-                    showCriticalMarketPriceImpactButtons={
-                        state.critical === 'confirmation'
-                    }
-                    priceImpactValues={
-                        s.quote
-                            ? resolvePriceImpactValues(s.quote, s.refuel)
-                            : undefined
-                    }
-                    gaslessFailureStage={state.gaslessFailureStage}
-                />
-            </WalletSubmissionView>
-        </>
+        <WalletTransferView>
+            <GasWarningView
+                adjustButton={
+                    <AdjustAmountButtonView
+                        compact
+                        disabled={s.quoteState.status === 'loading'}
+                    />
+                }
+            />
+            {send.controls}
+        </WalletTransferView>
     );
 }
 
@@ -559,18 +542,15 @@ function previewWalletProgress(s: Page2LoadedSnapshot) {
         error: !!state.error,
         swapError: state.swapError,
         gaslessUnavailable: state.gaslessUnavailable,
-        errorMessage: (
-            <ActionMessageView
-                error={state.error ? { name: state.error } : undefined}
-                isSignatureError={state.isSignatureError}
-                sourceNetwork={s.swap.source_network}
-                selectedSourceAddress={s.sourceAddress}
-                expanded={state.errorExpanded ?? false}
-                swapError={state.swapError}
-                gaslessUnavailable={state.gaslessUnavailable}
-                gaslessErrorMessage={state.gaslessMessage}
-            />
-        ),
+        errorMessage: getActionMessage({
+            error: state.error ? { name: state.error } : undefined,
+            isSignatureError: state.isSignatureError,
+            sourceNetwork: s.swap.source_network,
+            selectedSourceAddress: s.sourceAddress,
+            expanded: state.errorExpanded ?? false,
+            swapError: state.swapError,
+            gaslessUnavailable: state.gaslessUnavailable,
+        }),
     };
 }
 

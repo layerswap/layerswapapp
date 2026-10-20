@@ -14,7 +14,7 @@ import {
 import { SwapFailReasons } from '@/Models/RangeError';
 import { SwapStatus, type Refuel } from '@layerswap/widget-types';
 import { CircleCheck, Undo2 } from 'lucide-react';
-import { useMemo, type ComponentProps, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { ProgressPanelView, type ProgressPanelData } from './ProgressPanelView';
 import { getWalletProgress, type WalletProgressData } from './walletProgress';
 import {
@@ -26,16 +26,24 @@ import { getDepositWorkflowProgress } from './DepositWorkflowView';
 import shortenString from '@/components/utils/ShortenString';
 import type { SwapStepTransactions } from '@/stores/swapTransactionStore';
 import { getDepositActionLabel } from '@/helpers/depositActions';
-import { resolveSwapFlow, type ResolvedSwapFlow } from '@/components/utils/resolveSwapFlow';
+import {
+    resolveSwapFlow,
+    type ResolvedSwapFlow,
+} from '@/components/utils/resolveSwapFlow';
 
 export function ProcessingView({
     available = true,
     ...props
-}: ComponentProps<typeof ProcessingContentView> & { available?: boolean }) {
-    return available ? <ProcessingContentView {...props} /> : null;
+}: Parameters<typeof getProcessingProgress>[0] & { available?: boolean }) {
+    return (
+        <ProgressPanelView
+            data={available ? getProcessingProgress(props) : null}
+            animateOnMount={props.animateOnMount}
+        />
+    );
 }
 
-function ProcessingContentView({
+export function getProcessingProgress({
     flow: resolvedFlow,
     swapBasicData,
     swapDetails,
@@ -54,7 +62,6 @@ function ProcessingContentView({
     stepTransactions,
     quote,
     walletProgress,
-    animateOnMount = !!walletProgress?.walletExecutionStarted,
 }: {
     flow?: ResolvedSwapFlow;
     swapBasicData: SwapBasicData;
@@ -85,10 +92,19 @@ function ProcessingContentView({
     const swapOutputTransaction = swapDetails.transactions?.find(
         (t) => t.type === TransactionType.Output,
     );
-    const flow = resolvedFlow ?? resolveSwapFlow({
-        swapData: swapBasicData, depositActions, stepTransactions, quote, resolved, isDepositFlow,
-        hasRefuel: !!refuel, transactionHash, outputTransactionHash: swapOutputTransaction?.transaction_hash,
-    });
+    const flow =
+        resolvedFlow ??
+        resolveSwapFlow({
+            swapData: swapBasicData,
+            depositActions,
+            stepTransactions,
+            quote,
+            resolved,
+            isDepositFlow,
+            hasRefuel: !!refuel,
+            transactionHash,
+            outputTransactionHash: swapOutputTransaction?.transaction_hash,
+        });
     const swapRefuelTransaction = swapDetails.transactions?.find(
         (t) => t.type === TransactionType.Refuel,
     );
@@ -130,302 +146,265 @@ function ProcessingContentView({
     const truncatedRefuelAmount =
         refuel && truncateDecimals(refuel.amount, refuel.token?.precision);
 
-    const progressStates = useMemo<ProgressStates>(
-        () => ({
-            input_transfer: {
-                upcoming: {
-                    name: 'Waiting for your transfer',
-                    description: null,
-                },
-                current: {
-                    name: isDepositFlow
-                        ? 'Processing your transfer'
-                        : 'Processing your deposit',
-                    description:
-                        inputConfirmations != null &&
-                        inputMaxConfirmations != null &&
-                        inputConfirmations > 0 ? (
-                            <span>
-                                Confirmations{' '}
-                                <span className="text-primary-text">
-                                    {Math.min(
-                                        inputConfirmations,
-                                        inputMaxConfirmations,
-                                    )}
-                                    /{inputMaxConfirmations}
-                                </span>
+    const progressStates: ProgressStates = {
+        input_transfer: {
+            upcoming: {
+                name: 'Waiting for your transfer',
+                description: null,
+            },
+            current: {
+                name: isDepositFlow
+                    ? 'Processing your transfer'
+                    : 'Processing your deposit',
+                description:
+                    inputConfirmations != null &&
+                    inputMaxConfirmations != null &&
+                    inputConfirmations > 0 ? (
+                        <span>
+                            Confirmations{' '}
+                            <span className="text-primary-text">
+                                {Math.min(
+                                    inputConfirmations,
+                                    inputMaxConfirmations,
+                                )}
+                                /{inputMaxConfirmations}
                             </span>
-                        ) : null,
-                },
-                complete: {
-                    name: isDepositFlow
-                        ? `Transfer confirmed`
-                        : `Deposit confirmed`,
-                    description: `We've received your ${isDepositFlow ? 'transfer' : 'deposit'}.`,
-                },
-                failed: {
-                    name: `The transfer failed`,
-                    description: inputFailureMessage || (
-                        <div className="flex space-x-1">
-                            <div className="space-x-1 text-primary-text">
-                                {fail_reason ==
-                                SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? (
-                                    "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
-                                ) : fail_reason ==
-                                  SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ? (
-                                    "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
-                                ) : (
-                                    <div>
-                                        <span className="text-secondary-text">
-                                            Something went wrong while
-                                            processing the transfer.
-                                        </span>{' '}
-                                        <span
-                                            className="underline hover:cursor-pointer text-secondary-text"
-                                            onClick={() => onGetHelp?.()}
-                                        >
-                                            {' '}
-                                            please contact our support.
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    ),
-                },
-                delayed: {
-                    name: `This transfer is being delayed by Coinbase`,
-                    description: null,
-                },
+                        </span>
+                    ) : null,
             },
-            output_transfer: {
-                upcoming: {
-                    name: isDepositFlow
-                        ? 'Completing your deposit'
-                        : `Sending ${destination_token.asset} to your address`,
-                    description: null,
-                },
-                current: {
-                    name: isDepositFlow
-                        ? 'Completing your deposit'
-                        : `Sending ${destination_token.asset} to your address`,
-                    description: null,
-                },
-                complete: {
-                    name: `${swapOutputTransaction?.amount && truncateDecimals(swapOutputTransaction?.amount, destination_token.precision ?? destination_token.decimals)} ${destination_token.asset} ${isDepositFlow ? 'deposited' : 'was sent to your address'}`,
-                    description: null,
-                },
-                failed: {
-                    name:
-                        swapDetails.status === SwapStatus.PendingRefund ||
-                        swapDetails.status === SwapStatus.Refunded
-                            ? 'Processing Failed'
-                            : fail_reason ==
-                                SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE
-                              ? `The transfer is on hold`
-                              : 'The transfer has failed',
-                    description: (
-                        <div className="flex space-x-1">
-                            <div className="space-x-1 text-secondary-text">
-                                {swapDetails.status ===
-                                    SwapStatus.PendingRefund ||
-                                swapDetails.status === SwapStatus.Refunded ? (
-                                    "There was an issue completing the transfer. We're refunding your deposit."
-                                ) : fail_reason ==
-                                  SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? (
-                                    "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
-                                ) : fail_reason ==
-                                  SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ? (
-                                    "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
-                                ) : (
-                                    <div>
-                                        <span className="text-secondary-text">
-                                            Something went wrong while
-                                            processing the transfer.
-                                        </span>{' '}
-                                        <span
-                                            className="underline hover:cursor-pointer text-secondary-text"
-                                            onClick={() => onGetHelp?.()}
-                                        >
-                                            {' '}
-                                            please contact our support.
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    ),
-                },
-                delayed: {
-                    name: `This swap is being delayed by Coinbase`,
-                    description: null,
-                },
+            complete: {
+                name: isDepositFlow
+                    ? `Transfer confirmed`
+                    : `Deposit confirmed`,
+                description: `We've received your ${isDepositFlow ? 'transfer' : 'deposit'}.`,
             },
-            refuel: {
-                upcoming: {
-                    name: `Sending ${refuel?.token?.asset} to your address`,
-                    description: null,
-                },
-                current: {
-                    name: `Sending ${refuel?.token?.asset} to your address`,
-                    description: null,
-                },
-                complete: {
-                    name: `${truncatedRefuelAmount} ${refuel?.token?.asset} was sent to your address`,
-                    description: null,
-                },
-                delayed: {
-                    name: `This transfers is being delayed`,
-                    description: null,
-                },
-            },
-            refund: {
-                upcoming: {
-                    name: 'Refund Pending',
-                    description: null,
-                },
-                current: {
-                    name: 'Refund Pending',
-                    description: (
-                        <div className="text-secondary-text">
-                            Your refund is being processed.
+            failed: {
+                name: `The transfer failed`,
+                description: inputFailureMessage || (
+                    <div className="flex space-x-1">
+                        <div className="space-x-1 text-primary-text">
+                            {fail_reason ==
+                            SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? (
+                                "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
+                            ) : fail_reason ==
+                              SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ? (
+                                "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
+                            ) : (
+                                <div>
+                                    <span className="text-secondary-text">
+                                        Something went wrong while processing
+                                        the transfer.
+                                    </span>{' '}
+                                    <span
+                                        className="underline hover:cursor-pointer text-secondary-text"
+                                        onClick={() => onGetHelp?.()}
+                                    >
+                                        {' '}
+                                        please contact our support.
+                                    </span>
+                                </div>
+                            )}
                         </div>
-                    ),
-                },
-                complete: {
-                    name: 'Refund sent',
-                    description:
-                        'The full deposit amount has been sent back to your wallet.',
-                },
-                failed: {
-                    name: 'Refund Failed',
-                    description: (
+                    </div>
+                ),
+            },
+            delayed: {
+                name: `This transfer is being delayed by Coinbase`,
+                description: null,
+            },
+        },
+        output_transfer: {
+            upcoming: {
+                name: isDepositFlow
+                    ? 'Completing your deposit'
+                    : `Sending ${destination_token.asset} to your address`,
+                description: null,
+            },
+            current: {
+                name: isDepositFlow
+                    ? 'Completing your deposit'
+                    : `Sending ${destination_token.asset} to your address`,
+                description: null,
+            },
+            complete: {
+                name: `${swapOutputTransaction?.amount && truncateDecimals(swapOutputTransaction?.amount, destination_token.precision ?? destination_token.decimals)} ${destination_token.asset} ${isDepositFlow ? 'deposited' : 'was sent to your address'}`,
+                description: null,
+            },
+            failed: {
+                name:
+                    swapDetails.status === SwapStatus.PendingRefund ||
+                    swapDetails.status === SwapStatus.Refunded
+                        ? 'Processing Failed'
+                        : fail_reason ==
+                            SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE
+                          ? `The transfer is on hold`
+                          : 'The transfer has failed',
+                description: (
+                    <div className="flex space-x-1">
                         <div className="space-x-1 text-secondary-text">
-                            <span>
-                                Something went wrong while processing the
-                                refund.
-                            </span>{' '}
-                            <span
-                                className="underline hover:cursor-pointer text-secondary-text"
-                                onClick={() => onGetHelp?.()}
-                            >
-                                {' '}
-                                please contact our support.
-                            </span>
+                            {swapDetails.status === SwapStatus.PendingRefund ||
+                            swapDetails.status === SwapStatus.Refunded ? (
+                                "There was an issue completing the transfer. We're refunding your deposit."
+                            ) : fail_reason ==
+                              SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? (
+                                "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
+                            ) : fail_reason ==
+                              SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ? (
+                                "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
+                            ) : (
+                                <div>
+                                    <span className="text-secondary-text">
+                                        Something went wrong while processing
+                                        the transfer.
+                                    </span>{' '}
+                                    <span
+                                        className="underline hover:cursor-pointer text-secondary-text"
+                                        onClick={() => onGetHelp?.()}
+                                    >
+                                        {' '}
+                                        please contact our support.
+                                    </span>
+                                </div>
+                            )}
                         </div>
-                    ),
-                },
+                    </div>
+                ),
             },
-        }),
-        [
-            inputConfirmations,
-            inputMaxConfirmations,
-            inputFailureMessage,
-            swapOutputTransaction,
-            destination_token.asset,
-            destination_token.decimals,
-            destination_token.precision,
-            refuel?.token?.asset,
-            truncatedRefuelAmount,
-            fail_reason,
-            swapDetails.status,
-            onGetHelp,
-            isDepositFlow,
-        ],
-    );
+            delayed: {
+                name: `This swap is being delayed by Coinbase`,
+                description: null,
+            },
+        },
+        refuel: {
+            upcoming: {
+                name: `Sending ${refuel?.token?.asset} to your address`,
+                description: null,
+            },
+            current: {
+                name: `Sending ${refuel?.token?.asset} to your address`,
+                description: null,
+            },
+            complete: {
+                name: `${truncatedRefuelAmount} ${refuel?.token?.asset} was sent to your address`,
+                description: null,
+            },
+            delayed: {
+                name: `This transfers is being delayed`,
+                description: null,
+            },
+        },
+        refund: {
+            upcoming: {
+                name: 'Refund Pending',
+                description: null,
+            },
+            current: {
+                name: 'Refund Pending',
+                description: (
+                    <div className="text-secondary-text">
+                        Your refund is being processed.
+                    </div>
+                ),
+            },
+            complete: {
+                name: 'Refund sent',
+                description:
+                    'The full deposit amount has been sent back to your wallet.',
+            },
+            failed: {
+                name: 'Refund Failed',
+                description: (
+                    <div className="space-x-1 text-secondary-text">
+                        <span>
+                            Something went wrong while processing the refund.
+                        </span>{' '}
+                        <span
+                            className="underline hover:cursor-pointer text-secondary-text"
+                            onClick={() => onGetHelp?.()}
+                        >
+                            {' '}
+                            please contact our support.
+                        </span>
+                    </div>
+                ),
+            },
+        },
+    };
 
-    const { currentSteps, stepsProgressPercentage } = useMemo(() => {
-        const allSteps: StatusStep[] = [
-            {
-                id: 'input_transfer',
-                name: progressStates.input_transfer?.[
-                    stepStatuses.input_transfer
-                ]?.name,
-                status: stepStatuses.input_transfer,
-                description:
-                    progressStates.input_transfer?.[stepStatuses.input_transfer]
-                        ?.description,
-                explorerUrl: inputExplorerUrl,
-                readOnly,
-                index: 1,
-            },
-            {
-                id: 'output_transfer',
-                name: progressStates.output_transfer?.[
-                    stepStatuses.output_transfer
-                ]?.name,
-                status: stepStatuses.output_transfer,
-                description:
-                    progressStates.output_transfer?.[
-                        stepStatuses.output_transfer
-                    ]?.description,
-                explorerUrl: outputExplorerUrl,
-                readOnly,
-                index: 2,
-            },
-            {
-                id: 'refuel',
-                name: progressStates.refuel?.[stepStatuses.refuel]?.name,
-                status: stepStatuses.refuel,
-                description:
-                    progressStates.refuel?.[stepStatuses.refuel]?.description,
-                explorerUrl: refuelExplorerUrl,
-                readOnly,
-                index: 3,
-            },
-            {
-                id: 'refund',
-                name: progressStates.refund?.[stepStatuses.refund]?.name,
-                status: stepStatuses.refund,
-                description:
-                    progressStates.refund?.[stepStatuses.refund]?.description,
-                explorerUrl: refundExplorerUrl,
-                readOnly,
-                index: 4,
-            },
-        ];
-        const approval = stepTransactions?.approve_permit2;
-        if (approval) {
-            const approvalAction = depositActions?.find(
-                (action) => action.step === 'approve_permit2',
-            );
-            allSteps.unshift({
-                id: 'action:approve_permit2',
-                name: getDepositActionLabel({ step: 'approve_permit2' }),
-                status:
-                    approvalAction?.status === 'failed'
-                        ? ProgressStatus.Failed
-                        : approvalAction?.status === 'completed' ||
-                            transactionHash
-                          ? ProgressStatus.Complete
-                          : ProgressStatus.Current,
-                explorerUrl: approval.explorerUrl,
-                readOnly,
-                index: 0,
-            });
-        }
-        const current = allSteps.filter(
-            (s) => s.status && s.status !== ProgressStatus.Removed,
+    const allSteps: StatusStep[] = [
+        {
+            id: 'input_transfer',
+            name: progressStates.input_transfer?.[stepStatuses.input_transfer]
+                ?.name,
+            status: stepStatuses.input_transfer,
+            description:
+                progressStates.input_transfer?.[stepStatuses.input_transfer]
+                    ?.description,
+            explorerUrl: inputExplorerUrl,
+            readOnly,
+            index: 1,
+        },
+        {
+            id: 'output_transfer',
+            name: progressStates.output_transfer?.[stepStatuses.output_transfer]
+                ?.name,
+            status: stepStatuses.output_transfer,
+            description:
+                progressStates.output_transfer?.[stepStatuses.output_transfer]
+                    ?.description,
+            explorerUrl: outputExplorerUrl,
+            readOnly,
+            index: 2,
+        },
+        {
+            id: 'refuel',
+            name: progressStates.refuel?.[stepStatuses.refuel]?.name,
+            status: stepStatuses.refuel,
+            description:
+                progressStates.refuel?.[stepStatuses.refuel]?.description,
+            explorerUrl: refuelExplorerUrl,
+            readOnly,
+            index: 3,
+        },
+        {
+            id: 'refund',
+            name: progressStates.refund?.[stepStatuses.refund]?.name,
+            status: stepStatuses.refund,
+            description:
+                progressStates.refund?.[stepStatuses.refund]?.description,
+            explorerUrl: refundExplorerUrl,
+            readOnly,
+            index: 4,
+        },
+    ];
+    const approval = stepTransactions?.approve_permit2;
+    if (approval) {
+        const approvalAction = depositActions?.find(
+            (action) => action.step === 'approve_permit2',
         );
-        let completed = 0;
-        for (const s of current)
-            if (s.status === ProgressStatus.Complete) completed++;
-        const percentage = current.length
-            ? (completed / current.length) * 100
-            : 0;
-        return { currentSteps: current, stepsProgressPercentage: percentage };
-    }, [
-        progressStates,
-        stepStatuses,
-        inputExplorerUrl,
-        outputExplorerUrl,
-        refuelExplorerUrl,
-        refundExplorerUrl,
-        stepTransactions,
-        depositActions,
-        transactionHash,
-        readOnly,
-    ]);
+        allSteps.unshift({
+            id: 'action:approve_permit2',
+            name: getDepositActionLabel({ step: 'approve_permit2' }),
+            status:
+                approvalAction?.status === 'failed'
+                    ? ProgressStatus.Failed
+                    : approvalAction?.status === 'completed' || transactionHash
+                      ? ProgressStatus.Complete
+                      : ProgressStatus.Current,
+            explorerUrl: approval.explorerUrl,
+            readOnly,
+            index: 0,
+        });
+    }
+    const currentSteps = allSteps.filter(
+        (step) => step.status && step.status !== ProgressStatus.Removed,
+    );
+    const completedSteps = currentSteps.filter(
+        (step) => step.status === ProgressStatus.Complete,
+    ).length;
+    const stepsProgressPercentage = currentSteps.length
+        ? (completedSteps / currentSteps.length) * 100
+        : 0;
 
     const isTokenSwap = flow.processingTitle === 'swap';
     const displayedElapsedTime = isTokenSwap ? null : elapsedTime;
@@ -514,8 +493,5 @@ function ProcessingContentView({
         };
     }
 
-    return <ProgressPanelView
-        data={progress}
-        animateOnMount={animateOnMount}
-    />;
+    return progress;
 }

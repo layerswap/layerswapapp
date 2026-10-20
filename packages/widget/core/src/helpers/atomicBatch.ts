@@ -19,9 +19,12 @@ export function isAtomicBatchEligible(input: {
 export function getAtomicBatchExpiry(action: Pick<BatchTransferDepositAction, 'valid_before' | 'expires_at'>): number {
     const expiry = action.expires_at === undefined ? undefined : Date.parse(action.expires_at) / 1000
     if (expiry !== undefined && !Number.isSafeInteger(expiry)) throw new Error('Invalid atomic batch expiry')
-    const validBefore = action.valid_before ?? expiry
-    if (!Number.isSafeInteger(validBefore) || (expiry !== undefined && expiry !== validBefore)) throw new Error('Invalid atomic batch expiry')
-    return validBefore as number
+    const validBefore = action.valid_before
+    if (validBefore !== undefined && !Number.isSafeInteger(validBefore)) throw new Error('Invalid atomic batch expiry')
+    if (validBefore === undefined && expiry === undefined) throw new Error('Invalid atomic batch expiry')
+    // The API can expire an action before its calldata's transaction deadline.
+    // Stop submission at either deadline without changing the backend's calls.
+    return Math.min(validBefore ?? Infinity, expiry ?? Infinity)
 }
 
 export function validateAtomicBatch(action: BatchTransferDepositAction, swap: SwapBasicData, account: string, backendAccount?: string, now = Date.now()): AtomicBatchCall[] {

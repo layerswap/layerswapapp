@@ -22,7 +22,7 @@ import { type FC, type ReactNode } from 'react';
 import { ICON_CLASSES_WARNING } from '../../Form/SecondaryComponents/validationError/constants';
 import ErrorDismissButton from '../../Form/SecondaryComponents/validationError/ErrorDismissButton';
 import { ErrorDisplay } from '../../Form/SecondaryComponents/validationError/ErrorDisplay';
-import WalletMessage, { WalletMessageDetails } from '../messages/Message';
+import WalletMessage from '../messages/Message';
 import { walletDisconnectedMessage } from '../messages/walletErrorMessage';
 import { NetworkSwitchError, networkSwitchFailureReason } from '../Wallet/Common/ensureSourceChain';
 import type { ActionData } from '../Wallet/Common/sharedTypes';
@@ -160,8 +160,8 @@ export type SendTransactionViewProps = SubmitButtonProps & {
     switchToStandard?: () => void;
     onCancelWithdrawal?: () => void;
 };
-export function SendTransactionView({
-    showProgress = true,
+export function getSendTransactionPresentation({
+    showProgress: _showProgress,
     flow,
     icon = <WalletIcon className="stroke-2 w-6 h-6" />,
     errorMessage,
@@ -211,9 +211,7 @@ export function SendTransactionView({
     // The shared processing slot can render the card, but these controls must
     // still follow the same progress visibility when showProgress is false.
     const progress = getWalletProgress(walletProgress);
-    const workflowProgress = showProgress && progress
-        ? <ProgressPanelView data={progress} animateOnMount={walletExecutionStarted && !readOnly} />
-        : undefined;
+
     const networkSwitchMessage = networkSwitch && (networkSwitch.isPending || networkSwitch.isError)
         ? <ChangeNetworkMessage data={networkSwitch} network={sourceNetworkName ?? ''} />
         : undefined;
@@ -226,12 +224,9 @@ export function SendTransactionView({
             </div>
         ) : undefined);
     if (quoteIsLoading || loading || confirmingSubmission)
-        return (
-            <WalletExecutionTransition
-                workflow={workflowProgress}
-                controls={
+        return { walletProgress, controls: (
                     progress && (loading || confirmingSubmission) ? (
-                        message || walletRequestRecovery ? <>{message}{walletRequestRecovery}</> : undefined
+                        message || walletRequestRecovery ? <div className="flex flex-col gap-2">{message}{walletRequestRecovery}</div> : null
                     ) : (
                         <>
                             {message}
@@ -246,15 +241,10 @@ export function SendTransactionView({
                             {walletRequestRecovery}
                         </>
                     )
-                }
-            />
-        );
+                ) };
 
     if (showCriticalMarketPriceImpactButtons) {
-        return (
-            <WalletExecutionTransition
-                workflow={workflowProgress}
-                controls={
+        return { walletProgress, controls: (
                     <>
                         {message}
                         {quote && priceImpactValues && (
@@ -290,14 +280,9 @@ export function SendTransactionView({
                             Cancel & try another route
                         </ButtonWrapper>
                     </>
-                }
-            />
-        );
+                ) };
     }
-    return (
-        <WalletExecutionTransition
-            workflow={workflowProgress}
-            controls={
+    return { walletProgress, controls: (
                 <>
                     {message}
                     {!!(
@@ -374,7 +359,15 @@ export function SendTransactionView({
                         </ButtonWrapper>
                     )}
                 </>
-            }
-        />
-    );
+            ) };
+}
+
+/** Compatibility adapter; Page 2 consumes the nullable model directly. */
+export function SendTransactionView(props: SendTransactionViewProps) {
+    const { controls, walletProgress } = getSendTransactionPresentation(props);
+    const progress = props.showProgress === false ? null : getWalletProgress(walletProgress);
+    return <WalletExecutionTransition
+        workflow={progress ? <ProgressPanelView data={progress} /> : null}
+        controls={controls}
+    />;
 }
