@@ -87,7 +87,11 @@ export async function executeAtomicBatch(ctx: DepositExecutionContext, action: B
     useSwapTransactionStore.getState().setStepTransaction(
         swapData.id, 'publish', hash, getExplorerUrl(network.transaction_explorer_template, hash),
     )
-    onLifecycle({ ...lifecycle, step: 'transaction_submitted', stage: 'input_transfer', outcome: 'succeeded', transactionHash: hash })
+    try {
+        onLifecycle({ ...lifecycle, step: 'transaction_submitted', stage: 'input_transfer', outcome: 'succeeded', transactionHash: hash })
+    } catch {
+        // Observer failures cannot block completion or catchup for a confirmed batch.
+    }
     ctx.onSuccess()
     try {
         await ctx.layerswapApiClient.SwapCatchup(swapData.id, hash)

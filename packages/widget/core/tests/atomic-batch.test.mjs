@@ -338,6 +338,21 @@ test('a hung receipt request times out and its late response cannot save a trans
     assert.deepEqual(ctx.catchups, [])
 })
 
+test('a throwing lifecycle observer cannot prevent notification for a confirmed batch', async () => {
+    const ctx = context()
+    ctx.onLifecycle = event => {
+        ctx.events.push(event)
+        if (event.step === 'transaction_submitted') throw new Error('Host observer failed')
+    }
+    await submit(ctx, { getStatus: async () => status(200, [receipt(), receipt(finalHash)]) })
+    assert.deepEqual(ctx.catchups, [['atomic-swap', finalHash]])
+    assert.equal(ctx.successes, 1)
+    assert.equal(store.getState().swapTransactions['atomic-swap'].hash, finalHash)
+    assert.equal(store.getState().stepTransactions['atomic-swap'].publish.hash, finalHash)
+    assert.deepEqual(store.getState().pendingSubmissions, {})
+    assert.deepEqual(ctx.events.map(event => event.step), ['transaction_submitted'])
+})
+
 test('a catchup failure does not repeat submission or discard the saved receipt', async () => {
     const ctx = context()
     let polls = 0, catchups = 0
