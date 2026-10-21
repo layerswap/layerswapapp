@@ -1495,6 +1495,7 @@ for (const failure of ['rejected', 'failed']) {
         });
         const { default: Withdraw } = loadSource(`${withdraw}Withdraw.tsx`, {
             ...controllerImports,
+            '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput: noop } },
             '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
             '@/components/Input/Amount/helpers': loadSource('components/Input/Amount/helpers.ts', {
                 '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
