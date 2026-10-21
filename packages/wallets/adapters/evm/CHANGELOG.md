@@ -1,5 +1,94 @@
 # @layerswap/wallet-evm
 
+## 2.5.1
+
+### Minor Changes
+
+- 78fa843: Use MetaMask Connect EVM 2.1.1 for the default MetaMask connection through a
+  Wagmi 2 connector built on the SDK's public lifecycle and EIP-1193 APIs.
+  Wagmi, Viem, React-loader peer requirements, and CDN sharing rules are unchanged.
+  Host applications do not need a dependency upgrade.
+
+  Declare the adapter's existing `@wagmi/core` and `@wagmi/connectors` imports as
+  peer dependencies, with development dependencies for local builds and tests.
+  Package consumers supply these alongside Wagmi and Viem so the adapter can use
+  the host's compatible installation.
+
+  The SDK selects approved mobile chains within its multichain session and routes
+  signing and transaction requests to the selected chain. Its provider also
+  updates after a successful extension switch without needing a separate wallet
+  notification. Layerswap still verifies chain/account readiness and preserves
+  rejection, cancellation, and timeout handling before sending or signing.
+
+  External Wagmi configs and their connectors remain host-owned. This migration
+  does not replace their MetaMask sessions. Default legacy mobile sessions may
+  require a fresh connection after deployment; new sessions restore through
+  MetaMask Connect. The old SDK can still appear transitively through Wagmi 2's
+  connector package, but Layerswap's default MetaMask connector no longer uses it.
+
+- a9c35f8: RPC health checks are now opt-in and scoped to the network being asked about.
+  - `createEVMProvider` no longer adds the wallet RPC health check by default. Pass `rpcHealthCheckProviders: [new EVMRpcHealthCheckProvider()]` (now exported from `@layerswap/wallet-evm`) to keep the probe and the "add RPC" prompt.
+  - The probe measures the wallet's active chain; its verdict now carries that `chainId`. `useRpcHealth(network)` reports unknown health while the wallet is on another chain, so an unhealthy RPC on the chain being left no longer replaces the send button that switches away from it.
+  - `suggestRpcForCurrentChain` from `useRpcHealth(network)` now adds the RPC for `network`'s chain rather than the wallet's current chain.
+
+### Patch Changes
+
+- 18fc71c: Estimate gas with the connected source account's selected token balance while the transfer amount is empty. Use the entered amount once available and pass it through the detailed gas fee view.
+
+  When no source wallet is connected, use the route maximum for the Max shortcut once available rather than a disconnected account's cached balance. Keep Max unavailable until that route maximum is known.
+
+  Pass the transfer amount to EVM and Tron gas providers when building transactions.
+
+  Keep Max usable for oversized or fractional amounts without spending the fee reserve.
+
+- 7427883: Preserve pending WalletConnect switch errors instead of reporting them as user rejections. Only unknown-chain errors trigger an add-chain request, and only genuine declines are wrapped as rejections.
+
+  Show network-switch errors during critical-price-impact confirmation while keeping Continue anyway available for retry.
+
+  WalletConnect: after adding an unknown chain, ask the wallet to switch to it unless it already did. Adding a chain does not select it (EIP-3085), so a resolved switch no longer leaves the wallet on the previous chain.
+
+- - Add frontend swap workflows and live Min, 50%, and Max amount presets.
+  - Improve swap progress, previews, slow-route warnings, and amount validation.
+  - Fix retry handling, Hyperliquid withdrawal precision, TON wallet connections, and Pocket Universe compatibility.
+  - Improve transaction summaries and balance diagnostics.
+- a2136b6: Match mobile wallet-request recovery to the WalletConnect session that received
+  the request. Recorded requests now carry their session `topic`, and EVM and
+  Solana WalletConnect wallets expose theirs as `Wallet.metadata.walletConnectTopic`.
+  Wallets connected through the generic WalletConnect connector recover their
+  requests, and another wallet app using the same account no longer does.
+
+  Let users reopen the wallet's pending request without submitting it again.
+
+  Show reconnect guidance when the wallet disconnects during source-network
+  readiness, and report readiness failures that happen before a network switch.
+
+- 78fa843: Keep RPC failures distinct from user cancellations when Viem wraps transaction
+  errors with its unknown-error code (-1). Require actual user-rejection evidence
+  and classify wallet RPC HTTP failures as network errors while preserving their
+  original cause and diagnostic code.
+
+  Show recovery guidance for network failures, RPC errors, disconnected wallets,
+  pending requests, and timeouts before falling back to a generic swap error.
+  For EVM network failures, direct users to check the source network's RPC settings
+  in their wallet. Keep raw provider diagnostics in telemetry.
+
+- a2136b6: Stop reporting wallet RPC failures relayed over WalletConnect as user rejections.
+  MetaMask Mobile answers a failed request with CAIP-25 code 5000 and the failure
+  as the message; when that text names a non-decline failure, classify by it.
+  EVM network failures now tell users to select a working RPC URL in their
+  wallet's network settings and remove the others.
+- Updated dependencies [2463dd2]
+- Updated dependencies
+- Updated dependencies [a9c35f8]
+- Updated dependencies [419387b]
+- Updated dependencies [34da257]
+- Updated dependencies [a2136b6]
+- Updated dependencies [78fa843]
+- Updated dependencies [a2136b6]
+  - @layerswap/widget-types@2.5.1
+  - @layerswap/wallet-core@2.5.1
+  - @layerswap/utils@2.5.1
+
 ## 2.4.0
 
 ### Minor Changes
