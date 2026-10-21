@@ -276,3 +276,14 @@ test('errorMessage reads Error, string and plain { message } errors, and falls b
     assert.equal(errorMessage(null), 'null')
     assert.equal(errorMessage(7), '7')
 })
+
+test('Bitget nested authorization revocation is not an unexplained RPC error', () => {
+    assert.equal(normalizeWalletErrorCode({ code: -32603, message: 'Internal error', data: { originalError: { code: -32603, message: 'Authorization revoked.' } } }), 'unauthorized')
+})
+
+
+test('contract authorization reverts keep their contract classification', () => {
+    for (const reason of ['Unauthorized', 'not authorized', 'Authorization revoked.']) {
+        assert.equal(normalizeWalletErrorCode({ code: -32000, message: `execution reverted: ${reason}` }), 'contract_reverted')
+    }
+})

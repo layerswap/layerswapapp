@@ -30,7 +30,7 @@ const fixtureUrl = 'data:text/javascript,' + encodeURIComponent(`
   export const useInitialSettings = () => ({})
   export const useWalletWithdrawalState = () => ({ onWalletWithdrawalSuccess() { state.successes++; state.onSuccess?.() } })
   export const useSelectedAccount = () => ({ id: 'wallet', address: 'source' })
-  export default () => ({ wallets: [{ id: 'wallet', address: 'source', providerName: 'test-wallet' }] })
+  export default () => ({ wallets: [{ id: 'wallet', address: 'source', addresses: ['source'], providerName: 'test-wallet' }] })
   export const useTransfer = () => ({ executeTransfer: async (...args) => {
     state.transfers.push(args)
     return state.executeTransfer(...args)

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { Address } from './helpers/address.mjs'
 import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import test from 'node:test'
@@ -202,6 +203,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         if (!scope.initialized) { callback(); scope.initialized = true }
     }
     const { SendTransactionButton, ButtonWrapper } = loadSource(`${walletPath}buttons.tsx`, {
+        '@/helpers/resolveSelectedWallet': loadSource('../src/helpers/resolveSelectedWallet.ts', { '@/lib/address/Address': { Address } }),
         '@/lib/amountPresets': amountPresets,
         '@/helpers/depositActions': depositActions,
         '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: event => calls.lifecycle.push(event) }) },

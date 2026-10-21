@@ -29,13 +29,13 @@ const SOURCE_ADDRESS = '0x1111111111111111111111111111111111111111'
 const DESTINATION_ADDRESS = '0x2222222222222222222222222222222222222222'
 
 /** A client whose transport fails the way axios does: the error carries config, request and response. */
-function failingClient() {
+function failingClient(code = 'SERVER_ERROR') {
   const client = new LayerSwapApiClient()
   client._authInterceptor.defaults.adapter = async config => {
     const request = { url: config.url, headers: config.headers, xhr: 'XMLHttpRequest' }
     throw new AxiosError('Request failed with status code 500', 'ERR_BAD_RESPONSE', config, request, {
       status: 500, statusText: 'Internal Server Error', headers: {}, config,
-      data: { error: { code: 'SERVER_ERROR', message: 'boom' } },
+      data: { error: { code, message: 'boom' } },
     })
   }
   return client
@@ -103,3 +103,18 @@ test('the onError occurrence id matches the swap_creation_failed lifecycle event
   assert.equal(reported.length, 1)
   assert.equal(reported[0].occurrenceId, failed.occurrenceId)
 })
+
+const { ROUTE_VALIDATION_ERROR_CODES } = await import('../dist/esm/lib/routeValidationErrors.js')
+for (const code of ROUTE_VALIDATION_ERROR_CODES) {
+  test(`${code} is actionable validation without API reporting or gasless fallback`, async () => {
+    const reported = []
+    let fallback = 0
+    setErrorLogger(event => reported.push(event))
+    await assert.rejects(createSwapAttempt(
+      async () => ({ request: () => failingClient(code).CreateSwapAsync({}), useGasless: true, onCreated: [] }),
+      { path: 'test.createSwap', lifecycleContext: {}, onLifecycle() {}, onGaslessUnavailable: () => { fallback++ } },
+    ), error => error.response.data.error.code === code)
+    assert.deepEqual(reported, [])
+    assert.equal(fallback, 0)
+  })
+}

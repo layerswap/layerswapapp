@@ -62,7 +62,12 @@ const hooks = registerHooks({
       }
     }
     if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
-      return nextResolve(`${specifier}.js`, context)
+      try {
+        return nextResolve(`${specifier}.js`, context)
+      } catch (error) {
+        if (error.code !== 'ERR_MODULE_NOT_FOUND') throw error
+        return nextResolve(`${specifier}/index.js`, context)
+      }
     }
     return nextResolve(specifier, context)
   },
@@ -134,7 +139,7 @@ test('delayed restoration keeps connect available and never reports an unsupport
 
   state.account = { ...state.account, provider: { id: 'selected-provider', ready: true } }
   state.walletState = { ...state.walletState, wallets: [{
-    id: 'selected-wallet', providerName: 'selected-provider',
+    id: 'selected-wallet', address: 'source', addresses: ['source'], providerName: 'selected-provider',
     withdrawalSupportedNetworks: [sourceNetwork.name], chainId: '1',
   }] }
   await render()

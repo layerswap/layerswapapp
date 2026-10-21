@@ -1,3 +1,4 @@
+import { ROUTE_VALIDATION_ERROR_CODES } from './routeValidationErrors'
 import type { SwapLifecycleEvent } from '@layerswap/widget-types'
 import { getErrorOccurrenceId } from '@layerswap/widget-types'
 import type { ApiResponse } from '@layerswap/widget-types'
@@ -32,13 +33,21 @@ export type SwapCreationHooks = {
     path: string
     lifecycleContext: SwapLifecycleContext
     onLifecycle: (event: SwapLifecycleEvent) => void
-    /** Request scope only: fired when the API rejected or returned `error` for a use_gasless request. */
+    /** Request scope only: fired for a failed use_gasless request except route/amount validation. */
     onGaslessUnavailable: () => void
 }
 
+// These validation failures apply equally to standard transfers. Changing the
+// gasless preference cannot fix them and would hide the actionable API error.
+function isRouteValidationError(error: unknown): boolean {
+    const value = error as { code?: string; response?: { data?: { error?: { code?: string } } } } | undefined
+    const code = value?.response?.data?.error?.code ?? value?.code
+    return !!code && ROUTE_VALIDATION_ERROR_CODES.has(code)
+}
+
 /**
- * Request scope. The gasless flip is keyed to the API refusing the request (rejection or
- * an `error` envelope); a 2xx without an id is not a gasless refusal.
+ * Request scope. Route/amount validation errors remain actionable API errors.
+ * Other refusals of a gasless request offer fallback; a 2xx without an id does not.
  */
 export async function requestSwap(
     { request, useGasless }: Pick<PreparedSwapRequest, 'request' | 'useGasless'>,
@@ -48,11 +57,11 @@ export async function requestSwap(
     try {
         response = await request()
     } catch (error) {
-        if (useGasless) onGaslessUnavailable()
+        if (useGasless && !isRouteValidationError(error)) onGaslessUnavailable()
         throw error
     }
     if (response?.error) {
-        if (useGasless) onGaslessUnavailable()
+        if (useGasless && !isRouteValidationError(response.error)) onGaslessUnavailable()
         throw response.error
     }
     const swap = response?.data
