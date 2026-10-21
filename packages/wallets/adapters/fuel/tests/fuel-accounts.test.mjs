@@ -84,38 +84,35 @@ test('account sync removes revoked and disconnected entries rather than accumula
     assert.deepEqual(useFuelStore.getState().connectedWallets, [])
 })
 
-for (const query of ['accounts', 'currentNetwork']) {
-    test(`a transient ${query} failure retains the connected wallet while refreshing other connectors`, async t => {
-        const fuelWallet = connector()
-        const fuelet = connector('Fuelet', [addressC])
-        useFuelStore.getState()._setConnectors([fuelWallet, fuelet])
-        const service = new FuelConnectionService()
-        await service.syncConnectedWallets()
-        const cachedWallet = useFuelStore.getState().connectedWallets[0]
-        const originalQuery = fuelWallet[query]
-        const failure = t.mock.method(fuelWallet, query, async () => { throw new Error('temporary query failure') })
-        t.mock.method(console, 'error', () => {})
-        fuelet.authorizedAccounts = [addressB]
+test('a transient accounts failure retains the connected wallet while refreshing other connectors', async t => {
+    const fuelWallet = connector()
+    const fuelet = connector('Fuelet', [addressC])
+    useFuelStore.getState()._setConnectors([fuelWallet, fuelet])
+    const service = new FuelConnectionService()
+    await service.syncConnectedWallets()
+    const cachedWallet = useFuelStore.getState().connectedWallets[0]
+    const originalAccounts = fuelWallet.accounts
+    const failure = t.mock.method(fuelWallet, 'accounts', async () => { throw new Error('temporary query failure') })
+    t.mock.method(console, 'error', () => {})
+    fuelet.authorizedAccounts = [addressB]
 
-        await service.syncConnectedWallets()
-        const refreshedWallet = useFuelStore.getState().connectedWallets[0]
-        if (query === 'accounts') assert.equal(refreshedWallet, cachedWallet)
-        else assert.deepEqual(refreshedWallet, cachedWallet)
-        assert.equal(service.buildProvider().activeWallet, refreshedWallet)
-        assert.deepEqual(useFuelStore.getState().connectedWallets.map(w => [w.id, w.address]), [
-            ['Fuel Wallet', addressA], ['Fuelet', addressB],
-        ])
-        assert.equal(failure.mock.callCount(), 1)
+    await service.syncConnectedWallets()
+    const refreshedWallet = useFuelStore.getState().connectedWallets[0]
+    assert.equal(refreshedWallet, cachedWallet)
+    assert.equal(service.buildProvider().activeWallet, refreshedWallet)
+    assert.deepEqual(useFuelStore.getState().connectedWallets.map(w => [w.id, w.address]), [
+        ['Fuel Wallet', addressA], ['Fuelet', addressB],
+    ])
+    assert.equal(failure.mock.callCount(), 1)
 
-        fuelWallet[query] = originalQuery
-        fuelWallet.authorizedAccounts = [addressB]
-        await service.syncConnectedWallets()
-        assert.equal(useFuelStore.getState().connectedWallets[0].address, addressB)
-        fuelWallet.authorizedAccounts = []
-        await service.syncConnectedWallets()
-        assert.deepEqual(useFuelStore.getState().connectedWallets.map(w => w.id), ['Fuelet'])
-    })
-}
+    fuelWallet.accounts = originalAccounts
+    fuelWallet.authorizedAccounts = [addressB]
+    await service.syncConnectedWallets()
+    assert.equal(useFuelStore.getState().connectedWallets[0].address, addressB)
+    fuelWallet.authorizedAccounts = []
+    await service.syncConnectedWallets()
+    assert.deepEqual(useFuelStore.getState().connectedWallets.map(w => w.id), ['Fuelet'])
+})
 
 test('a network query failure applies newly authorized accounts while preserving cached network metadata', async t => {
     const fuelWallet = connector()

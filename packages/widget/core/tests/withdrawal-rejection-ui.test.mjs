@@ -420,19 +420,12 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
       state.error = error
       state.events = []
       state.errors = []
-      let result
-      function Probe() {
-        result = useWithdrawal({ swapId: 'swap-1', swapBasicData, refuel: false })
-        return null
-      }
-      const container = document.createElement('div')
-      const root = createRoot(container)
+      const mounted = await mountWithdrawal(useWithdrawal)
       try {
-        await act(async () => root.render(createElement(Probe)))
-        await act(async () => result.handleWithdraw())
-        assert.equal(result.rejected, rejected)
-        assert.equal(result.error === undefined, rejected)
-        assert.equal(result.loading, false)
+        await act(async () => mounted.result.handleWithdraw())
+        assert.equal(mounted.result.rejected, rejected)
+        assert.equal(mounted.result.error === undefined, rejected)
+        assert.equal(mounted.result.loading, false)
         assert.equal(state.events.at(-1).outcome, outcome)
         const terminalStep = outcome === 'rejected' ? 'wallet_action_rejected' : 'wallet_action_failed'
         assert.deepEqual(state.events.map(event => event.step), ['wallet_prompt_opened', terminalStep])
@@ -446,7 +439,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
           return { swap: { id: 'retry-swap' }, deposit_actions: [{ type: 'transfer', to_address: 'retry-deposit', call_data: '0x', amount_in_base_units: '1000000' }] }
         }
         state.getDepositActions = async () => ({ data: [{ type: 'transfer', to_address: 'refreshed-deposit', call_data: '0xfresh', amount_in_base_units: '2000000' }] })
-        await act(async () => result.handleWithdraw())
+        await act(async () => mounted.result.handleWithdraw())
         assert.equal(retryCreations, 0, 'a pre-submission failure retries on the original swap')
         assert.equal(state.transfers.at(-1)[0].depositAddress, 'refreshed-deposit')
         assert.deepEqual(state.actionRefreshes, [['swap-1', 'source'], ['swap-1', 'source']])
@@ -463,7 +456,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
           'wallet_prompt_opened', terminalStep, 'retry_requested', 'wallet_prompt_opened', terminalStep,
         ])
       } finally {
-        await act(async () => root.unmount())
+        await mounted.unmount()
       }
     })
   }
