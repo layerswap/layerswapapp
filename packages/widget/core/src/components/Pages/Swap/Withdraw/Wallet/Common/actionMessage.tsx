@@ -1,3 +1,4 @@
+import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import { isUserRejection } from './isUserRejection';
 import { useSwapDataState } from '@/context/swap';
 import { ErrorHandler } from '@/lib/ErrorHandler';
@@ -19,7 +20,8 @@ export const ActionMessage: FC<{
     const gaslessErrorMessage = useGaslessPreferenceStore(
         (s) => s.gaslessErrorMessage,
     );
-    const { swapError } = useSwapDataState();
+    const { swapError, swapId } = useSwapDataState();
+    const pendingSubmission = useSwapTransactionStore(state => !!swapId && !!state.pendingSubmissions[swapId]);
 
     useEffect(() => {
         if (
@@ -41,7 +43,7 @@ export const ActionMessage: FC<{
 
     return (
         <ActionMessageView
-            error={error}
+            error={pendingSubmission ? { name: 'SubmissionStatusUnknown' } : error}
             isSignatureError={isSignatureError}
             isLoading={isLoading}
             selectedSourceAddress={selectedSourceAddress}

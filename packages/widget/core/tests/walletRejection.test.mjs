@@ -85,6 +85,7 @@ const { ActionMessage: ActionMessageController } = loadSource(`${walletPath}acti
     '../../Presentation/ActionMessageView': presentation,
     '@/lib/ErrorHandler': { ErrorHandler: () => {} },
     '@/stores/gaslessPreferenceStore': { useGaslessPreferenceStore },
+    '@/stores/swapTransactionStore': { useSwapTransactionStore: selector => selector({ pendingSubmissions: {} }) },
     '@/context/swap': { useSwapDataState: () => ({ swapError: 'A generic workflow error is also present' }) },
     './isUserRejection': { isUserRejection },
 })
@@ -120,6 +121,8 @@ test('raw EVM signing cancellation survives the resolver and authorization workf
     })
     const { GaslessResolver } = loadSource('../src/lib/gasless/gaslessResolver.ts')
     const { executeGaslessAuthorization } = loadSource(`${walletPath}depositExecution.ts`, {
+        '@layerswap/wallet-core/errors': walletErrors,
+        './reconcileWalletSubmission': { reconcileWalletSubmission: () => assert.fail('Signing must not reconcile transfers') },
         '@/lib/address/explorerUrl': loadSource('../src/lib/address/explorerUrl.ts'),
         '@layerswap/widget-types': walletTypes,
         '@/lib/apiClients/layerSwapApiClient': { BackendTransactionStatus: { Pending: 'pending' } },

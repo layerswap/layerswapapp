@@ -39,6 +39,7 @@ export function createTronTransfer(): TransferProvider {
             })
 
             try {
+                params.onSubmissionStateChange?.('preparing')
                 const gasData = await new TronGasProvider().getGas({
                     address: selectedWallet.address,
                     network,
@@ -57,15 +58,22 @@ export function createTronTransfer(): TransferProvider {
                     issuerAddress: selectedWallet.address
                 })
 
-                const data = Buffer.from(callData).toString('hex')
-                const transaction = await tronWeb.transactionBuilder.addUpdateData(initialTransaction, data, "hex")
+                const data = Buffer.from(callData || '').toString('hex')
+                // Recompute memo bytes/txID locally: the remote path calls getsignweight
+                // before signing and masks RPC errors behind a generic txID error.
+                const transaction = await tronWeb.transactionBuilder.addUpdateData(initialTransaction, data, "hex", { txLocal: true })
                 const signature = await tronAdapterManager.signTransaction(transaction)
+                params.onSubmissionStateChange?.('submitting')
                 const res = await tronWeb.trx.sendRawTransaction(signature)
 
-                if (signature && res.result) {
+                // Nodes return the enum name as JSON; SDK/protobuf clients may
+                // expose its numeric value (5). Either acknowledges this txID.
+                const duplicate = String(res.code) === 'DUP_TRANSACTION_ERROR' || res.code === 5
+                if (signature && (res.result || duplicate)) {
                     return signature.txID
                 }
 
+                params.onSubmissionStateChange?.('not_submitted')
                 throw new Error("Transaction failed")
             } catch (error) {
                 throw toTransferError(error)

@@ -8,7 +8,7 @@ const hooks = registerHooks({
     // This path only needs the API status enum; keep the HTTP/browser client
     // out of the test while exercising real execution, classification and stores.
     if (specifier.endsWith('/lib/apiClients/layerSwapApiClient')) {
-      return { url: 'data:text/javascript,export const BackendTransactionStatus = { Pending: "pending" }', shortCircuit: true }
+      return { url: 'data:text/javascript,export const BackendTransactionStatus = { Pending: "pending", Failed: "failed" }; export const TransactionType = { Input: "input" }', shortCircuit: true }
     }
     if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
       return nextResolve(`${specifier}.js`, context)

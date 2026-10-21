@@ -68,3 +68,26 @@ test('other Starknet failures keep their labels and a string message', () => {
     const nested = new Error('No transaction hash returned')
     assert.equal(toTransferError(nested).message, 'No transaction hash returned')
 })
+
+test('execute diagnostics identify the selected signer and preserve the original exception', async () => {
+    const { readFileSync } = await import('node:fs')
+    const { default: ts } = await import('typescript')
+    const module = { exports: {} }
+    const source = readFileSync(new URL('../src/transferProvider/createStarknetTransfer.ts', import.meta.url), 'utf8')
+    const { outputText } = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } })
+    new Function('require', 'module', 'exports', outputText)(id => {
+        if (id === './toTransferError') return { toTransferError }
+        if (id === '@layerswap/utils') return { KnownInternalNames: { Networks: {} } }
+        throw new Error(`Unexpected import: ${id}`)
+    }, module, module.exports)
+    for (const original of [new Error('Execute failed'), new Error('An error occurred (USER_REFUSED_OP)')]) {
+        await assert.rejects(module.exports.createStarknetTransfer().executeTransfer({ callData: '[]' }, {
+            id: 'argentX', providerName: 'Starknet', metadata: { starknetAccount: { execute: async () => { throw original } } },
+        }), error => {
+            assert.match(error.cause.message, /connector: argentX, provider: Starknet/)
+            assert.equal(error.cause.cause, original)
+            assert.equal(isUserRejection(error), original.message.includes('USER_REFUSED_OP'))
+            return true
+        })
+    }
+})

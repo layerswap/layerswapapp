@@ -1,7 +1,5 @@
 import { ActionMessageType } from '@layerswap/widget-types'
-import { errorMessage, userRejectedError, walletActionError } from '@layerswap/wallet-core/errors'
-import type { BaseError } from 'viem'
-import { resolveError } from '../evmUtils/resolveError'
+import { errorMessage, normalizeWalletErrorCode, userRejectedError, walletActionError } from '@layerswap/wallet-core/errors'
 
 /**
  * Map a failed EVM transfer to the error the widget renders and the host is
@@ -11,8 +9,8 @@ import { resolveError } from '../evmUtils/resolveError'
  */
 export function toTransferError(error: unknown): Error {
     const message = errorMessage(error)
-    const resolved = resolveError(error as BaseError)
-    if (resolved === 'transaction_rejected') return userRejectedError({ message, cause: error })
+    const resolved = normalizeWalletErrorCode(error)
+    if (resolved === 'user_rejected') return userRejectedError({ message, cause: error })
     if (resolved === 'insufficient_funds') return walletActionError(ActionMessageType.InsufficientFunds, { message, cause: error })
     return walletActionError(ActionMessageType.UnexpectedErrorMessage, { message, cause: error })
 }

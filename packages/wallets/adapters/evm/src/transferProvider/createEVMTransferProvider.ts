@@ -4,7 +4,7 @@ import { sendTransaction, Config } from '@wagmi/core'
 import { toTransferError } from "./toTransferError"
 import { resolveWalletConnector } from '../service/resolveWalletConnector'
 
-type TransactionBuilder = (params: TransferProps) => Promise<any>
+type TransactionBuilder = (params: TransferProps, connector: ReturnType<typeof resolveWalletConnector>) => Promise<any>
 
 export function createEVMTransferProvider(
     config: Config,
@@ -17,9 +17,12 @@ export function createEVMTransferProvider(
         async executeTransfer(params: TransferProps): Promise<string> {
             const { selectedWallet } = params
 
+            let tx: Awaited<ReturnType<TransactionBuilder>> | undefined
             try {
-                const tx = await buildTransaction(params)
+                params.onSubmissionStateChange?.('preparing')
                 const connector = resolveWalletConnector(config, selectedWallet)
+                tx = await buildTransaction(params, connector)
+                params.onSubmissionStateChange?.('submitting')
                 const hash = await sendTransaction(config, { ...tx, connector })
 
                 if (hash) {
@@ -28,7 +31,18 @@ export function createEVMTransferProvider(
 
                 throw new Error("No transaction hash returned")
             } catch (error) {
-                throw toTransferError(error)
+                const failure = toTransferError(error)
+                if (tx) {
+                    failure.cause = Object.assign(new Error('EVM transfer failed after preparation', { cause: error }), {
+                        details: JSON.stringify({
+                            chainId: tx.chainId, valueWei: tx.value?.toString(),
+                            gasUnits: tx.gas?.toString(), gasPriceWei: tx.gasPrice?.toString(),
+                            maxFeePerGasWei: tx.maxFeePerGas?.toString(),
+                            maxPriorityFeePerGasWei: tx.maxPriorityFeePerGas?.toString(),
+                        }),
+                    })
+                }
+                throw failure
             }
         }
     }

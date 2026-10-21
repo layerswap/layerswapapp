@@ -115,8 +115,10 @@ test('EVM transfer errors carry the UI label, a string message, the original cau
     const { toTransferError } = await import('../dist/esm/transferProvider/toTransferError.js')
     const { createEVMTransferProvider } = await import('../dist/esm/transferProvider/createEVMTransferProvider.js')
     const legacy = { cause: { code: -1, message: 'User rejected the request.' } }
-    const provider = createEVMTransferProvider({}, () => true, async () => { throw legacy })
-    const thrown = await provider.executeTransfer({ selectedWallet: {} }).then(() => assert.fail('must throw'), error => error)
+    const selectedWallet = { address: '0x0000000000000000000000000000000000000001', internalId: 'test-wallet' }
+    const config = { state: { status: 'connected', connections: new Map([['test', { accounts: [selectedWallet.address], connector: { id: 'test-wallet' } }]]) } }
+    const provider = createEVMTransferProvider(config, () => true, async () => { throw legacy })
+    const thrown = await provider.executeTransfer({ selectedWallet }).then(() => assert.fail('must throw'), error => error)
     assert.equal(thrown.name, 'TransactionRejected')
     assert.equal(thrown.reasonCode, 'user_rejected')
     assert.equal(thrown.cause, legacy)
@@ -155,4 +157,13 @@ test('Hyperliquid and Polymarket declines are declared with the original error a
         assert.equal(isUserRejection(thrown), true)
         assert.equal(typeof thrown.message, 'string')
     }
+})
+
+test('transfer UI does not label RPC throttling or preflight reverts as insufficient funds', async () => {
+    const { toTransferError } = await import('../dist/esm/transferProvider/toTransferError.js')
+    for (const original of [
+        { code: -32002, message: 'endpoint returned too many errors' },
+        { code: 4200, message: 'HTTP 429' },
+        { name: 'EstimateGasExecutionError', cause: { code: -32000, message: 'execution reverted' } },
+    ]) assert.equal(toTransferError(original).name, 'UnexpectedErrorMessage')
 })
