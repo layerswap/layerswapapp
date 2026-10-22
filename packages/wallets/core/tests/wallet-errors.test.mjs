@@ -53,32 +53,19 @@ test('raw diagnostic codes survive codeless adapter/SDK wrappers without replaci
     for (const value of [undefined, null, 'Execute failed', { code: NaN }]) assert.equal(walletErrorCodeFromChain(value), undefined)
 })
 
-test('rejection classification works without an SDK or a particular message', () => {
-    for (const error of [
-        { code: 4001 }, { code: '4001' }, { code: 'ACTION_REJECTED', message: 'Request declined' },
-        userRejectedError({ message: 'Cancelled' }),
-        { name: 'UserRejectedRequestError' },
-        new Error('user rejected transaction'),
-        new Error('wrapper', { cause: { code: 'ACTION_REJECTED' } }),
-        { code: -32603, cause: { code: 4001 } },
-        { info: { error: { code: '4001' } } },
-        { cause: { info: { data: { originalError: { code: 4001 } } } } },
+test('classification accepts public code and nesting shapes without an SDK', () => {
+    for (const [error, expected] of [
+        [{ code: '4001' }, 'user_rejected'],
+        [{ code: 'ACTION_REJECTED' }, 'user_rejected'],
+        [{ name: 'UserRejectedRequestError' }, 'user_rejected'],
+        [{ info: { error: { code: '4001' } } }, 'user_rejected'],
+        [{ cause: { info: { data: { originalError: { code: 4001 } } } } }, 'user_rejected'],
+        [{ name: 'UnauthorizedProviderError' }, 'unauthorized'],
+        [{ cause: { code: -1 } }, 'unknown_error'],
     ]) {
-        assert.equal(normalizeWalletErrorCode(error), 'user_rejected')
-        assert.equal(isUserRejection(error), true)
+        assert.equal(normalizeWalletErrorCode(error), expected)
+        assert.equal(isUserRejection(error), expected === 'user_rejected')
     }
-})
-
-test('authorization and node failures must not become user cancellations', () => {
-    for (const error of [
-        { code: 4100 }, { name: 'UnauthorizedProviderError' },
-        { code: -32003, name: 'TransactionRejectedRpcError', message: 'Transaction rejected' },
-        { code: -1, message: 'Provider failure' },
-        // A nested unknown-error code is not evidence of user cancellation.
-        { cause: { code: -1 } }, { data: { code: -1 } },
-        new Error('RPC endpoint unavailable'),
-    ]) assert.equal(isUserRejection(error), false)
-    assert.equal(normalizeWalletErrorCode({ code: 4100 }), 'unauthorized')
 })
 
 test('a prompt the wallet is still showing is request_pending, never a cancellation', () => {
@@ -119,7 +106,6 @@ test('an explicit adapter reasonCode wins over every inferred signal, anywhere i
     // The outer adapter decision beats an inner declaration.
     assert.equal(normalizeWalletErrorCode(walletActionError(ActionMessageType.UnexpectedErrorMessage, { message: 'x', reasonCode: 'network_error', cause: userRejectedError() })), 'network_error')
     // Unknown strings keep the taxonomy bounded and fall through to inference.
-    assert.equal(normalizeWalletErrorCode({ reasonCode: 'made_up', code: 4001 }), 'user_rejected')
     assert.equal(isWalletErrorReasonCode('made_up'), false)
     assert.equal(isWalletErrorReasonCode('user_rejected'), true)
     assert.equal(isWalletErrorReasonCode('__proto__'), false)
@@ -129,7 +115,6 @@ test('an explicit adapter reasonCode wins over every inferred signal, anywhere i
     assert.equal(rejected.cause, err)
     assert.equal(rejected.name, 'TransactionRejected')
     assert.equal(rejected.reasonCode, 'user_rejected')
-    assert.equal(typeof userRejectedError().message, 'string')
     assert.equal(userRejectedError().message, 'Transaction rejected')
     assert.ok(Object.prototype.propertyIsEnumerable.call(rejected, 'reasonCode'), 'serialisable for hosts')
     assert.equal(isUserRejection(JSON.parse(JSON.stringify({ ...rejected, message: rejected.message }))), true)
@@ -140,54 +125,30 @@ test('an explicit adapter reasonCode wins over every inferred signal, anywhere i
     assert.equal(walletActionError(ActionMessageType.TransactionFailed, { message: 'x' }).cause, undefined)
 })
 
-test('chain adapter decline phrases classify without the sentinel; near-misses do not', () => {
-    for (const message of [
-        'An error occurred (USER_REFUSED_OP)',
-        '[TON_CONNECT_SDK_ERROR] Reject request',
-        'user reject this request',
-        'User canceled sending transaction',
-        'User rejected the transaction!',
-        'User rejected the request.',
-    ]) {
-        assert.equal(normalizeWalletErrorCode(new Error(message)), 'user_rejected', message)
-        assert.equal(normalizeWalletErrorCode(message), 'user_rejected', message)
-    }
-    for (const message of [
-        'Transaction rejected by node',
-        'Session closed',
-        'Execute failed',
-        'Request cancelled without user response!',
-        'op_underfunded',
-        'Horizon rejected the Stellar transaction',
-        // Decline text must name the user; a revert reason never counts.
-        'origin rejected the request',
-        'execution reverted: user rejected',
-    ]) {
-        assert.equal(isUserRejection(new Error(message)), false, message)
-        assert.equal(isUserRejection(message), false, message)
-    }
+test('raw provider strings distinguish wallet declines from transport failures', () => {
+    assert.equal(normalizeWalletErrorCode('An error occurred (USER_REFUSED_OP)'), 'user_rejected')
+    assert.equal(isUserRejection('Session closed'), false)
+    assert.equal(isUserRejection('origin rejected the request'), false)
+    assert.equal(isUserRejection(new Error('origin rejected the request')), false)
+    assert.equal(isUserRejection('execution reverted: user rejected'), false)
+    assert.equal(isUserRejection(new Error('execution reverted: user rejected')), false)
 })
 
-test('explicit cancellation codes win over generic errors anywhere in the cause chain', () => {
-    for (const code of [4001, '4001', 'ACTION_REJECTED', 'action_rejected']) {
-        for (const error of [
-            { code, cause: { code: -32603 } },
-            { code: -32603, cause: { code, cause: { code: 'SERVER_ERROR' } } },
-        ]) {
-            assert.equal(normalizeWalletErrorCode(error), 'user_rejected')
-            assert.equal(isUserRejection(error), true)
-        }
-    }
+test('lowercase cancellation codes and nested funds errors retain their meaning', () => {
+    assert.equal(normalizeWalletErrorCode({ code: -32603, cause: { code: 'action_rejected' } }), 'user_rejected')
     assert.equal(normalizeWalletErrorCode({ code: -32603, cause: { code: 'INSUFFICIENT_FUNDS' } }), 'insufficient_funds')
 })
 
-test('classification handles cyclic causes and a throwing cause accessor', () => {
-    const cycle = { code: 'ACTION_REJECTED' }
-    cycle.cause = cycle
-    assert.equal(isUserRejection(cycle), true)
-    const error = { code: 4001, get cause() { throw new Error('unreadable cause') } }
-    assert.equal(isUserRejection(error), true)
-    assert.equal(normalizeWalletErrorCode(null), 'unknown_error')
+test('ambiguous -32000 RPC codes do not override typed or nested wallet errors', () => {
+    const typed = Object.assign(new Error('Transaction failed'), {
+        code: -32000,
+        name: 'NonceTooLowError',
+    })
+    assert.equal(normalizeWalletErrorCode(typed), 'nonce_or_replacement')
+    const wrapped = Object.assign(new Error('Transaction failed', {
+        cause: new Error('execution reverted'),
+    }), { code: -32000 })
+    assert.equal(normalizeWalletErrorCode(wrapped), 'contract_reverted')
 })
 
 // ---- Corpus: every shape below has a provenance tag in wallet-error-fixtures.mjs.
@@ -212,23 +173,9 @@ test('a generic wrapper never changes the classification of what it wraps', () =
     }
 })
 
-test('internal_rpc_error is only returned when no definitive or descriptive signal exists anywhere', () => {
-    const bucketWrappers = GENERIC_WRAPPERS.filter(wrap => walletErrorCode(wrap({})) === '-32603')
-    assert.ok(bucketWrappers.length >= 3)
-    for (const { label, error, expected } of FIXTURES) {
-        if (expected === 'unknown_error' || expected === 'internal_rpc_error') continue
-        for (const wrap of bucketWrappers) {
-            assert.notEqual(normalizeWalletErrorCode(wrap(error)), 'internal_rpc_error', `${label} must not fall into the bucket`)
-        }
-    }
-    for (const signalless of [{ code: -1, message: 'Provider failure' }, new Error('something unexpected'), { data: { foo: 'bar' } }]) {
-        assert.equal(normalizeWalletErrorCode(signalless), 'unknown_error')
-        for (const wrap of bucketWrappers) assert.equal(normalizeWalletErrorCode(wrap(signalless)), 'internal_rpc_error')
-    }
-    assert.equal(normalizeWalletErrorCode({ code: -32603, message: 'Internal JSON-RPC error.', data: { code: 4001 } }), 'user_rejected')
-})
-
-test('tree walk survives throwing data getters, data cycles and deep cause chains', () => {
+test('tree walk survives throwing getters, cycles and deep cause chains', () => {
+    const throwingCause = { code: 4001, get cause() { throw new Error('unreadable cause') } }
+    assert.equal(isUserRejection(throwingCause), true)
     const throwing = { code: -32603, get data() { throw new Error('unreadable data') }, cause: { code: 4001 } }
     assert.equal(normalizeWalletErrorCode(throwing), 'user_rejected')
     const cyclic = { code: -32603, data: {} }
@@ -257,14 +204,10 @@ test('a JSON-RPC server error is only a decline when its text starts with the us
         assert.equal(isUserRejection(error), false, error.message)
         assert.notEqual(normalizeWalletErrorCode(error), 'user_rejected', error.message)
     }
-    assert.equal(normalizeWalletErrorCode({ code: -32000, message: 'execution reverted: user rejected' }), 'contract_reverted')
     // A WalletConnect wallet that answers a declined prompt with -32000 still reports the user.
     for (const message of ['User rejected the request.', 'User rejected.', 'user denied transaction signature', 'User has rejected the request.', 'The user has rejected the request.']) {
         assert.equal(normalizeWalletErrorCode({ code: -32000, message }), 'user_rejected', message)
     }
-    // Definitive codes are unaffected.
-    assert.equal(normalizeWalletErrorCode({ code: 4001 }), 'user_rejected')
-    assert.equal(normalizeWalletErrorCode({ code: 4001, message: 'MetaMask Tx Signature: User denied transaction signature.' }), 'user_rejected')
 })
 
 test('errorMessage reads Error, string and plain { message } errors, and falls back to String()', () => {

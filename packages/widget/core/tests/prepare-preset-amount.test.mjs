@@ -8,7 +8,7 @@ const token = { symbol: 'ETH', decimals: 6 }
 const network = { name: 'ETHEREUM_MAINNET', token }
 const values = { amount: '0.95', from: network, fromAsset: token, to: { name: 'BASE_MAINNET' },
   toAsset: token, destination_address: 'destination', depositMethod: 'wallet', refuel: false }
-const setup = ({ balance = 1, gas = 0.1, limits = { min_amount: 0.001, max_amount: 2 } } = {}) => {
+const setup = ({ balance = 1, gas = 0.1, maxFee, reserve, limits = { min_amount: 0.001, max_amount: 2 } } = {}) => {
   const calls = []
   const { preparePresetAmount } = loadSource('lib/preparePresetAmount.ts', {
     '@layerswap/widget-types': { usesDepository: () => false },
@@ -21,7 +21,7 @@ const setup = ({ balance = 1, gas = 0.1, limits = { min_amount: 0.001, max_amoun
       return { balances: [{ network: chain.name, token: token.symbol, amount: balance }] }
     } }) } },
     './resolvers/resolverService': { resolverService: { getGasResolver: () => ({ getGas: async args => {
-      calls.push(['gas', args]); return { gas, token }
+      calls.push(['gas', args]); return { gas, maxFee, reserve, token }
     } }) } },
     './amountPresets': amountPresets,
   })
@@ -129,3 +129,14 @@ for (const [name, symbol] of [['TON_MAINNET', 'TON'], ['PARADEX_MAINNET', 'USDC'
     assert.deepEqual(calls, [])
   })
 }
+
+
+test('live Max and confirmation reserve the maximum fee plus the native account reserve', async () => {
+  const { preparePresetAmount } = setup({ balance: 20, gas: 0.01, maxFee: 0.02, reserve: 10,
+    limits: { min_amount: 0.001, max_amount: 30 } })
+  const amount = await preparePresetAmount({ ...values, amountMode: 'max', amount: '19' }, 'source', {}, [], false)
+  assert.equal(amount, '9.9796')
+  const refreshed = setup({ balance: 20, gas: 0.01, maxFee: 0.04, reserve: 10,
+    limits: { min_amount: 0.001, max_amount: 30 } })
+  assert.equal(await refreshed.preparePresetAmount({ ...values, amountMode: 'max', amount }, 'source', {}, [], false), '9.9592')
+})

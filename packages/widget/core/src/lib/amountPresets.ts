@@ -91,13 +91,13 @@ export async function calculatePresetAmount({ network, token, balance, limit, mi
         const payable = resolveMaxAllowedAmount({
             fromCurrency: token, native_currency: gas?.token ?? network.token,
             walletBalance: balance, limitsMaxAmount: limit,
-            gasAmount: gas?.gas, gasReserve: gas?.reserve, depositMethod: 'wallet',
+            gasAmount: gas?.maxFee ?? gas?.gas, gasReserve: gas?.reserve, depositMethod: 'wallet',
         })
         if (payable == null) throw new Error('Could not estimate the network fee. Try again.')
         const target = Number(resolvePresetAmount(mode, payable, minimum ?? 0, token.decimals))
         const feeToken = gas?.token ?? network.token
         const paysFeeInSource = !feeToken || feeToken.symbol === token.symbol
-        const requiredFee = paysFeeInSource ? gas!.gas + (gas!.reserve ?? 0) : 0
+        const requiredFee = paysFeeInSource ? (gas!.maxFee ?? gas!.gas) + (gas!.reserve ?? 0) : 0
         const affordableLimit = Math.max(0, Math.min(balance.amount - requiredFee, limit))
         const withinPreset = candidate <= affordableLimit * (mode === 'half' ? 0.5 : 1)
             && (mode !== 'min' || candidate >= Number(minAmount))

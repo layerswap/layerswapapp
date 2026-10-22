@@ -1,24 +1,33 @@
 import assert from 'node:assert/strict'
-import test from 'node:test'
-import { readFileSync } from 'node:fs'
-import { createRequire } from 'node:module'
-import ts from 'typescript'
+import test, { after } from 'node:test'
+import { registerHooks } from 'node:module'
+import { extname } from 'node:path'
 
-const require = createRequire(import.meta.url)
+const rpcUrl = `data:text/javascript,${encodeURIComponent(`
+    export * from ${JSON.stringify(import.meta.resolve('viem'))}
+    export default () => ({})
+    export const resolveFallbackTransport = () => ({})
+    export const createPublicClient = () => { throw new Error('Unexpected fee RPC') }
+`)}`
+const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
+    const parent = context.parentURL ?? ''
+    if (parent.endsWith('/gasProviders/resolveEVMTransactionGasParameters.js') && ['viem', '../evmUtils/resolveChain', '../evmUtils/resolveTransports'].includes(specifier)) {
+        return { url: rpcUrl, shortCircuit: true }
+    }
+    if (parent.endsWith('/gasProviders/resolveEVMFeeData.js') && specifier === '../NetworkSettings')
+        return { url: 'data:text/javascript,export default class { static KnownSettings = {} }', shortCircuit: true }
+    if (specifier.startsWith('.') && !extname(specifier) && parent.includes('/dist/esm/'))
+        return nextResolve(`${specifier}.js`, context)
+    return nextResolve(specifier, context)
+} })
+after(() => hooks.deregister())
+const { transactionBuilder } = await import('../dist/esm/transferProvider/transactionBuilder.js')
 
-test('preparing a transaction never waits for fee estimation or uses token fees as gas units', async () => {
-    let gasCalls = 0
-    const module = { exports: {} }
-    const source = readFileSync(new URL('../src/transferProvider/transactionBuilder.ts', import.meta.url), 'utf8')
-    const { outputText } = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } })
-    new Function('require', 'module', 'exports', outputText)(id => id === '../gasProviders' ? {
-        EVMGasProvider: class { async getGas() { gasCalls++; return { gas: 1 } } },
-    } : require(id), module, module.exports)
-    const tx = await module.exports.transactionBuilder({
+test('preparing an ordinary EVM transaction never waits for fee estimation or uses token fees as gas units', async () => {
+    const tx = await transactionBuilder({
         amount: '0.01', callData: '0x1234', depositAddress: '0x0000000000000000000000000000000000000002',
-        selectedWallet: { address: '0x0000000000000000000000000000000000000001' }, network: { chain_id: '10' }, token: {},
+        selectedWallet: { address: '0x0000000000000000000000000000000000000001' }, network: { chain_id: '10' }, token: { decimals: 18 },
     })
-    assert.equal(gasCalls, 0)
     assert.equal(tx.gas, undefined)
     assert.equal(tx.value, 10000000000000000n)
     assert.equal(tx.chainId, 10)

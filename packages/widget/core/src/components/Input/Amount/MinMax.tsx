@@ -72,7 +72,7 @@ const MinMax = (props: MinMaxProps) => {
         isGasLoading && previousGas.current?.source === gasSource ? previousGas.current.data : undefined
     );
 
-    const gasAmount = previewGas?.gas;
+    const gasAmount = previewGas?.maxFee ?? previewGas?.gas;
     const gasReserve = previewGas?.reserve;
 
     const native_currency = previewGas?.token || from?.token
