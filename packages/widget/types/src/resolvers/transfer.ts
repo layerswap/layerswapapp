@@ -38,7 +38,28 @@ export type TransferProps = {
 /** Generic in-flight progress a provider may surface to the UI (e.g. a prerequisite signing step). */
 export type TransferProgress = { title: string; description?: string }
 
+/** Backend-built transfer instructions consumed by a wallet adapter. */
+export type WithdrawalAction = {
+    to_address?: string
+    call_data?: string | null
+    amount?: number
+    amount_in_base_units?: string
+    token?: Token
+}
+
+/** Adapter-owned withdrawal behavior. The widget has no provider-name registry. */
+export type WalletWithdrawal = {
+    id: string
+    displayName: string
+    preparationLabel?: string
+    amountDecimals?: (token: Token) => number
+    prepareTransfer: (action: WithdrawalAction | undefined, amount: number) =>
+        Pick<TransferProps, 'amount' | 'depositAddress' | 'callData'>
+        & Partial<Pick<TransferProps, 'amountInBaseUnits' | 'token'>>
+}
+
 export interface TransferProvider {
+    withdrawal?: WalletWithdrawal
     atomicBatch?: AtomicBatchProvider
     supportsNetwork(network: Network): boolean
     executeTransfer(params: TransferProps, wallet?: Wallet, onProgress?: (info: TransferProgress | undefined) => void): Promise<string>

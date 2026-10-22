@@ -127,7 +127,7 @@ for (const [kind, evidence, input] of [
     ['manual-deposit', 'deposit-method', { swapData: { ...swapData, use_deposit_address: true } }],
     ['exchange-deposit', 'deposit-method', { swapData: { ...swapData, use_deposit_address: true, source_exchange: { name: 'coinbase' } } }],
     ['specialized-wallet', 'source-provider', { sourceProvider: 'hyperliquid' }],
-    ['specialized-wallet', 'source-provider', { swapData: { ...swapData, source_network: { ...network, type: 'polymarket' } } }],
+    ['specialized-wallet', 'source-provider', { sourceProvider: 'third-party' }],
     ['wallet-transfer', 'legacy-transfer', { depositActions: [{ type: 'transfer' }] }],
     ['wallet-transfer', 'deposit-step', { depositActions: [{ step: 'deposit' }] }],
     ['frontend-swap', 'publish-step', { depositActions: frontend }],
@@ -333,7 +333,7 @@ test('native publication is distinct from an ERC-20 publication with missing exe
 test('manual and specialized sources keep their identity even with a batch-shaped deposit action', () => {
     const depositActions = [{ type: 'send_calls', step: 'publish' }]
     assert.equal(resolve({ depositActions, swapData: { ...swapData, use_deposit_address: true } }).kind, 'manual-deposit')
-    for (const sourceProvider of ['hyperliquid', 'polymarket']) {
+    for (const sourceProvider of ['hyperliquid', 'polymarket', 'third-party']) {
         const flow = resolve({ depositActions, sourceProvider })
         assert.equal(flow.kind, 'specialized-wallet')
         assert.equal(flow.sourceProvider, sourceProvider)

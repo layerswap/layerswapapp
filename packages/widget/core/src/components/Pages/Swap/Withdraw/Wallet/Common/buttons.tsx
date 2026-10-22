@@ -36,11 +36,12 @@ import { resolvePriceImpactValues } from '@/lib/fees';
 import useSWRGas from '@/lib/gases/useSWRGas';
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore';
 import { useDepositSignatureStore, useGaslessAuthorizationStore, useSwapTransactionStore } from '@/stores/swapTransactionStore';
-import { NetworkRoute } from '@layerswap/widget-types';
 import { walletRequestStore } from '@layerswap/wallet-core';
 import { useWalletRequestRecovery } from '../../Presentation/WalletRequestRecovery';
 import { ComponentProps, FC, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { SwapFormValues } from '../../../Form/SwapFormValues';
+import { useWithdrawalExecution } from '../../useWithdrawalExecution';
+import { walletWithdrawalValues, withdrawalSelectionKey } from '../../withdrawalHelpers';
+import { reportWithdrawalError } from '../../reportWithdrawalError';
 import {
     ButtonWrapper,
     ConnectWalletView,
@@ -194,11 +195,12 @@ export function useSendTransactionController({
 
     const { wallets } = useWallet(swapBasicData.source_network, 'withdrawal')
     const selectedWallet = (selectedSourceAccount?.provider?.connectedWallets ?? wallets).find(wallet => wallet.id === selectedSourceAccount?.id)
+    const selectionKey = withdrawalSelectionKey(swapBasicData.source_network.name, selectedSourceAccount, selectedWallet)
+    const { begin: beginExecution, loading, inFlight: executionInFlight, scope: executionScope } = useWithdrawalExecution(selectionKey, acquireWalletExecution)
     const selectedWalletRef = useRef(selectedWallet)
     useClientLayoutEffect(() => { selectedWalletRef.current = selectedWallet }, [selectedWallet])
     const { gasData } = useSWRGas(selectedSourceAccount?.address, networkWithTokens, swapBasicData.source_token, swapBasicData.requested_amount, undefined, { enabled: active })
     const [actionStateText, setActionStateText] = useState<string | undefined>()
-    const [loading, setLoading] = useState(false)
     const [observationNow, setObservationNow] = useState(Date.now)
     const firstObservedAt = useMemo(() => Date.now(), [swapId])
     const awaitingSubmission = pendingSubmission || acceptedBatch
@@ -215,11 +217,9 @@ export function useSendTransactionController({
     const [walletRequestSequence, setWalletRequestSequence] = useState(0)
     const [criticalConfirmation, setCriticalConfirmation] = useState<SwapResponse>()
     const [workflowState, setWorkflowState] = useState<{ swapId: string, actions: DepositAction[], swapData?: SwapDetails }>()
-    const executionInFlight = useRef(false)
     // A saved swap keeps its backend mode when reopened. Only a preference
     // changed in this view can request a replacement before submission.
     const reviewedGaslessPreference = useRef(gaslessEnabled)
-    const executionScope = useRef<AbortController | null>(null)
     const previousWalletChainId = useRef(selectedWallet?.chainId)
     const expectedSourceChainSwitch = useRef<{ signal: AbortSignal, chainId: string | number } | undefined>(undefined)
     const wasActive = useRef(active);
@@ -239,17 +239,9 @@ export function useSendTransactionController({
         // A successful switch refreshes the provider's wallet selection and callback.
         createSwapForCurrentSelection.current = createSwap
     }, [createSwap])
-    // Closing the screen or changing accounts stops future wallet requests.
-    // An already-open request still finishes so its submitted transaction is recorded.
     useClientLayoutEffect(() => {
-        const scope = new AbortController()
-        executionScope.current = scope
         setWalletRequestPending(false)
-        return () => {
-            executionScope.current?.abort()
-            executionScope.current = null
-        }
-    }, [selectedSourceAccount?.id, selectedSourceAccount?.providerName, selectedSourceAccount?.provider?.name, selectedSourceAccount?.address, selectedWallet?.metadata?.evmConnectorUid, selectedWallet?.metadata?.walletConnectTopic, swapBasicData.source_network.name])
+    }, [selectionKey])
     useClientLayoutEffect(() => {
         const chainId = selectedWallet?.chainId
         if (chainId === previousWalletChainId.current) return
@@ -320,14 +312,14 @@ export function useSendTransactionController({
         // A standard fallback changes the preference before starting this invocation.
         const executionGaslessEnabled = useGaslessPreferenceStore.getState().gaslessEnabled
         const executionDesiredGasless = executionGaslessEnabled && gaslessCapable
-        const signal = executionScope.current?.signal
-        if (!signal || signal.aborted || executionInFlight.current) return
+        const attempt = beginExecution()
+        if (!attempt) return
+        const { signal } = attempt
         const receipts = useSwapTransactionStore.getState()
         const requiresReconciliation = swapId && hasUnacknowledgedWalletAction({
             transaction: receipts.swapTransactions[swapId],
             pendingSubmission: receipts.pendingSubmissions?.[swapId], transactionStatus: inputTransactionStatus,
         })
-        executionInFlight.current = true
         const requestWallet = async <T,>(request: () => Promise<T>): Promise<T> => {
             signal.throwIfAborted()
             setWalletRequestSequence(walletRequestStore.getSnapshot()?.sequence ?? 0)
@@ -353,9 +345,6 @@ export function useSendTransactionController({
                 gaslessAuthorization,
             })
         let executionSwapId = forceNewSwap ? undefined : swapId
-        // An open wallet request can finish after this view unmounts. Its lock
-        // belongs to the workflow, independently of the polling hook's lifetime.
-        const releaseWalletExecution = acquireWalletExecution()
         try {
             if (requiresReconciliation && executionSwapId) {
                 // Observation belongs to backend polling. A second click must never
@@ -371,7 +360,6 @@ export function useSendTransactionController({
                 throw new Error('Wallet is not active')
             }
 
-            setLoading(true)
             setWalletRequestPending(false)
             setActionStateText(undefined)
             setNetworkSwitch(NO_NETWORK_SWITCH)
@@ -390,18 +378,7 @@ export function useSendTransactionController({
                 setWorkflowState(undefined)
                 setCriticalConfirmation(undefined)
 
-                const swapValues: SwapFormValues = {
-                    amountMode: swapBasicData.amountMode,
-                    amountPresetSource: swapBasicData.amountPresetSource,
-                    amount: swapBasicData.requested_amount.toString(),
-                    from: swapBasicData.source_network as NetworkRoute,
-                    to: swapBasicData.destination_network as NetworkRoute,
-                    fromAsset: swapBasicData.source_token,
-                    toAsset: swapBasicData.destination_token,
-                    refuel: refuel,
-                    destination_address: swapBasicData.destination_address,
-                    depositMethod: 'wallet',
-                }
+                const swapValues = walletWithdrawalValues(swapBasicData, refuel)
 
                 const newSwapData = await createSwapForCurrentSelection.current(swapValues, initialSettings).catch((e: any) => {
                     signal.throwIfAborted()
@@ -569,7 +546,7 @@ export function useSendTransactionController({
 
                         // Submission has been consumed; optional catchup must not retain the wallet screen.
                         setWalletActionExecuting(false)
-                        releaseWalletExecution()
+                        attempt.release()
                         onWalletWithdrawalSuccess?.()
                     },
                     onLifecycle: onSwapLifecycle,
@@ -647,12 +624,7 @@ export function useSendTransactionController({
             if (!useGaslessPreferenceStore.getState().gaslessUnavailable) {
                 setSwapError?.(error.message || 'Could not complete the swap action')
             }
-            ErrorHandler({
-                type: 'SwapWithdrawalError',
-                message: error.message,
-                name: error.name,
-                stack: error.stack,
-                cause: error,
+            reportWithdrawalError(error, {
                 swapId: executionSwapId,
                 fromAddress: selectedSourceAccount?.address,
                 toAddress: swapBasicData?.destination_address
@@ -679,9 +651,7 @@ export function useSendTransactionController({
             }
         }
         finally {
-            releaseWalletExecution()
-            executionInFlight.current = false
-            if (executionScope.current) setLoading(false)
+            attempt.finish()
         }
     }
 

@@ -20,6 +20,7 @@ import {
 import { resolvePolymarketError } from "./resolveError"
 import { isEvmUserRejection } from "../../evmUtils/resolveError"
 import { userRejectedError } from "@layerswap/wallet-core/errors"
+import { polymarketWithdrawal } from './withdrawal'
 
 const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
 
@@ -88,6 +89,7 @@ export function createPolymarketTransferProvider(
 ): TransferProvider {
     return {
         supportsNetwork,
+        withdrawal: polymarketWithdrawal,
 
         async executeTransfer(params: TransferProps, _wallet, onProgress?: (info: TransferProgress | undefined) => void): Promise<string> {
             params.onSubmissionStateChange?.('preparing')

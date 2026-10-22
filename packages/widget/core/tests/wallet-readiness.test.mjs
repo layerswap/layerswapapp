@@ -48,8 +48,8 @@ const mockUrl = `data:text/javascript,${encodeURIComponent(`
   export const useGasless = () => ({ isGaslessSupported: () => false })
   export const useRpcHealth = () => undefined
   export const isExtendedSourceNetwork = () => false
-  export const HyperliquidWalletWithdraw = () => null
-  export const PolymarketWalletWithdraw = () => null
+  export const ProviderWalletWithdrawal = () => null
+  export const useWithdrawalProvider = () => undefined
 `)}`
 const mockedDependencies = [
   '/context/withdrawalContext', '/hooks/useWallet', '/context/swapAccounts',
@@ -57,7 +57,7 @@ const mockedDependencies = [
   '/lib/balances/useBalance', '/Common/actionMessage', '/messages/TransactionMessages',
   '/hooks/useTransfer', '/hooks/useGasless', '/context/rpcHealthContext',
   '/RPCUnhealthyMessage', '/lib/extendedRoutes/registry',
-  '/WithdrawalProviders/Hyperliquid', '/WithdrawalProviders/Polymarket', '/Presentation/WalletActionsView', '/Presentation/ProgressPanelView', '/Presentation/walletProgress',
+  '/hooks/useWithdrawalProvider', '/WithdrawalProviders/ProviderWalletWithdrawal', '/Presentation/WalletActionsView', '/Presentation/ProgressPanelView', '/Presentation/walletProgress',
 ]
 // Mocks apply only to imports made by the component under test. If that file
 // moves, update this path or the real wallet SDKs will load unmocked.

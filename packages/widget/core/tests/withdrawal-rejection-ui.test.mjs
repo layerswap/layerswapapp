@@ -5,6 +5,7 @@ import { extname } from 'node:path'
 import { JSDOM } from 'jsdom'
 import { act, createElement } from 'react'
 import { userRejectedError } from '@layerswap/wallet-core/errors'
+import { loadSource } from './helpers/source.mjs'
 import { createSwapContext } from './helpers/swap-context.mjs'
 
 const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://widget.test', pretendToBeVisual: true })
@@ -35,6 +36,8 @@ const fixtureUrl = 'data:text/javascript,' + encodeURIComponent(`
     createSwap: (...args) => { state.creations++; return state.createSwap(...args) },
     mutateSwap: async response => { state.reconciled.push(response); state.swapDetails = response.data.swap },
   })
+  export const useWalletProvidersRegistry = () => state.walletRegistry
+  export const resolverService = { getTransferResolver: () => state.transferResolver }
   export const useSettingsState = () => ({ networks: [], sourceRoutes: [] })
   export const useInitialSettings = () => ({})
   export const useWalletWithdrawalState = () => ({ onWalletWithdrawalSuccess() { state.successes++; state.onSuccess?.() } })
@@ -57,12 +60,15 @@ const apiUrl = 'data:text/javascript,' + encodeURIComponent(`
     GetDepositActionsAsync(...args) { state.actionRefreshes.push(args); return state.getDepositActions(...args) }
   }
 `)
-const mocked = ['/context/swap', '/context/withdrawalContext', '/context/swapAccounts', '/context/settings',
+const mocked = ['/lib/resolvers/resolverService', '/context/swap', '/context/withdrawalContext', '/context/swapAccounts', '/context/settings',
   '/hooks/useWallet', '/hooks/useTransfer', '/context/callbackProvider', '/lib/ErrorHandler',
   '/lib/apiClients/layerSwapApiClient']
 const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
+  if (context.parentURL?.endsWith('/useWithdrawalProvider.js') && specifier === '@layerswap/wallet-core') {
+    return { url: fixtureUrl, shortCircuit: true }
+  }
   if (specifier.endsWith('/lib/apiClients/layerSwapApiClient')) return { url: apiUrl, shortCircuit: true }
-  if ((/\/use(?:Hyperliquid|Polymarket)Withdrawal\.js$/.test(context.parentURL ?? '') || context.parentURL?.endsWith('/executeProviderWithdrawal.js')) && mocked.some(path => specifier.endsWith(path))) {
+  if ((/\/(?:useWithdrawalProvider|useProviderWithdrawal|reportWithdrawalError|executeProviderWithdrawal)\.js$/.test(context.parentURL ?? '')) && mocked.some(path => specifier.endsWith(path))) {
     return { url: fixtureUrl, shortCircuit: true }
   }
   if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) return nextResolve(`${specifier}.js`, context)
@@ -88,8 +94,17 @@ function ExecutionProbe() {
   return null
 }
 Object.defineProperty(state, 'executing', { get: () => !state.executionUpdates.canAdjustAmount() })
-const { useHyperliquidWithdrawal } = await import('../dist/esm/components/Pages/Swap/Withdraw/WithdrawalProviders/Hyperliquid/useHyperliquidWithdrawal.js')
-const { usePolymarketWithdrawal } = await import('../dist/esm/components/Pages/Swap/Withdraw/WithdrawalProviders/Polymarket/usePolymarketWithdrawal.js')
+const { useProviderWithdrawal } = await import('../dist/esm/components/Pages/Swap/Withdraw/WithdrawalProviders/useProviderWithdrawal.js')
+const { useWithdrawalProvider } = await import('../dist/esm/hooks/useWithdrawalProvider.js')
+const { TransferResolver } = await import('../dist/esm/lib/transfers/transferResolver.js')
+const { hyperliquidWithdrawal } = loadSource('../../../wallets/adapters/evm/src/additionalProviders/hyperliquid/withdrawal.ts')
+const { polymarketWithdrawal } = loadSource('../../../wallets/adapters/evm/src/additionalProviders/polymarket/withdrawal.ts')
+function useHyperliquidWithdrawal(props, active) {
+  return useProviderWithdrawal(props, hyperliquidWithdrawal, active)
+}
+function usePolymarketWithdrawal(props, active) {
+  return useProviderWithdrawal(props, polymarketWithdrawal, active)
+}
 const stores = await import('../dist/esm/stores/swapTransactionStore.js')
 const { useSwapTransactionStore } = stores
 const phases = await import('../dist/esm/components/utils/resolveSwapPhase.js')
@@ -106,7 +121,7 @@ let unsubscribeStore, executionRoot
 beforeEach(async () => {
   useSwapTransactionStore.setState(useSwapTransactionStore.getInitialState(), true)
   Object.assign(state, {
-    events: [], errors: [], transfers: [], published: [], successes: 0, error: undefined, sourceAddress: 'source', provider: undefined,
+    events: [], errors: [], transfers: [], transferResolver: new TransferResolver([]), published: [], successes: 0, error: undefined, sourceAddress: 'source', provider: undefined,
     refreshes: [], actionRefreshes: [], reconciled: [], freshAttempts: 0, creations: 0, selectedSwapId: 'swap-1',
     swapDetails: { id: 'swap-1' }, onSuccess: undefined, executionLocks: [],
     depositActions: [{ type: 'transfer', to_address: 'deposit', call_data: '0x', amount_in_base_units: '1000000' }],
@@ -115,6 +130,8 @@ beforeEach(async () => {
     getSwap: async id => ({ data: { swap: { id, status: 'user_transfer_pending', transactions: [] }, deposit_actions: state.depositActions } }),
     getDepositActions: async () => ({ data: state.depositActions }),
   })
+  const registeredEntries = [{}]
+  state.walletRegistry = { subscribe: () => () => {}, getEntries: () => registeredEntries }
   unsubscribeStore = useSwapTransactionStore.subscribe((current, previous) => {
     for (const [id, transaction] of Object.entries(current.swapTransactions)) {
       if (transaction.hash && transaction.hash !== previous.swapTransactions[id]?.hash) {
@@ -333,6 +350,38 @@ async function mountWithdrawal(useWithdrawal, props = {}) {
   return { get result() { return result }, rerender: () => act(() => root.render(createElement(Probe))), setActive: value => { active = value; return act(() => root.render(createElement(Probe))); }, unmount: () => act(async () => root.unmount()) }
 }
 
+test('an arbitrary registered adapter uses the shared withdrawal flow without widget configuration', async () => {
+  const withdrawal = {
+    id: 'third-party', displayName: 'Third Party', preparationLabel: 'Preparing your account',
+    amountDecimals: () => 3,
+    prepareTransfer: (action, amount) => ({ depositAddress: action.to_address, callData: action.call_data, amount }),
+  }
+  state.transferResolver = new TransferResolver([{ supportsNetwork: network => network.name === 'source', withdrawal }])
+  state.executeTransfer = async () => 'third-party-hash'
+  const props = { swapId: undefined, swapBasicData: { ...swapBasicData, requested_amount: '1.23456' } }
+  state.createSwap = async values => {
+    assert.equal(values.amount, '1.234')
+    return { swap: { id: 'third-party-swap' }, deposit_actions: state.depositActions }
+  }
+  function useRegisteredWithdrawal(props, active) {
+    const definition = useWithdrawalProvider(props.swapBasicData.source_network)
+    assert.equal(definition, withdrawal)
+    return useProviderWithdrawal(props, definition, active)
+  }
+  const mounted = await mountWithdrawal(useRegisteredWithdrawal, props)
+  try {
+    await act(() => mounted.result.handleWithdraw())
+    assert.equal(state.creations, 1)
+    assert.equal(state.transfers[0][0].amount, 1.234)
+    assert.equal(state.transfers[0][0].depositAddress, 'deposit')
+    assert.equal(state.successes, 1)
+    assert.equal(useSwapTransactionStore.getState().swapTransactions['third-party-swap'].hash, 'third-party-hash')
+    assert.ok(state.events.some(event => event.action === 'third-party_withdrawal'))
+  } finally {
+    await mounted.unmount()
+  }
+})
+
 for (const [useWithdrawal, providerType] of [
   [useHyperliquidWithdrawal, 'hyperliquid'], [usePolymarketWithdrawal, 'polymarket'],
 ]) {
@@ -353,6 +402,7 @@ for (const [useWithdrawal, providerType] of [
       swr: { default: () => ({}) },
       overrides: {
         '@/components/utils/resolveSwapPhase': phases,
+        '@/hooks/useWithdrawalProvider': { useWithdrawalProvider: network => ({ id: providerType }) },
         '@/hooks/useSwapPolling': { useSwapPolling: () => ({ data: response, mutate() {} }) },
       },
     })

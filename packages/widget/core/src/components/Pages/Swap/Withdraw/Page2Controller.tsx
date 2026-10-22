@@ -1,9 +1,8 @@
 import { WalletTransferView } from './Presentation/Page2Sections';
 import type { ReactNode } from 'react';
 import type { SwapBasicData } from '@/lib/apiClients/layerSwapApiClient';
-import { NetworkType } from '@layerswap/widget-types';
-import { Address } from '@/lib/address/Address';
-import { isExtendedSourceNetwork } from '@/lib/extendedRoutes/registry';
+import type { WalletWithdrawal } from '@layerswap/widget-types';
+import { useWithdrawalProvider } from '@/hooks/useWithdrawalProvider';
 import { WithdrawalProvider } from '@/context/withdrawalContext';
 import { useSwapDataState } from '@/context/swap';
 import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
@@ -13,11 +12,10 @@ import { useEffect } from 'react';
 import { useWithdrawBalance } from './Withdraw';
 import { useWalletWithdrawalController } from './Wallet';
 import { useManualWithdrawController } from './ManualWithdraw';
-import { useHyperliquidWithdrawal } from './WithdrawalProviders/Hyperliquid/useHyperliquidWithdrawal';
-import { usePolymarketWithdrawal } from './WithdrawalProviders/Polymarket/usePolymarketWithdrawal';
+import { useProviderWithdrawal } from './WithdrawalProviders/useProviderWithdrawal';
+import { ProviderWithdrawalControls } from './WithdrawalProviders/ProviderWalletWithdrawal';
 import { useConnectWalletController } from './Wallet/Common/buttons';
 import { ConnectWalletView } from './Presentation/WalletActionsView';
-import { SpecializedWithdrawalView } from './Presentation/SpecializedWithdrawalView';
 import type { WalletProgressData } from './Presentation/walletProgress';
 import type { Partner } from '@/Models';
 
@@ -38,20 +36,16 @@ type Props = {
 
 export function Page2Controller(props: Props) {
     const source = props.swapBasicData.source_network;
-    const Host = props.swapBasicData.use_deposit_address
-        ? ManualController
-        : source.type === NetworkType.Polymarket
-          ? PolymarketController
-          : isExtendedSourceNetwork(source.name)
-            ? HyperliquidController
-            : WalletController;
+    const definition = useWithdrawalProvider(source);
     return (
         <WithdrawalProvider
             onWalletWithdrawalSuccess={props.onWalletWithdrawalSuccess}
             onCancelWithdrawal={props.onCancelWithdrawal}
             showProgress={false}
         >
-            <Host {...props} />
+            {props.swapBasicData.use_deposit_address ? <ManualController {...props} />
+                : definition ? <ProviderController key={definition.id} {...props} definition={definition} />
+                : <WalletController {...props} />}
         </WithdrawalProvider>
     );
 }
@@ -127,72 +121,31 @@ function ManualController(props: Props) {
     });
 }
 
-type SpecializedState = ReturnType<typeof useHyperliquidWithdrawal>;
-function useSpecializedPresentation(
-    props: Props,
-    state: SpecializedState,
-    provider: 'Hyperliquid' | 'Polymarket',
-): Model {
+function ProviderController({ definition, ...props }: Props & { definition: WalletWithdrawal }) {
+    const { swapDetails, refuel } = useSwapDataState();
     const active = useResolvedSwapStatus().showWithdrawScreen;
+    const state = useProviderWithdrawal({
+        swapBasicData: props.swapBasicData,
+        swapId: swapDetails?.id,
+        refuel: !!refuel,
+    }, definition, active);
     const balance = useWithdrawBalance(active);
     const connection = useConnectWalletController();
     const network = props.swapBasicData.source_network;
-    return {
+    return props.children({
         controls: null,
-        actionKey: balance.blocked ? balance.actionKey : provider,
+        actionKey: balance.blocked ? balance.actionKey : definition.id,
         footer: !active ? null : balance.blocked ? (
             balance.warning
         ) : (
             <WalletTransferView warning={balance.warning}>
-                <SpecializedWithdrawalView
-                    {...state}
-                    provider={provider}
+                <ProviderWithdrawalControls
+                    state={state}
+                    provider={definition}
                     network={network}
-                    isConnected={state.isConnected && !!state.wallet}
-                    accountMismatch={
-                        !!(
-                            state.sourceAddress &&
-                            state.activeAddress &&
-                            !Address.equals(
-                                state.activeAddress,
-                                state.sourceAddress,
-                                network,
-                            )
-                        )
-                    }
                     connectButton={<ConnectWalletView {...connection} />}
                 />
             </WalletTransferView>
         ),
-    };
-}
-function HyperliquidController(props: Props) {
-    const { swapDetails, refuel } = useSwapDataState();
-    const active = useResolvedSwapStatus().showWithdrawScreen;
-    const state = useHyperliquidWithdrawal(
-        {
-            swapBasicData: props.swapBasicData,
-            swapId: swapDetails?.id,
-            refuel: !!refuel,
-        },
-        active,
-    );
-    return props.children(
-        useSpecializedPresentation(props, state, 'Hyperliquid'),
-    );
-}
-function PolymarketController(props: Props) {
-    const { swapDetails, refuel } = useSwapDataState();
-    const active = useResolvedSwapStatus().showWithdrawScreen;
-    const state = usePolymarketWithdrawal(
-        {
-            swapBasicData: props.swapBasicData,
-            swapId: swapDetails?.id,
-            refuel: !!refuel,
-        },
-        active,
-    );
-    return props.children(
-        useSpecializedPresentation(props, state, 'Polymarket'),
-    );
+    });
 }

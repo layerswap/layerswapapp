@@ -66,8 +66,7 @@ export function isFrontendSwapQuote(quote: Pick<SwapQuote, 'path'> | undefined):
 export function resolveSwapFlow(input: ResolveSwapFlowInput): ResolvedSwapFlow {
     const { swapData, depositActions: actions, stepTransactions, quote } = input;
     const sourceType = swapData?.source_network?.type;
-    const sourceProvider = input.sourceProvider
-        ?? (sourceType === 'hyperliquid' || sourceType === 'polymarket' ? sourceType : undefined);
+    const sourceProvider = input.sourceProvider;
     const sourceCannotBatch = (!!sourceType && sourceType !== 'evm')
         || (!!swapData?.source_token?.symbol && !swapData.source_token.contract);
     const draft = input.isDraft === true && actions === undefined && !input.transaction && !input.gaslessAuthorization;
