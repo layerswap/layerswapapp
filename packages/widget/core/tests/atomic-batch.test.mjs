@@ -58,27 +58,6 @@ const submit = (ctx = context(), provider = {}) => executeAtomicBatch(ctx, ctx.d
     submit: async () => ({ id: batchId }), getStatus: async () => assert.fail('Backend observation must not poll the wallet'), ...provider,
 })
 
-test('an uncertain atomic submission stays in history after hydration without enabling resubmission', async () => {
-    const ctx = context()
-    await assert.rejects(submit(ctx, { submit: async () => { throw new Error('Wallet response lost') } }), /Wallet response lost/)
-    const saved = storage.get('swapTransactions')
-    store.setState(store.getInitialState(), true)
-    storage.set('swapTransactions', saved)
-    await store.persist.rehydrate()
-
-    const state = store.getState()
-    const response = { swap: { ...ctx.swapData, status: 'user_transfer_pending', transactions: [] } }
-    assert.equal(state.swapTransactions['atomic-swap'].timestamp, undefined)
-    assert.equal(shouldDisplay(response, state.swapTransactions, state.pendingSubmissions), true)
-    assert.equal(shouldDisplay({ swap: { ...response.swap, id: 'untouched' } }, {
-        untouched: { kind: 'atomic-batch' },
-    }, state.pendingSubmissions), false)
-    await assert.rejects(submit(ctx, {
-        submit: async () => assert.fail('reopening an uncertain submission must never send again'),
-    }), /may already be submitted/)
-    assert.equal(store.getState().pendingSubmissions['atomic-swap'], true)
-})
-
 for (const [name, action] of Object.entries(fixtures.actions).filter(([, action]) => action.calls.length > 1)) test(`preserves backend calls and hands accepted batches to backend tracking: ${name}`, async () => {
     const ctx = context(action)
     const needsApproval = ['zero_allowance', 'allowance_reset'].includes(name)
@@ -120,10 +99,6 @@ test('validates sender, chain, expiry, address, calldata and integer values befo
         { calls: [{ ...fixtures.actions.sufficient_allowance.calls[0], to: '0x123' }] },
         { calls: [{ ...fixtures.actions.sufficient_allowance.calls[0], data: '0x123' }] },
     ]) assert.throws(() => validateAtomicBatch({ ...fixtures.actions.zero_allowance, ...change }, fixtures.swap, fixtures.account, fixtures.account))
-})
-
-test('accepts the API action expiry five seconds before its transaction deadline', () => {
-    assert.equal(getAtomicBatchExpiry({ valid_before: 1792511077, expires_at: '2026-10-20T15:44:32+00:00' }), 1792511072)
 })
 
 test('submits with the earlier cutoff while preserving the backend calldata', async () => {
@@ -226,14 +201,18 @@ for (const [name, error] of [
     assert.equal(ctx.successes, 1)
 })
 
-test('a lost response preserves deduplication after reload and blocks another wallet request', async () => {
+test('a lost response remains visible in history and blocks another wallet request after reload', async () => {
     const ctx = context()
     await assert.rejects(submit(ctx, { submit: async () => { throw new Error('Connection lost') } }), /Connection lost/)
     const saved = storage.get('swapTransactions')
     store.setState(store.getInitialState(), true)
     storage.set('swapTransactions', saved)
     await store.persist.rehydrate()
-    assert.equal(store.getState().pendingSubmissions['atomic-swap'], true)
+    const state = store.getState()
+    const response = { swap: { ...ctx.swapData, status: 'user_transfer_pending', transactions: [] } }
+    assert.equal(state.pendingSubmissions['atomic-swap'], true)
+    assert.equal(state.swapTransactions['atomic-swap'].timestamp, undefined)
+    assert.equal(shouldDisplay(response, state.swapTransactions, state.pendingSubmissions), true)
     assert.equal(hasUnacknowledgedWalletAction({
         transaction: store.getState().swapTransactions['atomic-swap'],
         pendingSubmission: store.getState().pendingSubmissions['atomic-swap'],

@@ -1315,29 +1315,11 @@ test('a standard transfer receipt replaces the full quote and submitted button b
     }
 });
 
-test('a saved atomic receipt keeps confirmation visible until the API supplies progress', () => {
-    for (const milestoneId of ['restored', 'receipt']) {
-        const restored = frontendMilestone('atomic-batch-receipt', milestoneId);
-        assert.equal(restored.snapshot.walletExecutionStarted, false, 'reopening loses the local execution flag');
-        assert.equal(phase(restored.snapshot).phase, SwapPhase.AwaitingUserDeposit);
-        for (const mode of ['component', 'modal']) {
-            const view = fixtureDOM('atomic-batch-receipt', milestoneId, mode);
-            assert.match(view.textContent, /Confirming transaction/);
-            assert.equal(view.querySelectorAll('[aria-label="Progress"] li').length, 2);
-            assert.equal(view.querySelector('[data-quote-layout]').dataset.quoteLayout, 'attached');
-            assert.equal(view.querySelector('[data-wallet-execution-panel="controls"]'), null);
-            assert.doesNotMatch(view.textContent, /Transfer complete|Try again|Checking wallet submission|Transaction submitted/);
-        }
-    }
+test('receipt recovery keeps one progress card as action history and API transactions arrive', async () => {
+    const container = document.getElementById('root');
     const receipt = frontendMilestone('atomic-batch-receipt', 'receipt').snapshot.storedWalletTransaction;
     assert.deepEqual(Object.keys(receipt).sort(), ['hash', 'kind', 'timestamp']);
     assert.equal(receipt.kind, 'atomic-batch');
-    assert.equal(phase(frontendMilestone('atomic-batch-receipt', 'input').snapshot).phase, SwapPhase.InputPending);
-    assert.equal(phase(frontendMilestone('atomic-batch-receipt', 'completed').snapshot).phase, SwapPhase.Completed);
-});
-
-test('receipt recovery keeps one progress card as action history and API transactions arrive', async () => {
-    const container = document.getElementById('root');
     for (const mode of ['component', 'modal']) {
         const root = createRoot(container);
         try {
@@ -1345,8 +1327,16 @@ test('receipt recovery keeps one progress card as action history and API transac
             for (const milestoneId of ['restored', 'receipt', 'input', 'finalizing', 'completed']) {
                 const milestone = frontendMilestone('atomic-batch-receipt', milestoneId);
                 await act(async () => root.render(preview(milestone.snapshot, milestone.at, mode)));
+                if (milestoneId === 'restored' || milestoneId === 'receipt') {
+                    assert.equal(milestone.snapshot.walletExecutionStarted, false, 'reopening loses the local execution flag');
+                    assert.equal(phase(milestone.snapshot).phase, SwapPhase.AwaitingUserDeposit);
+                    assert.match(container.textContent, /Confirming transaction/);
+                    assert.doesNotMatch(container.textContent, /Transfer complete|Checking wallet submission|Transaction submitted/);
+                }
                 panel ??= container.querySelector('[data-steps-panel]');
                 assert.ok(panel);
+                assert.equal(panel.querySelectorAll('li').length, 2);
+                assert.equal(container.querySelector('[data-wallet-execution-panel="controls"]'), null);
                 assert.equal(container.querySelector('[data-steps-panel]'), panel, `${mode}: ${milestoneId}`);
                 assert.equal(panel.closest('[inert]'), null);
                 assert.equal(container.querySelector('[data-quote-layout]').dataset.quoteLayout, 'attached');

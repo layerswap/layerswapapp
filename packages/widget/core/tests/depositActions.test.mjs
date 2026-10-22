@@ -634,23 +634,13 @@ test('the button keeps one wallet request active and prevents repeated submissio
     assert.deepEqual(flow.calls.transfer, [])
 })
 
-test('new backend batch rejection never falls back to signing or an ordinary transfer', async () => {
-    const flow = createWorkflow({ atomic: true })
-    flow.state.apiActions = [atomicFixtures.actions.zero_allowance]
-    flow.state.batchError = { code: 4001 }
-    await flow.render().button.props.onClick()
-    assert.equal(flow.calls.batches.length, 1)
-    assert.deepEqual(flow.calls.transfer, [])
-    assert.deepEqual(flow.calls.sign, [])
-    assert.deepEqual(flow.calls.storedTransactions, [])
-})
-
 for (const allowance of ['zero_allowance', 'sufficient_allowance']) {
     test(`a reopened ${allowance} atomic swap keeps its backend mode with gasless enabled by default`, async () => {
         const flow = createWorkflow({ atomic: true })
         flow.preferences.gaslessEnabled = true
         flow.state.sourceToken = { ...atomicFixtures.token, supports_gasless_deposit: true, gasless_standard: 'eip3009' }
-        flow.state.apiActions = [atomicFixtures.actions[allowance]]
+        flow.state.apiActions = await atomicActions.resolveAtomicDepositActions(
+            atomicFixtures.deposit_actions[allowance], async () => atomicFixtures.next_actions[allowance])
         flow.state.depositActionsResponse = flow.state.apiActions
         flow.render()
         await flow.poll()
@@ -659,11 +649,11 @@ for (const allowance of ['zero_allowance', 'sufficient_allowance']) {
 
         assert.equal(flow.state.swapId, swapId, 'reopening must retain the existing swap')
         assert.equal(flow.calls.refresh.length, 1)
-        assert.equal(flow.calls.batches.length, 1)
+        assert.equal(flow.calls.batches.length, allowance === 'sufficient_allowance' ? 0 : 1)
         assert.equal(flow.preferences.gaslessEnabled, true)
         assert.deepEqual(flow.calls.errors, [])
         assert.deepEqual(flow.calls.sign, [])
-        assert.deepEqual(flow.calls.transfer, [])
+        assert.equal(flow.calls.transfer.length, allowance === 'sufficient_allowance' ? 1 : 0)
     })
 }
 
@@ -703,6 +693,7 @@ for (const rejectedError of [walletErrors.userRejectedError(), { code: 4001 }]) 
             assert.equal(flow.state.feedback.isSignatureError, false)
             assert.equal(rejection.isUserRejection(flow.state.feedback.error), true)
             assert.equal(flow.state.swapId, swapId)
+            assert.equal(flow.calls.batches.length, 1)
             assert.deepEqual(flow.calls.errors, [], 'wallet rejection is not reported as an unexpected error')
             assert.deepEqual(flow.calls.transfer, [])
             assert.deepEqual(flow.calls.sign, [])
@@ -732,6 +723,11 @@ for (const rejectedError of [walletErrors.userRejectedError(), { code: 4001 }]) 
 for (const submission of ['uncertain', 'accepted']) {
     test(`${submission} batch keeps automatic progress without wallet status or resubmission controls`, async () => {
         const flow = createWorkflow({ atomic: true })
+        flow.preferences.gaslessEnabled = true
+        flow.state.sourceToken = { ...atomicFixtures.token, supports_gasless_deposit: true, gasless_standard: 'eip3009' }
+        flow.state.createSwap = () => assert.fail('A submitted atomic swap cannot be replaced after changing gasless preference')
+        flow.state.apiActions = [atomicFixtures.actions.zero_allowance]
+        flow.state.depositActionsResponse = flow.state.apiActions
         const store = flow.stores.useSwapTransactionStore.getState()
         if (submission === 'uncertain') {
             store.pendingSubmissions[swapId] = true
@@ -749,6 +745,8 @@ for (const submission of ['uncertain', 'accepted']) {
         assert.deepEqual(flow.calls.batches, [])
         assert.deepEqual(flow.calls.batchStatus, [])
         assert.deepEqual(flow.calls.statusChecks, [])
+        assert.deepEqual(flow.calls.refresh, [])
+        assert.deepEqual(flow.calls.sign, [])
         assert.deepEqual(flow.calls.transfer, [])
         assert.equal(swapProgress.hasUnacknowledgedWalletAction({ transaction: store.swapTransactions[swapId],
             pendingSubmission: store.pendingSubmissions[swapId] }), true)
@@ -962,6 +960,11 @@ for (const route of ['same-network token swap', 'bridge', 'native token', 'manua
         }
         flow.state.quote = { receive_amount: 2.836322, destination_token: flow.state.swapBasicData.destination_token }
         flow.state.apiActions = [{ type: 'transfer', step: 'deposit', status: 'action_required', amount: '2.896498', to_address: '0x456' }]
+        flow.state.flow = loadSource('../src/components/utils/resolveSwapFlow.ts').resolveSwapFlow({
+            swapData: flow.state.swapBasicData,
+            depositActions: flow.state.apiActions,
+            quote: flow.state.quote,
+        })
         flow.render()
         await flow.poll()
         flow.state.onWalletPrompt = () => {
@@ -978,39 +981,6 @@ for (const route of ['same-network token swap', 'bridge', 'native token', 'manua
         assert.deepEqual(flow.calls.errors, [])
     })
 }
-
-test('the shared flow keeps a same-network deposit transfer on its wallet controls', async () => {
-    const flow = createWorkflow()
-    const network = { name: 'BASE_MAINNET', type: 'evm' }
-    flow.state.swapBasicData = {
-        source_network: network,
-        destination_network: network,
-        source_token: { symbol: 'USDT', contract: atomicFixtures.token.contract },
-        destination_token: { symbol: 'USDC', asset: 'USDC', decimals: 6 },
-        use_deposit_address: false,
-    }
-    flow.state.quote = { receive_amount: 2.836322, destination_token: flow.state.swapBasicData.destination_token }
-    flow.state.apiActions = [{ type: 'transfer', step: 'deposit', status: 'action_required', amount: '2.896498', to_address: '0x456' }]
-    const { resolveSwapFlow } = loadSource('../src/components/utils/resolveSwapFlow.ts')
-    flow.state.flow = resolveSwapFlow({
-        swapData: flow.state.swapBasicData,
-        depositActions: flow.state.apiActions,
-        quote: flow.state.quote,
-    })
-    flow.render()
-    await flow.poll()
-    flow.state.onWalletPrompt = () => {
-        const rendered = flow.render()
-        assert.equal(rendered.steps, undefined, 'route geometry cannot create a frontend workflow')
-        assert.equal(rendered.button.props.children, 'Confirm in your wallet')
-    }
-
-    await flow.render().button.props.onClick()
-
-    assert.equal(flow.calls.transfer.length, 1)
-    assert.deepEqual(flow.calls.batches, [])
-    assert.deepEqual(flow.calls.errors, [])
-})
 
 for (const atomic of [true, false]) test(`a changed creation quote ${atomic ? 'enters atomic wallet progress directly' : 'keeps the legacy quote-update pause'}`, async t => {
     t.mock.timers.enable({ apis: ['setTimeout'] })
@@ -1947,24 +1917,6 @@ test('current pending work and completed execution still lock replacement', () =
             ] }), true, `${status} ${step} can still move funds`)
         }
     }
-})
-
-test('an uncertain atomic submission blocks a replacement after the gasless preference changes', async () => {
-    const flow = createWorkflow({ atomic: true })
-    flow.state.sourceToken = { contract: '0xtoken', supports_gasless_deposit: true, gasless_standard: 'eip3009' }
-    flow.state.apiActions = [atomicFixtures.actions.zero_allowance]
-    flow.state.depositActionsResponse = flow.state.apiActions
-    flow.stores.useSwapTransactionStore.getState().swapTransactions[swapId] = { kind: 'atomic-batch' }
-    flow.stores.useSwapTransactionStore.getState().pendingSubmissions[swapId] = true
-    flow.preferences.gaslessEnabled = true
-    flow.state.createSwap = () => assert.fail('An uncertain atomic submission cannot be replaced')
-    const rendered = flow.render()
-    assert.equal(rendered.button, undefined)
-    await rendered.viewProps.handleClick()
-    assert.deepEqual(flow.calls.batches, [])
-    assert.deepEqual(flow.calls.refresh, [])
-    assert.deepEqual(flow.calls.sign, [])
-    assert.deepEqual(flow.calls.transfer, [])
 })
 
 test('enabling gasless after rejecting self-paid signing creates a new swap with future pending steps', async () => {

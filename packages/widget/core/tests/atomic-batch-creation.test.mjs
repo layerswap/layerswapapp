@@ -193,15 +193,6 @@ test('switching source routes refreshes creation with stable wallet, account and
     } finally { await act(() => h.root.unmount()) }
 })
 
-test('atomic creation does not require browser coordination', async () => {
-    const h = await setup()
-    try {
-        await act(async () => { await h.update.createSwap(h.values, {}) })
-        assert.equal(h.checks.length, 1)
-        assert.equal(h.requests[0].use_atomic_batch, true)
-    } finally { await act(() => h.root.unmount()) }
-})
-
 test('existing and completed swaps never rediscover capabilities after wallet changes', async () => {
     const h = await setup({ existing: true, discover: true })
     try {

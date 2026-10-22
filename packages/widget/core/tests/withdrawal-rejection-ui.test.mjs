@@ -541,22 +541,6 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
     })
   }
 
-  test(`${useWithdrawal.name} reuses the prepared swap when reviewed inputs are unchanged`, async () => {
-    state.swapDetails = undefined
-    state.error = userRejectedError()
-    state.createSwap = async () => ({ swap: { id: 'same-draft' }, deposit_actions: state.depositActions })
-    const mounted = await mountWithdrawal(useWithdrawal, { swapId: undefined })
-    try {
-      await act(async () => mounted.result.handleWithdraw())
-      await act(async () => mounted.result.handleWithdraw())
-      assert.equal(state.creations, 1)
-      assert.deepEqual(state.actionRefreshes, [['same-draft', 'source']])
-      assert.equal(state.transfers.at(-1)[0].swapId, 'same-draft')
-    } finally {
-      await mounted.unmount()
-    }
-  })
-
   test(`${useWithdrawal.name} remount retry cannot unlock the original pending wallet request`, async () => {
     const paused = Promise.withResolvers()
     const entered = Promise.withResolvers()

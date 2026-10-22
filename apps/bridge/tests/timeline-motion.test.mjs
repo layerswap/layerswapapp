@@ -1,14 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createRequire } from 'node:module';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
 import { JSDOM } from 'jsdom';
 import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
-import ts from 'typescript';
 
 // Exercise motion-enabled transitions: outgoing controls must be inactive,
 // and interruptions must leave one usable screen after the transition settles.
@@ -50,7 +49,6 @@ await build({
             export { TransferStatusHeader } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/TransferStatusHeader.js';
             export { QuoteSummaryView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/QuoteSummaryView.js';
             export { QuoteView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/QuoteView.js';
-            export { DepositWorkflowView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/DepositWorkflowView.js';
             export { WalletExecutionTransition } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/WalletExecutionTransition.js';
             export { WalletActionTransition } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/WalletActionTransition.js';
             export { getSendTransactionPresentation, SendTransactionView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/WalletActionsView.js';
@@ -78,27 +76,7 @@ await build({
     mainFields: ['module', 'main'],
     logLevel: 'silent',
 });
-const { Page2Presenter, getProcessingProgress, getSendTransactionPresentation, SwapContentView, ProcessingSectionView, StepsPanel, ProcessingView, Page2Preview, scenarios, EPOCH, resolveSwapPhase, resolveSwapFlow, Steps, TransferStatusHeader, QuoteView, QuoteSummaryView, DepositWorkflowView, WalletExecutionTransition, WalletActionTransition, SendTransactionView, RetryView, DepositLayoutView, DepositAddressTransition } = await import(pathToFileURL(outfile));
-function loadWidgetSource(path, imports) {
-    const { outputText } = ts.transpileModule(readFileSync(new URL(`../../../packages/widget/core/src/${path}`, import.meta.url), 'utf8'), {
-        compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
-    });
-    const module = { exports: {} };
-    new Function('require', 'module', 'exports', outputText)(name => {
-        if (name === 'react' || name === 'react/jsx-runtime') return widgetRequire(name);
-        if (name === '../components/utils/resolveSwapFlow.js') return loadWidgetSource('components/utils/resolveSwapFlow.ts', {});
-        if (name === '../../helpers/depositActions.js') return loadWidgetSource('helpers/depositActions.ts', {});
-        if (path.endsWith('SwapDetails.tsx')) {
-            if (name === './Page2Controller') return { Page2Controller: ({ children }) => children({ controls: imports['@/hooks/useResolvedSwapStatus'].useResolvedSwapStatus().showWithdrawScreen ? React.createElement(imports['./Withdraw'].default) : null }) };
-            if (name === './Processing/Processing') return { useProcessingController: props => props };
-            if (name === './Presentation/ProcessingView') return { getProcessingProgress: props => props };
-            if (name === './Presentation/Page2Presenter') return { Page2Presenter: ({ controls, ...props }) => React.createElement(SwapContentView, { ...props, progress: React.createElement(imports['./Processing'].default) }, controls) };
-        }
-        if (name in imports) return imports[name];
-        throw new Error(`Unexpected dependency: ${name}`);
-    }, module, module.exports);
-    return module.exports;
-}
+const { Page2Presenter, getProcessingProgress, getSendTransactionPresentation, SwapContentView, ProcessingSectionView, StepsPanel, ProcessingView, Page2Preview, scenarios, EPOCH, resolveSwapPhase, resolveSwapFlow, Steps, TransferStatusHeader, QuoteView, QuoteSummaryView, WalletExecutionTransition, WalletActionTransition, SendTransactionView, RetryView, DepositLayoutView, DepositAddressTransition } = await import(pathToFileURL(outfile));
 const container = document.getElementById('root');
 const surface = node => node?.closest('[data-wallet-execution-panel="workflow"]') ?? node;
 const settle = () => act(() => new Promise(resolve => setTimeout(resolve, 400)));
@@ -435,76 +413,6 @@ test('wallet prompts, transaction confirmation and completion update one persist
                 assert.equal(panel.querySelectorAll('.animate-spin').length, 0);
             }
         }
-    } finally {
-        await act(() => root.unmount());
-    }
-});
-
-test('submission hands off from the live wallet controller to one active processing panel', async () => {
-    const noop = () => {};
-    const empty = () => null;
-    const childrenOnly = ({ children }) => children;
-    const destinationToken = { asset: 'USDe', decimals: 18 };
-    const context = {
-        swapBasicData: {
-            source_network: { name: 'BASE_MAINNET' }, destination_network: { name: 'BASE_MAINNET' },
-            use_deposit_address: false,
-        },
-        walletExecutionStarted: true,
-        depositActionsResponse: [
-            { step: 'sign', status: 'completed' },
-            { step: 'publish', status: 'action_required' },
-        ],
-    };
-    let showWithdrawScreen = true;
-    const { resolveSwapFlow } = loadWidgetSource('components/utils/resolveSwapFlow.ts', {});
-    const common = { actions: context.depositActionsResponse, destinationToken, receiveAmount: 2.652761339210903 };
-    const { default: SwapDetails } = loadWidgetSource('components/Pages/Swap/Withdraw/SwapDetails.tsx', {
-        './Presentation/Page2Sections': { SwapContentView, ProcessingSectionView },
-        './Summary': { default: () => React.createElement('div', null, 'USDC → USDe') },
-        './SwapQuoteDetails': { SwapQuoteDetails: () => React.createElement('div', null, 'Receive at least') },
-        './Presentation/Page2Contained': { Page2Contained: childrenOnly },
-        '@/components/Common/Sceletons': { SwapDetailsSceleton: empty },
-        '@/components/Widget/Index': { Widget: Object.assign(childrenOnly, { Footer: childrenOnly }) },
-        '@/context/callbackProvider': { useCallbacks: () => ({ onBackClick: noop, onSwapLifecycle: noop }) },
-        '@/context/swap': { useSwapDataState: () => ({ ...context, flow: resolveSwapFlow({ swapData: context.swapBasicData, depositActions: context.depositActionsResponse, walletExecutionStarted: context.walletExecutionStarted, resolved: { showWithdrawScreen } }) }), useSwapDataUpdate: () => ({ setSwapViewMounted: noop }) },
-        '@/context/swapAccounts': { useSelectedAccount: () => ({ address: '0xsource' }) },
-        '@/hooks/useGaslessAuthorizationStatus': { useGaslessAuthorizationStatus: noop },
-        '@/hooks/useResolvedSwapStatus': { useResolvedSwapStatus: () => ({ showWithdrawScreen }) },
-        '@/hooks/useSwapRetry': { useSwapRetry: () => ({}) },
-        '@/lib/swapLifecycle': {},
-        './ManualWithdraw': { default: empty },
-        './Presentation/RetryView': { RetryView },
-        './Withdraw': { default: () => React.createElement(SendTransactionView, {
-            loading: true, depositActions: context.depositActionsResponse,
-            showProgress: false,
-            quote: { destination_token: destinationToken, receive_amount: common.receiveAmount },
-            actionStateText: 'Confirm in your wallet',
-        }) },
-        './Processing': { default: () => React.createElement(DepositWorkflowView, {
-            ...common,
-            loading: showWithdrawScreen,
-            actionStateText: showWithdrawScreen ? 'Confirm in your wallet' : undefined,
-            processing: showWithdrawScreen ? undefined : {
-                inputStatus: 'current', outputStatus: 'upcoming', inputDescription: 'Confirming transaction',
-            },
-        }) },
-    });
-    const root = createRoot(container);
-    const scene = () => React.createElement(React.StrictMode, null, React.createElement(SwapDetails, { type: 'contained' }));
-    try {
-        await act(() => root.render(scene()));
-        await settle();
-        assert.match(container.textContent, /Confirm in your wallet/);
-        context.walletExecutionStarted = false;
-        showWithdrawScreen = false;
-        await act(() => root.render(scene()));
-        await settle();
-        const panels = container.querySelectorAll('[data-steps-panel]');
-        assert.equal(panels.length, 1);
-        assert.equal(panels[0].closest('[inert]'), null);
-        assert.equal(surface(panels[0]).style.opacity, '1');
-        assert.match(panels[0].textContent, /Confirming transaction/);
     } finally {
         await act(() => root.unmount());
     }

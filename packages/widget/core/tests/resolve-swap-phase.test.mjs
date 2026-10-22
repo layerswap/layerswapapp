@@ -40,6 +40,7 @@ test('saved batch outcomes and user receipts cannot decide swap phase', () => {
   ]) {
     const awaiting = resolve(pendingSwap(), saved)
     assert.equal(awaiting.phase, SwapPhase.AwaitingUserDeposit)
+    assert.equal(awaiting.isTerminal, false)
     assert.equal(awaiting.failureReason, undefined)
     const completed = resolve(pendingSwap({ status: 'completed', transactions: [
       { type: 'output', status: 'completed', transaction_hash: '0x2', amount: 1 },
@@ -74,17 +75,12 @@ test('a failed gasless authorization resolves the swap to failed, with the reaso
   assert.equal(resolved.generalStatus.title, 'Transfer failed')
 })
 
-test('a fetched pending authorization shows processing without a saved placeholder', () => {
-  const resolved = resolve(pendingSwap(), { depositCompleted: true })
-  assert.equal(resolved.phase, SwapPhase.InputPending)
-  assert.equal(resolved.failureReason, undefined)
-  assert.equal(resolved.gaslessFailureStatus, undefined)
-})
-
 test('server-reported deposit completion shows processing only while the server reports it', () => {
   const completed = resolve(pendingSwap(), { depositCompleted: true })
   assert.equal(completed.showWithdrawScreen, false)
   assert.equal(completed.phase, SwapPhase.InputPending)
+  assert.equal(completed.failureReason, undefined)
+  assert.equal(completed.gaslessFailureStatus, undefined)
 
   const actionRequired = resolve(pendingSwap(), { depositCompleted: false })
   assert.equal(actionRequired.showWithdrawScreen, true)
@@ -150,25 +146,9 @@ test('a failed status from the tx-status poll resolves a client-detected transfe
   assert.equal(resolved.failureReason, 'transfer_failed')
 })
 
-test('reload cannot restore a failed phase from a saved transaction', () => {
-  const resolved = resolve(pendingSwap(), { storedWalletTransaction: { hash: '0x1', status: 'failed' } })
-  assert.equal(resolved.phase, SwapPhase.AwaitingUserDeposit)
-  assert.equal(resolved.isTerminal, false)
-  assert.equal(resolved.failureReason, undefined)
-})
-
 test('an input transaction the API lists as failed is failed but not retryable from the widget', () => {
   const resolved = resolve(pendingSwap({ transactions: [inputTx({ status: 'failed' })] }))
   assert.equal(resolved.phase, SwapPhase.Failed)
-  assert.equal(resolved.failureReason, undefined)
-})
-
-test('the API input transaction is authoritative over a stale stored failure', () => {
-  const resolved = resolve(pendingSwap({ transactions: [inputTx()] }), {
-    storedWalletTransaction: { hash: '0x1', status: 'failed' },
-  })
-  assert.notEqual(resolved.phase, SwapPhase.Failed)
-  assert.equal(resolved.phase, SwapPhase.OutputPending)
   assert.equal(resolved.failureReason, undefined)
 })
 
@@ -187,6 +167,7 @@ test('a transient stored failure yields to the input status the API reports afte
   assert.equal(listedPending.swapInputTxStatus, 'pending')
   assert.equal(listedPending.phase, SwapPhase.InputPending)
   const listedCompleted = resolve(pendingSwap({ transactions: [inputTx()] }), { storedWalletTransaction, inputTxStatusFromApi: 'failed' })
+  assert.equal(listedCompleted.phase, SwapPhase.OutputPending)
   assert.equal(listedCompleted.swapInputTxStatus, 'completed')
   assert.equal(listedCompleted.failureReason, undefined)
 })
