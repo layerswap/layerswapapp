@@ -40,7 +40,7 @@
     "flags": "^4.2.0",
     "framer-motion": "^10.16.15",
     "lucide-react": "^0.379.0",
-    "next": "15.5.22",
+    "next": "15.5.28",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-hot-toast": "^2.6.0",
@@ -52,7 +52,7 @@
   },
   "devDependencies": {
     "@layerswap/ui-kit": "workspace:^",
-    "@next/bundle-analyzer": "^15.5.19",
+    "@next/bundle-analyzer": "^15.5.28",
     "@tailwindcss/forms": "^0.5.0",
     "@tailwindcss/postcss": "^4.0.15",
     "@tailwindcss/typography": "^0.5.2",

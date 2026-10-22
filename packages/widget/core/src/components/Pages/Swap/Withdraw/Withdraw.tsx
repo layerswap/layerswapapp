@@ -1,3 +1,4 @@
+import { widgetTelemetry } from '@/lib/widgetTelemetry';
 import { truncateDecimals, truncateToDecimals } from '@layerswap/utils';
 import { Widget } from '@/components/Widget/Index';
 import { useSettingsState } from '@/context/settings';
@@ -10,7 +11,7 @@ import useOutOfGas from '@/lib/gases/useOutOfGas';
 import useSWRGas from '@/lib/gases/useSWRGas';
 import { resolveMaxAllowedAmount } from '@/components/Input/Amount/helpers';
 import { amountPresetSource, isAmountPreset } from '@/lib/amountPresets';
-import { NetworkRoute } from '@layerswap/widget-types';
+import { NetworkRoute, NetworkType } from '@layerswap/widget-types';
 import { useFormikContext } from 'formik';
 import type { JSX } from 'react';
 import { FC, useCallback, useMemo } from 'react';
@@ -26,6 +27,7 @@ import { WalletActionTransition } from './Presentation/WalletActionTransition';
 import { lifecycleContextFromSwap } from '@/lib/swapLifecycle';
 import { useTransferBlocked } from '@/hooks/useTransferBlocked';
 import { type ObservedLifecycleEvent, useLifecycleObservation } from '@/hooks/useLifecycleObservation';
+import { getActionableDepositAction, isTransferAction } from '@/helpers/depositActions';
 
 // "Transfer screen shown": reported once while the screen is visible, before any swap exists.
 const AWAITING_WALLET_ACTION: ObservedLifecycleEvent = {
@@ -41,7 +43,7 @@ const Withdraw: FC<{
     onWalletWithdrawalSuccess?: () => void;
     onCancelWithdrawal?: () => void;
 }> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal }) => {
-    const { swapBasicData, swapDetails, swapId, amountPresetLocked, refuel, quoteIsLoading } =
+    const { swapBasicData, swapDetails, swapId, amountPresetLocked, depositActionsResponse, refuel, quoteIsLoading } =
         useSwapDataState();
     const { setSubmitedFormValues, startFreshSwapAttempt, canAdjustAmount } = useSwapDataUpdate();
 
@@ -66,11 +68,26 @@ const Withdraw: FC<{
                 b?.token === swapBasicData?.source_token?.symbol,
         );
     const walletBalanceAmount = walletBalance?.amount;
+    const action = getActionableDepositAction(depositActionsResponse);
+    const transferAction = action && isTransferAction(action)
+        && source_network?.type === NetworkType.EVM
+        && (!action.network || action.network.name === source_network?.name)
+        && (!action.token || action.token.symbol === swapBasicData?.source_token.symbol)
+        && (!action.from_address || action.from_address.toLowerCase() === selectedSourceAccount?.address?.toLowerCase())
+        ? action : undefined;
+    const gasTransaction = transferAction?.to_address && transferAction.amount != null ? {
+        recipientAddress: transferAction.to_address,
+        callData: transferAction.call_data ?? '',
+        amountInBaseUnits: transferAction.amount_in_base_units,
+    } : undefined;
+    const gasEstimationAmount = gasTransaction ? transferAction?.amount : swapBasicData?.requested_amount;
     const { gasData } = useSWRGas(
         selectedSourceAccount?.address,
         source_network,
         swapBasicData?.source_token,
-        swapBasicData?.requested_amount,
+        gasEstimationAmount,
+        undefined,
+        { transaction: gasTransaction },
     );
     const { setValues, values } = useFormikContext<SwapFormValues>();
 
@@ -102,7 +119,7 @@ const Withdraw: FC<{
             || minAllowedAmount == null || !Number.isFinite(minAllowedAmount)
             || maxAllowedAmount == null || !Number.isFinite(maxAllowedAmount)) return undefined;
         const maxAmount = resolveMaxAllowedAmount({
-            walletBalance, gasAmount: gasData?.gas, gasReserve: gasData?.reserve,
+            walletBalance, gasAmount: gasData?.maxFee ?? gasData?.gas, gasReserve: gasData?.reserve,
             fromCurrency: swapBasicData.source_token, native_currency: gasData?.token ?? source_network?.token,
             limitsMaxAmount: maxAllowedAmount, depositMethod: 'wallet',
         });
@@ -118,6 +135,7 @@ const Withdraw: FC<{
     const handleEditAmount = useCallback(() => {
         // Execution can start between rendering the action and clicking it.
         if (!canAdjustAmount() || adjustedAmount === undefined || !swapBasicData) return;
+        widgetTelemetry.recordAmountInput('max');
         const maxFields = { amountMode: 'max' as const,
             amountPresetSource: amountPresetSource(swapBasicData.source_network.name, swapBasicData.source_token.symbol, selectedSourceAccount?.id, selectedSourceAccount?.address),
             amountPresetPending: true, amountPresetError: undefined };
@@ -168,17 +186,21 @@ const Withdraw: FC<{
         address: selectedSourceAccount?.address,
         network: source_network,
         token: swapBasicData?.source_token,
-        amount: swapBasicData?.requested_amount,
+        amount: gasEstimationAmount,
         balances,
         minAllowedAmount,
         maxAllowedAmount,
+        transaction: gasTransaction,
     });
 
     // The gas warning keeps WalletTransferButton available, so it is not a block.
     useTransferBlocked(
         swapBasicData?.use_deposit_address === false && showInsufficientBalanceWarning ? 'insufficient_balance'
         : undefined,
-        lifecycleContext, 'Withdraw')
+        { ...lifecycleContext,
+            sourceWalletAddress: selectedSourceAccount?.address, walletBalance: walletBalance?.amount,
+            walletBalanceNetwork: walletBalance?.network, walletBalanceToken: walletBalance?.token,
+            walletBalanceTimestamp: walletBalance?.request_time }, 'Withdraw')
 
     if (
         swapBasicData?.use_deposit_address === false &&
@@ -210,7 +232,8 @@ const Withdraw: FC<{
         };
     } else if (swapBasicData?.use_deposit_address === false && outOfGas && !presetIsSyncing) {
         withdraw = {
-            footerKey: 'outOfGas',
+            // A changing gas warning must preserve the active wallet execution.
+            footerKey: 'transfer',
             footer: (
                 <WalletTransferButton
                     swapBasicData={swapBasicData}

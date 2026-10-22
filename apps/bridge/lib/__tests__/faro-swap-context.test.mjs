@@ -474,3 +474,29 @@ test('navigating straight from one open swap to another still hands over ownersh
     assert.notEqual(h.attrs().journey_id, original)
     h.controller.dispose()
 })
+
+test('amount input and balance telemetry is retained on diagnostic rows, never session metadata or stalls', t => {
+    t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 1000 })
+    const h = harness()
+    const diagnostic = { amountMode: 'max', sourceWalletAddress: 'wallet-used', walletBalance: 0,
+        walletBalanceNetwork: 'BASE', walletBalanceToken: 'ETH', walletBalanceTimestamp: 'read-time' }
+    for (const step of ['form_submitted', 'transaction_submitted', 'gasless_authorization_submitted', 'awaiting_wallet_action']) {
+        h.controller.record(event(step, undefined, diagnostic))
+        assert.equal(h.records.at(-1).attrs.wallet_balance, undefined, step)
+        assert.equal(h.records.at(-1).attrs.source_wallet_address, undefined, step)
+    }
+    h.controller.record(event('transfer_blocked', 'swap', { ...diagnostic, reasonCode: 'insufficient_balance' }))
+    assert.equal(h.records.at(-1).attrs.wallet_balance, 0)
+    assert.equal(h.records.at(-1).attrs.source_wallet_address, 'wallet-used')
+    assert.equal(h.records.at(-1).attrs.amount_mode, 'max')
+    for (const key of ['source_wallet_address', 'wallet_balance', 'wallet_balance_network', 'wallet_balance_token', 'wallet_balance_timestamp']) {
+        assert.equal(h.attrs()[key], undefined, key)
+    }
+    assert.equal(h.attrs().amount_mode, undefined)
+    t.mock.timers.tick(10 * 60_000 + 1)
+    assert.equal(h.records.at(-1).attrs.step, 'suspected_stall')
+    assert.equal(h.records.at(-1).attrs.wallet_balance, undefined)
+    h.controller.record(event('awaiting_wallet_action', 'swap', diagnostic))
+    assert.equal(h.records.at(-1).attrs.wallet_balance, undefined)
+    h.controller.dispose()
+})

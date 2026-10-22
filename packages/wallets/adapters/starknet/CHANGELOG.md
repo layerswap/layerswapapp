@@ -1,5 +1,23 @@
 # @layerswap/wallet-starknet
 
+## 2.5.1
+
+### Patch Changes
+
+- 0dffcd2: Keep native-token Max usable from a zero amount and convert Starknet gas estimation amounts to base units. Keep exchange withdrawal details from displaying an unrelated connected wallet's gas fee.
+- 34da257: Show generic Starknet execution failures as wallet errors instead of user rejections. Preserve nested provider codes in lifecycle events and allowlisted RPC simulation/revert details in error reports, with bounded serialization. Expose the wallet-reported version when available for diagnostics.
+- Updated dependencies [2463dd2]
+- Updated dependencies
+- Updated dependencies [a9c35f8]
+- Updated dependencies [419387b]
+- Updated dependencies [34da257]
+- Updated dependencies [a2136b6]
+- Updated dependencies [78fa843]
+- Updated dependencies [a2136b6]
+  - @layerswap/widget-types@2.5.1
+  - @layerswap/wallet-core@2.5.1
+  - @layerswap/utils@2.5.1
+
 ## 2.4.0
 
 ### Patch Changes

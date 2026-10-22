@@ -1,6 +1,7 @@
 import { TokenBalance } from "@layerswap/widget-types";
 import { Token } from "@layerswap/widget-types";
 import { truncateToDecimals } from "@layerswap/utils";
+import { resolveGasBalanceBudget } from "@/lib/gases/resolveGasBalanceBudget";
 
 
 type ResolveMaxAllowedAmountProps = {
@@ -37,6 +38,6 @@ export const resolveMaxAllowedAmount = (props: ResolveMaxAllowedAmountProps) => 
 
 /** Native balance left to send after the buffered gas fee and the reserve the network requires to stay in the account. */
 export const resolveNativePayableAmount = (balance: number, gasAmount: number, gasReserve: number, decimals: number) => {
-    const payableAmount = balance - (gasAmount * 1.02) - gasReserve
+    const payableAmount = balance - resolveGasBalanceBudget({ gas: gasAmount, reserve: gasReserve })
     return Number(truncateToDecimals(String(payableAmount), decimals))
 }

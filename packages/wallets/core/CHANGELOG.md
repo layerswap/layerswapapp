@@ -1,5 +1,56 @@
 # @layerswap/wallet-core
 
+## 2.5.1
+
+### Minor Changes
+
+- 2463dd2: Switch the wallet to the source chain from the send button instead of a separate step.
+  - The standalone "Switch network" button on the wallet withdrawal step is gone. When the connected wallet reports a chain other than the swap's source chain (EVM and Fuel wallets), tapping the send button now asks the wallet to switch and continues to swap creation and the transaction or gasless signature prompt without another tap. A switch the wallet completes without asking shows nothing; if the wallet is still waiting after a second, the button reads "Switching network" with a "confirm in your wallet" message. Already-approved WalletConnect chains switch locally with no wallet prompt. Rejections and failures keep the button as "Try again" with the "Network switch failed" message.
+  - `ChangeNetworkButton` is no longer exported from `@layerswap/widget/internal`.
+  - Preview snapshots (`@layerswap/widget/internal`): `Page2WalletState` drops `{ kind: 'network' }`; the send state gains `networkSwitch` (`'pending' | 'rejected' | 'still-waiting' | 'timeout'`) rendered through the send button, and `ChangeNetworkView` is removed.
+  - `onSwapLifecycle` still emits `network_switch_started`, `network_switched`, `network_switch_rejected` and `network_switch_failed`; their `path` is now `SendTransactionButton`.
+  - The switch waits at most 60 seconds for the wallet, so an in-app browser that never answers a dismissed prompt no longer leaves the send flow stuck; the attempt is reported with `reasonCode: timeout`.
+  - New `WalletErrorReasonCode` `request_pending` (`@layerswap/widget-types`), recognised by `normalizeWalletErrorCode` from EIP-1193 `-32002` and "already pending" / "already processing" messages. A second tap while the wallet still shows the switch prompt is reported as `network_switch_failed` with `reasonCode: request_pending` and tells the user to confirm the pending request in the wallet.
+  - `@layerswap/wallet-fuel`: `switchChain` now rethrows after logging instead of swallowing the failure, so the send flow stops rather than transferring on the wrong network.
+
+### Patch Changes
+
+- 34da257: Show generic Starknet execution failures as wallet errors instead of user rejections. Preserve nested provider codes in lifecycle events and allowlisted RPC simulation/revert details in error reports, with bounded serialization. Expose the wallet-reported version when available for diagnostics.
+- a2136b6: Match mobile wallet-request recovery to the WalletConnect session that received
+  the request. Recorded requests now carry their session `topic`, and EVM and
+  Solana WalletConnect wallets expose theirs as `Wallet.metadata.walletConnectTopic`.
+  Wallets connected through the generic WalletConnect connector recover their
+  requests, and another wallet app using the same account no longer does.
+
+  Let users reopen the wallet's pending request without submitting it again.
+
+  Show reconnect guidance when the wallet disconnects during source-network
+  readiness, and report readiness failures that happen before a network switch.
+
+- 78fa843: Keep RPC failures distinct from user cancellations when Viem wraps transaction
+  errors with its unknown-error code (-1). Require actual user-rejection evidence
+  and classify wallet RPC HTTP failures as network errors while preserving their
+  original cause and diagnostic code.
+
+  Show recovery guidance for network failures, RPC errors, disconnected wallets,
+  pending requests, and timeouts before falling back to a generic swap error.
+  For EVM network failures, direct users to check the source network's RPC settings
+  in their wallet. Keep raw provider diagnostics in telemetry.
+
+- a2136b6: Stop reporting wallet RPC failures relayed over WalletConnect as user rejections.
+  MetaMask Mobile answers a failed request with CAIP-25 code 5000 and the failure
+  as the message; when that text names a non-decline failure, classify by it.
+  EVM network failures now tell users to select a working RPC URL in their
+  wallet's network settings and remove the others.
+- Updated dependencies [2463dd2]
+- Updated dependencies
+- Updated dependencies [a9c35f8]
+- Updated dependencies [419387b]
+- Updated dependencies [34da257]
+- Updated dependencies [a2136b6]
+  - @layerswap/widget-types@2.5.1
+  - @layerswap/utils@2.5.1
+
 ## 2.4.0
 
 ### Minor Changes

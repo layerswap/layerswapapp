@@ -189,3 +189,39 @@ test('disabled gas controls retain the last fee without requesting a new amount'
   assert.equal(requests[1].args.amount, 0.5)
   assert.equal(gasResult.gasData, undefined)
 })
+
+test('exact transaction estimates are scoped to recipient, calldata and base-unit value', async () => {
+  props.amount = '0.25'
+  await render()
+  await settle(requests[0], 0.01)
+  props.options = { transaction: { recipientAddress: 'deposit', callData: '', amountInBaseUnits: '250000000000000001' } }
+  await render()
+  assert.equal(requests.length, 2)
+  assert.equal(gasResult.gasData, undefined, 'A preliminary estimate must not stand in for the deposit action')
+  assert.equal(requests[1].args.recipientAddress, 'deposit')
+  assert.equal(requests[1].args.callData, '')
+  assert.equal(requests[1].args.amountInBaseUnits, '250000000000000001')
+  await settle(requests[1], 0.02)
+
+  for (const transaction of [
+    { ...props.options.transaction, recipientAddress: 'other-deposit' },
+    { ...props.options.transaction, callData: '0x1234' },
+    { ...props.options.transaction, amountInBaseUnits: '250000000000000002' },
+  ]) {
+    const count = requests.length
+    props.options = { transaction }
+    await render()
+    assert.equal(requests.length, count + 1)
+    assert.equal(gasResult.gasData, undefined)
+    await settle(requests[count], 0.03)
+  }
+})
+
+test('a zero-value deposit action still estimates its actual calldata', async () => {
+  props.amount = 0
+  props.options = { transaction: { recipientAddress: 'deposit', callData: '0x1234' } }
+  await render()
+  assert.equal(requests.length, 1)
+  assert.equal(requests[0].args.amount, 0)
+  assert.equal(requests[0].args.callData, '0x1234')
+})

@@ -49,6 +49,7 @@ function loadSource(path, imports = {}) {
         if (name === '@/lib/amountPresets') return loadSource('lib/amountPresets.ts', {
             '@/components/Input/Amount/helpers': loadSource('components/Input/Amount/helpers.ts', {
                 '@layerswap/utils': loadSource('../../../utils/src/truncateDecimals.ts'),
+                '@/lib/gases/resolveGasBalanceBudget': loadSource('lib/gases/resolveGasBalanceBudget.ts'),
             }),
             '@layerswap/utils': loadSource('../../../utils/src/truncateDecimals.ts'),
             '@layerswap/utils/known-ids': coreRequire('@layerswap/utils/known-ids'),
@@ -1227,14 +1228,18 @@ for (const failure of ['rejected', 'failed']) {
         });
         const { default: Withdraw } = loadSource(`${withdraw}Withdraw.tsx`, {
             ...controllerImports,
+            '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
+            '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
             '@layerswap/utils': loadSource('../../../utils/src/truncateDecimals.ts'),
             '@/components/Input/Amount/helpers': loadSource('components/Input/Amount/helpers.ts', {
                 '@layerswap/utils': loadSource('../../../utils/src/truncateDecimals.ts'),
+                '@/lib/gases/resolveGasBalanceBudget': loadSource('lib/gases/resolveGasBalanceBudget.ts'),
             }),
             '@/components/Widget/Index': { Widget: { Footer: childrenOnly } },
             '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
             '@/hooks/useFee': { transformSwapDataToQuoteArgs: noop, useQuoteData: () => ({ minAllowedAmount: 0.001, maxAllowedAmount: 10 }) },
             '@/lib/gases/useOutOfGas': { default: () => ({ outOfGas: true }) },
+            '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput: noop } },
             formik: { useFormikContext: () => ({ values: {}, setValues: values => { formAmount = values.amount; } }) },
             '../Form/SecondaryComponents/validationError/AdjustAmountButton': {
                 AdjustAmountButton: ({ onEditAmount }) => React.createElement('button', { onClick: onEditAmount }, 'Adjust amount'),
