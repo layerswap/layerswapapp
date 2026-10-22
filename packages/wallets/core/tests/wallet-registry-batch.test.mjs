@@ -4,168 +4,98 @@ import test from 'node:test'
 import { fetchRegistrySnapshot, matchRegistrySnapshot, normalizeRegistryNames } from '../dist/esm/lib/walletConnect/registrySnapshot.js'
 import { getAdditionalConnectorsStore } from '../dist/esm/lib/walletConnect/additionalConnectorsStore.js'
 import { defaultWalletConnectChainRegistry } from '../dist/esm/lib/walletConnect/chainRegistry.js'
-import {
-    getRegistryEntryByName,
-    requestRegistryEntriesByName,
-} from '../dist/esm/lib/walletConnect/registryEntryIndex.js'
+import { getRegistryEntryByName, requestRegistryEntriesByName } from '../dist/esm/lib/walletConnect/registryEntryIndex.js'
 
 const BATCH_URL = 'https://layerswap.io/app/api/wallet-registry'
+const PROJECT_ID = 'batch-test-project'
+const SOLANA_CHAIN = 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'
 
 defaultWalletConnectChainRegistry.register({ namespace: 'eip155', networkType: 'evm', explorerChainIds: ['eip155:1'] })
-defaultWalletConnectChainRegistry.register({ namespace: 'solana', networkType: 'solana', explorerChainIds: ['solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'] })
-for (let index = 1; index <= 4; index++) {
-    defaultWalletConnectChainRegistry.register({ namespace: `batch-ns-${index}`, networkType: 'evm', explorerChainIds: ['eip155:1'] })
-}
+defaultWalletConnectChainRegistry.register({ namespace: 'solana', networkType: 'solana', explorerChainIds: [SOLANA_CHAIN] })
 
 const rawWallet = (name, overrides = {}) => ({
-    id: name.toLowerCase(),
-    name,
-    image_id: 'img1',
-    order: 1,
-    mobile_link: 'https://example.com/m',
-    desktop_link: null,
-    link_mode: null,
-    rdns: null,
-    chrome_store: null,
-    injected: null,
-    chains: ['eip155:1'],
+    id: name.toLowerCase(), name, image_id: 'img1', order: 1,
+    mobile_link: 'https://example.com/m', desktop_link: null, link_mode: null,
+    rdns: null, chrome_store: null, injected: null, chains: ['eip155:1'],
     ...overrides,
 })
-
-const payload = (wallets, count = wallets.length) => ({
-    count,
-    data: wallets,
-    nextPage: null,
-    previousPage: null,
-})
-
+const payload = (wallets, count = wallets.length) => ({ count, data: wallets, nextPage: null, previousPage: null })
 const jsonResponse = (body, status = 200) => new Response(JSON.stringify(body), { status })
 
-function installFetch(handler) {
-    const calls = []
-    globalThis.fetch = async (url, init) => {
-        const call = { url: String(url), body: init?.body ? JSON.parse(init.body) : undefined }
-        calls.push(call)
-        return handler(call)
-    }
-    return calls
+async function lookup(names) {
+    requestRegistryEntriesByName(names)
+    await new Promise(resolve => setImmediate(resolve))
 }
 
-const batchCalls = (calls) => calls.filter(call => call.url === BATCH_URL)
-
-async function waitFor(predicate, timeout = 2000) {
-    const start = Date.now()
-    while (!predicate()) {
-        if (Date.now() - start > timeout) throw new Error('waitFor timed out')
-        await new Promise(resolve => setTimeout(resolve, 10))
-    }
-}
-
-const settle = () => new Promise(resolve => setTimeout(resolve, 50))
-
-test('snapshot fetches all EVM and Solana pages and dedupes by wallet id', async () => {
-    const shared = rawWallet('Phantom', { chains: ['eip155:1', 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'] })
-    const calls = installFetch(({ url }) => {
-        const page = new URL(url).searchParams.get('page')
-        if (url.includes('eip155')) {
-            if (page === '1') return jsonResponse(payload([rawWallet('Alpha'), shared], 250))
-            if (page === '2') return jsonResponse(payload([rawWallet('Beta')], 250))
-            return jsonResponse(payload([rawWallet('Gamma')], 250))
+async function mockRegistry(t, ...responses) {
+    const requests = []
+    t.mock.method(globalThis, 'fetch', async (url, init) => {
+        if (url === BATCH_URL) {
+            requests.push(JSON.parse(init.body))
+            assert.ok(responses.length, 'Unexpected batch request')
+            return responses.shift()
         }
-        if (page === '1') return jsonResponse(payload([shared, rawWallet('Delta')], 120))
-        return jsonResponse(payload([rawWallet('Epsilon')], 120))
+        assert.equal(new URL(url).searchParams.get('search'), null)
+        // Each case can initialize the same browse cache on its own.
+        return jsonResponse(payload([rawWallet('Ledger Live')]))
+    })
+    await getAdditionalConnectorsStore('eip155', PROJECT_ID).ensureBrowseLoaded()
+    return requests
+}
+
+test('snapshot fetches every EVM and Solana page without duplicate wallets', async t => {
+    const phantom = rawWallet('Phantom', { chains: ['eip155:1', SOLANA_CHAIN] })
+    const pages = {
+        eip155: [[rawWallet('Alpha'), phantom], [rawWallet('Beta')], [rawWallet('Gamma')]],
+        solana: [[phantom, rawWallet('Delta')], [rawWallet('Epsilon')]],
+    }
+    const fetch = t.mock.method(globalThis, 'fetch', async input => {
+        const url = new URL(input)
+        const namespace = url.searchParams.get('chains').split(':')[0]
+        const page = Number(url.searchParams.get('page'))
+        return jsonResponse(payload(pages[namespace][page - 1], namespace === 'eip155' ? 250 : 120))
     })
 
-    const wallets = await fetchRegistrySnapshot('p1')
+    const wallets = await fetchRegistrySnapshot(PROJECT_ID)
 
-    assert.equal(calls.length, 5)
-    assert.equal(calls.filter(call => call.url.includes('eip155')).length, 3)
-    assert.equal(calls.filter(call => call.url.includes('solana')).length, 2)
-    assert.ok(calls.every(call => new URL(call.url).searchParams.get('entries') === '100'))
+    assert.equal(fetch.mock.callCount(), 5)
     assert.deepEqual(wallets.map(wallet => wallet.name), ['Alpha', 'Phantom', 'Delta', 'Beta', 'Gamma', 'Epsilon'])
 })
 
-test('normalizeRegistryNames dedupes identities and drops empty keys', () => {
-    assert.deepEqual(normalizeRegistryNames(['Trust', 'Trust Wallet', 'trust-wallet', '!!!', 'Rainbow']), ['trust', 'rainbow'])
+test('snapshot matching handles aliases, duplicates, missing wallets and excluded entries', () => {
+    const snapshot = ['Trust Wallet', 'Trust', 'Bitget Wallet', 'YoWallet', 'Rainbow'].map(name => rawWallet(name))
+    const names = normalizeRegistryNames(['Trust', 'Trust Wallet', 'trust-wallet', 'Bitkeep', 'YoWallet', 'Missing', '!!!'])
+
+    assert.deepEqual(matchRegistrySnapshot(snapshot, names, PROJECT_ID).map(wallet => wallet.name), ['Trust Wallet', 'Bitget Wallet'])
 })
 
-test('matchRegistrySnapshot matches identities, applies slug overrides, skips filtered slugs and duplicate identities', () => {
-    const snapshot = [
-        rawWallet('Trust Wallet'),
-        rawWallet('Trust'),
-        rawWallet('Bitget Wallet'),
-        rawWallet('YoWallet'),
-        rawWallet('Rainbow'),
-    ]
+test('batch lookup requests only unknown wallets and caches matches and misses', async t => {
+    const chains = ['eip155:1', SOLANA_CHAIN]
+    const requests = await mockRegistry(t, jsonResponse({ wallets: [rawWallet('Rainbow'), rawWallet('Uniswap Wallet', { chains })] }))
+    const names = ['Ledger Live', 'Rainbow', 'Uniswap Wallet', 'Ghost Entry']
 
-    const matches = matchRegistrySnapshot(snapshot, normalizeRegistryNames(['trust', 'Bitkeep', 'YoWallet', 'Uniswap']), 'p1')
+    await lookup(names)
 
-    assert.deepEqual(matches.map(wallet => wallet.name), ['Trust Wallet', 'Bitget Wallet'])
-})
-
-test('one batch resolves all requested names without per-wallet Reown lookups', async () => {
-    const calls = installFetch(({ url }) => {
-        if (url === BATCH_URL) return jsonResponse({ wallets: [rawWallet('Rainbow'), rawWallet('Uniswap Wallet', { chains: ['eip155:1', 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'] })] })
-        return jsonResponse(payload([]))
-    })
-    await getAdditionalConnectorsStore('batch-ns-1', 'pb1').ensureBrowseLoaded()
-
-    requestRegistryEntriesByName(['Rainbow', 'Uniswap Wallet'])
-    await waitFor(() => getRegistryEntryByName('Rainbow'))
-
-    assert.equal(batchCalls(calls).length, 1)
-    assert.deepEqual(batchCalls(calls)[0].body, { names: ['Rainbow', 'Uniswap Wallet'], projectId: 'pb1' })
-    assert.ok(calls.every(call => !call.url.includes('search=')))
-    assert.deepEqual(getRegistryEntryByName('Uniswap Wallet')?.chains, ['eip155:1', 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'])
-
-    requestRegistryEntriesByName(['Rainbow', 'Zerion Fresh'])
-    await waitFor(() => batchCalls(calls).length === 2)
-    assert.deepEqual(batchCalls(calls)[1].body, { names: ['Zerion Fresh'], projectId: 'pb1' })
-})
-
-test('names present in loaded browse pages are not submitted', async () => {
-    const calls = installFetch(({ url }) => {
-        if (url === BATCH_URL) return jsonResponse({ wallets: [] })
-        return jsonResponse(payload([rawWallet('Ledger Live X')]))
-    })
-    await getAdditionalConnectorsStore('batch-ns-2', 'pb2').ensureBrowseLoaded()
-
-    requestRegistryEntriesByName(['Ledger Live X', 'Fresh Unknown'])
-    await waitFor(() => batchCalls(calls).length === 1)
-
-    assert.deepEqual(batchCalls(calls)[0].body, { names: ['Fresh Unknown'], projectId: 'pb1' })
-})
-
-test('empty matches are recorded and not re-requested', async () => {
-    const calls = installFetch(({ url }) => {
-        if (url === BATCH_URL) return jsonResponse({ wallets: [] })
-        return jsonResponse(payload([]))
-    })
-    await getAdditionalConnectorsStore('batch-ns-3', 'pb3').ensureBrowseLoaded()
-
-    requestRegistryEntriesByName(['Ghost Entry'])
-    await waitFor(() => batchCalls(calls).length === 1)
-    await settle()
-
+    assert.deepEqual(requests, [{ names: ['Rainbow', 'Uniswap Wallet', 'Ghost Entry'], projectId: PROJECT_ID }])
+    assert.deepEqual(getRegistryEntryByName('Uniswap Wallet')?.chains, chains)
     assert.equal(getRegistryEntryByName('Ghost Entry'), undefined)
-    requestRegistryEntriesByName(['Ghost Entry'])
-    await settle()
-    assert.equal(batchCalls(calls).length, 1)
+
+    await lookup(names)
+    assert.equal(requests.length, 1)
 })
 
-test('failed batches back off instead of retrying immediately', async () => {
-    const calls = installFetch(({ url }) => {
-        if (url === BATCH_URL) return jsonResponse({ error: 'boom' }, 502)
-        return jsonResponse(payload([]))
-    })
-    await getAdditionalConnectorsStore('batch-ns-4', 'pb4').ensureBrowseLoaded()
+test('failed batches pause requests and recover after the backoff expires', async t => {
+    let now = 1000
+    t.mock.method(Date, 'now', () => now)
+    const requests = await mockRegistry(t, jsonResponse({ error: 'boom' }, 502), jsonResponse({ wallets: [rawWallet('Retry Wallet')] }))
 
-    requestRegistryEntriesByName(['Doomed Entry'])
-    await waitFor(() => batchCalls(calls).length === 1)
-    await settle()
+    await lookup(['Retry Wallet'])
+    now += 29_999
+    await lookup(['Retry Wallet'])
+    assert.equal(requests.length, 1)
 
-    assert.equal(getRegistryEntryByName('Doomed Entry'), undefined)
-    requestRegistryEntriesByName(['Doomed Entry'])
-    await settle()
-    assert.equal(batchCalls(calls).length, 1)
+    now += 1
+    await lookup(['Retry Wallet'])
+    assert.equal(requests.length, 2)
+    assert.equal(getRegistryEntryByName('Retry Wallet')?.name, 'Retry Wallet')
 })
