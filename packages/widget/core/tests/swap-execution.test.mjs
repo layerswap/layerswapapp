@@ -93,6 +93,23 @@ const atomicSwap = transactions => ({
 const inputHash = `0x${'a'.repeat(64)}`
 
 for (const status of ['pending', 'completed']) {
+    test(`backend ${status} supplies the actual input hash for an accepted atomic batch after reload`, async () => {
+        store.getState().setSwapTransactionKind('swap', 'atomic-batch')
+        store.getState().setProviderSubmissionAccepted('swap')
+        const saved = storage.get('swapTransactions')
+        store.setState(store.getInitialState(), true)
+        storage.set('swapTransactions', saved)
+        await store.persist.rehydrate()
+
+        recordSwapExecution('swap', { swapData: atomicSwap([{ type: 'input', status, transaction_hash: inputHash }]) })
+        const transaction = store.getState().swapTransactions.swap
+        assert.equal(transaction.hash, inputHash)
+        assert.equal(transaction.kind, 'atomic-batch')
+        assert.equal(transaction.providerSubmissionAccepted, undefined)
+        recordSwapExecution('swap', { swapData: atomicSwap([{ type: 'input', status, transaction_hash: inputHash }]) })
+        assert.equal(store.getState().swapTransactions.swap, transaction)
+    })
+
     test(`a backend ${status} atomic input resolves a persisted unknown submission without action history`, async () => {
         store.getState().setSwapTransactionKind('swap', 'atomic-batch')
         store.getState().markSubmissionPending('swap')
@@ -126,6 +143,14 @@ for (const [name, transactions] of [
         assert.equal(store.getState().pendingSubmissions.swap, true)
         assert.deepEqual(store.getState().swapTransactions.swap, { kind: 'atomic-batch' })
     })
+
+    test(`${name} cannot fabricate a receipt for an accepted atomic batch`, () => {
+        store.getState().setSwapTransactionKind('swap', 'atomic-batch')
+        store.getState().setProviderSubmissionAccepted('swap')
+        recordSwapExecution('swap', { swapData: atomicSwap(transactions) })
+        assert.equal(store.getState().swapTransactions.swap.hash, undefined)
+        assert.equal(store.getState().swapTransactions.swap.providerSubmissionAccepted, true)
+    })
 }
 
 test('a different swap or execution lane cannot clear an uncertain submission', () => {
@@ -138,4 +163,18 @@ test('a different swap or execution lane cannot clear an uncertain submission', 
     store.getState().setSwapTransactionKind('swap', 'wallet-transfer')
     recordSwapExecution('swap', { swapData })
     assert.equal(store.getState().pendingSubmissions.swap, true, 'provider withdrawals retain their own reconciliation policy')
+})
+
+test('a regular intake receipt keeps its execution kind through allowance history and reload', async () => {
+    const hash = `0x${'a'.repeat(64)}`
+    store.getState().setSwapTransaction('swap', hash, 'frontend-swap')
+    const depositActions = [{ step: 'approve', status: 'completed' }, { step: 'publish', status: 'completed' }]
+    recordSwapExecution('swap', { depositActions })
+    const saved = storage.get('swapTransactions')
+    store.setState(store.getInitialState(), true)
+    storage.set('swapTransactions', saved)
+    await store.persist.rehydrate()
+    assert.equal(store.getState().swapTransactions.swap.kind, 'frontend-swap')
+    assert.equal(store.getState().swapTransactions.swap.hash, hash)
+    assert.equal(resolveSwapFlow({ depositActions, transaction: store.getState().swapTransactions.swap }).kind, 'frontend-swap')
 })

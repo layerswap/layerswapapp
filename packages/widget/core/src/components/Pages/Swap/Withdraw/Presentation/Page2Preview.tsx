@@ -160,6 +160,9 @@ export function Page2LoadedPreview({
     });
     const flow = resolveSwapFlow({
         swapData: s.swap,
+        isDraft: !s.swapId,
+        atomicBatchAvailable: s.atomicBatchAvailable,
+        gaslessEnabled: s.quoteState.gasless,
         depositActions: s.depositActions,
         transaction: s.storedWalletTransaction,
         stepTransactions: s.stepTransactions,

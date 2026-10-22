@@ -51,25 +51,3 @@ export function validateAtomicBatch(action: BatchTransferDepositAction, swap: Sw
         return { to: call.to as `0x${string}`, data: call.data as `0x${string}`, value }
     })
 }
-
-export type BatchOutcome = { state: 'pending' | 'uncertain' | 'failed' | 'not_submitted' } | { state: 'confirmed'; hash: string }
-
-/** Consume viem's formatted result, keeping malformed and partial outcomes locked. */
-export function resolveAtomicBatchOutcome(result: unknown, chainId: number, id: string): BatchOutcome {
-    if (!result || typeof result !== 'object') return { state: 'uncertain' }
-    const status = result as { id?: unknown; chainId?: unknown; atomic?: unknown; statusCode?: unknown; receipts?: unknown }
-    if (status.chainId !== chainId || status.atomic !== true || (status.id !== undefined && status.id !== id)
-        || !Number.isInteger(status.statusCode)) return { state: 'uncertain' }
-    const receipts = status.receipts
-    if (!Array.isArray(receipts)) return { state: 'uncertain' }
-    const valid = receipts.every(receipt => receipt && isTransactionHash(receipt.transactionHash)
-        && (receipt.status === 'success' || receipt.status === 'reverted'))
-    if (!valid) return { state: 'uncertain' }
-    if (status.statusCode === 200 && receipts.length && receipts.every(r => r.status === 'success')) {
-        return { state: 'confirmed', hash: receipts[receipts.length - 1].transactionHash }
-    }
-    if (status.statusCode === 400 && receipts.length === 0) return { state: 'not_submitted' }
-    if (status.statusCode === 500 && receipts.length && receipts.every(r => r.status === 'reverted')) return { state: 'failed' }
-    if (status.statusCode === 100 && receipts.length === 0) return { state: 'pending' }
-    return { state: 'uncertain' }
-}

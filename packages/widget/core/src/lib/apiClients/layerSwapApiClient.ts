@@ -30,7 +30,8 @@ export default class LayerSwapApiClient {
         this._unauthInterceptor = InitializeUnauthInstance(LayerSwapApiClient.apiBaseEndpoint)
     }
 
-    fetcher = (url: string) => this.AuthenticatedRequest<ApiResponse<any>>("GET", url)
+    fetcher = (url: string, options?: { signal?: AbortSignal }) =>
+        this.AuthenticatedRequest<ApiResponse<any>>("GET", url, undefined, undefined, options?.signal)
 
     async GetRoutesAsync(direction: 'sources' | 'destinations', _useFrontendSwap: true = true): Promise<ApiResponse<NetworkWithTokens[]>> {
         return await this.UnauthenticatedRequest<ApiResponse<NetworkWithTokens[]>>("GET", `/${direction}?include_unmatched=true&include_swaps=true&include_unavailable=true&use_frontend_swap=true`)
@@ -118,16 +119,19 @@ export default class LayerSwapApiClient {
         }
     }
 
-    private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
+    private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}, signal?: AbortSignal): Promise<T> {
         const finishTelemetry = startApiOperation(method, endpoint)
         let uri = LayerSwapApiClient.apiBaseEndpoint + "/api/v2" + endpoint;
-        return await this._authInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
+        return await this._authInterceptor(uri, { method: method, data: data, signal, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
             .then(res => {
                 finishTelemetry(res?.data?.error ? 'failed' : 'succeeded', { http_status: res?.status }, res?.data?.data)
                 return res?.data;
             })
             .catch(async reason => {
                 finishTelemetry(reason?.code === 'ERR_CANCELED' ? 'cancelled' : 'failed', { http_status: reason?.response?.status })
+                if (signal?.aborted && reason?.code === 'ERR_CANCELED') {
+                    return Promise.reject(reason);
+                }
                 if (reason instanceof AuthRefreshFailedError) {
                     return Promise.resolve(new EmptyApiResponse());
                 }
@@ -230,6 +234,8 @@ export type SwapResponse = {
 }
 
 export type SwapBasicData = {
+    /** Present only when the backend persisted a frontend settlement leg. */
+    quote_revision?: number;
     /** Local amount intent; never serialized as an API parameter. */
     amountMode?: AmountMode
     amountPresetSource?: string
@@ -264,6 +270,7 @@ export type SwapDetails = {
 }
 
 export type SwapItem = {
+    quote_revision?: number;
     id: string,
     created_date: string,
 
@@ -386,6 +393,7 @@ export type GetQuoteParams = {
 }
 
 export type SwapQuote = {
+    path?: { provider: string; order: number }[],
     source_network?: Network,
     source_token?: Token,
     destination_network?: Network,

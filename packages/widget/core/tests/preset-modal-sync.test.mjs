@@ -125,6 +125,7 @@ const { default: Withdraw } = loadSource('components/Pages/Swap/Withdraw/Withdra
   react: React, formik: require('formik'), '@/context/swap': context,
   '@/components/utils/RoundDecimals': rounding, '@/components/Input/Amount/helpers': maxHelpers,
   '@/lib/amountPresets': amountPresets,
+  '@/stores/swapTransactionStore': { useSwapTransactionStore: selector => selector({ swapTransactions: {}, pendingSubmissions: {} }) },
   '@/components/Widget/Index': { Widget: { Footer: passthrough } },
   '@/context/settings': { useSettingsState: () => ({ networks: [source, destination] }) },
   '@/context/swapAccounts': { useSelectedAccount: () => state.account },

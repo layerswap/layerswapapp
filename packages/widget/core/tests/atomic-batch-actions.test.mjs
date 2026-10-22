@@ -60,7 +60,7 @@ for (const name of ['zero_allowance', 'allowance_reset']) test(`${name}: flat ba
     assert.equal(response.data.some(action => action.type === 'sign'), false)
 })
 
-for (const route of ['create', 'swap', 'actions']) test(`${route}: sufficient allowance stays atomic, including reload without a local creation flag`, async () => {
+for (const route of ['create', 'swap', 'actions']) test(`${route}: sufficient allowance uses one regular transaction, including after reload`, async () => {
     const { client, requests } = clientFor(fixture.deposit_actions.sufficient_allowance)
     const response = route === 'create' ? await client.CreateSwapAsync({ source_address: fixture.account, use_atomic_batch: true })
         : route === 'swap' ? await client.GetSwapAsync('atomic-swap', fixture.account)
@@ -70,10 +70,13 @@ for (const route of ['create', 'swap', 'actions']) test(`${route}: sufficient al
     assert.equal(requests[1].path, '/api/v2/swaps/atomic-swap/next_action')
     assert.equal(requests[1].query.get('source_address'), fixture.account)
     if (route === 'create') assert.equal(requests[0].body.use_atomic_batch, true)
-    assert.equal(actions[0].type, 'send_calls')
-    assert.equal(actions[0].calls.length, 1)
-    assert.equal(actions[0].valid_before, undefined, 'expiry comes from the next_action envelope')
-    assert.equal(validateAtomicBatch(actions[0], fixture.swap, fixture.account, fixture.account)[0].value, 0n)
+    assert.equal(actions[0].type, 'transfer')
+    assert.equal(actions[0].calls, undefined)
+    assert.equal(actions[0].to_address, fixture.split_intake)
+    assert.equal(actions[0].call_data, fixture.next_actions.sufficient_allowance.action.calls[0].data)
+    assert.equal(actions[0].amount, 0)
+    assert.equal(actions[0].amount_in_base_units, '0')
+    assert.equal(actions[0].valid_before, 2000000000)
 })
 
 test('an allowance change between reads uses every call in the authoritative next_action', async () => {
@@ -88,7 +91,9 @@ test('both decimal deposit_actions and hex next_action values retain precision a
     actions[1].amount_in_base_units = precise[0].amount_in_base_units
     const flat = await resolveAtomicDepositActions(actions, () => assert.fail('flat calls are already complete'))
     const single = await resolveAtomicDepositActions(precise, async () => fixture.next_actions.precise_value)
-    for (const plan of [flat, single]) assert.equal(validateAtomicBatch(plan[0], fixture.swap, fixture.account, fixture.account).at(-1).value, 900719925474099312345678901n)
+    assert.equal(validateAtomicBatch(flat[0], fixture.swap, fixture.account, fixture.account).at(-1).value, 900719925474099312345678901n)
+    assert.equal(single[0].type, 'transfer')
+    assert.equal(single[0].amount_in_base_units, '900719925474099312345678901')
 })
 
 test('legacy signed publication remains an ordinary transfer', async () => {
@@ -163,4 +168,45 @@ for (const route of ['create', 'swap']) test(`${route} preserves authoritative s
     assert.equal(response.data.swap.source_address, fixture.account)
     assert.equal(response.data.deposit_actions, undefined, 'unverified actions cannot open the wallet')
     await assert.rejects(client.GetDepositActionsAsync('atomic-swap', fixture.account), /outage/)
+})
+
+for (const shape of ['wrapped', 'direct', 'completed-approval']) {
+    test(`${shape} single publication becomes a regular transfer with exact calldata and native value`, async () => {
+        const next = clone(fixture.next_actions.precise_value)
+        const original = fixture.deposit_actions.precise_value[0]
+        const input = shape === 'direct'
+            ? [{ ...next.action, step: 'publish', status: 'action_required', network: original.network,
+                token: original.token, valid_before: original.valid_before }]
+            : shape === 'completed-approval'
+                ? [{ step: 'approve', status: 'completed' }, original] : [original]
+        const result = await resolveAtomicDepositActions(input, async () => next)
+        assert.equal(result.length, 1)
+        assert.equal(result[0].type, 'transfer')
+        assert.equal(result[0].amount_in_base_units, '900719925474099312345678901')
+        assert.equal(result[0].call_data, next.action.calls[0].data)
+        assert.equal(result[0].to_address, next.action.calls[0].to)
+        assert.equal(result[0].calls, undefined)
+    })
+}
+
+for (const change of [
+    { to: '0x123' }, { to: `0x${'0'.repeat(40)}` }, { data: '0x123' }, { data: null },
+    { value: '-1' }, { value: '0x' }, { value: `0x${(2n ** 256n).toString(16)}` },
+]) {
+    test(`malformed single publication stays non-executable: ${JSON.stringify(change)}`, async () => {
+        const next = clone(fixture.next_actions.sufficient_allowance)
+        Object.assign(next.action.calls[0], change)
+        await assert.rejects(resolveAtomicDepositActions(fixture.deposit_actions.sufficient_allowance, async () => next), /Invalid single-call/)
+    })
+}
+
+test('a new backend single transfer uses the authoritative next_action calldata and expiry', async () => {
+    const publish = fixture.deposit_actions.sufficient_allowance[0]
+    const next = { step: 'publish', status: 'action_required', expires_at: '2033-05-18T03:33:19Z',
+        action: { ...publish, call_data: '0xabcd', amount_in_base_units: '123456789012345678901' } }
+    const resolved = await resolveAtomicDepositActions([publish], async () => next)
+    assert.equal(resolved[0].type, 'transfer')
+    assert.equal(resolved[0].call_data, '0xabcd')
+    assert.equal(resolved[0].amount_in_base_units, '123456789012345678901')
+    assert.equal(resolved[0].expires_at, next.expires_at)
 })

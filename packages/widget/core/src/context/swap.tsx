@@ -20,7 +20,7 @@ import { Address } from '@/lib/address/Address';
 import { useDepositSignatureStore, useGaslessAuthorizationStore, useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import { isDepositWorkflowComplete } from '@/helpers/depositActions';
 import { ResolvedSwapStatus, resolveSwapPhase } from '@/components/utils/resolveSwapPhase';
-import { resolveSwapFlow, type ResolvedSwapFlow } from '@/components/utils/resolveSwapFlow';
+import { isFrontendSwapQuote, resolveSwapFlow, type ResolvedSwapFlow } from '@/components/utils/resolveSwapFlow';
 import { useDepositSettings } from './depositSettings';
 import { useGaslessAuthorization } from '@/hooks/useGaslessAuthorization';
 import { useGaslessAuthorizationStatus } from '@/hooks/useGaslessAuthorizationStatus';
@@ -39,9 +39,9 @@ import { lifecycleContextFromForm } from '@/lib/swapLifecycle';
 import { createSwapAttempt } from '@/lib/swapCreation';
 import { recordSwapExecution } from '@/lib/swapExecution';
 import { isAtomicBatchEligible } from '@/helpers/atomicBatch';
+import { useAtomicBatchCapability } from '@/hooks/useAtomicBatchCapability';
 import { resolverService } from '@/lib/resolvers/resolverService';
 import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect';
-import { useAtomicBatchCapability } from '@/hooks/useAtomicBatchCapability';
 import { hasSwapExecutionProgress, hasUnacknowledgedWalletAction } from '@/helpers/swapProgress';
 import { formatTokenAmount } from '@/components/utils/formatTokenAmount';
 import { preparePresetAmount } from '@/lib/preparePresetAmount';
@@ -93,7 +93,6 @@ export type UpdateSwapInterface = {
 export type SwapContextData = {
     gaslessAuthorization?: GaslessAuthorizationResult,
     inputTransactionStatus?: { hash: string; status: TransactionStatus },
-    atomicBatchSupported?: boolean,
     swapApiError?: ApiError,
     swapDetailsError?: string,
     depositAddressIsFromAccount?: boolean,
@@ -359,13 +358,32 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     useClientLayoutEffect(() => {
         if (currentSelection.current.key !== selectionKey) currentSelection.current = { key: selectionKey, revision: currentSelection.current.revision + 1 }
     }, [selectionKey])
-    const atomicBatchSupported = useAtomicBatchCapability(sourceNetwork, swapBasicData?.source_token, selectedWallet, selectedSourceAccount?.address)
     const { checkContractStatus } = useContractAddressStore();
 
     const sourceIsSupported = (swapBasicData && selectedWallet) && WalletIsSupportedForSource({
         sourceNetwork: swapBasicData.source_network,
         sourceWallet: selectedWallet
     })
+
+    const draftGasless = !swapId && gaslessEnabled && isGaslessCapableRoute({
+        depositMethod: swapBasicData?.use_deposit_address ? 'deposit_address' : 'wallet',
+        supportsGaslessDeposit: swapBasicData?.source_token.supports_gasless_deposit,
+        sourceTokenContract: swapBasicData?.source_token.contract,
+        gaslessStandard: swapBasicData?.source_token.gasless_standard,
+        sourceIsSupported: !!sourceIsSupported,
+        sourceAddress: selectedSourceAccount?.address,
+    })
+    const draftBatchEligible = !swapId && swapBasicData && isFrontendSwapQuote(quote) && isAtomicBatchEligible({
+        network: swapBasicData.source_network, token: swapBasicData.source_token,
+        depositMethod: swapBasicData.use_deposit_address ? 'deposit_address' : 'wallet',
+        useGasless: draftGasless, sourceIsSupported: !!sourceIsSupported,
+        sourceAddress: selectedSourceAccount?.address, sourceExchange: swapBasicData.source_exchange,
+        extended: !!extendedSwapData,
+    })
+    const atomicBatchAvailable = useAtomicBatchCapability(
+        draftBatchEligible ? sourceNetwork : undefined,
+        swapBasicData?.source_token, selectedWallet, selectedSourceAccount?.address,
+    )
 
     const use_deposit_address = swapBasicData?.use_deposit_address
     const depositActionsSourceAddress = use_deposit_address || !selectedSourceAccount || !sourceIsSupported
@@ -465,17 +483,23 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             // Initiated can be unsigned. Fetched submission advances the phase,
             // while execution consumes that response before releasing its controller.
             depositCompleted: depositCompleted || isGaslessAuthorizationSubmitted(gaslessAuthorization),
-            providerSubmissionAccepted: storedWalletTransaction?.providerSubmissionAccepted,
+            // Atomic acceptance has no transaction hash or terminal outcome yet.
+            // Its wallet progress remains visible while backend polling detects the input.
+            providerSubmissionAccepted: storedWalletTransaction?.kind !== 'atomic-batch' && storedWalletTransaction?.providerSubmissionAccepted,
+            atomicBatchFailed: !!storedWalletTransaction?.atomicBatchFailure,
             walletActionExecuting,
             isDepositFlow,
             gaslessFailureStatus,
         }),
-        [swapDetails, refuel, inputTxStatusFromApi, depositCompleted, storedWalletTransaction?.providerSubmissionAccepted, walletActionExecuting,
+        [swapDetails, refuel, inputTxStatusFromApi, depositCompleted, storedWalletTransaction?.kind, storedWalletTransaction?.providerSubmissionAccepted, storedWalletTransaction?.atomicBatchFailure, walletActionExecuting,
             isDepositFlow, gaslessFailureStatus, gaslessAuthorization],
     )
 
     const flow = useMemo(() => resolveSwapFlow({
         swapData: swapBasicData,
+        isDraft: !swapId,
+        atomicBatchAvailable,
+        gaslessEnabled: draftGasless,
         depositActions: depositActionsResponse,
         transaction: storedWalletTransaction,
         stepTransactions,
@@ -488,7 +512,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         transactionHash: inputTransactionHash,
         outputTransactionHash: swapDetails?.transactions.find(transaction => transaction.type === TransactionType.Output)?.transaction_hash,
         resolved,
-    }), [swapId, swapBasicData, depositActionsResponse, storedWalletTransaction, stepTransactions, quote, gaslessAuthorization,
+    }), [swapId, swapBasicData, atomicBatchAvailable, draftGasless, depositActionsResponse, storedWalletTransaction, stepTransactions, quote, gaslessAuthorization,
         extendedSwapData?.sourceProvider, walletExecutionStarted, isDepositFlow, refuel, resolved, inputTransactionHash, swapDetails])
     // Observe every API status here, regardless of which screen is mounted.
     useSwapStatusNotification(swapDetails?.id, swapDetails?.status, {
@@ -721,7 +745,6 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const stateValue = useMemo(() => ({
         gaslessAuthorization,
         inputTransactionStatus,
-        atomicBatchSupported,
         withdrawType,
         depositAddressIsFromAccount: !!depositAddressIsFromAccount,
         swapApiError: error,
@@ -745,7 +768,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         flow,
         swapError,
         setSwapError
-    }), [gaslessAuthorization, inputTransactionStatus, atomicBatchSupported, withdrawType, depositAddressIsFromAccount, error, swapDetailsError, depositActionsResponse, depositActionsError, approvalTransaction, quote, quoteIsLoading, draftQuoteLoading, swapBasicFormData, amountPresetLocked, amountPresetRevision, quoteError, refuel, swapBasicData, swapDetails, swapId, walletExecutionStarted, walletActionFeedback, swapModalOpen, resolved, flow, swapError]);
+    }), [gaslessAuthorization, inputTransactionStatus, withdrawType, depositAddressIsFromAccount, error, swapDetailsError, depositActionsResponse, depositActionsError, approvalTransaction, quote, quoteIsLoading, draftQuoteLoading, swapBasicFormData, amountPresetLocked, amountPresetRevision, quoteError, refuel, swapBasicData, swapDetails, swapId, walletExecutionStarted, walletActionFeedback, swapModalOpen, resolved, flow, swapError]);
 
     return (
         <SwapDataStateContext.Provider value={stateValue}>

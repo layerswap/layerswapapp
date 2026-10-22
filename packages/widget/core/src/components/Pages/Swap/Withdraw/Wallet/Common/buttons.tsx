@@ -8,10 +8,9 @@ import { hasSwapExecutionProgress, hasUnacknowledgedWalletAction } from '@/helpe
 import { gaslessAuthorizationKey, isGaslessCapableRoute, isGaslessDepositWorkflow } from '@/helpers/gasless';
 import { isDepositWorkflowComplete } from '@/helpers/depositActions';
 import { isBatchTransferAction } from '@/helpers/depositActions';
-import { isAtomicBatchEligible } from '@/helpers/atomicBatch';
-import { isExtendedSourceNetwork } from '@/lib/extendedRoutes/registry';
 import { executeAtomicBatch } from '@/lib/atomicBatchExecution';
 import { resolverService } from '@/lib/resolvers/resolverService';
+import { resolveSwapFlow } from '@/components/utils/resolveSwapFlow';
 import { isUserRejection } from './isUserRejection';
 import { NetworkSwitchError, ensureSourceChain } from './ensureSourceChain';
 import type { ActionData } from './sharedTypes';
@@ -40,7 +39,7 @@ import { useDepositSignatureStore, useGaslessAuthorizationStore, useSwapTransact
 import { NetworkRoute } from '@layerswap/widget-types';
 import { walletRequestStore } from '@layerswap/wallet-core';
 import { useWalletRequestRecovery } from '../../Presentation/WalletRequestRecovery';
-import { ComponentProps, FC, type ReactNode, useCallback, useMemo, useRef, useState } from 'react';
+import { ComponentProps, FC, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SwapFormValues } from '../../../Form/SwapFormValues';
 import {
     ButtonWrapper,
@@ -68,7 +67,7 @@ const layerswapApiClient = new LayerSwapApiClient();
 const MAX_DEPOSIT_WORKFLOW_ACTIONS = 10;
 const NO_NETWORK_SWITCH: ActionData = { isPending: false, isError: false, error: null };
 const SWITCH_PROMPT_DELAY_MS = 1000;
-
+const SUBMISSION_DETECTION_TIMEOUT_MS = 150_000;
 export function useConnectWalletController(props: SubmitButtonProps = {}) {
     const { swapBasicData, swapDetails } = useSwapDataState()
     const { source_network } = swapBasicData || {}
@@ -156,7 +155,7 @@ export function useSendTransactionController({
     refuel,
     ...props
 }: SendFromWalletButtonProps, active = true) {
-    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, flow, refuel: refuelData, swapError, setSwapError, walletExecutionStarted, gaslessAuthorization, inputTransactionStatus, atomicBatchSupported } = useSwapDataState()
+    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, flow, refuel: refuelData, swapError, setSwapError, walletExecutionStarted, gaslessAuthorization, inputTransactionStatus } = useSwapDataState()
     const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
     const gaslessFailureStage = useGaslessPreferenceStore(s => s.gaslessFailureStage)
     const gaslessEnabled = useGaslessPreferenceStore(s => s.gaslessEnabled)
@@ -176,9 +175,14 @@ export function useSendTransactionController({
     const storedWalletTransaction = useSwapTransactionStore(
         state => swapId ? state.swapTransactions[swapId] : undefined,
     )
+    const pendingSubmission = useSwapTransactionStore(
+        state => swapId ? !!state.pendingSubmissions?.[swapId] : false,
+    )
     const stepTransactions = useSwapTransactionStore(
         state => swapId ? state.stepTransactions[swapId] : undefined,
     )
+    const acceptedBatch = storedWalletTransaction?.kind === 'atomic-batch'
+        && !!storedWalletTransaction.providerSubmissionAccepted && !storedWalletTransaction.hash
     const initialSettings = useInitialSettings()
     const { onSwapLifecycle } = useCallbacks()
 
@@ -195,12 +199,26 @@ export function useSendTransactionController({
     const { gasData } = useSWRGas(selectedSourceAccount?.address, networkWithTokens, swapBasicData.source_token, swapBasicData.requested_amount, undefined, { enabled: active })
     const [actionStateText, setActionStateText] = useState<string | undefined>()
     const [loading, setLoading] = useState(false)
+    const [observationNow, setObservationNow] = useState(Date.now)
+    const firstObservedAt = useMemo(() => Date.now(), [swapId])
+    const awaitingSubmission = pendingSubmission || acceptedBatch
+    const submittedAt = storedWalletTransaction?.timestamp ?? firstObservedAt
+    const submissionTimedOut = awaitingSubmission && observationNow - submittedAt >= SUBMISSION_DETECTION_TIMEOUT_MS
+    useEffect(() => {
+        if (!awaitingSubmission || loading) return
+        setObservationNow(Date.now())
+        const timeout = setTimeout(() => setObservationNow(Date.now()), Math.max(0, SUBMISSION_DETECTION_TIMEOUT_MS - (Date.now() - submittedAt)))
+        return () => clearTimeout(timeout)
+    }, [awaitingSubmission, loading, submittedAt])
     const [networkSwitch, setNetworkSwitch] = useState<ActionData>(NO_NETWORK_SWITCH)
     const [walletRequestPending, setWalletRequestPending] = useState(false)
     const [walletRequestSequence, setWalletRequestSequence] = useState(0)
     const [criticalConfirmation, setCriticalConfirmation] = useState<SwapResponse>()
     const [workflowState, setWorkflowState] = useState<{ swapId: string, actions: DepositAction[], swapData?: SwapDetails }>()
     const executionInFlight = useRef(false)
+    // A saved swap keeps its backend mode when reopened. Only a preference
+    // changed in this view can request a replacement before submission.
+    const reviewedGaslessPreference = useRef(gaslessEnabled)
     const executionScope = useRef<AbortController | null>(null)
     const previousWalletChainId = useRef(selectedWallet?.chainId)
     const expectedSourceChainSwitch = useRef<{ signal: AbortSignal, chainId: string | number } | undefined>(undefined)
@@ -271,17 +289,6 @@ export function useSendTransactionController({
     })
     const desiredGasless = gaslessEnabled && gaslessCapable
     const currentGasless = isGaslessDepositWorkflow(depositActions)
-    const canCreateAtomicBatch = !swapId && atomicBatchSupported && isAtomicBatchEligible({
-        network: swapBasicData.source_network,
-        token: swapBasicData.source_token,
-        depositMethod: swapBasicData.use_deposit_address ? 'deposit_address' : 'wallet',
-        useGasless: desiredGasless,
-        sourceIsSupported: !!selectedWallet?.asSourceSupportedNetworks?.includes(swapBasicData.source_network.name),
-        sourceAddress: selectedSourceAccount?.address,
-        sourceExchange: swapBasicData.source_exchange,
-        extended: isExtendedSourceNetwork(swapBasicData.source_network.name),
-    })
-    const initialActionButtonText = actionButtonText || (canCreateAtomicBatch ? 'Approve and swap' : undefined)
     const walletActionFeedback = useMemo(() => ({
         swapId,
         loading,
@@ -289,13 +296,11 @@ export function useSendTransactionController({
         error: walletError,
         failed: error,
         isSignatureError,
-        showSwapProgress: !swapBasicData.use_deposit_address && !desiredGasless
-            && swapBasicData.source_network.type === 'evm' && !!swapBasicData.source_token.contract
-            && swapBasicData.source_network.name === swapBasicData.destination_network?.name,
+        showSwapProgress: flow?.showSwapProgress ?? false,
     }), [swapId, loading, actionStateText, walletError, error, isSignatureError,
         swapBasicData.use_deposit_address, swapBasicData.source_network.type,
         swapBasicData.source_network.name, swapBasicData.source_token.contract,
-        swapBasicData.destination_network?.name, desiredGasless]);
+        swapBasicData.destination_network?.name, desiredGasless, flow?.showSwapProgress]);
 
 
     const priceImpactValues = useMemo(() => displayedQuote ? resolvePriceImpactValues(displayedQuote, refuel ? displayedRefuel : undefined) : undefined, [displayedQuote, refuel, displayedRefuel]);
@@ -311,7 +316,6 @@ export function useSendTransactionController({
         pendingSubmission: swapId ? useSwapTransactionStore.getState().pendingSubmissions?.[swapId] : undefined,
         transactionStatus: inputTransactionStatus, gaslessAuthorization, depositActions,
     })
-
     const executeWorkflow = async (requestFreshSwap = false) => {
         // A standard fallback changes the preference before starting this invocation.
         const executionGaslessEnabled = useGaslessPreferenceStore.getState().gaslessEnabled
@@ -319,8 +323,10 @@ export function useSendTransactionController({
         const signal = executionScope.current?.signal
         if (!signal || signal.aborted || executionInFlight.current) return
         const receipts = useSwapTransactionStore.getState()
-        if (swapId && hasUnacknowledgedWalletAction({ transaction: receipts.swapTransactions[swapId],
-            pendingSubmission: receipts.pendingSubmissions?.[swapId], transactionStatus: inputTransactionStatus })) return
+        const requiresReconciliation = swapId && hasUnacknowledgedWalletAction({
+            transaction: receipts.swapTransactions[swapId],
+            pendingSubmission: receipts.pendingSubmissions?.[swapId], transactionStatus: inputTransactionStatus,
+        })
         executionInFlight.current = true
         const requestWallet = async <T,>(request: () => Promise<T>): Promise<T> => {
             signal.throwIfAborted()
@@ -337,6 +343,7 @@ export function useSendTransactionController({
         // Read submission markers at click time; they may have arrived since render.
         const workflowFailed = depositActions?.some(action => action.status === 'failed')
         const flowPreferenceChanged = !!swapId
+            && executionGaslessEnabled !== reviewedGaslessPreference.current
             && currentGasless !== undefined
             && currentGasless !== executionDesiredGasless
         const forceNewSwap = (requestFreshSwap || flowPreferenceChanged || workflowFailed)
@@ -350,6 +357,13 @@ export function useSendTransactionController({
         // belongs to the workflow, independently of the polling hook's lifetime.
         const releaseWalletExecution = acquireWalletExecution()
         try {
+            if (requiresReconciliation && executionSwapId) {
+                // Observation belongs to backend polling. A second click must never
+                // ask the wallet for status or submit an uncertain transaction again.
+                clearError?.()
+                setSwapError?.(null)
+                return
+            }
             if (!selectedSourceAccount) {
                 throw new Error('Selected source account is undefined')
             }
@@ -406,6 +420,7 @@ export function useSendTransactionController({
                 }
 
                 executionSwapId = newSwapId
+                reviewedGaslessPreference.current = executionGaslessEnabled
                 // The shared summary and progress panel need the same creation
                 // response before the independent swap poll has caught up.
                 await mutateCache(`/swaps/${newSwapId}?exclude_deposit_actions=true`, { data: newSwapData }, false)
@@ -473,6 +488,13 @@ export function useSendTransactionController({
             for (let executedActions = 0; ; executedActions++) {
                 signal.throwIfAborted()
                 const currentAction = getActionableDepositAction(activeDepositActions)
+                const executionFlow = resolveSwapFlow({
+                    swapData: swapBasicData, depositActions: activeDepositActions,
+                    transaction: useSwapTransactionStore.getState().swapTransactions[swapData.id],
+                })
+                if (currentAction && executionFlow.resolution === 'unsupported') {
+                    throw new Error('This swap action is not supported. Refresh the swap before confirming in your wallet.')
+                }
                 if (!currentAction) {
                     const failedStep = activeDepositActions.find(action => action.status === 'failed')
                     if (failedStep) throw new Error(failedStep.detail || 'The swap action failed')
@@ -556,7 +578,9 @@ export function useSendTransactionController({
                 let approvalTransaction: { network: string; hash: string } | undefined
                 if (currentAction && isBatchTransferAction(currentAction)) {
                     const executionModeChanged = executionGaslessEnabled !== useGaslessPreferenceStore.getState().gaslessEnabled
-                    if (executionDesiredGasless || executionModeChanged) {
+                    // The prepared backend plan keeps its mode after reload,
+                    // independently of the next form's default gasless preference.
+                    if (executionModeChanged) {
                         throw new Error('Execution mode changed. Refresh the swap before submitting the atomic batch.')
                     }
                     const provider = resolverService.getTransferResolver().getAtomicBatchProvider({ ...(currentAction.network ?? swapBasicData.source_network), token: swapBasicData.source_token })
@@ -737,14 +761,17 @@ export function useSendTransactionController({
             quoteIsLoading: quoteIsLoading,
             quoteError: !!quoteError,
             loading: loading,
-            submissionAccepted: !!storedWalletTransaction?.hash,
+            pendingSubmission: pendingSubmission || acceptedBatch,
+            submissionTimedOut,
+            submissionAccepted: !!storedWalletTransaction?.hash || acceptedBatch,
             walletExecutionStarted: walletExecutionStarted,
             isDisabled: !!storedWalletTransaction?.hash,
             networkSwitch: networkSwitch,
             walletRequestRecovery,
             sourceNetworkName: swapBasicData.source_network.display_name,
             actionStateText: actionStateText,
-            actionButtonText: storedWalletTransaction?.hash ? 'Transaction submitted' : initialActionButtonText,
+            actionButtonText: storedWalletTransaction?.hash ? 'Transaction submitted'
+                : actionButtonText ?? flow?.actionButtonText,
             showSwapProgress: walletActionFeedback.showSwapProgress,
             depositActions: depositActions,
             stepTransactions: stepTransactions,

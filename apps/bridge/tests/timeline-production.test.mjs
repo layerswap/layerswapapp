@@ -31,6 +31,7 @@ function loadSource(path, imports = {}) {
     new Function('require', 'module', 'exports', outputText)(name => {
         if (name === 'react' || name === 'react/jsx-runtime') return require(name);
         if (name === '../components/utils/resolveSwapFlow.js') return loadSource("components/utils/resolveSwapFlow.ts");
+        if (name === '../../helpers/depositActions.js') return loadSource('helpers/depositActions.ts');
         if (name in imports) {
             if (name === '@/context/swap' && path === `${withdraw}SwapDetails.tsx`) {
                 const context = imports[name];
@@ -56,11 +57,11 @@ function loadSource(path, imports = {}) {
         if (name === '../Wallet/Common/actionMessage') return { useActionMessage: () => null };
         if (name === '@/components/utils/resolveSwapFlow') return loadSource('components/utils/resolveSwapFlow.ts');
         if (name === '@/lib/swapExecution') return { recordSwapExecution: noop };
+        if (name === '@/hooks/useAtomicBatchCapability') return { useAtomicBatchCapability: () => false };
         if (name === '@/helpers/atomicBatch') return { isAtomicBatchEligible: () => false };
         if (name === '@/lib/extendedRoutes/registry') return { isExtendedSourceNetwork: () => false };
         if (name === '@/lib/atomicBatchExecution') return { executeAtomicBatch: () => assert.fail('legacy flow cannot submit an atomic batch') };
         if (name === '@/lib/resolvers/resolverService') return {};
-        if (name === '@/hooks/useAtomicBatchCapability') return { useAtomicBatchCapability: () => false };
         if (name === '@/hooks/useClientLayoutEffect') return { useClientLayoutEffect: React.useLayoutEffect };
         if (name === '@/lib/amountPresets') return loadSource('lib/amountPresets.ts', {
             '@/components/Input/Amount/helpers': loadSource('components/Input/Amount/helpers.ts', {
@@ -250,6 +251,7 @@ test('switching gasless mode preserves the live execution lock while swap creati
         assert.equal(creates, 1, 'the live execution lock rejects another invocation');
         await act(async () => { resolveCreation(undefined); await execution; });
         assert.equal(errors.length, 1, 'the deferred response is handled by the original controller');
+        assert.equal(creates, 1, 'a failed creation waits for an explicit retry');
     } finally {
         resolveCreation(undefined);
         if (execution) await act(async () => execution);
@@ -1432,7 +1434,7 @@ for (const failure of ['rejected', 'failed']) {
         });
         const store = value => Object.assign(selector => selector(value), { getState: () => value });
         const stores = {
-            useSwapTransactionStore: store({ swapTransactions: {}, stepTransactions: {}, setSwapTransaction: (...args) => records.push(args) }),
+            useSwapTransactionStore: store({ swapTransactions: {}, pendingSubmissions: {}, stepTransactions: {}, setSwapTransaction: (...args) => records.push(args) }),
             useGaslessAuthorizationStore: store({ authorizations: {} }),
             useDepositSignatureStore: store({ signatures: {}, removeDepositSignature: noop }),
         };
@@ -1495,6 +1497,7 @@ for (const failure of ['rejected', 'failed']) {
         });
         const { default: Withdraw } = loadSource(`${withdraw}Withdraw.tsx`, {
             ...controllerImports,
+            '@/stores/swapTransactionStore': stores,
             '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput: noop } },
             '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
             '@/components/Input/Amount/helpers': loadSource('components/Input/Amount/helpers.ts', {
@@ -1537,7 +1540,8 @@ for (const failure of ['rejected', 'failed']) {
             await act(async () => container.querySelector('button').click());
             assert.equal(formAmount, '0.9898');
             assert.equal(harness.state.swapBasicData.requested_amount, '0.9898');
-            assert.equal(harness.state.swapId, undefined);
+            assert.equal(harness.state.swapId, undefined, 'editing the amount returns to a draft until confirmation');
+            assert.equal(requests.length, 0, 'editing the amount cannot create a replacement');
             await act(async () => walletView.handleClick());
             assert.equal(requests.length, 1);
             assert.equal(requests[0].amount, '0.9898');

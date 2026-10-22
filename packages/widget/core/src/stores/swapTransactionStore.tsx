@@ -4,12 +4,18 @@ import type { DepositActionStep } from '../lib/apiClients/layerSwapApiClient';
 
 export type SwapExecutionKind = 'wallet-transfer' | 'frontend-swap' | 'atomic-batch' | 'gasless-deposit';
 
+export type AtomicBatchSubmission = {
+    id: string;
+};
+
 export type SwapTransaction = {
     kind: SwapExecutionKind | 'transaction';
     hash?: string;
     timestamp?: number;
-    // A provider accepted the withdrawal but cannot supply a source transaction hash.
+    // A provider or wallet accepted submission before the backend supplied its input hash.
     providerSubmissionAccepted?: true;
+    atomicBatch?: AtomicBatchSubmission;
+    atomicBatchFailure?: 'reverted' | 'not_submitted';
 };
 
 export type SwapStepTransaction = { hash: string; timestamp: number; explorerUrl: string };
@@ -26,6 +32,7 @@ type SwapTransactionStore = {
     markSubmissionPending: (id: string) => void;
     clearPendingSubmission: (id: string) => void;
     setProviderSubmissionAccepted: (id: string) => void;
+    setAtomicBatchSubmission: (id: string, batch: AtomicBatchSubmission) => void;
     setSwapTransactionKind: (id: string, kind: SwapExecutionKind) => void;
     setSwapTransaction: (id: string, hash: string, kind?: SwapExecutionKind) => void;
     removeSwapTransaction: (id: string) => void;
@@ -91,6 +98,12 @@ function savedTimestamp(value: unknown): number {
     return typeof value === 'number' && Number.isFinite(value) ? value : 0;
 }
 
+function savedAtomicBatch(value: unknown): AtomicBatchSubmission | undefined {
+    const batch = savedRecords(value);
+    if (typeof batch.id !== 'string' || !batch.id.trim() || batch.id.length > 8194) return undefined;
+    return { id: batch.id };
+}
+
 function transactionReceipts(value: unknown): PersistedTransactionReceipts {
     const saved = savedRecords(value);
     const swapTransactions: Record<string, SwapTransaction> = {};
@@ -109,6 +122,15 @@ function transactionReceipts(value: unknown): PersistedTransactionReceipts {
             };
         } else if (kind) {
             swapTransactions[id] = { kind };
+        }
+        if (kind === 'atomic-batch' && swapTransactions[id]) {
+            if (entry.atomicBatchFailure === 'reverted' || entry.atomicBatchFailure === 'not_submitted') {
+                swapTransactions[id] = { kind, ...(receipt ?? {}),
+                    timestamp: savedTimestamp(entry.timestamp), atomicBatchFailure: entry.atomicBatchFailure };
+            } else if (!receipt && entry.providerSubmissionAccepted === true) {
+                const batch = savedAtomicBatch(entry.atomicBatch);
+                if (batch) swapTransactions[id].atomicBatch = batch;
+            }
         }
     }
     const stepTransactions: Record<string, SwapStepTransactions> = {};
@@ -184,6 +206,17 @@ export const useSwapTransactionStore = create<SwapTransactionStore>()(
                             timestamp: current?.timestamp ?? Date.now(),
                         },
                     },
+                    pendingSubmissions,
+                };
+            }),
+            setAtomicBatchSubmission: (id, batch) => set(state => {
+                const current = state.swapTransactions[id];
+                if (current?.hash) return state;
+                const { [id]: removed, ...pendingSubmissions } = state.pendingSubmissions;
+                return {
+                    swapTransactions: { ...state.swapTransactions, [id]: {
+                        kind: 'atomic-batch', providerSubmissionAccepted: true, atomicBatch: batch, timestamp: Date.now(),
+                    } },
                     pendingSubmissions,
                 };
             }),

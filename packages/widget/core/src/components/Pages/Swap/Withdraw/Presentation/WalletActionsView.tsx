@@ -133,6 +133,8 @@ export type SendTransactionViewProps = SubmitButtonProps & {
     quoteIsLoading?: boolean;
     quoteError?: boolean;
     loading?: boolean;
+    pendingSubmission?: boolean;
+    submissionTimedOut?: boolean;
     walletExecutionStarted?: boolean;
     /** A wallet receipt keeps confirmation visible without advancing the API swap phase. */
     submissionAccepted?: boolean;
@@ -169,6 +171,8 @@ export function getSendTransactionPresentation({
     quoteIsLoading,
     quoteError,
     loading,
+    pendingSubmission,
+    submissionTimedOut,
     submissionAccepted,
     walletExecutionStarted,
     networkSwitch,
@@ -196,18 +200,31 @@ export function getSendTransactionPresentation({
     onCancelWithdrawal,
     ...props
 }: SendTransactionViewProps) {
+    const observingSubmission = pendingSubmission && !loading;
+    const submissionMessage = observingSubmission && submissionTimedOut ? <WalletMessage
+        status="pending"
+        header="Transaction not confirmed"
+        details="We haven’t detected your transaction yet. Tracking continues automatically. This does not mean the transaction failed."
+    /> : undefined;
     const walletProgress = {
-        flow, quote, depositActions, stepTransactions, loading, submissionAccepted, walletExecutionStarted,
-        error, swapError, gaslessUnavailable, errorMessage, actionStateText,
+        flow, quote, depositActions, stepTransactions, loading,
+        submissionAccepted: submissionAccepted || observingSubmission,
+        submissionTimedOut, walletExecutionStarted,
+        error: pendingSubmission ? false : error,
+        swapError: pendingSubmission ? false : swapError, gaslessUnavailable,
+        errorMessage: submissionMessage ?? errorMessage, actionStateText,
         showSwapProgress, readOnly,
     };
     const { hasError, workflowFailed, confirmingSubmission, showStepError } =
         getWalletWorkflowState(walletProgress);
     const workflowCompleted = isDepositWorkflowComplete(depositActions ?? []);
     const actionableAction = getActionableDepositAction(depositActions);
-    const primaryActionText = props.isDisabled && actionButtonText ? actionButtonText : actionableAction
+    const draft = !swapId && flow?.resolution === 'pending';
+    const primaryActionText = draft ? actionButtonText || 'Confirm swap'
+        : flow?.resolution === 'unsupported' ? 'Refresh swap'
+        : props.isDisabled && actionButtonText ? actionButtonText : flow?.actionButtonText ?? (actionableAction
         ? getDepositActionLabel(actionableAction)
-        : actionButtonText || 'Swap now';
+        : actionButtonText || 'Swap now');
     // The shared processing slot can render the card, but these controls must
     // still follow the same progress visibility when showProgress is false.
     const progress = getWalletProgress(walletProgress);
@@ -215,7 +232,7 @@ export function getSendTransactionPresentation({
     const networkSwitchMessage = networkSwitch && (networkSwitch.isPending || networkSwitch.isError)
         ? <ChangeNetworkMessage data={networkSwitch} network={sourceNetworkName ?? ''} />
         : undefined;
-    const message = networkSwitchMessage ?? (
+    const message = submissionMessage && !showStepError ? submissionMessage : networkSwitchMessage ?? (
         !loading && !showStepError && errorMessage && hasError ? (
             <div
                 data-wallet-action-message
@@ -223,7 +240,12 @@ export function getSendTransactionPresentation({
                 {errorMessage}
             </div>
         ) : undefined);
-    if (quoteIsLoading || loading || confirmingSubmission)
+    const resolvingFlow = !!swapId && flow?.resolution === 'pending' && !actionableAction && !pendingSubmission
+        && !hasError && !networkSwitch?.isError;
+    if (observingSubmission) {
+        return { walletProgress, controls: submissionMessage ?? null };
+    }
+    if ((quoteIsLoading && !pendingSubmission) || loading || resolvingFlow || (confirmingSubmission && !pendingSubmission))
         return { walletProgress, controls: (
                     progress && (loading || confirmingSubmission) ? (
                         message || walletRequestRecovery ? <div className="flex flex-col gap-2">{message}{walletRequestRecovery}</div> : null
@@ -341,14 +363,13 @@ export function getSendTransactionPresentation({
                             icon={icon}
                             {...props}
                             isSubmitting={
-                                props.isSubmitting || loading || quoteIsLoading
+                                props.isSubmitting || loading || (quoteIsLoading && !pendingSubmission)
                             }
                             onClick={handleClick}
                             isDisabled={
                                 props.isDisabled ||
-                                quoteIsLoading ||
-                                !!quoteError ||
-                                workflowCompleted
+                                (quoteIsLoading && !pendingSubmission) ||
+                                (!pendingSubmission && (!!quoteError || workflowCompleted))
                             }
                         >
                             {error || swapError || networkSwitch?.isError || workflowFailed

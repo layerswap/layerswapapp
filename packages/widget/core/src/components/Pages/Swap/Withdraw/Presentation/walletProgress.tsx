@@ -7,7 +7,7 @@ import type { SwapStepTransactions } from '@/stores/swapTransactionStore';
 import { getCurrentDepositActionIndex } from '@/helpers/depositActions';
 import { WalletMessageDetails } from '../messages/Message';
 import { getDepositWorkflowProgress } from './DepositWorkflowView';
-import type { ResolvedSwapFlow } from '@/components/utils/resolveSwapFlow';
+import { resolveSwapFlow, type ResolvedSwapFlow } from '@/components/utils/resolveSwapFlow';
 import { truncateDecimals } from '@/components/utils/RoundDecimals';
 import { ProgressStatus, type StatusStep } from '../Processing/types';
 import type { ProgressPanelData } from './ProgressPanelView';
@@ -20,6 +20,7 @@ export type WalletProgressData = {
     loading?: boolean;
     walletExecutionStarted?: boolean;
     submissionAccepted?: boolean;
+    submissionTimedOut?: boolean;
     error?: boolean;
     swapError?: boolean;
     gaslessUnavailable?: boolean;
@@ -34,24 +35,12 @@ export function getWalletWorkflowState(data: WalletProgressData) {
         depositActions,
         stepTransactions,
         quote,
-        showSwapProgress,
         loading,
     } = data;
-    const isMultiStepWorkflow = data.flow
-        ? data.flow.walletProgress === 'workflow'
-        : (depositActions?.filter((action) => !!action.step).length ?? 0) > 1 ||
-          (!!stepTransactions?.approve_permit2?.explorerUrl &&
-              !!depositActions?.some(
-                  (action) => action.step === 'approve_permit2',
-              )) ||
-          (!!quote?.destination_token &&
-              !!depositActions?.some(
-                  (action) =>
-                      action.step === 'publish' ||
-                      (showSwapProgress && action.step === 'deposit'),
-              ));
+    const flow = data.flow ?? resolveSwapFlow({ depositActions, stepTransactions, quote });
+    const isMultiStepWorkflow = flow.walletProgress === 'workflow';
     const hasError = data.error || data.swapError || data.gaslessUnavailable;
-    const workflowFailed = depositActions?.some(
+    const workflowFailed = !data.submissionAccepted && depositActions?.some(
         (action) => action.status === 'failed',
     );
     const confirmingSubmission =
@@ -81,6 +70,9 @@ export function getWalletProgress(data: WalletProgressData) {
         confirmingSubmission,
         showStepError,
     } = getWalletWorkflowState(data);
+    if (data.submissionTimedOut && confirmingSubmission) {
+        return getSubmittedTransactionProgress(data);
+    }
     if (!isMultiStepWorkflow) {
         return confirmingSubmission ? getSubmittedTransactionProgress(data) : null;
     }
@@ -132,9 +124,9 @@ function getSubmittedTransactionProgress(data: WalletProgressData): ProgressPane
     const amount = data.quote?.receive_amount;
     const steps: StatusStep[] = [{
         id: 'input_transfer',
-        name: 'Confirming transaction',
+        name: data.submissionTimedOut ? 'Transaction not detected yet' : 'Confirming transaction',
         status: ProgressStatus.Current,
-        isLoading: true,
+        isLoading: !data.submissionTimedOut,
         readOnly: data.readOnly,
         index: 1,
     }];
@@ -156,7 +148,7 @@ function getSubmittedTransactionProgress(data: WalletProgressData): ProgressPane
         title: `${progressSubject} in progress`,
         label: `${progressSubject} progress`,
         progress: 0,
-        announcement: 'Confirming transaction.',
+        announcement: data.submissionTimedOut ? 'Transaction not detected yet. Tracking continues automatically.' : 'Confirming transaction.',
         steps,
     };
 }

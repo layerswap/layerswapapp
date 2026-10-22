@@ -30,6 +30,8 @@ const fixtureUrl = moduleUrl(`
     async createSwap() {
       if (!state.newSwap) throw new Error('unexpected creation')
       state.creations++
+      state.swap = { ...state.swap, swapDetails: state.newSwap.swap,
+        depositActionsResponse: state.newSwap.deposit_actions, quote: state.newSwap.quote }
       return state.newSwap
     }
   })
@@ -123,7 +125,8 @@ let requests = 0, originalError
 axios.defaults.adapter = async config => {
   state.apiCalls.push([config.method, config.url])
   if (config.method === 'get' && config.url.includes('/deposit_actions')) {
-    return { status: 200, statusText: 'OK', headers: {}, config, data: { data: state.swap.depositActionsResponse } }
+    const actions = config.url.includes('/swaps/fresh-swap/') ? state.newSwap?.deposit_actions : state.swap.depositActionsResponse
+    return { status: 200, statusText: 'OK', headers: {}, config, data: { data: actions } }
   }
   if (config.method === 'get' && config.url.endsWith('/authorize')) {
     return { status: 200, statusText: 'OK', headers: {}, config, data: { data: state.authorization } }
@@ -225,7 +228,9 @@ const renderRetryControls = () => act(async () => root.render(createElement(Stri
 async function failSignOnlyAuthorization(t, status, beforeFailure = () => {}) {
   t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 10000 })
   state.authorizeSucceeds = true
-  const sign = { ...state.swap.depositActionsResponse[0], signing_standard: 'eip3009' }
+  // Older responses omitted the semantic standard and remain signature-only
+  // until the authorization endpoint establishes their gasless outcome.
+  const sign = { ...state.swap.depositActionsResponse[0], signing_standard: undefined }
   state.swap.depositActionsResponse = [sign]
   await clickTransfer(async () => 'signature', { waitForCompletion: false })
   assert.ok(useDepositSignatureStore.getState().signatures['swap-1'], 'the accepted sign-only authorization starts unclassified')

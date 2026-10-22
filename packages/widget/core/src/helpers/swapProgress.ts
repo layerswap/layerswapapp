@@ -46,6 +46,7 @@ export function hasUnacknowledgedWalletAction(input: {
     depositActions?: DepositAction[]
 }): boolean {
     if (input.pendingSubmission) return true
+    if (input.transaction?.kind === 'atomic-batch' && input.transaction.atomicBatchFailure) return false
     if (input.transaction?.providerSubmissionAccepted) return true
     if (input.transaction?.hash && !(input.transactionStatus?.hash === input.transaction.hash
         && input.transactionStatus.status === 'failed')) return true

@@ -1501,6 +1501,7 @@ const frontend = (
     snapshot({
         swap: {
             ...snapshot().swap,
+            quote_revision: 1,
             source_network: base,
             destination_network: base,
             source_token: frontendToken,
@@ -2238,6 +2239,14 @@ const atomicActions = (
         calls.push(approve(100_000_000n));
     }
     calls.push({ to: deposit, data: '0x12345678', value: '0x0' });
+    if (allowance === 'sufficient') {
+        return [{
+            type: 'transfer', step: 'publish', status, detail,
+            network: base, token: frontendToken, from_address: account,
+            to_address: deposit, call_data: '0x12345678', amount: 0, amount_in_base_units: '0',
+            valid_before: Math.floor(EPOCH / 1000) + 600, expires_at: date(600),
+        }];
+    }
     return [
         {
             type: 'send_calls',
@@ -2264,6 +2273,8 @@ const atomic = (
         ...patch,
     });
 const atomicReceipt = { kind: 'atomic-batch' as const, hash, timestamp: EPOCH + 20_000 };
+const allowanceReceipt = (allowance: AtomicAllowance) => allowance === 'sufficient'
+    ? { ...atomicReceipt, kind: 'frontend-swap' as const } : atomicReceipt;
 const atomicInput = transaction(TransactionType.Input, {
     timestamp: date(30),
     created_date: date(30),
@@ -2279,7 +2290,7 @@ const atomicSettlement = (
         atomic(
             allowance,
             {
-                storedWalletTransaction: atomicReceipt,
+                storedWalletTransaction: allowanceReceipt(allowance),
                 details: details({
                     transactions: [{ ...atomicInput, confirmations: 3 }],
                 }),
@@ -2296,7 +2307,7 @@ const atomicSettlement = (
         atomic(
             allowance,
             {
-                storedWalletTransaction: atomicReceipt,
+                storedWalletTransaction: allowanceReceipt(allowance),
                 details: details({
                     status: SwapStatus.LsTransferPending,
                     transactions: [atomicInput],
@@ -2314,7 +2325,7 @@ const atomicSettlement = (
         atomic(
             allowance,
             {
-                storedWalletTransaction: atomicReceipt,
+                storedWalletTransaction: allowanceReceipt(allowance),
                 details: details({
                     status: SwapStatus.Completed,
                     transactions: [
@@ -2350,8 +2361,8 @@ const atomicBatchScenarios: TimelineScenario[] = [
             [
                 'sufficient',
                 'atomic-batch-approved',
-                'Atomic batch: sufficient allowance',
-                'Existing allowance leaves only the swap call, with one wallet confirmation.',
+                'Token swap: sufficient allowance',
+                'Existing allowance leaves one regular transaction that returns its hash directly.',
             ],
         ] as const
     ).map(
@@ -2365,10 +2376,11 @@ const atomicBatchScenarios: TimelineScenario[] = [
                     0,
                     'ready',
                     'Quote ready',
-                    'Approve and swap starts preparation and opens the wallet confirmation automatically.',
+                    'Opening the confirmation screen reviews the quote. Only the confirmation click creates the swap.',
                     frontend({
                         swapId: undefined,
-                        actionButtonText: 'Approve and swap',
+                        atomicBatchAvailable: true,
+                        quote: { ...frontendQuote, path: [{ provider: '0X', order: 0 }] },
                         walletExecutionStarted: false,
                     }),
                     SwapPhase.AwaitingUserDeposit,
@@ -2380,9 +2392,19 @@ const atomicBatchScenarios: TimelineScenario[] = [
                     'The initial click prepares the batch. The quote stays expanded and the button stays busy until wallet execution starts.',
                     frontend({
                         swapId: undefined,
+                        atomicBatchAvailable: true,
+                        quote: { ...frontendQuote, path: [{ provider: '0X', order: 0 }] },
                         walletExecutionStarted: false,
                         wallet: { kind: 'send', pending: true, label: 'Preparing swap…' },
                     }),
+                    SwapPhase.AwaitingUserDeposit,
+                ),
+                m(
+                    8,
+                    'prepared',
+                    'Batch ready',
+                    'After the confirmation click, the backend returns the actual calls that determine wallet execution.',
+                    atomic(allowance, { walletExecutionStarted: false }),
                     SwapPhase.AwaitingUserDeposit,
                 ),
                 m(
@@ -2405,7 +2427,8 @@ const atomicBatchScenarios: TimelineScenario[] = [
                     'Confirming swap transaction',
                     'The successful wallet receipt supplies the transaction hash. Approval and swap stay in one confirmation step while the API detects the input.',
                     atomic(allowance, {
-                        storedWalletTransaction: atomicReceipt,
+                        storedWalletTransaction: allowance === 'sufficient' ? allowanceReceipt(allowance)
+                            : { kind: 'atomic-batch', providerSubmissionAccepted: true, atomicBatch: { id: 'opaque-batch' }, timestamp: EPOCH + 20_000 },
                         wallet: { kind: 'send', disabled: true, submissionAccepted: true },
                     }),
                     SwapPhase.AwaitingUserDeposit,

@@ -1,4 +1,4 @@
-import { resolveSwapFlow } from '../../dist/esm/components/utils/resolveSwapFlow.js'
+import { isFrontendSwapQuote, resolveSwapFlow } from '../../dist/esm/components/utils/resolveSwapFlow.js'
 import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import React from 'react'
@@ -57,7 +57,7 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
         '@/stores/swapTransactionStore': overrides['@/stores'] ?? stores ?? emptyStores,
         '@/helpers/depositActions': { isDepositWorkflowComplete: () => false },
         '@/components/utils/resolveSwapPhase': { resolveSwapPhase: () => resolved },
-        '@/components/utils/resolveSwapFlow': { resolveSwapFlow },
+        '@/components/utils/resolveSwapFlow': { isFrontendSwapQuote, resolveSwapFlow },
         './depositSettings': { useDepositSettings: () => ({ isDepositFlow: false }) },
         '@/hooks/useGaslessAuthorization': { useGaslessAuthorization: () => ({}) },
         '@/hooks/useGaslessAuthorizationStatus': { useGaslessAuthorizationStatus: noop },
@@ -77,9 +77,9 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
             return { data: id ? snapshots.get(id) : undefined, mutate: noop }
         } },
         '@/hooks/useSwapStatusNotification': { useSwapStatusNotification: noop },
-        '@/hooks/useAtomicBatchCapability': { useAtomicBatchCapability: () => false },
         '@/hooks/useClientLayoutEffect': { useClientLayoutEffect: React.useLayoutEffect },
         '@/helpers/atomicBatch': { isAtomicBatchEligible: () => false },
+        '@/hooks/useAtomicBatchCapability': { useAtomicBatchCapability: () => false },
         '@/lib/resolvers/resolverService': {},
         '@/lib/swapLifecycle': {},
         '@/lib/swapCreation': {},

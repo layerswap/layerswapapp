@@ -88,6 +88,7 @@ function loadWidgetSource(path, imports) {
     new Function('require', 'module', 'exports', outputText)(name => {
         if (name === 'react' || name === 'react/jsx-runtime') return widgetRequire(name);
         if (name === '../components/utils/resolveSwapFlow.js') return loadWidgetSource('components/utils/resolveSwapFlow.ts', {});
+        if (name === '../../helpers/depositActions.js') return loadWidgetSource('helpers/depositActions.ts', {});
         if (path.endsWith('SwapDetails.tsx')) {
             if (name === './Page2Controller') return { Page2Controller: ({ children }) => children({ controls: imports['@/hooks/useResolvedSwapStatus'].useResolvedSwapStatus().showWithdrawScreen ? React.createElement(imports['./Withdraw'].default) : null }) };
             if (name === './Processing/Processing') return { useProcessingController: props => props };

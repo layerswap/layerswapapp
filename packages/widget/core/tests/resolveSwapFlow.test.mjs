@@ -10,6 +10,119 @@ const published = { phase: 'input_pending', showWithdrawScreen: false }
 const frontend = [{ step: 'sign', status: 'action_required' }, { step: 'publish', status: 'waiting' }]
 const resolve = input => resolveSwapFlow({ swapData, quote, resolved: waiting, ...input })
 
+const draftData = { ...swapData, source_token: { symbol: 'ARB', contract: `0x${'1'.repeat(40)}` } }
+
+for (const provider of ['0X', 'FLY', 'UNISWAP']) {
+    test(`${provider} draft resolves batching before creation`, () => {
+        const input = { isDraft: true, swapData: draftData, quote: { ...quote, path: [{ provider, order: 0 }] } }
+        const batch = resolve({ ...input, atomicBatchAvailable: true })
+        assert.equal(batch.kind, 'atomic-batch')
+        assert.equal(batch.resolution, 'resolved')
+        assert.equal(batch.actionButtonText, 'Approve and swap')
+        assert.equal(batch.compactQuote, false)
+        assert.equal(batch.walletProgress, 'controls')
+        const standard = resolve({ ...input, atomicBatchAvailable: false })
+        assert.equal(standard.kind, 'frontend-swap')
+        assert.equal(standard.actionButtonText, 'Sign to swap')
+        const gasless = resolve({ ...input, atomicBatchAvailable: true, gaslessEnabled: true })
+        assert.equal(gasless.kind, 'gasless-deposit')
+        assert.equal(gasless.actionButtonText, 'Sign to swap')
+    })
+}
+
+test('a regular bridge never becomes a batch because its wallet supports batching', () => {
+    for (const path of [[{ provider: 'ACROSS', order: 0 }], [{ provider: '0X', order: 0 }, { provider: 'ACROSS', order: 1 }]]) {
+        const flow = resolve({ isDraft: true, atomicBatchAvailable: true,
+            swapData: { ...draftData, destination_network: { name: 'ARBITRUM_MAINNET', type: 'evm' } }, quote: { ...quote, path } })
+        assert.equal(flow.kind, 'wallet-transfer')
+        assert.equal(flow.actionButtonText, 'Send from wallet')
+        assert.equal(flow.compactQuote, false)
+    }
+})
+
+test('native frontend swaps keep their single transaction even with batching support', () => {
+    const flow = resolve({ isDraft: true, atomicBatchAvailable: true,
+        swapData: { ...draftData, source_token: { symbol: 'ETH' } },
+        quote: { ...quote, path: [{ provider: '0X', order: 0 }] } })
+    assert.equal(flow.kind, 'frontend-swap')
+    assert.equal(flow.actionButtonText, 'Confirm swap')
+})
+
+test('a created swap never uses draft predictions to replace its actual actions', () => {
+    for (const depositActions of [undefined, [], [{ type: 'transfer', step: 'deposit', status: 'action_required' }]]) {
+        const flow = resolve({ isDraft: false, atomicBatchAvailable: true, gaslessEnabled: true,
+            swapData: { ...draftData, id: 'created' }, quote: { ...quote, path: [{ provider: '0X', order: 0 }] }, depositActions })
+        assert.notEqual(flow.kind, 'atomic-batch')
+        assert.notEqual(flow.kind, 'gasless-deposit')
+    }
+    const single = resolve({ isDraft: true, atomicBatchAvailable: true, swapData: draftData,
+        quote: { ...quote, path: [{ provider: '0X', order: 0 }] },
+        depositActions: [{ type: 'transfer', step: 'publish', status: 'action_required' }] })
+    assert.equal(single.kind, 'frontend-swap')
+    assert.equal(single.actionButtonText, 'Confirm swap')
+    assert.equal(resolve({ isDraft: true, atomicBatchAvailable: true }).resolution, 'pending')
+})
+
+for (const [name, kind, actions, label] of [
+    ['atomic approval', 'atomic-batch', [{ type: 'send_calls', step: 'publish', calls: [{}, {}] }], 'Approve and swap'],
+    ['atomic funded allowance', 'atomic-batch', [{ type: 'send_calls', step: 'publish', calls: [{}] }], 'Confirm swap'],
+    ['self-paid signing', 'frontend-swap', [{ type: 'sign', step: 'sign', signing_standard: 'eip3009' }, { step: 'publish' }], 'Sign to swap'],
+    ['native publication', 'frontend-swap', [{ type: 'transfer', step: 'publish' }], 'Confirm swap'],
+    ['ordinary bridge', 'wallet-transfer', [{ type: 'transfer', step: 'deposit' }], 'Send from wallet'],
+    ['EIP-3009 gasless', 'gasless-deposit', [{ type: 'sign', step: 'sign', signing_standard: 'eip3009' }], 'Sign to swap'],
+    ['Permit2 gasless', 'gasless-deposit', [{ type: 'sign', step: 'sign', signing_standard: 'permit2' }], 'Sign to swap'],
+]) {
+    test(`${name} resolves from the prepared backend workflow`, () => {
+        const flow = resolve({ swapData: { ...swapData, quote_revision: 1 },
+            depositActions: actions.map(action => ({ ...action, status: 'action_required' })) })
+        assert.equal(flow.resolution, 'resolved')
+        assert.equal(flow.kind, kind)
+        assert.equal(flow.actionButtonText, label)
+        assert.equal(flow.showSwapProgress, kind === 'atomic-batch' || kind === 'frontend-swap')
+    })
+}
+
+test('frontend settlement metadata distinguishes a gasless swap from a same-network depository transfer', () => {
+    const depositActions = [{ step: 'sign', signing_standard: 'eip3009', status: 'completed' }]
+    const deposit = resolve({ depositActions })
+    const swap = resolve({ depositActions, swapData: { ...swapData, quote_revision: 2 } })
+    assert.equal(deposit.processingTitle, 'transfer')
+    assert.equal(deposit.sharesExecutionTransaction, false)
+    assert.equal(swap.processingTitle, 'swap')
+    assert.equal(swap.sharesExecutionTransaction, true)
+})
+
+test('an observed regular transfer resolves from the backend empty-plan contract after reload', () => {
+    const flow = resolve({ swapData: { ...swapData, id: 'observed' }, depositActions: [] })
+    assert.equal(flow.kind, 'wallet-transfer')
+    assert.equal(flow.resolution, 'resolved')
+    assert.equal(resolve({ swapData: { ...swapData, id: 'loading' } }).resolution, 'pending')
+})
+
+test('unknown actionable workflows stay unsupported even with a saved execution kind', () => {
+    const flow = resolve({ transaction: { kind: 'wallet-transfer' },
+        depositActions: [{ type: 'transfer', step: 'future_step', status: 'action_required' }] })
+    assert.equal(flow.resolution, 'unsupported')
+    assert.equal(flow.actionButtonText, undefined)
+})
+
+for (const status of ['pending', 'completed', 'failed']) {
+    test(`backend ${status} history identifies every rail without local storage`, () => {
+        for (const [kind, plan] of [
+            ['atomic-batch', [{ step: 'approve' }, { step: 'publish' }]],
+            ['frontend-swap', [{ step: 'sign', signing_standard: 'eip3009' }, { step: 'publish' }]],
+            ['frontend-swap', [{ step: 'publish' }]],
+            ['gasless-deposit', [{ step: 'sign', signing_standard: 'eip3009' }]],
+            ['wallet-transfer', [{ step: 'deposit' }]],
+        ]) {
+            const flow = resolve({ swapData: { ...swapData, quote_revision: kind === 'wallet-transfer' ? undefined : 1 },
+                depositActions: plan.map(action => ({ ...action, status })) })
+            assert.equal(flow.kind, kind)
+            assert.equal(flow.resolution, 'resolved')
+        }
+    })
+}
+
 for (const [kind, evidence, input] of [
     ['manual-deposit', 'deposit-method', { swapData: { ...swapData, use_deposit_address: true } }],
     ['exchange-deposit', 'deposit-method', { swapData: { ...swapData, use_deposit_address: true, source_exchange: { name: 'coinbase' } } }],
@@ -29,7 +142,7 @@ for (const [kind, evidence, input] of [
     ['unresolved', 'missing-actions', {}],
     ['unresolved', 'missing-actions', { depositActions: [] }],
     ['unresolved', 'ambiguous-signature', { depositActions: [{ type: 'sign' }] }],
-    ['unresolved', 'ambiguous-signature', { depositActions: [{ step: 'sign', signing_standard: 'eip3009' }] }],
+    ['gasless-deposit', 'gasless-signature', { depositActions: [{ step: 'sign', signing_standard: 'eip3009' }] }],
     ['unresolved', 'ambiguous-signature', { depositActions: [{ step: 'approve_permit2' }] }],
     ['unresolved', 'ambiguous-publication', { depositActions: [{ step: 'publish' }] }],
     ['unresolved', 'ambiguous-publication', { depositActions: [{ step: 'publish', status: 'waiting' }] }],
@@ -236,4 +349,13 @@ test('new explicit execution evidence takes precedence over an earlier observati
         const flow = resolve({ transaction: { kind }, depositActions: [{ step: 'publish', status: 'completed' }] })
         assert.equal(flow.kind, 'unresolved', 'publication contradicts a gasless or plain deposit identity')
     }
+})
+
+test('completed allowance placeholders preserve the known single-transaction execution', () => {
+    const depositActions = [{ step: 'approve', status: 'completed' }, { step: 'publish', status: 'completed' }]
+    const flow = resolve({ transaction: { kind: 'frontend-swap' }, depositActions })
+    assert.equal(flow.kind, 'frontend-swap')
+    assert.equal(flow.evidence, 'stored-transaction')
+    const actionable = [{ type: 'send_calls', step: 'publish', status: 'action_required', calls: [{}, {}] }]
+    assert.equal(resolve({ transaction: { kind: 'frontend-swap' }, depositActions: actionable }).kind, 'atomic-batch')
 })

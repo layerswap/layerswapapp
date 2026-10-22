@@ -27,6 +27,7 @@ import { WalletActionTransition } from './Presentation/WalletActionTransition';
 import { lifecycleContextFromSwap } from '@/lib/swapLifecycle';
 import { useTransferBlocked } from '@/hooks/useTransferBlocked';
 import { type ObservedLifecycleEvent, useLifecycleObservation } from '@/hooks/useLifecycleObservation';
+import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 
 // "Transfer screen shown": reported once while the screen is visible, before any swap exists.
 const AWAITING_WALLET_ACTION: ObservedLifecycleEvent = {
@@ -41,6 +42,16 @@ export function useWithdrawBalance(active = true) {
     const { swapBasicData, swapDetails, swapId, amountPresetLocked, refuel, quoteIsLoading } =
         useSwapDataState();
     const { setSubmitedFormValues, startFreshSwapAttempt, canAdjustAmount } = useSwapDataUpdate();
+    const checkingSubmission = useSwapTransactionStore(state => {
+        if (!swapId) {
+            return false;
+        }
+        const transaction = state.swapTransactions[swapId];
+        return !!state.pendingSubmissions[swapId]
+            || (transaction?.kind === 'atomic-batch'
+                && !!transaction.providerSubmissionAccepted
+                && !transaction.hash);
+    });
 
     const { networks } = useSettingsState();
     const source_network =
@@ -154,7 +165,9 @@ export function useWithdrawBalance(active = true) {
     // Settled failures and frozen/manual amounts still show genuine warnings.
     const presetIsSyncing = !swapId && !amountPresetLocked && isAmountPreset(swapBasicData?.amountMode)
         && (swapBasicData?.amountPresetPending || !Object.is(swapBasicData?.amountPresetBalance, walletBalanceAmount));
-    const showInsufficientBalanceWarning = !presetIsSyncing &&
+    // A submitted swap only needs a read-only status check. Its original balance
+    // may already be spent, so funding warnings must not replace recovery controls.
+    const showInsufficientBalanceWarning = !checkingSubmission && !presetIsSyncing &&
         swapBasicData?.use_deposit_address === false &&
         swapBasicData?.requested_amount &&
         Number(swapBasicData?.requested_amount) &&
@@ -203,7 +216,7 @@ export function useWithdrawBalance(active = true) {
                     }
                 />
         );
-    } else if (swapBasicData?.use_deposit_address === false && outOfGas && !presetIsSyncing) {
+    } else if (!checkingSubmission && swapBasicData?.use_deposit_address === false && outOfGas && !presetIsSyncing) {
         actionKey = 'outOfGas';
         warning = <GasWarningView adjustButton={showAdjustAmount && <AdjustAmountButton compact onEditAmount={handleEditAmount} isLoading={quoteIsLoading} />} />;
     }

@@ -34,7 +34,7 @@ const resolve = (swapDetails, extra = {}) => resolveSwapPhase({ swapDetails, ref
 
 test('saved batch outcomes and user receipts cannot decide swap phase', () => {
   for (const saved of [
-    { atomicBatchPending: true }, { atomicBatchUncertain: true }, { atomicBatchFailed: true },
+    { atomicBatchPending: true }, { atomicBatchUncertain: true },
     { storedWalletTransaction: { hash: '0x1', status: 'failed' } },
     { storedWalletTransaction: { hash: '0x1', status: 'pending' } },
   ]) {
@@ -46,6 +46,20 @@ test('saved batch outcomes and user receipts cannot decide swap phase', () => {
     ] }), saved)
     assert.equal(completed.phase, SwapPhase.Completed)
   }
+})
+
+test('a terminal wallet batch failure without backend events enables failure recovery', () => {
+  const failed = resolve(pendingSwap(), { atomicBatchFailed: true })
+  assert.equal(failed.phase, SwapPhase.Failed)
+  assert.equal(failed.showWithdrawScreen, false)
+  assert.equal(failed.failureReason, 'transfer_failed')
+  const completed = resolve(pendingSwap({ status: 'completed', transactions: [
+    { type: 'output', status: 'completed', transaction_hash: '0x2', amount: 1 },
+  ] }), { atomicBatchFailed: true })
+  assert.equal(completed.phase, SwapPhase.Completed)
+  assert.equal(resolve(pendingSwap({ transactions: [inputTx({ status: 'pending', confirmations: 0 })] }), {
+    atomicBatchFailed: true,
+  }).phase, SwapPhase.InputPending, 'an indexed input takes precedence over a saved wallet failure')
 })
 
 test('a failed gasless authorization resolves the swap to failed, with the reason the retry UI needs', () => {

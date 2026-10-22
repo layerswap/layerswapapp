@@ -20,6 +20,7 @@ function loadSource(path, imports = {}) {
     new Function('require', 'module', 'exports', outputText)(name => {
         if (name === 'react/jsx-runtime') return require(name)
         if (name === '../components/utils/resolveSwapFlow.js' || name === '@/components/utils/resolveSwapFlow') return loadSource("../src/components/utils/resolveSwapFlow.ts");
+        if (name === '../../helpers/depositActions.js') return loadSource('../src/helpers/depositActions.ts');
         if (name in imports) return imports[name]
         if (name === '@/lib/swapExecution') return { recordSwapExecution: () => {} }
         throw new Error(`Unexpected dependency: ${name}`)
@@ -70,9 +71,10 @@ function createWorkflow({
     renderResolvedScreen = false,
     walletController = false,
     page2Host = false,
+    realBalance = false,
 } = {}) {
     let view
-    const calls = { refresh: [], confirmations: [], sign: [], authorize: [], transfer: [], batches: [], executionStarts: [], quoteLoading: [], storedTransactions: [], authorizations: [], signatures: [], errors: [], lifecycle: [], success: 0 }
+    const calls = { executionHolds: 0, batchStatus: [], statusChecks: [], statusSignals: [], blocked: [], refresh: [], confirmations: [], sign: [], authorize: [], transfer: [], batches: [], executionStarts: [], quoteLoading: [], storedTransactions: [], authorizations: [], signatures: [], errors: [], lifecycle: [], success: 0 }
     const state = {
         apiActions: actionsFor('fresh'),
         refreshError: undefined,
@@ -106,8 +108,18 @@ function createWorkflow({
         }),
         useSwapTransactionStore: store({
             pendingSubmissions: {},
-            swapTransactions: {}, setSwapTransaction(id, hash) { stores.useSwapTransactionStore.getState().swapTransactions[id] = { hash }; calls.storedTransactions.push([id, hash]) },
+            swapTransactions: {}, setSwapTransaction(id, hash) {
+                const transactions = stores.useSwapTransactionStore.getState()
+                transactions.swapTransactions[id] = { hash }
+                delete transactions.pendingSubmissions[id]
+                calls.storedTransactions.push([id, hash])
+            },
             stepTransactions: {},
+            setAtomicBatchSubmission(id, batch) {
+                this.swapTransactions[id] = { kind: 'atomic-batch', atomicBatch: batch,
+                    providerSubmissionAccepted: true, timestamp: Date.now() }
+                delete this.pendingSubmissions[id]
+            },
             setStepTransaction(id, step, hash, explorerUrl) {
                 const transactions = this.stepTransactions[id] ??= {}
                 transactions[step] = { hash, explorerUrl, timestamp: Date.now() }
@@ -121,7 +133,14 @@ function createWorkflow({
     const cache = new Map([[cacheKey, { data: state.depositActionsResponse }]])
     let pollingKey
     const api = {
-        fetcher: async () => ({ data: state.apiActions }),
+        fetcher: async (key, options) => {
+            if (key?.endsWith('?exclude_deposit_actions=true')) {
+                calls.statusChecks.push(key)
+                calls.statusSignals.push(options?.signal)
+                return state.onStatusCheck ? state.onStatusCheck() : { data: { swap: { ...state.swapDetails, transactions: [] } } }
+            }
+            return { data: state.apiActions }
+        },
         GetTransactionStatus: async (network, hash) => {
             calls.confirmations.push({ network, hash })
             return { data: { status: state.receipts?.get(hash) ?? 'Pending' } }
@@ -134,7 +153,10 @@ function createWorkflow({
         GetSwapAsync: () => assert.fail('Workflow execution must not poll whole swaps'),
         SwapCatchup: async () => { await state.onCatchup?.() },
     }
-    const apiModule = { default: class { constructor() { return api } }, BackendTransactionStatus: { Pending: 'pending' } }
+    const apiModule = { default: class { constructor() { return api } },
+        BackendTransactionStatus: { Pending: 'pending', Completed: 'completed', Failed: 'failed' },
+        TransactionType: { Input: 'input' },
+    }
     const swapContext = realPolling ? createSwapContext({
         Client: apiModule.default, getSwapId: () => state.swapId, getAccount: () => wallet, stores,
         overrides: renderResolvedScreen ? {
@@ -201,7 +223,7 @@ function createWorkflow({
     const Steps = ({ steps }) => walletController
         ? createElement('ol', null, steps.map((step, index) => createElement('li', { key: index, 'data-status': step.status }, step.name, step.description)))
         : null
-    const SubmitButton = walletController
+    const SubmitButton = walletController || mounted
         ? ({ children, onClick, isDisabled }) => createElement('button', { onClick, disabled: isDisabled }, children)
         : noop
     const progressPanel = loadSource('../src/components/Pages/Swap/Withdraw/Presentation/ProgressPanelView.tsx', {
@@ -243,7 +265,7 @@ function createWorkflow({
         '../../Form/SecondaryComponents/validationError/constants': {},
         '../../Form/SecondaryComponents/validationError/ErrorDismissButton': { default: noop },
         '../../Form/SecondaryComponents/validationError/ErrorDisplay': { ErrorDisplay },
-        '../messages/Message': { default: noop },
+        '../messages/Message': { default: ({ header, details }) => createElement('div', null, header, details) },
         '../messages/walletErrorMessage': loadSource('../src/components/Pages/Swap/Withdraw/messages/walletErrorMessage.ts', {
             '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
         }),
@@ -271,7 +293,12 @@ function createWorkflow({
         '@/helpers/depositActions': depositActions,
         '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: event => calls.lifecycle.push(event) }) },
         '@/lib/swapLifecycle': lifecycle,
-        '@/hooks/useTransferBlocked': { useTransferBlocked: noop },
+        '@/lib/swapExecution': loadSource('../src/lib/swapExecution.ts', {
+            '@/stores/swapTransactionStore': stores,
+            '@/lib/apiClients/layerSwapApiClient': apiModule,
+            '@/helpers/atomicBatch': loadSource('../src/helpers/atomicBatch.ts'),
+        }),
+        '@/hooks/useTransferBlocked': { useTransferBlocked: reason => { if (reason) calls.blocked.push(reason) } },
         '@/hooks/useClientLayoutEffect': { useClientLayoutEffect: mounted ? React.useLayoutEffect : useFakeLayoutEffect },
         // Script the hook's snapshots for execution tests. Its SWR requests,
         // timers, cache subscription and cancellation are covered in the polling integration tests.
@@ -303,15 +330,29 @@ function createWorkflow({
                 }
             },
         },
-        react: mounted ? React : { useState, useRef: initial => useState({ current: initial })[0], useMemo: fn => fn(), useCallback: fn => fn },
+        react: mounted ? React : { useState, useRef: initial => useState({ current: initial })[0], useMemo: fn => fn(), useCallback: fn => fn, useEffect: noop },
         '@layerswap/ui-kit/components': { WalletIcon: noop },
         '@/components/Buttons/submitButton': { default: noop },
         '@/hooks/useWallet': { default: () => ({ wallets: [wallet] }) },
         '@/context/swap': {
-            useSwapDataState: () => renderResolvedScreen ? { ...state, ...swapContext.useSwapDataState() } : state,
+            useSwapDataState: () => renderResolvedScreen ? { ...state, ...swapContext.useSwapDataState() }
+                : state.resolveCurrentFlow ? { ...state, flow: loadSource('../src/components/utils/resolveSwapFlow.ts').resolveSwapFlow({
+                    swapData: state.swapBasicData, depositActions: state.depositActionsResponse,
+                }) } : state,
             useSwapDataUpdate: () => ({
                 reportWalletActionFeedback,
-                ...(realPolling ? swapContext.useSwapDataUpdate() : { acquireWalletExecution: () => noop, setWalletActionExecuting: noop }),
+                ...(realPolling ? swapContext.useSwapDataUpdate() : {
+                    acquireWalletExecution: () => {
+                        calls.executionHolds++
+                        let released = false
+                        return () => {
+                            if (released) return
+                            released = true
+                            calls.executionHolds--
+                        }
+                    },
+                    setWalletActionExecuting: noop,
+                }),
                 createSwap: (...args) => state.createSwap ? state.createSwap(...args) : assert.fail('Retry must keep the existing swap'),
                 startFreshSwapAttempt: noop,
                 mutateSwap: async () => {},
@@ -346,7 +387,7 @@ function createWorkflow({
         '../../Presentation/WalletRequestRecovery': { useWalletRequestRecovery: () => null },
         '../../Presentation/WalletActionsView': mounted ? { ...walletViews, SendTransactionView: props => {
             view = props
-            if (walletController) {
+            if (walletController || state.renderControls) {
                 return createElement(walletViews.SendTransactionView, props)
             }
             return renderResolvedScreen ? createElement('button', null, props.actionStateText ?? 'Swap now') : null
@@ -363,11 +404,22 @@ function createWorkflow({
             await state.onWalletPrompt?.('approve_and_swap')
             if (state.batchError) throw state.batchError
         } },
-        '@/lib/resolvers/resolverService': { resolverService: { getTransferResolver: () => ({ getAtomicBatchProvider: () => ({}) }) } },
+        '@/lib/resolvers/resolverService': { resolverService: { getTransferResolver: () => ({ getAtomicBatchProvider: () => ({
+            getStatus: async (...args) => { calls.batchStatus.push(args); return state.onBatchStatus ? state.onBatchStatus() : state.batchStatusResponse },
+        }) }) } },
         '@/helpers/gasless': gasless,
         './isUserRejection': rejection,
         swr: realPolling ? require('swr') : {
-            useSWRConfig: () => ({ mutate: async (key, result) => { const data = await result; cache.set(key, data); return data } }),
+            useSWRConfig: () => ({ mutate: async (key, result) => {
+                const data = await result
+                cache.set(key, data)
+                if (state.resolveCurrentFlow && data?.data?.swap) {
+                    state.swapDetails = data.data.swap
+                    state.quote = data.data.quote
+                    state.depositActionsResponse = data.data.deposit_actions
+                }
+                return data
+            } }),
         },
     }
     const { SendTransactionButton, ButtonWrapper, useSendTransactionController, useConnectWalletController } = loadSource(`${walletPath}buttons.tsx`, buttonImports)
@@ -410,8 +462,8 @@ function createWorkflow({
             '../messages/TransactionMessages': messages,
             '@/hooks/useTransfer': { useTransfer: () => ({ executeTransfer: (...args) => state.executeTransfer ? state.executeTransfer(...args) : assert.fail('Atomic rejection must not fall back to a transfer') }) },
             '@/hooks/useGasless': { useGasless: () => ({ isGaslessSupported: () => false }) },
-            '@/context/rpcHealthContext': { useRpcHealth: (_, enabled) => { calls.rpcEnabled = enabled; return { health: { status: 'healthy' } }; } },
-            './RPCUnhealthyMessage': { default: noop },
+            '@/context/rpcHealthContext': { useRpcHealth: (_, enabled) => { calls.rpcEnabled = enabled; return { health: { status: state.rpcUnhealthy ? 'unhealthy' : 'healthy' } }; } },
+            './RPCUnhealthyMessage': { default: () => createElement('div', null, 'RPC unhealthy') },
             '@/lib/extendedRoutes/registry': { isExtendedSourceNetwork: () => false },
             '../WithdrawalProviders/Hyperliquid': {},
             '../WithdrawalProviders/Polymarket': {},
@@ -420,6 +472,27 @@ function createWorkflow({
         })
         WalletWithdrawal = walletComponents.WalletWithdrawal
         if (page2Host) {
+            const balanceController = realBalance ? loadSource('../src/components/Pages/Swap/Withdraw/Withdraw.tsx', {
+                ...buttonImports,
+                '@/components/utils/RoundDecimals': loadSource('../src/components/utils/RoundDecimals.ts'),
+                '@/components/Input/Amount/helpers': {},
+                '@/lib/amountPresets': amountPresets,
+                '@/components/Widget/Index': {},
+                '@/helpers/swapFlow': { isDepositAddressSwap: () => false },
+                '@/hooks/useFee': { transformSwapDataToQuoteArgs: noop, useQuoteData: () => ({}) },
+                '@/lib/balances/useBalance': { useBalance: () => ({ balances: state.balances }) },
+                '@/lib/gases/useOutOfGas': { default: () => ({ outOfGas: state.outOfGas }) },
+                formik: { useFormikContext: () => ({ values: {}, setValues: noop }) },
+                '../Form/SecondaryComponents/validationError/AdjustAmountButton': {},
+                '../Form/SecondaryComponents/validationError/RefreshBalanceButton': { RefreshBalanceButton: noop },
+                './Presentation/BalanceWarningView': {
+                    BalanceWarningView: () => createElement('div', null, 'Insufficient balance'),
+                    GasWarningView: () => createElement('div', null, 'Insufficient gas'),
+                },
+                './WalletTransferButton': {},
+                './Presentation/WalletActionTransition': {},
+                '@/hooks/useLifecycleObservation': { useLifecycleObservation: noop },
+            }) : { useWithdrawBalance: active => { calls.balanceActive = active; return { blocked: false, warning: null, actionKey: 'transfer' }; } }
             Page2Controller = loadSource('../src/components/Pages/Swap/Withdraw/Page2Controller.tsx', {
                 react: React,
                 '@/lib/address/Address': {},
@@ -430,7 +503,7 @@ function createWorkflow({
                 '@/hooks/useResolvedSwapStatus': { useResolvedSwapStatus: () => ({ showWithdrawScreen: state.active !== false }) },
                 '@/hooks/useWallet': buttonImports['@/hooks/useWallet'],
                 '@/context/swapAccounts': buttonImports['@/context/swapAccounts'],
-                './Withdraw': { useWithdrawBalance: active => { calls.balanceActive = active; return { blocked: false, warning: null, actionKey: 'transfer' }; } },
+                './Withdraw': balanceController,
                 './Wallet': { useWalletWithdrawalController: (...args) => {
                     React.useEffect(() => { calls.mounts = (calls.mounts ?? 0) + 1; return () => { calls.unmounts = (calls.unmounts ?? 0) + 1; }; }, []);
                     const model = walletComponents.useWalletWithdrawalController(...args);
@@ -506,7 +579,7 @@ function createWorkflow({
     }
 }
 
-for (const name of ['zero_allowance', 'allowance_reset', 'sufficient_allowance']) test(`new backend ${name} executes one batch with no permit or ordinary transfer`, async () => {
+for (const name of ['zero_allowance', 'allowance_reset', 'sufficient_allowance']) test(`new backend ${name} uses the exact transaction count its calls require`, async () => {
     const flow = createWorkflow({ atomic: true })
     const actions = await atomicActions.resolveAtomicDepositActions(atomicFixtures.deposit_actions[name], async () => atomicFixtures.next_actions[name])
     flow.state.apiActions = actions
@@ -519,17 +592,26 @@ for (const name of ['zero_allowance', 'allowance_reset', 'sufficient_allowance']
     assert.equal(rendered.steps[0].name, name === 'sufficient_allowance' ? 'Confirm swap' : 'Approve and swap')
     assert.equal(rendered.viewProps.depositActions.length, 1)
     await rendered.button.props.onClick()
-    assert.equal(flow.calls.batches.length, 1)
-    assert.deepEqual(flow.calls.batches[0].calls, atomicFixtures.next_actions[name].action.calls)
-    assert.deepEqual(flow.calls.transfer, [])
+    if (name === 'sufficient_allowance') {
+        assert.deepEqual(flow.calls.batches, [])
+        assert.equal(flow.calls.transfer.length, 1)
+        assert.equal(flow.calls.transfer[0].callData, atomicFixtures.next_actions[name].action.calls[0].data)
+        assert.deepEqual(flow.calls.storedTransactions, [[swapId, '0xtransaction']])
+        assert.equal(flow.calls.success, 1)
+    } else {
+        assert.equal(flow.calls.batches.length, 1)
+        assert.deepEqual(flow.calls.batches[0].calls, atomicFixtures.next_actions[name].action.calls)
+        assert.deepEqual(flow.calls.transfer, [])
+        assert.deepEqual(flow.calls.storedTransactions, [])
+        assert.equal(flow.calls.success, 0)
+    }
+    assert.deepEqual(flow.calls.batchStatus, [])
     assert.deepEqual(flow.calls.sign, [])
     assert.deepEqual(flow.calls.authorize, [])
-    assert.deepEqual(flow.calls.storedTransactions, [], 'receipt polling supplies the hash later')
-    assert.equal(flow.calls.success, 0)
     assert.deepEqual(flow.calls.errors, [])
 })
 
-test('the button keeps an atomic submission loading until its receipt is available', async () => {
+test('the button keeps one wallet request active and prevents repeated submission', async () => {
     const flow = createWorkflow({ atomic: true })
     flow.state.apiActions = [atomicFixtures.actions.zero_allowance]
     flow.state.depositActionsResponse = flow.state.apiActions
@@ -561,6 +643,28 @@ test('new backend batch rejection never falls back to signing or an ordinary tra
     assert.deepEqual(flow.calls.sign, [])
     assert.deepEqual(flow.calls.storedTransactions, [])
 })
+
+for (const allowance of ['zero_allowance', 'sufficient_allowance']) {
+    test(`a reopened ${allowance} atomic swap keeps its backend mode with gasless enabled by default`, async () => {
+        const flow = createWorkflow({ atomic: true })
+        flow.preferences.gaslessEnabled = true
+        flow.state.sourceToken = { ...atomicFixtures.token, supports_gasless_deposit: true, gasless_standard: 'eip3009' }
+        flow.state.apiActions = [atomicFixtures.actions[allowance]]
+        flow.state.depositActionsResponse = flow.state.apiActions
+        flow.render()
+        await flow.poll()
+
+        await flow.render().viewProps.handleClick()
+
+        assert.equal(flow.state.swapId, swapId, 'reopening must retain the existing swap')
+        assert.equal(flow.calls.refresh.length, 1)
+        assert.equal(flow.calls.batches.length, 1)
+        assert.equal(flow.preferences.gaslessEnabled, true)
+        assert.deepEqual(flow.calls.errors, [])
+        assert.deepEqual(flow.calls.sign, [])
+        assert.deepEqual(flow.calls.transfer, [])
+    })
+}
 
 for (const rejectedError of [walletErrors.userRejectedError(), { code: 4001 }]) {
     test(`atomic rejection reaches the wallet message, retry button and shared feedback: ${rejectedError instanceof Error ? 'adapter error' : 'raw code'}`, async () => {
@@ -624,40 +728,228 @@ for (const rejectedError of [walletErrors.userRejectedError(), { code: 4001 }]) 
     })
 }
 
-test('an eligible batch starts with Approve and swap before creation and follows the returned calls', async () => {
+for (const submission of ['uncertain', 'accepted']) {
+    test(`${submission} batch keeps automatic progress without wallet status or resubmission controls`, async () => {
+        const flow = createWorkflow({ atomic: true })
+        const store = flow.stores.useSwapTransactionStore.getState()
+        if (submission === 'uncertain') {
+            store.pendingSubmissions[swapId] = true
+            store.swapTransactions[swapId] = { kind: 'atomic-batch' }
+        } else {
+            store.setAtomicBatchSubmission(swapId, { id: 'opaque-id', account: atomicFixtures.account,
+                chainId: 8453, walletId: 'original', providerName: 'EVM' })
+        }
+        flow.state.quoteError = { message: 'Expired quote' }
+        const rendered = flow.render()
+        assert.equal(rendered.button, undefined)
+        assert.equal(rendered.viewProps.pendingSubmission, true)
+        await rendered.viewProps.handleClick()
+        await flow.render().viewProps.handleClick()
+        assert.deepEqual(flow.calls.batches, [])
+        assert.deepEqual(flow.calls.batchStatus, [])
+        assert.deepEqual(flow.calls.statusChecks, [])
+        assert.deepEqual(flow.calls.transfer, [])
+        assert.equal(swapProgress.hasUnacknowledgedWalletAction({ transaction: store.swapTransactions[swapId],
+            pendingSubmission: store.pendingSubmissions[swapId] }), true)
+    })
+}
+
+test('an accepted batch automatically becomes unconfirmed after the detection timeout and stays locked', async t => {
+    const dom = new JSDOM('<div id="root"></div>')
+    const previous = Object.getOwnPropertyDescriptors(globalThis)
+    Object.assign(globalThis, { window: dom.window, document: dom.window.document, IS_REACT_ACT_ENVIRONMENT: true })
+    t.mock.timers.enable({ apis: ['Date', 'setTimeout'] })
+    const flow = createWorkflow({ mounted: true, atomic: true })
+    flow.state.renderControls = true
+    const store = flow.stores.useSwapTransactionStore.getState()
+    store.setAtomicBatchSubmission(swapId, { id: 'opaque-id', account: atomicFixtures.account,
+        chainId: 8453, walletId: 'original', providerName: 'EVM' })
+    const root = createRoot(document.getElementById('root'))
+    try {
+        await act(async () => root.render(createElement(flow.Component)))
+        assert.equal(document.querySelector('button'), null)
+        await act(async () => t.mock.timers.tick(150_000))
+        assert.equal(flow.view.submissionTimedOut, true)
+        assert.match(document.body.textContent, /Transaction not confirmed/)
+        assert.match(document.body.textContent, /Tracking continues automatically/)
+        assert.equal(document.querySelector('button'), null)
+        assert.equal(store.swapTransactions[swapId].providerSubmissionAccepted, true)
+        assert.deepEqual(flow.calls.batchStatus, [])
+        assert.deepEqual(flow.calls.statusChecks, [])
+        assert.deepEqual(flow.calls.batches, [])
+    } finally {
+        await act(async () => root.unmount())
+        dom.window.close()
+        for (const key of ['window', 'document', 'IS_REACT_ACT_ENVIRONMENT']) {
+            if (previous[key]) Object.defineProperty(globalThis, key, previous[key]); else delete globalThis[key]
+        }
+    }
+})
+
+for (const [name, actions] of [
+    ['approval batch', [atomicFixtures.actions.zero_allowance]],
+    ['funded swap', atomicFixtures.deposit_actions.sufficient_allowance],
+    ['bridge', [{ type: 'transfer', step: 'deposit', status: 'action_required', amount: '2', to_address: '0x789' }]],
+    ['self-paid swap', actionsFor('prepared')],
+    ['gasless deposit', [{ ...actionsFor('gasless')[0], signing_standard: 'eip3009' }]],
+]) {
+    test(`opening and editing ${name} creates nothing until confirmation`, async t => {
+        const dom = new JSDOM('<div id="root"></div>')
+        const previous = Object.getOwnPropertyDescriptors(globalThis)
+        Object.assign(globalThis, { window: dom.window, document: dom.window.document, IS_REACT_ACT_ENVIRONMENT: true })
+        const flow = createWorkflow({ mounted: true, atomic: name.includes('batch') })
+        flow.network.chain_id = '8453'
+        flow.wallet.chainId = 8453
+        flow.state.resolveCurrentFlow = true
+        flow.state.renderControls = true
+        flow.state.swapId = undefined
+        flow.state.swapDetails = undefined
+        flow.state.depositActionsResponse = undefined
+        flow.state.walletExecutionStarted = false
+        flow.state.swapBasicData = { ...atomicFixtures.swap, source_network: flow.network,
+            destination_network: name === 'bridge' ? { name: 'ARBITRUM_MAINNET' } : flow.network }
+        const resolvedActions = name === 'funded swap'
+            ? await atomicActions.resolveAtomicDepositActions(actions, async () => atomicFixtures.next_actions.sufficient_allowance)
+            : actions
+        const preparedActions = resolvedActions.map(action => ({ ...structuredClone(action), network: flow.network }))
+        flow.state.apiActions = preparedActions
+        const prepared = Promise.withResolvers()
+        let creations = 0
+        flow.state.createSwap = () => { creations++; return prepared.promise }
+        const root = createRoot(document.getElementById('root'))
+        t.after(async () => {
+            await act(async () => root.unmount())
+            dom.window.close()
+            for (const key of ['window', 'document', 'IS_REACT_ACT_ENVIRONMENT']) {
+                if (previous[key]) Object.defineProperty(globalThis, key, previous[key]); else delete globalThis[key]
+            }
+        })
+        const render = () => act(async () => root.render(createElement(React.StrictMode, null, createElement(flow.Component))))
+        await render()
+        await render()
+        await act(async () => root.render(null))
+        await render()
+        flow.state.swapBasicData.requested_amount = '2'
+        flow.wallet.address = '0x456'
+        flow.preferences.gaslessEnabled = true
+        await render()
+        assert.equal(creations, 0, 'opening, reopening, rerenders and input changes only review the quote')
+        assert.equal(document.querySelector('button').disabled, false)
+        assert.equal(document.querySelector('button').textContent, 'Confirm swap')
+        assert.deepEqual(flow.calls.executionStarts, [])
+        assert.deepEqual(flow.calls.sign, [])
+        assert.deepEqual(flow.calls.batches, [])
+        assert.deepEqual(flow.calls.transfer, [])
+        assert.deepEqual(flow.calls.batchStatus, [])
+        let execution
+        await act(async () => {
+            execution = flow.view.handleClick()
+            await flow.view.handleClick()
+        })
+        assert.equal(creations, 1, 'only explicit confirmation creates a swap; repeated clicks share its lock')
+        assert.deepEqual(flow.calls.executionStarts, [])
+        assert.deepEqual(flow.calls.sign, [])
+        assert.deepEqual(flow.calls.batches, [])
+        assert.deepEqual(flow.calls.transfer, [])
+        await act(async () => {
+            prepared.resolve({ swap: { ...flow.state.swapBasicData, id: swapId, metadata: {} },
+                quote: { destination_token: atomicFixtures.swap.destination_token, receive_amount: 1 }, deposit_actions: preparedActions })
+            await execution
+        })
+        assert.equal(creations, 1)
+        assert.deepEqual(flow.calls.executionStarts, [swapId])
+        assert.deepEqual(flow.calls.batchStatus, [])
+        assert.deepEqual(flow.calls.errors, [])
+        if (name === 'approval batch') {
+            assert.equal(flow.calls.batches.length, 1, 'the same confirmation click starts the returned batch')
+            assert.deepEqual(flow.calls.sign, [])
+            assert.deepEqual(flow.calls.transfer, [])
+        } else if (name === 'self-paid swap' || name === 'gasless deposit') {
+            assert.equal(flow.calls.sign.length, 1)
+            assert.deepEqual(flow.calls.batches, [])
+            assert.deepEqual(flow.calls.transfer, [])
+        } else {
+            assert.equal(flow.calls.transfer.length, 1)
+            assert.deepEqual(flow.calls.batches, [])
+            assert.deepEqual(flow.calls.sign, [])
+        }
+    })
+}
+
+test('an unsupported backend action cannot switch chains or send a transaction', async () => {
+    const flow = createWorkflow()
+    flow.state.apiActions = [{ type: 'transfer', step: 'future_step', status: 'action_required' }]
+    let switches = 0
+    flow.state.ensureChain = async () => { switches++ }
+    await flow.render().button.props.onClick()
+    assert.equal(switches, 0)
+    assert.deepEqual(flow.calls.transfer, [])
+    assert.deepEqual(flow.calls.sign, [])
+    assert.deepEqual(flow.calls.batches, [])
+    assert.match(flow.state.swapError, /not supported/)
+})
+
+test('a draft waits for its actual backend plan before displaying a batch label', async () => {
+    const flow = createWorkflow()
+    const { resolveSwapFlow } = loadSource('../src/components/utils/resolveSwapFlow.ts')
+    flow.state.swapId = undefined
+    flow.state.swapDetails = undefined
+    flow.state.depositActionsResponse = undefined
+    flow.state.flow = resolveSwapFlow({ swapData: atomicFixtures.swap })
+    assert.equal(!!flow.render().button.props.isDisabled, false)
+    assert.equal(flow.render().button.props.children, 'Confirm swap')
+    flow.state.swapId = swapId
+    flow.state.apiActions = undefined
+    flow.render()
+    await flow.poll()
+    assert.equal(flow.render().button.props.isDisabled, true)
+    assert.equal(flow.render().button.props.children, 'Preparing…')
+    flow.state.apiActions = [atomicFixtures.actions.zero_allowance]
+    flow.state.depositActionsResponse = flow.state.apiActions
+    flow.state.flow = resolveSwapFlow({ swapData: atomicFixtures.swap, depositActions: flow.state.apiActions })
+    flow.render()
+    await flow.poll()
+    assert.equal(flow.render().button.props.children, 'Approve and swap')
+    assert.equal(flow.render().steps, undefined, 'preparation does not start wallet execution')
+    flow.state.apiActions = [atomicFixtures.actions.sufficient_allowance]
+    flow.state.depositActionsResponse = flow.state.apiActions
+    flow.state.flow = resolveSwapFlow({ swapData: atomicFixtures.swap, depositActions: flow.state.apiActions })
+    await flow.poll()
+    assert.equal(flow.render().button.props.children, 'Confirm swap')
+})
+
+test('USDC bridging from Base to Arbitrum keeps the normal transfer flow with a batching-capable wallet', async () => {
     const flow = createWorkflow()
     flow.state.swapId = undefined
     flow.state.swapDetails = undefined
     flow.state.depositActionsResponse = undefined
     flow.state.atomicBatchSupported = true
     flow.state.atomicBatchEligible = true
-    assert.equal(flow.render().button.props.children, 'Approve and swap')
-    assert.equal(flow.render().steps, undefined, 'batch availability does not start execution progress')
-
-    flow.state.depositSettings = { actionButtonText: 'Deposit' }
-    assert.equal(flow.render().button.props.children, 'Deposit')
-    flow.state.depositSettings = undefined
-
-    flow.state.atomicBatchSupported = false
-    assert.equal(flow.render().button.props.children, 'Swap now')
-    flow.state.atomicBatchSupported = true
-    flow.state.atomicBatchEligible = false
-    assert.equal(flow.render().button.props.children, 'Swap now')
-    flow.state.atomicBatchEligible = true
+    flow.state.swapBasicData = { ...atomicFixtures.swap,
+        source_network: { ...flow.network, type: 'evm', chain_id: '8453' },
+        source_token: { symbol: 'USDC', contract: `0x${'1'.repeat(40)}` },
+        destination_network: { name: 'ARBITRUM_MAINNET', type: 'evm', chain_id: '42161' },
+        destination_token: { symbol: 'USDC', contract: `0x${'2'.repeat(40)}` },
+    }
+    const { resolveSwapFlow } = loadSource('../src/components/utils/resolveSwapFlow.ts')
+    flow.state.flow = resolveSwapFlow({
+        swapData: flow.state.swapBasicData, atomicBatchAvailable: true,
+        quote: { ...flow.state.swapBasicData, path: [{ provider: 'ACROSS', order: 0 }] },
+    })
+    assert.equal(flow.render().button.props.children, 'Confirm swap')
     flow.state.swapId = swapId
-    assert.equal(flow.render().button.props.children, 'Sign to swap', 'capabilities cannot reclassify an existing swap')
-
-    flow.state.depositActionsResponse = await atomicActions.resolveAtomicDepositActions(
-        atomicFixtures.deposit_actions.sufficient_allowance,
-        async () => atomicFixtures.next_actions.sufficient_allowance,
-    )
-    flow.state.apiActions = flow.state.depositActionsResponse
+    flow.state.apiActions = [{ type: 'transfer', step: 'deposit', status: 'action_required' }]
+    flow.state.depositActionsResponse = flow.state.apiActions
+    flow.render()
     await flow.poll()
-    assert.equal(flow.render().button.props.children, 'Confirm swap', 'known sufficient allowance uses the actual call label')
+    flow.state.flow = resolveSwapFlow({ swapData: flow.state.swapBasicData, depositActions: flow.state.apiActions })
+    const rendered = flow.render()
+    assert.equal(rendered.button.props.children, 'Send from wallet')
+    assert.equal(rendered.steps, undefined)
 })
 
 for (const route of ['same-network token swap', 'bridge', 'native token', 'manual deposit']) {
-    test(`a single deposit transfer ${route === 'same-network token swap' ? 'keeps swap progress visible' : `keeps the existing ${route} presentation`}`, async () => {
+    test(`a single deposit transfer keeps the ${route} wallet controls`, async () => {
         const flow = createWorkflow()
         const network = { name: 'BASE_MAINNET', type: 'evm' }
         flow.state.swapBasicData = {
@@ -673,15 +965,8 @@ for (const route of ['same-network token swap', 'bridge', 'native token', 'manua
         await flow.poll()
         flow.state.onWalletPrompt = () => {
             const rendered = flow.render()
-            if (route === 'same-network token swap') {
-                assert.equal(rendered.button, undefined, 'the wallet prompt uses the progress panel')
-                assert.deepEqual(rendered.steps.map(step => step.name), ['Send from wallet', 'Receive 2.836322 USDC'])
-                assert.equal(rendered.steps[0].description, 'Confirm in your wallet')
-                assert.equal(rendered.steps[0].isLoading, true)
-            } else {
-                assert.equal(rendered.steps, undefined)
-                assert.equal(rendered.button.props.children, 'Confirm in your wallet')
-            }
+            assert.equal(rendered.steps, undefined)
+            assert.equal(rendered.button.props.children, 'Confirm in your wallet')
         }
 
         await flow.render().button.props.onClick()
@@ -1674,7 +1959,9 @@ test('an uncertain atomic submission blocks a replacement after the gasless pref
     flow.stores.useSwapTransactionStore.getState().pendingSubmissions[swapId] = true
     flow.preferences.gaslessEnabled = true
     flow.state.createSwap = () => assert.fail('An uncertain atomic submission cannot be replaced')
-    await flow.render().button.props.onClick()
+    const rendered = flow.render()
+    assert.equal(rendered.button, undefined)
+    await rendered.viewProps.handleClick()
     assert.deepEqual(flow.calls.batches, [])
     assert.deepEqual(flow.calls.refresh, [])
     assert.deepEqual(flow.calls.sign, [])
@@ -2250,3 +2537,41 @@ for (const succeeds of [true, false]) test(`Page 2 ${succeeds ? 'records a recei
         delete globalThis.IS_REACT_ACT_ENVIRONMENT
     }
 })
+
+for (const condition of ['unhealthy RPC', 'spent balance', 'disconnected wallet']) {
+    test(`accepted batch observation never offers another wallet action with ${condition}`, async () => {
+        const dom = new JSDOM('<div id="root"></div>')
+        const previous = Object.getOwnPropertyDescriptors(globalThis)
+        Object.assign(globalThis, { window: dom.window, document: dom.window.document, IS_REACT_ACT_ENVIRONMENT: true })
+        const flow = createWorkflow({ atomic: true, mounted: true, walletController: true, page2Host: true, realBalance: true })
+        flow.wallet.providerName = 'EVM'
+        flow.state.swapBasicData = { ...atomicFixtures.swap,
+            source_network: { ...flow.network, type: 'evm', chain_id: '8453' }, destination_network: flow.network }
+        flow.stores.useSwapTransactionStore.getState().setAtomicBatchSubmission(swapId, { id: 'opaque-id' })
+        flow.state.apiActions = [atomicFixtures.actions.zero_allowance]
+        flow.state.depositActionsResponse = flow.state.apiActions
+        flow.state.rpcUnhealthy = condition === 'unhealthy RPC'
+        if (condition === 'spent balance') {
+            flow.state.balances = [{ network: flow.network.name, token: atomicFixtures.token.symbol, amount: 0 }]
+            flow.state.outOfGas = true
+        }
+        if (condition === 'disconnected wallet') flow.wallet.withdrawalSupportedNetworks = []
+        const root = createRoot(document.getElementById('root'))
+        try {
+            await act(async () => root.render(createElement(flow.Component)))
+            assert.equal(document.querySelector('button'), null)
+            assert.doesNotMatch(document.body.textContent, /RPC unhealthy|Insufficient balance|Insufficient gas|Send from wallet|Check status/)
+            assert.equal(flow.view.pendingSubmission, true)
+            assert.equal(flow.calls.rpcEnabled, false)
+            assert.deepEqual(flow.calls.statusChecks, [])
+            assert.deepEqual(flow.calls.batchStatus, [])
+            assert.deepEqual(flow.calls.batches, [])
+        } finally {
+            await act(async () => root.unmount())
+            dom.window.close()
+            for (const key of ['window', 'document', 'IS_REACT_ACT_ENVIRONMENT']) {
+                if (previous[key]) Object.defineProperty(globalThis, key, previous[key]); else delete globalThis[key]
+            }
+        }
+    })
+}

@@ -23,6 +23,8 @@ export type ResolveSwapPhaseInput = {
     depositCompleted?: boolean;
     // A successful provider response can precede backend detection and have no hash.
     providerSubmissionAccepted?: boolean;
+    // A terminal EIP-5792 response can report a revert that emitted no backend discovery logs.
+    atomicBatchFailed?: boolean;
     // Keep a successful wallet handoff mounted until execution handles its response.
     walletActionExecuting?: boolean;
     isDepositFlow?: boolean;
@@ -59,7 +61,8 @@ export type ResolvedSwapStatus = {
 };
 
 export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStatus {
-    const { swapDetails, refuel, inputTxStatusFromApi, gaslessFailureStatus } = input;
+    const { swapDetails, refuel, gaslessFailureStatus } = input;
+    const inputTxStatusFromApi = input.atomicBatchFailed ? TransactionStatus.Failed : input.inputTxStatusFromApi;
     const depositSubmitted = !!input.depositCompleted
         || !!input.providerSubmissionAccepted
         || inputTxStatusFromApi === TransactionStatus.Pending

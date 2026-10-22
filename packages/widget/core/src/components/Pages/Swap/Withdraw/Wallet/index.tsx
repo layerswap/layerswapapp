@@ -131,16 +131,17 @@ export function useWalletWithdrawalController({
     const send = useSendTransactionController(transfer.sendProps, active && !!wallet && !sameAccountMismatch && !hasMultiStepHandler);
     const presentation = getSendTransactionPresentation(send);
     let controls: ReactNode = presentation.controls;
-    if (transfer.rpcMessage) controls = transfer.rpcMessage;
-    if (!wallet) controls = <ConnectWalletView {...connection} />;
-    if (sameAccountMismatch) {
+    const observingSubmission = send.pendingSubmission || send.submissionAccepted;
+    if (!observingSubmission && transfer.rpcMessage) controls = transfer.rpcMessage;
+    if (!observingSubmission && !wallet) controls = <ConnectWalletView {...connection} />;
+    if (!observingSubmission && sameAccountMismatch) {
         const network = source_network.name.toLowerCase() === sameAccountNetwork?.toLowerCase() ? source_network : destination_network;
         controls = <ActionMessages.DifferentAccountsNotAllowedError network={network.display_name} />;
     }
     // Extended sources (Hyperliquid, Polymarket) have their own withdraw flow — the chain
     // logic comes from the wallet package's TransferProvider, the UI lives here. Polymarket
     // is checked first: its synthesized networks are also extended sources.
-    if (provider?.multiStepHandlers) {
+    if (!observingSubmission && provider?.multiStepHandlers) {
         const MultiStepHandler = provider.multiStepHandlers.find(handler => handler.supportedNetworks.includes(source_network?.name))?.component
 
         if (MultiStepHandler) {
@@ -225,7 +226,16 @@ export function useTransferTokenController({
         setError(undefined);
         setIsSignatureError(false);
     }, [active]);
-    const { swapDetails, swapError } = useSwapDataState()
+    const { swapDetails, swapError, swapId } = useSwapDataState()
+    const checkingSubmission = useSwapTransactionStore(state => {
+        const currentSwapId = swapId ?? swapDetails?.id
+        if (!currentSwapId) return false
+        const transaction = state.swapTransactions[currentSwapId]
+        return !!state.pendingSubmissions[currentSwapId]
+            || (transaction?.kind === 'atomic-batch'
+                && !!transaction.providerSubmissionAccepted
+                && !transaction.hash)
+    })
     const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
     const gaslessErrorMessage = useGaslessPreferenceStore(s => s.gaslessErrorMessage)
 
@@ -239,7 +249,9 @@ export function useTransferTokenController({
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
     const { executeTransfer } = useTransfer()
     const { signGaslessDeposit, isGaslessSupported } = useGasless()
-    const rpcHealth = useRpcHealth(swapData.source_network, active)
+    // Backend observation must continue when the wallet's RPC is unavailable.
+    const rpcHealth = useRpcHealth(swapData.source_network, active && !checkingSubmission)
+    const rpcUnhealthy = !checkingSubmission && rpcHealth?.health.status === 'unhealthy'
     const lifecycleContext = useMemo(
         () => lifecycleContextFromSwap(swapData, swapDetails),
         [
@@ -258,7 +270,7 @@ export function useTransferTokenController({
     // Every state that replaces the send button with a message, in display priority. A swap or
     // deposit-actions error keeps the send button rendered, so it is not a block.
     const blockedReason: TransferBlockedReasonCode | undefined =
-        rpcHealth?.health.status === 'unhealthy' ? 'rpc_unhealthy'
+        rpcUnhealthy ? 'rpc_unhealthy'
         : gaslessUnavailable ? 'gasless_unavailable'
         : undefined
     useTransferBlocked(active ? blockedReason : undefined, lifecycleContext, 'TransferTokenButton',
@@ -369,7 +381,7 @@ export function useTransferTokenController({
         selectedSourceAddress: selectedSourceAccount?.address || '', sourceNetwork: swapData.source_network, active,
     });
     return {
-        rpcMessage: rpcHealth?.health.status === 'unhealthy' ? <RPCUnhealthyMessage
+        rpcMessage: rpcUnhealthy ? <RPCUnhealthyMessage
             network={swapData.source_network}
             suggestRpcForCurrentChain={rpcHealth.suggestRpcForCurrentChain}
             isSuggestingRpc={rpcHealth.isSuggestingRpc}

@@ -237,6 +237,9 @@ const phase = (s) =>
     });
 
 const snapshotFlow = s => resolveSwapFlow({
+    isDraft: !s.swapId,
+    atomicBatchAvailable: s.atomicBatchAvailable,
+    gaslessEnabled: s.quoteState.gasless,
     transaction: s.storedWalletTransaction,
     swapData: s.swap, depositActions: s.depositActions, quote: s.quote,
     stepTransactions: s.stepTransactions, gaslessAuthorization: s.gaslessAuthorization,
@@ -931,7 +934,7 @@ test('deposit widget navigation shares canvas, modal and timeline controls', asy
         assert.match(container.textContent, /Choose how to fund this deposit/);
         const ready = container.querySelector('li[data-milestone-id="ready"]');
         assert.doesNotMatch(ready.textContent, /Swap now|Send to/);
-        assert.ok([...ready.querySelectorAll('button')].some(button => button.textContent === 'Deposit'));
+        assert.ok([...ready.querySelectorAll('button')].some(button => button.textContent === 'Preparing…' && button.disabled));
         await chooseMode(container, 'modal');
         const modals = container.querySelectorAll('[data-deposit-modal]');
         assert.equal(modals.length, scenarios.find(s => s.id === 'deposit-widget-wallet').milestones.length);
@@ -1693,15 +1696,16 @@ for (const [scenarioId, callCount, stepLabel] of [
         assert.equal(scenario.group, 'token-swap');
         const confirming = frontendMilestone(scenarioId, 'confirming').snapshot;
         assert.equal(confirming.depositActions.length, 1);
-        assert.equal(confirming.depositActions[0].type, 'send_calls');
-        assert.equal(confirming.depositActions[0].calls.length, callCount);
+        assert.equal(confirming.depositActions[0].type, callCount === 1 ? 'transfer' : 'send_calls');
+        if (callCount > 1) assert.equal(confirming.depositActions[0].calls.length, callCount);
+        else assert.equal(confirming.depositActions[0].calls, undefined);
         assert.equal(scenario.milestones.filter(milestone => milestone.snapshot.wallet.pending && milestone.snapshot.walletExecutionStarted).length, 1);
-        assert.equal(scenario.milestones.some(milestone => milestone.id === 'prepared'), false, 'creation does not require another start click');
+        assert.equal(scenario.milestones.some(milestone => milestone.id === 'prepared'), true, 'the confirmation click receives the plan before requesting wallet execution');
 
         for (const mode of ['component', 'modal']) {
             const ready = fixtureDOM(scenarioId, 'ready', mode);
             const action = [...ready.querySelectorAll('button')].find(button => button.textContent === 'Approve and swap');
-            assert.ok(action, `${scenarioId}: batch start label before creation`);
+            assert.ok(action && !action.disabled, `${scenarioId}: the frontend quote and wallet capability identify the draft batch`);
             assert.equal(ready.querySelector('[aria-label="Progress"]'), null, 'batch availability cannot show execution progress');
             assert.doesNotMatch(ready.textContent, /Swap in progress|Confirming transaction/);
             assert.equal(ready.querySelector('[data-quote-layout]').dataset.quoteLayout, 'separate');
@@ -1710,6 +1714,10 @@ for (const [scenarioId, callCount, stepLabel] of [
             assert.equal(preparing.querySelector('[data-quote-layout]').dataset.quoteLayout, 'separate');
             const busyButton = [...preparing.querySelectorAll('button')].find(button => button.textContent === 'Preparing swap…');
             assert.ok(busyButton?.disabled, 'the same click remains busy through preparation');
+            const prepared = fixtureDOM(scenarioId, 'prepared', mode);
+            const confirm = [...prepared.querySelectorAll('button')].find(button => button.textContent === stepLabel);
+            assert.ok(confirm && !confirm.disabled, 'the actual calls determine the confirmation label');
+            assert.equal(prepared.querySelector('[aria-label="Progress"]'), null);
             const prompt = fixtureDOM(scenarioId, 'confirming', mode);
             const rows = prompt.querySelectorAll('[aria-label="Progress"] li');
             assert.equal(rows.length, 2);
@@ -1732,7 +1740,7 @@ for (const [scenarioId, callCount, stepLabel] of [
             assert.doesNotMatch(confirmation.textContent, /Checking wallet submission|Transaction submitted/);
 
             const completed = fixtureDOM(scenarioId, 'completed', mode);
-            assert.equal(completed.querySelector('[data-swap-flow]').dataset.swapFlow, 'atomic-batch');
+            assert.equal(completed.querySelector('[data-swap-flow]').dataset.swapFlow, callCount === 1 ? 'frontend-swap' : 'atomic-batch');
             assert.equal(completed.querySelectorAll('[aria-label="Progress"] li').length, 2);
             assert.match(completed.textContent, /Transfer complete/);
             assert.match(completed.textContent, /Received 0.0396 ETH/);
@@ -1804,6 +1812,7 @@ test('restored batch snapshots distinguish confirmed identity from an ambiguous 
     const completed = frontendMilestone('atomic-batch-approved', 'completed').snapshot;
     const snapshot = {
         ...completed,
+        swap: { ...completed.swap, quote_revision: undefined },
         depositActions: [{ step: 'publish', status: 'completed' }],
         storedWalletTransaction: { kind: 'atomic-batch' },
     };
@@ -2486,7 +2495,7 @@ test('frontend quotes match the real full-to-compact lifecycle and sign-only/nat
     assert.equal(gasless.querySelector('[data-quote-layout]').dataset.quoteLayout, 'separate');
     assert.equal(fixtureDOM('wallet-success', 'ready').querySelector('[data-quote-layout]').dataset.quoteLayout, 'separate');
     assert.equal(gasless.querySelector('[aria-label="Swap progress"]'), null);
-    assert.match(fixtureDOM('frontend-native', 'ready').textContent, /Swap now/);
+    assert.match(fixtureDOM('frontend-native', 'ready').textContent, /Confirm swap/);
     assert.match(fixtureDOM('frontend-native', 'publishing').textContent, /Step 1 of 2: Confirm swap/);
     assert.match(fixtureDOM('frontend-native', 'publishing').textContent, /Confirm in your wallet/);
     assert.equal(fixtureDOM('frontend-native', 'publishing').querySelector('[data-quote-layout]').dataset.quoteLayout, 'attached');

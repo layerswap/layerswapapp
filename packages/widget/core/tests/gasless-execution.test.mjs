@@ -208,10 +208,10 @@ test('closing during authorization retains the accepted signature without a tran
   assert.deepEqual(useGaslessAuthorizationStore.getState().authorizations[ctx.swapData.id], { kind: 'gasless', validBefore: 123 })
 })
 
-test('an ambiguous EIP-3009 signature becomes gasless only after authoritative submission', async () => {
+test('a legacy signature without a semantic standard becomes gasless after authoritative submission', async () => {
   const submitted = []
   const { ctx, signAction } = gaslessContext({ authorize: async () => {}, lifecycle: [], submitted })
-  signAction.signing_standard = 'eip3009'
+  delete signAction.signing_standard
   await executeGaslessAuthorization(ctx, async () => '0xsig')
   assert.equal(useGaslessAuthorizationStore.getState().authorizations[ctx.swapData.id], undefined)
   assert.deepEqual(useDepositSignatureStore.getState().signatures[ctx.swapData.id], { validBefore: 123 })
