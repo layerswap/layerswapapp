@@ -45,7 +45,11 @@ Next.js embeds these values at build time. Restart development or rebuild produc
 
 The Polymarket option also depends on a supported route and Layerswap feature configuration. An allow-list permits a method; it does not enable a route or feature by itself. The source wallet must own the user's Polymarket account. Do not assume a new Privy wallet owns an existing Polymarket account: connect that account's owner wallet inside the widget when prompted.
 
-The receiving address **always comes from the connected session**. It is never a hard-coded example address. The default destination is USDC on Base; override the network/token with supported Layerswap canonical identifiers. The destination address is visible in the live widget quote. When Reown is used, its Wagmi config is shared with the widget.
+The receiving address **always comes from the connected session**. It is never a hard-coded example address. The default destination is USDC on Base; override the network/token with supported Layerswap canonical identifiers. The destination address is visible in the live widget quote.
+
+The CDN loader intentionally receives no `wagmiConfig`. Reown manages the app's wallet login, while Layerswap creates its own EVM config and manages the funding wallet connection inside the widget. The app passes the signed-in Reown or Privy address as `destinationAddress`; host wallet connection changes are not synchronized with the widget's funding connection.
+
+`walletDefaults.walletConnect` supplies the project credentials and app metadata for the widget's own wallet connectors. The demo leaves `walletProvidersConfig` unset so available funding wallets are not restricted to EVM and Solana; providers that require additional credentials still need those configured. See [Wallets](https://docs.layerswap.io/widget/wallets).
 
 Every Deposit entry point opens Layerswap's own dialog directly through the SDK's `mode="button"` trigger. There is no app-specific deposit picker or confirmation step. The Polymarket banner limits the widget to the Polymarket method; other Deposit buttons let Layerswap show the available methods. If the receiving wallet is not connected, login is required first and Layerswap opens automatically after connection. Missing widget credentials produce a status message instead of a simulated funding dialog.
 

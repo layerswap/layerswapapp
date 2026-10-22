@@ -60,7 +60,7 @@ function Session({children}:{children:React.ReactNode}) {
   },[privy.authenticated]);
   const activeMethod = method || (reownAddress ? 'wallet' : privy.authenticated ? 'privy' : null);
   const address = activeMethod==='privy' ? privy.address : reownAddress;
-  const value = useMemo(()=>({address,email:activeMethod==='privy'?privy.email:null,authenticated:Boolean(address)||(activeMethod==='privy'&&privy.authenticated),method:activeMethod,ready:privy.ready,reownConfigured:Boolean(projectId),privyConfigured:Boolean(privyId),wagmiConfig:activeMethod==='wallet'?adapter?.wagmiConfig:undefined,connectWallet,login,disconnect}),[address,activeMethod,privy,connectWallet,login,disconnect]);
+  const value = useMemo(()=>({address,email:activeMethod==='privy'?privy.email:null,authenticated:Boolean(address)||(activeMethod==='privy'&&privy.authenticated),method:activeMethod,ready:privy.ready,reownConfigured:Boolean(projectId),privyConfigured:Boolean(privyId),connectWallet,login,disconnect}),[address,activeMethod,privy,connectWallet,login,disconnect]);
   return <WalletContext.Provider value={value}>
     {adapter?<ReownBridge onAddress={setReownAddress} actions={actions}/>:null}
     {privyId?<PrivyBridge onState={setPrivy} actions={actions}/>:null}
