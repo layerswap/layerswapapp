@@ -4,7 +4,7 @@ import { ProgressPanelView } from '../Presentation/ProgressPanelView';
 import { getWalletProgress } from '../Presentation/walletProgress';
 import { useWalletWithdrawalState } from '@/context/withdrawalContext';
 import { ConnectWalletView, getSendTransactionPresentation } from '../Presentation/WalletActionsView';
-import { NetworkType, type TransferBlockedReasonCode } from '@layerswap/widget-types';
+import type { TransferBlockedReasonCode } from '@layerswap/widget-types';
 import { FC, Suspense, useCallback, useEffect, useMemo, useState, useRef, type ReactNode } from "react";
 import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { WithdrawalProvider } from "@/context/withdrawalContext";
@@ -23,9 +23,8 @@ import { useTransfer } from "@/hooks/useTransfer";
 import { useGasless } from "@/hooks/useGasless";
 import { useRpcHealth } from "@/context/rpcHealthContext";
 import RPCUnhealthyMessage from "./RPCUnhealthyMessage";
-import { isExtendedSourceNetwork } from "@/lib/extendedRoutes/registry";
-import { HyperliquidWalletWithdraw } from "../WithdrawalProviders/Hyperliquid";
-import { PolymarketWalletWithdraw } from "../WithdrawalProviders/Polymarket";
+import { useWithdrawalProvider } from '@/hooks/useWithdrawalProvider';
+import { ProviderWalletWithdrawal } from '../WithdrawalProviders/ProviderWalletWithdrawal';
 import { useCallbacks } from "@/context/callbackProvider";
 import { lifecycleContextFromSwap, lifecycleErrorDetails } from "@/lib/swapLifecycle";
 import { useTransferBlocked } from "@/hooks/useTransferBlocked";
@@ -33,6 +32,8 @@ import { isProviderHydrated } from "@layerswap/wallet-core";
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 import { isUserRejection } from "./Common/isUserRejection";
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
+import { useWithdrawalScope } from '../useWithdrawalExecution';
+import { withdrawalSelectionKey } from '../withdrawalHelpers';
 
 type Props = {
     swapData: SwapBasicData
@@ -107,7 +108,7 @@ export function useWalletWithdrawalController({
         && selectedSourceAccount.address.toLowerCase() !== destination_address.toLowerCase()
     )
 
-    const isExtendedSource = source_network?.type === NetworkType.Polymarket || isExtendedSourceNetwork(source_network?.name)
+    const providerWithdrawal = useWithdrawalProvider(source_network)
     const hasMultiStepHandler = !!provider?.multiStepHandlers?.some(handler => handler.supportedNetworks.includes(source_network?.name))
     // The account can restore before its provider publishes the connected wallet.
     // useWallet's network provider may belong to another account, so check the
@@ -117,7 +118,7 @@ export function useWalletWithdrawalController({
         && selectedProvider.pendingSessionRestore !== true
     // A connected account whose wallet cannot withdraw on this network only
     // sees the connect button again; report that as a blocked transfer step.
-    const blockedReason: TransferBlockedReasonCode | undefined = isExtendedSource || hasMultiStepHandler ? undefined
+    const blockedReason: TransferBlockedReasonCode | undefined = providerWithdrawal || hasMultiStepHandler ? undefined
         : sameAccountMismatch ? 'same_account_required'
         : selectedProviderReady && !wallet ? 'wallet_unsupported_for_network'
         : undefined
@@ -138,9 +139,7 @@ export function useWalletWithdrawalController({
         const network = source_network.name.toLowerCase() === sameAccountNetwork?.toLowerCase() ? source_network : destination_network;
         controls = <ActionMessages.DifferentAccountsNotAllowedError network={network.display_name} />;
     }
-    // Extended sources (Hyperliquid, Polymarket) have their own withdraw flow — the chain
-    // logic comes from the wallet package's TransferProvider, the UI lives here. Polymarket
-    // is checked first: its synthesized networks are also extended sources.
+    // Custom multi-step handlers retain their existing completion/error contract.
     if (!observingSubmission && provider?.multiStepHandlers) {
         const MultiStepHandler = provider.multiStepHandlers.find(handler => handler.supportedNetworks.includes(source_network?.name))?.component
 
@@ -188,8 +187,8 @@ export function useWalletWithdrawalController({
 }
 
 export const WalletWithdrawal: FC<WithdrawPageProps> = props => {
-    if (props.swapBasicData.source_network.type === NetworkType.Polymarket) return <PolymarketWalletWithdraw {...props} />;
-    if (isExtendedSourceNetwork(props.swapBasicData.source_network.name)) return <HyperliquidWalletWithdraw {...props} />;
+    const definition = useWithdrawalProvider(props.swapBasicData.source_network);
+    if (definition) return <ProviderWalletWithdrawal key={definition.id} {...props} definition={definition} />;
     return <RegularWalletWithdrawal {...props} />;
 };
 function RegularWalletWithdrawal(props: WithdrawPageProps) {
@@ -278,15 +277,13 @@ export function useTransferTokenController({
         : blockedReason === 'gasless_unavailable' ? gaslessErrorMessage ?? undefined
         : undefined)
 
-    const selectionScope = useRef<AbortController | null>(null);
+    const selectionKey = withdrawalSelectionKey(swapData.source_network.name, selectedSourceAccount, wallet);
+    const selectionScope = useWithdrawalScope(selectionKey);
     useClientLayoutEffect(() => {
-        const scope = new AbortController();
-        selectionScope.current = scope;
         setButtonClicked(false);
         setError(undefined);
         setIsSignatureError(false);
-        return () => scope.abort();
-    }, [selectedSourceAccount?.id, selectedSourceAccount?.address, selectedSourceAccount?.providerName, selectedSourceAccount?.provider?.name, wallet?.metadata?.evmConnectorUid, wallet?.metadata?.walletConnectTopic, swapData.source_network.name]);
+    }, [selectionKey]);
 
     const clickHandler = useCallback(async (transferProps: TransferProps) => {
         const { amount, depositAddress } = transferProps

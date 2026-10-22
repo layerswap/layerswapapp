@@ -77,6 +77,12 @@ The backend's complete allowance-rail history retains `approve` and `publish` pl
 
 The resolver exposes explicit pending, resolved and unsupported states. Canonical plans identify manual deposits, exchange deposits, specialized wallets, wallet transfers, gasless deposits, self-paid frontend swaps and atomic batches. Older signature-only responses without a semantic standard retain their known signing action while awaiting further backend evidence; they cannot invent atomic execution or settlement progress. Reopening a swap keeps its original backend mode regardless of the form's default gasless preference. Only a preference changed in the current view can request a fresh unsubmitted swap.
 
+## Provider withdrawals
+
+Transfer adapters can expose an optional `withdrawal` capability from `@layerswap/widget-types`. Each adapter owns its identifier, display labels, amount precision and conversion of backend deposit instructions into transfer parameters. Hyperliquid and Polymarket declare these beside their transfer implementations. Adding another adapter uses the existing transfer-provider registration; Page 2, withdrawal controls and flow resolution discover the capability without provider-name branches.
+
+The shared provider controller owns lazy swap creation, reviewed-draft identity, retries, submission reconciliation, progress, errors and success handoff. The ordinary wallet workflow shares selection cancellation, execution leases, form-value construction and error reporting. Its approval, signing, gasless and atomic execution steps remain in the ordinary workflow.
+
 ## Live acceptance checks
 
 Against a deployment containing PR #5400, verify ARB to AAVE on Arbitrum with MetaMask already reporting `supported`, and a second compatible EVM wallet. Check the zero-allowance and zero-first reset batches plus the sufficient-allowance regular transaction; exact values; one wallet confirmation with approval wording only when approval is required; quote confirmation; rejection; account and chain changes before and during submission; repeated clicks in the active widget; screen closure and reload; disconnected original wallet; lost responses; status outages; automatic unconfirmed timeout; late backend detection after that timeout; and retry boundaries after a known failed transaction.
