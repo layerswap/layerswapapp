@@ -65,11 +65,9 @@ const MethodPicker: FC = () => {
     const handleExtendedClick = (option: ReturnType<typeof useExtendedDepositOption>) => {
         if (!destinationReady || !option.available || !option.networkName) return;
         setPresetSourceNetwork(option.networkName);
-        // Skip straight to the amount step with the already-connected wallet — but
-        // only when we don't positively know its balance is below the minimum
-        // deposit. If it can't cover the minimum, route through connect so the user
-        // can pick a funded wallet, then continue the normal flow.
-        if (option.compatibleWallet && !option.compatibleWalletBelowMinimum) {
+        // Use the connected wallet regardless of balance. The amount step shows
+        // insufficient-balance validation for this source.
+        if (option.compatibleWallet) {
             selectSourceAccount(option.compatibleWallet);
             push("wallet-amount");
             return;
