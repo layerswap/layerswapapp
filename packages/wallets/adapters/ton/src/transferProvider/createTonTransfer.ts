@@ -40,7 +40,7 @@ export function createTonTransfer(): TransferProvider {
                     tonApiKey,
                 )
 
-                const res = await tonConnect.sendTransaction({ ...transaction, from: walletAddress }, {
+                const res = await tonConnect.sendTransaction(transaction, {
                     onRequestSent: openWalletAppForConfirmation,
                 })
                 const tonClient = createTonClient(tonApiKey)
