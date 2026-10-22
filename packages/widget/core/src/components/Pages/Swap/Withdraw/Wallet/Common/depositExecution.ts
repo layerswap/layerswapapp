@@ -9,7 +9,7 @@ import LayerSwapApiClient, {
     GaslessAuthorizationResult,
 } from "@/lib/apiClients/layerSwapApiClient";
 import { useDepositSignatureStore, useGaslessAuthorizationStore, useSwapTransactionStore } from "@/stores/swapTransactionStore";
-import { getExplorerUrl } from '@/lib/address/explorerUrl';
+import { getExplorerUrl } from '@layerswap/utils';
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 import { isUserRejection } from "./isUserRejection";
 import { TransferProps } from "@layerswap/widget-types";

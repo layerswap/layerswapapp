@@ -4,7 +4,7 @@ import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import React, { useEffect, useId, useMemo, useRef } from "react";
 import { LayoutGroup, motion } from "framer-motion";
 import { resolveMaxAllowedAmount } from "./helpers";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger, useHydratedReducedMotion } from "@layerswap/ui-kit";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { useBalance } from "@/lib/balances/useBalance";
@@ -12,8 +12,7 @@ import useWallet from "@/hooks/useWallet";
 import { useUsdModeStore } from "@/stores/usdModeStore";
 import { skipNextUsdSync } from "@/hooks/useUsdTokenSync";
 import { ceilUsd, floorUsd } from "@/components/utils/formatUsdAmount";
-import { truncateToDecimals, isScientific } from "@/components/utils/RoundDecimals";
-import { useHydratedReducedMotion } from "@/hooks/useHydratedReducedMotion";
+import { truncateToDecimals, isScientific } from "@layerswap/utils";
 
 import { amountPresetSource, isWalletAmountFlow, resolvePresetAmount, supportsLiveAmountPreset, type AmountPreset } from '@/lib/amountPresets';
 

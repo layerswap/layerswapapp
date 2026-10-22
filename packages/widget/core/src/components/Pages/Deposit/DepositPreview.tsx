@@ -1,7 +1,7 @@
 import { useId, type ReactNode } from 'react';
 import { QrCode } from 'lucide-react';
-import { ImageWithFallback, WalletIcon } from '@layerswap/ui-kit/components';
-import { ResolveConnectorIcon } from '@/components/Icons/ConnectorIcons';
+import { ImageWithFallback, WalletIcon } from '@layerswap/ui-kit';
+import { ResolveConnectorIcon } from '@layerswap/ui-kit';
 import { WidgetFrame } from '@/components/Widget/WidgetFrame';
 import { PoweredByFooter } from '@/components/Widget/Footer';
 import { ElapsedTime } from '@/components/Common/ElapsedTime';

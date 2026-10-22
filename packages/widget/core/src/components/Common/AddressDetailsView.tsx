@@ -20,15 +20,15 @@ import {
     Popover,
     PopoverContent,
     PopoverTrigger,
-} from '@/components/shadcn/popover';
+} from '@layerswap/ui-kit';
 import {
     Tooltip,
     TooltipContent,
     TooltipTrigger,
-} from '@/components/shadcn/tooltip';
-import { ImageWithFallback } from '@layerswap/ui-kit/components';
+} from '@layerswap/ui-kit';
+import { ImageWithFallback } from '@layerswap/ui-kit';
 import { Address } from '@/lib/address/Address';
-import { getExplorerUrl } from '@/lib/address/explorerUrl';
+import { getExplorerUrl } from '@layerswap/utils';
 import clsx from 'clsx';
 import { AddressLabelView } from './AddressLabelView';
 export function AddressDetailsView({

@@ -2,7 +2,7 @@ import { ManualSourceSelectorView } from './Presentation/ManualSourceSelectorVie
 import { DepositQRCodeView } from './Presentation/DepositQRCodeView';
 import { ManualDepositButtonView } from './Presentation/ManualDepositButtonView';
 import { Partner } from '@/Models/Partner';
-import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon';
+import { ExtendedAddress } from '@layerswap/ui-kit';
 import { Widget } from '@/components/Widget/Index';
 import { useAsyncModal } from '@/context/asyncModal';
 import { useInitialSettings } from '@/context/settings';
@@ -17,8 +17,8 @@ import {
     SwapBasicData,
     SwapQuote,
 } from '@/lib/apiClients/layerSwapApiClient';
-import { useCopyClipboard } from '@layerswap/ui-kit';
-import { CopyButton } from '@layerswap/ui-kit/components';
+import { useCopyClipboard } from '@layerswap/utils/react';
+import { CopyButton } from '@layerswap/ui-kit';
 import {
     Network,
     NetworkRoute,

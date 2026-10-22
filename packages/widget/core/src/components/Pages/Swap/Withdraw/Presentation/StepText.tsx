@@ -1,7 +1,7 @@
 import { animate } from 'framer-motion';
 import { useRef, type ReactNode } from 'react';
 import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect';
-import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion';
+import { useHydratedReducedMotion } from '@layerswap/ui-kit';
 
 export const stepTextTransition = {
     duration: 0.15,

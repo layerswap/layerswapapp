@@ -1,6 +1,6 @@
-import { Checkbox } from '@/components/shadcn/checkbox'
+import { Checkbox } from '@layerswap/ui-kit'
 import { FC, ReactNode } from 'react'
-import { cn } from '@/helpers/cn'
+import { cn } from '@layerswap/utils'
 
 type CheckboxRowProps = {
     checked: boolean

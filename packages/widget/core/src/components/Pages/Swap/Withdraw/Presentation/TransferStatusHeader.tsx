@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion';
+import { useHydratedReducedMotion } from '@layerswap/ui-kit';
 import { Gauge } from '../Processing/gauge';
 import { stepTextTransition } from './StepText';
 

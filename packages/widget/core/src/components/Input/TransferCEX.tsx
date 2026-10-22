@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { useFormikContext } from "formik";
-import { ImageWithFallback } from "@layerswap/ui-kit/components";
+import { ImageWithFallback } from "@layerswap/ui-kit";
 import { SwapFormValues } from "../Pages/Swap/Form/SwapFormValues";
 
 type Props = {

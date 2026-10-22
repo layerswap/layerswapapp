@@ -602,14 +602,13 @@ const { default: MinMax } = loadSource('components/Input/Amount/MinMax.tsx', {
   react: { ...React, default: React }, formik: require('formik'),
   '@/lib/gases/useSWRGas': { default: () => ({ gasData: state.previewGas, isGasLoading: false }) },
   'framer-motion': require('framer-motion'), './helpers': maxHelpers,
-  '@/components/shadcn/tooltip': { Tooltip: ({ children }) => children, TooltipTrigger: ({ children }) => children, TooltipContent: () => null },
+  '@layerswap/ui-kit': { Tooltip: ({ children }) => children, TooltipTrigger: ({ children }) => children, TooltipContent: () => null, useHydratedReducedMotion: () => true },
   '@/context/swapAccounts': { useSelectedAccount: () => state.account },
   '@/lib/balances/useBalance': { useBalance: () => ({ balances: state.balances, mutate() {} }) },
   '@/hooks/useWallet': { default: () => ({ wallets: state.wallets }) },
   '@/stores/usdModeStore': { useUsdModeStore: usdStore }, '@/hooks/useUsdTokenSync': { skipNextUsdSync() {} },
   '@/components/utils/formatUsdAmount': require('@layerswap/utils/common'),
-  '@/components/utils/RoundDecimals': rounding,
-  '@/hooks/useHydratedReducedMotion': { useHydratedReducedMotion: () => true },
+  '@layerswap/utils': rounding,
   '@/lib/amountPresets': amountPresets,
 })
 function PresetButtons() {

@@ -16,7 +16,7 @@ import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { DepositAction } from "@/lib/apiClients/layerSwapApiClient";
 import { executeProviderWithdrawal, getProviderDepositActions } from "../executeProviderWithdrawal";
 import { ErrorHandler } from "@/lib/ErrorHandler";
-import { truncateToDecimals } from "@/components/utils/RoundDecimals";
+import { truncateToDecimals } from "@layerswap/utils";
 import { useCallbacks } from "@/context/callbackProvider";
 import { lifecycleContextFromSwap } from "@/lib/swapLifecycle";
 

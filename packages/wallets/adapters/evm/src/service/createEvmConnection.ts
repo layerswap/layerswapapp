@@ -1,6 +1,6 @@
 import type { WalletConnectionProvider, WalletConnectionProviderProps, WalletConnectionStore, MultiStepHandler } from "@layerswap/wallet-core/types"
 import { isMobile } from "@layerswap/utils"
-import { connectModalStore, createMemoizedConnectionStore, getAdditionalConnectorsStore, type AppNetworkAdapter } from "@layerswap/wallet-core"
+import { connectModalStore, createMemoizedConnectionStore, getAdditionalConnectorsStore } from "@layerswap/wallet-core"
 import { EIP155_NAMESPACE, evmWalletConnectChain, id as PROVIDER_ID, name as PROVIDER_NAME, registerEvmWalletConnectChain } from '../constants'
 import { createEvmTransfer } from '../transferProvider/createEvmTransfer'
 import { supportsRegistryConnects } from './connectorsHelpers'
@@ -68,6 +68,7 @@ export function createEvmConnection<Network>(
                 browseConnectors: additionalState.browseConnectors,
                 recentConnectors: additionalState.recentConnectors,
                 networks,
+                networkAdapter,
             }
         },
         buildSnapshot: inputs => {

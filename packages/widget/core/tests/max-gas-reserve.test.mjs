@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test, { after, afterEach, beforeEach } from 'node:test'
 import { registerHooks } from 'node:module'
+import { existsSync } from 'node:fs'
 import { extname } from 'node:path'
 import { JSDOM } from 'jsdom'
 import { act, createElement, StrictMode } from 'react'
@@ -23,6 +24,7 @@ const mockUrl = `data:text/javascript,${encodeURIComponent(`
   export const Tooltip = ({ children }) => children
   export const TooltipTrigger = ({ children }) => children
   export const TooltipContent = () => null
+  export const useHydratedReducedMotion = () => true
   export const resolverService = { getGasResolver: () => ({ getGas(args) {
     const request = Promise.withResolvers()
     state.requests.push({ ...request, args })
@@ -31,13 +33,16 @@ const mockUrl = `data:text/javascript,${encodeURIComponent(`
 `)}`
 const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
   const parent = context.parentURL ?? ''
-  if (parent.endsWith('/components/Input/Amount/MinMax.js') && [
-    '/context/swapAccounts', '/hooks/useWallet', '/lib/balances/useBalance', '/components/shadcn/tooltip',
-  ].some(path => specifier.endsWith(path))) return { url: mockUrl, shortCircuit: true }
+  if (parent.endsWith('/components/Input/Amount/MinMax.js') && (specifier === '@layerswap/ui-kit' || [
+    '/context/swapAccounts', '/hooks/useWallet', '/lib/balances/useBalance',
+  ].some(path => specifier.endsWith(path)))) return { url: mockUrl, shortCircuit: true }
   if (parent.includes('/dist/esm/') && specifier.endsWith('/resolvers/resolverService')) {
     return { url: mockUrl, shortCircuit: true }
   }
-  if (specifier.startsWith('.') && !extname(specifier) && parent.includes('/dist/esm/')) return nextResolve(`${specifier}.js`, context)
+  if (specifier.startsWith('.') && !extname(specifier) && parent.includes('/dist/esm/')) {
+    const file = new URL(`${specifier}.js`, context.parentURL)
+    return nextResolve(existsSync(file) ? `${specifier}.js` : `${specifier}/index.js`, context)
+  }
   return nextResolve(specifier, context)
 } })
 

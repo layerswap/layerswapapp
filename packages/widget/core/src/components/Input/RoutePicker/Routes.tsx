@@ -1,10 +1,10 @@
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
-import { truncateDecimals } from "@/components/utils/RoundDecimals";
+import { truncateDecimals } from "@layerswap/utils";
 import { SelectItem } from "@/components/Select/Selector/SelectItem";
 import { ChevronDown, Info } from "lucide-react";
 import RoutePickerIcon from "@/components/Icons/RoutePickerPlaceholder";
 import { useBalance } from "@/lib/balances/useBalance";
-import { ImageWithFallback } from "@layerswap/ui-kit/components";
+import { ImageWithFallback } from "@layerswap/ui-kit";
 import { GroupedTokenElement, RowElement } from "@/Models/Route";
 import { getKey, useBalanceStore } from "@/stores/balanceStore";
 import { useSwapAccounts } from "@/context/swapAccounts";

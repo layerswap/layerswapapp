@@ -1,6 +1,7 @@
+import { NetworkType } from '@layerswap/widget-types';
 import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
 import type { WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types";
-import type { AppNetworkAdapter } from "@layerswap/wallet-core"
+import type { AppNetworkAdapter } from "@layerswap/utils"
 import { sleep } from "@layerswap/utils"
 import type { FuelConnector } from '@fuel-ts/account'
 import { Address } from '@fuel-ts/address'
@@ -46,13 +47,13 @@ export class FuelConnectionService<Network> implements WalletConnectionService<n
 
     private getSupportedNetworks(): string[] {
         return this._networks
-            .filter(network => this._networkAdapter?.isFuelNetwork(network))
+            .filter(network => this._networkAdapter?.getNetworkType(network) === NetworkType.Fuel)
             .map(network => this._networkAdapter?.getId(network))
             .filter((id): id is string => !!id)
     }
 
     getNetworkIcon(): string | undefined {
-        const network = this._networks.find(item => this._networkAdapter?.isFuelNetwork(item))
+        const network = this._networks.find(item => this._networkAdapter?.getNetworkType(item) === NetworkType.Fuel)
         return network && this._networkAdapter ? this._networkAdapter.getIcon(network) : undefined
     }
 

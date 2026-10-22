@@ -5,13 +5,13 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { loadSource, rounding } from './helpers/source.mjs'
 
 const SummaryView = loadSource('components/Pages/Swap/Withdraw/Presentation/SummaryView.tsx', {
-    '@/components/utils/RoundDecimals': rounding,
+    '@layerswap/utils': rounding,
     'lucide-react': { ArrowDown: () => null, Fuel: () => null },
     '@/components/Common/NumFlowWithFallback': {
         default: ({ value, prefix = '', suffix = '' }) => createElement('span', { 'data-value': value }, `${prefix}${value}${suffix}`),
     },
     '@/components/Input/Amount/PriceImpact': { PriceImpact: () => null },
-    '@layerswap/ui-kit/components': { ImageWithFallback: () => null },
+    '@layerswap/ui-kit': { ImageWithFallback: () => null },
 }).default
 
 const eth = { asset: 'ETH', precision: 8, decimals: 18, price_in_usd: 2000 }

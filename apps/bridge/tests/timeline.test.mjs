@@ -109,7 +109,7 @@ await build({
         export { GasFeeView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Form/FeeDetails/SwapQuote/GasFeeView.js';
         export { ManualDepositButtonView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/ManualDepositButtonView.js';
         export { ConfirmationContent } from '../../packages/widget/core/dist/esm/components/Modal/ConfirmationContent.js';
-        export { CopyButtonView } from '@layerswap/ui-kit/components';
+        export { CopyButtonView } from '@layerswap/ui-kit';
         export { SettingsStateContext } from '../../packages/widget/core/dist/esm/context/settings.js';`,
         resolveDir: resolve(directory, '..'),
         loader: 'tsx',

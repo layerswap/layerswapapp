@@ -1,3 +1,4 @@
+import { NetworkType } from '@layerswap/widget-types';
 import { type InternalConnector, type Wallet } from '@layerswap/widget-types'
 import type {
     RequestAdditionalConnectorsParams,
@@ -17,7 +18,6 @@ import {
     setPendingMetadataForRegistry,
     subscribeDisplayUri,
     walletIconResolver,
-    type AppNetworkAdapter,
     type WalletConnectWalletBase,
 } from '@layerswap/wallet-core'
 import { id as PROVIDER_ID, name as PROVIDER_NAME, stellarWalletConnectChain } from '../constants'
@@ -25,6 +25,7 @@ import { STELLAR_APPKIT_WALLET_CONNECT_ID } from './StellarWalletConnectModule'
 import { stellarKitManager } from './stellarKitManager'
 import { stellarStore, type StellarWalletSnapshot } from './stellarStore'
 import { toStellarConnector } from './stellarConnector'
+import { AppNetworkAdapter } from '@layerswap/utils'
 
 type RegistryRequestFn = (params?: RequestAdditionalConnectorsParams) => Promise<{
     connectors: WalletConnectWalletBase[]
@@ -247,14 +248,14 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
     }
 
     private getNetworkLogo(): string | undefined {
-        const network = this.networks.find(item => this.networkAdapter?.isStellarNetwork(item))
+        const network = this.networks.find(item => this.networkAdapter?.getNetworkType(item) === NetworkType.Stellar)
         return network && this.networkAdapter ? this.networkAdapter.getIcon(network) : undefined
     }
 
     private getSupportedNetworks(): string[] {
         if (!this.networkAdapter) return []
         return this.networks
-            .filter(network => this.networkAdapter?.isStellarNetwork(network))
+            .filter(network => this.networkAdapter?.getNetworkType(network) === NetworkType.Stellar)
             .map(network => this.networkAdapter!.getId(network))
     }
 }
