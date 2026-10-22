@@ -68,7 +68,8 @@ export function createEVMProvider<TNetwork = NetworkWithTokens>(
             : [
                 evmGasProvider,
                 new LazyGasProvider(
-                    network => network.type === NetworkType.Hyperliquid && !!network.token,
+                    // Hyperliquid fees use the selected USDC token, not native token metadata.
+                    network => network.type === NetworkType.Hyperliquid,
                     () => import("./additionalProviders/hyperliquid/hyperliquidGasProvider")
                         .then(module => new module.HyperliquidGasProvider()),
                 ),
