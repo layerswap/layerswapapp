@@ -46,6 +46,7 @@ export function CallbackProvider({ children, callbacks }: CallbackProviderProps)
         try { callbacksRef.current?.onSwapStatusChange?.(event) } catch (error) { reportCallbackError(error) }
     }, [backendStatuses])
     const onSwapLifecycle = useCallback((event: SwapLifecycleEvent) => {
+        event = { ...event, amountMode: widgetTelemetry.amountInputMethod(event) }
         // Creation is an explicit operation result. Wallet prompts/phase observations never
         // establish or reset backend history.
         if (event.step === 'swap_created' && event.swapId) backendStatuses.created(event.swapId)

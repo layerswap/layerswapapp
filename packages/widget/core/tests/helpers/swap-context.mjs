@@ -1,28 +1,35 @@
+import { resolveSwapFlow } from '../../dist/esm/components/utils/resolveSwapFlow.js'
 import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import React from 'react'
 import ts from 'typescript'
+import { formatTokenAmount } from '../../dist/esm/components/utils/formatTokenAmount.js'
+import { amountPresets, swapProgress } from './source.mjs'
 
 const require = createRequire(import.meta.url)
 const noop = () => {}
 
 // Run the real swap provider and its SWR receipt subscription, with unrelated
 // quote, route, wallet and whole-swap services held at deterministic boundaries.
-export function createSwapContext({ Client, getSwapId, getAccount, stores, swapTransactions = {}, swr = require('swr') }) {
+export function createSwapContext({ Client, getSwapId, getAccount, stores, swapTransactions = {}, swr = require('swr'), overrides = {} }) {
     const network = { name: 'BASE_MAINNET' }
     const snapshots = new Map()
     const store = state => Object.assign(selector => selector(state), { getState: () => state })
     const emptyStores = {
-        useSwapTransactionStore: store({ swapTransactions, setSwapTransaction: noop }),
+        useSwapTransactionStore: store({ swapTransactions, pendingSubmissions: {}, stepTransactions: {}, setSwapTransaction: noop }),
         useGaslessAuthorizationStore: store({ authorizations: {} }),
-        useDepositSignatureStore: store({ removeDepositSignature: noop }),
+        useDepositSignatureStore: store({ signatures: {}, removeDepositSignature: noop }),
     }
     const resolved = {}
     const imports = {
+        '@/components/utils/formatTokenAmount': { formatTokenAmount },
+        '@/lib/amountPresets': amountPresets,
+        '@/lib/preparePresetAmount': { preparePresetAmount: () => { throw new Error('Unexpected preset preparation') } },
+        '@/helpers/swapProgress': swapProgress,
         '@/helpers/depository': { shouldUseDepository: () => false },
         react: React,
         'react/jsx-runtime': require('react/jsx-runtime'),
-        swr,
+        swr: { ...swr, useSWRConfig: swr.useSWRConfig ?? (() => ({ mutate: async () => undefined })) },
         '@layerswap/widget-types': { SwapStatus: { Created: 'created', UserTransferPending: 'user_transfer_pending' } },
         '@/lib/apiClients/layerSwapApiClient': {
             default: Client,
@@ -45,6 +52,7 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
         '@/stores': stores ?? emptyStores,
         '@/helpers/depositActions': { isDepositWorkflowComplete: () => false },
         '@/components/utils/resolveSwapPhase': { resolveSwapPhase: () => resolved },
+        '@/components/utils/resolveSwapFlow': { resolveSwapFlow },
         './depositSettings': { useDepositSettings: () => ({ isDepositFlow: false }) },
         '@/hooks/useGaslessAuthorization': { useGaslessAuthorization: () => ({}) },
         '@/stores/contractAddressStore': { useContractAddressStore: () => ({}) },
@@ -58,13 +66,14 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
         '@/hooks/useSwapPolling': { useSwapPolling: id => {
             if (!snapshots.has(id)) snapshots.set(id, { data: { swap: {
                 id, source_network: network, source_token: {}, destination_network: network,
-                destination_token: {}, requested_amount: '1', transactions: [], use_deposit_address: false,
+                destination_token: {}, requested_amount: 1, transactions: [], use_deposit_address: false,
             } } })
             return { data: id ? snapshots.get(id) : undefined, mutate: noop }
         } },
         '@/hooks/useSwapStatusNotification': { useSwapStatusNotification: noop },
         '@/lib/swapLifecycle': {},
         '@/lib/swapCreation': {},
+        ...overrides,
     }
     const { outputText } = ts.transpileModule(readFileSync(new URL('../../src/context/swap.tsx', import.meta.url), 'utf8'), {
         compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },

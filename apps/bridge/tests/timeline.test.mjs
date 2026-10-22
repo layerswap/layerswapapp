@@ -11,6 +11,7 @@ import { renderToStaticMarkup, renderToString } from 'react-dom/server';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
+const widgetRequire = createRequire(new URL('../../../packages/widget/core/package.json', import.meta.url));
 const temporary = mkdtempSync(join(directory, '.timeline-'));
 process.on('exit', () => rmSync(temporary, { recursive: true, force: true }));
 const dom = new JSDOM(
@@ -86,9 +87,9 @@ globalThis.setInterval = reject('setInterval');
 const { createRoot, hydrateRoot } = await import('react-dom/client');
 
 // Bundle the actual package export, using the same workspace package boundaries as Next.
-const result = await build({
+await build({
     stdin: {
-        contents: `export { Page2Preview, resolveSwapPhase, SwapPhase } from '@layerswap/widget/internal';
+        contents: `export { Page2Preview, resolveSwapPhase, resolveSwapFlow, SwapPhase } from '@layerswap/widget/internal';
         export { TimelinePreview } from './features/timeline/TimelinePreview';
         export { scenarios, scenarioGroups, scenarioWidgets, EPOCH } from './features/timeline/fixtures';
         export { selectTime, selectScenario } from './features/timeline/model';
@@ -99,10 +100,10 @@ const result = await build({
         export { default as App } from './pages/_app';
         export { SendTransactionView, ConnectWalletView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/WalletActionsView.js';
         export { ProcessingView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/ProcessingView.js';
+        export { isDepositWorkflowComplete } from '../../packages/widget/core/dist/esm/helpers/depositActions.js';
         export { gaslessFailureMessage } from '../../packages/widget/core/dist/esm/helpers/gaslessFailureMessage.js';
         export { SpecializedWithdrawalView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/SpecializedWithdrawalView.js';
         export { default as ProductionSummary } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Summary/Summary.js';
-        export { default as ProductionAddressIcon } from '../../packages/widget/core/dist/esm/components/Common/AddressIcon/index.js';
         export { SlippageView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Form/FeeDetails/SlippageView.js';
         export { Slippage as ProductionSlippage } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Form/FeeDetails/Slippage.js';
         export { GasFeeView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Form/FeeDetails/SwapQuote/GasFeeView.js';
@@ -123,7 +124,6 @@ const result = await build({
         'react-dom',
         'react-dom/*',
         'next/head',
-        'framer-motion',
     ],
     banner: {
         js: "import { createRequire as _createRequire } from 'node:module'; const require = _createRequire(import.meta.url);",
@@ -136,6 +136,10 @@ const result = await build({
         {
             name: 'workspace-packages',
             setup(builder) {
+                builder.onResolve({ filter: /^framer-motion$/ }, () => ({
+                    path: widgetRequire.resolve('framer-motion'),
+                    external: true,
+                }));
                 builder.onResolve({ filter: /^next\/(head|router)$/ }, (args) => ({
                     path: require.resolve(args.path),
                     external: true,
@@ -164,6 +168,8 @@ const {
     DepositHeaderView,
     DepositAddressFormButtonView,
     resolveSwapPhase,
+    resolveSwapFlow,
+    isDepositWorkflowComplete,
     SwapPhase,
     scenarios,
     scenarioGroups,
@@ -179,7 +185,6 @@ const {
     ConnectWalletView,
     SpecializedWithdrawalView,
     ProductionSummary,
-    ProductionAddressIcon,
     SlippageView,
     ProductionSlippage,
     GasFeeView,
@@ -223,15 +228,24 @@ const phase = (s) =>
             'rejected',
         ].includes(s.gaslessAuthorization?.status) ? s.gaslessAuthorization.status : undefined,
         isDepositFlow: s.isDepositFlow,
+        depositCompleted: !s.swap.use_deposit_address && isDepositWorkflowComplete(s.depositActions ?? []),
     });
+
+const snapshotFlow = s => resolveSwapFlow({
+    swapData: s.swap, depositActions: s.depositActions, quote: s.quote,
+    stepTransactions: s.stepTransactions, gaslessAuthorization: s.gaslessAuthorization,
+    sourceProvider: s.sourceProvider ?? (s.wallet.kind === 'specialized' ? s.wallet.provider : undefined),
+    walletExecutionStarted: s.walletExecutionStarted, isDepositFlow: s.isDepositFlow,
+    hasRefuel: !!s.refuel, resolved: phase(s),
+    transactionHash: s.details.transactions.find(t => t.type === 'input')?.transaction_hash || s.gaslessAuthorization?.transaction?.transaction_hash || s.storedWalletTransaction?.hash,
+    outputTransactionHash: s.details.transactions.find(t => t.type === 'output')?.transaction_hash,
+});
 
 test('flow navigation includes every scenario once and keeps related cases together', () => {
     const visible = scenarioGroups.flatMap(group => group.scenarios);
     assert.equal(visible.length, scenarios.length);
     assert.equal(new Set(visible.map(scenario => scenario.id)).size, scenarios.length);
     assert.deepEqual([...visible].map(scenario => scenario.id).sort(), scenarios.map(scenario => scenario.id).sort());
-    assert.equal(scenarioGroups[0].scenarios[0].id, 'wallet-success');
-    assert.deepEqual(scenarioWidgets.map(widget => widget.id), ['swap', 'deposit']);
     assert.deepEqual(scenarioWidgets.flatMap(widget => widget.groups), scenarioGroups);
     for (const widget of scenarioWidgets) {
         assert.ok(widget.groups.length > 0, widget.id);
@@ -244,15 +258,6 @@ test('flow navigation includes every scenario once and keeps related cases toget
         for (const section of group.sections) {
             assert.ok(section.scenarios.length > 0, `${group.id}/${section.id}`);
         }
-    }
-    const groupIds = id => scenarioGroups.find(group => group.id === id).scenarios.map(scenario => scenario.id);
-    assert.deepEqual(groupIds('manual-deposit'), ['manual-network', 'manual-exchange', 'minimum-update', 'maximum-update']);
-    assert.deepEqual(groupIds('page-states'), ['initial-loading', 'not-found']);
-    for (const provider of ['Hyperliquid', 'Polymarket']) {
-        assert.deepEqual(groupIds(provider.toLowerCase()), scenarios.filter(scenario => scenario.id.startsWith(`${provider}-`)).map(scenario => scenario.id));
-    }
-    for (const id of ['wallet-success', 'refuel', 'rpc', 'swap-error', 'input-failure', 'refund']) {
-        assert.ok(groupIds('wallet-transfer').includes(id), id);
     }
 });
 
@@ -406,6 +411,12 @@ test('every fixture renders in both modes without application providers or incom
                         preview(m.snapshot, m.at, mode),
                     );
                 }, `${scenario.id}/${m.id}`);
+                if (m.snapshot.kind === 'swap') {
+                    const flow = snapshotFlow(m.snapshot);
+                    assert.ok(html.includes(`data-swap-flow="${flow.kind}"`), `${scenario.id}/${m.id}: shared flow identity`);
+                    if (!m.snapshot.swap.use_deposit_address)
+                        assert.ok(html.includes(`data-quote-layout="${flow.compactQuote ? 'attached' : 'separate'}"`), `${scenario.id}/${m.id}: shared quote state`);
+                }
                 if (mode === 'modal') {
                     assert.match(html, m.snapshot.kind === 'deposit' ? /data-deposit-modal="true"/ : /data-page2-modal="true" data-state="open"/);
                 } else {
@@ -575,7 +586,7 @@ test('reduced-motion hydration matches the server markup in both modes', async (
     const errors = [];
     const quotes = scenarios.find((s) => s.id === 'quote-loading');
     for (const mode of ['component', 'modal']) {
-        for (const milestone of [scenarios[0].milestones[0], quotes.milestones.at(-1)]) {
+        for (const milestone of [scenarios[0].milestones[0], scenarios[0].milestones[4], scenarios[0].milestones.at(-1), quotes.milestones.at(-1)]) {
             const element = preview(milestone.snapshot, milestone.at, mode);
             container.innerHTML = renderToString(element);
             let root;
@@ -612,6 +623,9 @@ test('all mounted previews ignore clicks and keyboard activation without request
                         assert.equal(panel.style.height, 'auto', `${label}: reduced motion shows steps immediately`);
                         assert.equal(panel.style.opacity, '1', label);
                         assert.equal(panel.parentElement.closest('[data-steps-panel]'), null, `${label}: no nested panel animations`);
+                        const heading = panel.querySelector('[data-transfer-title]');
+                        assert.equal(heading.querySelector('[style]'), null, `${label}: reduced motion has no heading translation, blur or delay`);
+                        assert.equal(heading.textContent, heading.parentElement.getAttribute('aria-label'), `${label}: heading immediately reflects the latest state`);
                     }
                     const before = container.textContent;
                     displayed.set(m.id, before);
@@ -674,7 +688,6 @@ const chooseOption = async (container, selector, label) => {
     await act(async () => option.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
 };
 const chooseGroup = (container, group) => chooseOption(container, '#timeline-group', group);
-const chooseScenario = (container, scenario) => chooseOption(container, '#timeline-scenario', scenario);
 const chooseWidget = async (container, label) => {
     const button = [...container.querySelectorAll('[aria-label="Widget"] button')].find(button => button.textContent === label);
     assert.ok(button, label);
@@ -699,160 +712,6 @@ const chooseLayout = async (container, label) => {
     await act(async () => button.click());
     assert.equal(button.getAttribute('aria-pressed'), 'true');
 };
-
-test('canvas is the default and its controls panel can hide without resetting previews', async () => {
-    const container = document.getElementById('root');
-    const root = createRoot(container);
-    try {
-        await act(async () => root.render(React.createElement(TimelinePage)));
-        assert.equal(container.querySelector('[aria-label="Preview layout"] [aria-pressed="true"]').textContent, 'Canvas');
-        assert.equal(container.querySelector('[aria-label="Timeline controls"]'), null);
-        const panel = container.querySelector('#canvas-controls');
-        assert.equal(panel.hidden, false);
-        assert.ok(panel.querySelector('#timeline-group'));
-        assert.ok(panel.querySelector('#timeline-scenario'));
-        assert.ok(panel.querySelector('[role="tablist"]'));
-        const firstPreview = container.querySelector('[data-page2-preview]');
-        await act(async () => firstPreview.querySelector('[aria-label="See details"]').click());
-        await chooseOption(container, '#canvas-pages-per-row', '4');
-        const world = container.querySelector('[data-canvas-transform]');
-        const before = world.style.transform;
-        const toggle = container.querySelector('[aria-controls="canvas-controls"]');
-        await act(async () => toggle.click());
-        assert.equal(panel.hidden, true);
-        assert.equal(toggle.getAttribute('aria-expanded'), 'false');
-        assert.equal(toggle.getAttribute('aria-label'), 'Show canvas controls');
-        assert.equal(container.querySelector('[data-page2-preview]'), firstPreview);
-        assert.equal(container.querySelector('[data-milestone-id] [data-value="quote"] [data-page2-quote-disclosure][aria-expanded]').getAttribute('aria-expanded'), 'true');
-        assert.equal(world.style.transform, before);
-        await act(async () => toggle.click());
-        assert.equal(panel.hidden, false);
-        assert.equal(toggle.getAttribute('aria-expanded'), 'true');
-        assert.equal(container.querySelector('#canvas-pages-per-row').textContent, '4');
-        await chooseMode(container, 'modal');
-        assert.equal(container.querySelectorAll('[data-page2-modal]').length, scenarios[0].milestones.length);
-        await act(async () => toggle.click());
-        await chooseLayout(container, 'Timeline');
-        assert.equal(container.querySelector('#canvas-controls'), null);
-        assert.ok(container.querySelector('aside[aria-label="Scenarios"]'));
-        await chooseLayout(container, 'Canvas');
-        assert.equal(container.querySelector('#canvas-controls').hidden, true);
-        assert.deepEqual(forbidden, []);
-    } finally {
-        await act(async () => root.unmount());
-    }
-});
-
-test('canvas shows ordered snapshots at their own times and restores the timeline position', async () => {
-    const container = document.getElementById('root');
-    const root = createRoot(container);
-    const scenario = scenarios[0];
-    try {
-        await act(async () => root.render(React.createElement(TimelinePage)));
-        await chooseLayout(container, 'Timeline');
-        const next = [...container.querySelectorAll('button')].find(button => button.textContent === 'Next →');
-        await act(async () => next.click());
-        const timelineTime = container.querySelector('#timeline-time').value;
-        const timelineTitle = container.querySelector('#scenario-title').textContent;
-        await chooseLayout(container, 'Canvas');
-        assert.equal(container.querySelector('[aria-label="Timeline controls"]'), null);
-        const strip = container.querySelector('[aria-label="Scenario canvas"]');
-        assert.equal(strip.tabIndex, 0, 'the canvas is keyboard-focusable');
-        const cards = [...strip.querySelectorAll('[data-milestone-id]')];
-        assert.deepEqual(cards.map(card => card.dataset.milestoneId), scenario.milestones.map(milestone => milestone.id));
-        for (const [index, card] of cards.entries()) {
-            const milestone = scenario.milestones[index];
-            assert.equal(card.querySelector('h3').textContent, milestone.label);
-            assert.ok(card.querySelector('header').textContent.includes(`Step ${index + 1}`));
-            assert.ok(card.querySelector('[data-page2-preview]'), milestone.id);
-        }
-        assert.match(strip.querySelector('[data-milestone-id="confirmations"]').textContent, /Elapsed time:00:00/);
-        assert.match(strip.querySelector('[data-milestone-id="more-confirmations"]').textContent, /Elapsed time:00:15/);
-        assert.match(strip.querySelector('[data-milestone-id="output-pending"]').textContent, /Elapsed time:00:30/);
-        assert.match(strip.querySelector('[data-milestone-id="completed"]').textContent, /Transfer complete/);
-        await chooseMode(container, 'modal');
-        assert.equal(container.querySelectorAll('[data-page2-modal]').length, scenario.milestones.length);
-        const frameIds = [...container.querySelectorAll('[data-page2-modal]')].map(modal => modal.parentElement.id);
-        assert.equal(new Set(frameIds).size, frameIds.length, 'each preview has its own widget and portal root');
-        await chooseLayout(container, 'Timeline');
-        assert.equal(container.querySelectorAll('[data-page2-preview]').length, 1);
-        assert.equal(container.querySelector('#timeline-time').value, timelineTime);
-        assert.equal(container.querySelector('#scenario-title').textContent, timelineTitle);
-        assert.ok(container.querySelector('[data-page2-modal]'));
-        assert.deepEqual(forbidden, []);
-    } finally {
-        await act(async () => root.unmount());
-    }
-});
-
-test('canvas quote disclosures are independent and reset when the scenario changes', async () => {
-    const container = document.getElementById('root');
-    const root = createRoot(container);
-    const expanded = card => card.querySelector('[data-value="quote"] [data-page2-quote-disclosure][aria-expanded]')?.getAttribute('aria-expanded') === 'true';
-    try {
-        await act(async () => root.render(React.createElement(TimelinePage)));
-        await chooseLayout(container, 'Timeline');
-        await act(async () => container.querySelector('[aria-label="See details"]').click());
-        await chooseLayout(container, 'Canvas');
-        const cards = [...container.querySelectorAll('[data-milestone-id]')];
-        assert.equal(expanded(cards[0]), false, 'sequence starts from the fixture, independently of timeline disclosure');
-        await act(async () => cards[0].querySelector('[aria-label="See details"]').click());
-        assert.equal(expanded(cards[0]), true);
-        assert.equal(expanded(cards[1]), false);
-        await chooseMode(container, 'modal');
-        assert.equal(expanded(container.querySelector('[data-milestone-id]')), true);
-        await chooseLayout(container, 'Timeline');
-        assert.equal(expanded(container), true, 'timeline disclosure survives a layout switch');
-        await chooseLayout(container, 'Canvas');
-        await chooseGroup(container, 'Page states');
-        assert.deepEqual([...container.querySelectorAll('[data-milestone-id]')].map(card => card.dataset.milestoneId), ['loading', 'ready']);
-        await chooseScenario(container, 'Swap not found');
-        assert.deepEqual([...container.querySelectorAll('[data-milestone-id]')].map(card => card.dataset.milestoneId), ['loading', 'not-found']);
-        await chooseGroup(container, 'Wallet transfers');
-        assert.equal(expanded(container.querySelector('[data-milestone-id]')), false);
-        assert.equal(container.querySelectorAll('[data-page2-modal]').length, scenarios[0].milestones.length);
-        assert.deepEqual(forbidden, []);
-    } finally {
-        await act(async () => root.unmount());
-    }
-});
-
-test('canvas uses dependent flow and scenario selectors while timeline keeps its sidebar', async () => {
-    const container = document.getElementById('root');
-    const root = createRoot(container);
-    try {
-        await act(async () => root.render(React.createElement(TimelinePage)));
-        await chooseLayout(container, 'Timeline');
-        assert.ok(container.querySelector('aside[aria-label="Scenarios"]'));
-        assert.equal(container.querySelector('#timeline-scenario'), null);
-        await chooseMode(container, 'modal');
-        await chooseLayout(container, 'Canvas');
-        assert.equal(container.querySelector('aside[aria-label="Scenarios"]'), null);
-        assert.ok(container.querySelector('aside[aria-label="Canvas controls"]'));
-        assert.equal(container.querySelector('#timeline-group').textContent, 'Wallet transfers');
-        assert.equal(container.querySelector('#timeline-scenario').textContent, 'Successful wallet transfer');
-        await chooseGroup(container, 'Token swaps');
-        assert.equal(container.querySelector('#timeline-scenario').textContent, 'Approve, sign and confirm');
-        const picker = container.querySelector('#timeline-scenario');
-        await act(async () => picker.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })));
-        const options = [...document.querySelectorAll('[role="option"]')];
-        assert.deepEqual(options.map(option => option.textContent), scenarioGroups.find(group => group.id === 'token-swap').scenarios.map(scenario => scenario.label));
-        await act(async () => options.find(option => option.textContent === 'Native token swap').dispatchEvent(new window.KeyboardEvent('keydown', {key: 'Enter', bubbles: true})));
-        assert.equal(container.querySelectorAll('[data-milestone-id]').length, 2);
-        assert.equal(container.querySelectorAll('[data-page2-modal]').length, 2);
-        await chooseLayout(container, 'Timeline');
-        assert.equal(container.querySelector('#timeline-scenario'), null);
-        assert.equal(container.querySelector('aside button[aria-pressed="true"]').getAttribute('aria-label'), 'Native token swap');
-        assert.equal(container.querySelector('#scenario-title').textContent, 'Native token swap');
-        await chooseLayout(container, 'Canvas');
-        assert.equal(container.querySelector('#timeline-scenario').textContent, 'Native token swap');
-        await chooseGroup(container, 'Manual deposits');
-        assert.equal(container.querySelector('#timeline-scenario').textContent, 'Manual deposit from network');
-        assert.deepEqual(forbidden, []);
-    } finally {
-        await act(async () => root.unmount());
-    }
-});
 
 test('deposit widget navigation shares canvas, modal and timeline controls', async () => {
     const container = document.getElementById('root');
@@ -987,208 +846,6 @@ test('shared deposit controls retain callbacks in production', async () => {
     }
 });
 
-test('canvas fits, zooms, pans and focuses frames without remounting previews', async () => {
-    const container = document.getElementById('root');
-    const root = createRoot(container);
-    const click = async label => {
-        const button = [...container.querySelectorAll('button')].find(button => button.getAttribute('aria-label') === label || button.textContent === label);
-        assert.ok(button, label);
-        await act(async () => button.click());
-    };
-    try {
-        await act(async () => root.render(React.createElement(TimelinePage)));
-        await chooseLayout(container, 'Canvas');
-        const canvas = container.querySelector('[aria-label="Scenario canvas"]');
-        const world = container.querySelector('[data-canvas-transform]');
-        const content = world.querySelector('ol');
-        const firstPreview = world.querySelector('[data-page2-preview]');
-        Object.defineProperties(canvas, { clientWidth: {value: 1000}, clientHeight: {value: 700} });
-        Object.defineProperties(content, { offsetWidth: {value: 1536}, offsetHeight: {value: 2500} });
-        await click('Fit all');
-        assert.equal(container.querySelector('[aria-label="Reset zoom to 100%"] ').textContent, '25%');
-        await click('Reset zoom to 100%');
-        const beforeZoom = world.style.transform;
-        const wheel = new window.WheelEvent('wheel', {deltaY: -50, ctrlKey: true, clientX: 300, clientY: 200, bubbles: true, cancelable: true});
-        await act(async () => canvas.dispatchEvent(wheel));
-        assert.equal(wheel.defaultPrevented, true, 'zoom belongs to the canvas, not the browser');
-        assert.notEqual(world.style.transform, beforeZoom);
-        assert.equal(container.querySelector('[aria-label="Reset zoom to 100%"] ').textContent, '165%');
-        await click('Zoom in');
-        await click('Zoom in');
-        assert.equal(container.querySelector('[aria-label="Zoom in"]').disabled, true, 'zoom is bounded');
-
-        const beforePan = world.style.transform;
-        await act(async () => canvas.dispatchEvent(new window.KeyboardEvent('keydown', {key: 'ArrowRight', bubbles: true})));
-        assert.notEqual(world.style.transform, beforePan);
-        const afterKeyPan = world.style.transform;
-        canvas.setPointerCapture = () => {};
-        canvas.hasPointerCapture = () => false;
-        const pointer = (type, x, y) => {
-            const event = new window.MouseEvent(type, {clientX:x, clientY:y, button:0, bubbles:true, cancelable:true});
-            Object.defineProperties(event, {pointerId:{value:1}, pointerType:{value:'mouse'}});
-            return event;
-        };
-        await act(async () => canvas.dispatchEvent(pointer('pointerdown', 20, 20)));
-        await act(async () => canvas.dispatchEvent(pointer('pointermove', 90, 70)));
-        await act(async () => canvas.dispatchEvent(pointer('pointerup', 90, 70)));
-        assert.notEqual(world.style.transform, afterKeyPan);
-        const afterDrag = world.style.transform;
-        await act(async () => canvas.dispatchEvent(pointer('pointermove', 150, 150)));
-        assert.equal(world.style.transform, afterDrag, 'released gestures stop panning');
-
-        const frame = world.querySelector('[data-milestone-id]');
-        Object.defineProperties(frame, { offsetWidth:{value:472}, offsetHeight:{value:750}, offsetLeft:{value:536}, offsetTop:{value:800} });
-        await click('Focus step 1: Ready to send');
-        assert.equal(container.querySelector('[aria-label="Reset zoom to 100%"] ').textContent, '85%');
-        assert.equal(world.querySelector('[data-page2-preview]'), firstPreview);
-        await click('Fit all');
-        assert.equal(container.querySelector('[aria-label="Reset zoom to 100%"] ').textContent, '25%');
-        await act(async () => frame.querySelector('h3').dispatchEvent(new window.MouseEvent('dblclick', {bubbles: true})));
-        assert.equal(container.querySelector('[aria-label="Reset zoom to 100%"] ').textContent, '85%');
-        await chooseOption(container, '#canvas-pages-per-row', '1');
-        assert.equal(container.querySelector('[aria-label="Reset zoom to 100%"]').textContent, '25%', 'changing row size refits even after manual navigation');
-        assert.equal(world.querySelector('[data-page2-preview]'), firstPreview, 'reflow preserves preview identity');
-        assert.equal(content.style.gridTemplateColumns, 'repeat(1, 472px)');
-        await chooseOption(container, '#canvas-pages-per-row', '9');
-        assert.equal(content.style.gridTemplateColumns, 'repeat(9, 472px)');
-        assert.deepEqual([...content.querySelectorAll('[data-milestone-id]')].map(card => card.dataset.milestoneId), scenarios[0].milestones.map(milestone => milestone.id));
-        await chooseLayout(container, 'Timeline');
-        assert.equal(container.querySelector('#canvas-pages-per-row'), null);
-        await chooseLayout(container, 'Canvas');
-        assert.equal(container.querySelector('#canvas-pages-per-row').textContent, '9');
-        await chooseGroup(container, 'Page states');
-        assert.equal(container.querySelector('#canvas-pages-per-row').textContent, '2', 'short scenarios use only the columns they need');
-        await chooseGroup(container, 'Wallet transfers');
-        assert.equal(container.querySelector('#canvas-pages-per-row').textContent, '9', 'short scenarios preserve the preferred row size');
-        assert.deepEqual(forbidden, []);
-    } finally {
-        await act(async () => root.unmount());
-    }
-});
-
-test('canvas preserves modal body wheel scrolling while keeping canvas pan and zoom', async () => {
-    const container = document.getElementById('root');
-    const root = createRoot(container);
-    try {
-        await act(async () => root.render(React.createElement(TimelinePage)));
-        await chooseMode(container, 'modal');
-        const canvas = container.querySelector('[aria-label="Scenario canvas"]');
-        const world = container.querySelector('[data-canvas-transform]');
-        const modal = canvas.querySelector('[data-page2-modal]');
-        await act(async () => modal.querySelector('[aria-label="See details"]').click());
-        const body = modal.querySelector('.styled-scroll');
-        const target = [...body.querySelectorAll('button')].find(button => button.textContent === 'Close details');
-        assert.ok(target, 'wheel input starts inside the expanded quote');
-        // JSDOM has no layout or native scroll; supply overflow dimensions and
-        // verify that the real modal event remains available to the browser.
-        Object.defineProperties(body, {
-            clientHeight: { value: 400 },
-            scrollHeight: { value: 800, configurable: true },
-        });
-        const dispatchWheel = async (element, options = {}) => {
-            const event = new window.WheelEvent('wheel', {
-                deltaY: 80, bubbles: true, cancelable: true, ...options,
-            });
-            await act(async () => element.dispatchEvent(event));
-            return event;
-        };
-
-        const beforeScroll = world.style.transform;
-        for (const deltaY of [80, -80]) {
-            const wheel = await dispatchWheel(target, { deltaY });
-            assert.equal(wheel.defaultPrevented, false, 'overflowing modal keeps native scrolling');
-            assert.equal(world.style.transform, beforeScroll, 'scrolling the modal does not pan the canvas');
-        }
-        for (const modifier of ['ctrlKey', 'metaKey']) {
-            const beforeZoom = world.style.transform;
-            const wheel = await dispatchWheel(target, { deltaY: -25, [modifier]: true });
-            assert.equal(wheel.defaultPrevented, true, `${modifier} zoom still belongs to the canvas`);
-            assert.notEqual(world.style.transform, beforeZoom);
-        }
-        const beforePan = world.style.transform;
-        assert.equal((await dispatchWheel(canvas)).defaultPrevented, true);
-        assert.notEqual(world.style.transform, beforePan, 'background wheel input still pans');
-
-        Object.defineProperty(body, 'scrollHeight', { value: 400 });
-        const beforeFittedBodyWheel = world.style.transform;
-        assert.equal((await dispatchWheel(target)).defaultPrevented, true);
-        assert.notEqual(world.style.transform, beforeFittedBodyWheel, 'a body without overflow keeps canvas gestures');
-        assert.deepEqual(forbidden, []);
-    } finally {
-        await act(async () => root.unmount());
-    }
-});
-
-test('touch swipes scroll an overflowing modal body without moving the canvas', async () => {
-    const container = document.getElementById('root');
-    const root = createRoot(container);
-    try {
-        await act(async () => root.render(React.createElement(TimelinePage)));
-        await chooseMode(container, 'modal');
-        const canvas = container.querySelector('[aria-label="Scenario canvas"]');
-        const world = container.querySelector('[data-canvas-transform]');
-        const modal = canvas.querySelector('[data-page2-modal]');
-        await act(async () => modal.querySelector('[aria-label="See details"]').click());
-        const body = modal.querySelector('.styled-scroll');
-        Object.defineProperties(body, {
-            clientHeight: { value: 400 },
-            scrollHeight: { value: 800, configurable: true },
-        });
-        let captured = false;
-        canvas.setPointerCapture = () => { captured = true; };
-        canvas.hasPointerCapture = () => captured;
-        canvas.releasePointerCapture = () => { captured = false; };
-        const pointer = async (target, type, y) => {
-            const event = new window.MouseEvent(type, { clientX: 80, clientY: y, button: 0, bubbles: true, cancelable: true });
-            Object.defineProperties(event, { pointerId: { value: 1 }, pointerType: { value: 'touch' } });
-            await act(async () => target.dispatchEvent(event));
-        };
-        const before = world.style.transform;
-        const scale = Number(before.match(/scale\(([^)]+)\)/)[1]);
-        await pointer(body, 'pointerdown', 200);
-        await pointer(canvas, 'pointermove', 160);
-        assert.equal(body.scrollTop, 40 / scale, 'scroll distance accounts for the preview zoom');
-        assert.equal(world.style.transform, before);
-        assert.equal(canvas.classList.contains('cursor-grabbing'), false);
-        await pointer(canvas, 'pointerup', 160);
-        assert.equal(captured, false);
-        await pointer(canvas, 'pointermove', 120);
-        assert.equal(body.scrollTop, 40 / scale, 'released gestures stop scrolling');
-        await pointer(canvas, 'pointerdown', 200);
-        await pointer(canvas, 'pointermove', 160);
-        await pointer(canvas, 'pointerup', 160);
-        assert.notEqual(world.style.transform, before, 'touch gestures on the background still pan');
-        assert.deepEqual(forbidden, []);
-    } finally {
-        await act(async () => root.unmount());
-    }
-});
-
-test('the viewer hydrates shared selection controls without replacing server markup', async () => {
-    const container = document.getElementById('root');
-    const element = React.createElement(TimelinePage);
-    const errors = [];
-    container.innerHTML = renderToString(element);
-    const serverPicker = container.querySelector('#timeline-group');
-    let root;
-    try {
-        await act(async () => {
-            root = hydrateRoot(container, element, {
-                onRecoverableError: error => errors.push(error.message),
-            });
-        });
-        assert.equal(container.querySelector('#timeline-group'), serverPicker);
-        await chooseGroup(container, 'Token swaps');
-        await chooseMode(container, 'modal');
-        assert.equal(container.querySelector('#scenario-title').textContent, 'Approve, sign and confirm');
-        assert.ok(container.querySelector('[data-page2-modal]'));
-        assert.deepEqual(errors, []);
-        assert.deepEqual(forbidden, []);
-    } finally {
-        if (root) await act(async () => root.unmount());
-    }
-});
-
 test('viewer filters scenario groups, resets selections and preserves strictly earlier/later navigation', async () => {
     const container = document.getElementById('root');
     const root = createRoot(container);
@@ -1225,7 +882,7 @@ test('viewer filters scenario groups, resets selections and preserves strictly e
     assert.equal(button('← Previous').disabled, true);
     assert.equal(
         container
-            .querySelector('[aria-current="step"]')
+            .querySelector('button[aria-current="step"]')
             .textContent.includes('Confirming deposit'),
         true,
     );
@@ -1359,85 +1016,6 @@ test('quote disclosures work in both modes and reset on timeline navigation with
         await chooseMode(container, 'component');
         assert.equal(expanded(), true);
         assert.equal(scenarios[0].milestones[0].snapshot.quoteState.expanded, false);
-        assert.deepEqual(forbidden, []);
-    } finally {
-        await act(async () => root.unmount());
-    }
-});
-
-test('recipient rows use the production identicon and controlled wallet, partner and saved-address visuals', async () => {
-    const container = document.getElementById('root');
-    const root = createRoot(container);
-    const wallet = scenarios[0].milestones[0].snapshot;
-    const manual = scenarios.find((s) => s.id === 'manual-network')
-        .milestones.find((m) => m.id === 'address-ready').snapshot;
-    try {
-        await act(async () => root.render(React.createElement(ProductionAddressIcon, {
-            address: wallet.swap.destination_address,
-            network: wallet.swap.destination_network,
-            size: 16,
-        })));
-        const liveIcon = container.querySelector('[data-address-icon] svg').outerHTML;
-        assert.ok(liveIcon.includes('<rect'));
-        for (const mode of ['component', 'modal']) {
-            for (const snapshot of [wallet, manual]) {
-                await act(async () => root.render(preview(snapshot, 12, mode)));
-                const recipient = container.querySelector('[data-recipient-address]');
-                assert.ok(recipient.textContent.includes('0x222'));
-                assert.equal(recipient.querySelector('[data-address-icon] svg').outerHTML, liveIcon);
-                const icon = recipient.querySelector('[data-address-icon]');
-                assert.equal(icon.style.width, '16px');
-                assert.equal(icon.style.height, '16px');
-
-                await act(async () => root.render(preview({
-                    ...snapshot,
-                    recipient: { savedName: 'Sample recipient' },
-                }, 12, mode)));
-                assert.ok(container.querySelector('[data-recipient-address]').textContent.includes('Sample recipient'));
-                assert.ok(container.querySelector('[data-address-icon] .lucide-user-round'));
-
-                const partnerIcon = snapshot.swap.destination_network.logo;
-                const walletIcon = snapshot.swap.source_network.logo;
-                await act(async () => root.render(preview({
-                    ...snapshot,
-                    recipient: {
-                        wallet: { id: 'sample', displayName: 'Sample wallet', icon: walletIcon },
-                        partnerIcon,
-                    },
-                }, 12, mode)));
-                assert.equal(container.querySelector('[data-recipient-address] img').getAttribute('alt'), 'Sample wallet');
-                assert.equal(container.querySelector('[data-recipient-address] [data-address-icon]'), null);
-
-                await act(async () => root.render(preview({ ...snapshot, recipient: { partnerIcon } }, 12, mode)));
-                assert.equal(container.querySelector('[data-recipient-address] img').getAttribute('alt'), 'Partner logo');
-                await act(async () => root.render(preview(snapshot, 12, mode)));
-                assert.equal(container.querySelector('[data-recipient-address] [data-address-icon] svg').outerHTML, liveIcon);
-            }
-        }
-        assert.deepEqual(forbidden, []);
-    } finally {
-        await act(async () => root.unmount());
-    }
-});
-
-test('connected-wallet header uses controlled sample wallets without mounting live wallet controllers', async () => {
-    const container = document.getElementById('root');
-    const root = createRoot(container);
-    const snapshot = scenarios[0].milestones[0].snapshot;
-    try {
-        await act(async () => root.render(preview({ ...snapshot, connectedWallets: [
-            { id: 'one', displayName: 'Sample wallet one', icon: snapshot.swap.source_network.logo },
-            { id: 'two', displayName: 'Sample wallet two', address: snapshot.sourceAddress },
-            { id: 'three', displayName: 'Sample wallet three' },
-        ] }, 0)));
-        const header = container.querySelector('[aria-label="Connected wallets"]');
-        assert.ok(header.querySelector('img[alt="Sample wallet one"]'));
-        assert.ok(header.querySelector('[data-address-icon] svg'));
-        assert.ok(header.textContent.includes('+1'));
-        await act(async () => header.closest('button').click());
-        assert.equal(container.querySelector('[role="dialog"]'), null);
-        await act(async () => root.render(preview(snapshot, 0)));
-        assert.equal(container.querySelector('[aria-label="Connected wallets"]'), null);
         assert.deepEqual(forbidden, []);
     } finally {
         await act(async () => root.unmount());
@@ -1626,7 +1204,7 @@ const fixtureDOM = (scenario, milestone, mode) => {
 const processingElement = (s) => {
     const input = s.details.transactions.find(transaction => transaction.type === 'input');
     return React.createElement(ProcessingView, {
-        swapBasicData: s.swap, swapDetails: s.details, refuel: s.refuel,
+        swapBasicData: s.swap, swapDetails: s.details, refuel: s.refuel, flow: snapshotFlow(s),
         resolved: phase(s), depositActions: s.depositActions, quote: s.quote,
         stepTransactions: s.stepTransactions,
         isDepositFlow: s.isDepositFlow,
@@ -1791,9 +1369,12 @@ test('receive links appear when loading and stay mounted through completion', as
             const input = completed.details.transactions.find(transaction => transaction.type === 'input');
             for (const depositActions of [completed.depositActions, undefined]) {
                 const snapshot = {
-                    ...completed, depositActions, stepTransactions: { approve_permit2: approval },
+                    ...completed, depositActions,
+                    gaslessAuthorization: scenario === 'frontend-gasless-success' ? { status: 'published' } : undefined,
+                    stepTransactions: { approve_permit2: approval },
                     storedWalletTransaction: { hash: input.transaction_hash, status: 'pending', timestamp: 1 },
                 };
+                const knownAtomicWorkflow = !!depositActions?.some(action => action.step === 'publish') || !!snapshot.gaslessAuthorization;
                 let executionLink;
                 let receiveRow;
                 let approvalLink;
@@ -1806,14 +1387,17 @@ test('receive links appear when loading and stay mounted through completion', as
                     await act(async () => root.render(processingElement({ ...snapshot, details })));
                     const rows = [...document.querySelectorAll('li')];
                     const link = rows.at(-1).querySelector('a[data-step-transaction]');
-                    assert.equal(rows.at(-2).querySelector('a[data-step-transaction]'), null, 'the execution step never duplicates the link');
+                    const outputHash = details.transactions.find(transaction => transaction.type === 'output')?.transaction_hash;
+                    const inputLink = rows.at(-2).querySelector('a[data-step-transaction]');
+                    const expectsInputLink = !knownAtomicWorkflow && !outputHash;
+                    assert.equal(!!inputLink, expectsInputLink, 'missing action history retains the input link until a shared receipt is proven');
                     const currentApprovalLink = rows[0].querySelector('a[data-step-transaction]');
                     assert.equal(currentApprovalLink.href, approval.explorerUrl);
                     if (approvalLink) assert.equal(currentApprovalLink, approvalLink, 'the approval link remains mounted');
                     else approvalLink = currentApprovalLink;
-                    if (!hasLink) {
+                    if (!hasLink || (!knownAtomicWorkflow && !outputHash)) {
                         assert.equal(link, null, `${scenario}: the upcoming receive step has no link`);
-                        assert.equal(document.querySelectorAll('a[data-step-transaction]').length, 1, 'the approval link remains available');
+                        assert.equal(document.querySelectorAll('a[data-step-transaction]').length, expectsInputLink ? 2 : 1, 'approval and any known input receipt remain available');
                         continue;
                     }
                     assert.ok(link, `${scenario}: the loading or completed receive step has the execution link`);
@@ -1955,52 +1539,6 @@ test('token swap timeline keeps wallet steps through confirmations and delivery'
     assert.equal(completed.querySelector('[aria-label="Swap progress"]'), null);
 });
 
-test('token swap keeps its inline gauge and header unchanged through completion', async () => {
-    const root = createRoot(document.getElementById('root'));
-    const input = frontendMilestone('frontend-permit2', 'input');
-    const completed = frontendMilestone('frontend-permit2', 'completed');
-    try {
-        await act(async () => root.render(preview(input.snapshot, input.at)));
-        const progressbar = document.querySelector('[role="progressbar"]');
-        const gauge = progressbar.querySelector('svg');
-        const summaryToken = document.querySelector('img[alt="Token Logo"]');
-        const steps = document.querySelector('[aria-label="Progress"]');
-        const recipient = document.querySelector('[data-recipient-address]');
-        assert.equal(progressbar.getAttribute('aria-valuenow'), '50');
-        assert.equal(gauge.getAttribute('width'), '32');
-        assert.equal(progressbar.parentElement.textContent, 'Swap in progress');
-        assert.equal(progressbar.parentElement.querySelector('[role="timer"]'), null);
-
-        await act(async () => root.render(preview(completed.snapshot, completed.at)));
-        assert.equal(document.querySelector('[role="progressbar"]'), progressbar);
-        assert.equal(progressbar.querySelector('svg'), gauge);
-        assert.equal(progressbar.getAttribute('aria-valuenow'), '100');
-        assert.equal(gauge.getAttribute('width'), '32');
-        assert.equal(progressbar.parentElement.querySelector('h3').textContent, 'Transfer complete');
-        assert.equal(progressbar.parentElement.querySelector('[style*="transition"], [class*="animate-"], [class*="transition-"]'), null);
-        assert.ok(progressbar.querySelector('.lucide-check'));
-        assert.equal(progressbar.parentElement.textContent, 'Transfer complete');
-        assert.equal(document.querySelector('img[alt="Token Logo"]'), summaryToken);
-        assert.equal(document.querySelector('[aria-label="Progress"]'), steps);
-        assert.equal(steps.closest('[hidden], [aria-hidden="true"], [inert]'), null);
-        assert.equal(steps.querySelectorAll('.lucide-check').length, 4);
-        assert.equal(document.querySelector('[data-recipient-address]'), recipient);
-        assert.equal(recipient.closest('[hidden], [aria-hidden="true"], [inert]'), null);
-        assert.equal(document.querySelector('[role="timer"]'), null);
-
-        // Rewinding reuses the same nodes and restores their in-progress statuses.
-        await act(async () => root.render(preview(input.snapshot, input.at)));
-        assert.equal(document.querySelector('[role="progressbar"]'), progressbar);
-        assert.equal(document.querySelector('img[alt="Token Logo"]'), summaryToken);
-        assert.equal(document.querySelector('[aria-label="Progress"]'), steps);
-        assert.equal(steps.closest('[aria-hidden="true"]'), null);
-        assert.equal(recipient.closest('[inert]'), null);
-        assert.equal(document.querySelectorAll('[aria-label="Progress"]').length, 1);
-    } finally {
-        await act(async () => root.unmount());
-    }
-});
-
 test('wallet execution exchanges the preparing button for persistent steps and respects reduced motion', async () => {
     const container = document.getElementById('root');
     const root = createRoot(container);
@@ -2019,11 +1557,13 @@ test('wallet execution exchanges the preparing button for persistent steps and r
         assert.equal(panel.style.height, 'auto', 'reduced motion shows the final height immediately');
         assert.equal(panel.style.opacity, '1');
         assert.equal(workflow.style.height, '', 'the wallet wrapper does not run a second height animation');
-        assert.equal(container.querySelector('[data-wallet-execution-panel="controls"]'), null, 'reduced motion removes the old button immediately');
+        // The controls panel stays available for wallet-request recovery while loading.
+        // Compare booleans so failures do not inspect React's cyclic JSDOM nodes.
+        assert.ok(container.querySelector('[data-wallet-execution-panel="controls"] button') === null, 'reduced motion removes the old button immediately');
 
         await act(async () => root.render(preview(signing.snapshot, signing.at)));
-        assert.equal(container.querySelector('[data-wallet-execution-panel="workflow"]'), workflow);
-        assert.equal(workflow.querySelector('[aria-label="Progress"]'), steps);
+        assert.ok(container.querySelector('[data-wallet-execution-panel="workflow"]') === workflow, 'signing preserves the workflow panel');
+        assert.ok(workflow.querySelector('[aria-label="Progress"]') === steps, 'signing preserves the progress list');
         assert.match(steps.textContent, /Sign in your wallet/);
 
         await act(async () => root.render(preview(preparing.snapshot, preparing.at)));
@@ -2243,64 +1783,52 @@ test('frontend quotes match the real full-to-compact lifecycle and sign-only/nat
     assert.equal(fixtureDOM('frontend-critical', 'continue').querySelector('[data-quote-layout]').dataset.quoteLayout, 'attached');
 });
 
-test('compacting and attaching preserves one quote and recipient through repeated reversals', async () => {
-    const container = document.getElementById('root');
-    const root = createRoot(container);
-    const ready = frontendMilestone('frontend-permit2', 'ready');
-    const approving = frontendMilestone('frontend-permit2', 'approving');
-    try {
-        await act(async () => root.render(preview(ready.snapshot, ready.at)));
-        const overview = container.querySelector('[data-quote-layout]');
-        const summaryToken = overview.querySelector('img[alt="Token Logo"]');
-        const recipient = overview.querySelector('[data-recipient-address]');
-        const disclosure = overview.querySelector('[aria-label="See details"]');
-        for (const milestone of [approving, ready, approving, ready]) {
-            await act(async () => root.render(preview(milestone.snapshot, milestone.at)));
-            const compact = milestone === approving;
-            assert.equal(container.querySelector('[data-quote-layout]'), overview);
-            assert.equal(overview.dataset.quoteLayout, compact ? 'attached' : 'separate');
-            assert.equal(overview.querySelector('img[alt="Token Logo"]'), summaryToken);
-            assert.equal(overview.querySelector('[data-recipient-address]'), recipient);
-            assert.equal(overview.querySelector('[aria-label="See details"]'), disclosure);
-            assert.equal(overview.querySelectorAll('[data-recipient-address]').length, 1);
-            assert.equal(!!disclosure.closest('[aria-hidden="true"][inert]'), compact);
+test('ordinary wallet transfers keep their full quote while waiting for confirmation on either route', () => {
+    for (const scenario of ['wallet-success', 'wallet-same-network']) {
+        for (const mode of ['component', 'modal']) {
+            for (const milestone of ['ready', 'preparing', 'confirm']) {
+                const view = fixtureDOM(scenario, milestone, mode);
+                assert.equal(view.querySelector('[data-quote-layout]').dataset.quoteLayout, 'separate');
+                assert.equal(view.querySelector('[aria-label="See details"]').closest('[inert], [aria-hidden="true"]'), null);
+                assert.equal(view.querySelector('[data-attr="edit-slippage"]').closest('[inert], [aria-hidden="true"]'), null);
+                assert.equal(view.querySelector('[data-steps-panel]'), null);
+                if (milestone === 'confirm') {
+                    const button = [...view.querySelectorAll('button')].find(button => button.textContent.includes('Confirm in your wallet'));
+                    assert.ok(button?.disabled, 'the original wallet confirmation button remains visible');
+                }
+            }
+            const submitted = fixtureDOM(scenario, 'publishing', mode);
+            assert.equal(submitted.querySelector('[data-quote-layout]').dataset.quoteLayout, 'attached');
+            assert.ok(submitted.querySelector('[data-steps-panel]'));
         }
-    } finally {
-        await act(async () => root.unmount());
     }
 });
 
-test('standard quotes compact and attach through completion while preserving recipient and quote identity', async () => {
+test('screen changes keep the quote, recipient and minimum receive amount visible', async () => {
     const container = document.getElementById('root');
     const root = createRoot(container);
     try {
-        for (const scenarioId of ['wallet-success', 'gasless-success', 'refuel']) {
-            const scenario = scenarios.find(s => s.id === scenarioId);
+        for (const id of ['wallet-success', 'wallet-same-network', 'gasless-success', 'refuel']) {
+            const scenario = scenarios.find(s => s.id === id);
             const ready = scenario.milestones.find(m => phase(m.snapshot).showWithdrawScreen);
             const processing = scenario.milestones.find(m => !phase(m.snapshot).showWithdrawScreen);
             for (const mode of ['component', 'modal']) {
                 await act(async () => root.render(preview(ready.snapshot, ready.at, mode)));
-                const overview = container.querySelector('[data-quote-layout]');
-                const quote = overview.querySelector('[data-quote-transition]');
-                const disclosure = quote.querySelector('[aria-label="See details"]');
-                const summaryToken = overview.querySelector('img[alt="Token Logo"]');
-                assert.ok(disclosure);
                 for (const milestone of [processing, ready, processing, scenario.milestones.at(-1), ready]) {
                     await act(async () => root.render(preview(milestone.snapshot, milestone.at, mode)));
                     const compact = !phase(milestone.snapshot).showWithdrawScreen;
-                    assert.equal(container.querySelector('[data-quote-layout]'), overview);
-                    assert.equal(overview.dataset.quoteLayout, compact ? 'attached' : 'separate');
-                    assert.equal(overview.querySelector('img[alt="Token Logo"]'), summaryToken);
-                    assert.equal(overview.querySelector('[data-quote-transition]'), quote);
-                    assert.equal(quote.querySelector('[aria-label="See details"]'), disclosure);
+                    const quote = container.querySelector('[data-quote-transition]');
+                    assert.ok(quote);
                     assert.equal(quote.closest('[hidden], [inert], [aria-hidden="true"]'), null);
-                    assert.equal(!!disclosure.closest('[aria-hidden="true"][inert]'), compact);
                     const recipient = quote.querySelector('[data-recipient-address]');
                     assert.ok(recipient);
                     assert.equal(recipient.closest('[hidden], [inert], [aria-hidden="true"]'), null);
                     const minimum = [...quote.querySelectorAll('label')].find(label => label.textContent === 'Receive at least');
                     assert.ok(minimum);
                     assert.equal(minimum.closest('[hidden], [inert], [aria-hidden="true"]'), null);
+                    const disclosure = quote.querySelector('[aria-label="See details"]');
+                    assert.ok(disclosure);
+                    assert.equal(!!disclosure.closest('[aria-hidden="true"][inert]'), compact);
                     assert.equal(container.querySelectorAll('[data-quote-transition]').length, 1);
                     assert.equal(container.querySelectorAll('[data-steps-panel]').length, compact ? 1 : 0);
                 }

@@ -1,9 +1,11 @@
+import { isAmountPreset } from '@/lib/amountPresets';
 import { Formik, type FormikConfig, type FormikProps } from 'formik'
 import { useCallback, type ReactNode } from 'react'
 import { useCallbacks } from '@/context/callbackProvider'
 import { lifecycleContextFromForm } from '@/lib/swapLifecycle'
 import type { SwapFormValues } from './SwapFormValues'
 import FormTelemetry from './FormTelemetry'
+import AmountPresetController from './AmountPresetController'
 
 /**
  * 'deposit-address' is the Swap page tab; deposit-widget-* is the standalone
@@ -32,6 +34,7 @@ type Props = Omit<FormikConfig<SwapFormValues>, 'onSubmit' | 'children'> & {
 export default function SwapForm({ mode, submitPath, submitAction = 'submit', onSubmit, children, ...formik }: Props) {
     const { onSwapLifecycle } = useCallbacks()
     const handleSubmit = useCallback<FormikConfig<SwapFormValues>['onSubmit']>((values, helpers) => {
+        if (isAmountPreset(values.amountMode) && (values.amountPresetPending || values.amountPresetError)) return Promise.resolve()
         onSwapLifecycle({
             step: 'form_submitted',
             stage: 'form',
@@ -51,6 +54,7 @@ export default function SwapForm({ mode, submitPath, submitAction = 'submit', on
                 // rendered outside this subtree stay outside the form.
                 <div data-ls-form={mode} className="contents">
                     <FormTelemetry mode={mode} />
+                    <AmountPresetController />
                     {typeof children === 'function' ? children(props) : children}
                 </div>
             )}

@@ -23,6 +23,7 @@ export enum ProgressStatus {
     Removed = 'removed',
 }
 export type StatusStep = {
+    id: string;
     name?: string;
     status: ProgressStatus;
     isLoading?: boolean;

@@ -227,7 +227,7 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
 
     const quoteData = quote?.data
     const hasValidAmount = !!debouncedAmount && isPositiveDecimal(String(debouncedAmount))
-    const isTransitioning = swrIsLoading || isDebouncing
+    const isTransitioning = swrIsLoading || isDebouncing || amount !== debouncedAmount
     const resolvedQuote = (quoteError || !hasQuoteParams || !hasValidAmount) ? undefined : quoteData
     if (!isTransitioning) lastSettledQuoteRef.current = resolvedQuote
     const suppressStale = isTransitioning && lastSettledQuoteRef.current === undefined
@@ -263,8 +263,8 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
             source_token: finalQuote.quote.source_token,
             destination_token: finalQuote.quote.destination_token,
         } : undefined,
-        isQuoteLoading,
-        isDebouncing,
+        isQuoteLoading: isQuoteLoading || isTransitioning,
+        isDebouncing: isDebouncing || amount !== debouncedAmount,
         quoteError,
         limitsError,
         mutateFee,

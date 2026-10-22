@@ -5,6 +5,7 @@ import { extname } from 'node:path'
 import { JSDOM } from 'jsdom'
 import { act, createElement } from 'react'
 import { userRejectedError } from '@layerswap/wallet-core/errors'
+import { createSwapContext } from './helpers/swap-context.mjs'
 
 const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://widget.test' })
 const previous = Object.getOwnPropertyDescriptors(globalThis)
@@ -15,6 +16,12 @@ const fixtureUrl = 'data:text/javascript,' + encodeURIComponent(`
   export const state = { events: [], errors: [] }
   export const useSwapDataState = () => ({ swapDetails: state.swapDetails, depositActionsResponse: state.depositActions })
   export const useSwapDataUpdate = () => ({ setSwapId(id) { state.selectedSwapId = id },
+    setWalletActionExecuting(value) { state.executionUpdates.setWalletActionExecuting(value); state.executionLocks.push(value) },
+    acquireWalletExecution() {
+      const release = state.executionUpdates.acquireWalletExecution()
+      state.executionLocks.push(true)
+      return () => { release(); state.executionLocks.push(false) }
+    },
     startFreshSwapAttempt() { state.freshAttempts++ },
     createSwap: (...args) => { state.creations++; return state.createSwap(...args) },
     mutateSwap: async response => { state.reconciled.push(response); state.swapDetails = response.data.swap },
@@ -61,6 +68,16 @@ after(() => {
 })
 const { state } = await import(fixtureUrl)
 const { createRoot } = await import('react-dom/client')
+// Keep the real execution context alive while withdrawal views close/reopen.
+const executionContext = createSwapContext({
+  Client: class {}, getSwapId: () => undefined, getAccount: () => undefined,
+  swr: { default: () => ({}) },
+})
+function ExecutionProbe() {
+  state.executionUpdates = executionContext.useSwapDataUpdate()
+  return null
+}
+Object.defineProperty(state, 'executing', { get: () => !state.executionUpdates.canAdjustAmount() })
 const { useHyperliquidWithdrawal } = await import('../dist/esm/components/Pages/Swap/Withdraw/WithdrawalProviders/Hyperliquid/useHyperliquidWithdrawal.js')
 const { usePolymarketWithdrawal } = await import('../dist/esm/components/Pages/Swap/Withdraw/WithdrawalProviders/Polymarket/usePolymarketWithdrawal.js')
 const { useSwapTransactionStore } = await import('../dist/esm/stores/swapTransactionStore.js')
@@ -71,13 +88,13 @@ const swapBasicData = {
   source_token: { decimals: 6 }, destination_token: {}, destination_address: 'destination',
 }
 
-let unsubscribeStore
-beforeEach(() => {
+let unsubscribeStore, executionRoot
+beforeEach(async () => {
   useSwapTransactionStore.setState({ swapTransactions: {}, stepTransactions: {}, pendingSubmissions: {} })
   Object.assign(state, {
     events: [], errors: [], transfers: [], published: [], successes: 0, error: undefined,
     refreshes: [], actionRefreshes: [], reconciled: [], freshAttempts: 0, creations: 0, selectedSwapId: 'swap-1',
-    swapDetails: { id: 'swap-1' }, onSuccess: undefined,
+    swapDetails: { id: 'swap-1' }, onSuccess: undefined, executionLocks: [],
     depositActions: [{ type: 'transfer', to_address: 'deposit', call_data: '0x', amount_in_base_units: '1000000' }],
     executeTransfer: async params => { params.onSubmissionStateChange('preparing'); throw state.error },
     createSwap: async () => assert.fail('unexpected swap creation'),
@@ -91,8 +108,10 @@ beforeEach(() => {
       }
     }
   })
+  executionRoot = createRoot(document.createElement('div'))
+  await act(() => executionRoot.render(createElement(executionContext.SwapDataProvider, null, createElement(ExecutionProbe))))
 })
-afterEach(() => unsubscribeStore())
+afterEach(async () => { unsubscribeStore(); await act(() => executionRoot.unmount()) })
 
 async function reloadTransactionStore() {
   const persisted = localStorage.getItem('swapTransactions')
@@ -330,6 +349,67 @@ for (const reload of [false, true]) {
 }
 
 for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal]) {
+  test(`${useWithdrawal.name} remount retry cannot unlock the original pending wallet request`, async () => {
+    const paused = Promise.withResolvers()
+    const entered = Promise.withResolvers()
+    state.executeTransfer = async params => {
+      params.onSubmissionStateChange('preparing')
+      entered.resolve()
+      await paused.promise
+      throw userRejectedError()
+    }
+    const original = await mountWithdrawal(useWithdrawal)
+    let pending, reopened
+    try {
+      await act(async () => { pending = original.result.handleWithdraw(); await entered.promise })
+      await original.unmount()
+      assert.equal(state.executing, true)
+      reopened = await mountWithdrawal(useWithdrawal)
+      await act(async () => reopened.result.handleWithdraw())
+      assert.match(reopened.result.error.details, /already in progress/)
+      assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, {})
+      assert.equal(state.executionUpdates.canAdjustAmount(), false, 'the rejected retry cannot release the original operation')
+      await act(async () => { paused.resolve(); await pending })
+      assert.equal(state.executionUpdates.canAdjustAmount(), true)
+      assert.equal(state.transfers.length, 1)
+    } finally {
+      await act(async () => { paused.resolve(); await pending })
+      if (reopened) await reopened.unmount()
+    }
+  })
+
+  for (const stage of ['preparation', 'signing']) {
+    test(`${useWithdrawal.name} locks adjustment throughout ${stage}, including after unmount`, async () => {
+      const paused = Promise.withResolvers()
+      if (stage === 'preparation') state.getDepositActions = async () => {
+        await paused.promise
+        return { data: state.depositActions }
+      }
+      state.executeTransfer = async params => {
+        params.onSubmissionStateChange('preparing')
+        if (stage === 'signing') await paused.promise
+        throw userRejectedError()
+      }
+      const mounted = await mountWithdrawal(useWithdrawal)
+      let pending, unmounted = false
+      try {
+        await act(async () => {
+          pending = mounted.result.handleWithdraw()
+          assert.equal(state.executing, true, 'lock synchronously before any async work or rerender')
+        })
+        assert.equal(state.executing, true)
+        assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, {}, 'preparation has no durable submission marker')
+        await mounted.unmount(); unmounted = true
+        assert.equal(state.executing, true, 'closing the screen must not unlock an active wallet request')
+      } finally {
+        await act(async () => { paused.resolve(); await pending })
+        if (!unmounted) await mounted.unmount()
+      }
+      assert.equal(state.executing, false)
+      assert.deepEqual(state.executionLocks, [true, false])
+      assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, {})
+    })
+  }
   for (const [label, error, rejected, outcome] of [
     ['legacy rejected UI label', Object.assign(new Error('Request declined'), { name: 'TransactionRejected' }), true, 'failed'],
     ['declared cancellation', userRejectedError(), true, 'rejected'],
@@ -340,19 +420,12 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
       state.error = error
       state.events = []
       state.errors = []
-      let result
-      function Probe() {
-        result = useWithdrawal({ swapId: 'swap-1', swapBasicData, refuel: false })
-        return null
-      }
-      const container = document.createElement('div')
-      const root = createRoot(container)
+      const mounted = await mountWithdrawal(useWithdrawal)
       try {
-        await act(async () => root.render(createElement(Probe)))
-        await act(async () => result.handleWithdraw())
-        assert.equal(result.rejected, rejected)
-        assert.equal(result.error === undefined, rejected)
-        assert.equal(result.loading, false)
+        await act(async () => mounted.result.handleWithdraw())
+        assert.equal(mounted.result.rejected, rejected)
+        assert.equal(mounted.result.error === undefined, rejected)
+        assert.equal(mounted.result.loading, false)
         assert.equal(state.events.at(-1).outcome, outcome)
         const terminalStep = outcome === 'rejected' ? 'wallet_action_rejected' : 'wallet_action_failed'
         assert.deepEqual(state.events.map(event => event.step), ['wallet_prompt_opened', terminalStep])
@@ -366,7 +439,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
           return { swap: { id: 'retry-swap' }, deposit_actions: [{ type: 'transfer', to_address: 'retry-deposit', call_data: '0x', amount_in_base_units: '1000000' }] }
         }
         state.getDepositActions = async () => ({ data: [{ type: 'transfer', to_address: 'refreshed-deposit', call_data: '0xfresh', amount_in_base_units: '2000000' }] })
-        await act(async () => result.handleWithdraw())
+        await act(async () => mounted.result.handleWithdraw())
         assert.equal(retryCreations, 0, 'a pre-submission failure retries on the original swap')
         assert.equal(state.transfers.at(-1)[0].depositAddress, 'refreshed-deposit')
         assert.deepEqual(state.actionRefreshes, [['swap-1', 'source'], ['swap-1', 'source']])
@@ -383,7 +456,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
           'wallet_prompt_opened', terminalStep, 'retry_requested', 'wallet_prompt_opened', terminalStep,
         ])
       } finally {
-        await act(async () => root.unmount())
+        await mounted.unmount()
       }
     })
   }
@@ -764,9 +837,11 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
       } finally {
         await mounted.unmount()
       }
-      if (rejected) transfer.reject(userRejectedError())
-      else transfer.resolve('late-hash')
-      await pending
+      await act(async () => {
+        if (rejected) transfer.reject(userRejectedError())
+        else transfer.resolve('late-hash')
+        await pending
+      })
       assert.deepEqual(state.events.map(event => event.step), ['wallet_prompt_opened'])
       assert.deepEqual(state.errors, [])
       assert.deepEqual(state.published, rejected ? [] : [['swap-1', 'pending', 'late-hash']])

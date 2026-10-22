@@ -1,3 +1,5 @@
+import { widgetTelemetry } from '../dist/esm/lib/widgetTelemetry.js'
+import { createPortal } from 'react-dom'
 import assert from 'node:assert/strict'
 import test, { after, afterEach, beforeEach } from 'node:test'
 import { registerHooks } from 'node:module'
@@ -17,17 +19,14 @@ for (const [key, value] of Object.entries(globals)) {
 const mockUrl = `data:text/javascript,${encodeURIComponent(`
   import { createElement } from ${JSON.stringify(import.meta.resolve('react'))}
   export const state = {}
-  export const useSwapDataState = () => ({ swapBasicData: state.swap, depositActionsResponse: state.actions })
-  export const useSwapDataUpdate = () => ({
-    setSubmitedFormValues(values) { state.submittedValues = values },
-    startFreshSwapAttempt() { state.freshAttempts = (state.freshAttempts ?? 0) + 1 },
-  })
+  export const useSwapDataState = () => ({ swapBasicData: state.swap, depositActionsResponse: state.actions, quoteIsLoading: state.quoteLoading })
+  export const useSwapDataUpdate = () => ({ setSubmitedFormValues(values) { state.submitted = values }, startFreshSwapAttempt() { state.freshAttempts++ }, canAdjustAmount: () => !state.locked })
   export const useSettingsState = () => ({ networks: [state.swap.source_network] })
-  export const useSelectedAccount = () => ({ address: 'source' })
+  export const useSelectedAccount = () => ({ address: state.walletAddress ?? 'source' })
   export const useBalance = () => ({ balances: state.balances, mutate() {}, isLoading: false })
-  export const useFormikContext = () => ({ setFieldValue(name, value) { state.formValues[name] = value } })
+  export const useFormikContext = () => ({ values: {}, setValues(values) { state.formValues = values } })
   export const useCallbacks = () => ({ onSwapLifecycle: event => state.events.push(event) })
-  export const useQuoteData = () => ({ minAllowedAmount: 0.001, maxAllowedAmount: state.maxAllowedAmount })
+  export const useQuoteData = () => ({ minAllowedAmount: state.minAllowedAmount, maxAllowedAmount: state.maxAllowedAmount })
   export const transformSwapDataToQuoteArgs = () => ({})
   const passthrough = ({ children }) => children
   export const WalletActionTransition = passthrough
@@ -37,7 +36,7 @@ const mockUrl = `data:text/javascript,${encodeURIComponent(`
   export default () => null
   export const SwapQuoteDetails = () => null
   export const ErrorDisplay = ({ title, message, action, footer }) => createElement('div', null, title, message, action, footer)
-  export const AdjustAmountButton = ({ onEditAmount }) => createElement('button', { onClick: onEditAmount }, 'Adjust amount')
+  export const AdjustAmountButton = ({ onEditAmount, isLoading }) => createElement('button', { onClick: onEditAmount, disabled: isLoading }, 'Adjust amount')
   export const RefreshBalanceButton = () => createElement('button', null, 'Refresh balance')
   export const WalletTransferAction = () => createElement('button', null, 'Send transaction')
 `)}`
@@ -75,16 +74,11 @@ beforeEach(() => {
   document.body.append(container)
   root = createRoot(container)
   Object.assign(state, {
-    events: [],
-    actions: undefined,
-    gasRequests: [],
-    formValues: {},
-    submittedValues: undefined,
-    freshAttempts: 0,
+    actions: undefined, gasRequests: [], events: [], walletAddress: undefined, locked: false, freshAttempts: 0, submitted: undefined, formValues: undefined, quoteLoading: false,
     swap: { source_network: network, source_token: token, destination_network: { name: 'BASE_MAINNET' }, destination_token: token, requested_amount: '0.95', use_deposit_address: false },
     balances: [{ network: network.name, token: token.symbol, amount: 1, isNativeCurrency: true }],
     gasData: { gas: 0.1, token },
-    maxAllowedAmount: 10,
+    minAllowedAmount: 0.001, maxAllowedAmount: 10,
   })
 })
 afterEach(async () => {
@@ -155,7 +149,7 @@ test('Adjust amount uses the maximum fee and retains the required native balance
   const adjust = () => [...container.querySelectorAll('button')].find(button => button.textContent === 'Adjust amount')
   await act(() => adjust().click())
   assert.ok(Math.abs(Number(state.formValues.amount) - 9.9796) < 1e-6)
-  assert.equal(state.submittedValues.amount, state.formValues.amount)
+  assert.equal(state.submitted.amount, state.formValues.amount)
   assert.equal(state.freshAttempts, 1)
 
   state.gasData = { ...state.gasData, maxFee: 0.04, reserve: 11 }
@@ -236,6 +230,14 @@ test('insufficient balance still replaces Send and reports a real block once', a
   assert.equal(sendButton(), undefined)
   assert.match(container.textContent, /Insufficient balance/)
   assert.deepEqual(blocks().map(event => event.reasonCode), ['insufficient_balance'])
+  const awaiting = state.events.find(event => event.step === 'awaiting_wallet_action')
+  for (const key of ['sourceWalletAddress', 'walletBalance', 'walletBalanceNetwork', 'walletBalanceToken', 'walletBalanceTimestamp']) {
+    assert.equal(key in awaiting, false, `awaiting callback must not expose ${key}`)
+  }
+  assert.equal(blocks()[0].sourceWalletAddress, 'source')
+  assert.equal(blocks()[0].walletBalance, 0.5)
+  assert.equal(blocks()[0].walletBalanceToken, token.symbol)
+  assert.equal(blocks()[0].walletBalanceNetwork, network.name)
 
   state.balances[0].amount = 1
   await render()
@@ -250,4 +252,148 @@ test('deposit-address swaps do not report wallet balance or gas blocks', async (
   await render()
   assert.deepEqual(state.events, [])
   assert.doesNotMatch(container.textContent, /Insufficient balance/)
+})
+
+const adjustButton = () => [...container.querySelectorAll('button')].find(button => button.textContent === 'Adjust amount')
+test('Adjust amount explicitly starts a fresh draft with Max enabled', async () => {
+  await render()
+  await act(() => adjustButton().click())
+  assert.equal(state.freshAttempts, 1)
+  assert.equal(state.submitted.amountMode, 'max')
+  assert.equal(state.submitted.amount, '0.898')
+  assert.equal(state.formValues.amount, state.submitted.amount)
+})
+test('Adjust amount cannot abandon an executing swap', async () => {
+  state.locked = true
+  await render()
+  assert.equal(!!adjustButton(), false, 'Adjust amount must be hidden')
+  assert.equal(state.freshAttempts, 0)
+})
+
+test('Adjust amount rechecks execution safety if the swap locks after render', async t => {
+  t.after(widgetTelemetry.mount(widgetTelemetry.createFlow({ source_network: network.name })))
+  widgetTelemetry.recordAmountInput('manual')
+  await render()
+  const button = adjustButton()
+  assert.ok(button)
+  state.locked = true
+  await act(() => button.click())
+  assert.equal(state.freshAttempts, 0)
+  assert.equal(state.submitted, undefined)
+  assert.equal(widgetTelemetry.amountInputMethod({ step: 'form_submitted' }), 'manual')
+})
+
+function setTokenBalance(amount) {
+  const usdt = { symbol: 'USDT', asset: 'USDT', precision: 6, decimals: 6 }
+  state.swap.source_token = usdt
+  state.swap.requested_amount = '0.2'
+  state.balances = [{ network: network.name, token: usdt.symbol, amount, isNativeCurrency: false }]
+}
+
+test('zero USDT balance shows Refresh without an ineffective Adjust amount action', async () => {
+  setTokenBalance(0)
+  await render()
+  assert.match(container.textContent, /Insufficient balance/)
+  assert.match(container.textContent, /Refresh balance/)
+  assert.equal(!!adjustButton(), false, 'Adjust amount must be hidden')
+  assert.equal(state.freshAttempts, 0)
+})
+
+for (const [name, configure] of [
+  ['zero native balance', () => { state.balances[0].amount = 0 }],
+  ['balance exhausted by fees', () => { state.balances[0].amount = 0.2; state.gasData.gas = 0.2 }],
+  ['spendable balance below minimum', () => { state.balances[0].amount = 0.5; state.gasData.gas = 0.49 }],
+  ['missing native fee estimate', () => { state.balances[0].amount = 0.5; state.gasData = undefined }],
+  ['missing minimum', () => { state.balances[0].amount = 0.5; state.minAllowedAmount = undefined }],
+  ['missing maximum', () => { state.balances[0].amount = 0.5; state.maxAllowedAmount = undefined }],
+  ['token balance below minimum', () => { setTokenBalance(0.0005) }],
+  ['token amount rounded down below minimum', () => { setTokenBalance(0.0010009); state.minAllowedAmount = 0.0010005 }],
+  ['token dust that truncates to zero', () => { setTokenBalance(0.0000009); state.minAllowedAmount = 0 }],
+]) {
+  test(`${name} hides Adjust amount and preserves Refresh`, async () => {
+    configure()
+    await render()
+    assert.match(container.textContent, /Insufficient balance/)
+    assert.match(container.textContent, /Refresh balance/)
+    assert.equal(!!adjustButton(), false, 'Adjust amount must be hidden')
+  })
+}
+
+test('a gas warning without a viable replacement has no Adjust amount action', async () => {
+  state.gasData.gas = 2
+  await render()
+  assert.match(container.textContent, /Insufficient balance for gas/)
+  assert.equal(sendButton().disabled, false)
+  assert.equal(!!adjustButton(), false, 'Adjust amount must be hidden')
+})
+
+test('Adjust amount appears after funds return, uses a valid boundary amount, and hides again on depletion', async () => {
+  setTokenBalance(0)
+  state.gasData = undefined // A token transfer does not reserve gas from its token balance.
+  await render()
+  assert.equal(!!adjustButton(), false, 'Adjust amount must be hidden')
+  state.balances[0].amount = state.minAllowedAmount
+  await render()
+  assert.equal(adjustButton().disabled, false)
+  await act(() => adjustButton().click())
+  assert.equal(state.submitted.amount, '0.001')
+  assert.equal(state.submitted.amountMode, 'max')
+  assert.equal(state.formValues.amount, '0.001')
+  assert.equal(state.freshAttempts, 1)
+  state.balances[0].amount = 0
+  await render()
+  assert.equal(!!adjustButton(), false, 'Adjust amount must be hidden')
+  assert.match(container.textContent, /Refresh balance/)
+})
+
+test('an execution lock hides Adjust amount but keeps Refresh available for insufficient balance', async () => {
+  setTokenBalance(0.1)
+  state.locked = true
+  await render()
+  assert.equal(!!adjustButton(), false, 'Adjust amount must be hidden')
+  assert.match(container.textContent, /Refresh balance/)
+  state.locked = false
+  await render()
+  assert.equal(adjustButton().disabled, false)
+})
+
+test('temporary quote loading retains a viable Adjust amount action in its loading state', async () => {
+  state.quoteLoading = true
+  await render()
+  assert.equal(adjustButton().disabled, true)
+  state.quoteLoading = false
+  await render()
+  assert.equal(adjustButton().disabled, false)
+})
+
+test('portaled Adjust amount records Max after its guard without changing the adjustment', async () => {
+  const unmount = widgetTelemetry.mount(widgetTelemetry.createFlow({ source_network: network.name, source_token: token.symbol }))
+  const portal = document.createElement('div'); document.body.append(portal)
+  try {
+    widgetTelemetry.recordAmountInput('manual')
+    await act(() => root.render(createElement(StrictMode, null, createPortal(createElement(Withdraw, { type: 'widget' }), portal))))
+    const button = [...portal.querySelectorAll('button')].find(button => button.textContent === 'Adjust amount')
+    assert.ok(button)
+    assert.equal(button.closest('[data-ls-form]'), null)
+    assert.equal(widgetTelemetry.amountInputMethod({ step: 'form_submitted' }), 'manual')
+    await act(() => button.click())
+    assert.equal(widgetTelemetry.amountInputMethod({ step: 'form_submitted' }), 'max')
+    assert.equal(state.freshAttempts, 1)
+    assert.equal(state.submitted.amountMode, 'max')
+    assert.equal(state.submitted.amount, '0.898')
+  } finally { unmount(); portal.remove() }
+})
+
+test('an insufficient-balance warning after wallet switching records the selected wallet balance', async () => {
+  await render()
+  assert.deepEqual(blocks(), [])
+  state.walletAddress = 'wallet-B'
+  state.balances = [{ ...state.balances[0], amount: 0.25, request_time: 'wallet-B-read' }]
+  await render()
+  assert.equal(blocks().length, 1)
+  assert.equal(blocks()[0].sourceWalletAddress, 'wallet-B')
+  assert.equal(blocks()[0].walletBalance, 0.25)
+  assert.equal(blocks()[0].walletBalanceToken, token.symbol)
+  assert.equal(blocks()[0].walletBalanceNetwork, network.name)
+  assert.equal(blocks()[0].walletBalanceTimestamp, 'wallet-B-read')
 })

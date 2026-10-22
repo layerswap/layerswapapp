@@ -26,6 +26,7 @@ export { useBalanceStore, selectResolvedSortingBalances, getKey, type BalanceEnt
 export { useRouteTokenSwitchStore } from "../stores/routeTokenSwitchStore"
 export { useManualDestAddressesStore, type ManualDestAddress } from "../stores/manualDestAddressesStore"
 export { default as ShortenString } from "../components/utils/ShortenString"
+export { formatTokenAmount } from "../components/utils/formatTokenAmount"
 export { Address } from "../lib/address/Address"
 export { getExplorerUrl } from "../lib/address/explorerUrl"
 export * from "../context/swap"
@@ -39,6 +40,7 @@ export type { DisplayUriSource, WalletConnectRegistryConnector, WalletConnectWal
 export { Page2Preview } from '../components/Pages/Swap/Withdraw/Presentation/Page2Preview';
 export type { Page2Snapshot, Page2LoadedSnapshot, Page2WalletState } from '../components/Pages/Swap/Withdraw/Presentation/Page2Snapshot';
 export { resolveSwapPhase, SwapPhase } from '../components/utils/resolveSwapPhase';
+export { resolveSwapFlow, type ResolvedSwapFlow, type ResolveSwapFlowInput } from '../components/utils/resolveSwapFlow';
 export { BackendTransactionStatus, TransactionStatus, TransactionType } from '../lib/apiClients/layerSwapApiClient';
 export type { SwapDetails, SwapQuote, Transaction, DepositAction } from '../lib/apiClients/layerSwapApiClient';
 

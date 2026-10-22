@@ -29,7 +29,9 @@ export function useBalance(
         if (!address || !network) return
         if (!refreshWhenHidden && document.hidden) return
         if (!refreshWhenOffline && navigator.onLine === false) return
-        fetchBalance(address, network, { dedupeInterval: interval })
+        // Errors are exposed through the store; a background refresh must not
+        // leave an unhandled rejection while the user reviews the form.
+        void fetchBalance(address, network, { dedupeInterval: interval }).catch(() => undefined)
     }
 
     useEffect(() => {

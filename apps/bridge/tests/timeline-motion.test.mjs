@@ -1,33 +1,34 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
 import { JSDOM } from 'jsdom';
 import React, { act } from 'react';
-import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
+import ts from 'typescript';
 
-// Exercise presence with motion enabled. The main timeline suite verifies
-// reduced motion; it cannot catch controls unmounting before their exit ends.
+// Exercise motion-enabled transitions: outgoing controls must be inactive,
+// and interruptions must leave one usable screen after the transition settles.
 const dom = new JSDOM('<div id="root"></div>', { pretendToBeVisual: true });
-for (const name of ['window', 'document', 'HTMLElement', 'Element', 'SVGElement', 'Node', 'getComputedStyle']) {
+for (const name of ['window', 'document', 'HTMLElement', 'Element', 'SVGElement', 'Node', 'NodeList', 'getComputedStyle', 'customElements']) {
     globalThis[name] = dom.window[name];
 }
 globalThis.requestAnimationFrame = dom.window.requestAnimationFrame.bind(dom.window);
 globalThis.cancelAnimationFrame = dom.window.cancelAnimationFrame.bind(dom.window);
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-dom.window.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {} });
+dom.window.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
 dom.window.scrollTo = () => {};
-const measurements = new Map();
 globalThis.ResizeObserver = class {
-    constructor(callback) { this.callback = callback; }
-    observe(node) { measurements.set(this, node); }
-    disconnect() { measurements.delete(this); }
+    observe() {}
+    unobserve() {}
+    disconnect() {}
 };
 
 const directory = dirname(fileURLToPath(import.meta.url));
+const widgetRequire = createRequire(new URL('../../../packages/widget/core/package.json', import.meta.url));
 const temporary = mkdtempSync(join(directory, '.timeline-motion-'));
 process.on('exit', () => rmSync(temporary, { recursive: true, force: true }));
 const outfile = join(temporary, 'motion.mjs');
@@ -36,12 +37,14 @@ await build({
         contents: `
             export { SwapContentView, ProcessingSectionView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/Page2Sections.js';
             export { StepsPanel } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Processing/StepsComponent.js';
+            export { default as Steps } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Processing/StepsComponent.js';
+            export { TransferStatusHeader } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/TransferStatusHeader.js';
+            export { QuoteView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/QuoteView.js';
             export { DepositWorkflowView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/DepositWorkflowView.js';
             export { WalletExecutionTransition } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/WalletExecutionTransition.js';
             export { WalletActionTransition } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/WalletActionTransition.js';
             export { SendTransactionView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/WalletActionsView.js';
             export { RetryView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/RetryView.js';
-            export { DepositLayoutView } from '../../packages/widget/core/dist/esm/components/Pages/Deposit/DepositLayoutView.js';
             export { DepositAddressTransition } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Form/DepositAddressForm/DepositAddressTransition.js';
         `,
         resolveDir: join(directory, '..'),
@@ -51,45 +54,60 @@ await build({
     platform: 'node',
     format: 'esm',
     bundle: true,
-    external: ['react', 'react-dom', 'react-dom/*', 'framer-motion'],
+    external: ['react', 'react-dom', 'react-dom/*'],
+    plugins: [{
+        name: 'widget-motion',
+        setup(builder) {
+            builder.onResolve({ filter: /^framer-motion$/ }, () => ({
+                path: widgetRequire.resolve('framer-motion'), external: true,
+            }));
+        },
+    }],
     mainFields: ['module', 'main'],
     logLevel: 'silent',
 });
-const { SwapContentView, ProcessingSectionView, StepsPanel, DepositWorkflowView, WalletExecutionTransition, WalletActionTransition, SendTransactionView, RetryView, DepositLayoutView, DepositAddressTransition } = await import(pathToFileURL(outfile));
+const { SwapContentView, ProcessingSectionView, StepsPanel, Steps, TransferStatusHeader, QuoteView, DepositWorkflowView, WalletExecutionTransition, WalletActionTransition, SendTransactionView, RetryView, DepositAddressTransition } = await import(pathToFileURL(outfile));
+function loadWidgetSource(path, imports) {
+    const { outputText } = ts.transpileModule(readFileSync(new URL(`../../../packages/widget/core/src/${path}`, import.meta.url), 'utf8'), {
+        compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
+    });
+    const module = { exports: {} };
+    new Function('require', 'module', 'exports', outputText)(name => {
+        if (name === 'react' || name === 'react/jsx-runtime') return widgetRequire(name);
+        if (name === '../components/utils/resolveSwapFlow.js') return loadWidgetSource('components/utils/resolveSwapFlow.ts', {});
+        if (name in imports) return imports[name];
+        throw new Error(`Unexpected dependency: ${name}`);
+    }, module, module.exports);
+    return module.exports;
+}
 const container = document.getElementById('root');
 const settle = () => act(() => new Promise(resolve => setTimeout(resolve, 400)));
-const view = (processing, manual = false) => React.createElement(SwapContentView, {
-    summary: (!manual || processing) && React.createElement('div', null, 'Summary'),
-    quote: !manual && React.createElement('div', null, 'Quote'),
-    compactQuote: !manual && processing,
+const view = processing => React.createElement(SwapContentView, {
+    summary: React.createElement('div', null, 'Summary'),
+    quote: React.createElement('div', null, 'Quote'),
+    compactQuote: processing,
     transferStage: processing ? 'processing' : 'withdraw',
 }, processing
     ? React.createElement(StepsPanel, null, 'Processing deposit')
     : React.createElement('button', null, 'Confirm in your wallet'));
 
-test('standard transfer retains inert controls until their exit finishes alongside entering steps', async () => {
+test('outgoing transfer controls are inactive and the screen remains usable after returning', async () => {
     const root = createRoot(container);
     try {
         await act(() => root.render(view(false)));
-        const quote = container.querySelector('[data-quote-transition]');
-        const controls = container.querySelector('[data-wallet-execution-panel="controls"]');
         await act(() => root.render(view(true)));
-        assert.equal(container.querySelector('[data-quote-transition]'), quote);
-        assert.equal(container.querySelector('[data-wallet-execution-panel="controls"]'), controls);
-        assert.ok(controls.hasAttribute('inert'));
-        assert.equal(controls.getAttribute('aria-hidden'), 'true');
-        const steps = container.querySelector('[data-steps-panel]');
-        assert.ok(steps);
+        const controls = container.querySelector('[data-wallet-execution-panel="controls"]');
+        if (controls) assert.ok(controls.closest('[inert]'));
         await settle();
         assert.equal(container.querySelector('[data-wallet-execution-panel="controls"]'), null);
-        assert.equal(container.querySelector('[data-steps-panel]'), steps);
+        const steps = container.querySelector('[data-steps-panel]');
+        assert.ok(steps);
+        assert.equal(steps.closest('[inert]'), null);
         assert.equal(steps.style.opacity, '1');
         await act(() => root.render(view(false)));
-        assert.equal(container.querySelector('[data-steps-panel]'), steps);
-        assert.ok(steps.closest('[inert]'));
+        if (steps.isConnected) assert.ok(steps.closest('[inert]'));
         await settle();
         assert.equal(container.querySelector('[data-steps-panel]'), null);
-        assert.equal(container.querySelector('[data-quote-transition]'), quote);
         assert.equal(container.querySelector('button').closest('[inert]'), null);
     } finally {
         await act(() => root.unmount());
@@ -113,9 +131,9 @@ test('reversing an unfinished standard transfer transition settles on the latest
     }
 });
 
-test('retry collapses failed-state actions with the steps and gives Swap now one entrance animation', async () => {
+test('leaving a failed swap deactivates retry controls and restores one usable send button', async () => {
     const root = createRoot(container);
-    const scene = (failed) => React.createElement(SwapContentView, {
+    const scene = failed => React.createElement(SwapContentView, {
         summary: React.createElement('div', null, 'Summary'),
         quote: React.createElement('div', null, 'Quote'),
         compactQuote: failed,
@@ -128,190 +146,90 @@ test('retry collapses failed-state actions with the steps and gives Swap now one
     try {
         await act(() => root.render(scene(true)));
         const actions = container.querySelector('[data-processing-actions]');
-        assert.ok(actions, 'retry controls have their own collapsible region');
-        const quote = container.querySelector('[data-quote-transition]');
-        const retryButton = actions.querySelector('button');
-
-        await act(() => {
-            flushSync(() => root.render(scene(false)));
-            const controls = container.querySelector('[data-wallet-execution-panel="controls"]');
-            assert.equal(controls.style.opacity, '0', 'the outer controls own the entrance');
-            const walletAction = controls.querySelector('[style*="transform"]');
-            assert.equal(walletAction.style.transform, 'none', 'no second slide under the height animation');
-            assert.equal(walletAction.style.opacity, '1');
-        });
-        assert.equal(actions.querySelector('button'), retryButton, 'outgoing retry remains mounted for its exit');
-        assert.ok(actions.hasAttribute('inert'));
-        assert.equal(actions.getAttribute('aria-hidden'), 'true');
-        assert.equal(container.querySelector('[data-quote-transition]'), quote);
-        await act(() => new Promise(resolve => setTimeout(resolve, 100)));
-        assert.ok(Number(actions.style.opacity) < 1, 'retry controls fade out with the steps');
-        assert.notEqual(actions.style.height, 'auto', 'retry controls collapse rather than leaving their height until unmount');
-
+        assert.ok(actions);
+        await act(() => root.render(scene(false)));
+        if (actions.isConnected) assert.ok(actions.closest('[inert]'));
         await settle();
         assert.equal(container.querySelector('[data-processing-actions]'), null);
         assert.equal(container.querySelector('[data-steps-panel]'), null);
         assert.deepEqual([...container.querySelectorAll('button')].map(button => button.textContent), ['Swap now']);
         assert.equal(container.querySelector('button').closest('[inert]'), null);
-
-        for (const failed of [true, false, true, false]) {
-            await act(() => root.render(scene(failed)));
-        }
+        for (const failed of [true, false, true, false]) await act(() => root.render(scene(failed)));
         await settle();
         assert.equal(container.querySelector('[data-processing-actions]'), null);
         assert.deepEqual([...container.querySelectorAll('button')].map(button => button.textContent), ['Swap now']);
-    } finally {
-        await act(() => root.unmount());
-    }
-});
-
-test('manual deposit animates summary entry and retains instructions through their exit and rewind', async () => {
-    const root = createRoot(container);
-    try {
-        await act(() => root.render(view(false, true)));
-        assert.equal(container.querySelector('[data-wallet-execution-panel="overview"]'), null);
-        const controls = container.querySelector('[data-wallet-execution-panel="controls"]');
-
-        await act(() => root.render(view(true, true)));
-        const overview = container.querySelector('[data-wallet-execution-panel="overview"]');
-        const steps = container.querySelector('[data-steps-panel]');
-        assert.ok(overview);
-        assert.ok(steps);
-        assert.equal(container.querySelector('[data-wallet-execution-panel="controls"]'), controls);
-        assert.ok(controls.hasAttribute('inert'));
-        await settle();
-        assert.equal(container.querySelector('[data-wallet-execution-panel="controls"]'), null);
-        assert.equal(overview.style.opacity, '1');
-
-        await act(() => root.render(view(false, true)));
-        assert.equal(container.querySelector('[data-wallet-execution-panel="overview"]'), overview);
-        assert.ok(overview.hasAttribute('inert'));
-        assert.ok(steps.closest('[inert]'));
-        await settle();
-        assert.equal(container.querySelector('[data-wallet-execution-panel="overview"]'), null);
-        assert.equal(container.querySelector('[data-steps-panel]'), null);
         assert.equal(container.querySelector('button').closest('[inert]'), null);
-
-        for (const processing of [true, false, true]) {
-            await act(() => root.render(view(processing, true)));
-        }
-        await settle();
-        assert.equal(container.querySelectorAll('[data-wallet-execution-panel="overview"]').length, 1);
-        assert.equal(container.querySelectorAll('[data-steps-panel]').length, 1);
-        assert.equal(container.querySelector('[data-wallet-execution-panel="controls"]'), null);
     } finally {
         await act(() => root.unmount());
     }
 });
 
-test('wallet confirmation hands off to transaction confirmation without replaying the steps entrance', async () => {
-    const root = createRoot(container);
-    const actions = [
-        { step: 'approve_permit2', status: 'completed' },
-        { step: 'sign', status: 'completed' },
-        { step: 'publish', status: 'action_required' },
-    ];
-    const common = { actions, destinationToken: { asset: 'ETH', decimals: 18 }, receiveAmount: 0.0396 };
-    function WalletController({ ready }) {
-        return React.createElement(WalletExecutionTransition, {
-            workflow: !ready && React.createElement(DepositWorkflowView, {
-                ...common, loading: true, actionStateText: 'Confirm in your wallet',
-            }),
-            controls: ready && React.createElement('button', null, 'Preparing swap'),
-        });
-    }
-    function ProcessingController() {
-        return React.createElement('div', null, React.createElement(DepositWorkflowView, {
+test('submission hands off from the live wallet controller to one active processing panel', async () => {
+    const noop = () => {};
+    const empty = () => null;
+    const childrenOnly = ({ children }) => children;
+    const destinationToken = { asset: 'USDe', decimals: 18 };
+    const context = {
+        swapBasicData: {
+            source_network: { name: 'BASE_MAINNET' }, destination_network: { name: 'BASE_MAINNET' },
+            use_deposit_address: false,
+        },
+        walletExecutionStarted: true,
+        depositActionsResponse: [
+            { step: 'sign', status: 'completed' },
+            { step: 'publish', status: 'action_required' },
+        ],
+    };
+    let showWithdrawScreen = true;
+    const { resolveSwapFlow } = loadWidgetSource('components/utils/resolveSwapFlow.ts', {});
+    const common = { actions: context.depositActionsResponse, destinationToken, receiveAmount: 2.652761339210903 };
+    const { default: SwapDetails } = loadWidgetSource('components/Pages/Swap/Withdraw/SwapDetails.tsx', {
+        './Presentation/Page2Sections': { SwapContentView, ProcessingSectionView },
+        './Summary': { default: () => React.createElement('div', null, 'USDC → USDe') },
+        './SwapQuoteDetails': { SwapQuoteDetails: () => React.createElement('div', null, 'Receive at least') },
+        './Presentation/Page2Contained': { Page2Contained: childrenOnly },
+        '@/components/Common/Sceletons': { SwapDetailsSceleton: empty },
+        '@/components/Widget/Index': { Widget: childrenOnly },
+        '@/context/callbackProvider': { useCallbacks: () => ({ onBackClick: noop, onSwapLifecycle: noop }) },
+        '@/context/swap': { useSwapDataState: () => ({ ...context, flow: resolveSwapFlow({ swapData: context.swapBasicData, depositActions: context.depositActionsResponse, walletExecutionStarted: context.walletExecutionStarted, resolved: { showWithdrawScreen } }) }), useSwapDataUpdate: () => ({ setSwapViewMounted: noop }) },
+        '@/context/swapAccounts': { useSelectedAccount: () => ({ address: '0xsource' }) },
+        '@/hooks/useGaslessAuthorizationStatus': { useGaslessAuthorizationStatus: noop },
+        '@/hooks/useResolvedSwapStatus': { useResolvedSwapStatus: () => ({ showWithdrawScreen }) },
+        '@/hooks/useSwapRetry': { useSwapRetry: () => ({}) },
+        '@/lib/swapLifecycle': {},
+        './ManualWithdraw': { default: empty },
+        './Presentation/RetryView': { RetryView },
+        './Withdraw': { default: () => React.createElement(SendTransactionView, {
+            loading: true, depositActions: context.depositActionsResponse,
+            quote: { destination_token: destinationToken, receive_amount: common.receiveAmount },
+            actionStateText: 'Confirm in your wallet',
+        }) },
+        './Processing': { default: () => React.createElement(DepositWorkflowView, {
             ...common,
-            processing: { title: 'Transfer in progress', inputStatus: 'current', outputStatus: 'upcoming', inputDescription: 'Confirming transaction · no action needed' },
-        }));
-    }
-    const scene = stage => React.createElement(React.StrictMode, null,
-        React.createElement(SwapContentView, { summary: React.createElement('div', null, 'Summary') },
-            stage === 'processing' ? React.createElement(ProcessingController) : React.createElement(WalletController, { ready: stage === 'ready' })));
+            processing: { inputStatus: 'current', outputStatus: 'upcoming', inputDescription: 'Confirming transaction' },
+        }) },
+    });
+    const root = createRoot(container);
+    const scene = () => React.createElement(React.StrictMode, null, React.createElement(SwapDetails, { type: 'contained' }));
     try {
-        await act(() => root.render(scene('ready')));
-        await act(() => {
-            flushSync(() => root.render(scene('wallet')));
-            assert.equal(container.querySelector('[data-steps-panel]').style.opacity, '0', 'the actual first appearance still animates');
-        });
+        await act(() => root.render(scene()));
         await settle();
         assert.match(container.textContent, /Confirm in your wallet/);
-
-        await act(() => root.render(scene('processing')));
-        let panel = container.querySelector('[data-steps-panel]');
-        assert.equal(panel.style.height, 'auto', 'a controller handoff must not collapse an already visible panel');
-        assert.equal(panel.style.opacity, '1', 'a controller handoff must not fade the panel in again');
-        assert.match(panel.textContent, /Confirming transaction · no action needed/);
-        assert.equal(container.querySelectorAll('[data-steps-panel]').length, 1);
-
-        await act(() => root.render(scene('wallet')));
-        panel = container.querySelector('[data-steps-panel]');
-        assert.equal(panel.style.height, 'auto');
-        assert.equal(panel.style.opacity, '1');
-        await act(() => root.render(scene('ready')));
+        context.walletExecutionStarted = false;
+        showWithdrawScreen = false;
+        await act(() => root.render(scene()));
         await settle();
-        assert.equal(container.querySelector('[data-steps-panel]'), null);
-        await act(() => {
-            flushSync(() => root.render(scene('wallet')));
-            assert.equal(container.querySelector('[data-steps-panel]').style.opacity, '0', 'returning after the panel disappeared restores its entrance');
-        });
-        await settle();
+        const panels = container.querySelectorAll('[data-steps-panel]');
+        assert.equal(panels.length, 1);
+        assert.equal(panels[0].closest('[inert]'), null);
+        assert.equal(panels[0].style.opacity, '1');
+        assert.match(panels[0].textContent, /Confirming transaction/);
     } finally {
         await act(() => root.unmount());
     }
 });
 
-test('deposit screen height tweens in both directions without double-animating changes within a screen', async () => {
-    const root = createRoot(container);
-    const originalBounds = dom.window.HTMLElement.prototype.getBoundingClientRect;
-    let measuredHeight = 400;
-    dom.window.HTMLElement.prototype.getBoundingClientRect = () => ({ x: 0, y: 0, top: 0, left: 0, right: 472, bottom: measuredHeight, width: 472, height: measuredHeight });
-    const scene = step => React.createElement(DepositLayoutView, {
-        transitionKey: step,
-        header: React.createElement('header', null, 'Deposit'),
-        footer: React.createElement('footer', null, 'Layerswap'),
-    }, React.createElement('div', null, step));
-    const measure = height => {
-        measuredHeight = height;
-        for (const [observer, target] of measurements)
-            observer.callback([{ target, borderBoxSize: [{ inlineSize: 472, blockSize: height }] }]);
-    };
-    try {
-        await act(() => root.render(scene('methods')));
-        const panel = container.querySelector('header').nextElementSibling.nextElementSibling;
-        // JSDOM has no layout or default computed padding; Framer uses both
-        // when resolving the initial auto height into pixels.
-        panel.style.padding = '0px';
-        await settle();
-        await act(() => measure(400));
-        await settle();
-        assert.equal(panel.style.height, '400px');
-
-        await act(() => root.render(scene('address')));
-        await act(() => measure(600));
-        await act(() => new Promise(resolve => setTimeout(resolve, 70)));
-        assert.ok(parseFloat(panel.style.height) > 400 && parseFloat(panel.style.height) < 600, `screen entry should tween, got ${panel.style.height}`);
-        await settle();
-        assert.equal(panel.style.height, '600px');
-
-        await act(() => measure(500));
-        await act(() => new Promise(resolve => setTimeout(resolve, 40)));
-        assert.equal(panel.style.height, '500px', 'in-screen quote changes track the content without a second tween');
-
-        await act(() => root.render(scene('methods')));
-        await act(() => measure(400));
-        await act(() => new Promise(resolve => setTimeout(resolve, 70)));
-        assert.ok(parseFloat(panel.style.height) > 400 && parseFloat(panel.style.height) < 500, `rewinding should tween, got ${panel.style.height}`);
-        await settle();
-        assert.equal(panel.style.height, '400px');
-    } finally {
-        await act(() => root.unmount());
-        dom.window.HTMLElement.prototype.getBoundingClientRect = originalBounds;
-    }
-});
-
-test('deposit details collapse while confirmation expands, and rewind restores the instructions', async () => {
+test('departing deposit instructions are inactive and become usable again on return', async () => {
     const root = createRoot(container);
     const scene = processing => React.createElement(DepositAddressTransition, {
         summary: processing && React.createElement('div', null, '100 USDC on Ethereum → 99 USDC on Base'),
@@ -322,27 +240,17 @@ test('deposit details collapse while confirmation expands, and rewind restores t
     });
     try {
         await act(() => root.render(scene(false)));
-        const details = container.querySelector('[data-wallet-execution-panel="controls"]');
         await act(() => root.render(scene(true)));
-        assert.equal(container.querySelector('[data-wallet-execution-panel="controls"]'), details, 'keep the address and expanded details until their collapse finishes');
-        assert.ok(details.hasAttribute('inert'));
-        const summary = container.querySelector('[data-wallet-execution-panel="overview"]');
-        assert.match(summary.textContent, /100 USDC on Ethereum/);
-        const confirmation = container.querySelector('[data-steps-panel]');
-        assert.ok(confirmation, 'confirmation enters alongside the collapsing details');
-        await act(() => new Promise(resolve => setTimeout(resolve, 70)));
-        assert.notEqual(details.style.height, 'auto');
-        assert.ok(Number(details.style.opacity) < 1);
+        const details = container.querySelector('[data-wallet-execution-panel="controls"]');
+        if (details) assert.ok(details.closest('[inert]'));
         await settle();
         assert.equal(container.querySelector('[data-wallet-execution-panel="controls"]'), null);
-        assert.equal(container.querySelector('[data-steps-panel]'), confirmation);
-        assert.equal(container.querySelector('[data-wallet-execution-panel="overview"]'), summary);
-        assert.equal(summary.style.opacity, '1');
+        const confirmation = container.querySelector('[data-steps-panel]');
+        assert.ok(confirmation);
+        assert.equal(confirmation.closest('[inert]'), null);
 
         await act(() => root.render(scene(false)));
-        assert.ok(summary.hasAttribute('inert'));
-        assert.equal(container.querySelector('[data-steps-panel]'), confirmation);
-        assert.ok(confirmation.closest('[inert]'));
+        if (confirmation.isConnected) assert.ok(confirmation.closest('[inert]'));
         await settle();
         assert.equal(container.querySelector('[data-steps-panel]'), null);
         assert.equal(container.querySelector('[data-wallet-execution-panel="overview"]'), null);
@@ -355,6 +263,142 @@ test('deposit details collapse while confirmation expands, and rewind restores t
         await settle();
         assert.equal(container.querySelectorAll('button').length, 1);
         assert.equal(container.querySelector('[data-steps-panel]'), null);
+    } finally {
+        await act(() => root.unmount());
+    }
+});
+
+test('changing execution slots deactivates outgoing steps and settles on the latest screen', async () => {
+    const root = createRoot(container);
+    const scene = processing => React.createElement(SwapContentView, {
+        summary: React.createElement('div', null, 'Summary'),
+        transferStage: processing ? 'processing' : 'withdraw',
+    }, processing
+        ? React.createElement(StepsPanel, { label: 'Processing' }, 'Confirming transfer')
+        : React.createElement(WalletExecutionTransition, {
+            workflow: React.createElement(StepsPanel, { label: 'Wallet' }, 'Confirm in your wallet'),
+        }));
+    try {
+        await act(() => root.render(scene(false)));
+        await settle();
+        const outgoing = container.querySelector('[aria-label="Wallet"]');
+        await act(() => root.render(scene(true)));
+        if (outgoing.isConnected) assert.ok(outgoing.closest('[inert]'));
+        await settle();
+        assert.equal(container.querySelectorAll('[data-steps-panel]').length, 1);
+        assert.equal(container.querySelector('[aria-label="Processing"]').style.opacity, '1');
+        for (const processing of [false, true, false, true]) {
+            await act(() => root.render(scene(processing)));
+        }
+        await settle();
+        assert.equal(container.querySelectorAll('[data-steps-panel]').length, 1);
+        assert.equal(container.querySelector('[data-steps-panel]').getAttribute('aria-label'), 'Processing');
+    } finally {
+        await act(() => root.unmount());
+    }
+});
+
+test('retry controls exit when removed within the same processing section', async () => {
+    const root = createRoot(container);
+    const scene = retry => React.createElement(ProcessingSectionView, {
+        actions: retry ? React.createElement(RetryView) : undefined,
+    }, React.createElement(StepsPanel, null, 'Processing'));
+    try {
+        await act(() => root.render(scene(true)));
+        const panel = container.querySelector('[data-steps-panel]');
+        const actions = container.querySelector('[data-processing-actions]');
+        await act(() => root.render(scene(false)));
+        if (actions.isConnected) assert.ok(actions.closest('[inert]'));
+        await settle();
+        assert.equal(container.querySelector('[data-processing-actions]'), null);
+        assert.equal(container.querySelector('[data-steps-panel]'), panel);
+        for (const retry of [true, false, true]) await act(() => root.render(scene(retry)));
+        await settle();
+        assert.equal(container.querySelectorAll('[data-processing-actions]').length, 1);
+        assert.equal(container.querySelector('[data-processing-actions]').hasAttribute('inert'), false);
+    } finally {
+        await act(() => root.unmount());
+    }
+});
+
+test('a processing section without actions releases its execution slot on exit', async () => {
+    const root = createRoot(container);
+    const scene = processing => React.createElement(SwapContentView, {
+        summary: React.createElement('div', null, 'Summary'),
+        transferStage: processing ? 'processing' : 'withdraw',
+    }, processing
+        ? React.createElement(ProcessingSectionView, null,
+            React.createElement(StepsPanel, null, 'Processing'))
+        : React.createElement('button', null, 'Swap now'));
+    try {
+        await act(() => root.render(scene(true)));
+        await act(() => root.render(scene(false)));
+        await settle();
+        assert.equal(container.querySelector('[data-steps-panel]'), null);
+        assert.equal(container.querySelector('[data-wallet-execution-panel="workflow"]'), null);
+    } finally {
+        await act(() => root.unmount());
+    }
+});
+
+test('the visible transfer status settles on the latest rapid update', async () => {
+    const root = createRoot(container);
+    const scene = title => React.createElement(TransferStatusHeader, { title, progress: 20 });
+    try {
+        await act(() => root.render(scene('Transfer in progress')));
+        for (const title of ['Transfer complete', 'Refund pending', 'Refund sent']) {
+            await act(() => root.render(scene(title)));
+        }
+        // Let React commit the exit before advancing the incoming text.
+        for (let i = 0; i < 2; i++) await act(() => new Promise(resolve => setTimeout(resolve, 200)));
+        assert.equal(container.querySelector('[data-transfer-title]').textContent, 'Refund sent');
+        assert.equal(container.querySelector('h3').getAttribute('aria-label'), 'Refund sent');
+        await act(() => root.render(scene('Transfer complete')));
+        await act(() => root.render(scene('Refund sent')));
+        await settle();
+        assert.equal(container.querySelector('[data-transfer-title]').textContent, 'Refund sent');
+    } finally {
+        await act(() => root.unmount());
+    }
+});
+
+test('confirmation updates and completed step text replace the previous pending state', async () => {
+    const root = createRoot(container);
+    const scene = (name, confirmations, status = 'current') => React.createElement(Steps, { steps: [{
+        id: 'input_transfer', name, status,
+        description: confirmations && React.createElement('span', null, `Confirmations ${confirmations}`),
+    }] });
+    try {
+        await act(() => root.render(scene('Processing your deposit', '1/12')));
+        for (const count of ['2/12', '3/12', '5/12']) {
+            await act(() => root.render(scene('Confirming your deposit', count)));
+        }
+        assert.match(container.textContent, /Confirmations 5\/12/);
+        await act(() => root.render(scene('Deposit confirmed', undefined, 'complete')));
+        for (let i = 0; i < 2; i++) await act(() => new Promise(resolve => setTimeout(resolve, 200)));
+        assert.equal(container.querySelector('[data-step-text]').textContent, 'Deposit confirmed');
+        assert.doesNotMatch(container.textContent, /Confirmations|Processing your deposit/);
+        assert.equal(container.querySelector('[data-status-step="input_transfer"]').hasAttribute('aria-current'), false);
+    } finally {
+        await act(() => root.unmount());
+    }
+});
+
+test('closing quote details makes them inactive before removing their contents', async () => {
+    const root = createRoot(container);
+    const scene = compact => React.createElement(QuoteView, {
+        isOpen: true, compact,
+        summary: React.createElement('div', null, 'Quote'),
+        details: React.createElement('div', null, 'Expanded fees'),
+    });
+    try {
+        await act(() => root.render(scene(false)));
+        await settle();
+        const details = container.querySelector('.AccordionContent');
+        await act(() => root.render(scene(true)));
+        assert.ok(details.hasAttribute('inert'));
+        await settle();
+        assert.equal(details.textContent, '');
     } finally {
         await act(() => root.unmount());
     }

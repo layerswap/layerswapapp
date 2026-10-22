@@ -1,5 +1,29 @@
 # @layerswap/wallet-tron
 
+## 2.5.1
+
+### Patch Changes
+
+- 18fc71c: Estimate gas with the connected source account's selected token balance while the transfer amount is empty. Use the entered amount once available and pass it through the detailed gas fee view.
+
+  When no source wallet is connected, use the route maximum for the Max shortcut once available rather than a disconnected account's cached balance. Keep Max unavailable until that route maximum is known.
+
+  Pass the transfer amount to EVM and Tron gas providers when building transactions.
+
+  Keep Max usable for oversized or fractional amounts without spending the fee reserve.
+
+- Updated dependencies [2463dd2]
+- Updated dependencies
+- Updated dependencies [a9c35f8]
+- Updated dependencies [419387b]
+- Updated dependencies [34da257]
+- Updated dependencies [a2136b6]
+- Updated dependencies [78fa843]
+- Updated dependencies [a2136b6]
+  - @layerswap/widget-types@2.5.1
+  - @layerswap/wallet-core@2.5.1
+  - @layerswap/utils@2.5.1
+
 ## 2.4.0
 
 ### Patch Changes

@@ -171,6 +171,8 @@ test('exact gas loading preserves the pending wallet request and its execution l
                 state.depositActionsResponse = [action];
                 rerender();
             },
+            canAdjustAmount: () => true,
+            acquireWalletExecution: () => noop,
             startFreshSwapAttempt: noop,
             markWalletExecutionStarted: noop,
             setQuoteLoading: noop,
@@ -188,6 +190,10 @@ test('exact gas loading preserves the pending wallet request and its execution l
         useDepositSignatureStore: (s) => s({ signatures: {} }),
     };
     const imports = {
+        '@/lib/amountPresets': { AmountPresetChangedError: class extends Error {}, isAmountPreset: () => false },
+        '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput: noop } },
+        '@layerswap/wallet-core': loadSource('../../../wallets/core/src/lib/walletConnect/walletRequestStore.ts'),
+        '../../Presentation/WalletRequestRecovery': { WalletRequestRecovery: () => null },
         '@/context/swap': swapHooks,
         '@/context/settings': {
             useSettingsState: () => ({ networks: [network] }),
@@ -326,7 +332,7 @@ test('exact gas loading preserves the pending wallet request and its execution l
             },
         ),
         '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
-        formik: { useFormikContext: () => ({ setFieldValue: noop }) },
+        formik: { useFormikContext: () => ({ values: {}, setValues: noop }) },
         '../Form/SecondaryComponents/validationError/AdjustAmountButton': {
             AdjustAmountButton: () =>
                 React.createElement('div', null, 'Adjust amount'),
