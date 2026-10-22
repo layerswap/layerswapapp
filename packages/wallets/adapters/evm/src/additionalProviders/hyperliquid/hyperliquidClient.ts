@@ -1,4 +1,5 @@
 import { fetchWithTimeout, retry } from "@layerswap/utils";
+import { parseUnits } from "viem";
 
 interface ClearinghouseState {
     assetPositions: {
@@ -50,13 +51,6 @@ interface SpotClearinghouseState {
         total: string;
         entryNtl: string;
     }[];
-}
-
-export type HyperliquidTokenBalance = {
-    coin: string;
-    total: number;
-    hold: number;
-    available: number;
 }
 
 /**
@@ -115,33 +109,24 @@ export type HyperliquidSignature = { r: string; s: string; v: number };
 
 export type HyperliquidWithdrawResponse = { status: 'ok' } | { status: 'err'; response: string };
 
-/** Free, withdrawable USDC split across the two HyperCore pools. */
+/** Free, withdrawable USDC in token base units across the two HyperCore pools. */
 export type WithdrawableSplit = {
     /** Spot available = total - hold, floored at 0. */
-    spot: number;
+    spot: bigint;
     /** Perps `withdrawable` (free USDC after margin), floored at 0. */
-    perps: number;
+    perps: bigint;
     /** spot + perps. */
-    combined: number;
+    combined: bigint;
 };
 
-const parseBalanceAmount = (value: string | undefined): number => {
-    const amount = Number(value)
-    return Number.isFinite(amount) ? amount : 0
-}
-
-export const getAvailableTokenBalance = (state: SpotClearinghouseState, coin: string): HyperliquidTokenBalance => {
-    const balance = state.balances.find(b => b.coin.toUpperCase() === coin.toUpperCase())
-    const total = parseBalanceAmount(balance?.total)
-    const hold = parseBalanceAmount(balance?.hold)
-    const available = Math.max(total - hold, 0)
-
-    return {
-        coin,
-        total,
-        hold,
-        available,
+/** Subtract before truncating dust, without rounding an unavailable base unit up. */
+const getWithdrawableAmount = (total: string, hold: string, decimals: number): bigint => {
+    if (![total, hold].every(value => typeof value === 'string' && /^-?\d+(\.\d+)?$/.test(value))) {
+        throw new Error('Unable to read your Hyperliquid balance. Please try again.')
     }
+    const precision = Math.max(decimals, total.split('.')[1]?.length ?? 0, hold.split('.')[1]?.length ?? 0)
+    const available = parseUnits(total, precision) - parseUnits(hold, precision)
+    return available > 0n ? available / (10n ** BigInt(precision - decimals)) : 0n
 }
 
 export class HyperliquidClient {
@@ -192,15 +177,16 @@ export class HyperliquidClient {
      * covers the amount. Fetches both clearinghouse states concurrently; either failing
      * rejects the whole split (we can't decide a source on partial data).
      */
-    async getWithdrawableSplit(user: string, nodeUrl: string, coin: string, timeoutMs?: number, retryCount?: number): Promise<WithdrawableSplit> {
+    async getWithdrawableSplit(user: string, nodeUrl: string, coin: string, decimals: number, timeoutMs?: number, retryCount?: number): Promise<WithdrawableSplit> {
         const [spotState, perpsState] = await Promise.all([
             this.getSpotClearinghouseState(user, nodeUrl, timeoutMs, retryCount),
             this.getClearinghouseState(user, nodeUrl, timeoutMs, retryCount),
         ])
-        const spot = getAvailableTokenBalance(spotState, coin).available
+        const balance = spotState.balances.find(b => b.coin.toUpperCase() === coin.toUpperCase())
+        const spot = balance ? getWithdrawableAmount(balance.total, balance.hold, decimals) : 0n
         // `withdrawable` is the free USDC after margin — the correct field, not
         // accountValue/totalRawUsd (which include margin-locked equity).
-        const perps = Math.max(parseBalanceAmount(perpsState.withdrawable), 0)
+        const perps = getWithdrawableAmount(perpsState.withdrawable, '0', decimals)
         return { spot, perps, combined: spot + perps }
     }
 

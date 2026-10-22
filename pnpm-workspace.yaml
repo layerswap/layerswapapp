@@ -1,6 +1,7 @@
 packages:
   - packages/**
   - apps/*
+  - eslint-plugins/*
 
 catalog:
   '@tanstack/react-query': 5.90.11
@@ -12,7 +13,7 @@ catalog:
   '@walletconnect/universal-provider': 2.21.8
   '@walletconnect/types': 2.21.8
   '@walletconnect/utils': 2.21.8
-  axios: 1.18.1
+  axios: 1.20.0
   react: 19.2.3
   react-dom: 19.2.3
   rimraf: ^5.0.0

@@ -1,1 +1,15 @@
 # @layerswap/widget-react
+
+## 1.0.2
+
+### Patch Changes
+
+- Fix React runtime compatibility between host applications and the CDN widget.
+
+## 1.0.1
+
+### Patch Changes
+
+- 747f2a8: Re-export the host callback event types from `@layerswap/widget-types`: `ErrorEventType`, `SwapStatusEvent`, `SwapLifecycleEvent`, `WidgetTelemetryEvent`, `WidgetTelemetryHandler`, `WidgetFlowStep`, `WidgetOperation` and `WidgetOperationOutcome`, so `callbacks` handlers can be typed without a direct dependency on `@layerswap/widget-types`.
+- Updated dependencies [747f2a8]
+  - @layerswap/widget-js@1.0.1

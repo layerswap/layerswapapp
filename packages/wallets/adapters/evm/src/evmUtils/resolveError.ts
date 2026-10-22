@@ -1,4 +1,5 @@
-import { BaseError, InsufficientFundsError, EstimateGasExecutionError, UserRejectedRequestError } from 'viem'
+import { BaseError, InsufficientFundsError, EstimateGasExecutionError } from 'viem'
+import { isUserRejection } from '@layerswap/wallet-core/errors'
 
 type ResolvedError = "insufficient_funds" | "transaction_rejected"
 
@@ -9,9 +10,11 @@ export const resolveError = (error: BaseError): ResolvedError | undefined => {
     if (isInsufficientFundsError)
         return "insufficient_funds"
 
-    const isUserRejectedRequestError = typeof error?.walk === "function" && error?.walk && error?.walk((e: BaseError) => e instanceof UserRejectedRequestError) instanceof UserRejectedRequestError
-
-    if (isUserRejectedRequestError)
+    // viem wraps every CAIP-25 5000 in UserRejectedRequestError, including wallet
+    // failures relayed that way; the shared classifier tells the two apart.
+    // It runs before the -32000 check below: WalletConnect wallets also answer
+    // a declined prompt with -32000.
+    if (isUserRejection(error))
         return "transaction_rejected"
 
     const code_name = error?.['code']
@@ -27,7 +30,11 @@ export const resolveError = (error: BaseError): ResolvedError | undefined => {
         || code_name === 'EstimateGasExecutionError'
         || code_name === 3)
         return "insufficient_funds"
-    else if (code_name === 4001 || inner_code === -1) {
-        return "transaction_rejected"
-    }
+}
+
+/**
+ * Share the rejection decision between EVM signing and transaction errors.
+ */
+export function isEvmUserRejection(error: unknown): boolean {
+    return isUserRejection(error) || resolveError(error as BaseError) === 'transaction_rejected'
 }

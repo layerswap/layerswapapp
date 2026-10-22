@@ -1,5 +1,97 @@
 # @layerswap/wallet-fuel
 
+## 2.5.1
+
+### Patch Changes
+
+- 2463dd2: Switch the wallet to the source chain from the send button instead of a separate step.
+  - The standalone "Switch network" button on the wallet withdrawal step is gone. When the connected wallet reports a chain other than the swap's source chain (EVM and Fuel wallets), tapping the send button now asks the wallet to switch and continues to swap creation and the transaction or gasless signature prompt without another tap. A switch the wallet completes without asking shows nothing; if the wallet is still waiting after a second, the button reads "Switching network" with a "confirm in your wallet" message. Already-approved WalletConnect chains switch locally with no wallet prompt. Rejections and failures keep the button as "Try again" with the "Network switch failed" message.
+  - `ChangeNetworkButton` is no longer exported from `@layerswap/widget/internal`.
+  - Preview snapshots (`@layerswap/widget/internal`): `Page2WalletState` drops `{ kind: 'network' }`; the send state gains `networkSwitch` (`'pending' | 'rejected' | 'still-waiting' | 'timeout'`) rendered through the send button, and `ChangeNetworkView` is removed.
+  - `onSwapLifecycle` still emits `network_switch_started`, `network_switched`, `network_switch_rejected` and `network_switch_failed`; their `path` is now `SendTransactionButton`.
+  - The switch waits at most 60 seconds for the wallet, so an in-app browser that never answers a dismissed prompt no longer leaves the send flow stuck; the attempt is reported with `reasonCode: timeout`.
+  - New `WalletErrorReasonCode` `request_pending` (`@layerswap/widget-types`), recognised by `normalizeWalletErrorCode` from EIP-1193 `-32002` and "already pending" / "already processing" messages. A second tap while the wallet still shows the switch prompt is reported as `network_switch_failed` with `reasonCode: request_pending` and tells the user to confirm the pending request in the wallet.
+  - `@layerswap/wallet-fuel`: `switchChain` now rethrows after logging instead of swallowing the failure, so the send flow stops rather than transferring on the wrong network.
+
+- Updated dependencies [2463dd2]
+- Updated dependencies
+- Updated dependencies [a9c35f8]
+- Updated dependencies [419387b]
+- Updated dependencies [34da257]
+- Updated dependencies [a2136b6]
+- Updated dependencies [78fa843]
+- Updated dependencies [a2136b6]
+  - @layerswap/widget-types@2.5.1
+  - @layerswap/wallet-core@2.5.1
+  - @layerswap/utils@2.5.1
+
+## 2.4.0
+
+### Patch Changes
+
+- Keep Fuel account permissions current and send transactions through the selected connector.
+  - Reconcile accounts on account, connection, and network changes; remove stale authorized addresses and prevent older synchronization results from overwriting newer wallet state.
+  - Preserve the last known wallet during transient account queries. When only network resolution fails, retain cached network metadata while applying the confirmed account permissions.
+  - Use the selected source address and connector, and check sender authorization before preparing and before sending the transaction.
+  - Classify unauthorized senders as account mismatches with `reasonCode: 'unauthorized'`, and display the supplied authorization details in the widget.
+
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @layerswap/widget-types@2.4.0
+  - @layerswap/wallet-core@2.4.0
+  - @layerswap/utils@2.4.0
+
+## 2.3.1
+
+### Patch Changes
+
+- @layerswap/wallet-core@2.3.1
+- @layerswap/utils@2.3.1
+
+## 2.3.0
+
+### Patch Changes
+
+- dc962d6: Transfer providers declare why a transfer failed instead of relying on the rejected UI label.
+  - Every thrown transfer error is built with `walletActionError` / `userRejectedError` from `@layerswap/wallet-core/errors`: it keeps its `ActionMessageType` name for the UI, carries the original error as `cause`, always has a string `message`, and declares `reasonCode: 'user_rejected'` only for a wallet decline. The mapping lives in a pure `transferProvider/toTransferError` module per adapter, covered by `tests/transfer-errors.test.mjs`.
+  - Starknet: `message` is a string again (it used to be the raw error object). `USER_REFUSED_OP` is a declared decline; `Execute failed` keeps the rejected copy but carries no reason code and is reported to the host as a failure until its wallet-side origin is verified.
+  - Paradex: the `'reject'` substring heuristic is gone; only structured declines from the backing EVM/Starknet wallet (4001, viem `UserRejectedRequestError`, `USER_REFUSED_OP`) count as rejections, so sequencer/gateway rejections are failures.
+  - Stellar: the decline vocabulary (`declin|cancel|closed`) applies only to the wallet prompt (`signTransaction`); account load, fee, simulation, validation and Horizon submission failures containing those words are failures (`UnexpectedErrorMessage` / `TransactionFailed` / `InsufficientFunds`).
+  - Fuel, TON, TRON, Bitcoin, Solana: conditions unchanged; declines are declared explicitly and other failures keep their labels.
+
+- f26c1e7: Wallet declines are reported as declines, and node errors no longer pass for declines.
+  - `@layerswap/wallet-core/errors` exports `errorMessage(error)`: an Error's message, a string as is, or a plain `{ message }` object's string message, else `String(error)`. Every adapter's `toTransferError` uses it, so plain-object wallet rejections keep their text instead of `[object Object]`.
+  - Classifier: decline text must name the user (`user rejected`, `user denied`, `denied by the user`, …); the generic `rejected the request` phrase is gone, so a node's `origin rejected the request` is no longer `user_rejected`. A revert reason (`execution reverted: …`) never counts as a decline, and on a JSON-RPC server error (`-32000`..`-32099`) the text must start with `user rejected` / `user denied` — WalletConnect wallets that decline with `-32000 "User rejected the request."` stay `user_rejected`. Definitive codes (4001, 5000, `ACTION_REJECTED`, `UserRejectedRequestError`) are unchanged.
+  - EVM: `resolveError` checks decline evidence before the nested `-32000` insufficient-funds branch, so a decline relayed as `-32000` is no longer shown as insufficient funds.
+  - Starknet: a plain `{ code: 113, message: 'An error occurred (USER_REFUSED_OP)' }` rejection is a declared decline carrying its real message.
+  - Stellar: the signing-prompt vocabulary includes `reject` again, so Albedo's `Action request was rejected by the user.` is a decline.
+  - TON: TON Connect's `UserRejectsError` is a declared decline (with a name/message fallback for a duplicate SDK copy); the `Reject request` string is still recognised.
+
+- Updated dependencies [95d95a1]
+- Updated dependencies [31d0d1f]
+- Updated dependencies [5bd03c7]
+- Updated dependencies [bdf46a0]
+- Updated dependencies [f26c1e7]
+- Updated dependencies [bdf46a0]
+  - @layerswap/widget-types@2.3.0
+  - @layerswap/wallet-core@2.3.0
+  - @layerswap/utils@2.3.0
+
+## 2.2.0
+
+### Minor Changes
+
+- Global improvements and bug fixes
+
+### Patch Changes
+
+- Updated dependencies
+  - @layerswap/utils@2.2.0
+  - @layerswap/wallet-core@2.2.0
+  - @layerswap/widget-types@2.2.0
+
 ## 2.1.0
 
 ### Minor Changes

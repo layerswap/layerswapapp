@@ -1,4 +1,5 @@
 export * from "./api"
+export * from './chainRegistry'
 export * from './buildDeepLink'
 export * from "./createRegistryConnector"
 export * from "./connectorSource"
@@ -9,6 +10,7 @@ export * from './mapConnectError'
 export * from "./mapWallet"
 export * from "./registry"
 export * from './subscribeDisplayUri'
+export * from './subscribeWalletRequests'
 export * from "./types"
 export * from "./additionalConnectorsStore"
 export * from "./connectModalStore"

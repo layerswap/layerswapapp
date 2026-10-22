@@ -12,6 +12,7 @@ import {
     Operation,
     StrKey,
     TransactionBuilder,
+    TransactionFailedError,
     encodeMuxedAccount,
     encodeMuxedAccountToAddress,
     nativeToScVal,
@@ -40,14 +41,16 @@ import {
 } from '../dist/esm/stellarBalances.js'
 import {
     STELLAR_APPKIT_WALLET_CONNECT_ID,
-    StellarWalletConnectChain,
     StellarWalletConnectModule,
 } from '../dist/esm/service/StellarWalletConnectModule.js'
+import { StellarWalletConnectChain } from '../dist/esm/constants.js'
 import { StellarConnectionService } from '../dist/esm/service/StellarConnectionService.js'
 import { toStellarConnector } from '../dist/esm/service/stellarConnector.js'
 import { stellarStore } from '../dist/esm/service/stellarStore.js'
 import { stellarKitManager } from '../dist/esm/service/stellarKitManager.js'
 import { createStellarTransfer } from '../dist/esm/transferProvider/createStellarTransfer.js'
+import { toSigningError, toTransferError } from '../dist/esm/transferProvider/toTransferError.js'
+import { isUserRejection } from '@layerswap/wallet-core/errors'
 
 const sourceKey = Keypair.random()
 const receiverKey = Keypair.random()
@@ -227,16 +230,9 @@ test('maps backend token fields to native and issued Stellar assets', () => {
     assert.throws(() => resolveStellarAsset({ ...issuedToken, contract: depositoryContract }), /issuer is invalid/)
 })
 
-test('validates native and issued-asset depository XDR on both networks', () => {
-    const native = buildFixture()
-    assert.equal(validateFixture(native).source, sourceKey.publicKey())
-
-    const issued = buildFixture({ networkPassphrase: Networks.PUBLIC, token: issuedToken })
-    assert.equal(validateFixture(issued).source, sourceKey.publicKey())
-})
-
 test('builds native and issued-asset deposits from four arguments with the connected wallet as from', () => {
     for (const fixture of [buildFixture(), buildFixture({ networkPassphrase: Networks.PUBLIC, token: issuedToken })]) {
+        assert.equal(validateFixture(fixture).source, sourceKey.publicKey())
         const encodedOperation = buildDepositOperation(fixture)
         const operation = Operation.fromXdrObject(encodedOperation)
         assert.equal(operation.source, sourceKey.publicKey())
@@ -446,6 +442,48 @@ test('maps spendable Horizon balances like the backend', () => {
     assert.equal(baseUnitsToNumber(100n, 7), 0.00001)
 })
 
+test('uses verified mainnet endpoints when backend public nodes are unavailable', async t => {
+    const requests = []
+    let passphrase = Networks.TESTNET
+    t.mock.method(globalThis, 'fetch', async (input, init) => {
+        const request = input instanceof Request ? input : new Request(input, init)
+        requests.push({ url: request.url, method: request.method })
+        if (request.url === 'https://horizon.stellar.org/' && request.method === 'GET') {
+            return Response.json({ network_passphrase: passphrase })
+        }
+        if (request.url === 'https://mainnet.sorobanrpc.com/' && request.method === 'POST') {
+            const body = await request.json()
+            assert.equal(body.method, 'getNetwork')
+            return Response.json({ jsonrpc: '2.0', id: body.id, result: { passphrase, protocolVersion: 27 } })
+        }
+        assert.fail(`Unexpected Stellar request: ${request.method} ${request.url}`)
+    })
+    const network = {
+        name: 'STELLAR_MAINNET',
+        node_url: 'https://horizon.stellar.org',
+        nodes: [],
+    }
+
+    // A reachable endpoint on the wrong chain must still be rejected.
+    await assert.rejects(getStellarHorizonServer(network, Networks.PUBLIC), /No Stellar Horizon endpoint/)
+    await assert.rejects(getStellarRpcServer(network, Networks.PUBLIC), /No Stellar RPC endpoint/)
+
+    // Failed verification must not prevent a later successful retry.
+    passphrase = Networks.PUBLIC
+    const [horizon, rpcServer] = await Promise.all([
+        getStellarHorizonServer(network, Networks.PUBLIC),
+        getStellarRpcServer(network, Networks.PUBLIC),
+    ])
+    assert.equal(horizon.serverURL.toString(), 'https://horizon.stellar.org/')
+    assert.equal(rpcServer.serverURL.toString(), 'https://mainnet.sorobanrpc.com/')
+    assert.deepEqual(requests, [
+        { url: 'https://horizon.stellar.org/', method: 'GET' },
+        { url: 'https://mainnet.sorobanrpc.com/', method: 'POST' },
+        { url: 'https://horizon.stellar.org/', method: 'GET' },
+        { url: 'https://mainnet.sorobanrpc.com/', method: 'POST' },
+    ])
+})
+
 test('discovers Horizon and RPC from the backend network node list', async () => {
     const originalFetch = globalThis.fetch
     const requests = []
@@ -491,63 +529,19 @@ test('discovers Horizon and RPC from the backend network node list', async () =>
 })
 
 test('maps web and bridge Stellar wallets without requiring extensions', () => {
-    const connectors = [
-        {
-            id: 'albedo',
-            name: 'Albedo',
-            type: 'HOT_WALLET',
-            isAvailable: true,
-            isPlatformWrapper: false,
-            icon: 'albedo.png',
-            url: 'https://albedo.link/',
-        },
-        {
-            id: 'xbull',
-            name: 'xBull',
-            type: 'HOT_WALLET',
-            isAvailable: true,
-            isPlatformWrapper: false,
-            icon: 'xbull.png',
-            url: 'https://xbull.app',
-        },
-        {
-            id: 'freighter',
-            name: 'Freighter',
-            type: 'HOT_WALLET',
-            isAvailable: true,
-            isPlatformWrapper: false,
-            icon: 'freighter.png',
-            url: 'https://freighter.app',
-        },
-        {
-            id: 'wallet_connect',
-            name: 'WalletConnect',
-            type: 'BRIDGE_WALLET',
-            // SignClient initializes asynchronously, so the Kit can report
-            // false during its first supported-wallet refresh.
-            isAvailable: false,
-            isPlatformWrapper: false,
-            icon: 'walletconnect.png',
-            url: 'https://walletconnect.com/',
-        },
-    ].map(toStellarConnector)
-    const albedo = connectors.find(connector => connector.id === 'albedo')
-    const xbull = connectors.find(connector => connector.id === 'xbull')
-    const freighter = connectors.find(connector => connector.id === 'freighter')
-    const walletConnect = connectors.find(connector => connector.id === 'wallet_connect')
-
-    assert.equal(albedo?.type, 'injected')
-    assert.equal(albedo?.isLoadable, true)
-    assert.equal(albedo?.extensionNotFound, false)
-    assert.equal(xbull?.type, 'injected')
-    assert.equal(xbull?.isLoadable, true)
-    assert.equal(xbull?.extensionNotFound, false)
-    assert.equal(freighter?.type, 'injected')
-    assert.equal(freighter?.isLoadable, false)
-    assert.equal(walletConnect?.type, 'walletConnect')
-    assert.equal(walletConnect?.isLoadable, true)
-    assert.equal(walletConnect?.hasBrowserExtension, false)
-    assert.equal(walletConnect?.extensionNotFound, false)
+    const cases = [
+        ['albedo', 'HOT_WALLET', true, { type: 'injected', isLoadable: true, extensionNotFound: false }],
+        ['xbull', 'HOT_WALLET', true, { type: 'injected', isLoadable: true, extensionNotFound: false }],
+        ['freighter', 'HOT_WALLET', true, { type: 'injected', isLoadable: false }],
+        // WalletConnect can be unavailable while SignClient initializes.
+        ['wallet_connect', 'BRIDGE_WALLET', false, { type: 'walletConnect', isLoadable: true, hasBrowserExtension: false, extensionNotFound: false }],
+    ]
+    for (const [id, type, isAvailable, expected] of cases) {
+        const connector = toStellarConnector({ id, name: id, type, isAvailable, isPlatformWrapper: false })
+        for (const [field, value] of Object.entries(expected)) {
+            assert.equal(connector[field], value, id + '.' + field)
+        }
+    }
 })
 
 test('emits the WalletConnect URI and signs Stellar XDR through SignClient', async () => {
@@ -820,4 +814,145 @@ test('routes Stellar registry wallets through the shared QR modal', async () => 
         stellarStore.getState().setWallets([])
         stellarStore.getState().setActive(undefined, undefined)
     }
+})
+
+test('only a declined wallet prompt is a rejection; pre-flight and submit failures are failures', async t => {
+    const signTransaction = stellarKitManager.signTransaction
+    const fixture = buildFixture()
+    const params = {
+        selectedWallet: { address: sourceKey.publicKey() },
+        depositAddress: fixture.depository,
+        network: {
+            name: 'STELLAR_TESTNET',
+            type: 'stellar',
+            chain_id: fixture.networkPassphrase,
+            node_url: 'https://error-stage.example',
+        },
+        token: fixture.token,
+        amountInBaseUnits: fixture.amount,
+        encodedArgs: fixture.encodedArgs,
+        sequenceNumber: fixture.depositId,
+        callData: '',
+    }
+    const provider = createStellarTransfer()
+    const thrownBy = promise => promise.then(() => assert.fail('must throw'), error => error)
+    const installHappyPath = () => {
+        t.mock.method(Horizon.Server.prototype, 'root', async () => ({ network_passphrase: fixture.networkPassphrase }))
+        t.mock.method(rpc.Server.prototype, 'getNetwork', async () => ({ passphrase: fixture.networkPassphrase }))
+        t.mock.method(Horizon.Server.prototype, 'loadAccount', async address => new Account(address, sourceSequence))
+        t.mock.method(Horizon.Server.prototype, 'fetchBaseFee', async () => 100)
+        t.mock.method(rpc.Server.prototype, 'prepareTransaction', async () => fixture.transaction)
+        t.mock.method(stellarKitManager, 'revalidate', async () => {})
+        t.mock.method(stellarKitManager, 'signTransaction', async (envelope, passphrase, address) => {
+            const transaction = TransactionBuilder.fromXdr(envelope, passphrase)
+            transaction.sign(sourceKey)
+            return { signedTxXdr: transaction.toXdr(), signerAddress: address }
+        })
+        t.mock.method(Horizon.Server.prototype, 'submitTransaction', async () => ({ successful: true, hash: 'deposit-hash' }))
+    }
+
+    // A closed socket while loading the account contains 'closed' but is not the user's decision.
+    installHappyPath()
+    const socketClosed = new Error('WebSocket connection closed')
+    t.mock.method(Horizon.Server.prototype, 'loadAccount', async () => { throw socketClosed })
+    let thrown = await thrownBy(provider.executeTransfer(params))
+    assert.equal(thrown.name, 'UnexpectedErrorMessage')
+    assert.equal(thrown.cause, socketClosed)
+    assert.equal(isUserRejection(thrown), false)
+    assert.equal(typeof thrown.message, 'string')
+
+    // The wallet prompt is the only stage where a decline can happen.
+    installHappyPath()
+    const declined = new Error('User declined')
+    t.mock.method(stellarKitManager, 'signTransaction', async () => { throw declined })
+    thrown = await thrownBy(provider.executeTransfer(params))
+    assert.equal(thrown.name, 'TransactionRejected')
+    assert.equal(thrown.reasonCode, 'user_rejected')
+    assert.equal(thrown.cause, declined)
+    assert.equal(isUserRejection(thrown), true)
+
+    // Exercise the real manager as well: wrapping SDK errors must not erase
+    // rejection codes, nested causes, or any of dev's signing-prompt wording.
+    for (const original of [
+        ...['User rejected', 'User declined', 'Request cancelled', 'Request denied', 'Permission denied',
+            'User denied transaction signature', 'Popup was closed by the user',
+            'Action request was rejected by the user.'].map(message => new Error(message)),
+        { code: 4001 },
+        { code: '4001', message: 'Wallet request failed' },
+        { code: 5000, message: 'Wallet request failed' },
+        new Error('Wallet request failed', { cause: { code: 4001 } }),
+        'User rejected the request',
+    ]) {
+        installHappyPath()
+        t.mock.method(stellarKitManager, 'signTransaction', signTransaction)
+        t.mock.method(stellarKitManager, 'requireKit', () => ({
+            setNetwork() {},
+            signTransaction: async () => { throw original },
+        }))
+        const submit = t.mock.method(Horizon.Server.prototype, 'submitTransaction', async () => assert.fail('a cancellation must not submit'))
+        thrown = await thrownBy(provider.executeTransfer(params))
+        assert.equal(thrown.name, 'TransactionRejected')
+        assert.equal(thrown.reasonCode, 'user_rejected')
+        assert.equal(thrown.cause, original)
+        assert.equal(isUserRejection(thrown), true)
+        assert.equal(submit.mock.callCount(), 0)
+    }
+
+    // Signing must preserve an existing UI label, cause and classification.
+    for (const [name, message, reasonCode] of [
+        ['InsufficientFunds', 'Transaction rejected: insufficient balance', 'insufficient_funds'],
+        ['WaletMismatch', 'The selected account does not match', undefined],
+        ['TransactionRejected', 'User declined', 'user_rejected'],
+    ]) {
+        installHappyPath()
+        const labelled = Object.assign(new Error(message, { cause: new Error('Wallet response') }), { name, reasonCode })
+        t.mock.method(stellarKitManager, 'signTransaction', async () => { throw labelled })
+        thrown = await thrownBy(provider.executeTransfer(params))
+        assert.equal(thrown, labelled)
+        assert.equal(isUserRejection(thrown), reasonCode === 'user_rejected')
+    }
+
+    // Horizon result codes after signing map to funds / failed, never to a decline.
+    installHappyPath()
+    const underfunded = new TransactionFailedError('Transaction submission failed', {
+        data: { extras: { result_codes: { transaction: 'tx_insufficient_balance' } } },
+    })
+    t.mock.method(Horizon.Server.prototype, 'submitTransaction', async () => { throw underfunded })
+    thrown = await thrownBy(provider.executeTransfer(params))
+    assert.equal(thrown.name, 'InsufficientFunds')
+    assert.equal(thrown.cause, underfunded)
+    assert.equal(isUserRejection(thrown), false)
+})
+
+test('Stellar error mapping is pure: prompt vocabulary applies to the signing stage only', () => {
+    // Albedo rejects the prompt with a plain Error carrying no code.
+    for (const message of ['User declined', 'Request cancelled', 'Request denied', 'Session closed', 'Popup was closed by the user', 'Action request was rejected by the user.']) {
+        const original = new Error(message)
+        const signing = toSigningError(original)
+        assert.equal(signing.name, 'TransactionRejected', message)
+        assert.equal(signing.cause, original)
+        assert.equal(isUserRejection(signing), true, message)
+        const elsewhere = toTransferError(original)
+        assert.equal(elsewhere.name, 'UnexpectedErrorMessage', message)
+        assert.equal(elsewhere.cause, original)
+        assert.equal(elsewhere.message, message)
+        assert.equal(isUserRejection(elsewhere), false, message)
+    }
+    const structured = toSigningError({ code: 4001, message: 'User rejected the request.' })
+    assert.equal(isUserRejection(structured), true)
+    const walletFailure = toSigningError(new Error('Signer unavailable'))
+    assert.equal(walletFailure.name, 'UnexpectedErrorMessage')
+    assert.equal(isUserRejection(walletFailure), false)
+
+    const stale = toTransferError(new TransactionFailedError('failed', { data: { extras: { result_codes: { transaction: 'tx_bad_seq' } } } }))
+    assert.equal(stale.name, 'TransactionFailed')
+    assert.equal(stale.message, 'The signed Stellar transaction became stale')
+    const horizon = toTransferError(new TransactionFailedError('failed', { data: { extras: { result_codes: { transaction: 'tx_failed', operations: ['op_bad_auth'] } } } }))
+    assert.equal(horizon.name, 'TransactionFailed')
+    assert.equal(isUserRejection(horizon), false)
+    const reserve = toTransferError(new TransactionFailedError('failed', { data: { extras: { result_codes: { transaction: 'tx_failed', operations: ['op_low_reserve'] } } } }))
+    assert.equal(reserve.name, 'InsufficientFunds')
+    // Errors that already carry a label pass through untouched.
+    const labelled = Object.assign(new Error('expired'), { name: 'TransactionExpired' })
+    assert.equal(toTransferError(labelled), labelled)
 })

@@ -1,7 +1,7 @@
 import KnownInternalNames from "@layerswap/utils/known-ids"
 import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
-import type { NetworkType } from "@layerswap/widget-types"
 import type { WalletConnectConfig } from "@layerswap/wallet-evm"
+import { solanaWalletConnectChain } from '@layerswap/wallet-svm'
 import { defineWalletDescriptor, type DescriptorNetworkOptions } from "./defineWalletDescriptor"
 import { hasStorageKey } from "./persistedSession"
 
@@ -30,7 +30,7 @@ export function createSVMDescriptor(walletConnectConfigs?: WalletConnectConfig, 
         // Keep widget and wallet imports type-only to preserve lazy loading.
         capabilities: {
             walletConnectRegistry: {
-                networkTypes: ['solana' as NetworkType],
+                networkTypes: [solanaWalletConnectChain.networkType],
             },
         },
         autofillSupportedNetworks: supportedNetworks,

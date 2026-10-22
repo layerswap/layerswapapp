@@ -1,5 +1,75 @@
 # @layerswap/ui-kit
 
+## 2.5.1
+
+### Minor Changes
+
+- - Add frontend swap workflows and live Min, 50%, and Max amount presets.
+  - Improve swap progress, previews, slow-route warnings, and amount validation.
+  - Fix retry handling, Hyperliquid withdrawal precision, TON wallet connections, and Pocket Universe compatibility.
+  - Improve transaction summaries and balance diagnostics.
+
+### Patch Changes
+
+- Updated dependencies [2463dd2]
+- Updated dependencies
+- Updated dependencies [a9c35f8]
+- Updated dependencies [419387b]
+- Updated dependencies [34da257]
+- Updated dependencies [a2136b6]
+- Updated dependencies [78fa843]
+- Updated dependencies [a2136b6]
+  - @layerswap/widget-types@2.5.1
+  - @layerswap/wallet-core@2.5.1
+  - @layerswap/utils@2.5.1
+
+## 2.4.0
+
+### Patch Changes
+
+- Fix the backdrop flash after wallet drawer exit animations by pinning Framer Motion to `12.34.5` in the UI kit and widget.
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @layerswap/widget-types@2.4.0
+  - @layerswap/wallet-core@2.4.0
+  - @layerswap/utils@2.4.0
+
+## 2.3.1
+
+### Patch Changes
+
+- @layerswap/wallet-core@2.3.1
+- @layerswap/utils@2.3.1
+
+## 2.3.0
+
+### Patch Changes
+
+- Updated dependencies [95d95a1]
+- Updated dependencies [31d0d1f]
+- Updated dependencies [5bd03c7]
+- Updated dependencies [bdf46a0]
+- Updated dependencies [f26c1e7]
+- Updated dependencies [bdf46a0]
+  - @layerswap/widget-types@2.3.0
+  - @layerswap/wallet-core@2.3.0
+  - @layerswap/utils@2.3.0
+
+## 2.2.0
+
+### Minor Changes
+
+- Global improvements and bug fixes
+
+### Patch Changes
+
+- Updated dependencies
+  - @layerswap/utils@2.2.0
+  - @layerswap/wallet-core@2.2.0
+  - @layerswap/widget-types@2.2.0
+
 ## 2.1.0
 
 ### Minor Changes

@@ -1,13 +1,17 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { unstable_cache } from "next/cache";
 import { DEFAULT_WALLETCONNECT_PROJECT_ID, WALLET_REGISTRY_BATCH_LIMIT, fetchRegistrySnapshot, matchRegistrySnapshot, normalizeRegistryNames, type Web3ModalWallet } from "@layerswap/wallet-core";
+import { registerDefaultWalletConnectChains } from "@layerswap/wallets";
 
 export const config = { api: { bodyParser: { sizeLimit: "16kb" } } };
 
 const SNAPSHOT_REVALIDATE_SECONDS = 7 * 24 * 60 * 60;
 
 const getCachedSnapshot = unstable_cache(
-    () => fetchRegistrySnapshot(DEFAULT_WALLETCONNECT_PROJECT_ID),
+    () => {
+        registerDefaultWalletConnectChains();
+        return fetchRegistrySnapshot(DEFAULT_WALLETCONNECT_PROJECT_ID);
+    },
     ["wallet-registry-snapshot"],
     { revalidate: SNAPSHOT_REVALIDATE_SECONDS },
 );

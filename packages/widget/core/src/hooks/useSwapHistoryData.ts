@@ -2,7 +2,7 @@ import { SwapStatus } from '@layerswap/widget-types';
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSwrSwaps } from './useSwrSwaps'
 import LayerSwapApiClient, { SwapResponse } from '@/lib/apiClients/layerSwapApiClient'
-import { ApiResponse } from '@/Models/ApiResponse'
+import type { ApiResponse } from '@layerswap/widget-types'
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore'
 import { useExtendedSourceSkin } from './useExtendedSourceSkin'
 import { Address } from '@/lib/address/Address'

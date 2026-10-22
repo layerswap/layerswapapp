@@ -16,3 +16,5 @@ export { default as SearchIcon } from "./SearchIcon"
 export { default as StyledQRCode } from "./StyledQRCode"
 export type { StyledQRCodeProps } from "./StyledQRCode"
 export { default as WalletIcon } from "./WalletIcon"
+
+export { CopyButtonView } from './CopyButtonView';

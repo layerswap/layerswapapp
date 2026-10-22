@@ -2,7 +2,7 @@ import {
     BaseSignerWalletAdapter,
     WalletAdapterNetwork,
     WalletDisconnectionError,
-    WalletName,
+    type WalletName,
     WalletNotConnectedError,
     WalletNotReadyError,
     WalletReadyState,
@@ -10,11 +10,13 @@ import {
     WalletSignTransactionError,
     isVersionedTransaction,
 } from "@solana/wallet-adapter-base"
-import { PublicKey, Transaction, VersionedTransaction, TransactionVersion } from "@solana/web3.js"
+import { PublicKey, Transaction, VersionedTransaction, type TransactionVersion } from "@solana/web3.js"
 import type { UniversalProvider as UniversalProviderClass } from "@walletconnect/universal-provider"
 import type { SessionTypes, SignClientTypes } from "@walletconnect/types"
 import { getSdkError, parseAccountId } from "@walletconnect/utils"
 import base58 from "bs58"
+import { subscribeWalletRequests } from '@layerswap/wallet-core'
+import { SolanaWalletConnectChain, solanaWalletConnectChain } from '../constants'
 
 type UniversalProviderType = InstanceType<typeof UniversalProviderClass>
 
@@ -23,13 +25,6 @@ const Methods = {
     signMessage: "solana_signMessage",
     signAndSendTransaction: "solana_signAndSendTransaction",
     signAllTransactions: "solana_signAllTransactions",
-} as const
-
-const ChainIDs = {
-    Mainnet: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
-    Devnet: "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
-    DeprecatedMainnet: "solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ",
-    DeprecatedDevnet: "solana:8E9rvCKLFQia2Y35HXjjpWzj8weVo44K",
 } as const
 
 /**
@@ -41,7 +36,7 @@ const ChainIDs = {
 const SOLANA_WC_STORAGE_PREFIX = "layerswapSolanaWalletConnect"
 
 const solanaAccount = (session: SessionTypes.Struct): string | undefined =>
-    session.namespaces["solana"]?.accounts?.[0]
+    session.namespaces[solanaWalletConnectChain.namespace]?.accounts?.[0]
 
 const WALLET_CONNECT_ICON =
     'data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9IjE4NSIgdmlld0JveD0iMCAwIDMwMCAxODUiIHdpZHRoPSIzMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0ibTYxLjQzODU0MjkgMzYuMjU2MjYxMmM0OC45MTEyMjQxLTQ3Ljg4ODE2NjMgMTI4LjIxMTk4NzEtNDcuODg4MTY2MyAxNzcuMTIzMjA5MSAwbDUuODg2NTQ1IDUuNzYzNDE3NGMyLjQ0NTU2MSAyLjM5NDQwODEgMi40NDU1NjEgNi4yNzY1MTEyIDAgOC42NzA5MjA0bC0yMC4xMzY2OTUgMTkuNzE1NTAzYy0xLjIyMjc4MSAxLjE5NzIwNTEtMy4yMDUzIDEuMTk3MjA1MS00LjQyODA4MSAwbC04LjEwMDU4NC03LjkzMTE0NzljLTM0LjEyMTY5Mi0zMy40MDc5ODE3LTg5LjQ0Mzg4Ni0zMy40MDc5ODE3LTEyMy41NjU1Nzg4IDBsLTguNjc1MDU2MiA4LjQ5MzYwNTFjLTEuMjIyNzgxNiAxLjE5NzIwNDEtMy4yMDUzMDEgMS4xOTcyMDQxLTQuNDI4MDgwNiAwbC0yMC4xMzY2OTQ5LTE5LjcxNTUwMzFjLTIuNDQ1NTYxMi0yLjM5NDQwOTItMi40NDU1NjEyLTYuMjc2NTEyMiAwLTguNjcwOTIwNHptMjE4Ljc2Nzc5NjEgNDAuNzczNzQ0OSAxNy45MjE2OTcgMTcuNTQ2ODk3YzIuNDQ1NTQ5IDIuMzk0Mzk2OSAyLjQ0NTU2MyA2LjI3NjQ3NjkuMDAwMDMxIDguNjcwODg5OWwtODAuODEwMTcxIDc5LjEyMTEzNGMtMi40NDU1NDQgMi4zOTQ0MjYtNi40MTA1ODIgMi4zOTQ0NTMtOC44NTYxNi4wMDAwNjItLjAwMDAxLS4wMDAwMTAtLjAwMDAyMi0uMDAwMDIyLS4wMDAwMzItLjAwMDAzMmwtNTcuMzU0MTQzLTU2LjE1NDU3MmMtLjYxMTM5LS41OTg2MDItMS42MDI2NS0uNTk4NjAyLTIuMjE0MDQgMC0uMDAwMDA0LjAwMDAwNC0uMDAwMDA3LjAwMDAwOC0uMDAwMDExLjAwMDAxMWwtNTcuMzUyOTIxMiA1Ni4xNTQ1MzFjLTIuNDQ1NTM2OCAyLjM5NDQzMi02LjQxMDU3NTUgMi4zOTQ0NzItOC44NTYxNjEyLjAwMDA4Ny0uMDAwMDE0My0uMDAwMDE0LS4wMDAwMjk2LS4wMDAwMjgtLjAwMDA0NDktLjAwMDA0NGwtODAuODEyNDE5NDMtNzkuMTIyMTg1Yy0yLjQ0NTU2MDIxLTIuMzk0NDA4LTIuNDQ1NTYwMjEtNi4yNzY1MTE1IDAtOC42NzA5MTk3bDE3LjkyMTcyOTYzLTE3LjU0Njg2NzNjMi40NDU1NjAyLTIuMzk0NDA4MiA2LjQxMDU5ODktMi4zOTQ0MDgyIDguODU2MTYwMiAwbDU3LjM1NDk3NzUgNTYuMTU1MzU3Yy42MTEzOTA4LjU5ODYwMiAxLjYwMjY0OS41OTg2MDIgMi4yMTQwMzk4IDAgLjAwMDAwOTItLjAwMDAwOS4wMDAwMTc0LS4wMDAwMTcuMDAwMDI2NS0uMDAwMDI0bDU3LjM1MjEwMzEtNTYuMTU1MzMzYzIuNDQ1NTA1LTIuMzk0NDYzMyA2LjQxMDU0NC0yLjM5NDU1MzEgOC44NTYxNjEtLjAwMDIuMDAwMDM0LjAwMDAzMzYuMDAwMDY4LjAwMDA2NzMuMDAwMTAxLjAwMDEwMWw1Ny4zNTQ5MDIgNTYuMTU1NDMyYy42MTEzOS41OTg2MDEgMS42MDI2NS41OTg2MDEgMi4yMTQwNCAwbDU3LjM1Mzk3NS01Ni4xNTQzMjQ5YzIuNDQ1NTYxLTIuMzk0NDA5MiA2LjQxMDU5OS0yLjM5NDQwOTIgOC44NTYxNiAweiIgZmlsbD0iIzNiOTlmYyIvPjwvc3ZnPg=='
@@ -73,6 +68,7 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
     private _onSessionDelete: () => void
     private _displayUriListeners: Set<DisplayUriListener> = new Set()
     private _internalDisplayUriHandler: ((uri: string) => void) | undefined
+    private _unsubscribeWalletRequests: (() => void) | undefined
 
     constructor(config: SolanaWalletConnectAdapterConfig) {
         super()
@@ -80,7 +76,7 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
         this._publicKey = null
         this._connecting = false
         this._readyState = typeof window === "undefined" ? WalletReadyState.Unsupported : WalletReadyState.Loadable
-        this._network = config.network === WalletAdapterNetwork.Mainnet ? ChainIDs.Mainnet : ChainIDs.Devnet
+        this._network = config.network === WalletAdapterNetwork.Mainnet ? SolanaWalletConnectChain.Mainnet : SolanaWalletConnectChain.Devnet
         this._onSessionDelete = () => {
             this.disconnect()
         }
@@ -92,6 +88,11 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
 
     get connecting(): boolean {
         return this._connecting
+    }
+
+    /** Topic of the connected session; requests sent on it are recorded under it. */
+    get sessionTopic(): string | undefined {
+        return this._session?.topic
     }
 
     get readyState(): WalletReadyState {
@@ -125,6 +126,7 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
                         customStoragePrefix: this._config.options.customStoragePrefix ?? SOLANA_WC_STORAGE_PREFIX,
                     })
                     this._provider = provider
+                    this._unsubscribeWalletRequests = subscribeWalletRequests(provider.client, solanaWalletConnectChain.namespace)
                     if (!this._internalDisplayUriHandler) {
                         this._internalDisplayUriHandler = (uri: string) => {
                             for (const cb of this._displayUriListeners) {
@@ -199,13 +201,13 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
                 await this.dropSession(provider)
             }
 
-            const chains = this._network === ChainIDs.Mainnet
-                ? [ChainIDs.Mainnet, ChainIDs.DeprecatedMainnet]
-                : [ChainIDs.Devnet, ChainIDs.DeprecatedDevnet]
+            const chains = this._network === SolanaWalletConnectChain.Mainnet
+                ? [SolanaWalletConnectChain.Mainnet, SolanaWalletConnectChain.DeprecatedMainnet]
+                : [SolanaWalletConnectChain.Devnet, SolanaWalletConnectChain.DeprecatedDevnet]
 
             const session = await provider.connect({
                 optionalNamespaces: {
-                    solana: {
+                    [solanaWalletConnectChain.namespace]: {
                         chains,
                         methods: [
                             Methods.signTransaction,
@@ -237,6 +239,8 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
     }
 
     private resetProvider(): void {
+        this._unsubscribeWalletRequests?.()
+        this._unsubscribeWalletRequests = undefined
         const provider = this._provider
         if (provider && this._internalDisplayUriHandler) {
             try { provider.off("display_uri", this._internalDisplayUriHandler) } catch { /* no-op */ }

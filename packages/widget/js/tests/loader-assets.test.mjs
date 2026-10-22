@@ -62,6 +62,7 @@ test('registers build controls and shared assets under their distinct SRI prefix
   const remote = new FakeScriptElement();
   remote.src = source.remoteEntry;
   assert.equal(remote.getAttribute('integrity'), remoteHash);
+  assert.equal(remote.getAttribute('crossorigin'), 'anonymous');
 
   const asset = new FakeScriptElement();
   asset.src = 'https://cdn.example/1.7.0-0123456789ab/../assets/lazy.0123456789abcdef.js';

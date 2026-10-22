@@ -1,0 +1,15 @@
+{
+  "$schema": "https://github.com/IBM/audit-ci/raw/main/docs/schema.json",
+  "low": true,
+  "package-manager": "yarn",
+  "allowlist": [
+    "GHSA-848j-6mx2-7j84"
+  ],
+  "show-found": false,
+  "show-not-found": false,
+  "directory": ".",
+  "extra-args": [
+    "--registry",
+    "https://registry.npmjs.org"
+  ]
+}

@@ -12,7 +12,7 @@ const nextConfig = {
     images: {
         remotePatterns: REMOTE_PATTERNS,
     },
-    transpilePackages: ['@layerswap/widget', '@layerswap/utils'],
+    transpilePackages: ['@layerswap/widget-types', '@layerswap/utils'],
 }
 if (process.env.NEXT_PUBLIC_APP_BASE_PATH) {
     nextConfig.basePath = process.env.NEXT_PUBLIC_APP_BASE_PATH

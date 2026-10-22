@@ -3,12 +3,19 @@ import test from 'node:test'
 
 import { fetchRegistrySnapshot, matchRegistrySnapshot, normalizeRegistryNames } from '../dist/esm/lib/walletConnect/registrySnapshot.js'
 import { getAdditionalConnectorsStore } from '../dist/esm/lib/walletConnect/additionalConnectorsStore.js'
+import { defaultWalletConnectChainRegistry } from '../dist/esm/lib/walletConnect/chainRegistry.js'
 import {
     getRegistryEntryByName,
     requestRegistryEntriesByName,
 } from '../dist/esm/lib/walletConnect/registryEntryIndex.js'
 
 const BATCH_URL = 'https://layerswap.io/app/api/wallet-registry'
+
+defaultWalletConnectChainRegistry.register({ namespace: 'eip155', networkType: 'evm', explorerChainIds: ['eip155:1'] })
+defaultWalletConnectChainRegistry.register({ namespace: 'solana', networkType: 'solana', explorerChainIds: ['solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'] })
+for (let index = 1; index <= 4; index++) {
+    defaultWalletConnectChainRegistry.register({ namespace: `batch-ns-${index}`, networkType: 'evm', explorerChainIds: ['eip155:1'] })
+}
 
 const rawWallet = (name, overrides = {}) => ({
     id: name.toLowerCase(),

@@ -1,8 +1,9 @@
-import { ActionMessageType } from '@layerswap/widget-types';
 import { Network } from "@layerswap/widget-types";
 import { TransferProvider, TransferProps } from "@layerswap/widget-types";
-import { Provider } from '@fuel-ts/account'
+import { Account, Provider } from '@fuel-ts/account'
+import { Address } from '@fuel-ts/address'
 import { transactionBuilder } from "./transactionBuilder"
+import { toTransferError } from "./toTransferError"
 import { KnownInternalNames } from "@layerswap/utils";
 import { getFuelInstance, hasFuelInstance } from "../service/getFuel"
 
@@ -24,19 +25,30 @@ export function createFuelTransfer(): TransferProvider {
             }
             const fuel = getFuelInstance()
 
-            const { callData, network, selectedWallet, swapId } = params
-
-            const fuelProvider = new Provider(network.node_url)
-            const fuelWallet = await fuel.getWallet(selectedWallet.address, fuelProvider)
-
-            if (!fuelWallet) {
-                throw new Error("Fuel wallet not found")
-            }
+            const { callData, network, selectedWallet, sourceAddress, swapId } = params
 
             try {
+                const connector = fuel.getConnector(selectedWallet.id)
+                if (!connector) throw new Error("Fuel wallet not found")
+
+                const sender = new Address(sourceAddress ?? selectedWallet.address).toB256()
+                const assertAuthorized = async () => {
+                    const connected = await connector.isConnected()
+                    const accounts = connected ? await connector.accounts() : []
+                    if (!accounts.some(address => new Address(address).toB256().toLowerCase() === sender.toLowerCase())) {
+                        throw new Error("address is not authorized for this connection.")
+                    }
+                }
+                await assertAuthorized()
+
+                const fuelProvider = new Provider(network.node_url)
+                // Bind to the selected connector. Fuel.getWallet binds to the SDK's
+                // mutable current connector, which may change during preparation.
+                const fuelWallet = new Account(sender, fuelProvider, connector)
                 const scriptTransaction = await transactionBuilder({ fuelWallet, callData })
                 await fuelProvider.simulate(scriptTransaction)
 
+                await assertAuthorized()
                 const transactionResponse = await fuelWallet.sendTransaction(scriptTransaction)
 
                 if (swapId && transactionResponse) {
@@ -45,23 +57,7 @@ export function createFuelTransfer(): TransferProvider {
 
                 throw new Error("No transaction ID returned")
             } catch (error) {
-                const e = new Error()
-                e.message = error.message
-
-                if (error.message === "The account(s) sending the transaction don't have enough funds to cover the transaction."
-                    || error.message === "the target cannot be met due to no coins available or exceeding the 255 coin limit."
-                ) {
-                    e.name = ActionMessageType.InsufficientFunds
-                    throw e
-                } else if (error.message === "Request cancelled without user response!"
-                    || error.message === "User rejected the transaction!"
-                    || error.message === "User canceled sending transaction") {
-                    e.name = ActionMessageType.TransactionRejected
-                    throw e
-                } else {
-                    e.name = ActionMessageType.UnexpectedErrorMessage
-                    throw e
-                }
+                throw toTransferError(error)
             }
         }
     }

@@ -152,7 +152,7 @@ export default function AssetsTable({ assets }: { assets: AnalyticsAsset[] }) {
             {hiddenCount > 0 ? (
                 <div className="border-t border-secondary-400">
                     <button type="button" onClick={() => setExpanded((e) => !e)} aria-expanded={expanded} className="flex w-full items-center justify-center gap-1 py-2.5 text-center text-[12.5px] font-semibold text-secondary-text transition-colors hover:text-primary-text focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-400">
-                        {expanded ? "Show less" : `Show all ${sorted.length} assets`}
+                        <span>{expanded ? "Show less" : `Show all ${sorted.length} assets`}</span>
                         <ChevronDown className={`h-3.5 w-3.5 shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`} />
                     </button>
                 </div>

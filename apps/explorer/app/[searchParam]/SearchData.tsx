@@ -1,7 +1,7 @@
 "use client";
 
 import useSWRInfinite from "swr/infinite";
-import { ApiResponse } from '@layerswap/widget/types';
+import { ApiResponse } from '@layerswap/widget-types';
 import { SwapData, TransactionType } from "@/models/Swap";
 import LoadingBlocks from "@/components/LoadingBlocks";
 import NotFound from "@/components/notFound";
@@ -18,7 +18,7 @@ export default function SearchData({ searchParam }: SearchDataProps) {
         return `/explorer/${searchParam}?version=${process.env.NEXT_PUBLIC_API_VERSION}&page=${pageIndex + 1}&statuses=Completed&statuses=PendingWithdrawal&statuses=PendingRefund&statuses=Refunded`;
     };
 
-    const { data, error, isLoading, size, setSize, isValidating } = useSWRInfinite<ApiResponse<SwapData[]>>(
+    const { data, error, isLoading, size, setSize, isValidating } = useSWRInfinite<ApiResponse<SwapData[]>, Error>(
         getKey,
         apiClient.fetcher,
         { dedupingInterval: 60000, revalidateFirstPage: false }
@@ -27,7 +27,7 @@ export default function SearchData({ searchParam }: SearchDataProps) {
     const allData = data ? data.flatMap(d => d?.data || []) : [];
     const lastPage = data?.[data.length - 1];
     const isLoadingMore = isValidating && size > 1;
-    const isReachingEnd = !!data && (!lastPage?.data || lastPage.data.length === 0);
+    const isReachingEnd = (!!data && (!lastPage?.data || lastPage.data.length === 0)) || error?.message === "No swaps found";
 
     // Extract data from response
     const swapData = allData[0];
@@ -51,7 +51,7 @@ export default function SearchData({ searchParam }: SearchDataProps) {
     const isEmptyData = !!data && allData.every(s => !s?.swap?.transactions?.length);
 
     // Handle error and empty states
-    if (error || isEmptyData) return <NotFound />;
+    if ((error && allData.length === 0) || isEmptyData) return <NotFound />;
     if (isLoading) return <LoadingBlocks variant="swap" />;
 
     // Multiple swaps found - show list view
@@ -61,7 +61,6 @@ export default function SearchData({ searchParam }: SearchDataProps) {
         return (
             <SwapListView
                 swaps={filteredSwaps}
-                destinationAddress={swap?.destination_address}
                 onLoadMore={() => setSize(size + 1)}
                 isLoadingMore={isLoadingMore}
                 isReachingEnd={isReachingEnd}

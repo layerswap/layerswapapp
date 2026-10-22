@@ -1,4 +1,5 @@
 import type { ThemeData } from "./theme";
+import type { ErrorEventType, SwapLifecycleEvent, SwapStatusEvent } from './logEvents';
 
 /**
  * Wallet provider ids matching what the remote's `getDefaultProviders()`
@@ -78,19 +79,25 @@ export type WalletDefaults = {
 };
 
 /**
- * Widget-level event callbacks. Payloads are typed openly so this package
- * carries no dependency on the widget's internal models — import the precise
- * payload types (`SwapResponse`, `SwapFormValues`, `SwapStatusEvent`,
- * `ErrorEventType`) from `@layerswap/widget` if you want them.
+ * Widget-level event callbacks. Form and swap response payloads stay open to
+ * avoid a dependency on core's internal models. Event contracts live here and
+ * are shared by the widget, CDN remote, and loaders.
  */
 export type WidgetCallbacks = {
+  onTelemetry?: import('./telemetry').WidgetTelemetryHandler;
   onFormChange?: (formData: unknown) => void;
   onSwapCreate?: (swapData: unknown) => void;
   onSwapComplete?: (swapData: unknown) => void;
   onSwapModalStateChange?: (open: boolean) => void;
   onBackClick?: () => void;
-  onError?: (error: unknown) => void;
-  onSwapStatusChange?: (event: unknown) => void;
+  onError?: (error: ErrorEventType) => void;
+  /**
+   * Reports each observed API status transition for ls_transfer_pending, completed, failed, expired; other fields are context. Wallet retries and modal remounts do not repeat unchanged statuses.
+   * Only transitions are reported: a swap opened from a URL or history in a status it already had (e.g. reloading a completed swap) is not reported until its status changes. Swaps explicitly created in this widget may report their first status. Every backend status is observed before filtering notifications.
+   */
+  onSwapStatusChange?: (event: SwapStatusEvent) => void;
+  /** Phase/transaction observations are deduplicated; user actions and wallet retries remain repeatable. */
+  onSwapLifecycle?: (event: SwapLifecycleEvent) => void;
   onMenuNavigationChange?: (path: string) => void;
 };
 

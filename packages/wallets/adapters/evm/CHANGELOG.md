@@ -1,5 +1,176 @@
 # @layerswap/wallet-evm
 
+## 2.5.1
+
+### Minor Changes
+
+- 78fa843: Use MetaMask Connect EVM 2.1.1 for the default MetaMask connection through a
+  Wagmi 2 connector built on the SDK's public lifecycle and EIP-1193 APIs.
+  Wagmi, Viem, React-loader peer requirements, and CDN sharing rules are unchanged.
+  Host applications do not need a dependency upgrade.
+
+  Declare the adapter's existing `@wagmi/core` and `@wagmi/connectors` imports as
+  peer dependencies, with development dependencies for local builds and tests.
+  Package consumers supply these alongside Wagmi and Viem so the adapter can use
+  the host's compatible installation.
+
+  The SDK selects approved mobile chains within its multichain session and routes
+  signing and transaction requests to the selected chain. Its provider also
+  updates after a successful extension switch without needing a separate wallet
+  notification. Layerswap still verifies chain/account readiness and preserves
+  rejection, cancellation, and timeout handling before sending or signing.
+
+  External Wagmi configs and their connectors remain host-owned. This migration
+  does not replace their MetaMask sessions. Default legacy mobile sessions may
+  require a fresh connection after deployment; new sessions restore through
+  MetaMask Connect. The old SDK can still appear transitively through Wagmi 2's
+  connector package, but Layerswap's default MetaMask connector no longer uses it.
+
+- a9c35f8: RPC health checks are now opt-in and scoped to the network being asked about.
+  - `createEVMProvider` no longer adds the wallet RPC health check by default. Pass `rpcHealthCheckProviders: [new EVMRpcHealthCheckProvider()]` (now exported from `@layerswap/wallet-evm`) to keep the probe and the "add RPC" prompt.
+  - The probe measures the wallet's active chain; its verdict now carries that `chainId`. `useRpcHealth(network)` reports unknown health while the wallet is on another chain, so an unhealthy RPC on the chain being left no longer replaces the send button that switches away from it.
+  - `suggestRpcForCurrentChain` from `useRpcHealth(network)` now adds the RPC for `network`'s chain rather than the wallet's current chain.
+
+### Patch Changes
+
+- 18fc71c: Estimate gas with the connected source account's selected token balance while the transfer amount is empty. Use the entered amount once available and pass it through the detailed gas fee view.
+
+  When no source wallet is connected, use the route maximum for the Max shortcut once available rather than a disconnected account's cached balance. Keep Max unavailable until that route maximum is known.
+
+  Pass the transfer amount to EVM and Tron gas providers when building transactions.
+
+  Keep Max usable for oversized or fractional amounts without spending the fee reserve.
+
+- 7427883: Preserve pending WalletConnect switch errors instead of reporting them as user rejections. Only unknown-chain errors trigger an add-chain request, and only genuine declines are wrapped as rejections.
+
+  Show network-switch errors during critical-price-impact confirmation while keeping Continue anyway available for retry.
+
+  WalletConnect: after adding an unknown chain, ask the wallet to switch to it unless it already did. Adding a chain does not select it (EIP-3085), so a resolved switch no longer leaves the wallet on the previous chain.
+
+- - Add frontend swap workflows and live Min, 50%, and Max amount presets.
+  - Improve swap progress, previews, slow-route warnings, and amount validation.
+  - Fix retry handling, Hyperliquid withdrawal precision, TON wallet connections, and Pocket Universe compatibility.
+  - Improve transaction summaries and balance diagnostics.
+- a2136b6: Match mobile wallet-request recovery to the WalletConnect session that received
+  the request. Recorded requests now carry their session `topic`, and EVM and
+  Solana WalletConnect wallets expose theirs as `Wallet.metadata.walletConnectTopic`.
+  Wallets connected through the generic WalletConnect connector recover their
+  requests, and another wallet app using the same account no longer does.
+
+  Let users reopen the wallet's pending request without submitting it again.
+
+  Show reconnect guidance when the wallet disconnects during source-network
+  readiness, and report readiness failures that happen before a network switch.
+
+- 78fa843: Keep RPC failures distinct from user cancellations when Viem wraps transaction
+  errors with its unknown-error code (-1). Require actual user-rejection evidence
+  and classify wallet RPC HTTP failures as network errors while preserving their
+  original cause and diagnostic code.
+
+  Show recovery guidance for network failures, RPC errors, disconnected wallets,
+  pending requests, and timeouts before falling back to a generic swap error.
+  For EVM network failures, direct users to check the source network's RPC settings
+  in their wallet. Keep raw provider diagnostics in telemetry.
+
+- a2136b6: Stop reporting wallet RPC failures relayed over WalletConnect as user rejections.
+  MetaMask Mobile answers a failed request with CAIP-25 code 5000 and the failure
+  as the message; when that text names a non-decline failure, classify by it.
+  EVM network failures now tell users to select a working RPC URL in their
+  wallet's network settings and remove the others.
+- Updated dependencies [2463dd2]
+- Updated dependencies
+- Updated dependencies [a9c35f8]
+- Updated dependencies [419387b]
+- Updated dependencies [34da257]
+- Updated dependencies [a2136b6]
+- Updated dependencies [78fa843]
+- Updated dependencies [a2136b6]
+  - @layerswap/widget-types@2.5.1
+  - @layerswap/wallet-core@2.5.1
+  - @layerswap/utils@2.5.1
+
+## 2.4.0
+
+### Minor Changes
+
+- Register WalletConnect chains during provider initialization instead of hardcoding them in wallet-core.
+  - `@layerswap/wallet-core` exports `WalletConnectChainRegistry`, `defaultWalletConnectChainRegistry`, and `WalletConnectChainDefinition` for namespace, network type, and wallet explorer chain definitions.
+  - EVM, Solana, and Stellar adapters export their chain definitions and registration helpers, and register their chains when their connection providers initialize.
+  - `@layerswap/wallets` exports `registerDefaultWalletConnectChains`, which is also called by `getDefaultProviders`.
+  - Custom integrations that query wallet explorer chains before initializing providers must register their namespace first. An unregistered namespace now throws an explicit error.
+
+### Patch Changes
+
+- Reduce repeated balance requests and report API failures consistently.
+  - Keep failed EVM multicall results instead of immediately repeating each failed token balance request against the same RPC.
+  - Report balance failures once per fetch through the balance resolver instead of emitting an additional error for every failed token.
+  - Report unauthenticated API failures through the widget's `APIError` handler, matching authenticated requests. Expected transaction-status 404 responses and ignored API error codes remain excluded from reporting; request rejection and polling behavior are preserved.
+
+- Route mobile WalletConnect signing requests to the wallet that owns the selected session.
+  - Export `subscribeWalletRequests` from wallet-core. EVM and Solana WalletConnect connectors open the session's wallet after the signing request reaches the relay, using the request ID and session topic. Link-mode sessions retain the SDK's app link behavior.
+  - Resolve deep links from session metadata and matching registry metadata, including native and universal mobile links, with the MetaMask app link workaround.
+  - Add optional `Wallet.metadata.evmConnectorUid` and use the selected connector for EVM transfers and gasless signatures. Ambiguous or disconnected selections require reconnection instead of falling back to another wallet using the same address.
+  - Clean up signing-request listeners when connectors are replaced or reset.
+
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @layerswap/widget-types@2.4.0
+  - @layerswap/wallet-core@2.4.0
+  - @layerswap/utils@2.4.0
+
+## 2.3.1
+
+### Patch Changes
+
+- @layerswap/wallet-core@2.3.1
+- @layerswap/utils@2.3.1
+
+## 2.3.0
+
+### Patch Changes
+
+- bdf46a0: Share wallet error classification through `@layerswap/wallet-core/errors`.
+  - `@layerswap/wallet-core/errors` is a new subpath exporting `isUserRejection`, `normalizeWalletErrorCode` and `walletErrorCode`, so the widget and wallet adapters classify wallet cancellations and failures the same way.
+  - It also exports the helpers transfer providers throw with: `walletActionError(name, { message, cause?, reasonCode? })` builds the error whose `name` is the `ActionMessageType` the widget renders and whose optional `reasonCode` (a `WalletErrorReasonCode`) is what hosts and telemetry are told; `userRejectedError({ message?, cause? })` is the only sanctioned way to pair the rejected label with `user_rejected`; `isWalletErrorReasonCode(value)` narrows to the bounded taxonomy; `WalletActionError` is the thrown type. An explicit `reasonCode` on the error, anywhere in its `cause` chain, wins over every inferred signal (outermost first).
+  - ActionMessageType labels are UI copy and never classify: a bare `TransactionRejected` name no longer yields `user_rejected`. A custom `TransferProvider` that only sets `name = 'TransactionRejected'` shows the rejected copy but is reported to the host as a failure (`onError`, `wallet_action_failed`, `reasonCode: unknown_error`); declare declines with `userRejectedError` instead. The message rules additionally recognise the chain wallets' own decline phrases (`USER_REFUSED_OP`, `Reject request`, `user reject this request`).
+  - `@layerswap/wallet-evm` resolves user rejections through the shared helper. The Hyperliquid and Polymarket transfer providers use the common `evmUtils/resolveError` instead of private copies, and the adapter keeps its legacy nested `-1` / `data.code` cancellation handling at the adapter boundary.
+  - Classification precedence is by evidence, not by which field a signal came from: a definitive code/name (4001, 5000, `ACTION_REJECTED`, `UserRejectedRequestError`, …) or descriptive message text (`user rejected`, `denied by the user`, `insufficient funds`, …) anywhere in the error tree beats the `-32603` / `SERVER_ERROR` / `InternalRpcError` / `internal error` buckets. viem bucket classes (`InternalRpcError`, `InvalidInputRpcError`, `UnknownRpcError`) contribute no text of their own, so a wrapper can never change what it wraps.
+  - `cause`, `data`, `originalError` and `error` are inspected (bounded), covering viem/ethers wrappers, JSON-RPC `data`, MetaMask's `-32603` serializer fallback and ethers v5 `SERVER_ERROR` bodies.
+  - Host-visible `reason_code` shifts: wrapped declines that were `internal_rpc_error` become `user_rejected` (Faro impact `expected` via `widget_diagnostic` instead of `user` via `captureException`; `onSwapLifecycle` emits `wallet_action_rejected` instead of `wallet_action_failed`), and viem-wrapped node `-32000` errors report the underlying reason (`insufficient_funds`, `nonce_or_replacement`, `contract_reverted`, `timeout`, `unknown_error`) instead of `invalid_parameters`.
+
+- f26c1e7: Wallet declines are reported as declines, and node errors no longer pass for declines.
+  - `@layerswap/wallet-core/errors` exports `errorMessage(error)`: an Error's message, a string as is, or a plain `{ message }` object's string message, else `String(error)`. Every adapter's `toTransferError` uses it, so plain-object wallet rejections keep their text instead of `[object Object]`.
+  - Classifier: decline text must name the user (`user rejected`, `user denied`, `denied by the user`, …); the generic `rejected the request` phrase is gone, so a node's `origin rejected the request` is no longer `user_rejected`. A revert reason (`execution reverted: …`) never counts as a decline, and on a JSON-RPC server error (`-32000`..`-32099`) the text must start with `user rejected` / `user denied` — WalletConnect wallets that decline with `-32000 "User rejected the request."` stay `user_rejected`. Definitive codes (4001, 5000, `ACTION_REJECTED`, `UserRejectedRequestError`) are unchanged.
+  - EVM: `resolveError` checks decline evidence before the nested `-32000` insufficient-funds branch, so a decline relayed as `-32000` is no longer shown as insufficient funds.
+  - Starknet: a plain `{ code: 113, message: 'An error occurred (USER_REFUSED_OP)' }` rejection is a declared decline carrying its real message.
+  - Stellar: the signing-prompt vocabulary includes `reject` again, so Albedo's `Action request was rejected by the user.` is a decline.
+  - TON: TON Connect's `UserRejectsError` is a declared decline (with a name/message fallback for a duplicate SDK copy); the `Reject request` string is still recognised.
+
+- Updated dependencies [95d95a1]
+- Updated dependencies [31d0d1f]
+- Updated dependencies [5bd03c7]
+- Updated dependencies [bdf46a0]
+- Updated dependencies [f26c1e7]
+- Updated dependencies [bdf46a0]
+  - @layerswap/widget-types@2.3.0
+  - @layerswap/wallet-core@2.3.0
+  - @layerswap/utils@2.3.0
+
+## 2.2.0
+
+### Minor Changes
+
+- Global improvements and bug fixes
+
+### Patch Changes
+
+- Updated dependencies
+  - @layerswap/utils@2.2.0
+  - @layerswap/wallet-core@2.2.0
+  - @layerswap/widget-types@2.2.0
+
 ## 2.1.0
 
 ### Minor Changes

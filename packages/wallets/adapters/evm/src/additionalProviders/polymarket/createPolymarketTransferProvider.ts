@@ -1,4 +1,3 @@
-import { ActionMessageType } from '@layerswap/widget-types';
 import { Network } from "@layerswap/widget-types";
 import { TransferProvider, TransferProps, TransferProgress } from "@layerswap/widget-types";
 import { Config } from "wagmi"
@@ -9,7 +8,7 @@ import { resolveFallbackTransport } from "../../evmUtils/resolveTransports"
 import { resolvePolymarketHolding, selectPolymarketFunder } from "./funder"
 import { buildDepositWalletBatchRequest, buildDepositWalletDeployRequest, buildPolymarketDepositCalls } from "./depositWithdraw"
 import { buildSafeBatchRequest } from "./safeWithdraw"
-import { getRelayerNonce, isPolymarketDeployed, submitRelayerTransaction, type RelayerSubmittable } from "./relayerClient"
+import { getRelayerNonce, isPolymarketDeployed, submitRelayerTransaction, RelayerNotSubmittedError, type RelayerSubmittable } from "./relayerClient"
 import {
     POLYMARKET_BATCH_DEADLINE_SECONDS,
     POLYMARKET_CHAIN_ID,
@@ -18,16 +17,18 @@ import {
     POLYMARKET_USDC_E_ADDRESS,
     resolvePolymarketConfig,
 } from "./constants"
-import { resolvePolymarketError, isUserRejection } from "./resolveError"
+import { resolvePolymarketError } from "./resolveError"
+import { isEvmUserRejection } from "../../evmUtils/resolveError"
+import { userRejectedError } from "@layerswap/wallet-core/errors"
 
 const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
 
-/** Thrown for a user-declined wallet prompt; the widget maps this to a "rejected" UI. */
-const rejected = (): Error => {
-    const e = new Error('Transaction rejected')
-    e.name = ActionMessageType.TransactionRejected
-    return e
-}
+/**
+ * Thrown for a user-declined wallet prompt: rejected UI copy plus the
+ * `user_rejected` classification the host and telemetry read. Exported so the
+ * mapping is testable without a wallet.
+ */
+export const rejected = (cause: unknown): Error => userRejectedError({ cause })
 
 /** A surfaced failure: `message` is the user-facing detail, `header` the title. */
 const fail = (header: string, details: string): Error => {
@@ -89,6 +90,7 @@ export function createPolymarketTransferProvider(
         supportsNetwork,
 
         async executeTransfer(params: TransferProps, _wallet, onProgress?: (info: TransferProgress | undefined) => void): Promise<string> {
+            params.onSubmissionStateChange?.('preparing')
             const { network, token: sourceToken, sourceAddress, depositAddress, callData } = params
             const pmConfig = resolvePolymarketConfig(network?.name)
             if (!pmConfig) throw fail('Unsupported network', 'No Polymarket route for this destination.')
@@ -110,7 +112,7 @@ export function createPolymarketTransferProvider(
             try {
                 await switchChain(config, { chainId: POLYMARKET_CHAIN_ID })
             } catch (switchErr) {
-                if (isUserRejection(switchErr)) throw rejected()
+                if (isEvmUserRejection(switchErr)) throw rejected(switchErr)
                 throw fail('Wrong network', 'Switch your wallet to Polygon to sign the withdrawal, then try again.')
             }
 
@@ -188,11 +190,20 @@ export function createPolymarketTransferProvider(
             try {
                 request = await buildRequest()
             } catch (signErr) {
-                if (isUserRejection(signErr)) throw rejected()
+                if (isEvmUserRejection(signErr)) throw rejected(signErr)
                 throw signErr
             }
 
-            const submitResponse = await submitRelayerTransaction(request)
+            params.onSubmissionStateChange?.('submitting')
+            let submitResponse: Awaited<ReturnType<typeof submitRelayerTransaction>>
+            try {
+                submitResponse = await submitRelayerTransaction(request)
+            } catch (error) {
+                if (error instanceof RelayerNotSubmittedError) {
+                    params.onSubmissionStateChange?.('not_submitted')
+                }
+                throw error
+            }
             if (!submitResponse?.transactionID) {
                 const { header, details } = resolvePolymarketError('Polymarket rejected the withdrawal')
                 throw fail(header, details)

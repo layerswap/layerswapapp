@@ -1,48 +1,15 @@
-import { Transaction, TransactionBuilder, TransactionFailedError } from '@stellar/stellar-sdk'
+import { Transaction, TransactionBuilder } from '@stellar/stellar-sdk'
 import { bytesToHex } from '@layerswap/utils/common'
 import { foregroundWalletApp } from '@layerswap/wallet-core'
+import { walletActionError } from '@layerswap/wallet-core/errors'
 import { ActionMessageType, NetworkType, type TransferProvider } from '@layerswap/widget-types'
 import { resolveStellarNetworkPassphrase } from '../stellarNetwork'
 import { getStellarHorizonServer, getStellarRpcServer } from '../stellarServers'
 import { stellarKitManager } from '../service/stellarKitManager'
 import { buildStellarDepositOperation, validateStellarXdr } from './validateStellarXdr'
+import { toSigningError, toTransferError } from './toTransferError'
 
 const TRANSACTION_TIMEOUT_SECONDS = 5 * 60
-
-function mappedError(name: ActionMessageType, message: string, cause?: unknown): Error {
-    const error = new Error(message, cause === undefined ? undefined : { cause })
-    error.name = name
-    return error
-}
-
-function isWalletRejection(error: unknown): boolean {
-    const message = error instanceof Error ? error.message : String(error)
-    return /reject|declin|cancel|denied|closed/i.test(message)
-}
-
-function classifyTransferError(error: unknown): Error {
-    if (error instanceof Error && Object.values(ActionMessageType).includes(error.name as ActionMessageType)) return error
-    if (isWalletRejection(error)) {
-        return mappedError(ActionMessageType.TransactionRejected, 'The Stellar transaction was rejected', error)
-    }
-    if (error instanceof TransactionFailedError) {
-        const resultCodes = error.getResultCodes()
-        if (
-            resultCodes.transaction === 'tx_insufficient_balance'
-            || resultCodes.operations.some(code => code === 'op_underfunded' || code === 'op_low_reserve')
-        ) {
-            return mappedError(ActionMessageType.InsufficientFunds, 'Insufficient Stellar balance or reserve', error)
-        }
-        if (resultCodes.transaction === 'tx_bad_seq' || resultCodes.transaction === 'tx_too_late') {
-            // This failure happened after the user signed. Never classify it as
-            // a preflight expiry: the widget retries only unsigned stale actions.
-            return mappedError(ActionMessageType.TransactionFailed, 'The signed Stellar transaction became stale', error)
-        }
-        return mappedError(ActionMessageType.TransactionFailed, 'Horizon rejected the Stellar transaction', error)
-    }
-    const message = error instanceof Error ? error.message : String(error)
-    return mappedError(ActionMessageType.UnexpectedErrorMessage, message || 'Stellar transaction failed', error)
-}
 
 export function createStellarTransfer(): TransferProvider {
     return {
@@ -112,13 +79,19 @@ export function createStellarTransfer(): TransferProvider {
 
                 await foregroundWalletApp(selectedWallet.metadata?.deepLink)
 
-                const signed = await stellarKitManager.signTransaction(
-                    preparedXdr,
-                    networkPassphrase,
-                    selectedWallet.address,
-                )
+                let signed: Awaited<ReturnType<typeof stellarKitManager.signTransaction>>
+                try {
+                    signed = await stellarKitManager.signTransaction(
+                        preparedXdr,
+                        networkPassphrase,
+                        selectedWallet.address,
+                    )
+                } catch (error) {
+                    // The only stage where a decline can happen: the wallet prompt.
+                    throw toSigningError(error)
+                }
                 if (signed.signerAddress && signed.signerAddress !== selectedWallet.address) {
-                    throw mappedError(ActionMessageType.WaletMismatch, 'The Stellar wallet signed with a different account')
+                    throw walletActionError(ActionMessageType.WaletMismatch, { message: 'The Stellar wallet signed with a different account' })
                 }
 
                 const signedTransaction = TransactionBuilder.fromXdr(signed.signedTxXdr, networkPassphrase)
@@ -132,7 +105,7 @@ export function createStellarTransfer(): TransferProvider {
                 if (!result.successful || !result.hash) throw new Error('Horizon did not accept the Stellar transaction')
                 return result.hash
             } catch (error) {
-                throw classifyTransferError(error)
+                throw toTransferError(error)
             }
         },
     }

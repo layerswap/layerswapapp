@@ -52,6 +52,8 @@ import type { StellarProviderConfig } from "@layerswap/wallet-stellar";
 import { createStellarDescriptor } from "./descriptors/stellar";
 
 import { WalletProviderDescriptor, WalletProvider, WalletWrapper } from "@layerswap/wallet-core/types"
+import { registerDefaultWalletConnectChains } from './walletConnectRegistry'
+export { registerDefaultWalletConnectChains }
 
 export { defineWalletDescriptor } from "./descriptors/defineWalletDescriptor";
 export type { DescriptorNetworkOptions } from "./descriptors/defineWalletDescriptor";
@@ -140,6 +142,7 @@ export type DefaultWalletConfig = {
  * ```
  */
 export function getDefaultProviders(config: DefaultWalletConfig = {}) {
+    registerDefaultWalletConnectChains()
     const { walletConnect, ton, immutablePassport } = config;
 
     const providers: (WalletProvider | WalletWrapper | WalletProviderDescriptor)[] = [

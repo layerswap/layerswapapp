@@ -57,6 +57,8 @@ export type HyperliquidConfig = {
     signatureChainIdHex: `0x${string}`
     /** CCTP destination domain for the chosen destination. */
     destinationCctpDomain: number
+    /** Fee deducted from the withdrawal before it reaches the deposit address. */
+    forwardingFee: number
 }
 
 export function resolveHyperliquidNodeUrl(networkName: string, override: string | undefined): string | undefined {
@@ -96,5 +98,6 @@ export function resolveHyperliquidConfig(
         signatureChainId: isTestnet ? HYPERLIQUID_SIGNATURE_CHAIN_ID_TESTNET : HYPERLIQUID_SIGNATURE_CHAIN_ID_MAINNET,
         signatureChainIdHex: isTestnet ? HYPERLIQUID_SIGNATURE_CHAIN_ID_HEX_TESTNET : HYPERLIQUID_SIGNATURE_CHAIN_ID_HEX_MAINNET,
         destinationCctpDomain: dest.destinationCctpDomain,
+        forwardingFee: dest.flatFee,
     }
 }

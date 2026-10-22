@@ -5,17 +5,10 @@ import { Home } from "lucide-react";
 import NotFoundIcon from "../components/Icons/NotFoundIcon";
 import { useRouter } from "next/router";
 import { useIntercom } from "react-use-intercom";
-import { capture } from "../lib/posthog";
+import { captureEvent } from "../lib/faro";
 export default function Custom404() {
     useEffect(() => {
-        // 404s usually render before `_app.js`'s idle-time posthog init, and
-        // posthog-js drops pre-init captures — `capture` from lib/posthog
-        // holds the event until init completes, keeping posthog-js out of
-        // this page's bundle.
-        capture("404", {
-            name: "404",
-            path: window.location.pathname,
-        });
+        captureEvent("page_not_found", { path: window.location.pathname });
     }, []);
 
     const router = useRouter()
