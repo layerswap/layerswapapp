@@ -66,6 +66,7 @@ function loadSource(path, imports = {}) {
         if (name === '@/lib/amountPresets') return loadSource('lib/amountPresets.ts', {
             '@/components/Input/Amount/helpers': loadSource('components/Input/Amount/helpers.ts', {
                 '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
+                '@/lib/gases/resolveGasBalanceBudget': loadSource('lib/gases/resolveGasBalanceBudget.ts'),
             }),
             '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
             '@layerswap/utils/known-ids': coreRequire('@layerswap/utils/known-ids'),
@@ -1480,10 +1481,12 @@ for (const failure of ['rejected', 'failed']) {
         const { default: Withdraw } = loadSource(`${withdraw}Withdraw.tsx`, {
             ...controllerImports,
             '@/stores/swapTransactionStore': stores,
-            '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput: noop } },
+            '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
+            '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
             '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
             '@/components/Input/Amount/helpers': loadSource('components/Input/Amount/helpers.ts', {
                 '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
+                '@/lib/gases/resolveGasBalanceBudget': loadSource('lib/gases/resolveGasBalanceBudget.ts'),
             }),
             '@/components/Widget/Index': { Widget: { Footer: childrenOnly } },
             '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),

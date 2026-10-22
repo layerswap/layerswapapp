@@ -60,8 +60,8 @@ const render = () => act(() => root.render(createElement(StrictMode, null,
     createElement(Formik, { initialValues: { amount: '0.5' }, onSubmit() {} }, createElement(Probe))),
 )))
 const maxButton = () => container.querySelector('[data-attr="max-amount"]')
-const settle = (request, gas) => act(async () => {
-  request.resolve(gas === undefined ? undefined : { gas, token: request.args.network.token })
+const settle = (request, gas, extras = {}) => act(async () => {
+  request.resolve(gas === undefined ? undefined : { gas, token: request.args.network.token, ...extras })
   await request.promise
 })
 
@@ -116,6 +116,19 @@ test('Using max can be turned off during gas estimation without changing the amo
   assert.equal(maxButton().disabled, false)
   await act(() => maxButton().click())
   assert.equal(formik.values.amount, '0.9796')
+})
+
+test('Max uses the maximum fee and preserves the required native balance', async () => {
+  state.balances[0].amount = 20
+  await render()
+  await settle(state.requests[0], 0.01, { maxFee: 0.02, reserve: 10 })
+  await act(() => maxButton().click())
+  assert.ok(Math.abs(Number(formik.values.amount) - 9.9796) < 1e-12)
+  assert.equal(maxButton().disabled, false, 'The selected Max preset can be turned off during gas estimation')
+
+  await settle(state.requests[1], 0.01, { maxFee: 0.02, reserve: 10 })
+  await act(() => maxButton().click())
+  assert.ok(Math.abs(Number(formik.values.amount) - 9.9796) < 1e-12)
 })
 
 test('an estimate from the previous account cannot enable Max for the current account', async () => {

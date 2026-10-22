@@ -16,7 +16,7 @@ export function loadSource(path, imports = {}) {
     return module.exports
 }
 export const rounding = loadSource('components/utils/RoundDecimals.ts')
-export const maxHelpers = loadSource('components/Input/Amount/helpers.ts', { '@/components/utils/RoundDecimals': rounding })
+export const maxHelpers = loadSource('components/Input/Amount/helpers.ts', { '@/components/utils/RoundDecimals': rounding, '@/lib/gases/resolveGasBalanceBudget': loadSource('lib/gases/resolveGasBalanceBudget.ts') })
 export const amountPresets = loadSource('lib/amountPresets.ts', {
     '@/components/Input/Amount/helpers': maxHelpers, '@/components/utils/RoundDecimals': rounding,
     '@layerswap/utils/known-ids': require('@layerswap/utils/known-ids'),
