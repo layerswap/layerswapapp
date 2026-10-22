@@ -85,6 +85,7 @@ export type SwapLifecycleContext = Partial<Pick<
     | 'swapId'
     | 'depositMethod'
     | 'requestedAmount'
+    | 'sourceWalletAddress' | 'walletBalance' | 'walletBalanceNetwork' | 'walletBalanceToken' | 'walletBalanceTimestamp'
     | 'fromAddress'
     | 'toAddress'
     | 'sourceNetwork'

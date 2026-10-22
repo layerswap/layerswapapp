@@ -1,5 +1,43 @@
 # @layerswap/widget-types
 
+## 2.5.1
+
+### Minor Changes
+
+- 2463dd2: Switch the wallet to the source chain from the send button instead of a separate step.
+  - The standalone "Switch network" button on the wallet withdrawal step is gone. When the connected wallet reports a chain other than the swap's source chain (EVM and Fuel wallets), tapping the send button now asks the wallet to switch and continues to swap creation and the transaction or gasless signature prompt without another tap. A switch the wallet completes without asking shows nothing; if the wallet is still waiting after a second, the button reads "Switching network" with a "confirm in your wallet" message. Already-approved WalletConnect chains switch locally with no wallet prompt. Rejections and failures keep the button as "Try again" with the "Network switch failed" message.
+  - `ChangeNetworkButton` is no longer exported from `@layerswap/widget/internal`.
+  - Preview snapshots (`@layerswap/widget/internal`): `Page2WalletState` drops `{ kind: 'network' }`; the send state gains `networkSwitch` (`'pending' | 'rejected' | 'still-waiting' | 'timeout'`) rendered through the send button, and `ChangeNetworkView` is removed.
+  - `onSwapLifecycle` still emits `network_switch_started`, `network_switched`, `network_switch_rejected` and `network_switch_failed`; their `path` is now `SendTransactionButton`.
+  - The switch waits at most 60 seconds for the wallet, so an in-app browser that never answers a dismissed prompt no longer leaves the send flow stuck; the attempt is reported with `reasonCode: timeout`.
+  - New `WalletErrorReasonCode` `request_pending` (`@layerswap/widget-types`), recognised by `normalizeWalletErrorCode` from EIP-1193 `-32002` and "already pending" / "already processing" messages. A second tap while the wallet still shows the switch prompt is reported as `network_switch_failed` with `reasonCode: request_pending` and tells the user to confirm the pending request in the wallet.
+  - `@layerswap/wallet-fuel`: `switchChain` now rethrows after logging instead of swallowing the failure, so the send flow stops rather than transferring on the wrong network.
+
+- - Add frontend swap workflows and live Min, 50%, and Max amount presets.
+  - Improve swap progress, previews, slow-route warnings, and amount validation.
+  - Fix retry handling, Hyperliquid withdrawal precision, TON wallet connections, and Pocket Universe compatibility.
+  - Improve transaction summaries and balance diagnostics.
+
+### Patch Changes
+
+- a9c35f8: RPC health checks are now opt-in and scoped to the network being asked about.
+  - `createEVMProvider` no longer adds the wallet RPC health check by default. Pass `rpcHealthCheckProviders: [new EVMRpcHealthCheckProvider()]` (now exported from `@layerswap/wallet-evm`) to keep the probe and the "add RPC" prompt.
+  - The probe measures the wallet's active chain; its verdict now carries that `chainId`. `useRpcHealth(network)` reports unknown health while the wallet is on another chain, so an unhealthy RPC on the chain being left no longer replaces the send button that switches away from it.
+  - `suggestRpcForCurrentChain` from `useRpcHealth(network)` now adds the RPC for `network`'s chain rather than the wallet's current chain.
+
+- 419387b: Keep Solana's rent-exempt minimum when Max or Adjust amount is used on native SOL, so the transfer no longer leaves a sub-rent balance that fails wallet simulation. Gas estimates may now report a `reserve` that must stay in the account.
+- 34da257: Show generic Starknet execution failures as wallet errors instead of user rejections. Preserve nested provider codes in lifecycle events and allowlisted RPC simulation/revert details in error reports, with bounded serialization. Expose the wallet-reported version when available for diagnostics.
+- a2136b6: Match mobile wallet-request recovery to the WalletConnect session that received
+  the request. Recorded requests now carry their session `topic`, and EVM and
+  Solana WalletConnect wallets expose theirs as `Wallet.metadata.walletConnectTopic`.
+  Wallets connected through the generic WalletConnect connector recover their
+  requests, and another wallet app using the same account no longer does.
+
+  Let users reopen the wallet's pending request without submitting it again.
+
+  Show reconnect guidance when the wallet disconnects during source-network
+  readiness, and report readiness failures that happen before a network switch.
+
 ## 2.4.0
 
 ### Minor Changes

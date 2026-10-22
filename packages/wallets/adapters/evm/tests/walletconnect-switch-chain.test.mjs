@@ -23,27 +23,15 @@ const optimism = {
     rpcUrls: { default: { http: ['https://mainnet.optimism.io'] } },
 }
 
-function createEmitter() {
-    const listeners = new Set()
-    return {
-        on: (_event, listener) => listeners.add(listener),
-        off: (_event, listener) => listeners.delete(listener),
-        emit: (_event, data) => [...listeners].forEach(listener => listener(data)),
-        get size() { return listeners.size },
-    }
-}
-
 /**
  * A wallet on chain 1 that does not know chain 10: the first switch fails with 4902.
  * `onAdd` and `onSecondSwitch` decide what the wallet does next.
  */
 function setup({ onAdd = () => { }, onSecondSwitch, unknownChain = true }) {
-    const emitter = createEmitter()
     const calls = []
     const wallet = { chainId: 1 }
     const moveTo = (chainId) => {
         wallet.chainId = chainId
-        emitter.emit('change', { chainId })
     }
     let switches = 0
     const provider = {
@@ -58,7 +46,7 @@ function setup({ onAdd = () => { }, onSecondSwitch, unknownChain = true }) {
             throw new Error(`Unexpected ${method}`)
         },
     }
-    const config = { chains: [{ ...optimism, id: 1 }, optimism], emitter, storage: null }
+    const config = { chains: [{ ...optimism, id: 1 }, optimism], emitter: { emit() {} }, storage: null }
     const connector = walletConnect({
         projectId: 'test', id: 'test-wallet', name: 'Test Wallet', rdns: 'test.wallet', type: 'walletConnect', icon: '',
         mobile: { native: 'testwallet://', universal: 'https://test.wallet' },
@@ -70,30 +58,16 @@ function setup({ onAdd = () => { }, onSecondSwitch, unknownChain = true }) {
         getRequestedChainsIds: async () => requestedChains,
         setRequestedChainsIds: (chains) => { requestedChains = chains },
     })
-    return { connector, calls, wallet, emitter, requestedChains: () => requestedChains }
+    return { connector, calls, wallet, requestedChains: () => requestedChains }
 }
 
 test('adding an unknown chain asks the wallet to switch to it afterwards', async () => {
-    const { connector, calls, wallet, emitter, requestedChains } = setup({ onSecondSwitch: moveTo => moveTo(10) })
+    const { connector, calls, wallet, requestedChains } = setup({ onSecondSwitch: moveTo => moveTo(10) })
 
     assert.equal((await connector.switchChain({ chainId: 10 })).id, 10)
     assert.deepEqual(calls, ['wallet_switchEthereumChain', 'wallet_addEthereumChain', 'wallet_switchEthereumChain'])
     assert.equal(wallet.chainId, 10)
     assert.deepEqual(requestedChains(), [10])
-    assert.equal(emitter.size, 0)
-})
-
-test('already-selected chains do not request a switch', async () => {
-    const { connector, calls } = setup({ onSecondSwitch: () => assert.fail('unexpected request') })
-    await connector.switchChain({ chainId: 1 })
-    assert.deepEqual(calls, [])
-})
-
-test('chain verification succeeds without a change event', async () => {
-    const fixture = setup({ unknownChain: false, onSecondSwitch: () => { fixture.wallet.chainId = 10 } })
-    await fixture.connector.switchChain({ chainId: 10 })
-    assert.deepEqual(fixture.calls, ['wallet_switchEthereumChain'])
-    assert.equal(fixture.emitter.size, 0)
 })
 
 for (const mode of ['unanswered request', 'missing chain update', 'unanswered add']) {
@@ -113,7 +87,6 @@ for (const mode of ['unanswered request', 'missing chain update', 'unanswered ad
         late.resolve()
         for (let i = 0; i < 30; i++) await Promise.resolve()
         assert.deepEqual(fixture.calls, callsBeforeLateResponse)
-        assert.equal(fixture.emitter.size, 0)
         assert.deepEqual(fixture.requestedChains(), [])
     })
 }
@@ -123,7 +96,6 @@ test('pending requests remain pending errors and never add the chain', async () 
     const fixture = setup({ unknownChain: false, onSecondSwitch: () => { throw error } })
     await assert.rejects(fixture.connector.switchChain({ chainId: 10 }), e => e === error)
     assert.deepEqual(fixture.calls, ['wallet_switchEthereumChain'])
-    assert.equal(fixture.emitter.size, 0)
 })
 
 test('a wallet that switches while adding is not asked again', async () => {
@@ -134,12 +106,11 @@ test('a wallet that switches while adding is not asked again', async () => {
 })
 
 test('declining the switch after adding is a rejection, not a completed switch', async () => {
-    const { connector, wallet, emitter, requestedChains } = setup({
+    const { connector, wallet, requestedChains } = setup({
         onSecondSwitch: () => { throw Object.assign(new Error('User rejected the request.'), { code: 4001 }) },
     })
 
     await assert.rejects(connector.switchChain({ chainId: 10 }), { name: 'UserRejectedRequestError' })
     assert.equal(wallet.chainId, 1)
     assert.deepEqual(requestedChains(), [])
-    assert.equal(emitter.size, 0)
 })

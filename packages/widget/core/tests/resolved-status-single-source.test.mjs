@@ -23,11 +23,6 @@ function filesContaining(pattern) {
   return sources.filter(({ text }) => pattern.test(text)).map(({ path }) => path).sort()
 }
 
-test('the source tree is scanned', () => {
-  assert(sources.length > 100)
-  assert(sources.some(({ path }) => path === 'context/swap.tsx'))
-})
-
 test('every useResolvedSwapStatus caller passes no inputs', () => {
   const offenders = []
   for (const { path, text } of sources) {

@@ -8,6 +8,7 @@ const ATTEMPT_START_STEPS = new Set<SwapLifecycleStep>(SWAP_LIFECYCLE_ATTEMPT_ST
 const MAX_TRACKED_SWAPS = 64
 
 function getLifecycleAttributes(event: SwapLifecycleEvent): Record<string, unknown> {
+    const includeBalance = event.step === 'transfer_blocked' && event.reasonCode === 'insufficient_balance'
     return {
         schema_version: 1,
         step: event.step,
@@ -29,6 +30,14 @@ function getLifecycleAttributes(event: SwapLifecycleEvent): Record<string, unkno
         phase: event.phase,
         deposit_method: event.depositMethod,
         requested_amount: event.requestedAmount,
+        amount_mode: event.amountMode,
+        ...(includeBalance ? {
+            source_wallet_address: event.sourceWalletAddress,
+            wallet_balance: event.walletBalance,
+            wallet_balance_network: event.walletBalanceNetwork,
+            wallet_balance_token: event.walletBalanceToken,
+            wallet_balance_timestamp: event.walletBalanceTimestamp,
+        } : {}),
         from_address: event.fromAddress,
         to_address: event.toAddress,
         source_network: event.sourceNetwork,
@@ -290,7 +299,7 @@ export function createSwapLifecycleTelemetry({ captureEvent, setSwapContext }: {
             const stalledAt = Date.now()
             const stalledSequence = state.sequence + 1
             const stalledAttributes = {
-                ...attributes,
+                ...getLifecycleAttributes({ ...event, step: 'suspected_stall' }),
                 step: 'suspected_stall',
                 outcome: 'stalled',
                 reason_code: `${event.step}_timeout`,

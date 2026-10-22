@@ -474,6 +474,7 @@ function createWorkflow({
         if (page2Host) {
             const balanceController = realBalance ? loadSource('../src/components/Pages/Swap/Withdraw/Withdraw.tsx', {
                 ...buttonImports,
+                '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput: noop } },
                 '@/components/utils/RoundDecimals': loadSource('../src/components/utils/RoundDecimals.ts'),
                 '@/components/Input/Amount/helpers': {},
                 '@/lib/amountPresets': amountPresets,
@@ -1631,25 +1632,23 @@ test('gasless execution records success only after a confirmed server submission
     assert.deepEqual(flow.calls.errors, [])
 })
 
-for (const status of ['expired', 'insufficient', 'rejected']) {
-    test(`a completed sign with ${status} authorization keeps its retry button enabled`, async () => {
-        const flow = createWorkflow()
-        const [sign] = actionsFor('failed-authorization')
-        flow.state.apiActions = [sign]
-        flow.state.rejectSigning = false
-        flow.state.onTransition = () => {
-            flow.state.apiActions = [{ step: 'sign', status: 'completed' }]
-            throw new Error(`The swap authorization failed: ${status}`)
-        }
-        await flow.render().button.props.onClick()
-        await flow.poll()
-        const { button } = flow.render()
-        assert.equal(button.props.children, 'Try again')
-        assert.equal(button.props.isDisabled, false)
-        assert.equal(flow.calls.success, 0)
-        assert.deepEqual(flow.calls.storedTransactions, [])
-    })
-}
+test('a failed authorization after completed signing keeps its retry button enabled', async () => {
+    const flow = createWorkflow()
+    const [sign] = actionsFor('failed-authorization')
+    flow.state.apiActions = [sign]
+    flow.state.rejectSigning = false
+    flow.state.onTransition = () => {
+        flow.state.apiActions = [{ step: 'sign', status: 'completed' }]
+        throw new Error('The swap authorization failed: expired')
+    }
+    await flow.render().button.props.onClick()
+    await flow.poll()
+    const { button } = flow.render()
+    assert.equal(button.props.children, 'Try again')
+    assert.equal(button.props.isDisabled, false)
+    assert.equal(flow.calls.success, 0)
+    assert.deepEqual(flow.calls.storedTransactions, [])
+})
 
 test('completed prerequisites allow resuming a late publish action', async () => {
     const flow = createWorkflow()

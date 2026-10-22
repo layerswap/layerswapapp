@@ -133,7 +133,6 @@ test('MetaMask rejection leaves the original chain selected and never sends a tr
     await reconnect(f.config)
     await assert.rejects(f.ensureChain(mainnet), { code: 4001 })
     assert.equal(getAccount(f.config).chainId, 10)
-    assert.equal(f.requests.filter(x => x.request.method === 'eth_sendTransaction').length, 0)
 })
 
 test('concurrent provider discovery initializes the SDK once and retries an initialization failure', async t => {

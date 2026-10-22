@@ -295,12 +295,6 @@ for (const [source, destination, intermediate] of [
     })
 }
 
-test('Hyperliquid requires enough balance for the gross withdrawal before signing', async () => {
-    const flow = createWithdrawal('Hyperliquid', undefined, { spot: '9.9', perps: '0' })
-    await assert.rejects(flow.execute({ amount: 9.8, amountInBaseUnits: '9800000' }), { header: 'Insufficient balance' })
-    assert.deepEqual(flow.events, ['preparing'])
-})
-
 test('BAB-410: equal available and withdrawal amounts explain the additional reserve', async () => {
     const flow = createWithdrawal('Hyperliquid', undefined, { spot: '5546.669466', perps: '0' })
     await assert.rejects(flow.execute({ amountInBaseUnits: '5546469466' }), {

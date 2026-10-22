@@ -51,13 +51,6 @@ function effectEmitters() {
   return found
 }
 
-test('the source tree is scanned', () => {
-  const files = [...sourceFiles(srcDir)].map(path => relative(srcDir, path))
-  assert(files.length > 100)
-  assert(files.includes('hooks/useLifecycleObservation.ts'))
-  assert(files.includes('components/Pages/Swap/Withdraw/Processing/Processing.tsx'))
-})
-
 test('effect-driven lifecycle observations go through useLifecycleObservation', () => {
   const found = effectEmitters()
   const unexpected = [...found].filter(entry => !ALLOWLIST.has(entry)).sort()

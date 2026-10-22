@@ -9,6 +9,7 @@ import { name as PROVIDER_NAME, id as PROVIDER_ID } from '../constants'
 import { getTonConnect } from './getTonConnect'
 import { snapshotFromTonWallet, type TonWalletSnapshot, useTonStore } from './tonStore'
 import { isTonWalletInstalled } from './isTonWalletInstalled'
+import { getTonConnectDeepLink } from './getTonConnectDeepLink'
 
 type RuntimeDeps = {
     setSelectedConnector?: (connector: unknown) => void
@@ -148,28 +149,18 @@ export class TonConnectionService<Network> implements WalletConnectionService<Ru
                 tonConnect.connect({ jsBridgeKey: walletInfo.jsBridgeKey }, { signal: abortController?.signal })
             } else if (isWalletInfoRemote(walletInfo)) {
                 const remote = walletInfo as WalletInfoRemote
-                // Loading state for the QR view while the bridge handshakes.
-                setSelectedConnector?.({ ...connector, qr: { state: 'loading', value: undefined }, showQrCode: true })
+                const openDirectly = isMobilePlatform || (walletInfo.appName === 'telegram-wallet' && !connector.showQrCode)
+                setSelectedConnector?.({ ...connector, qr: openDirectly ? undefined : { state: 'loading', value: undefined }, showQrCode: !openDirectly })
 
                 const universalLink = tonConnect.connect({
                     universalLink: remote.universalLink,
                     bridgeUrl: remote.bridgeUrl,
                 }, { signal: abortController?.signal }) as string
 
-                // Prefer the wallet's native scheme (e.g. `tonkeeper-tc://`) for the
-                // open-in-app button — it launches the desktop wallet directly. Falls
-                // back to the universal link (e.g. https://t.me/wallet?...) when the
-                // wallet doesn't publish a native scheme (Telegram Wallet, Tonhub).
-                const nativeDeepLink = remote.deepLink
-                    ? appendTonConnectParamsToDeepLink(remote.deepLink, universalLink)
-                    : universalLink
+                const nativeDeepLink = getTonConnectDeepLink(universalLink, remote.deepLink)
 
-                if (isMobilePlatform) {
-                    try {
-                        window.location.href = nativeDeepLink
-                    } catch {
-                        setSelectedConnector?.({ ...connector, qr: { state: 'fetched', value: universalLink, deepLink: nativeDeepLink }, showQrCode: true })
-                    }
+                if (openDirectly) {
+                    window.location.href = nativeDeepLink
                 } else {
                     setSelectedConnector?.({ ...connector, qr: { state: 'fetched', value: universalLink, deepLink: nativeDeepLink }, showQrCode: true })
                 }
@@ -225,15 +216,6 @@ export class TonConnectionService<Network> implements WalletConnectionService<Ru
 
 
 /**
- * Display-name overrides for wallets where the TonConnect registry's `name`
- * field is ambiguous (e.g. Telegram's bot wallet is published as just "Wallet").
- * Mirrors how `@tonconnect/ui-react`'s modal labels them.
- */
-const TON_WALLET_DISPLAY_NAMES: Record<string, string> = {
-    'telegram-wallet': 'Wallet in Telegram',
-}
-
-/**
  * The TonConnect registry sometimes contains multiple entries that resolve to
  * the same wallet — most notably OKX, which publishes both `okxWallet` and
  * `okxTonWallet` with the same `jsBridgeKey: "okxTonWallet"`. Collapse to the
@@ -243,6 +225,8 @@ function dedupeTonWallets(wallets: readonly WalletInfo[]): WalletInfo[] {
     const seenBridgeKeys = new Set<string>()
     const result: WalletInfo[] = []
     for (const wallet of wallets) {
+        // The legacy Telegram connector is separate from Wallet in Telegram.
+        if (wallet.appName === 'telegram') continue
         const key = isWalletInfoInjectable(wallet) ? wallet.jsBridgeKey : undefined
         if (key) {
             if (seenBridgeKeys.has(key)) continue
@@ -258,11 +242,10 @@ function walletInfoToInternalConnector(info: WalletInfo, wallets: readonly Walle
     const isInjected = isTonWalletInstalled(info, wallets)
     const hasBrowserExtension = isInjectable
     const isMobileSupported = isWalletInfoRemote(info)
-    const displayName = TON_WALLET_DISPLAY_NAMES[info.appName] ?? info.name
 
     return {
         id: info.appName,
-        name: displayName,
+        name: info.name,
         icon: info.imageUrl,
         type: isInjected ? 'injected' : 'other',
         hasBrowserExtension,
@@ -271,19 +254,4 @@ function walletInfoToInternalConnector(info: WalletInfo, wallets: readonly Walle
         installUrl: info.aboutUrl,
         providerName: PROVIDER_NAME,
     }
-}
-
-/**
- * TonConnect's `connect({ universalLink, bridgeUrl })` returns a `tc://`-style
- * universal link. For wallets that publish a native deep-link (e.g. tonkeeper://),
- * we splice the TonConnect query params onto the wallet's own deep-link so
- * mobile redirects open the wallet directly.
- */
-function appendTonConnectParamsToDeepLink(deepLink: string, universalLink: string): string {
-    const qIdx = universalLink.indexOf('?')
-    if (qIdx === -1) return deepLink
-    const params = universalLink.slice(qIdx)
-    return deepLink.includes('?')
-        ? `${deepLink}&${params.slice(1)}`
-        : `${deepLink}${params}`
 }
