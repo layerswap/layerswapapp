@@ -474,6 +474,7 @@ function createWorkflow({
         if (page2Host) {
             const balanceController = realBalance ? loadSource('../src/components/Pages/Swap/Withdraw/Withdraw.tsx', {
                 ...buttonImports,
+                '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
                 '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput: noop } },
                 '@/components/utils/RoundDecimals': loadSource('../src/components/utils/RoundDecimals.ts'),
                 '@/components/Input/Amount/helpers': {},
