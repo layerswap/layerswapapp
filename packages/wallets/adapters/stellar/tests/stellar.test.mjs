@@ -230,16 +230,9 @@ test('maps backend token fields to native and issued Stellar assets', () => {
     assert.throws(() => resolveStellarAsset({ ...issuedToken, contract: depositoryContract }), /issuer is invalid/)
 })
 
-test('validates native and issued-asset depository XDR on both networks', () => {
-    const native = buildFixture()
-    assert.equal(validateFixture(native).source, sourceKey.publicKey())
-
-    const issued = buildFixture({ networkPassphrase: Networks.PUBLIC, token: issuedToken })
-    assert.equal(validateFixture(issued).source, sourceKey.publicKey())
-})
-
 test('builds native and issued-asset deposits from four arguments with the connected wallet as from', () => {
     for (const fixture of [buildFixture(), buildFixture({ networkPassphrase: Networks.PUBLIC, token: issuedToken })]) {
+        assert.equal(validateFixture(fixture).source, sourceKey.publicKey())
         const encodedOperation = buildDepositOperation(fixture)
         const operation = Operation.fromXdrObject(encodedOperation)
         assert.equal(operation.source, sourceKey.publicKey())
@@ -536,63 +529,19 @@ test('discovers Horizon and RPC from the backend network node list', async () =>
 })
 
 test('maps web and bridge Stellar wallets without requiring extensions', () => {
-    const connectors = [
-        {
-            id: 'albedo',
-            name: 'Albedo',
-            type: 'HOT_WALLET',
-            isAvailable: true,
-            isPlatformWrapper: false,
-            icon: 'albedo.png',
-            url: 'https://albedo.link/',
-        },
-        {
-            id: 'xbull',
-            name: 'xBull',
-            type: 'HOT_WALLET',
-            isAvailable: true,
-            isPlatformWrapper: false,
-            icon: 'xbull.png',
-            url: 'https://xbull.app',
-        },
-        {
-            id: 'freighter',
-            name: 'Freighter',
-            type: 'HOT_WALLET',
-            isAvailable: true,
-            isPlatformWrapper: false,
-            icon: 'freighter.png',
-            url: 'https://freighter.app',
-        },
-        {
-            id: 'wallet_connect',
-            name: 'WalletConnect',
-            type: 'BRIDGE_WALLET',
-            // SignClient initializes asynchronously, so the Kit can report
-            // false during its first supported-wallet refresh.
-            isAvailable: false,
-            isPlatformWrapper: false,
-            icon: 'walletconnect.png',
-            url: 'https://walletconnect.com/',
-        },
-    ].map(toStellarConnector)
-    const albedo = connectors.find(connector => connector.id === 'albedo')
-    const xbull = connectors.find(connector => connector.id === 'xbull')
-    const freighter = connectors.find(connector => connector.id === 'freighter')
-    const walletConnect = connectors.find(connector => connector.id === 'wallet_connect')
-
-    assert.equal(albedo?.type, 'injected')
-    assert.equal(albedo?.isLoadable, true)
-    assert.equal(albedo?.extensionNotFound, false)
-    assert.equal(xbull?.type, 'injected')
-    assert.equal(xbull?.isLoadable, true)
-    assert.equal(xbull?.extensionNotFound, false)
-    assert.equal(freighter?.type, 'injected')
-    assert.equal(freighter?.isLoadable, false)
-    assert.equal(walletConnect?.type, 'walletConnect')
-    assert.equal(walletConnect?.isLoadable, true)
-    assert.equal(walletConnect?.hasBrowserExtension, false)
-    assert.equal(walletConnect?.extensionNotFound, false)
+    const cases = [
+        ['albedo', 'HOT_WALLET', true, { type: 'injected', isLoadable: true, extensionNotFound: false }],
+        ['xbull', 'HOT_WALLET', true, { type: 'injected', isLoadable: true, extensionNotFound: false }],
+        ['freighter', 'HOT_WALLET', true, { type: 'injected', isLoadable: false }],
+        // WalletConnect can be unavailable while SignClient initializes.
+        ['wallet_connect', 'BRIDGE_WALLET', false, { type: 'walletConnect', isLoadable: true, hasBrowserExtension: false, extensionNotFound: false }],
+    ]
+    for (const [id, type, isAvailable, expected] of cases) {
+        const connector = toStellarConnector({ id, name: id, type, isAvailable, isPlatformWrapper: false })
+        for (const [field, value] of Object.entries(expected)) {
+            assert.equal(connector[field], value, id + '.' + field)
+        }
+    }
 })
 
 test('emits the WalletConnect URI and signs Stellar XDR through SignClient', async () => {
