@@ -13,6 +13,9 @@ const projectId = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID;
 const privyId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
 const networks = [base, polygon, mainnet, arbitrum, optimism] as [typeof base, ...Array<typeof polygon | typeof mainnet | typeof arbitrum | typeof optimism>];
 const adapter = projectId ? new WagmiAdapter({ projectId, networks, ssr: true }) : null;
+// Share the host config from the widget's first mount, including Privy login.
+// The widget cannot adopt a different EVM config after initialization.
+const wagmiConfig = adapter?.wagmiConfig;
 const appUrl = getAppOrigin();
 const modal = adapter && projectId ? createAppKit({
   adapters: [adapter], projectId, networks, defaultNetwork: base,
@@ -60,7 +63,7 @@ function Session({children}:{children:React.ReactNode}) {
   },[privy.authenticated]);
   const activeMethod = method || (reownAddress ? 'wallet' : privy.authenticated ? 'privy' : null);
   const address = activeMethod==='privy' ? privy.address : reownAddress;
-  const value = useMemo(()=>({address,email:activeMethod==='privy'?privy.email:null,authenticated:Boolean(address)||(activeMethod==='privy'&&privy.authenticated),method:activeMethod,ready:privy.ready,reownConfigured:Boolean(projectId),privyConfigured:Boolean(privyId),wagmiConfig:activeMethod==='wallet'?adapter?.wagmiConfig:undefined,connectWallet,login,disconnect}),[address,activeMethod,privy,connectWallet,login,disconnect]);
+  const value = useMemo(()=>({address,email:activeMethod==='privy'?privy.email:null,authenticated:Boolean(address)||(activeMethod==='privy'&&privy.authenticated),method:activeMethod,ready:privy.ready,reownConfigured:Boolean(projectId),privyConfigured:Boolean(privyId),wagmiConfig,connectWallet,login,disconnect}),[address,activeMethod,privy,connectWallet,login,disconnect]);
   return <WalletContext.Provider value={value}>
     {adapter?<ReownBridge onAddress={setReownAddress} actions={actions}/>:null}
     {privyId?<PrivyBridge onState={setPrivy} actions={actions}/>:null}
@@ -70,7 +73,7 @@ function Session({children}:{children:React.ReactNode}) {
 export default function ConfiguredProvider({children}:{children:React.ReactNode}) {
   const [queryClient] = useState(()=>new QueryClient());
   let content = <Session>{children}</Session>;
-  if (adapter) content = <WagmiProvider config={adapter.wagmiConfig}><QueryClientProvider client={queryClient}>{content}</QueryClientProvider></WagmiProvider>;
+  if (wagmiConfig) content = <WagmiProvider config={wagmiConfig}><QueryClientProvider client={queryClient}>{content}</QueryClientProvider></WagmiProvider>;
   if (privyId) content = <PrivyProvider appId={privyId} clientId={process.env.NEXT_PUBLIC_PRIVY_CLIENT_ID || undefined} config={{
     loginMethods:['email','google'],
     appearance:{theme:'light',accentColor:'#7655e8',logo:'/icon.svg'},
