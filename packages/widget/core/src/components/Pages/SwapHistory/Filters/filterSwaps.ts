@@ -13,7 +13,8 @@ const INCOMPLETE_STATUSES: string[] = [
 
 const hasUserActivity = (
     sr: SwapResponse,
-    storeTransactions: Record<string, SwapTransaction>
+    storeTransactions: Record<string, SwapTransaction>,
+    pendingSubmissions: Record<string, true>,
 ): boolean => {
     const hasInputTx = !!sr.swap?.transactions?.some(
         (t: { type: TransactionType }) => t.type === TransactionType.Input
@@ -21,14 +22,15 @@ const hasUserActivity = (
     const swapId = sr.swap?.id
     const transaction = swapId ? storeTransactions[swapId] : undefined
     const hasStoreTx = !!transaction?.hash || !!transaction?.providerSubmissionAccepted
-    return hasInputTx || hasStoreTx
+    return hasInputTx || hasStoreTx || !!(swapId && pendingSubmissions[swapId])
 }
 
 export const shouldDisplay = (
     sr: SwapResponse,
-    storeTransactions: Record<string, SwapTransaction>
+    storeTransactions: Record<string, SwapTransaction>,
+    pendingSubmissions: Record<string, true> = {},
 ): boolean => {
     const status = sr.swap?.status as string | undefined
     if (!status || !INCOMPLETE_STATUSES.includes(status)) return true
-    return hasUserActivity(sr, storeTransactions)
+    return hasUserActivity(sr, storeTransactions, pendingSubmissions)
 }

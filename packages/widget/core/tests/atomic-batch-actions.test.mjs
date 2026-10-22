@@ -99,7 +99,7 @@ test('both decimal deposit_actions and hex next_action values retain precision a
 test('legacy signed publication remains an ordinary transfer', async () => {
     const actions = fixture.deposit_actions.sufficient_allowance
     const { client } = clientFor(actions, { step: 'publish', status: 'action_required', action: actions[0] })
-    assert.deepEqual((await client.GetDepositActionsAsync('legacy-swap', fixture.account)).data, actions)
+    assert.deepEqual((await client.GetDepositActionsAsync('legacy-swap', fixture.account)).data, [{ ...actions[0], amount: 0 }])
 })
 
 test('native, gasless, Permit2 approval and manual-deposit responses keep their existing workflow', async () => {
@@ -209,4 +209,13 @@ test('a new backend single transfer uses the authoritative next_action calldata 
     assert.equal(resolved[0].call_data, '0xabcd')
     assert.equal(resolved[0].amount_in_base_units, '123456789012345678901')
     assert.equal(resolved[0].expires_at, next.expires_at)
+    assert.equal(resolved[0].amount, 0)
+})
+
+test('a publication without either transaction value cannot become executable', async () => {
+    const publish = { ...fixture.deposit_actions.sufficient_allowance[0] }
+    delete publish.amount_in_base_units
+    await assert.rejects(resolveAtomicDepositActions([publish], async () => ({
+        step: 'publish', status: 'action_required', action: publish,
+    })), /missing its transaction value/)
 })

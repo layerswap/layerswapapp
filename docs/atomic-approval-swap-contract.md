@@ -49,11 +49,15 @@ No permit signature or `/authorize` request is used for this rail. The backend b
 
 The EVM adapter uses viem `sendCalls` with `forceAtomic: true`, version `2.0.0`, sequential fallback disabled and request retries disabled. In [EIP-5792](https://eips.ethereum.org/EIPS/eip-5792), this sends `atomicRequired: true`. Capability caching is scoped to connector, account, source chain and current wallet chain; submission performs a fresh check.
 
+Shared capability discovery has a ten-second deadline. A timeout leaves creation on the existing workflow without atomic opt-in; a timed-out fresh submission check refuses the batch before opening a wallet prompt. Late discovery responses cannot overwrite a newer result or retain the pending lookup.
+
 The existing swap transaction store saves execution kind, transaction hash/timestamp, and submission guards keyed by swap ID. An accepted multi-call batch stores only its opaque batch ID and acceptance timestamp. It has no transaction hash until the backend supplies an indexed input. Batch IDs never become explorer links, transaction-status arguments or catchup hashes.
 
 After acceptance, the existing backend swap poller owns tracking. The frontend makes no `wallet_getCallsStatus` request, opens no wallet for status, and exposes no manual status button. The wallet request returns immediately after acceptance. Background detection, backend failure, and completion update the existing progress surface. A disconnected wallet, spent source balance or unhealthy wallet RPC cannot replace that progress with another submission prompt.
 
 If no input has been detected after 150 seconds, the progress displays “Transaction not detected yet” and explains that tracking continues automatically. This is an unconfirmed outcome, not a declaration that funds failed to move. Backend polling continues, a later indexed input replaces the accepted marker with its hash, and the persisted guard prevents another wallet submission or replacement. Closing and reopening preserves that guard and the accepted timestamp. Lost responses also remain guarded; reopening starts a fresh observation window if no acceptance timestamp was available.
+
+Uncertain submissions remain visible in history while their persisted guard is unresolved, including when there is no receipt timestamp or the backend's history list omits the swap. History recovery respects selected account and network filters and never clears the submission guard.
 
 Wallet rejection and proven non-submission release the submission guard. Missing inputs, quote expiry, status outages and elapsed time do not. Legacy saved wallet failure receipts remain readable, but this flow no longer obtains new failure receipts from wallet status calls.
 

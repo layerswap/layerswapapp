@@ -26,6 +26,7 @@ const { getActionableDepositAction, getDepositActionLabel, getDepositActionDescr
 const { executeAtomicBatch } = await import('../dist/esm/lib/atomicBatchExecution.js')
 const { recordSwapExecution } = await import('../dist/esm/lib/swapExecution.js')
 const { hasUnacknowledgedWalletAction } = await import('../dist/esm/helpers/swapProgress.js')
+const { shouldDisplay } = await import('../dist/esm/components/Pages/SwapHistory/Filters/filterSwaps.js')
 const { useSwapTransactionStore: store } = await import('../dist/esm/stores/swapTransactionStore.js')
 const fixtures = JSON.parse(readFileSync(new URL('./fixtures/atomic-batch.json', import.meta.url)))
 const hash = `0x${'a'.repeat(64)}`, finalHash = `0x${'b'.repeat(64)}`
@@ -55,6 +56,27 @@ function context(action = fixtures.actions.zero_allowance) {
 }
 const submit = (ctx = context(), provider = {}) => executeAtomicBatch(ctx, ctx.depositActions[0], {
     submit: async () => ({ id: batchId }), getStatus: async () => assert.fail('Backend observation must not poll the wallet'), ...provider,
+})
+
+test('an uncertain atomic submission stays in history after hydration without enabling resubmission', async () => {
+    const ctx = context()
+    await assert.rejects(submit(ctx, { submit: async () => { throw new Error('Wallet response lost') } }), /Wallet response lost/)
+    const saved = storage.get('swapTransactions')
+    store.setState(store.getInitialState(), true)
+    storage.set('swapTransactions', saved)
+    await store.persist.rehydrate()
+
+    const state = store.getState()
+    const response = { swap: { ...ctx.swapData, status: 'user_transfer_pending', transactions: [] } }
+    assert.equal(state.swapTransactions['atomic-swap'].timestamp, undefined)
+    assert.equal(shouldDisplay(response, state.swapTransactions, state.pendingSubmissions), true)
+    assert.equal(shouldDisplay({ swap: { ...response.swap, id: 'untouched' } }, {
+        untouched: { kind: 'atomic-batch' },
+    }, state.pendingSubmissions), false)
+    await assert.rejects(submit(ctx, {
+        submit: async () => assert.fail('reopening an uncertain submission must never send again'),
+    }), /may already be submitted/)
+    assert.equal(store.getState().pendingSubmissions['atomic-swap'], true)
 })
 
 for (const [name, action] of Object.entries(fixtures.actions).filter(([, action]) => action.calls.length > 1)) test(`preserves backend calls and hands accepted batches to backend tracking: ${name}`, async () => {

@@ -490,6 +490,73 @@ for (const reload of [false, true]) {
 }
 
 for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal]) {
+  for (const change of ['amount', 'destination']) {
+    test(`${useWithdrawal.name} prepares new instructions after changing the reviewed ${change}`, async () => {
+      state.swapDetails = undefined
+      const created = []
+      state.createSwap = async values => {
+        const id = `created-${created.length + 1}`
+        const action = { type: 'transfer', to_address: `${id}-deposit`, call_data: `0x${created.length + 1}`,
+          amount: Number(values.amount), amount_in_base_units: String(Number(values.amount) * 1_000_000) }
+        created.push({ id, values, action })
+        return { swap: { id }, deposit_actions: [action] }
+      }
+      state.getDepositActions = async id => ({ data: [created.find(swap => swap.id === id).action] })
+      state.error = userRejectedError()
+      const props = { swapId: undefined, swapBasicData: { ...swapBasicData, requested_amount: '10' } }
+      const mounted = await mountWithdrawal(useWithdrawal, props)
+      try {
+        await act(async () => mounted.result.handleWithdraw())
+        assert.equal(mounted.result.rejected, true)
+        assert.equal(created.length, 1)
+        assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, {})
+
+        // Adjust amount detaches the context ID while the Page 2 controller stays mounted.
+        props.swapBasicData = change === 'amount'
+          ? { ...props.swapBasicData, requested_amount: '5' }
+          : { ...props.swapBasicData, destination_address: 'another-recipient' }
+        await mounted.rerender()
+        state.executeTransfer = async params => {
+          params.onSubmissionStateChange('preparing')
+          params.onSubmissionStateChange('submitting')
+          return 'new-withdrawal-hash'
+        }
+        await act(async () => mounted.result.handleWithdraw())
+        assert.equal(created.length, 2)
+        const transfer = state.transfers.at(-1)[0]
+        assert.equal(transfer.swapId, 'created-2')
+        assert.equal(transfer.depositAddress, created[1].action.to_address)
+        assert.equal(transfer.amount, change === 'amount' ? 5 : 10)
+        assert.equal(created[1].values.destination_address, props.swapBasicData.destination_address)
+        if (useWithdrawal === useHyperliquidWithdrawal) {
+          assert.equal(transfer.amountInBaseUnits, created[1].action.amount_in_base_units)
+        } else {
+          assert.equal(transfer.callData, created[1].action.call_data)
+        }
+        assert.deepEqual(state.actionRefreshes, [], 'new drafts cannot refresh the rejected swap')
+        assert.equal(useSwapTransactionStore.getState().swapTransactions['created-2'].hash, 'new-withdrawal-hash')
+      } finally {
+        await mounted.unmount()
+      }
+    })
+  }
+
+  test(`${useWithdrawal.name} reuses the prepared swap when reviewed inputs are unchanged`, async () => {
+    state.swapDetails = undefined
+    state.error = userRejectedError()
+    state.createSwap = async () => ({ swap: { id: 'same-draft' }, deposit_actions: state.depositActions })
+    const mounted = await mountWithdrawal(useWithdrawal, { swapId: undefined })
+    try {
+      await act(async () => mounted.result.handleWithdraw())
+      await act(async () => mounted.result.handleWithdraw())
+      assert.equal(state.creations, 1)
+      assert.deepEqual(state.actionRefreshes, [['same-draft', 'source']])
+      assert.equal(state.transfers.at(-1)[0].swapId, 'same-draft')
+    } finally {
+      await mounted.unmount()
+    }
+  })
+
   test(`${useWithdrawal.name} remount retry cannot unlock the original pending wallet request`, async () => {
     const paused = Promise.withResolvers()
     const entered = Promise.withResolvers()

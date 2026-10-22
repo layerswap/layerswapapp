@@ -31,6 +31,7 @@ type PendingCapabilityCheck = {
 }
 
 const CAPABILITY_CACHE_DURATION_MS = 30_000
+const CAPABILITY_TIMEOUT_MS = 10_000
 const UINT256_LIMIT = 2n ** 256n
 const ZERO_ADDRESS = /^0x0{40}$/i
 const HEX_BYTES = /^0x(?:[0-9a-fA-F]{2})*$/
@@ -229,7 +230,9 @@ export function createAtomicBatchProvider(config: Config): AtomicBatchProvider {
             // must not cancel the other caller's wallet request.
             const sharedContext = { ...context, signal: undefined }
             const requestId = Symbol('wallet-capability')
-            const promise = checkWalletCapability(sharedContext, walletSnapshot, requestId)
+            const promise = withCapabilityDeadline(
+                checkWalletCapability(sharedContext, walletSnapshot, requestId),
+            )
             pendingCapabilityChecks.set(walletSnapshot.cacheKey, {
                 requestId,
                 connectionVersion: walletSnapshot.connectionVersion,
@@ -346,6 +349,22 @@ export function resolveSelectedConnector(config: Config, wallet: Wallet, account
 
 function includesAccount(accounts: readonly string[], account: string): boolean {
     return accounts.some(connectedAccount => connectedAccount.toLowerCase() === account.toLowerCase())
+}
+
+async function withCapabilityDeadline(check: Promise<AtomicCapability>): Promise<AtomicCapability> {
+    let timeout: ReturnType<typeof setTimeout> | undefined
+    try {
+        return await Promise.race([
+            check,
+            new Promise<AtomicCapability>(resolve => {
+                // Optional discovery may fall back; a fresh submission check still
+                // requires explicit support before opening a wallet prompt.
+                timeout = setTimeout(() => resolve('unsupported'), CAPABILITY_TIMEOUT_MS)
+            }),
+        ])
+    } finally {
+        clearTimeout(timeout)
+    }
 }
 
 function accountListKey(accounts: readonly string[]): string {

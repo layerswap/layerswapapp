@@ -149,6 +149,46 @@ test('selection discovery and swap creation share an in-flight capability reques
     assert.deepEqual(h.walletReads, { accounts: 0, chain: 0 })
 })
 
+test('stalled shared discovery settles at its deadline and a late response cannot replace a fresh result', async t => {
+    t.mock.timers.enable({ apis: ['setTimeout'] })
+    const h = walletHarness()
+    const controller = new AbortController()
+    let resolveOld
+    h.state.onCapabilities = () => new Promise(resolve => { resolveOld = resolve })
+    const selection = h.provider.getCapabilities({ ...h.context, signal: controller.signal })
+    const cancelled = assert.rejects(selection, error => error.name === 'AbortError')
+    while (!h.requests.length) await new Promise(resolve => setImmediate(resolve))
+    const creation = h.provider.getCapabilities(h.context)
+    controller.abort()
+    t.mock.timers.tick(10_000)
+    await cancelled
+    assert.equal(await creation, 'unsupported', 'optional creation discovery can use the existing workflow')
+    assert.equal(h.requests.length, 1)
+
+    h.state.onCapabilities = () => ({ '0xa4b1': { atomic: { status: 'ready' } } })
+    assert.equal(await h.provider.getCapabilities(h.context), 'ready', 'timeout releases the shared request')
+    resolveOld({ '0xa4b1': { atomic: { status: 'supported' } } })
+    await new Promise(resolve => setImmediate(resolve))
+    assert.equal(await h.provider.getCapabilities(h.context), 'ready', 'the timed-out request cannot refill the cache')
+    assert.equal(h.requests.length, 2)
+    assert.equal(h.requests.some(request => request.method === 'wallet_sendCalls'), false)
+})
+
+test('a stalled fresh submission capability check expires before opening a wallet prompt', async t => {
+    t.mock.timers.enable({ apis: ['setTimeout'] })
+    const h = walletHarness()
+    await h.provider.getCapabilities(h.context)
+    h.state.onCapabilities = () => new Promise(() => {})
+    let prompts = 0
+    const pending = h.provider.submit({ ...h.context, onWalletPrompt: () => { prompts++ } })
+    const rejected = assert.rejects(pending, error => error.atomicSubmission === 'not_submitted')
+    while (h.requests.length < 2) await new Promise(resolve => setImmediate(resolve))
+    t.mock.timers.tick(10_000)
+    await rejected
+    assert.equal(prompts, 0)
+    assert.equal(h.requests.some(request => request.method === 'wallet_sendCalls'), false)
+})
+
 test('MetaMask switch completion can repeat the target chain while creation shares discovery', async () => {
     const h = walletHarness()
     h.state.chainId = 534352

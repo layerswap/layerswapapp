@@ -62,9 +62,20 @@ export async function resolveAtomicDepositActions(actions: DepositAction[], getN
     const next = await getNextAction()
     if (next.step !== 'publish' || next.status !== 'action_required' || !next.action) throw new Error(next.detail || 'The swap action changed. Refresh the swap before submitting.')
     if (next.action.type === 'transfer') {
-        return [{ ...publish, ...next.action, step: 'publish', status: next.status,
-            network: next.action.network ?? publish.network, token: next.action.token ?? publish.token,
-            ...(next.expires_at ? { expires_at: next.expires_at } : {}) }]
+        const amountInBaseUnits = next.action.amount_in_base_units ?? publish.amount_in_base_units
+        const amount = next.action.amount ?? publish.amount
+        if (amount === undefined && amountInBaseUnits === undefined) {
+            throw new Error('The publication is missing its transaction value')
+        }
+        return [{
+            ...publish, ...next.action,
+            step: 'publish', status: next.status,
+            amount: amount ?? 0,
+            amount_in_base_units: amountInBaseUnits,
+            network: next.action.network ?? publish.network,
+            token: next.action.token ?? publish.token,
+            ...(next.expires_at ? { expires_at: next.expires_at } : {}),
+        }]
     }
     if (next.action.type !== 'send_calls') throw new Error('Invalid atomic swap action')
     return [resolvePublication({ ...next.action, step: 'publish', status: next.status, expires_at: next.expires_at,
