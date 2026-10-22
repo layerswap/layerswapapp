@@ -1,7 +1,6 @@
 'use client';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LayerswapDepositWidget } from '@layerswap/widget-react';
-import { useWalletSession } from './auth/context';
 import { foresightLayerswapColorOverrides, foresightLayerswapTheme } from '@/lib/layerswap-theme';
 import { getAppOrigin } from '@/lib/app-origin';
 
@@ -10,12 +9,10 @@ export type DepositRequest = {id:number;method:DepositMethod|null;address:`0x${s
 const destination = {network:process.env.NEXT_PUBLIC_DEPOSIT_NETWORK || 'BASE_MAINNET',tokens:[process.env.NEXT_PUBLIC_DEPOSIT_TOKEN || 'USDC']};
 const apiKey = process.env.NEXT_PUBLIC_LAYERSWAP_API_KEY || '';
 const config = {apiKey,version:'mainnet' as const,theme:foresightLayerswapTheme};
-const walletProvidersConfig = {include:['evm' as const,'solana' as const]};
 const appUrl = getAppOrigin();
 const walletDefaults = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID ? {walletConnect:{projectId:process.env.NEXT_PUBLIC_REOWN_PROJECT_ID,name:'Foresight',description:'Fund your Foresight wallet',url:appUrl,icons:[`${appUrl}/icon.svg`]}} : undefined;
 
 export default function DepositWidget({address,request,onComplete,onStatus}:{address:`0x${string}`;request:DepositRequest|null;onComplete:()=>void;onStatus:(message:string)=>void}) {
-  const {wagmiConfig} = useWalletSession();
   const host = useRef<HTMLDivElement>(null);
   const openedRequest = useRef<number|null>(null);
   const latestRequest = useRef(request);
@@ -68,7 +65,7 @@ export default function DepositWidget({address,request,onComplete,onStatus}:{add
     <style>{foresightLayerswapColorOverrides}</style>
     <LayerswapDepositWidget key={retryKey} config={config} destination={destination} destinationAddress={address}
       mode="button" buttonLabel="Deposit" buttonClassName="layerswap-deposit-trigger"
-      methods={methods} walletProvidersConfig={walletProvidersConfig} walletDefaults={walletDefaults} wagmiConfig={wagmiConfig}
+      methods={methods} walletDefaults={walletDefaults}
       showDestinationAddress title="Add funds" callbacks={callbacks} fallback={null}
       onError={handleLoadError}/>
   </div>;
