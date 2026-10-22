@@ -1,27 +1,29 @@
-import { useEffect, useState } from 'react'
+import useSWR from 'swr'
 import type { Network, Token, Wallet } from '@layerswap/widget-types'
 import { resolverService } from '@/lib/resolvers/resolverService'
 
-/** Read-only discovery for an eligible draft. The adapter shares its cache with creation. */
-export function useAtomicBatchCapability(network: Network | undefined, token: Token | undefined, wallet: Wallet | undefined, account: string | undefined) {
-    const key = [network?.name, network?.chain_id, token?.contract, wallet?.id, wallet?.internalId,
-        wallet?.metadata?.evmConnectorUid, wallet?.metadata?.walletConnectTopic, wallet?.chainId, wallet?.isActive, account].join(':')
-    const [capability, setCapability] = useState<{ key: string; supported: boolean }>()
-    useEffect(() => {
-        if (!network || !token || !wallet?.isActive || !account) return
-        const controller = new AbortController()
-        const source = { ...network, token }
-        // Provider registration finishes before discovery starts.
-        void Promise.resolve().then(() => {
-            controller.signal.throwIfAborted()
+/** The form discovers support early; review reads the same wallet/account/chain query. */
+export function useAtomicBatchCapability(network: Network | undefined, token: Token | undefined, wallet: Wallet | undefined, account: string | undefined): boolean {
+    const key = network && token && wallet?.isActive && account
+        ? ['atomic-batch-capability', network.name, network.chain_id, wallet.id, wallet.internalId, wallet.providerName,
+            wallet.metadata?.connectorId, wallet.metadata?.connectorUid, wallet.metadata?.evmConnectorUid,
+            wallet.metadata?.walletConnectTopic, wallet.chainId, wallet.addresses?.join(','), account]
+        : null
+    const { data } = useSWR<boolean>(key, async () => {
+        if (!network || !token || !wallet?.isActive || !account) return false
+        // Resolver registration finishes before wallet discovery starts.
+        await Promise.resolve()
+        try {
+            const source = { ...network, token }
             const provider = resolverService.getTransferResolver().getAtomicBatchProvider(source)
-            return provider?.getCapabilities({ network: source, wallet, account, signal: controller.signal })
-        }).then(status => {
-            if (!controller.signal.aborted) setCapability({ key, supported: status === 'supported' })
-        }).catch(() => {
-            if (!controller.signal.aborted) setCapability({ key, supported: false })
-        })
-        return () => controller.abort()
-    }, [key])
-    return capability?.key === key && capability.supported
+            return await provider?.getCapabilities({ network: source, wallet, account }) === 'supported'
+        } catch {
+            return false
+        }
+    }, {
+        keepPreviousData: false,
+        revalidateOnFocus: false,
+        revalidateOnReconnect: false,
+    })
+    return data === true
 }
