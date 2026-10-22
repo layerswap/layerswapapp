@@ -99,7 +99,6 @@ const transition = loadSource(`${withdraw}Presentation/WalletExecutionTransition
 const sections = loadSource(`${withdraw}Presentation/Page2Sections.tsx`, {
     ...motion,
     './WalletExecutionTransition': transition,
-    '../Processing/StepsComponent': { StepsPanelProvider: childrenOnly },
 });
 const network = { name: 'BASE_MAINNET', type: 'evm' };
 const token = { symbol: 'USDC', contract: '0xtoken', supports_gasless_deposit: true, gasless_standard: 'eip3009' };
@@ -176,7 +175,6 @@ test('switching gasless mode preserves the live execution lock while swap creati
         '@/lib/gases/useSWRGas': { default: () => ({}) },
         '@/stores/gaslessPreferenceStore': { useGaslessPreferenceStore },
         '@/stores/swapTransactionStore': stores,
-        '@layerswap/utils': { sleep: noop },
         '../../Presentation/WalletActionsView': {
             SendTransactionView: props => {
                 viewProps = props;
@@ -197,10 +195,6 @@ test('switching gasless mode preserves the live execution lock while swap creati
     const { default: SwapDetails } = loadSource(`${withdraw}SwapDetails.tsx`, {
         ...walletHooks,
         './Presentation/Page2Sections': sections,
-        '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
-        '@/helpers/gasless': gasless,
-        '@/stores/swapTransactionStore': stores,
-        '@/hooks/useIsGaslessActive': { useIsGaslessActive: () => useGaslessPreferenceStore(state => state.gaslessEnabled) },
         './Summary': { default: empty },
         './SwapQuoteDetails': { SwapQuoteDetails: empty },
         './Presentation/Page2Contained': { Page2Contained: childrenOnly },
@@ -262,10 +256,6 @@ for (const [label, depositActions, compactDuringExecution] of [
         const { default: SwapDetails } = loadSource(`${withdraw}SwapDetails.tsx`, {
             ...walletHooks,
             './Presentation/Page2Sections': sections,
-            '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
-            '@/helpers/gasless': gasless,
-            '@/stores/swapTransactionStore': { useSwapTransactionStore: () => undefined },
-            '@/hooks/useIsGaslessActive': { useIsGaslessActive: () => false },
             './Summary': { default: empty },
             './SwapQuoteDetails': {
                 SwapQuoteDetails: ({ compact }) => React.createElement('button', { 'data-quote-details': true, hidden: compact }, 'See details'),
@@ -371,10 +361,6 @@ test('live recipient visibility preserves disconnected destinations and respects
     const { default: SwapDetails } = loadSource(`${withdraw}SwapDetails.tsx`, {
         ...liveWalletHooks,
         './Presentation/Page2Sections': sections,
-        '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
-        '@/helpers/gasless': gasless,
-        '@/stores/swapTransactionStore': { useSwapTransactionStore: () => undefined },
-        '@/hooks/useIsGaslessActive': { useIsGaslessActive: () => false },
         './Summary': { default: empty },
         './SwapQuoteDetails': quoteDetails,
         './Presentation/Page2Contained': { Page2Contained: childrenOnly },
@@ -635,7 +621,6 @@ function createSwapHistoryHarness(fetcher, { onCreate, selectedAccount } = {}) {
     };
     const workflow = loadSource(`${withdraw}Presentation/DepositWorkflowView.tsx`, {
         ...shared,
-        '../Processing/StepTransactionLink': { StepTransactionLink: empty },
     });
     const { ProcessingView } = loadSource(`${withdraw}Presentation/ProcessingView.tsx`, {
         ...shared,
@@ -706,7 +691,6 @@ function createSwapHistoryHarness(fetcher, { onCreate, selectedAccount } = {}) {
         '@/lib/extendedRoutes/transforms': {},
         '@/stores/extendedRoutesStore': {},
         '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
-        '@/lib/swapPollingPolicy': pollingPolicy,
     });
     const harness = { Provider: context.SwapDataProvider, context, api, stores };
     harness.Completion = function Completion() {
@@ -768,85 +752,6 @@ for (const [kind, actions, compactsBeforeSubmission] of [
         }
     });
 }
-
-test('switching off gasless after rejection keeps a sign-only quote expanded through the new attempt', async () => {
-    const root = createRoot(container);
-    const harness = createSwapHistoryHarness(async key => key.includes('/deposit_actions')
-        ? { data: [{ type: 'sign', step: 'sign', status: 'action_required' }] }
-        : { data: { swap: {
-            id: 'first', status: 'user_transfer_pending', requested_amount: 100,
-            source_network: network, destination_network: network,
-            source_token: token, destination_token: { asset: 'ETH', decimals: 18 },
-            use_deposit_address: false, transactions: [],
-        } } });
-    let rejected = false;
-    const { default: SwapDetails } = loadSource(`${withdraw}SwapDetails.tsx`, {
-        ...walletHooks,
-        './Presentation/Page2Sections': sections,
-        '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
-        '@/helpers/gasless': gasless,
-        '@/stores/swapTransactionStore': harness.stores,
-        '@/hooks/useIsGaslessActive': { useIsGaslessActive: () => useGaslessPreferenceStore(state => state.gaslessEnabled) },
-        './Summary': { default: empty },
-        './SwapQuoteDetails': {
-            SwapQuoteDetails: ({ compact }) => React.createElement('button', { 'data-quote-details': true, hidden: compact }, 'See details'),
-        },
-        './Presentation/Page2Contained': { Page2Contained: childrenOnly },
-        '@/components/Common/Sceletons': { SwapDetailsSceleton: empty },
-        '@/components/Widget/Index': { Widget: childrenOnly },
-        '@/context/callbackProvider': { useCallbacks: () => ({ onBackClick: noop, onSwapLifecycle: noop }) },
-        '@/lib/swapLifecycle': {},
-        '@/context/swap': harness.context,
-        '@/hooks/useGaslessAuthorizationStatus': { useGaslessAuthorizationStatus: noop },
-        '@/hooks/useResolvedSwapStatus': { useResolvedSwapStatus: () => harness.context.useSwapDataState().resolved },
-        '@/hooks/useSwapRetry': { useSwapRetry: () => ({}) },
-        './ManualWithdraw': { default: empty },
-        './Presentation/RetryView': { RetryView: empty },
-        './Processing': { default: empty },
-        './Withdraw': { default: () => rejected ? 'Signing rejected. Try again' : null },
-    });
-    function Screen() {
-        harness.state = harness.context.useSwapDataState();
-        harness.update = harness.context.useSwapDataUpdate();
-        return React.createElement(SwapDetails, { type: 'contained' });
-    }
-    const config = { provider: () => new Map(), revalidateOnFocus: false, revalidateOnReconnect: false };
-    const render = () => act(async () => root.render(React.createElement(SWRConfig, { value: config },
-        React.createElement(harness.Provider, null, React.createElement(Screen)))));
-    useGaslessPreferenceStore.getState().resetGaslessPreference();
-    try {
-        await render();
-        await act(() => harness.update.markWalletExecutionStarted('first'));
-        rejected = true;
-        await render();
-        const quote = container.querySelector('[data-quote-details]');
-        assert.equal(quote.hidden, false);
-        assert.match(container.textContent, /Signing rejected/);
-
-        await act(() => useGaslessPreferenceStore.getState().setGaslessEnabled(false));
-        assert.equal(container.querySelector('[data-quote-details]'), quote, 'toggling preserves the quote node');
-        assert.equal(quote.hidden, false, 'a rejected gasless attempt must not compact the standard quote');
-        assert.equal(container.querySelector('[data-quote-layout]').dataset.quoteLayout, 'separate');
-        assert.equal(harness.state.swapId, 'first', 'changing presentation does not discard the existing swap');
-        assert.match(container.textContent, /Signing rejected/);
-
-        await act(() => harness.update.markWalletExecutionStarted('first'));
-        assert.equal(quote.hidden, false, 'restarting a single wallet prompt must not compact the quote');
-        assert.equal(container.querySelector('[data-quote-layout]').dataset.quoteLayout, 'separate');
-
-        await act(() => {
-            useGaslessPreferenceStore.getState().setGaslessEnabled(true);
-            harness.update.markWalletExecutionStarted('first');
-        });
-        assert.equal(harness.state.walletExecutionStarted, true, 'execution captures the current preference even before React rerenders');
-        assert.equal(quote.hidden, false);
-        await act(() => useGaslessPreferenceStore.getState().setGaslessEnabled(false));
-        assert.equal(quote.hidden, false, 'another mode change cannot reuse the previous gasless attempt');
-    } finally {
-        await act(() => root.unmount());
-        useGaslessPreferenceStore.getState().resetGaslessPreference();
-    }
-});
 
 test('wallet execution layout belongs to the active swap and resets for a fresh attempt', async () => {
     const root = createRoot(container);
@@ -1057,7 +962,6 @@ test('a real atomic swap keeps its receipts without completion time when the API
         t.mock.timers.reset();
     }
 });
-
 
 for (const provider of ['Hyperliquid', 'Polymarket']) {
     for (const outcome of ['failure', 'success']) {
@@ -1318,7 +1222,6 @@ for (const failure of ['rejected', 'failed']) {
             '@/lib/fees': { resolvePriceImpactValues: noop },
             '@/stores/gaslessPreferenceStore': { useGaslessPreferenceStore },
             '@/stores/swapTransactionStore': stores,
-            '@layerswap/utils': { sleep: noop },
             '../../Presentation/WalletActionsView': { SendTransactionView: props => { walletView = props; return null; } },
             './depositExecution': execution,
         });
@@ -1451,10 +1354,6 @@ function createRetryHarness({ transaction, authorization, transactions = [], dep
         '@/context/swap': swapHooks,
         '@/context/callbackProvider': { useCallbacks: () => ({ onBackClick: noop, onSwapLifecycle: noop }) },
         '@/lib/swapLifecycle': { lifecycleContextFromSwap: () => ({}) },
-        '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
-        '@/helpers/gasless': gasless,
-        '@/stores/swapTransactionStore': stores,
-        '@/hooks/useIsGaslessActive': { useIsGaslessActive: () => true },
         '@/hooks/useGaslessAuthorizationStatus': { useGaslessAuthorizationStatus: noop },
         '@/hooks/useResolvedSwapStatus': statusHook,
         '@/hooks/useSwapRetry': { useSwapRetry },

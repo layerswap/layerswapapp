@@ -4,7 +4,6 @@ import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 import { createSwapContextWriter, createWalletContextWriter, SwapContextInstrumentation } from '../faro-session-context.ts'
 import { createSwapLifecycleTelemetry } from '../faro-swap-lifecycle.ts'
-import { beforeSend } from '../faro-sanitizer.ts'
 
 const require = createRequire(import.meta.url)
 const sdkRequire = createRequire(require.resolve('@grafana/faro-web-sdk'))

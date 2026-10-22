@@ -100,23 +100,19 @@ const BriefInformation: FC<BriefInformationProps> = ({ campaign }) =>
         }
     </p>
 
-const Loading = () => <Widget>
-    <Widget.Content>
-        <div className="absolute top-[calc(50%-5px)] left-[calc(50%-5px)]">
-            <SpinIcon className="animate-spin h-5 w-5" />
-        </div>
-    </Widget.Content>
-</Widget>
+const Loading = () => <Widget.Content>
+    <div className="absolute top-[calc(50%-5px)] left-[calc(50%-5px)]">
+        <SpinIcon className="animate-spin h-5 w-5" />
+    </div>
+</Widget.Content>
 
-const NotFound = () => <Widget>
-    <Widget.Content>
-        <div className="h-[364px] flex flex-col items-center justify-center space-y-4">
-            <Gift className="h-20 w-20 text-primary" />
-            <p className="font-bold text-center">Campaign not found</p>
-            <LinkWrapper className="text-xs underline hover:no-underline" href='/campaigns'>See all campaigns</LinkWrapper>
-        </div>
-    </Widget.Content>
-</Widget>
+const NotFound = () => <Widget.Content>
+    <div className="h-[364px] flex flex-col items-center justify-center space-y-4">
+        <Gift className="h-20 w-20 text-primary" />
+        <p className="font-bold text-center">Campaign not found</p>
+        <LinkWrapper className="text-xs underline hover:no-underline" href='/campaigns'>See all campaigns</LinkWrapper>
+    </div>
+</Widget.Content>
 
 export const CampaignDetails: FC<{ campaignName: string; goBack: () => void }> = (props) => {
     return (

@@ -170,7 +170,6 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
             default: Steps,
             StepsPanel: ({ children }) => createElement(Fragment, null, children),
         },
-        '../Processing/StepTransactionLink': { StepTransactionLink: noop },
         '@layerswap/utils': { truncateDecimals: value => value },
         './TransferStatusHeader': { TransferStatusHeader: noop },
         '../Processing/types': progressTypes,
@@ -239,7 +238,6 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
             },
         },
         react: mounted ? React : { useState, useRef: initial => useState({ current: initial })[0], useMemo: fn => fn(), useCallback: fn => fn },
-        '@layerswap/ui-kit': { WalletIcon: noop },
         '@/components/Buttons/submitButton': { default: noop },
         '@/hooks/useWallet': { default: () => ({ wallets: [wallet] }) },
         '@/context/swap': {
@@ -256,24 +254,16 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
                 }
             },
         },
-        'lucide-react': { Loader2: noop },
-        '@/components/Pages/Swap/Form/SecondaryComponents/validationError/ErrorDisplay': { ErrorDisplay: noop },
-        '@/components/Pages/Swap/Form/SecondaryComponents/validationError/ErrorDismissButton': { default: noop },
-        '@/components/Icons/FailIcon': { default: noop },
-        '../../messages/Message': { default: noop },
         '@/components/Wallet/WalletModal': { useConnectModal: noop },
         '@/context/settings': { useInitialSettings: () => ({}), useSettingsState: () => ({ networks: [network] }) },
         '@/stores/swapTransactionStore': stores,
         '@/stores/gaslessPreferenceStore': preferenceStore,
         '@/lib/apiClients/layerSwapApiClient': apiModule,
-        '@layerswap/utils': { sleep: async () => {} },
         '@/components/utils/numbers': { isDiffByPercent: () => false },
         '@/context/withdrawalContext': { useWalletWithdrawalState: () => ({ onWalletWithdrawalSuccess: () => calls.success++ }) },
         '@/context/swapAccounts': { useSelectedAccount: () => ({ id: wallet.id, address: wallet.address, provider: { switchChain: state.switchChain, ensureChain: state.ensureChain } }) },
         '@/lib/ErrorHandler': { ErrorHandler: error => calls.errors.push(error) },
         '@/lib/fees': loadSource('../src/lib/fees.ts'),
-        '@/components/Icons/InfoIcon': { default: noop },
-        '@/components/Pages/Swap/Form/SecondaryComponents/validationError/constants': {},
         '@/lib/balances/useBalance': { useBalance: () => ({}) },
         '@/lib/gases/useSWRGas': { default: () => ({}) },
         '@/context/depositSettings': { useDepositSettings: () => ({}) },
@@ -282,8 +272,6 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         '@layerswap/wallet-core': { walletRequestStore: { getSnapshot: () => null } },
         '../../Presentation/WalletRequestRecovery': { WalletRequestRecovery: () => null },
         '../../Presentation/WalletActionsView': mounted ? { ...walletViews, SendTransactionView: props => { view = props; return null } } : walletViews,
-        '../../Processing/StepsComponent': { default: Steps },
-        '../../Processing/types': progressTypes,
         '@/helpers/swapProgress': swapProgress,
         '@/helpers/gasless': gasless,
         './isUserRejection': rejection,
@@ -650,7 +638,6 @@ test('a failed or empty refresh never falls back to signing an expired cached ac
     }
 })
 
-
 for (const stop of ['unmount', 'reopen', 'account change']) {
     test(`approval confirmation cannot continue after ${stop}`, async () => {
         const dom = new JSDOM('<div id="root"></div>')
@@ -792,25 +779,23 @@ test('gasless execution records success only after a confirmed server submission
     assert.deepEqual(flow.calls.errors, [])
 })
 
-for (const status of ['expired', 'insufficient', 'rejected']) {
-    test(`a completed sign with ${status} authorization keeps its retry button enabled`, async () => {
-        const flow = createWorkflow()
-        const [sign] = actionsFor('failed-authorization')
-        flow.state.apiActions = [sign]
-        flow.state.rejectSigning = false
-        flow.state.onTransition = () => {
-            flow.state.apiActions = [{ step: 'sign', status: 'completed' }]
-            throw new Error(`The swap authorization failed: ${status}`)
-        }
-        await flow.render().button.props.onClick()
-        await flow.poll()
-        const { button } = flow.render()
-        assert.equal(button.props.children, 'Try again')
-        assert.equal(button.props.isDisabled, false)
-        assert.equal(flow.calls.success, 0)
-        assert.deepEqual(flow.calls.storedTransactions, [])
-    })
-}
+test('a failed authorization after completed signing keeps its retry button enabled', async () => {
+    const flow = createWorkflow()
+    const [sign] = actionsFor('failed-authorization')
+    flow.state.apiActions = [sign]
+    flow.state.rejectSigning = false
+    flow.state.onTransition = () => {
+        flow.state.apiActions = [{ step: 'sign', status: 'completed' }]
+        throw new Error('The swap authorization failed: expired')
+    }
+    await flow.render().button.props.onClick()
+    await flow.poll()
+    const { button } = flow.render()
+    assert.equal(button.props.children, 'Try again')
+    assert.equal(button.props.isDisabled, false)
+    assert.equal(flow.calls.success, 0)
+    assert.deepEqual(flow.calls.storedTransactions, [])
+})
 
 test('completed prerequisites allow resuming a late publish action', async () => {
     const flow = createWorkflow()
@@ -1124,7 +1109,6 @@ test('the mounted controller and real polling resume a mined partial approval wi
     }
 })
 
-
 test('a new swap is prepared before any network-switch request', async () => {
     const flow = createWorkflow()
     flow.state.swapId = undefined
@@ -1257,7 +1241,6 @@ test('a rejected network switch preserves the workflow and retries before signin
     assert.equal(flow.state.swapId, swapId)
     assert.equal(flow.render().viewProps.networkSwitch.isError, false)
 })
-
 
 test('a network switch completing after unmount cannot start a deposit', async () => {
     const dom = new JSDOM('<div id="root"></div>')

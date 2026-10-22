@@ -9,6 +9,8 @@ export { usePersistedState } from "@layerswap/wallet-core";
 export { useSettingsState } from "../context/settings";
 export * from "../components/Icons"
 export { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, Command, CommandWrapper, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, CommandShortcut, CommandSeparator, Accordion, AccordionItem, AccordionTrigger, AccordionContent, Checkbox, Progress } from "@layerswap/ui-kit"
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider, TooltipArrow } from "@layerswap/ui-kit"
+export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor } from "@layerswap/ui-kit"
 export { default as WalletMessage } from "../components/Pages/Swap/Withdraw/messages/Message"
 export * from "../components/Buttons"
 export * from "../components/Pages/Swap/Withdraw/Wallet/Common/buttons"
