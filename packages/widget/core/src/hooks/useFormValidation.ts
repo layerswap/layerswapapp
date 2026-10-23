@@ -5,6 +5,7 @@ import { Address } from '@/lib/address/Address';
 import { floorUsd } from '@/components/utils/formatUsdAmount';
 import { isDepositAddressFlow } from '@/helpers/swapFlow';
 import { minimumAmountMessage } from '@/lib/amountMessages';
+import { refundAddressValidation } from '@/helpers/refundAddress';
 
 interface Params {
     values: SwapFormValues;
@@ -33,7 +34,7 @@ export const FORM_VALIDATION_ERROR_CODES = {
 }
 
 
-export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isUsdMode, sourceAddress, sameAccountNetwork, quoteError, noExchangeWithdrawalRoute }: Params) {
+export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isUsdMode, sourceAddress, sameAccountNetwork, quoteError, noExchangeWithdrawalRoute }: Params): { code?: string; message: string } {
     let amount = values.amount ? Number(values.amount) : undefined;
 
     // Deposit address flow without exchange: no amount or exchange required
@@ -54,7 +55,7 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
     if (!values.toAsset) {
         return { message: 'Select destination asset' };
     }
-    if (!depositAddressFlow) {
+    if (!depositAddressFlow || (amount !== undefined && amount !== 0)) {
         if (isAmountPreset(values.amountMode) && values.amountPresetError) return { message: values.amountPresetError };
         if (amount === undefined || amount === 0 || isNaN(Number(amount))) {
             return { message: 'Enter an amount' };
@@ -89,7 +90,7 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
         }
     }
 
-    if (!depositAddressFlow) {
+    if (values.depositMethod !== 'deposit_address') {
         if (
             (values.from?.name && values.from?.name.toLowerCase() === sameAccountNetwork?.toLowerCase()) ||
             (values.to?.name && values.to?.name.toLowerCase() === sameAccountNetwork?.toLowerCase())
@@ -102,26 +103,38 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
                 return { message: `Address update required`, code: FORM_VALIDATION_ERROR_CODES.ADDRESS_UPDATE_REQUIRED };
             }
 
-            if (values.depositMethod === "deposit_address") {
-                return { message: 'Manual Transfer is not supported', code: FORM_VALIDATION_ERROR_CODES.MANUAL_TRANSFER_UNSUPPORTED };
-            }
         }
     }
 
-    return resolveQuoteError(quoteError) ?? { message: '' };
+    const backendError = resolveQuoteError(quoteError);
+    if (backendError && backendError.code !== 'REFUND_ADDRESS_MISSING') return backendError;
+    return refundAddressValidation(values) ?? backendError ?? { message: '' };
 }
 
 export function resolveQuoteError(quoteError?: QuoteError) {
     const quoteErrorCode = quoteError?.response?.data?.error?.code || quoteError?.code;
     const quoteErrorMessage = quoteError?.response?.data?.error?.message || quoteError?.message;
-    if (quoteError && quoteErrorCode !== "QUOTE_REQUIRES_NO_DEPOSIT_ADDRESS") {
+    if (quoteError) {
+        if (quoteErrorCode === 'REFUND_ADDRESS_MISSING') {
+            return { message: 'Enter a refund address', code: quoteErrorCode };
+        }
+        if (quoteErrorCode === 'QUOTE_REQUIRES_NO_DEPOSIT_ADDRESS') {
+            return { message: 'Manual swapping is not supported', code: FORM_VALIDATION_ERROR_CODES.MANUAL_TRANSFER_UNSUPPORTED };
+        }
         if (quoteErrorCode === "PRICE_IMPACT_TOO_HIGH") {
             return { message: 'Price impact too high', code: FORM_VALIDATION_ERROR_CODES.PRICE_IMPACT_TOO_HIGH };
         }
         if (quoteErrorCode === "ROUTE_NOT_FOUND_ERROR" && quoteErrorMessage === "Rate not available") {
             return { message: 'Rate not available', code: FORM_VALIDATION_ERROR_CODES.RATE_NOT_AVAILABLE };
         }
-        return { message: 'Route not found', code: FORM_VALIDATION_ERROR_CODES.ROUTE_NOT_FOUND };
+        if (quoteErrorCode === 'LESS_THAN_MIN_ERROR' || quoteErrorCode === 'GREATER_THAN_MAX_ERROR') {
+            const limit = quoteError.response?.data?.error?.metadata?.AmountLimit ?? quoteError.metadata?.AmountLimit;
+            return {
+                message: limit != null ? `${quoteErrorCode === 'LESS_THAN_MIN_ERROR' ? 'Min' : 'Max'} amount is ${limit}` : quoteErrorMessage || 'Amount outside route limits',
+                code: quoteErrorCode === 'LESS_THAN_MIN_ERROR' ? FORM_VALIDATION_ERROR_CODES.MIN_AMOUNT_ERROR : FORM_VALIDATION_ERROR_CODES.MAX_AMOUNT_ERROR,
+            };
+        }
+        return { message: quoteErrorMessage || 'Route not found', code: quoteErrorCode || FORM_VALIDATION_ERROR_CODES.ROUTE_NOT_FOUND };
     }
 
 }

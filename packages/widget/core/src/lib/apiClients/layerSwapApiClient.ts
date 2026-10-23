@@ -12,6 +12,7 @@ import { ErrorHandler } from "@/lib/ErrorHandler";
 import { startApiOperation } from '../widgetTelemetry';
 
 const IGNORED_API_ERROR_CODES = [
+    'REFUND_ADDRESS_MISSING',
     'ROUTE_NOT_FOUND_ERROR',
     'PRICE_IMPACT_TOO_HIGH',
     'GREATER_THAN_MAX_ERROR',
@@ -190,6 +191,7 @@ export type SwapResponse = {
 }
 
 export type SwapBasicData = {
+    refund_address?: string
     /** Local amount intent; never serialized as an API parameter. */
     amountMode?: AmountMode
     amountPresetSource?: string
@@ -224,6 +226,7 @@ export type SwapDetails = {
 }
 
 export type SwapItem = {
+    refund_address?: string,
     id: string,
     created_date: string,
 

@@ -34,6 +34,8 @@ import ValidationError from "../SecondaryComponents/validationError";
 import { ErrorDisplay } from "../SecondaryComponents/validationError/ErrorDisplay";
 import FailIcon from "@/components/Icons/FailIcon";
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
+import RefundAddressField from '../RefundAddressField';
+import { manualRefundAddress } from '@/helpers/refundAddress';
 
 type Props = {
     partner?: Partner;
@@ -148,6 +150,7 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
     const error = formValidation.message;
 
     const allFieldsReady = !!(from && fromAsset && destination && toCurrency && destination_address);
+    const refundAddress = manualRefundAddress(values);
 
     const swapMatchesValues = useMemo(() => {
         if (!swapId || !swapBasicData || !allFieldsReady) return false;
@@ -156,9 +159,10 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
             swapBasicData.source_token?.symbol === fromAsset?.symbol &&
             swapBasicData.destination_network?.name === destination?.name &&
             swapBasicData.destination_token?.symbol === toCurrency?.symbol &&
-            AddressClass.equals(swapBasicData.destination_address ?? '', destination_address ?? '', destination)
+            AddressClass.equals(swapBasicData.destination_address ?? '', destination_address ?? '', destination) &&
+            ((!swapBasicData.refund_address && !refundAddress) || AddressClass.equals(swapBasicData.refund_address || '', refundAddress || '', from))
         );
-    }, [swapId, swapBasicData, from, fromAsset, destination, toCurrency, destination_address, allFieldsReady]);
+    }, [swapId, swapBasicData, from, fromAsset, destination, toCurrency, destination_address, refundAddress, allFieldsReady]);
 
     // Auto-create the swap once form is complete. The ref tracks the last
     // attempted (from, fromAsset, to, toAsset, address) tuple so we don't loop:
@@ -169,7 +173,7 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
     // wallet disconnects) so reconnecting the same wallet re-creates the swap.
     const attemptedKeyRef = useRef<string | null>(null);
     const fieldKey = allFieldsReady
-        ? `${from?.name}|${fromAsset?.symbol}|${destination?.name}|${toCurrency?.symbol}|${destination_address?.toLowerCase()}`
+        ? `${from?.name}|${fromAsset?.symbol}|${destination?.name}|${toCurrency?.symbol}|${destination_address?.toLowerCase()}|${refundAddress || ''}`
         : null;
 
     // Preserve swaps whose route is unknown. A submitted snapshot can establish
@@ -321,6 +325,7 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
                             }
                         </>
                     )}
+                    <RefundAddressField showSelected />
                     <ValidationError />
                     {depositError && (
                         <div role="alert">

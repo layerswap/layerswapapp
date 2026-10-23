@@ -1,6 +1,7 @@
 import { SwapStatus, type Refuel, type Wallet } from '@layerswap/widget-types';
 import { Context, useCallback, useEffect, useState, useRef, createContext, useContext, useMemo } from 'react'
 import LayerSwapApiClient, { BackendTransactionStatus, CreateSwapParams, PublishedSwapTransactions, SwapTransaction, TransactionStatus, WithdrawType, SwapResponse, DepositAction, SwapBasicData, SwapQuote, SwapDetails, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
+import { manualRefundAddress, refundAddressValidation } from '@/helpers/refundAddress';
 import { InitialSettings } from '@/Models/InitialSettings';
 import useSWR, { KeyedMutator, useSWRConfig } from 'swr';
 import type { ApiResponse } from '@layerswap/widget-types';
@@ -54,6 +55,7 @@ export type ApprovalTransaction = {
 
 export type UpdateSwapInterface = {
     createSwap: (values: SwapFormValues, query: InitialSettings, partner?: Partner) => Promise<SwapResponse>,
+    rememberRefundAddress: (response: SwapResponse) => void;
     canAdjustAmount: () => boolean
     syncAmountPresetDraft: (values: SwapFormValues) => boolean
     setQuoteLoading: (value: boolean) => void;
@@ -107,6 +109,17 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const { onSwapCreate, onSwapLifecycle } = useCallbacks()
     const { mutate: mutateCache } = useSWRConfig()
     const [swapBasicFormData, setSwapBasicFormData] = useState<SwapBasicData & { refuel: boolean }>()
+    // Polls can omit the recipient. Remember accepted prefetched and locally
+    // created swaps by ID so their refund never falls back to another swap's.
+    const acceptedRefundAddresses = useRef(new Map<string, string>(
+        initialSwapData?.swap.refund_address
+            ? [[initialSwapData.swap.id, initialSwapData.swap.refund_address]]
+            : [],
+    ))
+    const rememberRefundAddress = useCallback((response: SwapResponse) => {
+        const address = response.swap.refund_address
+        if (address) acceptedRefundAddresses.current.set(response.swap.id, address)
+    }, [])
 
     const presetPreparation = useRef(false)
     const [preparingPreset, setPreparingPreset] = useState(false)
@@ -196,6 +209,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             destination_token: values.toAsset,
             requested_amount: values.amount || '',
             destination_address: values.destination_address,
+            refund_address: manualRefundAddress(values),
             use_deposit_address: values.depositMethod === 'deposit_address',
             refuel: !!values.refuel,
             source_exchange: values.fromExchange,
@@ -257,6 +271,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             : swap.source_token
         return {
             ...swap,
+            refund_address: swap.refund_address ?? acceptedRefundAddresses.current.get(swap.id),
             source_token,
             requested_amount: formatTokenAmount(swap.requested_amount, source_token.decimals),
             refuel: !!data.data.refuel,
@@ -460,6 +475,9 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         if (!depositAddressFlow && !amount)
             throw new Error("Form data is missing")
 
+        const refundError = refundAddressValidation(values)
+        if (refundError) throw new Error(refundError.message)
+
         return createSwapAttempt(async () => {
             const sourceWalletIsSupported = selectedWallet && WalletIsSupportedForSource({
                 sourceNetwork: from,
@@ -518,13 +536,13 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
                 refuel: !!refuel,
                 use_deposit_address: depositMethod === 'wallet' ? false : true,
                 source_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
-                refund_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
+                refund_address: depositMethod === 'deposit_address' ? manualRefundAddress(values) : sourceIsSupported ? selectedSourceAccount?.address : undefined,
                 use_frontend_swap: useFrontendSwap,
                 use_gasless: useGasless,
                 ...(useDepository && { use_depository: true }),
             }
 
-            if (!isExtendedBridge && depositMethod === 'wallet' && slippage && slippage > 0 && slippage < 0.8) {
+            if (!isExtendedBridge && slippage && slippage > 0 && slippage < 0.8) {
                 data.slippage = slippage.toString()
             }
 
@@ -532,6 +550,10 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
                 request: () => layerswapApiClient.CreateSwapAsync(data),
                 useGasless,
                 onCreated: [
+                    { name: 'refundAddress.remember', run: (swap: SwapResponse) => {
+                        const address = swap.swap.refund_address ?? data.refund_address
+                        if (address) acceptedRefundAddresses.current.set(swap.swap.id, address)
+                    } },
                     { name: 'onSwapCreate', run: onSwapCreate },
                     // Persist the extended identity so the post-create UI and the withdraw step
                     // can keep showing the extended source and resume after a reload.
@@ -624,6 +646,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
 
     const updateFns = useMemo<UpdateSwapInterface>(() => ({
         createSwap,
+        rememberRefundAddress,
         syncAmountPresetDraft,
         canAdjustAmount,
         mutateSwap: mutate,
@@ -640,7 +663,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         setSubmitedFormValues,
         setQuoteLoading,
         setSwapModalOpen
-    }), [createSwap, syncAmountPresetDraft, canAdjustAmount, mutate, mutateDepositActions, setWalletActionExecuting, acquireWalletExecution, handleUpdateSwapid, markWalletExecutionStarted, startFreshSwapAttempt, watchApprovalTransaction, setSubmitedFormValues]);
+    }), [createSwap, rememberRefundAddress, syncAmountPresetDraft, canAdjustAmount, mutate, mutateDepositActions, setWalletActionExecuting, acquireWalletExecution, handleUpdateSwapid, markWalletExecutionStarted, startFreshSwapAttempt, watchApprovalTransaction, setSubmitedFormValues]);
 
     const stateValue = useMemo(() => ({
         withdrawType,

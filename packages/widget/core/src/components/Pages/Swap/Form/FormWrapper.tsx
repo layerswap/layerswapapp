@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from "react";
+import type { FormikHelpers } from 'formik';
 import { useSettingsState } from "@/context/settings";
 import { UpdateSwapInterface, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import React from "react";
@@ -35,6 +36,7 @@ import SlowRouteNote from "./SecondaryComponents/SlowRouteNote";
 import { lifecycleContextFromForm, lifecycleContextFromSwap, resolveFlowClosedEvent } from "@/lib/swapLifecycle";
 import { useResolvedSwapStatus } from "@/hooks/useResolvedSwapStatus";
 import SwapForm, { type SwapFormMode } from './SwapForm';
+import { requireRefundAddress } from '@/helpers/refundAddress';
 const SwapDetails = lazy(() => import("../Withdraw/SwapDetails"))
 
 type NetworkToConnect = {
@@ -82,7 +84,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
 
     const { setConfirmed, isConfirmed, checkContractStatus } = useContractAddressStore();
 
-    const handleSubmit = useCallback(async (values: SwapFormValues) => {
+    const handleSubmit = useCallback(async (values: SwapFormValues, helpers: FormikHelpers<SwapFormValues>) => {
         // form_submitted is emitted by SwapForm before this runs.
         const lifecycleContext = lifecycleContextFromForm(values)
 
@@ -196,6 +198,9 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
             })
         }
         catch (error) {
+            if (error?.code === 'REFUND_ADDRESS_MISSING') {
+                await helpers.setValues(current => requireRefundAddress(current, values), false)
+            }
             setSwapError && setSwapError(error?.message || 'Could not create swap')
         }
     }, [createSwap, initialSettings, partner, swapBasicData, getProvider, settings, type, setSwapError, onSwapLifecycle])
@@ -324,7 +329,13 @@ const handleCreateSwap = async ({ query, values, partner, setShowSwapModal, crea
         }
     }
     catch (error) {
-        const data: ApiError = error?.response?.data?.error
+        const data: ApiError | undefined = error?.response?.data?.error ?? error
+        if (data?.code === 'REFUND_ADDRESS_MISSING') {
+            throw Object.assign(new Error('Enter a refund address to continue.'), { code: data.code })
+        }
+        if (values.refund_address && (data?.code === LSAPIKnownErrorCode.BLACKLISTED_ADDRESS || data?.code === LSAPIKnownErrorCode.INVALID_ADDRESS_ERROR)) {
+            throw new Error(data.message || 'Check your destination and refund addresses.')
+        }
         if (data?.code === LSAPIKnownErrorCode.BLACKLISTED_ADDRESS) {
             throw new Error("You can't transfer to that address. Please double check.")
         }

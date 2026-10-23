@@ -6,6 +6,7 @@ import { lifecycleContextFromForm } from '@/lib/swapLifecycle'
 import type { SwapFormValues } from './SwapFormValues'
 import FormTelemetry from './FormTelemetry'
 import AmountPresetController from './AmountPresetController'
+import { refundAddressValidation } from '@/helpers/refundAddress'
 
 /**
  * 'deposit-address' is the Swap page tab; deposit-widget-* is the standalone
@@ -35,6 +36,7 @@ export default function SwapForm({ mode, submitPath, submitAction = 'submit', on
     const { onSwapLifecycle } = useCallbacks()
     const handleSubmit = useCallback<FormikConfig<SwapFormValues>['onSubmit']>((values, helpers) => {
         if (isAmountPreset(values.amountMode) && (values.amountPresetPending || values.amountPresetError)) return Promise.resolve()
+        if (refundAddressValidation(values)) return Promise.resolve()
         onSwapLifecycle({
             step: 'form_submitted',
             stage: 'form',

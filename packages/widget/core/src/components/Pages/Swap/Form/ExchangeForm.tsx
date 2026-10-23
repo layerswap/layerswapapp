@@ -29,6 +29,7 @@ import { AddressGroup } from "@/components/Input/Address/AddressPicker";
 import { ImageWithFallback } from "@layerswap/ui-kit/components";
 import { ExchangeReceiveAmount } from "@/components/Input/Amount/ExchangeReceiveAmount";
 import AddressIcon from "@/components/Common/AddressIcon";
+import RefundAddressField from './RefundAddressField';
 
 type Props = {
     partner?: Partner;
@@ -147,8 +148,9 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                             </div>
                         </div>
                         <div>
-                            <ValidationError />
+                            <ValidationError showSwapErrors />
                             <QuoteDetails swapValues={values} quote={quote?.quote} isQuoteLoading={isQuoteLoading} reward={quote?.reward} variant="base" triggerClassnames="mt-2" />
+                            <RefundAddressField />
                         </div>
                     </div>
                 </Widget.Content>

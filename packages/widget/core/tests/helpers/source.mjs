@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import ts from 'typescript'
+import { Address } from './address.mjs'
 import { resolveDepositExecution } from '../../dist/esm/components/utils/resolveSwapFlow.js'
 const require = createRequire(import.meta.url)
 export function loadSource(path, imports = {}) {
@@ -25,11 +26,13 @@ export const amountMessages = loadSource('lib/amountMessages.ts', {
     '@/components/utils/RoundDecimals': rounding,
     '@/components/utils/formatUsdAmount': require('@layerswap/utils/common'),
 })
+export const refundAddress = loadSource('helpers/refundAddress.ts', { '@/lib/address/Address': { Address } })
 export const formValidation = loadSource('hooks/useFormValidation.ts', {
     '@/lib/amountPresets': amountPresets,
     '@/lib/amountMessages': amountMessages,
     '@/components/utils/formatUsdAmount': require('@layerswap/utils/common'),
     '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
+    '@/helpers/refundAddress': refundAddress,
     '@/lib/address/Address': { Address: { isValid: () => true } },
 })
 export const swapProgress = loadSource('helpers/swapProgress.ts', {

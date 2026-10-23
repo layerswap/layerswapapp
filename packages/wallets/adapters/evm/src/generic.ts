@@ -40,24 +40,33 @@ export function createEVMProvider<TNetwork = NetworkWithTokens>(
     const init = (_ctx: WalletInitContext) => {
     }
 
-    const createConnection = (
-        props: WalletConnectionProviderProps<TNetwork>,
-    ): WalletConnectionStore<TNetwork> => {
+    const initializeConnection = (props: WalletConnectionProviderProps<TNetwork>) => {
         initEvmProvider({
             networks: props.networks,
             networkAdapter: props.networkAdapter,
             walletConnectConfigs,
             externalWagmiConfig: wagmiConfig ?? null,
         })
-        if (customConnection) {
-            return customConnection(props)
-        }
-        return createEvmConnection(props, {
+    }
+
+    const createConnection = (
+        props: WalletConnectionProviderProps<TNetwork>,
+    ): WalletConnectionStore<TNetwork> => {
+        initializeConnection(props)
+        const connection = customConnection ? customConnection(props) : createEvmConnection(props, {
             walletConnectProjectId: walletConnectConfigs?.projectId,
             extraMultiStepHandlers: moduleMultiStepHandlers,
             additionalSupportedNetworks,
             ethereumChainIds,
         })
+        return {
+            store: connection.store,
+            updateProps(nextProps) {
+                initializeConnection(nextProps)
+                connection.updateProps?.(nextProps)
+            },
+            destroy: () => connection.destroy?.(),
+        }
     }
 
     const moduleBalanceProviders = walletProviderModules

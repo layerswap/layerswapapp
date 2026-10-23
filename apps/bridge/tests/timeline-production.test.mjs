@@ -6,6 +6,7 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { JSDOM } from 'jsdom';
 import ts from 'typescript';
+import { Address as RefundAddress } from '../../../packages/widget/core/tests/helpers/address.mjs';
 
 const require = createRequire(import.meta.url);
 const core = new URL('../../../packages/widget/core/src/', import.meta.url);
@@ -30,6 +31,7 @@ function loadSource(path, imports = {}) {
     const module = { exports: {} };
     new Function('require', 'module', 'exports', outputText)(name => {
         if (name === 'react' || name === 'react/jsx-runtime') return require(name);
+        if (name === '@/helpers/refundAddress') return loadSource('helpers/refundAddress.ts', { '@/lib/address/Address': { Address: RefundAddress } });
         if (name === '../components/utils/resolveSwapFlow.js') return loadSource("components/utils/resolveSwapFlow.ts");
         if (name in imports) {
             if (name === '@/context/swap' && path === `${withdraw}SwapDetails.tsx`) {

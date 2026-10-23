@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test, { after, afterEach, beforeEach } from 'node:test'
 import { registerHooks } from 'node:module'
 import { extname } from 'node:path'
+import { existsSync } from 'node:fs'
 import { JSDOM } from 'jsdom'
 import { act, createElement, StrictMode, useState } from 'react'
 import { useFormikContext } from 'formik'
@@ -24,7 +25,7 @@ const hooks = registerHooks({
     if (specifier.endsWith('/context/swapAccounts')) return { url: 'data:text/javascript,export const useSelectedAccount = () => undefined', shortCircuit: true }
     if (specifier === './AmountPresetController') return { url: 'data:text/javascript,export default () => null', shortCircuit: true }
     if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
-      return nextResolve(`${specifier}.js`, context)
+      return nextResolve(existsSync(new URL(`${specifier}.js`, context.parentURL)) ? `${specifier}.js` : `${specifier}/index.js`, context)
     }
     return nextResolve(specifier, context)
   },

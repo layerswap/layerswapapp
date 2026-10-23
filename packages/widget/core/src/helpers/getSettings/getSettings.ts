@@ -38,7 +38,12 @@ export async function getSettings(apiKey: string, options?: GetSettingsOptions) 
             includeFeatureFlags ? fetchExtendedRouteFlags() : Promise.resolve(undefined),
         ])
 
-        if (!networkData) return
+        // A successful HTTP response can still contain no configured networks
+        // (for example while the backend settings cache is unavailable). Keep
+        // it on the existing settings-failure path instead of mounting wallets.
+        if (!Array.isArray(networkData) || networkData.length === 0) {
+            throw new Error('No networks returned by the Layerswap API')
+        }
 
         const settings = {
             networks: networkData,

@@ -1,5 +1,5 @@
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
-import { useFormikContext } from "formik";
+import { useFormikContext, type FormikHelpers } from "formik";
 import { Partner } from "@/Models/Partner";
 import SwapForm from "@/components/Pages/Swap/Form/SwapForm";
 import DepositAddressForm from "@/components/Pages/Swap/Form/DepositAddressForm";
@@ -15,6 +15,8 @@ import { useDepositPrefetch } from "../depositPrefetchContext";
 import { useReportCloseLock } from "../depositStepContext";
 import { useResolvedSwapStatus } from "@/hooks/useResolvedSwapStatus";
 import { SwapResponse, TransactionType } from "@/lib/apiClients/layerSwapApiClient";
+import { Address } from "@/lib/address/Address";
+import { requireRefundAddress } from "@/helpers/refundAddress";
 
 type Props = {
     partner?: Partner;
@@ -79,12 +81,34 @@ const DepositDestinationRow: FC = () => {
     );
 };
 
+function withPrefetchedRefund(values: SwapFormValues, response?: SwapResponse): SwapFormValues {
+    const swap = response?.swap;
+    // Inherit only an accepted recipient for this route, preserving explicit edits
+    // and ignoring responses that arrived after the user changed their selection.
+    if (!swap?.refund_address || values.refund_address
+        || !swap.use_deposit_address || values.depositMethod !== 'deposit_address'
+        || swap.source_network.name !== values.from?.name
+        || swap.source_token.symbol !== values.fromAsset?.symbol
+        || swap.destination_network.name !== values.to?.name
+        || swap.destination_token.symbol !== values.toAsset?.symbol
+        || !values.destination_address
+        || !Address.equals(swap.destination_address, values.destination_address, swap.destination_network)) {
+        return values;
+    }
+    return {
+        ...values,
+        refund_address: swap.refund_address,
+        refundAddressNetwork: swap.source_network.name,
+    };
+}
+
 const DepositAddressFlow: FC<Props & { initialSwapData?: SwapResponse }> = ({ partner, showDestinationPicker, initialSwapData }) => {
     const initialSettings = useInitialSettings();
     const { destinationAddress } = useDepositSelection();
     const { prefetchedSource, claimPrefetchedSwap, markSwapUsed } = useDepositPrefetch();
-    const initialValues = useDepositInitialValues("deposit_address", prefetchedSource);
-    const { createSwap, setSwapId, setSubmitedFormValues } = useSwapDataUpdate();
+    const generatedInitialValues = useDepositInitialValues("deposit_address", prefetchedSource);
+    const initialValues = useMemo(() => withPrefetchedRefund(generatedInitialValues, initialSwapData), [generatedInitialValues, initialSwapData]);
+    const { createSwap, setSwapId, setSubmitedFormValues, rememberRefundAddress } = useSwapDataUpdate();
     const { setSwapError } = useSwapDataState();
 
     // The seeded swap came from the prefetcher — report it as used so the
@@ -96,7 +120,7 @@ const DepositAddressFlow: FC<Props & { initialSwapData?: SwapResponse }> = ({ pa
     }, []);
 
     const handleSubmit = useCallback(
-        async (values: SwapFormValues) => {
+        async (values: SwapFormValues, helpers: FormikHelpers<SwapFormValues>) => {
             // Triggered by DepositAddressForm's auto-submit effect once the form
             // is valid. The wallet flow never reaches here — it has its own
             // provider and persists via setSubmitedFormValues/setSwapId.
@@ -107,13 +131,27 @@ const DepositAddressFlow: FC<Props & { initialSwapData?: SwapResponse }> = ({ pa
                 // values takes priority; on its failure fall back to a regular
                 // creation so the user still gets a swap and a real error path.
                 let swap = await claimPrefetchedSwap(values)?.catch(() => undefined);
-                if (!swap) swap = await createSwap(values, initialSettings, partner);
+                if (swap) {
+                    const acceptedSwap = swap;
+                    const hydratedValues = withPrefetchedRefund(values, acceptedSwap);
+                    if (hydratedValues !== values) {
+                        values = hydratedValues;
+                        await helpers.setValues(current => withPrefetchedRefund(current, acceptedSwap), false);
+                        setSubmitedFormValues(values);
+                    }
+                } else {
+                    swap = await createSwap(values, initialSettings, partner);
+                }
+                rememberRefundAddress(swap);
                 markSwapUsed(swap, values);
                 setSwapId(swap.swap.id);
             } catch (error) {
-                const data: ApiError = error?.response?.data?.error;
+                const data: ApiError | undefined = error?.response?.data?.error ?? error;
                 let message: string;
-                if (data?.code === LSAPIKnownErrorCode.BLACKLISTED_ADDRESS) {
+                if (data?.code === 'REFUND_ADDRESS_MISSING') {
+                    await helpers.setValues(current => requireRefundAddress(current, values), false);
+                    message = 'Enter a refund address to continue.';
+                } else if (data?.code === LSAPIKnownErrorCode.BLACKLISTED_ADDRESS) {
                     message = "You can't transfer to that address. Please double check.";
                 } else if (data?.code === LSAPIKnownErrorCode.INVALID_ADDRESS_ERROR) {
                     message = `Enter a valid ${values.to?.display_name} address`;
@@ -123,7 +161,7 @@ const DepositAddressFlow: FC<Props & { initialSwapData?: SwapResponse }> = ({ pa
                 if (setSwapError) setSwapError(message);
             }
         },
-        [createSwap, setSwapId, setSubmitedFormValues, setSwapError, initialSettings, partner, claimPrefetchedSwap, markSwapUsed],
+        [createSwap, setSwapId, setSubmitedFormValues, rememberRefundAddress, setSwapError, initialSettings, partner, claimPrefetchedSwap, markSwapUsed],
     );
 
     return (
