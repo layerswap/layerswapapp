@@ -166,3 +166,68 @@ test('missing or inconsistent timestamps do not produce a fabricated completion 
     assert.equal(resolved.generalStatus.subTitle, null)
   }
 })
+
+for (const outcome of ['unindexed', 'completed']) {
+  test(`background polling discovers ${outcome} progress after a wallet timeout`, async () => {
+    const React = await import('react')
+    const { act, createElement } = React
+    const { JSDOM } = await import('jsdom')
+    const dom = new JSDOM('<div id="root"></div>', { url: 'https://widget.example' })
+    const previous = Object.getOwnPropertyDescriptors(globalThis)
+    const globals = { window: dom.window, document: dom.window.document, localStorage: dom.window.localStorage, IS_REACT_ACT_ENVIRONMENT: true }
+    for (const [key, value] of Object.entries(globals)) Object.defineProperty(globalThis, key, { configurable: true, writable: true, value })
+    const { createRoot } = await import('react-dom/client')
+    const { default: useSWR, SWRConfig, useSWRConfig } = await import('swr')
+    const { createSwapContext } = await import('./helpers/swap-context.mjs')
+    const { executeWalletTransfer } = await import('../dist/esm/components/Pages/Swap/Withdraw/Wallet/Common/depositExecution.js')
+    const id = `timeout-ui-${outcome}`
+    const cacheKey = `/swaps/${id}?exclude_deposit_actions=true`
+    const cache = new Map()
+    const token = { symbol: 'ETH', decimals: 18 }
+    const network = { name: 'BASE_MAINNET', token }
+    const pending = { id, metadata: {}, status: 'user_transfer_pending', source_network: network, source_token: token, destination_network: network, destination_token: token, transactions: [], use_deposit_address: false, requested_amount: 1 }
+    const observed = { ...pending, status: outcome === 'completed' ? 'completed' : 'user_transfer_pending', transactions: outcome === 'unindexed' ? [{ type: 'input', status: 'pending', transaction_hash: '', confirmations: 0, max_confirmations: 1 }] : [] }
+    const context = createSwapContext({
+      Client: class {}, getSwapId: () => id, getAccount: () => ({ id: 'wallet', address: 'source' }),
+      overrides: {
+        '@/components/utils/resolveSwapPhase': { resolveSwapPhase },
+        '@/hooks/useSwapPolling': { useSwapPolling: swapId => useSWR(swapId ? `/swaps/${swapId}?exclude_deposit_actions=true` : null, null, { fallbackData: { data: { swap: pending } } }) },
+      },
+    })
+    let data, mutate, sends = 0, successes = 0
+    function Probe() {
+      data = context.useSwapDataState()
+      mutate = useSWRConfig().mutate
+      return createElement('output', null, data.resolved.showWithdrawScreen ? 'withdraw' : 'progress')
+    }
+    const root = createRoot(document.getElementById('root'))
+    try {
+      await act(() => root.render(createElement(SWRConfig, { value: { provider: () => cache } },
+        createElement(context.SwapDataProvider, null, createElement(Probe)))))
+      assert.equal(document.querySelector('output').textContent, 'withdraw')
+      await act(async () => {
+        await assert.rejects(executeWalletTransfer({
+          swapData: pending, swapBasicData: pending, selectedWallet: { address: 'source' },
+          depositActions: [{ type: 'transfer', amount: 1, to_address: 'deposit' }],
+          layerswapApiClient: { GetSwapAsync: () => assert.fail('No timeout-triggered status request') },
+          setActionStateText() {}, setSwapTransaction: () => assert.fail('Hashless progress must not invent a transaction'),
+          onSuccess: () => { successes++ }, onLifecycle() {},
+        }, async () => { sends++; throw Object.assign(new Error('Wallet timeout'), { code: 'ETIMEDOUT' }) }), /Wallet timeout/)
+      })
+      assert.equal(sends, 1)
+      assert.equal(successes, 0)
+      assert.equal(document.querySelector('output').textContent, 'withdraw')
+      // Simulate the existing poll publishing its next API snapshot.
+      await act(async () => { await mutate(cacheKey, { data: { swap: observed } }, { revalidate: false }) })
+      assert.equal(data.swapDetails, observed)
+      assert.equal(data.resolved.showWithdrawScreen, false)
+      assert.equal(document.querySelector('output').textContent, 'progress')
+    } finally {
+      await act(() => root.unmount())
+      dom.window.close()
+      for (const key of Object.keys(globals)) {
+        if (previous[key]) Object.defineProperty(globalThis, key, previous[key]); else delete globalThis[key]
+      }
+    }
+  })
+}

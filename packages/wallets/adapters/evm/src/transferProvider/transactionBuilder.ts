@@ -1,5 +1,5 @@
 import type { TransferProps } from '@layerswap/widget-types'
-import { parseEther, type PublicClient } from 'viem'
+import { formatUnits, parseEther, type PublicClient } from 'viem'
 import { estimateTransferFee } from '../gasProviders/estimateTransferFee'
 
 export const transactionBuilder = async (params: TransferProps, readClient?: PublicClient) => {
@@ -17,6 +17,9 @@ export const transactionBuilder = async (params: TransferProps, readClient?: Pub
     const estimate = await estimateTransferFee(network, tx, readClient)
     const balance = await estimate.client.getBalance({ address: tx.account, blockTag: 'latest' })
     if (tx.value + estimate.fee > balance) {
+        if (network.token) params.onFeeEstimate?.({
+            gas: Number(formatUnits(estimate.fee, network.token.decimals)), token: network.token,
+        })
         throw Object.assign(new Error('Insufficient funds for the transfer and network fee. Reduce the amount and try again.'), {
             code: 'INSUFFICIENT_FUNDS',
             // Decimal strings preserve units and precision in error telemetry.

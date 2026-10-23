@@ -36,9 +36,6 @@ export function ActionMessageView({
     if (isLoading) {
         return <ActionMessages.ConfirmActionMessage />;
     }
-    if (error?.name === 'SubmissionStatusUnknown') {
-        return <WalletMessage status="pending" header="Checking deposit status" details="Your transaction may already have been submitted. Check your wallet; retry here to check its status. Another send is blocked until status is resolved or you verify the failed request in your wallet." />;
-    }
     // A presentation label selects copy; execution classifies the underlying wallet evidence.
     if (error?.name === ActionMessageType.TransactionRejected || isUserRejection(error)) {
         return <ActionMessages.TransactionRejectedMessage isSignature={isSignatureError} />;

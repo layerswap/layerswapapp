@@ -1,5 +1,3 @@
-import { reconcileWalletSubmission } from './reconcileWalletSubmission';
-import { normalizeWalletErrorCode } from '@layerswap/wallet-core/errors';
 import { type SwapLifecycleEvent, type Wallet, ActionMessageType } from '@layerswap/widget-types';
 import LayerSwapApiClient, {
     BackendTransactionStatus,
@@ -34,6 +32,7 @@ export type DepositExecutionContext = {
     layerswapApiClient: LayerSwapApiClient
     setActionStateText: (text?: string) => void
     setSwapTransaction: (id: string, status: BackendTransactionStatus, hash: string) => void
+    onFeeEstimate?: TransferProps['onFeeEstimate']
     setSwapError?: (value: string | null) => void
     onSuccess: () => void
     onLifecycle: (event: SwapLifecycleEvent) => void
@@ -49,15 +48,11 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
 
     const submissionStore = useSwapTransactionStore.getState()
     const known = submissionStore.swapTransactions[swapData.id]
-    if (submissionStore.pendingSubmissions[swapData.id] || (known?.hash && known.status !== BackendTransactionStatus.Failed)) {
-        setActionStateText('Checking deposit status')
-        const result = await reconcileWalletSubmission({
-            swapId: swapData.id, sourceAddress: sourceAddress ?? selectedWallet.address,
-            api: layerswapApiClient, setSwapTransaction, onSuccess,
-        })
-        if (result.outcome === 'submitted') return result.hash
-        // Refresh the action on the next deliberate retry after confirmed failure.
-        throw new Error('The previous transaction failed. Try again to refresh the transfer.')
+    // A hash may arrive while the caller awaits preparation. Reuse the local
+    // submission instead of asking the wallet to send the same deposit again.
+    if (known?.hash && known.status !== BackendTransactionStatus.Failed) {
+        onSuccess()
+        return known.hash
     }
     if (!action || !isTransferAction(action)) throw new Error('No transfer action')
     const transferProps = resolveTransactionData(swapData, action, swapBasicData, selectedWallet)
@@ -69,45 +64,27 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
     const finishTelemetry = widgetTelemetry.beginOperation('wallet_transfer', {
         swap_id: swapData.id, provider: selectedWallet.providerName, timing_kind: 'user_wait_included',
     })
-    let submissionPhase: 'preparing' | 'submitting' | 'not_submitted' | undefined
     const requestWallet = async (props: TransferProps, { retriesExpiry }: { retriesExpiry: boolean }) => {
         if (signal?.aborted) {
             finishTelemetry('cancelled')
             signal.throwIfAborted()
         }
-        submissionPhase = undefined
-        try {
-            return await executeWalletOperation({
-                context: {
-                    ...lifecycleContext,
-                    path: 'WalletTransfer',
-                    action: action.step === 'approve_permit2' ? 'approve_permit2' : 'send_transaction',
-                    provider: selectedWallet.providerName,
-                },
-                onLifecycle,
-                // Keep one timing operation across the Stellar refresh and both wallet requests.
-                onSettled: finishTelemetry,
-                reportsSubmission: action.step !== 'approve_permit2',
-                shouldReportError: error => !(retriesExpiry && isExpiredTransaction(error)),
-            }, () => onClick({
-                ...props,
-                onSubmissionStateChange: state => {
-                    if (submissionPhase === 'submitting' && state !== 'not_submitted') return
-                    submissionPhase = state
-                    props.onSubmissionStateChange?.(state)
-                },
-            }))
-        } catch (error) {
-            const reason = normalizeWalletErrorCode(error)
-            // Transport failures alone do not prove that a wallet was asked to
-            // send. Older adapters may fail while preparing without reporting a phase.
-            const uncertain = (submissionPhase === 'submitting' && (reason === 'timeout' || reason === 'network_error' || reason === 'unknown_error'))
-                || (error as Error)?.message === 'Wallet returned no transaction hash'
-            if (action.step !== 'approve_permit2' && submissionPhase !== 'preparing' && submissionPhase !== 'not_submitted' && uncertain) {
-                submissionStore.markSubmissionPending(swapData.id)
-            }
-            throw error
-        }
+        return executeWalletOperation({
+            context: {
+                ...lifecycleContext,
+                path: 'WalletTransfer',
+                action: action.step === 'approve_permit2' ? 'approve_permit2' : 'send_transaction',
+                provider: selectedWallet.providerName,
+            },
+            onLifecycle,
+            // Keep one timing operation across the Stellar refresh and both wallet requests.
+            onSettled: finishTelemetry,
+            reportsSubmission: action.step !== 'approve_permit2',
+            shouldReportError: error => !(retriesExpiry && isExpiredTransaction(error)),
+        }, () => onClick({
+            ...props,
+            onFeeEstimate: action.step !== 'approve_permit2' && !props.token?.contract ? ctx.onFeeEstimate : undefined,
+        }))
     }
 
     try {

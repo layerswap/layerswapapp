@@ -114,9 +114,3 @@ for (const [name, expectedHeader] of [
     }
   })
 }
-
-test('uncertain submissions explain why another send is blocked', () => {
-  const html = renderError({ name: 'SubmissionStatusUnknown' })
-  assert.match(html, /Checking deposit status/)
-  assert.match(html, /Another send is blocked/)
-})

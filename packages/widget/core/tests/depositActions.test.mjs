@@ -109,7 +109,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         },
         GetDepositActionsAsync: async (...args) => {
             calls.refresh.push(args)
-            return state.refreshError ? { error: state.refreshError } : { data: state.apiActions }
+            return state.onRefresh ? state.onRefresh(...args) : state.refreshError ? { error: state.refreshError } : { data: state.apiActions }
         },
         AuthorizeSwapAsync: async (...args) => { calls.authorize.push(args) },
         GetSwapAsync: (...args) => { calls.statusChecks ??= []; calls.statusChecks.push(args); return state.getSwap ? state.getSwap(...args) : assert.fail('Unexpected swap reconciliation') },
@@ -141,15 +141,9 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
     const { executeWalletOperation } = loadSource(`${walletPath}executeWalletOperation.ts`, {
         '@/lib/swapLifecycle': lifecycle, './isUserRejection': rejection,
     })
-    const reconciliation = loadSource(`${walletPath}reconcileWalletSubmission.ts`, {
-        '@/lib/apiClients/layerSwapApiClient': apiModule,
-        '@/helpers/swapProgress': swapProgress,
-        '@/stores/swapTransactionStore': stores,
-    })
     const execution = loadSource(`${walletPath}depositExecution.ts`, {
         '@layerswap/widget-types': walletTypes,
         '@layerswap/wallet-core/errors': walletErrors,
-        './reconcileWalletSubmission': reconciliation,
         '@/lib/apiClients/layerSwapApiClient': apiModule,
         '@/stores/swapTransactionStore': stores,
         '@/stores/gaslessPreferenceStore': preferenceStore,
@@ -258,6 +252,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
                 return {
                     acquireWalletExecution: executionUpdates?.acquireWalletExecution ?? (() => noop),
                     createSwap: (...args) => state.createSwap ? state.createSwap(...args) : assert.fail('Retry must keep the existing swap'),
+                    setTransferFeeAdjustment: value => { state.transferFeeAdjustment = value },
                     startFreshSwapAttempt: noop,
                     mutateSwap: async () => {},
                     setSwapId: id => { state.swapId = id },
@@ -287,7 +282,6 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         '@/lib/gases/useSWRGas': { default: () => ({}) },
         '@/context/depositSettings': { useDepositSettings: () => ({}) },
         './depositExecution': execution,
-        './reconcileWalletSubmission': reconciliation,
         './ensureSourceChain': sourceChain,
         '@layerswap/wallet-core': { walletRequestStore: { getSnapshot: () => null } },
         '../../Presentation/WalletRequestRecovery': { WalletRequestRecovery: () => null },
@@ -298,7 +292,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         '@/helpers/gasless': gasless,
         './isUserRejection': rejection,
         swr: realPolling ? require('swr') : {
-            useSWRConfig: () => ({ mutate: async (key, result) => { const data = await result; cache.set(key, data); return data } }),
+            useSWRConfig: () => ({ mutate: async (key, result) => { if (state.cacheError) throw state.cacheError; const data = await result; cache.set(key, data); return data } }),
         },
     })
     const findElement = (node, type, predicate = () => true) => {
@@ -328,7 +322,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
             onClick: async props => {
                 calls.transfer.push(props)
                 const step = depositActions.getActionableDepositAction(state.apiActions).step
-                await state.onWalletPrompt?.(step)
+                await state.onWalletPrompt?.(step, props)
                 state.completedStep = step
                 return step === 'approve_permit2' ? state.approvalHash ?? '0xapproval' : '0xtransaction'
             },
@@ -344,7 +338,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
         }
     }
     return {
-        state, calls, render, wallet, network, preferences, stores, walletViews,
+        state, calls, render, wallet, network, preferences, stores, walletViews, cache,
         Component: () => realPolling
             ? createElement(swapContext.SwapDataProvider, null, createElement(SwapView, null,
                 state.hideWalletButton ? null : createElement(SendTransactionButton, props())))
@@ -629,7 +623,7 @@ for (const progress of ['transaction', 'authorization', 'signature']) {
         assert.deepEqual(flow.calls.transfer, [])
         if (progress === 'transaction') {
             assert.deepEqual(flow.calls.refresh, [], 'a known submitted transaction does not need deposit instructions')
-            assert.deepEqual(flow.calls.statusChecks, [[swapId, sourceAddress]])
+            assert.deepEqual(flow.calls.statusChecks ?? [], [], 'a recorded hash needs no extra status request')
             assert.equal(flow.calls.success, 1)
             assert.deepEqual(flow.calls.errors, [])
         } else {
@@ -1395,138 +1389,105 @@ test('an ordinary wallet retry cannot release the original unmounted request loc
     assert.deepEqual(flow.calls.storedTransactions, [])
 })
 
-for (const snapshot of ['missing', 'completed', 'pending', 'failed']) {
-    test(`uncertain submission reconciles before workflow preparation: ${snapshot}`, async () => {
-        const flow = createWorkflow()
-        const action = { type: 'transfer', step: 'deposit', status: snapshot === 'missing' ? 'action_required' : snapshot, amount: '1', to_address: '0x456' }
-        flow.state.apiActions = [action]
-        flow.render()
-        await flow.poll()
-        if (snapshot === 'missing') flow.state.swapDetails = undefined
-        flow.stores.useSwapTransactionStore.getState().markSubmissionPending(swapId)
-        flow.state.getSwap = async () => ({ data: { swap: { id: swapId, transactions: [
-            { type: 'input', status: 'completed', transaction_hash: 'original-input' },
-        ] } } })
-        flow.state.createSwap = () => assert.fail('An unresolved original cannot be replaced')
-        await flow.render().viewProps.handleClick()
-        assert.deepEqual(flow.calls.statusChecks, [[swapId, sourceAddress]])
-        assert.equal(flow.calls.transfer.length, 0)
-        assert.equal(flow.calls.refresh.length, 0)
-        assert.deepEqual(flow.calls.storedTransactions, [[swapId, 'completed', 'original-input']])
-        assert.equal(flow.calls.success, 1)
-        assert.equal(flow.stores.useSwapTransactionStore.getState().pendingSubmissions[swapId], undefined)
-    })
-}
-
-for (const failed of [true, false]) {
-    test(`wallet-verified recovery checks status and unlocks without sending: failed=${failed}`, async () => {
-        const flow = createWorkflow()
-        flow.state.apiActions = [{ type: 'transfer', step: 'deposit', status: 'action_required', amount: '1', to_address: '0x456' }]
-        flow.render()
-        await flow.poll()
-        flow.stores.useSwapTransactionStore.getState().markSubmissionPending(swapId)
-        flow.state.getSwap = async () => ({ data: { swap: { id: swapId, transactions: failed
-            ? [{ type: 'input', status: 'failed', transaction_hash: 'failed-input' }] : [] } } })
-        await flow.render().viewProps.handleClick()
-        assert.equal(flow.stores.useSwapTransactionStore.getState().pendingSubmissions[swapId], true, 'ordinary retry cannot assume an empty/failed response is proof')
-        assert.deepEqual(flow.calls.errors, [], 'status uncertainty is not a withdrawal error or gas miscalculation')
-        assert.match(flow.state.swapError, /may already have been submitted/)
-        await flow.render().viewProps.confirmNotSubmitted()
-        assert.equal(flow.calls.statusChecks.length, 2)
-        assert.equal(flow.stores.useSwapTransactionStore.getState().pendingSubmissions[swapId], undefined)
-        assert.equal(flow.calls.transfer.length, 0, 'unlocking cannot send')
-        await flow.render().viewProps.handleClick()
-        assert.equal(flow.calls.transfer.length, 1, 'a separate deliberate click refreshes and sends')
-    })
-}
-
-for (const progress of ['input', 'unindexed_input', 'deposit', 'completed', 'local_hash', 'api_error', 'malformed']) {
-    test(`wallet verification cannot bypass new progress or an invalid status check: ${progress}`, async () => {
-        const flow = createWorkflow()
-        flow.state.apiActions = [{ type: 'transfer', step: 'deposit', status: 'action_required', amount: '1', to_address: '0x456' }]
-        flow.render()
-        await flow.poll()
-        const store = flow.stores.useSwapTransactionStore.getState()
-        store.markSubmissionPending(swapId)
-        if (progress === 'local_hash') store.swapTransactions[swapId] = { hash: 'known-input', status: 'pending' }
-        flow.state.getSwap = async () => {
-            if (progress === 'api_error') throw new Error('Status API unavailable')
-            return { data: { swap: {
-                id: swapId,
-                status: progress === 'completed' ? 'completed' : 'user_transfer_pending',
-                transactions: progress === 'malformed' ? undefined : progress === 'unindexed_input'
-                    ? [{ type: 'input', status: 'pending', transaction_hash: '' }] : progress === 'input'
-                    ? [{ type: 'input', status: 'pending', transaction_hash: 'indexed-input' }] : [],
-            }, deposit_actions: progress === 'deposit' ? [{ type: 'transfer', step: 'deposit', status: 'pending' }] : [] } }
-        }
-        await flow.render().viewProps.confirmNotSubmitted()
-        assert.equal(flow.calls.transfer.length, 0)
-        assert.equal(flow.calls.statusChecks.length, 1)
-        if (progress === 'input') {
-            assert.equal(flow.calls.success, 1, 'an input discovered during verification is resumed')
-            assert.deepEqual(flow.calls.storedTransactions, [[swapId, 'pending', 'indexed-input']])
-        } else {
-            assert.equal(store.pendingSubmissions[swapId], true)
-            assert.equal(flow.calls.success, 0)
-        }
-    })
-}
-
-for (const confirmedFailed of [false, true]) {
-    test(`a recorded hash is reconciled before missing snapshots can cause another send: failed=${confirmedFailed}`, async () => {
-        const flow = createWorkflow()
-        const store = flow.stores.useSwapTransactionStore.getState()
-        store.swapTransactions[swapId] = { status: 'pending', hash: 'known-input' }
-        flow.state.swapDetails = undefined
-        flow.state.createSwap = () => assert.fail('Must not replace a recorded submission')
-        flow.state.getSwap = async () => ({ data: { swap: { id: swapId, transactions: confirmedFailed
-            ? [{ type: 'input', status: 'failed', transaction_hash: 'known-input' }] : [] } } })
-        await flow.render().viewProps.handleClick()
-        assert.equal(flow.calls.statusChecks.length, 1)
-        assert.equal(flow.calls.transfer.length, 0)
-        if (confirmedFailed) assert.deepEqual(flow.calls.storedTransactions, [[swapId, 'failed', 'known-input']])
-        else assert.equal(flow.calls.success, 1, 'resume the known hash while the backend indexes it')
-    })
-}
-
-test('deposit status checks and wallet verification stay usable with an expired/loading quote and completed actions', async () => {
+test('a wallet timeout returns immediately with normal manual retry and no status request', async () => {
     const flow = createWorkflow()
-    flow.state.apiActions = [{ type: 'transfer', step: 'deposit', status: 'completed' }]
-    flow.render()
-    await flow.poll()
-    flow.stores.useSwapTransactionStore.getState().markSubmissionPending(swapId)
-    flow.state.quoteIsLoading = true
-    flow.state.quoteError = { message: 'Expired quote' }
-    const view = flow.render()
-    const status = view.buttonByText('Check deposit status')
-    assert.ok(status)
-    assert.equal(status.props.isDisabled, false)
-    assert.equal(status.props.isSubmitting, false)
-    assert.ok(view.buttonByText('I checked my wallet — unlock retry'))
-})
-
-test('an unrelated failed input cannot unlock a different recorded transaction', async () => {
-    const flow = createWorkflow()
-    const store = flow.stores.useSwapTransactionStore.getState()
-    store.swapTransactions[swapId] = { hash: 'known-pending', status: 'pending' }
-    flow.state.getSwap = async () => ({ data: { swap: { id: swapId, transactions: [
-        { type: 'input', transaction_hash: 'old-failed', status: 'failed' },
-    ] } } })
+    flow.state.apiActions = [{ type: 'transfer', step: 'deposit', status: 'action_required', amount: '1', to_address: '0x456' }]
+    flow.state.onWalletPrompt = () => {
+        if (flow.calls.transfer.length === 1) throw Object.assign(new Error('Wallet timeout'), { code: 'ETIMEDOUT' })
+    }
+    flow.state.getSwap = () => assert.fail('A timeout must not request status')
     await flow.render().viewProps.handleClick()
-    assert.equal(flow.calls.transfer.length, 0)
-    assert.equal(store.swapTransactions[swapId].status, 'pending')
+    assert.equal(flow.calls.transfer.length, 1, 'no automatic wallet retry')
+    assert.deepEqual(flow.calls.statusChecks ?? [], [])
+    assert.equal(flow.state.swapError, 'Wallet timeout')
+    assert.deepEqual(flow.stores.useSwapTransactionStore.getState().pendingSubmissions, {})
+    const retry = flow.render().buttonByText('Try again')
+    assert.ok(retry)
+    assert.equal(retry.props.isDisabled, false)
+    flow.state.createSwap = () => assert.fail('Retry the prepared swap normally')
+    await retry.props.onClick()
+    assert.equal(flow.calls.transfer.length, 2)
+    assert.deepEqual(flow.calls.statusChecks ?? [], [])
     assert.equal(flow.calls.success, 1)
 })
 
-test('a matching failed hash can recover even when its wallet step still says completed', async () => {
+for (const status of ['pending', 'completed']) test(`a late recorded ${status} hash prevents sending from a stale button`, async () => {
     const flow = createWorkflow()
-    flow.stores.useSwapTransactionStore.getState().swapTransactions[swapId] = { hash: 'known-input', status: 'pending' }
-    flow.state.getSwap = async () => ({ data: {
-        swap: { id: swapId, status: 'user_transfer_pending', transactions: [{ type: 'input', transaction_hash: 'known-input', status: 'failed' }] },
-        deposit_actions: [{ type: 'transfer', step: 'deposit', status: 'completed' }],
-    } })
-    await flow.render().viewProps.handleClick()
-    assert.deepEqual(flow.calls.storedTransactions, [[swapId, 'failed', 'known-input']])
+    const click = flow.render().viewProps.handleClick
+    flow.stores.useSwapTransactionStore.getState().swapTransactions[swapId] = { status, hash: 'known-input' }
+    flow.state.swapDetails = undefined
+    flow.state.createSwap = () => assert.fail('A funded swap must not be replaced')
+    flow.state.getSwap = () => assert.fail('Existing polling owns status')
+    await click()
+    assert.deepEqual(flow.calls.refresh, [])
+    assert.deepEqual(flow.calls.statusChecks ?? [], [])
     assert.equal(flow.calls.transfer.length, 0)
+    assert.equal(flow.calls.sign.length, 0)
+    assert.equal(flow.calls.success, 1)
+})
+
+test('a hash arriving during preparation prevents the subsequent wallet send', async () => {
+    const flow = createWorkflow()
+    const actions = [{ type: 'transfer', step: 'deposit', status: 'action_required', amount: '1', to_address: '0x456' }]
+    const refresh = Promise.withResolvers()
+    flow.state.onRefresh = () => refresh.promise
+    const execution = flow.render().viewProps.handleClick()
+    await new Promise(setImmediate)
+    assert.equal(flow.calls.refresh.length, 1)
+    flow.stores.useSwapTransactionStore.getState().swapTransactions[swapId] = { status: 'pending', hash: 'late-input' }
+    refresh.resolve({ data: actions })
+    await execution
+    assert.equal(flow.calls.transfer.length, 0)
+    assert.equal(flow.calls.sign.length, 0)
+    assert.deepEqual(flow.calls.statusChecks ?? [], [])
+    assert.equal(flow.calls.success, 1)
+})
+
+test('a locally failed transaction does not prevent a deliberate new wallet request', async () => {
+    const flow = createWorkflow()
+    flow.state.apiActions = [{ type: 'transfer', step: 'deposit', status: 'action_required', amount: '1', to_address: '0x456' }]
+    flow.stores.useSwapTransactionStore.getState().swapTransactions[swapId] = { status: 'failed', hash: 'failed-input' }
+    await flow.render().viewProps.handleClick()
+    assert.equal(flow.calls.transfer.length, 1)
+    assert.equal(flow.calls.success, 1)
+    assert.deepEqual(flow.calls.statusChecks ?? [], [])
+})
+
+test('the workflow records the final native fee for the current swap before preflight failure', async () => {
+    const flow = createWorkflow()
+    flow.state.apiActions = [{ type: 'transfer', step: 'deposit', status: 'action_required', amount: '1', to_address: '0x456' }]
+    const fee = { gas: 0.00012, token: { symbol: 'ETH', decimals: 18 } }
+    flow.state.onWalletPrompt = (_, props) => {
+        props.onSubmissionStateChange?.('preparing')
+        props.onFeeEstimate(fee)
+        throw Object.assign(new Error('Insufficient funds'), { code: 'INSUFFICIENT_FUNDS' })
+    }
+    await flow.render().button.props.onClick()
+    assert.deepEqual(flow.state.transferFeeAdjustment, { swapId, sourceAddress, network: 'BASE_MAINNET', fee })
+    assert.equal(flow.stores.useSwapTransactionStore.getState().pendingSubmissions[swapId], undefined)
     assert.equal(flow.calls.success, 0)
+})
+
+test('an affordable native transfer completes without storing fee-adjustment recovery data', async () => {
+    const flow = createWorkflow()
+    const native = { symbol: 'ETH', decimals: 18 }
+    flow.state.sourceToken = native
+    flow.state.apiActions = [{ type: 'transfer', step: 'deposit', status: 'action_required', amount: '1', to_address: '0x456' }]
+    const { transactionBuilder } = loadSource('../../../wallets/adapters/evm/src/transferProvider/transactionBuilder.ts', {
+        viem: require('viem'),
+        '../gasProviders/estimateTransferFee': { estimateTransferFee: async () => ({
+            gas: 21000n, fees: { gasPrice: 1000000000n }, l1Fee: 0n, fee: 21000000000000n,
+            client: { getBalance: async () => 2000000000000000000n },
+        }) },
+    })
+    flow.state.onWalletPrompt = async (_, props) => {
+        props.onSubmissionStateChange?.('preparing')
+        await transactionBuilder({ ...props, network: { ...props.network, token: native } }, {})
+        props.onSubmissionStateChange?.('submitting')
+    }
+    await flow.render().button.props.onClick()
+    assert.equal(flow.state.transferFeeAdjustment, undefined)
+    assert.equal(flow.calls.transfer.length, 1)
+    assert.equal(flow.calls.success, 1)
+    assert.deepEqual(flow.calls.errors, [])
 })

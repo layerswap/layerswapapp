@@ -149,8 +149,6 @@ export type SendTransactionViewProps = SubmitButtonProps & {
     gaslessUnavailable?: boolean;
     gaslessFailureStage?: 'create' | 'deposit' | null;
     canSwitchToStandard?: boolean;
-    pendingSubmission?: boolean;
-    confirmNotSubmitted?: () => void;
     handleClick?: () => void;
     handleCriticalContinue?: () => void;
     retryGasless?: () => void;
@@ -182,8 +180,6 @@ export function SendTransactionView({
     gaslessUnavailable,
     gaslessFailureStage,
     canSwitchToStandard = true,
-    pendingSubmission,
-    confirmNotSubmitted,
     handleClick,
     handleCriticalContinue,
     retryGasless,
@@ -229,7 +225,7 @@ export function SendTransactionView({
                 {errorMessage}
             </div>
         ) : undefined);
-    if ((quoteIsLoading && !pendingSubmission) || loading)
+    if (quoteIsLoading || loading)
         return (
             <WalletExecutionTransition
                 workflow={workflowProgress}
@@ -317,16 +313,7 @@ export function SendTransactionView({
                             message={`The “receive at least” amount is affected by high price impact. You will receive at least ${quote.min_receive_amount} ${quote.destination_token.asset} ($ ${priceImpactValues.minReceiveAmountUSD})`}
                         />
                     )}
-                    {pendingSubmission && confirmNotSubmitted && (
-                        <details className="text-sm text-secondary-text space-y-2">
-                            <summary className="cursor-pointer">Wallet shows a failed or unsubmitted request?</summary>
-                            <p>Only unlock retry after verifying in your wallet that this request failed or expired without sending funds. A pending transaction must keep waiting.</p>
-                            <ButtonWrapper buttonStyle="secondary" size="small" onClick={confirmNotSubmitted}>
-                                I checked my wallet — unlock retry
-                            </ButtonWrapper>
-                        </details>
-                    )}
-                    {gaslessUnavailable && !pendingSubmission ? (
+                    {gaslessUnavailable ? (
                         <div className="space-y-2">
                             {gaslessFailureStage === 'deposit' && (
                                 <ButtonWrapper
@@ -369,16 +356,16 @@ export function SendTransactionView({
                             icon={icon}
                             {...props}
                             isSubmitting={
-                                props.isSubmitting || loading || (quoteIsLoading && !pendingSubmission)
+                                props.isSubmitting || loading || quoteIsLoading
                             }
                             onClick={handleClick}
                             isDisabled={
-                                (quoteIsLoading && !pendingSubmission) ||
-                                (!!quoteError && !pendingSubmission) ||
-                                (workflowCompleted && !pendingSubmission)
+                                quoteIsLoading ||
+                                !!quoteError ||
+                                workflowCompleted
                             }
                         >
-                            {pendingSubmission ? 'Check deposit status' : error || swapError || networkSwitch?.isError || workflowFailed
+                            {error || swapError || networkSwitch?.isError || workflowFailed
                                 ? 'Try again'
                                 : workflowCompleted
                                   ? 'Completed'

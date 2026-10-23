@@ -43,7 +43,7 @@ const Withdraw: FC<{
     onWalletWithdrawalSuccess?: () => void;
     onCancelWithdrawal?: () => void;
 }> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal }) => {
-    const { swapBasicData, swapDetails, swapId, amountPresetLocked, refuel, quoteIsLoading } =
+    const { swapBasicData, swapDetails, swapId, transferFeeAdjustment, amountPresetLocked, refuel, quoteIsLoading } =
         useSwapDataState();
     const { setSubmitedFormValues, startFreshSwapAttempt, canAdjustAmount } = useSwapDataUpdate();
 
@@ -74,6 +74,15 @@ const Withdraw: FC<{
         swapBasicData?.source_token,
         swapBasicData?.requested_amount,
     );
+    // A failed affordability check can expose contract costs absent from the
+    // pre-creation EOA probe. Only use its estimate for the same swap and account.
+    const estimatedFee = transferFeeAdjustment && transferFeeAdjustment.swapId === swapId
+        && transferFeeAdjustment.sourceAddress === selectedSourceAccount?.address
+        && transferFeeAdjustment.network === source_network?.name
+        && transferFeeAdjustment.fee.token.symbol === swapBasicData?.source_token.symbol
+        && Number.isFinite(transferFeeAdjustment.fee.gas) && transferFeeAdjustment.fee.gas >= 0
+        ? transferFeeAdjustment.fee : undefined;
+    const adjustmentFee = estimatedFee ?? gasData;
     const { setValues, values } = useFormikContext<SwapFormValues>();
 
     const lifecycleContext = useMemo(
@@ -104,8 +113,8 @@ const Withdraw: FC<{
             || minAllowedAmount == null || !Number.isFinite(minAllowedAmount)
             || maxAllowedAmount == null || !Number.isFinite(maxAllowedAmount)) return undefined;
         const maxAmount = resolveMaxAllowedAmount({
-            walletBalance, gasAmount: gasData?.gas, gasReserve: gasData?.reserve,
-            fromCurrency: swapBasicData.source_token, native_currency: gasData?.token ?? source_network?.token,
+            walletBalance, gasAmount: adjustmentFee?.gas, gasReserve: adjustmentFee?.reserve,
+            fromCurrency: swapBasicData.source_token, native_currency: adjustmentFee?.token ?? source_network?.token,
             limitsMaxAmount: maxAllowedAmount, depositMethod: 'wallet',
         });
         if (maxAmount == null || !Number.isFinite(maxAmount)) return undefined;
@@ -121,9 +130,9 @@ const Withdraw: FC<{
         // Execution can start between rendering the action and clicking it.
         if (!canAdjustAmount() || adjustedAmount === undefined || !swapBasicData) return;
         widgetTelemetry.recordAmountInput('max');
-        const maxFields = { amountMode: 'max' as const,
+        const maxFields = { amountMode: estimatedFee ? 'manual' as const : 'max' as const,
             amountPresetSource: amountPresetSource(swapBasicData.source_network.name, swapBasicData.source_token.symbol, selectedSourceAccount?.id, selectedSourceAccount?.address),
-            amountPresetPending: true, amountPresetError: undefined };
+            amountPresetPending: !estimatedFee, amountPresetError: undefined };
         const nextValues: SwapFormValues = {
             ...values,
             ...maxFields,
@@ -142,7 +151,7 @@ const Withdraw: FC<{
         void setValues(nextValues, true);
         setSubmitedFormValues(nextValues);
     }, [
-        adjustedAmount,
+        adjustedAmount, estimatedFee,
         swapBasicData,
         refuel,
         setValues, values, canAdjustAmount, selectedSourceAccount,
@@ -214,7 +223,7 @@ const Withdraw: FC<{
                 />
             ),
         };
-    } else if (swapBasicData?.use_deposit_address === false && outOfGas && !presetIsSyncing) {
+    } else if (swapBasicData?.use_deposit_address === false && (outOfGas || (estimatedFee && adjustedAmount !== undefined)) && !presetIsSyncing) {
         withdraw = {
             footerKey: 'outOfGas',
             footer: (

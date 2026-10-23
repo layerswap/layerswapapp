@@ -19,7 +19,7 @@ for (const [key, value] of Object.entries(globals)) {
 const mockUrl = `data:text/javascript,${encodeURIComponent(`
   import { createElement } from ${JSON.stringify(import.meta.resolve('react'))}
   export const state = {}
-  export const useSwapDataState = () => ({ swapBasicData: state.swap, quoteIsLoading: state.quoteLoading })
+  export const useSwapDataState = () => ({ swapBasicData: state.swap, swapId: state.swapId, transferFeeAdjustment: state.transferFeeAdjustment, quoteIsLoading: state.quoteLoading })
   export const useSwapDataUpdate = () => ({ setSubmitedFormValues(values) { state.submitted = values }, startFreshSwapAttempt() { state.freshAttempts++ }, canAdjustAmount: () => !state.locked })
   export const useSettingsState = () => ({ networks: [state.swap.source_network] })
   export const useSelectedAccount = () => ({ address: state.walletAddress ?? 'source' })
@@ -74,7 +74,7 @@ beforeEach(() => {
   document.body.append(container)
   root = createRoot(container)
   Object.assign(state, {
-    events: [], walletAddress: undefined, locked: false, freshAttempts: 0, submitted: undefined, formValues: undefined, quoteLoading: false,
+    swapId: undefined, transferFeeAdjustment: undefined, events: [], walletAddress: undefined, locked: false, freshAttempts: 0, submitted: undefined, formValues: undefined, quoteLoading: false,
     swap: { source_network: network, source_token: token, destination_network: { name: 'BASE_MAINNET' }, destination_token: token, requested_amount: '0.95', use_deposit_address: false },
     balances: [{ network: network.name, token: token.symbol, amount: 1, isNativeCurrency: true }],
     gasData: { gas: 0.1, token },
@@ -198,6 +198,38 @@ test('Adjust amount explicitly starts a fresh draft with Max enabled', async () 
   assert.equal(state.submitted.amount, '0.898')
   assert.equal(state.formValues.amount, state.submitted.amount)
 })
+test('contract fee replaces the EOA reserve in an explicit fixed-amount recovery', async () => {
+  state.swapId = 'contract-swap'
+  state.swap.requested_amount = '0.000974296'
+  state.balances[0].amount = 0.001
+  state.minAllowedAmount = 0.00001
+  state.gasData = { gas: 0.0000252, token }
+  await render()
+  assert.equal(adjustButton(), undefined, 'EOA probe alone cannot see the contract cost')
+  state.transferFeeAdjustment = { swapId: state.swapId, sourceAddress: 'source', network: network.name, fee: { gas: 0.00012, token } }
+  await render()
+  assert.match(container.textContent, /Insufficient balance for gas/)
+  assert.ok(adjustButton())
+  await act(() => adjustButton().click())
+  assert.equal(state.freshAttempts, 1)
+  assert.equal(state.submitted.amount, '0.0008776')
+  assert.equal(state.formValues.amount, '0.0008776')
+  assert.equal(state.submitted.amountMode, 'manual', 'a new EOA probe must not raise the reviewed reduction')
+  assert.equal(state.submitted.amountPresetPending, false)
+  assert.equal(Number(state.submitted.amount) + state.transferFeeAdjustment.fee.gas <= state.balances[0].amount, true)
+})
+
+for (const mismatch of ['swapId', 'sourceAddress', 'network']) test(`fee adjustment cannot leak across ${mismatch}`, async () => {
+  state.swapId = 'contract-swap'
+  state.swap.requested_amount = '0.000974296'
+  state.balances[0].amount = 0.001
+  state.minAllowedAmount = 0.00001
+  state.gasData = { gas: 0.0000252, token }
+  state.transferFeeAdjustment = { swapId: state.swapId, sourceAddress: 'source', network: network.name, fee: { gas: 0.00012, token }, [mismatch]: 'other' }
+  await render()
+  assert.equal(adjustButton(), undefined)
+})
+
 test('Adjust amount cannot abandon an executing swap', async () => {
   state.locked = true
   await render()
@@ -287,6 +319,8 @@ test('an execution lock hides Adjust amount but keeps Refresh available for insu
   await render()
   assert.equal(!!adjustButton(), false, 'Adjust amount must be hidden')
   assert.match(container.textContent, /Refresh balance/)
+  state.swapId = undefined
+  state.transferFeeAdjustment = undefined
   state.locked = false
   await render()
   assert.equal(adjustButton().disabled, false)

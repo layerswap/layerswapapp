@@ -101,16 +101,18 @@ for (const fail of [true, false]) test(`wallet receives the estimated fields and
     const phases = []
     let resolutions = 0
     const original = Object.assign(new Error('HTTP 429'), { code: 4200 })
+    const connector = { getProvider: async () => ({ request: async () => { if (fail) throw original; return 'hash' } }) }
     const { createEVMTransferProvider } = load('../src/transferProvider/createEVMTransferProvider.ts', {
         '@wagmi/core': { sendTransaction: async (_, request) => {
-            assert.deepEqual(request, { ...tx, connector: 'selected-connector' })
-            if (fail) throw original
-            return 'hash'
+            assert.equal(request.connector, connector, 'wagmi receives the original connector without interception')
+            const { connector: tracked, ...sent } = request
+            assert.deepEqual(sent, tx)
+            return (await tracked.getProvider()).request({ method: 'eth_sendTransaction' })
         } },
         './toTransferError': { toTransferError: error => new Error(error.message, { cause: error }) },
-        '../service/resolveWalletConnector': { resolveWalletConnector: () => { resolutions++; return 'selected-connector' } },
+        '../service/resolveWalletConnector': { resolveWalletConnector: () => { resolutions++; return connector } },
     })
-    const transfer = createEVMTransferProvider({}, () => true, async (_, connector) => { assert.equal(connector, 'selected-connector'); return tx }).executeTransfer({
+    const transfer = createEVMTransferProvider({}, () => true, async (_, selected) => { assert.equal(selected, connector); return tx }).executeTransfer({
         ...params, onSubmissionStateChange: phase => phases.push(phase),
     })
     if (fail) await assert.rejects(transfer, error => {
@@ -189,4 +191,62 @@ for (const failure of [undefined, 'network_error', 'timeout', 'unsupported_metho
     else assert.equal(await createEvmTransfer().executeTransfer(request), 'hash')
     assert.equal(builds, fallback && walletChain === 60808 ? 2 : 1)
     assert.equal(walletReads, fallback ? 1 : 0)
+})
+
+test('actual contract fee is exposed before rejecting an unaffordable EOA-based Max', async () => {
+    const native = { symbol: 'ETH', decimals: 18 }
+    const balance = 1000000000000000n
+    const actualGas = 120000n, actualFee = actualGas * 1000000000n
+    const reviewed = { ...params, network: { ...params.network, token: native }, amount: '0.000974296' }
+    let fee
+    const { transactionBuilder } = load('../src/transferProvider/transactionBuilder.ts', {
+        '../gasProviders/estimateTransferFee': { estimateTransferFee: async (_, tx) => {
+            assert.equal(tx.to, reviewed.depositAddress)
+            return { gas: actualGas, fees: { gasPrice: 1000000000n }, l1Fee: 0n, fee: actualFee, client: { getBalance: async () => balance } }
+        } },
+    })
+    await assert.rejects(transactionBuilder({ ...reviewed, onFeeEstimate: value => { fee = value } }, {}), error => error.code === 'INSUFFICIENT_FUNDS')
+    assert.deepEqual(fee, { gas: 0.00012, token: native })
+    const adjusted = '0.0008776' // balance minus this fee and the existing 2% reserve
+    const tx = await transactionBuilder({ ...reviewed, amount: adjusted }, {})
+    assert.equal(tx.value, 877600000000000n)
+    assert.equal(tx.gas, actualGas)
+})
+
+for (const outcome of ['affordable', 'exact-balance', 'insufficient', 'balance-error']) test(`fee adjustment is reported only for failed affordability: ${outcome}`, async () => {
+    const native = { symbol: 'ETH', decimals: 18 }
+    const fee = 120000000000000n
+    const value = 163036734120886n
+    const balance = value + fee + (outcome === 'insufficient' ? -1n : outcome === 'affordable' ? 1n : 0n)
+    const readFailure = new Error('Balance RPC unavailable')
+    const events = []
+    let reported
+    const { transactionBuilder } = load('../src/transferProvider/transactionBuilder.ts', {
+        '../gasProviders/estimateTransferFee': { estimateTransferFee: async () => ({
+            gas: 120000n, fees: { gasPrice: 1000000000n }, l1Fee: 0n, fee,
+            client: { getBalance: async () => {
+                events.push('balance')
+                if (outcome === 'balance-error') throw readFailure
+                return balance
+            } },
+        }) },
+    })
+    const result = transactionBuilder({ ...params, network: { ...params.network, token: native },
+        onFeeEstimate: estimate => { events.push('adjustment'); reported = estimate },
+    }, {})
+    if (outcome === 'insufficient') {
+        await assert.rejects(result, error => error.code === 'INSUFFICIENT_FUNDS')
+        assert.deepEqual(reported, { gas: 0.00012, token: native })
+        assert.deepEqual(events, ['balance', 'adjustment'])
+    } else {
+        if (outcome === 'balance-error') await assert.rejects(result, error => error === readFailure)
+        else {
+            const tx = await result
+            assert.equal(tx.value, value)
+            assert.equal(tx.gas, 120000n)
+            assert.equal(tx.gasPrice, 1000000000n)
+        }
+        assert.equal(reported, undefined)
+        assert.deepEqual(events, ['balance'])
+    }
 })

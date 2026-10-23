@@ -290,3 +290,19 @@ for (const [mode, fresh] of [['min', '1'], ['half', '0.4']]) {
     assert.equal(updates.syncAmountPresetDraft({ ...values, amount: '0.1' }), false)
   })
 }
+
+test('starting the reduced draft discards the old action fee and creates the reviewed amount', async () => {
+  await act(() => updates.setSubmitedFormValues(values))
+  const fee = { swapId: 'old-swap', sourceAddress: 'source', network: 'BASE_MAINNET', fee: { gas: 0.00012, token } }
+  await act(() => updates.setTransferFeeAdjustment(fee))
+  assert.equal(data.transferFeeAdjustment, fee)
+  const reduced = { ...values, amount: '0.0008776', amountMode: 'manual', amountPresetPending: false }
+  await act(() => {
+    updates.startFreshSwapAttempt()
+    updates.setSubmitedFormValues(reduced)
+  })
+  assert.equal(data.transferFeeAdjustment, undefined)
+  await act(async () => { await updates.createSwap(reduced, {}) })
+  assert.equal(state.prepares, 0, 'an EOA preset probe must not raise the reviewed contract reduction')
+  assert.equal(state.created[0].amount, reduced.amount)
+})

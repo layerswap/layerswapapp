@@ -1,4 +1,4 @@
-import { SwapStatus, type Refuel, type Wallet } from '@layerswap/widget-types';
+import { SwapStatus, type Refuel, type Wallet, type GasWithToken } from '@layerswap/widget-types';
 import { Context, useCallback, useEffect, useState, useRef, createContext, useContext, useMemo } from 'react'
 import LayerSwapApiClient, { BackendTransactionStatus, CreateSwapParams, PublishedSwapTransactions, SwapTransaction, TransactionStatus, WithdrawType, SwapResponse, DepositAction, SwapBasicData, SwapQuote, SwapDetails, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
 import { InitialSettings } from '@/Models/InitialSettings';
@@ -52,7 +52,16 @@ export type ApprovalTransaction = {
     hash: string
 }
 
+/** A failed transfer's fee estimate, used by the explicit Adjust amount action. */
+export type TransferFeeAdjustment = {
+    swapId: string
+    sourceAddress: string
+    network: string
+    fee: GasWithToken
+}
+
 export type UpdateSwapInterface = {
+    setTransferFeeAdjustment: (value: TransferFeeAdjustment) => void
     createSwap: (values: SwapFormValues, query: InitialSettings, partner?: Partner) => Promise<SwapResponse>,
     canAdjustAmount: () => boolean
     syncAmountPresetDraft: (values: SwapFormValues) => boolean
@@ -74,6 +83,7 @@ export type UpdateSwapInterface = {
 }
 
 export type SwapContextData = {
+    transferFeeAdjustment?: TransferFeeAdjustment
     swapApiError?: ApiError,
     swapDetailsError?: string,
     depositAddressIsFromAccount?: boolean,
@@ -131,6 +141,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const { sourceRoutes, destinationRoutes, networks } = useSettingsState()
     const updateRecentTokens = useRecentNetworksStore(state => state.updateRecentNetworks)
     const [swapModalOpen, setSwapModalOpen] = useState(false)
+    const [transferFeeAdjustment, setTransferFeeAdjustment] = useState<TransferFeeAdjustment>()
     const [swapError, setSwapError] = useState<string | null>(null)
     const [approvalWait, setApprovalWait] = useState<ApprovalTransaction>()
     const walletActionInFlight = useRef(false)
@@ -286,6 +297,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             amountMode: current?.amountMode,
             amountPresetSource: current?.amountPresetSource,
         }))
+        setTransferFeeAdjustment(undefined)
         setPresetCreated(false)
         setSwapTransaction(undefined)
         setSwapError(null)
@@ -623,6 +635,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     }, [createSwapRequest, selectedSourceAccount, selectedWallet, sourceRoutes, mutateCache])
 
     const updateFns = useMemo<UpdateSwapInterface>(() => ({
+        setTransferFeeAdjustment,
         createSwap,
         syncAmountPresetDraft,
         canAdjustAmount,
@@ -643,6 +656,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     }), [createSwap, syncAmountPresetDraft, canAdjustAmount, mutate, mutateDepositActions, setWalletActionExecuting, acquireWalletExecution, handleUpdateSwapid, markWalletExecutionStarted, startFreshSwapAttempt, watchApprovalTransaction, setSubmitedFormValues]);
 
     const stateValue = useMemo(() => ({
+        transferFeeAdjustment,
         withdrawType,
         swapTransaction,
         depositAddressIsFromAccount: !!depositAddressIsFromAccount,
@@ -666,7 +680,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         flow,
         swapError,
         setSwapError
-    }), [withdrawType, swapTransaction, depositAddressIsFromAccount, error, swapDetailsError, depositActionsResponse, depositActionsError, approvalTransaction, quote, quoteIsLoading, draftQuoteLoading, swapBasicFormData, amountPresetLocked, amountPresetRevision, quoteError, refuel, swapBasicData, swapDetails, swapId, walletExecutionStarted, swapModalOpen, resolved, flow, swapError]);
+    }), [withdrawType, swapTransaction, depositAddressIsFromAccount, error, swapDetailsError, depositActionsResponse, depositActionsError, approvalTransaction, quote, quoteIsLoading, draftQuoteLoading, swapBasicFormData, amountPresetLocked, amountPresetRevision, quoteError, refuel, swapBasicData, swapDetails, swapId, walletExecutionStarted, swapModalOpen, resolved, flow, swapError, transferFeeAdjustment]);
 
     return (
         <SwapDataStateContext.Provider value={stateValue}>

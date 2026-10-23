@@ -228,48 +228,11 @@ for (const hash of ['transaction-hash', '', undefined]) {
 }
 
 const { useSwapTransactionStore } = await import('../dist/esm/stores/swapTransactionStore.js')
-afterEach(() => useSwapTransactionStore.setState({ pendingSubmissions: {} }))
-for (const outcome of ['mined', 'unknown', 'unavailable']) test(`timeout retry reconciles before wallet send: ${outcome}`, async t => {
-  const id = `timeout-${outcome}`
-  t.after(() => {
-    useSwapTransactionStore.getState().clearPendingSubmission(id)
-    useSwapTransactionStore.getState().removeSwapTransaction(id)
-  })
-  let calls = 0, successes = 0
-  const published = []
-  const ctx = {
-    ...calldataContext('0x1234', { name: 'ETHEREUM_MAINNET' }),
-    swapData: { id, metadata: {} },
-    onSuccess: () => { successes++ },
-    setSwapTransaction: (...args) => published.push(args),
-    layerswapApiClient: {
-      GetSwapAsync: async () => {
-        if (outcome === 'unavailable') throw new Error('API unavailable')
-        return { data: { swap: { id, transactions: outcome === 'mined'
-          ? [{ type: 'input', status: 'completed', transaction_hash: 'mined-hash' }] : [] } } }
-      },
-    },
-  }
-  const send = async props => { calls++; props.onSubmissionStateChange('submitting'); throw Object.assign(new Error('Timeout'), { code: 163 }) }
-  await assert.rejects(executeWalletTransfer(ctx, send), /Timeout/)
-  assert.equal(useSwapTransactionStore.getState().pendingSubmissions[id], true)
-  if (outcome === 'mined') {
-    assert.equal(await executeWalletTransfer(ctx, send), 'mined-hash')
-    assert.deepEqual(published, [[id, 'completed', 'mined-hash']])
-    assert.equal(successes, 1)
-    assert.equal(useSwapTransactionStore.getState().pendingSubmissions[id], undefined)
-  } else {
-    await assert.rejects(executeWalletTransfer(ctx, send), outcome === 'unknown' ? /may already have been submitted/ : /API unavailable/)
-    assert.equal(useSwapTransactionStore.getState().pendingSubmissions[id], true)
-    assert.equal(successes, 0)
-  }
-  assert.equal(calls, 1)
-})
-
+afterEach(() => useSwapTransactionStore.setState({ pendingSubmissions: {}, swapTransactions: {} }))
 test('a preparation RPC timeout cannot leave an uncertain broadcast marker', async () => {
   const ctx = { ...calldataContext('0x', { name: 'ETHEREUM_MAINNET' }), swapData: { id: 'prepare-timeout', metadata: {} } }
   await assert.rejects(executeWalletTransfer(ctx, async props => {
-    props.onSubmissionStateChange('preparing')
+    props.onSubmissionStateChange?.('preparing')
     throw new Error('RPC timeout')
   }), /RPC timeout/)
   assert.equal(useSwapTransactionStore.getState().pendingSubmissions['prepare-timeout'], undefined)
@@ -279,37 +242,26 @@ for (const phase of [undefined, 'preparing', 'not_submitted']) test(`a definitiv
   const id = `definite-${phase}`
   const ctx = { ...calldataContext('0x', { name: 'ETHEREUM_MAINNET' }), swapData: { id, metadata: {} } }
   await assert.rejects(executeWalletTransfer(ctx, async props => {
-    if (phase) props.onSubmissionStateChange(phase)
+    if (phase) props.onSubmissionStateChange?.(phase)
     throw new Error('RPC timeout')
   }), /RPC timeout/)
   assert.equal(useSwapTransactionStore.getState().pendingSubmissions[id], undefined)
 })
 
-test('late preparing progress cannot downgrade an uncertain submitted request', async () => {
-  const id = 'late-preparation'
-  const ctx = { ...calldataContext('0x', { name: 'ETHEREUM_MAINNET' }), swapData: { id, metadata: {} } }
-  await assert.rejects(executeWalletTransfer(ctx, async props => {
-    props.onSubmissionStateChange('submitting')
-    props.onSubmissionStateChange('preparing')
-    throw new Error('Response timeout')
-  }), /Response timeout/)
-  assert.equal(useSwapTransactionStore.getState().pendingSubmissions[id], true)
-})
-
-test('a timeout after refreshing an expired request also requires reconciliation', async () => {
+test('a timeout after refreshing an expired request preserves the wallet error', async () => {
   const id = 'refreshed-timeout'
   const ctx = { ...calldataContext('original', { name: 'STELLAR_MAINNET' }), swapData: { id, metadata: {} },
     layerswapApiClient: { GetDepositActionsAsync: async () => ({ data: [{ type: 'transfer', amount: 1, to_address: 'deposit', call_data: 'fresh' }] }) },
   }
   await assert.rejects(executeWalletTransfer(ctx, async props => {
     if (props.callData === 'original') throw Object.assign(new Error('Expired'), { name: ActionMessageType.TransactionExpired })
-    props.onSubmissionStateChange('submitting')
+    props.onSubmissionStateChange?.('submitting')
     throw new Error('Response timeout')
   }), /Response timeout/)
-  assert.equal(useSwapTransactionStore.getState().pendingSubmissions[id], true)
+  assert.equal(useSwapTransactionStore.getState().pendingSubmissions[id], undefined)
 })
 
-for (const error of [Object.assign(new Error('HTTP 429'), { code: 4200 }), new Error('Failed to fetch')]) {
+for (const error of [Object.assign(new Error('HTTP 429'), { code: 4200 }), new Error('Failed to fetch'), new Error('RPC timeout')]) {
   test(`an unphased preparation failure remains retryable: ${error.message}`, async () => {
     const id = `unphased-${error.message}`
     const ctx = { ...calldataContext('0x', { name: 'SOLANA_MAINNET' }), swapData: { id, metadata: {} } }
@@ -321,3 +273,56 @@ for (const error of [Object.assign(new Error('HTTP 429'), { code: 4200 }), new E
     assert.equal(calls, 2)
   })
 }
+
+test('native final fee reaches recovery without marking preparation as submitted', async () => {
+  const id = 'contract-budget'
+  const ctx = { ...calldataContext('0x', { name: 'ETHEREUM_MAINNET' }), swapData: { id, metadata: {} } }
+  let received
+  const fee = { gas: 0.00012, token: { symbol: 'ETH' } }
+  await assert.rejects(executeWalletTransfer({ ...ctx, onFeeEstimate: value => { received = value } }, async props => {
+    props.onSubmissionStateChange?.('preparing')
+    props.onFeeEstimate(fee)
+    throw Object.assign(new Error('Insufficient funds'), { code: 'INSUFFICIENT_FUNDS' })
+  }), /Insufficient funds/)
+  assert.equal(received, fee)
+  assert.equal(useSwapTransactionStore.getState().pendingSubmissions[id], undefined)
+})
+
+for (const failure of ['timeout', 'network', 'unknown', 'missing-hash', 'unphased-missing-hash']) test(`ambiguous submitting ${failure} does not trigger status lookup or another wallet request`, async () => {
+  const id = `ambiguous-${failure}`
+  let sends = 0, checks = 0
+  const ctx = {
+    ...calldataContext('0x', { name: 'ETHEREUM_MAINNET' }), swapData: { id, metadata: {} },
+    layerswapApiClient: { GetSwapAsync: async () => { checks++; return { data: { swap: { id, transactions: [] } } } } },
+  }
+  await assert.rejects(executeWalletTransfer(ctx, async props => {
+    sends++
+    if (failure !== 'unphased-missing-hash') props.onSubmissionStateChange?.('submitting')
+    if (failure.endsWith('missing-hash')) return undefined
+    throw new Error(failure === 'timeout' ? 'Wallet timeout' : failure === 'network' ? 'Failed to fetch' : 'Unexpected wallet response')
+  }), error => error.message === (failure.endsWith('missing-hash') ? 'Wallet returned no transaction hash' : failure === 'timeout' ? 'Wallet timeout' : failure === 'network' ? 'Failed to fetch' : 'Unexpected wallet response'))
+  assert.equal(sends, 1)
+  assert.equal(checks, 0)
+})
+
+for (const failure of [Object.assign(new Error('User rejected request'), { code: 4001 }), new Error('Insufficient funds'), new Error('Execution reverted')]) test(`definitive submitting failure stays an ordinary error: ${failure.message}`, async () => {
+  const ctx = { ...calldataContext('0x', { name: 'ETHEREUM_MAINNET' }),
+    layerswapApiClient: { GetSwapAsync: () => assert.fail('No reconciliation') },
+  }
+  await assert.rejects(executeWalletTransfer(ctx, async props => {
+    props.onSubmissionStateChange?.('submitting')
+    throw failure
+  }), error => error === failure)
+})
+
+for (const status of ['pending', 'completed']) test(`a recorded ${status} hash resumes locally without a wallet or API request`, async () => {
+  const id = `known-${status}`
+  useSwapTransactionStore.getState().setSwapTransaction(id, status, 'recorded-hash')
+  let successes = 0
+  const ctx = { ...calldataContext('0x', { name: 'ETHEREUM_MAINNET' }),
+    swapData: { id, metadata: {} }, depositActions: [], onSuccess: () => { successes++ },
+    layerswapApiClient: { GetSwapAsync: () => assert.fail('No status request') },
+  }
+  assert.equal(await executeWalletTransfer(ctx, () => assert.fail('No wallet request')), 'recorded-hash')
+  assert.equal(successes, 1)
+})
