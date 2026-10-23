@@ -1,5 +1,12 @@
 # @layerswap/wallet-imtbl-passport
 
+## 2.6.0
+
+### Patch Changes
+
+- Updated dependencies
+  - @layerswap/wallet-core@2.6.0
+
 ## 2.5.1
 
 ### Patch Changes

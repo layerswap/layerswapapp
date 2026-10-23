@@ -1,5 +1,25 @@
 # @layerswap/wallets
 
+## 2.6.0
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies
+  - @layerswap/wallet-evm@2.6.0
+  - @layerswap/widget-types@2.6.0
+  - @layerswap/wallet-core@2.6.0
+  - @layerswap/wallet-bitcoin@2.6.0
+  - @layerswap/wallet-fuel@2.6.0
+  - @layerswap/wallet-imtbl-passport@2.6.0
+  - @layerswap/wallet-paradex@2.6.0
+  - @layerswap/wallet-starknet@2.6.0
+  - @layerswap/wallet-stellar@2.6.0
+  - @layerswap/wallet-svm@2.6.0
+  - @layerswap/wallet-ton@2.6.0
+  - @layerswap/wallet-tron@2.6.0
+  - @layerswap/utils@2.6.0
+
 ## 2.5.1
 
 ### Patch Changes
