@@ -2,20 +2,17 @@
   position: sticky;
   top: 0;
   z-index: 30;
-  border-bottom: 1px solid #333439;
-  background: #17181b;
-  color: #fff;
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.inner {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 24px;
   min-height: 60px;
-  padding-block: 10px;
+  padding: 10px 24px;
+  border-bottom: 1px solid #333439;
+  background: #17181b;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .identity,
@@ -110,8 +107,9 @@
 }
 
 @media (max-width: 900px) {
-  .inner {
+  .toolbar {
     gap: 16px;
+    padding-inline: 18px;
   }
 
   .description {
@@ -120,9 +118,10 @@
 }
 
 @media (max-width: 620px) {
-  .inner {
+  .toolbar {
     grid-template-columns: 1fr auto;
     gap: 8px 12px;
+    padding: 10px 16px;
   }
 
   .identity {
