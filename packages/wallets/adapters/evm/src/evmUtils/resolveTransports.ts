@@ -31,7 +31,11 @@ export const resolveTransports = (
 }
 
 /**
- * Creates a fallback transport from an array of node URLs
+ * Creates a fallback transport from an array of node URLs.
+ * Explicit retryCount also controls retries of the entire fallback cycle.
+ * With retryCount: 0 each eligible node is tried once, without extra cycles.
+ * Undefined retains viem's default three retries (up to four cycles).
+ * This applies to balance providers as well as transfer preparation.
  * @param nodes - Array of RPC node URLs
  * @param options - Optional transport configuration
  * @returns Fallback transport wrapping all HTTP transports
@@ -40,6 +44,6 @@ export const resolveFallbackTransport = (
     nodes: string[],
     options?: TransportOptions
 ) => {
-    return fallback(resolveTransports(nodes, options))
+    return fallback(resolveTransports(nodes, options), { retryCount: options?.retryCount })
 }
 

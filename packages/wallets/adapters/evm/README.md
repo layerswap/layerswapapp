@@ -117,6 +117,22 @@ All EVM-compatible chains including:
 - Base
 - And many more L2s
 
+## RPC preparation and retries
+
+Transfer preparation allows up to five seconds for application RPC reads, then
+up to five seconds for checked wallet reads. If optional provider or chain-ID
+probes fail with an unavailable, unclassified, or internal RPC error, the wallet
+can prepare the requested transaction itself. Wallet rejection, authorization,
+disconnection, and pending-request errors remain actionable failures. Transaction
+estimation reverts and insufficient-funds errors also propagate.
+
+The shared fallback transport now forwards an explicit `retryCount` to viem's
+outer fallback cycle. This also affects balance providers that supply retry
+options: `retryCount: 0` tries each eligible RPC once without additional cycles.
+Leaving it undefined retains viem's default three retries, or up to four cycles.
+Transfer preparation explicitly disables retries and uses a 1.5-second timeout
+per HTTP request within its five-second application-read budget.
+
 ## Documentation
 
 For detailed setup instructions, configuration options, and usage examples, see the [EVM Wallet Provider documentation](https://docs.layerswap.io/integration/UI/Widget/WalletManagement/EVMProvider).

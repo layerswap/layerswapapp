@@ -65,9 +65,9 @@ for (const legacy of [true, false]) test(`fee estimation preserves units and L1 
         '../NetworkSettings': { default: { KnownSettings: {} } },
     })
     const result = await estimateTransferFee({ name: 'BOB', metadata: { evm_oracle_contract: '0xoracle' } }, request)
-    assert.equal(result.gas, 27600n)
-    assert.equal(result.fee, 27600n * (legacy ? 50n : 100n) + 12345n)
-    assert.deepEqual(executionRequest, { ...request, ...(legacy ? { gasPrice: 50n } : { maxFeePerGas: 100n, maxPriorityFeePerGas: 1n }) })
+    assert.equal(result.gas, 23000n)
+    assert.equal(result.fee, 23000n * (legacy ? 50n : 100n) + 12345n)
+    assert.deepEqual(executionRequest, { ...request, ...(legacy ? { gasPrice: 50n } : { maxFeePerGas: 100n, maxPriorityFeePerGas: 1n }), stateOverride: [{ address: request.account, balance: request.value + (legacy ? 50n : 100n) * 60_000_000n + 1n }] })
     assert.deepEqual(l1Request, { ...request, chain: undefined, gasPriceOracleAddress: '0xoracle' })
 })
 
@@ -152,7 +152,7 @@ test('final estimation uses the supplied chain-bound read client and requires no
         account: params.selectedWallet.address, to: params.depositAddress, data: '0x', value: 1n,
     }, walletClient)
     assert.equal(result.client, walletClient)
-    assert.equal(result.fee, 2536800n)
+    assert.equal(result.fee, 2114000n)
     assert.deepEqual(calls, ['block'])
 })
 
@@ -181,15 +181,16 @@ for (const failure of [undefined, 'network_error', 'timeout', 'unsupported_metho
             assert.equal(actual, config); return { executeTransfer: props => build(props, connector) }
         } },
         './transactionBuilder': { transactionBuilder: async (props, client) => {
-            assert.equal(props, request); builds++;
+            assert.deepEqual({ ...props, onFeeEstimate: undefined }, { ...request, onFeeEstimate: undefined }); builds++;
+            if (!client) return 'hash'
             if (client === readClient && failure) throw original
             assert.equal(client, failure ? walletClient : readClient); return 'hash'
         } },
     })
     const fallback = failure && failure !== 'insufficient_funds'
-    if (failure && (!fallback || walletChain !== 60808)) await assert.rejects(createEvmTransfer().executeTransfer(request), error => error === original)
+    if (failure && !fallback) await assert.rejects(createEvmTransfer().executeTransfer(request), error => error === original)
     else assert.equal(await createEvmTransfer().executeTransfer(request), 'hash')
-    assert.equal(builds, fallback && walletChain === 60808 ? 2 : 1)
+    assert.equal(builds, fallback ? 2 : 1)
     assert.equal(walletReads, fallback ? 1 : 0)
 })
 
@@ -249,4 +250,210 @@ for (const outcome of ['affordable', 'exact-balance', 'insufficient', 'balance-e
         assert.equal(reported, undefined)
         assert.deepEqual(events, ['balance'])
     }
+})
+
+for (const legacy of [true, false]) test(`real fee helper exposes contract adjustment despite RPC affordability cap: legacy=${legacy}`, async () => {
+    const native = { symbol: 'ETH', decimals: 18 }
+    const balance = 1000000000000000n
+    let reported
+    const { estimateTransferFee } = load('../src/gasProviders/estimateTransferFee.ts', {
+        '../evmUtils/resolveChain': {}, '../evmUtils/resolveTransports': {},
+        '../NetworkSettings': { default: { KnownSettings: {} } },
+    })
+    const client = {
+        getBlock: async () => ({ baseFeePerGas: legacy ? null : 1n }),
+        getGasPrice: async () => 1000000000n,
+        estimateFeesPerGas: async () => ({ maxFeePerGas: 1000000000n, maxPriorityFeePerGas: 1n }),
+        estimateGas: async tx => {
+            assert.equal(tx.value, 974296000000000n, 'preserve payable contract execution')
+            assert.equal(tx.data, params.callData)
+            const cap = tx.maxFeePerGas ?? tx.gasPrice ?? 1000000000n
+            assert.ok(cap > 0n)
+            const simulatedBalance = tx.stateOverride?.[0].balance ?? balance
+            if (cap && (simulatedBalance - tx.value) / cap < 100000n) throw new Error('gas required exceeds allowance')
+            return 100000n
+        },
+        getBalance: async () => balance,
+    }
+    const { transactionBuilder } = load('../src/transferProvider/transactionBuilder.ts', {
+        '../gasProviders/estimateTransferFee': { estimateTransferFee },
+    })
+    await assert.rejects(transactionBuilder({ ...params, amount: '0.000974296', network: { ...params.network, token: native },
+        onFeeEstimate: fee => { reported = fee },
+    }, client), error => error.code === 'INSUFFICIENT_FUNDS')
+    assert.deepEqual(reported, { gas: 0.0001, token: native })
+})
+
+for (const walletFailure of ['unsupported_method', 'network_error', 'insufficient_funds', 'contract_reverted']) test(`wallet read fallback preserves semantic failures: ${walletFailure}`, async () => {
+    const { createEvmTransfer } = load('../src/transferProvider/createEvmTransfer.ts', {
+        viem: { createPublicClient: ({ transport }) => transport, custom: () => 'wallet' },
+        '@layerswap/wallet-core/errors': { normalizeWalletErrorCode: error => error.message },
+        '../evmUtils/resolveChain': { default: () => ({ id: 60808 }) },
+        '../evmUtils/resolveTransports': { resolveFallbackTransport: (_, options) => {
+            assert.deepEqual(options, { retryCount: 0, timeoutMs: 1500 }); return 'app'
+        } },
+        '../service/getEvmConfig': { getEvmConfig: () => ({}) },
+        './createEVMTransferProvider': { createEVMTransferProvider: (_, __, build) => ({ executeTransfer: props => build(props, {
+            getProvider: async () => ({ request: async () => '0xed88' }),
+        }) }) },
+        './transactionBuilder': { transactionBuilder: async (_, client) => {
+            if (client === 'app') throw new Error('network_error')
+            if (client === 'wallet') throw new Error(walletFailure)
+            return 'wallet-prepared-intent'
+        } },
+    })
+    const result = createEvmTransfer().executeTransfer(params)
+    if (['insufficient_funds', 'contract_reverted'].includes(walletFailure)) await assert.rejects(result, { message: walletFailure })
+    else assert.equal(await result, 'wallet-prepared-intent')
+})
+
+test('hung read phases expire and late fee estimates cannot update the active attempt', async t => {
+    t.mock.timers.enable({ apis: ['setTimeout'] })
+    const late = []
+    let adjustments = 0
+    const { createEvmTransfer } = load('../src/transferProvider/createEvmTransfer.ts', {
+        viem: { createPublicClient: ({ transport }) => transport, custom: () => 'wallet' },
+        '@layerswap/wallet-core/errors': { normalizeWalletErrorCode: error => error.name === 'TimeoutError' ? 'timeout' : 'unknown_error' },
+        '../evmUtils/resolveChain': { default: () => ({ id: 60808 }) },
+        '../evmUtils/resolveTransports': { resolveFallbackTransport: () => 'app' },
+        '../service/getEvmConfig': { getEvmConfig: () => ({}) },
+        './createEVMTransferProvider': { createEVMTransferProvider: (_, __, build) => ({ executeTransfer: props => build(props, {
+            getProvider: async () => ({ request: async () => '0xed88' }),
+        }) }) },
+        './transactionBuilder': { transactionBuilder: async (props, client) => {
+            if (!client) return 'wallet-prepared-intent'
+            return new Promise(resolve => late.push(() => { props.onFeeEstimate({ gas: 1 }); resolve('stale') }))
+        } },
+    })
+    const result = createEvmTransfer().executeTransfer({ ...params, onFeeEstimate: () => { adjustments++ } })
+    t.mock.timers.tick(5000)
+    for (let i = 0; i < 20; i++) await Promise.resolve()
+    assert.equal(late.length, 2)
+    t.mock.timers.tick(5000)
+    assert.equal(await result, 'wallet-prepared-intent')
+    late.forEach(resolve => resolve())
+    assert.equal(adjustments, 0)
+})
+
+test('Max probe can price gas when the account cannot afford one fee', async () => {
+    const native = { symbol: 'ETH', decimals: 18 }
+    const { estimateTransferFee } = load('../src/gasProviders/estimateTransferFee.ts', {
+        '../evmUtils/resolveChain': { default: () => ({}) },
+        '../evmUtils/resolveTransports': { resolveFallbackTransport: () => ({}) },
+        '../NetworkSettings': { default: { KnownSettings: {} } },
+        viem: { createPublicClient: () => ({
+            getBlock: async () => ({ baseFeePerGas: null }),
+            getGasPrice: async () => 1000000000n,
+            estimateGas: async tx => {
+                assert.equal(tx.value, 0n)
+                const balance = 1n
+                const feeCap = tx.gasPrice ?? tx.maxFeePerGas ?? 1000000000n
+                assert.ok(feeCap > 0n)
+                const simulatedBalance = tx.stateOverride?.[0].balance ?? balance
+                if (feeCap && simulatedBalance / feeCap < 21512n) throw new Error('gas required exceeds allowance')
+                return 21512n
+            },
+        }) },
+    })
+    const { EVMGasProvider } = load('../src/gasProviders/evmGasProvider.ts', {
+        './estimateTransferFee': { estimateTransferFee },
+        '../NetworkSettings': { default: { KnownSettings: {} } },
+    })
+    const fee = await new EVMGasProvider().getGas({ address: params.selectedWallet.address,
+        network: { chain_id: '1', name: 'ETHEREUM_MAINNET', token: native }, token: native,
+    })
+    assert.equal(fee.gas, 0.000021512)
+})
+
+for (const message of ['state overrides are not supported', 'too many arguments, want at most 2']) test(`unsupported overrides retry real fees safely: ${message}`, async () => {
+    const requests = []
+    const original = new Error('execution reverted: state overrides are not supported')
+    let revert = false
+    const { estimateTransferFee } = load('../src/gasProviders/estimateTransferFee.ts', {
+        '../NetworkSettings': { default: { KnownSettings: {} } },
+        '../evmUtils/resolveChain': {}, '../evmUtils/resolveTransports': {},
+    })
+    const client = {
+        getBlock: async () => ({ baseFeePerGas: null }), getGasPrice: async () => 100n,
+        estimateGas: async tx => {
+            requests.push(tx)
+            assert.equal(tx.gasPrice, 100n)
+            assert.equal(tx.value, 123n)
+            if (revert) throw original
+            if (tx.stateOverride) throw new Error(message)
+            return 21000n
+        },
+    }
+    const request = { account: params.selectedWallet.address, to: params.depositAddress, value: 123n, data: '0x1234' }
+    assert.equal((await estimateTransferFee({ name: 'test' }, request, client)).gas, 21000n)
+    assert.equal(requests.length, 2)
+    assert.equal(requests[1].stateOverride, undefined)
+    revert = true
+    await assert.rejects(estimateTransferFee({ name: 'test' }, request, client), error => error === original)
+    assert.equal(requests.length, 3, 'ordinary reverts are never retried without overrides')
+})
+
+test('unsupported override never converts an unaffordable request to a zero-fee estimate', async () => {
+    let calls = 0
+    const insufficient = Object.assign(new Error('gas required exceeds allowance (20000)'), { code: -32000 })
+    const { estimateTransferFee } = load('../src/gasProviders/estimateTransferFee.ts', {
+        '../NetworkSettings': { default: { KnownSettings: {} } },
+        '../evmUtils/resolveChain': {}, '../evmUtils/resolveTransports': {},
+    })
+    await assert.rejects(estimateTransferFee({ name: 'test' }, {
+        account: params.selectedWallet.address, to: params.depositAddress, value: 123n, data: '0x1234',
+    }, {
+        getBlock: async () => ({ baseFeePerGas: null }), getGasPrice: async () => 100n,
+        estimateGas: async tx => {
+            calls++
+            assert.equal(tx.gasPrice, 100n)
+            if (tx.stateOverride) throw new Error('state overrides are not supported')
+            throw insufficient
+        },
+    }), error => error === insufficient)
+    assert.equal(calls, 2)
+})
+
+for (const stage of ['provider', 'chainId', 'estimate']) for (const [label, failure, optionalFallback] of [
+    ['unknown', new Error('Probe unavailable without a classified code'), true],
+    ['internal RPC', Object.assign(new Error('Internal error'), { code: -32603 }), true],
+    ['network', Object.assign(new Error('Network failure'), { code: 'NETWORK_ERROR' }), true],
+    ['unsupported', Object.assign(new Error('Method unavailable'), { code: -32601 }), true],
+    ['rejected', Object.assign(new Error('User rejected'), { code: 4001 }), false],
+    ['unauthorized', Object.assign(new Error('Unauthorized'), { code: 4100 }), false],
+    ['disconnected', Object.assign(new Error('Disconnected'), { code: 4900 }), false],
+    ['pending', Object.assign(new Error('Already pending'), { code: -32002 }), false],
+    ['invalid parameters', Object.assign(new Error('Invalid params'), { code: -32602 }), false],
+    ['insufficient funds', Object.assign(new Error('Insufficient funds'), { code: 'INSUFFICIENT_FUNDS' }), false],
+    ['revert', Object.assign(new Error('Execution reverted'), { code: 'CALL_EXCEPTION' }), false],
+]) test(`optional probes retain actionable errors separately from estimation: ${stage}, ${label}`, async () => {
+    let unpricedBuilds = 0, walletEstimates = 0
+    const { createEvmTransfer } = load('../src/transferProvider/createEvmTransfer.ts', {
+        viem: { createPublicClient: ({ transport }) => transport, custom: () => 'wallet' },
+        '../evmUtils/resolveChain': { default: () => ({ id: 60808 }) },
+        '../evmUtils/resolveTransports': { resolveFallbackTransport: () => 'app' },
+        '../service/getEvmConfig': { getEvmConfig: () => ({}) },
+        './createEVMTransferProvider': { createEVMTransferProvider: (_, __, build) => ({ executeTransfer: props => build(props, {
+            getProvider: async () => {
+                if (stage === 'provider') throw failure
+                return { request: async ({ method }) => {
+                    assert.equal(method, 'eth_chainId')
+                    if (stage === 'chainId') throw failure
+                    return '0xed88'
+                } }
+            },
+        }) }) },
+        './transactionBuilder': { transactionBuilder: async (_, client) => {
+            if (client === 'app') throw Object.assign(new Error('App RPC unavailable'), { code: 'NETWORK_ERROR' })
+            if (client === 'wallet') { walletEstimates++; throw failure }
+            unpricedBuilds++
+            return { chainId: 60808, intent: true }
+        } },
+    })
+    const fallback = optionalFallback && (stage !== 'estimate' || label === 'network' || label === 'unsupported')
+    const result = createEvmTransfer().executeTransfer(params)
+    if (fallback) assert.deepEqual(await result, { chainId: 60808, intent: true })
+    else await assert.rejects(result, error => error === failure)
+    assert.equal(unpricedBuilds, fallback ? 1 : 0)
+    assert.equal(walletEstimates, stage === 'estimate' ? 1 : 0)
 })

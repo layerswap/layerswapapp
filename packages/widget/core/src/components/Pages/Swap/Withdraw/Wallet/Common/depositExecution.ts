@@ -134,7 +134,6 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
     }
 
     setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, hash)
-    submissionStore.clearPendingSubmission(swapData.id)
     onSuccess()
     useDepositSignatureStore.getState().removeDepositSignature(swapData.id)
     try {
