@@ -148,7 +148,9 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
 
     if (!loaded) return null;
 
-    const container = (isMobile && AppSettings.ThemeData?.enablePortal) ? undefined : document.getElementById('widget');
+    // render the non dismissible easy deposit popup on mobileunder the widget header so the tabs stay visible
+    const widgetBody = isMobileWithoutPortal && !dismissible ? document.getElementById('widget_body') : null;
+    const container = widgetBody ?? ((isMobile && AppSettings.ThemeData?.enablePortal) ? undefined : document.getElementById('widget'));
 
     return (
         <Drawer.Root
@@ -191,7 +193,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                 )}
                 <Drawer.Content asChild>
                 <DrawerSurfaceView
-                    fitHeight={isFitHeightMode} fullHeight={snap === 1} portal={AppSettings.ThemeData?.enablePortal === true} className={className}
+                    fitHeight={isFitHeightMode} fullHeight={snap === 1} portal={AppSettings.ThemeData?.enablePortal === true && !widgetBody} className={className}
                     data-testid="content" data-fit-height={isFitHeightMode ? 'true' : undefined}
                     style={parked ? { transform: 'translate3d(0, 100%, 0)', animation: 'none', transition: 'none' } : undefined}
                 >
