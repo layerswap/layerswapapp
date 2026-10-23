@@ -23,6 +23,7 @@ const hooks = registerHooks({
   resolve(specifier, context, nextResolve) {
     if (specifier.endsWith('/context/swapAccounts')) return { url: 'data:text/javascript,export const useSelectedAccount = () => undefined', shortCircuit: true }
     if (specifier === './AmountPresetController') return { url: 'data:text/javascript,export default () => null', shortCircuit: true }
+    if (specifier === './AtomicBatchDiscovery') return { url: 'data:text/javascript,export default () => null', shortCircuit: true }
     if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
       return nextResolve(`${specifier}.js`, context)
     }

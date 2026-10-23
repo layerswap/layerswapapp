@@ -153,6 +153,7 @@ test('exact gas loading preserves the pending wallet request and its execution l
     const swapHooks = {
         useSwapDataState: () => state,
         useSwapDataUpdate: () => ({
+            reportWalletActionFeedback: () => noop,
             async createSwap() {
                 return {
                     swap: {
@@ -183,17 +184,29 @@ test('exact gas loading preserves the pending wallet request and its execution l
         useSwapTransactionStore: (s) =>
             s({
                 swapTransactions: {},
+                pendingSubmissions: {},
                 stepTransactions: {},
                 setSwapTransaction: noop,
             }),
         useGaslessAuthorizationStore: (s) => s({ authorizations: {} }),
         useDepositSignatureStore: (s) => s({ signatures: {} }),
     };
+    for (const useStore of Object.values(stores)) {
+        useStore.getState = () => useStore(state => state);
+    }
+    const gaslessState = { gaslessEnabled: false, gaslessUnavailable: false };
+    const useGaslessPreferenceStore = Object.assign(selector => selector(gaslessState), { getState: () => gaslessState });
     const imports = {
+        '@/stores/swapTransactionStore': stores,
+        '@/lib/resolvers/resolverService': {},
+        '@/components/utils/resolveSwapFlow': loadSource('components/utils/resolveSwapFlow.ts', { '../../helpers/depositActions.js': helpers }),
+        '@/lib/atomicBatchExecution': { executeAtomicBatch: () => assert.fail('standard transfer cannot submit an atomic batch') },
         '@/lib/amountPresets': { AmountPresetChangedError: class extends Error {}, isAmountPreset: () => false },
         '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput: noop } },
         '@layerswap/wallet-core': loadSource('../../../wallets/core/src/lib/walletConnect/walletRequestStore.ts'),
-        '../../Presentation/WalletRequestRecovery': { WalletRequestRecovery: () => null },
+        '../../Presentation/WalletRequestRecovery': loadSource(base + 'Presentation/WalletRequestRecovery.tsx', {
+            '@layerswap/wallet-core': loadSource('../../../wallets/core/src/lib/walletConnect/walletRequestStore.ts'),
+        }),
         '@/context/swap': swapHooks,
         '@/context/settings': {
             useSettingsState: () => ({ networks: [network] }),
@@ -235,7 +248,7 @@ test('exact gas loading preserves the pending wallet request and its execution l
                     refresh: async () => [action],
                 }),
             },
-            '@/helpers/swapProgress': { hasSwapExecutionProgress: () => false },
+            '@/helpers/swapProgress': { hasSwapExecutionProgress: () => false, hasUnacknowledgedWalletAction: () => false },
             '@/helpers/gasless': {
                 isGaslessCapableRoute: () => false,
                 isGaslessDepositWorkflow: () => false,
@@ -257,8 +270,7 @@ test('exact gas loading preserves the pending wallet request and its execution l
             '@/lib/ErrorHandler': { ErrorHandler: noop },
             '@/lib/fees': { resolvePriceImpactValues: noop },
             '@/stores/gaslessPreferenceStore': {
-                useGaslessPreferenceStore: (s) =>
-                    s({ gaslessEnabled: false, gaslessUnavailable: false }),
+                useGaslessPreferenceStore,
             },
             '@/stores/swapTransactionStore': stores,
             '@layerswap/utils': { sleep: noop },

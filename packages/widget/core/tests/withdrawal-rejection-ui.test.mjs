@@ -7,15 +7,24 @@ import { act, createElement } from 'react'
 import { userRejectedError } from '@layerswap/wallet-core/errors'
 import { createSwapContext } from './helpers/swap-context.mjs'
 
-const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://widget.test' })
+const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://widget.test', pretendToBeVisual: true })
 const previous = Object.getOwnPropertyDescriptors(globalThis)
-for (const [key, value] of Object.entries({ window: dom.window, document: dom.window.document, localStorage: dom.window.localStorage, IS_REACT_ACT_ENVIRONMENT: true })) {
+const surfaces = {
+  window: dom.window, document: dom.window.document, localStorage: dom.window.localStorage,
+  HTMLElement: dom.window.HTMLElement, Element: dom.window.Element, SVGElement: dom.window.SVGElement,
+  getComputedStyle: dom.window.getComputedStyle,
+  requestAnimationFrame: dom.window.requestAnimationFrame.bind(dom.window),
+  cancelAnimationFrame: dom.window.cancelAnimationFrame.bind(dom.window),
+  IS_REACT_ACT_ENVIRONMENT: true,
+}
+for (const [key, value] of Object.entries(surfaces)) {
   Object.defineProperty(globalThis, key, { configurable: true, writable: true, value })
 }
+dom.window.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} })
 const fixtureUrl = 'data:text/javascript,' + encodeURIComponent(`
   export const state = { events: [], errors: [] }
   export const useSwapDataState = () => ({ swapDetails: state.swapDetails, depositActionsResponse: state.depositActions })
-  export const useSwapDataUpdate = () => ({ setSwapId(id) { state.selectedSwapId = id },
+  export const useSwapDataUpdate = () => ({ reportWalletActionFeedback() { return () => {} }, setSwapId(id) { state.selectedSwapId = id },
     setWalletActionExecuting(value) { state.executionUpdates.setWalletActionExecuting(value); state.executionLocks.push(value) },
     acquireWalletExecution() {
       const release = state.executionUpdates.acquireWalletExecution()
@@ -29,7 +38,7 @@ const fixtureUrl = 'data:text/javascript,' + encodeURIComponent(`
   export const useSettingsState = () => ({ networks: [], sourceRoutes: [] })
   export const useInitialSettings = () => ({})
   export const useWalletWithdrawalState = () => ({ onWalletWithdrawalSuccess() { state.successes++; state.onSuccess?.() } })
-  export const useSelectedAccount = () => ({ id: 'wallet', address: 'source' })
+  export const useSelectedAccount = () => ({ id: 'wallet', address: state.sourceAddress ?? 'source', provider: state.provider })
   export default () => ({ wallets: [{ id: 'wallet', address: 'source', providerName: 'test-wallet' }] })
   export const useTransfer = () => ({ executeTransfer: async (...args) => {
     state.transfers.push(args)
@@ -40,8 +49,9 @@ const fixtureUrl = 'data:text/javascript,' + encodeURIComponent(`
 `)
 const apiUrl = 'data:text/javascript,' + encodeURIComponent(`
   import { state } from ${JSON.stringify(fixtureUrl)}
-  export const BackendTransactionStatus = { Pending: 'pending', Failed: 'failed' }
-  export const TransactionType = { Input: 'input' }
+  export const BackendTransactionStatus = { Pending: 'pending', Failed: 'failed', Completed: 'completed', Initiated: 'initiated' }
+  export const TransactionStatus = { Pending: 'pending', Failed: 'failed', Completed: 'completed' }
+  export const TransactionType = { Input: 'input', Output: 'output', Refuel: 'refuel', Refund: 'refund' }
   export default class {
     GetSwapAsync(...args) { state.refreshes.push(args); return state.getSwap(...args) }
     GetDepositActionsAsync(...args) { state.actionRefreshes.push(args); return state.getDepositActions(...args) }
@@ -61,7 +71,7 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
 after(() => {
   hooks.deregister()
   dom.window.close()
-  for (const key of ['window', 'document', 'localStorage', 'IS_REACT_ACT_ENVIRONMENT']) {
+  for (const key of Object.keys(surfaces)) {
     if (previous[key]) Object.defineProperty(globalThis, key, previous[key])
     else delete globalThis[key]
   }
@@ -80,7 +90,11 @@ function ExecutionProbe() {
 Object.defineProperty(state, 'executing', { get: () => !state.executionUpdates.canAdjustAmount() })
 const { useHyperliquidWithdrawal } = await import('../dist/esm/components/Pages/Swap/Withdraw/WithdrawalProviders/Hyperliquid/useHyperliquidWithdrawal.js')
 const { usePolymarketWithdrawal } = await import('../dist/esm/components/Pages/Swap/Withdraw/WithdrawalProviders/Polymarket/usePolymarketWithdrawal.js')
-const { useSwapTransactionStore } = await import('../dist/esm/stores/swapTransactionStore.js')
+const stores = await import('../dist/esm/stores/swapTransactionStore.js')
+const { useSwapTransactionStore } = stores
+const phases = await import('../dist/esm/components/utils/resolveSwapPhase.js')
+const { getExplorerUrl } = await import('../dist/esm/lib/address/explorerUrl.js')
+const { WalletExecutionTransition } = await import('../dist/esm/components/Pages/Swap/Withdraw/Presentation/WalletExecutionTransition.js')
 const providerExecutionUrl = new URL('../dist/esm/components/Pages/Swap/Withdraw/WithdrawalProviders/executeProviderWithdrawal.js', import.meta.url)
 const { executeProviderWithdrawal } = await import(providerExecutionUrl)
 const swapBasicData = {
@@ -90,9 +104,9 @@ const swapBasicData = {
 
 let unsubscribeStore, executionRoot
 beforeEach(async () => {
-  useSwapTransactionStore.setState({ swapTransactions: {}, stepTransactions: {}, pendingSubmissions: {} })
+  useSwapTransactionStore.setState(useSwapTransactionStore.getInitialState(), true)
   Object.assign(state, {
-    events: [], errors: [], transfers: [], published: [], successes: 0, error: undefined,
+    events: [], errors: [], transfers: [], published: [], successes: 0, error: undefined, sourceAddress: 'source', provider: undefined,
     refreshes: [], actionRefreshes: [], reconciled: [], freshAttempts: 0, creations: 0, selectedSwapId: 'swap-1',
     swapDetails: { id: 'swap-1' }, onSuccess: undefined, executionLocks: [],
     depositActions: [{ type: 'transfer', to_address: 'deposit', call_data: '0x', amount_in_base_units: '1000000' }],
@@ -103,8 +117,8 @@ beforeEach(async () => {
   })
   unsubscribeStore = useSwapTransactionStore.subscribe((current, previous) => {
     for (const [id, transaction] of Object.entries(current.swapTransactions)) {
-      if (transaction !== previous.swapTransactions[id]) {
-        state.published.push([id, transaction.status, transaction.hash])
+      if (transaction.hash && transaction.hash !== previous.swapTransactions[id]?.hash) {
+        state.published.push([id, transaction.hash])
       }
     }
   })
@@ -113,9 +127,22 @@ beforeEach(async () => {
 })
 afterEach(async () => { unsubscribeStore(); await act(() => executionRoot.unmount()) })
 
+test('a saved flow kind does not trigger reconciliation before the first withdrawal', async () => {
+  useSwapTransactionStore.getState().setSwapTransactionKind('swap-1', 'wallet-transfer')
+  const hash = await executeProviderWithdrawal({
+    swapId: 'swap-1', sourceAddress: 'source',
+    prepare: async () => 'prepared',
+    execute: async prepared => { assert.equal(prepared, 'prepared'); return 'submitted-hash' },
+    onReconcile: () => assert.fail('identity alone does not prove a submission'),
+  })
+  assert.equal(hash, 'submitted-hash')
+  assert.deepEqual(state.refreshes, [])
+  assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].kind, 'wallet-transfer')
+})
+
 async function reloadTransactionStore() {
   const persisted = localStorage.getItem('swapTransactions')
-  useSwapTransactionStore.setState({ swapTransactions: {}, stepTransactions: {}, pendingSubmissions: {} })
+  useSwapTransactionStore.setState(useSwapTransactionStore.getInitialState(), true)
   localStorage.setItem('swapTransactions', persisted)
   await useSwapTransactionStore.persist.rehydrate()
 }
@@ -179,7 +206,7 @@ for (const stage of ['preparation', 'signing']) {
 
 test('concurrent retries cannot both reconcile a failed withdrawal and submit again', async () => {
   const reconciliation = Promise.withResolvers()
-  useSwapTransactionStore.getState().setSwapTransaction('swap-1', 'failed', 'failed-withdrawal')
+  useSwapTransactionStore.getState().setSwapTransaction('swap-1', 'failed-withdrawal')
   useSwapTransactionStore.getState().markSubmissionPending('swap-1')
   state.getSwap = () => reconciliation.promise
   let preparations = 0
@@ -220,6 +247,32 @@ test('an unrelated backend failure cannot clear a pending submission without a r
   assert.equal(useSwapTransactionStore.getState().pendingSubmissions['swap-1'], true)
 })
 
+test('a successful hashless provider response resumes after reload without another wallet request', async () => {
+  const request = {
+    swapId: 'swap-1', sourceAddress: 'source', onReconcile: async () => {},
+    prepare: async () => 'prepared',
+    execute: async (_, onSubmissionStateChange) => {
+      onSubmissionStateChange('preparing')
+      return ''
+    },
+  }
+  assert.equal(await executeProviderWithdrawal(request), '')
+  const receipt = useSwapTransactionStore.getState().swapTransactions['swap-1']
+  assert.equal(receipt.providerSubmissionAccepted, true)
+  assert.equal(receipt.hash, undefined)
+  assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, {})
+  await reloadTransactionStore()
+  state.getSwap = async () => assert.fail('a successful submission does not depend on backend indexing')
+  assert.equal(await executeProviderWithdrawal({
+    ...request,
+    prepare: async () => assert.fail('the accepted request must be retained'),
+    execute: async () => assert.fail('never send the withdrawal twice'),
+  }), '')
+  assert.deepEqual(state.refreshes, [])
+  assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, {})
+  assert.deepEqual(useSwapTransactionStore.getState().swapTransactions['swap-1'], receipt)
+})
+
 test('recording a transaction clears its pending submission atomically and preserves other swaps', () => {
   const store = useSwapTransactionStore.getState()
   store.markSubmissionPending('swap-1')
@@ -230,13 +283,14 @@ test('recording a transaction clears its pending submission atomically and prese
     pending: current.pendingSubmissions['swap-1'], transaction: current.swapTransactions['swap-1'],
   }))
   try {
-    store.setSwapTransaction('swap-1', 'pending', 'hash')
+    store.setSwapTransaction('swap-1', 'hash')
     assert.equal(transitions.length, 1)
     assert.equal(transitions[0].pending, undefined)
     assert.equal(transitions[0].transaction.hash, 'hash')
     assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, { 'swap-2': true })
-    assert.deepEqual(JSON.parse(localStorage.getItem('swapTransactions')).state, {
-      swapTransactions: { 'swap-1': { hash: 'hash', status: 'pending', timestamp: transitions[0].transaction.timestamp } },
+    const receipts = JSON.parse(localStorage.getItem('swapTransactions')).state
+    assert.deepEqual(receipts, {
+      swapTransactions: { 'swap-1': { kind: 'transaction', hash: 'hash', timestamp: transitions[0].transaction.timestamp } },
       stepTransactions: {},
       pendingSubmissions: { 'swap-2': true },
     })
@@ -256,12 +310,12 @@ test('transaction cleanup does not discard an unresolved provider submission', (
 })
 
 test('existing persisted transactions hydrate with an empty pending submission map', async () => {
-  const transaction = { hash: 'existing-hash', status: 'pending', timestamp: 123 }
+  const transaction = { hash: 'existing-hash', timestamp: 123 }
   localStorage.setItem('swapTransactions', JSON.stringify({
     state: { swapTransactions: { 'swap-1': transaction } }, version: 0,
   }))
   await useSwapTransactionStore.persist.rehydrate()
-  assert.deepEqual(useSwapTransactionStore.getState().swapTransactions, { 'swap-1': transaction })
+  assert.deepEqual(useSwapTransactionStore.getState().swapTransactions, { 'swap-1': { kind: 'transaction', ...transaction } })
   assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, {})
   useSwapTransactionStore.getState().markSubmissionPending('swap-2')
   assert.equal(useSwapTransactionStore.getState().pendingSubmissions['swap-2'], true)
@@ -269,13 +323,99 @@ test('existing persisted transactions hydrate with an empty pending submission m
 
 async function mountWithdrawal(useWithdrawal, props = {}) {
   let result
+  let active = true
   function Probe() {
-    result = useWithdrawal({ swapId: 'swap-1', swapBasicData, refuel: false, ...props })
+    result = useWithdrawal({ swapId: 'swap-1', swapBasicData, refuel: false, ...props }, active)
     return null
   }
   const root = createRoot(document.createElement('div'))
   await act(async () => root.render(createElement(Probe)))
-  return { get result() { return result }, unmount: () => act(async () => root.unmount()) }
+  return { get result() { return result }, rerender: () => act(() => root.render(createElement(Probe))), setActive: value => { active = value; return act(() => root.render(createElement(Probe))); }, unmount: () => act(async () => root.unmount()) }
+}
+
+for (const [useWithdrawal, providerType] of [
+  [useHyperliquidWithdrawal, 'hyperliquid'], [usePolymarketWithdrawal, 'polymarket'],
+]) {
+  test(`${useWithdrawal.name} stays loading during the real exit transition and resumes processing after reload`, async () => {
+    const transfer = Promise.withResolvers()
+    const entered = Promise.withResolvers()
+    state.executeTransfer = async params => {
+      params.onSubmissionStateChange('preparing')
+      params.onSubmissionStateChange('submitting')
+      entered.resolve()
+      return transfer.promise
+    }
+    const details = { ...swapBasicData, source_network: { ...swapBasicData.source_network, type: providerType },
+      id: 'swap-1', status: 'user_transfer_pending', transactions: [], use_deposit_address: false }
+    let response = { data: { swap: details } }
+    const context = createSwapContext({
+      Client: class {}, getSwapId: () => 'swap-1', getAccount: () => undefined, stores,
+      swr: { default: () => ({}) },
+      overrides: {
+        '@/components/utils/resolveSwapPhase': phases,
+        '@/hooks/useSwapPolling': { useSwapPolling: () => ({ data: response, mutate() {} }) },
+      },
+    })
+    let observed, withdrawal
+    const buttonStates = []
+    function Controls() {
+      withdrawal = useWithdrawal({ swapId: 'swap-1', swapBasicData, refuel: false })
+      buttonStates.push(withdrawal.loading)
+      return createElement('button', { disabled: withdrawal.loading }, withdrawal.loading ? 'Withdrawing' : 'Withdraw')
+    }
+    function Screen() {
+      observed = context.useSwapDataState()
+      state.executionUpdates = context.useSwapDataUpdate()
+      return createElement(WalletExecutionTransition, {
+        controlsKey: observed.resolved.showWithdrawScreen ? 'withdraw' : 'processing',
+        controls: observed.resolved.showWithdrawScreen ? createElement(Controls) : null,
+        workflow: !observed.resolved.showWithdrawScreen ? createElement('output', null, 'Processing') : null,
+      })
+    }
+    const container = document.createElement('div')
+    const render = () => act(async () => executionRoot.render(createElement(context.SwapDataProvider, null, createElement(Screen))))
+    await act(async () => executionRoot.unmount())
+    executionRoot = createRoot(container)
+    await render()
+    assert.equal(container.querySelector('button')?.disabled, false)
+    let pending
+    try {
+      await act(async () => { pending = withdrawal.handleWithdraw(); await entered.promise })
+      assert.equal(container.querySelector('button')?.textContent, 'Withdrawing')
+      assert.equal(container.querySelector('button')?.disabled, true)
+      assert.equal(observed.resolved.phase, 'awaiting_user_deposit', 'an in-flight request is not accepted yet')
+      const submittingRenderCount = buttonStates.length
+      await act(async () => { transfer.resolve(''); await pending })
+      assert.equal(state.successes, 1)
+      assert.equal(container.querySelector('output')?.textContent, 'Processing')
+      assert.ok(container.querySelector('button'), 'the real exit transition retains the outgoing controls')
+      assert.equal(container.querySelector('button').disabled, true, 'the outgoing button stays disabled until its exit finishes')
+      assert.equal(container.querySelector('button').textContent, 'Withdrawing')
+      assert.equal(observed.resolved.phase, 'input_pending')
+      assert.equal(observed.flow.kind, 'specialized-wallet')
+      assert.ok(buttonStates.slice(submittingRenderCount).every(loading => loading), 'the active button never returns after acceptance')
+      assert.equal(state.executionUpdates.canAdjustAmount(), false, 'accepted withdrawals keep the submitted amount locked')
+      const receipt = useSwapTransactionStore.getState().swapTransactions['swap-1']
+      assert.equal(getExplorerUrl('https://explorer.test/tx/{0}', receipt.hash), '', 'no transaction link without a hash')
+
+      await act(async () => executionRoot.unmount())
+      await reloadTransactionStore()
+      executionRoot = createRoot(container)
+      await render()
+      assert.equal(container.textContent, 'Processing')
+      assert.equal(observed.resolved.phase, 'input_pending')
+      assert.equal(state.transfers.length, 1)
+      assert.equal(state.successes, 1, 'reopening does not replay submission success')
+      assert.equal(state.executionUpdates.canAdjustAmount(), false)
+
+      response = { data: { swap: { ...details, transactions: [{ type: 'input', status: 'completed',
+        transaction_hash: 'indexed-withdrawal', confirmations: 1, max_confirmations: 1 }] } } }
+      await render()
+      assert.equal(observed.resolved.phase, 'output_pending', 'backend confirmation continues the normal processing flow')
+    } finally {
+      await act(async () => { transfer.resolve(''); await pending })
+    }
+  })
 }
 
 test('Hyperliquid passes the deposit action amount and its token to the provider', async () => {
@@ -340,8 +480,9 @@ for (const reload of [false, true]) {
       assert.equal(state.creations, 0)
       assert.deepEqual(state.refreshes, [])
       assert.equal(state.successes, 1)
-      assert.deepEqual(state.published, [['swap-1', 'pending', '']])
+      assert.deepEqual(state.published, [])
       assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, {})
+      assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].providerSubmissionAccepted, true)
     } finally {
       await mounted.unmount()
     }
@@ -349,6 +490,57 @@ for (const reload of [false, true]) {
 }
 
 for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal]) {
+  for (const change of ['amount', 'destination']) {
+    test(`${useWithdrawal.name} prepares new instructions after changing the reviewed ${change}`, async () => {
+      state.swapDetails = undefined
+      const created = []
+      state.createSwap = async values => {
+        const id = `created-${created.length + 1}`
+        const action = { type: 'transfer', to_address: `${id}-deposit`, call_data: `0x${created.length + 1}`,
+          amount: Number(values.amount), amount_in_base_units: String(Number(values.amount) * 1_000_000) }
+        created.push({ id, values, action })
+        return { swap: { id }, deposit_actions: [action] }
+      }
+      state.getDepositActions = async id => ({ data: [created.find(swap => swap.id === id).action] })
+      state.error = userRejectedError()
+      const props = { swapId: undefined, swapBasicData: { ...swapBasicData, requested_amount: '10' } }
+      const mounted = await mountWithdrawal(useWithdrawal, props)
+      try {
+        await act(async () => mounted.result.handleWithdraw())
+        assert.equal(mounted.result.rejected, true)
+        assert.equal(created.length, 1)
+        assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, {})
+
+        // Adjust amount detaches the context ID while the Page 2 controller stays mounted.
+        props.swapBasicData = change === 'amount'
+          ? { ...props.swapBasicData, requested_amount: '5' }
+          : { ...props.swapBasicData, destination_address: 'another-recipient' }
+        await mounted.rerender()
+        state.executeTransfer = async params => {
+          params.onSubmissionStateChange('preparing')
+          params.onSubmissionStateChange('submitting')
+          return 'new-withdrawal-hash'
+        }
+        await act(async () => mounted.result.handleWithdraw())
+        assert.equal(created.length, 2)
+        const transfer = state.transfers.at(-1)[0]
+        assert.equal(transfer.swapId, 'created-2')
+        assert.equal(transfer.depositAddress, created[1].action.to_address)
+        assert.equal(transfer.amount, change === 'amount' ? 5 : 10)
+        assert.equal(created[1].values.destination_address, props.swapBasicData.destination_address)
+        if (useWithdrawal === useHyperliquidWithdrawal) {
+          assert.equal(transfer.amountInBaseUnits, created[1].action.amount_in_base_units)
+        } else {
+          assert.equal(transfer.callData, created[1].action.call_data)
+        }
+        assert.deepEqual(state.actionRefreshes, [], 'new drafts cannot refresh the rejected swap')
+        assert.equal(useSwapTransactionStore.getState().swapTransactions['created-2'].hash, 'new-withdrawal-hash')
+      } finally {
+        await mounted.unmount()
+      }
+    })
+  }
+
   test(`${useWithdrawal.name} remount retry cannot unlock the original pending wallet request`, async () => {
     const paused = Promise.withResolvers()
     const entered = Promise.withResolvers()
@@ -503,7 +695,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
         assert.equal(state.creations, 0)
         assert.equal(state.selectedSwapId, 'swap-1')
         assert.deepEqual(state.actionRefreshes, [['swap-1', 'source']], 'ambiguous retries do not prepare another withdrawal')
-        assert.deepEqual(state.published, [['swap-1', 'pending', 'accepted-withdrawal']])
+        assert.deepEqual(state.published, [['swap-1', 'accepted-withdrawal']])
         assert.equal(state.successes, 1)
         assert.equal(mounted.result.error, undefined)
         assert.equal(useSwapTransactionStore.getState().pendingSubmissions['swap-1'], undefined)
@@ -528,7 +720,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
   })
 
   test(`${useWithdrawal.name} reuses a submitted withdrawal after reloading the transaction store`, async () => {
-    state.executeTransfer = async () => ''
+    state.executeTransfer = async () => 'submitted-withdrawal'
     let mounted = await mountWithdrawal(useWithdrawal)
     try {
       await act(async () => mounted.result.handleWithdraw())
@@ -537,11 +729,14 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
       assert.deepEqual(useSwapTransactionStore.getState().pendingSubmissions, {})
       state.depositActions = undefined
       state.getDepositActions = async () => assert.fail('a submitted withdrawal does not need deposit instructions')
+      state.getSwap = async id => ({ data: { swap: { id, transactions: [
+        { type: 'input', status: 'pending', transaction_hash: 'submitted-withdrawal' },
+      ] } } })
       mounted = await mountWithdrawal(useWithdrawal)
       await act(async () => mounted.result.handleWithdraw())
       assert.equal(state.transfers.length, 1)
       assert.equal(state.creations, 0)
-      assert.deepEqual(state.refreshes, [])
+      assert.deepEqual(state.refreshes, [['swap-1', 'source']], 'a saved receipt always fetches its current backend outcome')
       assert.equal(mounted.result.error, undefined)
       assert.equal(state.successes, 2)
     } finally {
@@ -550,7 +745,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
   })
 
   test(`${useWithdrawal.name} reconciles a stored failed transaction before allowing another withdrawal`, async () => {
-    useSwapTransactionStore.getState().setSwapTransaction('swap-1', 'failed', 'withdrawal-hash')
+    useSwapTransactionStore.getState().setSwapTransaction('swap-1', 'withdrawal-hash')
     const mounted = await mountWithdrawal(useWithdrawal)
     try {
       await act(async () => mounted.result.handleWithdraw())
@@ -565,7 +760,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
 
   test(`${useWithdrawal.name} retries a backend-confirmed failed withdrawal on the existing swap`, async () => {
     const store = useSwapTransactionStore.getState()
-    store.setSwapTransaction('swap-1', 'failed', 'failed-withdrawal')
+    store.setSwapTransaction('swap-1', 'failed-withdrawal')
     store.markSubmissionPending('swap-1')
     store.markSubmissionPending('swap-2')
     await reloadTransactionStore()
@@ -609,7 +804,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
   ]) {
     test(`${useWithdrawal.name} preserves the retry block with ${label}`, async () => {
       const store = useSwapTransactionStore.getState()
-      store.setSwapTransaction('swap-1', 'failed', hash)
+      store.setSwapTransaction('swap-1', hash)
       store.markSubmissionPending('swap-1')
       const transaction = useSwapTransactionStore.getState().swapTransactions['swap-1']
       state.getSwap = async id => ({ data: { swap: { id, transactions }, deposit_actions: state.depositActions } })
@@ -628,7 +823,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
   }
 
   test(`${useWithdrawal.name} does not retry a confirmed failed input while a deposit is active`, async () => {
-    useSwapTransactionStore.getState().setSwapTransaction('swap-1', 'failed', 'failed-withdrawal')
+    useSwapTransactionStore.getState().setSwapTransaction('swap-1', 'failed-withdrawal')
     state.getSwap = async id => ({ data: {
       swap: { id, transactions: [{ type: 'input', status: 'failed', transaction_hash: 'failed-withdrawal' }] },
       deposit_actions: [{ type: 'transfer', step: 'deposit', status: 'pending' }],
@@ -640,7 +835,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
       assert.deepEqual(state.actionRefreshes, [])
       assert.deepEqual(state.transfers, [])
       assert.equal(state.successes, 1)
-      assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].status, 'pending')
+      assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].hash, 'failed-withdrawal', 'fetched progress must not overwrite receipt history with an empty hash')
     } finally {
       await mounted.unmount()
     }
@@ -669,7 +864,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
       } else {
         assert.deepEqual(state.transfers.map(([params]) => params.amountInBaseUnits), ['1000000', '2000000'])
       }
-      assert.deepEqual(state.published, [['new-swap', 'pending', '']])
+      assert.deepEqual(state.published, [])
       assert.equal(state.successes, 1)
     } finally {
       await mounted.unmount()
@@ -690,7 +885,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
       if (useWithdrawal === useHyperliquidWithdrawal) {
         assert.equal(state.transfers[0][0].amountInBaseUnits, '2000000')
       }
-      assert.deepEqual(state.published, [['swap-1', 'pending', '']])
+      assert.deepEqual(state.published, [])
     } finally {
       await mounted.unmount()
     }
@@ -722,7 +917,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
         assert.equal(state.transfers.length, 2)
         assert.equal(state.transfers[1][0].depositAddress, 'current-deposit')
         assert.deepEqual(state.actionRefreshes, Array.from({ length: 3 }, () => ['swap-1', 'source']))
-        assert.deepEqual(state.published, [['swap-1', 'pending', '']])
+        assert.deepEqual(state.published, [])
         assert.equal(state.successes, 1)
       } finally {
         await mounted.unmount()
@@ -761,10 +956,12 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
           assert.equal(event.path, useWithdrawal.name.slice(3))
           assert.equal(event.provider, 'test-wallet')
         }
-        assert.deepEqual(state.published, [['swap-1', 'pending', hash || '']])
+        assert.deepEqual(state.published, hash ? [['swap-1', hash]] : [])
+        assert.equal(useSwapTransactionStore.getState().pendingSubmissions['swap-1'], undefined)
+        assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].providerSubmissionAccepted, hash ? undefined : true)
         assert.equal(state.successes, 1)
         assert.deepEqual(state.errors, [])
-        assert.equal(mounted.result.loading, false)
+        assert.equal(mounted.result.loading, true, 'accepted withdrawals stay busy while the outgoing view is retained')
         assert.equal(mounted.result.error, undefined)
         assert.equal(mounted.result.rejected, false)
       } finally {
@@ -786,7 +983,8 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
         ['wallet_prompt_opened', 'new-swap'], ['transaction_submitted', 'new-swap'],
       ])
       assert.equal(state.transfers[0][0].depositAddress, 'new-deposit')
-      assert.deepEqual(state.published, [['new-swap', 'pending', '']])
+      assert.deepEqual(state.published, [])
+      assert.equal(mounted.result.loading, true, 'the newly created swap receipt keeps the outgoing view busy')
     } finally {
       await mounted.unmount()
     }
@@ -825,6 +1023,72 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
     }
   })
 
+  for (const change of ['account', 'provider', 'source']) {
+    test(`${useWithdrawal.name} records a late receipt after ${change} cancellation without a stale handoff`, async () => {
+      const transfer = Promise.withResolvers()
+      state.executeTransfer = () => transfer.promise
+      const props = { swapBasicData }
+      const mounted = await mountWithdrawal(useWithdrawal, props)
+      let pending
+      try {
+        await act(() => { pending = mounted.result.handleWithdraw() })
+        if (change === 'account') state.sourceAddress = 'different-account'
+        if (change === 'provider') state.provider = { name: 'different-provider' }
+        if (change === 'source') props.swapBasicData = { ...swapBasicData, source_network: { name: 'different-source' } }
+        await mounted.rerender()
+        await act(async () => { transfer.resolve('late-receipt'); await pending })
+        assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].hash, 'late-receipt')
+        assert.equal(state.successes, 0)
+        assert.deepEqual(state.events.map(event => event.step), ['wallet_prompt_opened'])
+        assert.deepEqual(state.errors, [])
+      } finally {
+        transfer.resolve('late-receipt')
+        await pending
+        await mounted.unmount()
+      }
+    })
+  }
+
+  test(`${useWithdrawal.name} provider snapshot updates preserve the active operation`, async () => {
+    state.provider = { name: 'same-provider' }
+    const transfer = Promise.withResolvers()
+    state.executeTransfer = () => transfer.promise
+    const mounted = await mountWithdrawal(useWithdrawal)
+    let pending
+    try {
+      await act(() => { pending = mounted.result.handleWithdraw() })
+      state.provider = { name: 'same-provider' }
+      await mounted.rerender()
+      await act(async () => { transfer.resolve('snapshot-receipt'); await pending })
+      assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].hash, 'snapshot-receipt')
+      assert.equal(state.successes, 1)
+      assert.deepEqual(state.errors, [])
+    } finally {
+      transfer.resolve('snapshot-receipt')
+      await pending
+      await mounted.unmount()
+    }
+  })
+
+  test(`${useWithdrawal.name} hiding controls keeps an active operation alive`, async () => {
+    const transfer = Promise.withResolvers()
+    state.executeTransfer = () => transfer.promise
+    const mounted = await mountWithdrawal(useWithdrawal)
+    let pending
+    try {
+      await act(() => { pending = mounted.result.handleWithdraw() })
+      await mounted.setActive(false)
+      await act(async () => { transfer.resolve('submitted-while-hidden'); await pending })
+      assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].hash, 'submitted-while-hidden')
+      assert.equal(state.successes, 1)
+      assert.deepEqual(state.errors, [])
+    } finally {
+      transfer.resolve('submitted-while-hidden')
+      await pending
+      await mounted.unmount()
+    }
+  })
+
   for (const rejected of [false, true]) {
     test(`${useWithdrawal.name} stops reporting outcomes after unmount: ${rejected ? 'rejected' : 'succeeded'}`, async () => {
       const transfer = Promise.withResolvers()
@@ -844,7 +1108,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
       })
       assert.deepEqual(state.events.map(event => event.step), ['wallet_prompt_opened'])
       assert.deepEqual(state.errors, [])
-      assert.deepEqual(state.published, rejected ? [] : [['swap-1', 'pending', 'late-hash']])
+      assert.deepEqual(state.published, rejected ? [] : [['swap-1', 'late-hash']])
       assert.equal(state.successes, 0)
     })
   }

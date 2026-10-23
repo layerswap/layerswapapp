@@ -77,4 +77,3 @@ function stepInterval(elapsedMs: number, steps: Step[], fallbackMs: number): num
 function withJitter(ms: number): number {
     return Math.round(ms * (0.85 + Math.random() * 0.3))
 }
-

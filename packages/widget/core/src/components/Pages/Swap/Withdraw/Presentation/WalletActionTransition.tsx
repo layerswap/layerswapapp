@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useIsPresent } from 'framer-motion';
 import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion';
 import type { ReactNode } from 'react';
 
@@ -16,15 +16,23 @@ export function WalletActionTransition({
 
     return (
         <AnimatePresence initial={false} mode="wait">
-            <motion.div
-                key={actionKey}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-            >
-                {children}
-            </motion.div>
+            <ActionContent key={actionKey}>{children}</ActionContent>
         </AnimatePresence>
+    );
+}
+
+function ActionContent({ children }: { children: ReactNode }) {
+    const isPresent = useIsPresent();
+    return (
+        <motion.div
+            aria-hidden={!isPresent}
+            inert={!isPresent}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+        >
+            {children}
+        </motion.div>
     );
 }
