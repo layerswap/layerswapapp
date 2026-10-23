@@ -3,7 +3,7 @@ import { walletRequestStore } from '@layerswap/wallet-core'
 import type { Wallet } from '@layerswap/widget-types'
 
 /** A second tap opens the already-published request; it never sends another one. */
-export function WalletRequestRecovery({ wallet, active, afterSequence }: {
+export function useWalletRequestRecovery({ wallet, active, afterSequence }: {
     wallet?: Wallet
     active: boolean
     afterSequence: number
@@ -25,3 +25,5 @@ export function WalletRequestRecovery({ wallet, active, afterSequence }: {
         )}
     </div>
 }
+
+export const WalletRequestRecovery = (props: Parameters<typeof useWalletRequestRecovery>[0]) => useWalletRequestRecovery(props);

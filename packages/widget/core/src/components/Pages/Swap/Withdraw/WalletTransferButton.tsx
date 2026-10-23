@@ -11,6 +11,7 @@ type Props = {
     warning?: JSX.Element | null;
     onWalletWithdrawalSuccess?: () => void;
     onCancelWithdrawal?: () => void;
+    showProgress?: boolean;
 };
 const WalletTransferButton: FC<Props> = ({
     swapBasicData: swapData,
@@ -19,6 +20,7 @@ const WalletTransferButton: FC<Props> = ({
     warning,
     onWalletWithdrawalSuccess,
     onCancelWithdrawal,
+    showProgress,
 }) => {
     return (
         <>
@@ -29,6 +31,7 @@ const WalletTransferButton: FC<Props> = ({
                     refuel={refuel}
                     onWalletWithdrawalSuccess={onWalletWithdrawalSuccess}
                     onCancelWithdrawal={onCancelWithdrawal}
+                    showProgress={showProgress}
                 />
             </WalletTransferView>
         </>

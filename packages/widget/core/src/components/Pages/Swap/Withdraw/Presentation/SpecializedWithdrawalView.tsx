@@ -33,7 +33,7 @@ export function SpecializedWithdrawalView({
 }: SpecializedWithdrawalViewProps) {
     if (!isConnected) {
         return (
-            <div className="w-full space-y-3">
+            <div className="flex w-full flex-col gap-2">
                 <WalletMessage
                     status="pending"
                     header={`Connect your ${provider} wallet`}
@@ -54,7 +54,7 @@ export function SpecializedWithdrawalView({
     }
 
     return (
-        <div className="w-full space-y-3 text-primary-text">
+        <div className="flex w-full flex-col gap-2 text-primary-text">
             {error && (
                 <WalletMessage
                     status="error"

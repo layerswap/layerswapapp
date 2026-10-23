@@ -39,6 +39,24 @@ export type TransferProps = {
 export type TransferProgress = { title: string; description?: string }
 
 export interface TransferProvider {
+    atomicBatch?: AtomicBatchProvider
     supportsNetwork(network: Network): boolean
     executeTransfer(params: TransferProps, wallet?: Wallet, onProgress?: (info: TransferProgress | undefined) => void): Promise<string>
+}
+
+export type AtomicBatchContext = {
+    network: Network
+    wallet: Wallet
+    account: string
+    signal?: AbortSignal
+    onWalletPrompt?: () => void
+}
+
+export type AtomicBatchCall = { to: `0x${string}`; data: `0x${string}`; value: bigint }
+
+/** IDs belong to the wallet call API and are never transaction hashes. */
+export interface AtomicBatchProvider {
+    getCapabilities(context: AtomicBatchContext, options?: { fresh?: boolean }): Promise<'supported' | 'ready' | 'unsupported'>
+    submit(context: AtomicBatchContext & { calls: AtomicBatchCall[]; validBefore: number }): Promise<{ id: string }>
+    getStatus(context: AtomicBatchContext, id: string): Promise<unknown>
 }
