@@ -79,9 +79,10 @@ export const foresightLayerswapColorOverrides = `
   .layerswap-styles .loader {
     color: rgb(${theme.primary.DEFAULT}) !important;
   }
+  /* Keep the ring inside the field so the wallet panel cannot clip its edges. */
   ${searchField}:has(input:focus-visible) {
     outline: 2px solid rgb(${theme.primary.DEFAULT});
-    outline-offset: 2px;
+    outline-offset: -2px;
   }
   ${searchField} input::placeholder {
     color: rgb(${theme.secondary.text}) !important;
