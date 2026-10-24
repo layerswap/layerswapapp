@@ -46,6 +46,8 @@ export const foresightLayerswapTheme = {
 // cannot be separated with ThemeData alone. Keep these exceptions scoped to
 // Layerswap's own portal root; no wallet, quote, or transaction logic changes.
 const theme = foresightLayerswapTheme;
+// Search is a composite control: put its focus indicator around the whole field.
+const searchField = '.layerswap-styles .relative.flex.items-center.rounded-lg:has(> .relative.w-full > input[autocomplete="off"])';
 const warningTooltip = '.layerswap-styles [data-slot="tooltip-content"]:has(.text-warning-foreground)';
 export const foresightLayerswapColorOverrides = `
   .layerswap-styles .rounded-b-lg:has(.group\\/balance-warn) {
@@ -70,8 +72,26 @@ export const foresightLayerswapColorOverrides = `
     background-color: rgb(${theme.primary[600]}) !important;
     filter: none !important;
   }
+  /* Legacy SDK message headings and connecting dots assume a dark surface. */
+  .layerswap-styles :is(.bg-secondary-400, .bg-secondary-500) p.text-white {
+    color: rgb(${theme.primary.text}) !important;
+  }
+  .layerswap-styles .loader {
+    color: rgb(${theme.primary.DEFAULT}) !important;
+  }
+  ${searchField}:has(input:focus-visible) {
+    outline: 2px solid rgb(${theme.primary.DEFAULT});
+    outline-offset: 2px;
+  }
+  ${searchField} input::placeholder {
+    color: rgb(${theme.secondary.text}) !important;
+  }
   .layerswap-styles :is(button, input, [role="button"], [tabindex]):focus-visible {
     outline: 2px solid rgb(${theme.primary.DEFAULT});
     outline-offset: 2px;
+  }
+  ${searchField} input:focus-visible {
+    outline: none;
+    box-shadow: none;
   }
 `;

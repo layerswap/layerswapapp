@@ -16,6 +16,8 @@ const adapter = projectId ? new WagmiAdapter({ projectId, networks, ssr: true })
 const appUrl = getAppOrigin();
 const modal = adapter && projectId ? createAppKit({
   adapters: [adapter], projectId, networks, defaultNetwork: base,
+  // The host only needs an address; Layerswap selects the chain when funding.
+  allowUnsupportedChain: true,
   metadata: { name: 'Foresight', description: 'Foresight prediction market demo', url: appUrl, icons: [new URL('/icon.svg', appUrl).href] },
   themeMode: 'light', themeVariables: { '--w3m-accent': '#7655e8', '--w3m-border-radius-master': '2px' },
   features: { analytics: false, email: false, socials: false, swaps: false, onramp: false },
