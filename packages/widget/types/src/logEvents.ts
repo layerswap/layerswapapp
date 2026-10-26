@@ -288,8 +288,9 @@ export type SwapLifecycleEvent = {
   phase?: string;
   depositMethod?: string;
   requestedAmount?: string;
-  /** Last explicit input method, not the form's automatic behavior mode. */
-  amountMode?: 'manual' | 'min' | 'half' | 'max' | 'unknown';
+  /** Last explicit input method, not the form's automatic behavior mode.
+   *  `adjusted` is the widget's own reduction accepted after an insufficient-funds wallet error. */
+  amountMode?: 'manual' | 'min' | 'half' | 'max' | 'adjusted' | 'unknown';
   sourceWalletAddress?: string;
   walletBalance?: number;
   walletBalanceNetwork?: string;

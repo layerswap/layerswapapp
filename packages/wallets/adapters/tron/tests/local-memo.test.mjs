@@ -1,20 +1,10 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { readFileSync } from 'node:fs'
-import ts from 'typescript'
+import { loadSource } from './loadSource.mjs'
 
 // Keep the transfer provider real; replace TronWeb, the adapter manager and the gas estimate.
-function load(path, imports) {
-    const { outputText } = ts.transpileModule(readFileSync(new URL(path, import.meta.url), 'utf8'), {
-        compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-    })
-    const module = { exports: {} }
-    new Function('require', 'module', 'exports', outputText)(name => {
-        assert.ok(name in imports, `Unexpected dependency: ${name}`)
-        return imports[name]
-    }, module, module.exports)
-    return module.exports
-}
+const load = (path, imports) => loadSource(new URL(path, import.meta.url), imports)
+const tronBroadcast = load('../src/transferProvider/tronBroadcast.ts', {})
 
 test('the deposit memo is added with a locally computed transaction id, without a node round trip', async () => {
     const calls = []
@@ -29,6 +19,7 @@ test('the deposit memo is added with a locally computed transaction id, without 
         } },
         './transactionBuilder': { buildInitialTransaction: async () => ({ txID: 'local-id', raw_data: {} }) },
         './toTransferError': { toTransferError: error => error },
+        './tronBroadcast.js': tronBroadcast,
         '../tronGasProvider': { TronGasProvider: class { async getGas() { return { gas: 1 } } } },
         '@layerswap/utils': { KnownInternalNames: { Networks: { TronMainnet: 'TRON_MAINNET', TronTestnet: 'TRON_TESTNET' } } },
         '../service/tronAdapterManager': { tronAdapterManager: {

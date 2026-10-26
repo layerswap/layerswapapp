@@ -161,7 +161,38 @@ test('throttling evidence outranks the codes wallets reuse for it, but never an 
     assert.equal(normalizeWalletErrorCode({ code: 4200, message: 'Unsupported method' }), 'unsupported_method')
     assert.equal(normalizeWalletErrorCode('HTTP 429: too many requests'), 'network_error')
     assert.equal(normalizeWalletErrorCode({ status: 429 }), 'network_error')
+})
+
+test('an endpoint cooldown and a 429 kept on a nested response are throttling, after an explicit decline', () => {
+    assert.equal(normalizeWalletErrorCode({ code: 4200, message: 'RPC endpoint returned too many errors, the endpoint is in cooldown.' }), 'network_error')
+    assert.equal(normalizeWalletErrorCode({ code: -32002, message: 'RPC is in cooldown' }), 'network_error')
+    assert.equal(normalizeWalletErrorCode({ code: 4200, message: 'Unsupported method', response: { status: 429 } }), 'network_error')
+    assert.equal(normalizeWalletErrorCode(new Error('request failed', { cause: { response: { status: 429, statusText: 'Too Many Requests' } } })), 'network_error')
+    assert.equal(normalizeWalletErrorCode({ code: 4200, message: 'Unsupported method', response: { status: 500 } }), 'unsupported_method')
+    assert.equal(normalizeWalletErrorCode({ code: 4001, message: 'User rejected the request', cause: { message: 'RPC is in cooldown' } }), 'user_rejected')
+    assert.equal(normalizeWalletErrorCode({ code: -32002, message: 'Request of type wallet_switchEthereumChain already pending. Please wait.' }), 'request_pending')
     assert.equal(normalizeWalletErrorCode({ status: 500, message: 'bad gateway' }), 'unknown_error')
+})
+
+test('cooldown wording is transport evidence only on the node carrying a reused code; elsewhere it is descriptive text', () => {
+    // A wallet puts an endpoint in cooldown after failures of any kind: the definitive code keeps its meaning.
+    assert.equal(normalizeWalletErrorCode({ code: 4902, message: 'Unrecognized chain ID', cause: { message: 'RPC endpoint returned too many errors, the endpoint is in cooldown.' } }), 'chain_not_added')
+    assert.equal(normalizeWalletErrorCode({ name: 'InsufficientFundsError', message: 'The total cost exceeds the balance of the account.', cause: { message: 'RPC is in cooldown' } }), 'insufficient_funds')
+    assert.equal(normalizeWalletErrorCode(new Error('RPC is in cooldown')), 'network_error')
+    assert.equal(normalizeWalletErrorCode({ code: -32603, message: 'RPC endpoint returned too many errors, the endpoint is in cooldown.' }), 'network_error')
+})
+
+test('a nested HTTP response contributes only its status, never the body a server sent', () => {
+    const relayed = { message: 'Request failed with status code 500', response: { status: 500, data: { error: { code: 4001, message: 'User rejected the request' } } } }
+    assert.equal(normalizeWalletErrorCode(relayed), 'unknown_error')
+    assert.equal(isUserRejection(relayed), false)
+    assert.equal(normalizeWalletErrorCode({ message: 'Request failed', response: { statusCode: 429, data: { message: 'User rejected the request' } } }), 'network_error')
+    assert.equal(walletErrorDetails(relayed).message, 'Request failed with status code 500')
+    assert.equal(walletErrorDetails(relayed).code, undefined)
+})
+
+test('a node that reports the balance as not sufficient is an insufficient-funds failure', () => {
+    assert.equal(normalizeWalletErrorCode(new Error('CONTRACT_VALIDATE_ERROR: Validate TransferContract error, balance is not sufficient.')), 'insufficient_funds')
 })
 
 // ---- Corpus: every shape below has a provenance tag in wallet-error-fixtures.mjs.

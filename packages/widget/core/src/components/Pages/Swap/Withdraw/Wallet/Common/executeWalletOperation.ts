@@ -15,21 +15,31 @@ type WalletOperationOptions = {
     shouldReportError?: (error: unknown) => boolean
     /** Preserve flows that stop reporting outcomes after their UI unmounts. */
     isActive?: () => boolean
+    /** When the prompt event is reported: as `execute` starts (default), or when `execute`
+     *  signals the wallet request. A request that settles without signalling is reported
+     *  just before its terminal event, so the prompt always precedes the outcome. */
+    promptOpensOn?: 'start' | 'wallet_request'
 }
 
 /** Reports only the wallet request; preparation and success hand-off belong to the caller. */
 export async function executeWalletOperation(
-    { context, onLifecycle, onSettled, allowEmptyHash = false, reportsSubmission = true, shouldReportError, isActive }: WalletOperationOptions,
-    execute: () => Promise<string | undefined>,
+    { context, onLifecycle, onSettled, allowEmptyHash = false, reportsSubmission = true, shouldReportError, isActive, promptOpensOn = 'start' }: WalletOperationOptions,
+    execute: (onWalletRequest: () => void) => Promise<string | undefined>,
 ): Promise<string> {
     const active = () => isActive?.() ?? true
 
-    onLifecycle({
-        ...context,
-        step: 'wallet_prompt_opened',
-        stage: 'wallet_action',
-        outcome: 'pending',
-    })
+    let promptReported = false
+    const reportPrompt = () => {
+        if (promptReported) return
+        promptReported = true
+        onLifecycle({
+            ...context,
+            step: 'wallet_prompt_opened',
+            stage: 'wallet_action',
+            outcome: 'pending',
+        })
+    }
+    if (promptOpensOn === 'start') reportPrompt()
 
     const reportFailure = (error: unknown, reasonCode?: SwapLifecycleEvent['reasonCode']) => {
         const rejected = !reasonCode && isUserRejection(error)
@@ -48,11 +58,13 @@ export async function executeWalletOperation(
 
     let hash: string | undefined
     try {
-        hash = await execute()
+        hash = await execute(reportPrompt)
     } catch (error) {
+        reportPrompt()
         if (active() && shouldReportError?.(error) !== false) reportFailure(error)
         throw error
     }
+    reportPrompt()
 
     if (!allowEmptyHash && !hash) {
         const error = new Error('Wallet returned no transaction hash')

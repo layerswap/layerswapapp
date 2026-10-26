@@ -330,6 +330,7 @@ export function useTransferTokenController({
                     signal?.throwIfAborted();
                     if (!provider?.transfer) throw new Error('No provider transfer')
 
+                    resolvedTransferProps.onWalletRequest?.()
                     const tx = await provider.transfer(resolvedTransferProps, wallet)
 
                     if (!tx)

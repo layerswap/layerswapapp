@@ -80,6 +80,12 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
             finishTelemetry('cancelled')
             signal.throwIfAborted()
         }
+        // The provider's own preparation (a Monad transaction builder reads gas and
+        // fees first) runs inside the wallet request. The provider, or the transfer
+        // resolver for one without preparation, signals when the wallet is actually
+        // asked: the prompt event is reported there and the preparation is timed apart.
+        const requested = Date.now()
+        let adapterPreparationMs: number | undefined
         return executeWalletOperation({
             context: {
                 ...lifecycleContext,
@@ -89,10 +95,18 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
             },
             onLifecycle,
             // Keep one timing operation across the Stellar refresh and both wallet requests.
-            onSettled: finishTelemetry,
+            onSettled: (outcome, attributes) => finishTelemetry(outcome,
+                adapterPreparationMs === undefined ? attributes : { ...attributes, adapter_preparation_ms: adapterPreparationMs }),
             reportsSubmission: action.step !== 'approve_permit2',
             shouldReportError: error => !(retriesExpiry && isExpiredTransaction(error)),
-        }, () => onClick(props))
+            promptOpensOn: 'wallet_request',
+        }, reportPrompt => onClick({
+            ...props,
+            onWalletRequest: () => {
+                adapterPreparationMs ??= Date.now() - requested
+                reportPrompt()
+            },
+        }))
     }
 
     // The recorded deposit already had its receipt, success hand-off and catch-up; this handler only stops.

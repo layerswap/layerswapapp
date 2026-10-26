@@ -1,10 +1,18 @@
 import { Network } from "@layerswap/widget-types";
 import { createPublicClient } from "viem";
 import resolveChain from "../evmUtils/resolveChain";
-import { resolveFallbackTransport } from "../evmUtils/resolveTransports";
+import { resolveFallbackTransport, type TransportOptions } from "../evmUtils/resolveTransports";
 import { buildTransactionGasParameters } from "./evmGasMath";
 import { resolveEVMGasPolicy } from "./evmGasPolicies";
 import { resolveEVMFeeData } from "./resolveEVMFeeData";
+
+/**
+ * These reads sit between Send and the wallet prompt. A hung endpoint must fail
+ * over to the next node quickly instead of holding the prompt for the shared
+ * 60 s timeout and three more passes over the node list; the fee policy itself
+ * is unchanged.
+ */
+const PRE_WALLET_RPC_OPTIONS: TransportOptions = { timeoutMs: 10_000, retryCount: 1 }
 
 type ResolveEVMTransactionGasParametersArgs = {
     network: Network
@@ -27,7 +35,7 @@ export const resolveEVMTransactionGasParameters = async ({
 
     const publicClient = createPublicClient({
         chain: resolveChain(network),
-        transport: resolveFallbackTransport(network.nodes?.length > 0 ? network.nodes : [network.node_url]),
+        transport: resolveFallbackTransport(network.nodes?.length > 0 ? network.nodes : [network.node_url], PRE_WALLET_RPC_OPTIONS),
     })
 
     const [estimatedGas, feesPerGas] = await Promise.all([

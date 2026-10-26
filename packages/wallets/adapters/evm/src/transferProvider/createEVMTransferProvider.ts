@@ -13,13 +13,16 @@ export function createEVMTransferProvider(
 ): TransferProvider {
     return {
         supportsNetwork,
+        // The transaction builder may read gas and fees before the wallet is asked.
+        reportsWalletRequest: true,
 
         async executeTransfer(params: TransferProps): Promise<string> {
-            const { selectedWallet } = params
+            const { selectedWallet, onWalletRequest } = params
 
             try {
                 const tx = await buildTransaction(params)
                 const connector = resolveWalletConnector(config, selectedWallet)
+                onWalletRequest?.()
                 const hash = await sendTransaction(config, { ...tx, connector })
 
                 if (hash) {

@@ -6,6 +6,7 @@ import { toTransferError } from "./toTransferError"
 import { TronGasProvider } from "../tronGasProvider"
 import { KnownInternalNames } from "@layerswap/utils";
 import { tronAdapterManager } from "../service/tronAdapterManager"
+import { isDuplicateBroadcast, textToHex, TronBroadcastError } from "./tronBroadcast.js"
 
 const supportedNetworks = [
     KnownInternalNames.Networks.TronMainnet,
@@ -57,19 +58,20 @@ export function createTronTransfer(): TransferProvider {
                     issuerAddress: selectedWallet.address
                 })
 
-                const data = Buffer.from(callData).toString('hex')
+                const data = textToHex(callData)
                 // The memo only changes raw_data; recompute the transaction id locally.
                 // The default path posts the transaction to the node (getsignweight) and
                 // reports any RPC failure there as a generic transaction-id error.
                 const transaction = await tronWeb.transactionBuilder.addUpdateData(initialTransaction, data, "hex", { txLocal: true })
                 const signature = await tronAdapterManager.signTransaction(transaction)
+                if (!signature?.txID) throw new Error("The wallet returned no signed transaction")
                 const res = await tronWeb.trx.sendRawTransaction(signature)
-
-                if (signature && res.result) {
-                    return signature.txID
-                }
-
-                throw new Error("Transaction failed")
+                if (res.result) return signature.txID
+                // The network already knows this signed transaction under the same id (a
+                // wallet that broadcasts on its own, a repeated broadcast): it is submitted.
+                if (isDuplicateBroadcast(res, signature.txID)) return signature.txID
+                // The node's code and reason are the failure; the widget's label wraps them.
+                throw new TronBroadcastError(res)
             } catch (error) {
                 throw toTransferError(error)
             }

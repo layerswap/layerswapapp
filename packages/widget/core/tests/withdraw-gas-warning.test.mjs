@@ -255,11 +255,13 @@ test('deposit-address swaps do not report wallet balance or gas blocks', async (
 })
 
 const adjustButton = () => [...container.querySelectorAll('button')].find(button => button.textContent === 'Adjust amount')
-test('Adjust amount explicitly starts a fresh draft with Max enabled', async () => {
+test('Adjust amount starts a fresh draft that keeps the reviewed amount instead of a live Max', async () => {
   await render()
   await act(() => adjustButton().click())
   assert.equal(state.freshAttempts, 1)
-  assert.equal(state.submitted.amountMode, 'max')
+  assert.equal(state.submitted.amountMode, 'manual')
+  assert.equal(state.submitted.amountPresetSource, undefined)
+  assert.equal(state.submitted.amountPresetPending, false)
   assert.equal(state.submitted.amount, '0.898')
   assert.equal(state.formValues.amount, state.submitted.amount)
 })
@@ -337,7 +339,7 @@ test('Adjust amount appears after funds return, uses a valid boundary amount, an
   assert.equal(adjustButton().disabled, false)
   await act(() => adjustButton().click())
   assert.equal(state.submitted.amount, '0.001')
-  assert.equal(state.submitted.amountMode, 'max')
+  assert.equal(state.submitted.amountMode, 'manual')
   assert.equal(state.formValues.amount, '0.001')
   assert.equal(state.freshAttempts, 1)
   state.balances[0].amount = 0
@@ -366,20 +368,20 @@ test('temporary quote loading retains a viable Adjust amount action in its loadi
   assert.equal(adjustButton().disabled, false)
 })
 
-test('portaled Adjust amount records Max after its guard without changing the adjustment', async () => {
+test('portaled Adjust amount records the amount input after its guard without changing the adjustment', async () => {
   const unmount = widgetTelemetry.mount(widgetTelemetry.createFlow({ source_network: network.name, source_token: token.symbol }))
   const portal = document.createElement('div'); document.body.append(portal)
   try {
-    widgetTelemetry.recordAmountInput('manual')
+    widgetTelemetry.recordAmountInput('max')
     await act(() => root.render(createElement(StrictMode, null, createPortal(createElement(Withdraw, { type: 'widget' }), portal))))
     const button = [...portal.querySelectorAll('button')].find(button => button.textContent === 'Adjust amount')
     assert.ok(button)
     assert.equal(button.closest('[data-ls-form]'), null)
-    assert.equal(widgetTelemetry.amountInputMethod({ step: 'form_submitted' }), 'manual')
-    await act(() => button.click())
     assert.equal(widgetTelemetry.amountInputMethod({ step: 'form_submitted' }), 'max')
+    await act(() => button.click())
+    assert.equal(widgetTelemetry.amountInputMethod({ step: 'form_submitted' }), 'adjusted', 'the widget\'s reduction is neither Max nor a typed amount')
     assert.equal(state.freshAttempts, 1)
-    assert.equal(state.submitted.amountMode, 'max')
+    assert.equal(state.submitted.amountMode, 'manual')
     assert.equal(state.submitted.amount, '0.898')
   } finally { unmount(); portal.remove() }
 })

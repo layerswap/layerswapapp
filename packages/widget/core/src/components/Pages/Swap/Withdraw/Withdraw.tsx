@@ -10,7 +10,7 @@ import { useBalance } from '@/lib/balances/useBalance';
 import useOutOfGas from '@/lib/gases/useOutOfGas';
 import useSWRGas from '@/lib/gases/useSWRGas';
 import { resolveMaxAllowedAmount } from '@/components/Input/Amount/helpers';
-import { amountPresetSource, isAmountPreset } from '@/lib/amountPresets';
+import { isAmountPreset } from '@/lib/amountPresets';
 import { truncateToDecimals } from '@/components/utils/RoundDecimals';
 import { NetworkRoute, NetworkType } from '@layerswap/widget-types';
 import { useFormikContext } from 'formik';
@@ -141,13 +141,15 @@ export function useWithdrawBalance(active = true) {
     const handleEditAmount = useCallback(() => {
         // Execution can start between rendering the action and clicking it.
         if (!canAdjustAmount() || adjustedAmount === undefined || !swapBasicData) return;
-        widgetTelemetry.recordAmountInput('max');
-        const maxFields = { amountMode: 'max' as const,
-            amountPresetSource: amountPresetSource(swapBasicData.source_network.name, swapBasicData.source_token.symbol, selectedSourceAccount?.id, selectedSourceAccount?.address),
-            amountPresetPending: true, amountPresetError: undefined };
+        widgetTelemetry.recordAmountInput('adjusted');
+        // The reduction was reviewed against the fee of this swap's actual deposit
+        // action. A live Max would recompute it before the next swap exists, from the
+        // cheaper stand-in transfer, and raise the amount back into the same failure.
+        // The replacement draft therefore keeps the reviewed amount as it is.
         const nextValues: SwapFormValues = {
             ...values,
-            ...maxFields,
+            amountMode: 'manual',
+            amountPresetSource: undefined, amountPresetPending: false, amountPresetError: undefined, amountPresetBalance: undefined,
             amount: adjustedAmount,
             from: swapBasicData.source_network as NetworkRoute,
             to: swapBasicData.destination_network as NetworkRoute,
@@ -166,7 +168,7 @@ export function useWithdrawBalance(active = true) {
         adjustedAmount,
         swapBasicData,
         refuel,
-        setValues, values, canAdjustAmount, selectedSourceAccount,
+        setValues, values, canAdjustAmount,
         setSubmitedFormValues,
         startFreshSwapAttempt,
     ]);

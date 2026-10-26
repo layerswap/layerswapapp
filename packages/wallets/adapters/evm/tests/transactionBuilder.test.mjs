@@ -10,7 +10,7 @@ const rpcUrl = `data:text/javascript,${encodeURIComponent(`
     export const createPublicClient = () => {
         state.clients++
         return {
-            estimateGas: async args => { state.estimate = args; return state.estimateGas(args) },
+            estimateGas: async args => { state.estimate = args; state.estimateRequests++; return state.estimateGas(args) },
             estimateFeesPerGas: async () => state.fees,
             getGasPrice: async () => state.gasPrice,
             estimateMaxPriorityFeePerGas: async () => { state.priorityRequests++; return state.priorityFee },
@@ -20,8 +20,9 @@ const rpcUrl = `data:text/javascript,${encodeURIComponent(`
         }
     }
     export default network => ({ id: Number(network.chain_id) })
-    export const resolveFallbackTransport = nodes => {
+    export const resolveFallbackTransport = (nodes, options) => {
         state.nodes = nodes
+        state.transportOptions = options
         if (!nodes.length || nodes.some(node => !node)) throw new Error('No RPC endpoint')
         return {}
     }
@@ -56,7 +57,7 @@ const params = {
 beforeEach(() => Object.assign(state, {
     clients: 0, estimate: undefined,
     nodes: undefined, settings: {}, gasPrice: 102_000_000_000n, priorityFee: 2_000_000_000n,
-    priorityRequests: 0, accountCode: '0x', estimateGas: () => 22_515n,
+    priorityRequests: 0, accountCode: '0x', estimateGas: () => 22_515n, estimateRequests: 0, transportOptions: undefined,
     balanceRequests: 0, balance: 20n * 10n ** 18n,
     l1Fee: 1_000_000_000n, l1Estimate: undefined,
     fees: { maxFeePerGas: 122_000_000_000n, maxPriorityFeePerGas: 2_000_000_000n },
@@ -88,6 +89,13 @@ test('other EVM chains continue to let the wallet set gas parameters', async () 
     assert.equal(tx.maxFeePerGas, undefined)
     assert.equal(tx.value, 10n ** 18n)
     assert.equal(tx.data, '0x')
+})
+
+test('Monad reads before the wallet prompt use a bounded transport while quotes keep the shared defaults', async () => {
+    await transactionBuilder(params)
+    assert.deepEqual(state.transportOptions, { timeoutMs: 10_000, retryCount: 1 })
+    await new EVMGasProvider().getGas({ ...params, address: params.selectedWallet.address })
+    assert.equal(state.transportOptions, undefined)
 })
 
 test('Monad does not fall back to wallet gas parameters when EIP-1559 fees are unavailable', async () => {
@@ -158,25 +166,87 @@ test('a reserve-violating delegated native action remains quotable without chang
     assert.equal(state.estimate.to, action.depositAddress)
     assert.equal(state.estimate.data, action.callData)
     assert.equal(state.estimate.value, 19_000_000_000_000_000_001n)
+    // value + reserve + a block of gas at the fee cap
     assert.deepEqual(state.estimate.stateOverride, [{
         address: action.selectedWallet.address,
-        balance: 29_000_000_000_000_000_001n,
+        balance: 19_000_000_000_000_000_001n + reserve + 122_000_000_000n * 30_000_000n,
     }])
-    assert.equal(state.balance, 20n * 10n ** 18n)
+    assert.equal(state.balanceRequests, 0)
 
     await assert.rejects(transactionBuilder(action), /reserve balance violation/)
     assert.equal(state.estimate.stateOverride, undefined)
 })
 
-test('an affordable delegated native quote preserves the actual sender balance', async () => {
+test('an affordable exact quote estimates against the actual sender balance without reading it', async () => {
     state.accountCode = `0xef0100${'78'.repeat(20)}`
     const quote = await new EVMGasProvider().getGas({
         ...params, address: params.selectedWallet.address,
         recipientAddress: params.depositAddress, callData: '',
     })
     assert.equal(quote.reserve, 10)
-    assert.equal(state.balanceRequests, 1)
+    assert.equal(state.balanceRequests, 0)
+    assert.equal(state.estimateRequests, 1)
     assert.equal(state.estimate.stateOverride, undefined)
+})
+
+test('an unaffordable exact native transfer is still quoted so a lower amount can be offered', async () => {
+    const value = 1_000_000_000_000_000_001n
+    state.estimateGas = args => {
+        if (args.stateOverride?.[0]?.balance >= args.value) return 21_000n
+        throw new Error('insufficient funds for transfer')
+    }
+    const action = { ...params, network: { ...params.network, chain_id: '1' }, callData: '', amountInBaseUnits: String(value) }
+    const quote = await new EVMGasProvider().getGas({
+        network: action.network, token: action.token, amount: action.amount, amountInBaseUnits: action.amountInBaseUnits,
+        callData: action.callData, address: action.selectedWallet.address, recipientAddress: action.depositAddress,
+    })
+    assert.ok(quote)
+    assert.ok(quote.maxFee > 0)
+    assert.equal(state.estimateRequests, 2)
+    assert.equal(state.estimate.value, value, 'the simulated balance never changes the quoted transfer')
+    assert.equal(state.estimate.data, '0x')
+    assert.deepEqual(state.estimate.stateOverride, [{
+        address: action.selectedWallet.address,
+        balance: value + 122_000_000_000n * 30_000_000n,
+    }])
+})
+
+test('a node without state overrides reports the first estimate failure', async () => {
+    state.estimateGas = args => {
+        throw new Error(args.stateOverride ? 'too many arguments, want at most 2' : 'insufficient funds for transfer')
+    }
+    const action = { ...params, network: { ...params.network, chain_id: '1' }, callData: '' }
+    const quote = await new EVMGasProvider().getGas({
+        network: action.network, token: action.token, amount: action.amount,
+        callData: action.callData, address: action.selectedWallet.address, recipientAddress: action.depositAddress,
+    })
+    assert.equal(quote, undefined)
+    assert.equal(state.estimateRequests, 2)
+})
+
+test('a failure no balance can change is not estimated again', async () => {
+    for (const [message, name] of [
+        ['execution reverted: paused', 'ContractFunctionExecutionError'],
+        ['HTTP request failed. Status: 502', 'HttpRequestError'],
+        ['The request took too long to respond. Timeout: 10000ms', 'TimeoutError'],
+    ]) {
+        state.estimateRequests = 0
+        state.estimateGas = () => { throw Object.assign(new Error(message), { name }) }
+        const action = { ...params, network: { ...params.network, chain_id: '1' }, callData: '' }
+        const quote = await new EVMGasProvider().getGas({
+            network: action.network, token: action.token, amount: action.amount,
+            callData: action.callData, address: action.selectedWallet.address, recipientAddress: action.depositAddress,
+        })
+        assert.equal(quote, undefined, message)
+        assert.equal(state.estimateRequests, 1, message)
+    }
+})
+
+test('stand-in quotes are never retried with a simulated balance', async () => {
+    state.estimateGas = () => { throw new Error('execution reverted') }
+    const quote = await new EVMGasProvider().getGas({ ...params, network: { ...params.network, chain_id: '1' }, address: params.selectedWallet.address })
+    assert.equal(quote, undefined)
+    assert.equal(state.estimateRequests, 1)
 })
 
 for (const [name, network, selectedToken, accountCode] of [

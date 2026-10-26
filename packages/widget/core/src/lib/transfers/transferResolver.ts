@@ -20,6 +20,8 @@ export class TransferResolver {
             throw error
         }
 
+        // A provider without preparation of its own reaches the wallet as the call starts.
+        if (!provider.reportsWalletRequest) params.onWalletRequest?.()
         return provider.executeTransfer(params, wallet, onProgress)
     }
 }

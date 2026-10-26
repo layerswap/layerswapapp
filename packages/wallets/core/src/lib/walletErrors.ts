@@ -206,17 +206,28 @@ function isDeclineText(text: string, code?: string): boolean {
 // ---- Transport evidence. Wallets relay their RPC's transport failures under
 // ---- codes reserved for other conditions: a throttled endpoint comes back as
 // ---- -32603 "Request is being rate limited.", -32002 (resource unavailable,
-// ---- otherwise "request already pending"), 4200 (unsupported method) or a
-// ---- generic transaction failure, while viem's own HttpRequestError keeps the
-// ---- HTTP status. Concrete throttling evidence anywhere in the chain outranks
-// ---- those codes; only an explicit decline comes first.
+// ---- otherwise "request already pending") "RPC is in cooldown", 4200
+// ---- (unsupported method) "RPC endpoint returned too many errors ... cooldown"
+// ---- or a generic transaction failure, while viem's own HttpRequestError keeps
+// ---- the HTTP status and fetch-style errors keep the `response`. Concrete
+// ---- throttling evidence anywhere in the chain outranks those codes; only an
+// ---- explicit decline comes first.
+// ---- A wallet puts an endpoint in cooldown after throttling or after repeated
+// ---- failures of any kind, so that wording is only transport evidence on the
+// ---- node that carries one of the codes wallets reuse for it; elsewhere in the
+// ---- chain it is descriptive text (MESSAGE_RULES) that a definitive code outranks.
 const HTTP_TOO_MANY_REQUESTS = 429
 const THROTTLED_TEXT = /too many requests|rate.?limit|\b429\b/i
+const COOLDOWN_TEXT = /too many errors|\bcooldown\b/i
+const COOLDOWN_CODES = new Set(['4200', '-32002', '-32603'])
 
 function transportReason(chain: ErrorCandidate[]): WalletErrorReasonCode | undefined {
     for (const candidate of chain) {
         const status = candidate.status ?? candidate.statusCode
-        if (status === HTTP_TOO_MANY_REQUESTS || THROTTLED_TEXT.test(textOf(candidate))) return 'network_error'
+        const text = textOf(candidate)
+        if (status === HTTP_TOO_MANY_REQUESTS || THROTTLED_TEXT.test(text)) return 'network_error'
+        const code = walletErrorCode(candidate)
+        if (code !== undefined && COOLDOWN_CODES.has(code) && COOLDOWN_TEXT.test(text)) return 'network_error'
     }
     return undefined
 }
@@ -224,7 +235,7 @@ function transportReason(chain: ErrorCandidate[]): WalletErrorReasonCode | undef
 const MESSAGE_RULES: Record<TextTier, NameRules> = {
     descriptive: [
         // user_rejected is decided by isDeclineText, ahead of these rules.
-        [/insufficient funds|insufficient balance|exceeds balance|not enough/i, 'insufficient_funds'],
+        [/insufficient funds|insufficient balance|exceeds balance|not enough|not sufficient/i, 'insufficient_funds'],
         [/cannot estimate gas|gas required exceeds|intrinsic gas|estimateGas/i, 'gas_estimation_failed'],
         [/execution reverted|revert/i, 'contract_reverted'],
         [/nonce too low|nonce has already|replacement transaction underpriced|already known/i, 'nonce_or_replacement'],
@@ -232,7 +243,7 @@ const MESSAGE_RULES: Record<TextTier, NameRules> = {
         [/disconnected|not connected/i, 'wallet_disconnected'],
         [/method not (supported|found)|unsupported method|does not support/i, 'unsupported_method'],
         [/invalid (params|parameters|argument)/i, 'invalid_parameters'],
-        [/network error|failed to fetch|load failed|econnre|socket hang up|fetch failed|RPC endpoint returned HTTP (?:client|server) error/i, 'network_error'],
+        [/network error|failed to fetch|load failed|econnre|socket hang up|fetch failed|RPC endpoint returned HTTP (?:client|server) error|too many errors|\bcooldown\b/i, 'network_error'],
         [/timed? ?out|timeout/i, 'timeout'],
         [/already pending|already processing/i, 'request_pending'],
     ],
@@ -245,12 +256,17 @@ const MESSAGE_RULES: Record<TextTier, NameRules> = {
 // ---- SDKs actually use to nest the real failure (viem/ethers `cause`,
 // ---- JSON-RPC `data`, ethers v5 `error`, MetaMask `originalError`).
 const NESTED_KEYS = ['cause', 'data', 'originalError', 'error', 'info'] as const
+// A fetch-style error keeps its HTTP response here. Only the status is evidence:
+// the body is whatever the server sent (a proxy's JSON may carry its own
+// `code`/`message`), so it never joins the candidates.
+const RESPONSE_KEY = 'response'
 
 function isErrorLike(value: unknown): value is ErrorCandidate {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return false
     return 'code' in value || 'message' in value || 'name' in value || 'cause' in value || 'reasonCode' in value
         || 'error' in value || 'originalError' in value || 'shortMessage' in value
         || 'data' in value || 'info' in value || 'details' in value || 'status' in value || 'statusCode' in value
+        || 'response' in value
 }
 
 /** Innermost first: deeper nodes describe the raw failure, wrappers add noise. */
@@ -303,8 +319,19 @@ function collectNodes(error: unknown): Array<{ value: ErrorCandidate; depth: num
             try { next = (value as Record<string, unknown>)[key] } catch { continue }
             if (isErrorLike(next)) stack.push([next, depth + 1])
         }
+        const status = responseStatus(value)
+        if (status !== undefined) stack.push([{ status }, depth + 1])
     }
     return nodes
+}
+
+function responseStatus(value: object): number | undefined {
+    let response: unknown
+    try { response = (value as Record<string, unknown>)[RESPONSE_KEY] } catch { return undefined }
+    if (!response || typeof response !== 'object') return undefined
+    const { status, statusCode } = response as { status?: unknown; statusCode?: unknown }
+    const code = typeof status === 'number' ? status : statusCode
+    return typeof code === 'number' && Number.isFinite(code) ? code : undefined
 }
 
 function textOf(candidate: ErrorCandidate): string {
@@ -357,8 +384,9 @@ function rawTextReason(error: unknown, tier: TextTier): WalletErrorReasonCode | 
  *      userRejectedError) wins anywhere in the chain, outermost first;
  *      then a CAIP-25 5000 whose own text names a non-decline failure;
  *   1. a definitive cancellation signal anywhere in the tree;
- *   1b. throttling evidence (HTTP 429, "too many requests", "rate limit") anywhere
- *      in the tree: wallets relay it under codes reserved for other conditions;
+ *   1b. throttling evidence (HTTP 429 on any node or its `response`, "too many
+ *      requests", "rate limit") anywhere in the tree, and an endpoint "cooldown"
+ *      on a node carrying a code wallets reuse for it (4200, -32002, -32603);
  *   2. definitive codes/names, innermost first;
  *   3. descriptive message text, innermost first (SDK bucket classes contribute no text);
  *      decline text must name the user, never inside a revert reason, and on a

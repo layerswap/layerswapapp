@@ -33,6 +33,11 @@ export type TransferProps = {
      *  provider. Report `not_submitted` only after a definitive provider refusal;
      *  transport failures and ambiguous responses must remain `submitting`. */
     onSubmissionStateChange?: (state: 'preparing' | 'submitting' | 'not_submitted') => void
+    /** Called once, immediately before the wallet is asked to sign. A provider with
+     *  its own preparation (transaction build, gas and fee reads) calls it when that is
+     *  done and declares so with `TransferProvider.reportsWalletRequest`, so the prompt
+     *  is reported and timed from there; otherwise the widget calls it as the request starts. */
+    onWalletRequest?: () => void
 }
 
 /** Generic in-flight progress a provider may surface to the UI (e.g. a prerequisite signing step). */
@@ -40,6 +45,8 @@ export type TransferProgress = { title: string; description?: string }
 
 export interface TransferProvider {
     atomicBatch?: AtomicBatchProvider
+    /** The provider calls `TransferProps.onWalletRequest` itself, right before the wallet is asked to sign. */
+    reportsWalletRequest?: boolean
     supportsNetwork(network: Network): boolean
     executeTransfer(params: TransferProps, wallet?: Wallet, onProgress?: (info: TransferProgress | undefined) => void): Promise<string>
 }

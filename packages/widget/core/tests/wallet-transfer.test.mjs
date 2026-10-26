@@ -95,6 +95,7 @@ for (const [callData, expectedMemo] of [[null, ''], [undefined, ''], ['', ''], [
       } },
       './transactionBuilder': { buildInitialTransaction: async () => ({ txID: 'tron-hash' }) },
       './toTransferError': { toTransferError: error => error },
+      './tronBroadcast.js': loadAdapterSource('../../../wallets/adapters/tron/src/transferProvider/tronBroadcast.ts', {}),
       '../tronGasProvider': { TronGasProvider: class { async getGas() { return {} } } },
       '@layerswap/utils': { KnownInternalNames: { Networks: { TronMainnet: 'TRON_MAINNET', TronTestnet: 'TRON_TESTNET' } } },
       '../service/tronAdapterManager': { tronAdapterManager: {
@@ -154,6 +155,8 @@ for (const result of ['success', 'rejected', 'expired-again', 'refresh-failed', 
       },
     }
     const transfer = executeWalletTransfer(ctx, async props => {
+      // The transfer resolver signals the request for a provider without preparation of its own.
+      props.onWalletRequest()
       prompts.push(props.callData)
       assert.equal(lifecycle.at(-1).step, 'wallet_prompt_opened', 'every wallet call has a prompt event')
       if (prompts.length === 1 || result === 'expired-again') throw expired
@@ -222,6 +225,54 @@ for (const [label, thrown, expected] of [
     assert.equal(operations[0].attributes.outcome, expected.outcome)
   })
 }
+
+for (const [label, signalsWalletRequest] of [['a provider that signals its wallet request', true], ['a provider without preparation', false]]) {
+  test(`the wallet transfer operation reports provider preparation apart from the wallet wait: ${label}`, async t => {
+    const operations = []
+    const lifecycle = []
+    t.after(widgetTelemetry.register(event => operations.push(event)))
+    const action = { type: 'transfer', amount: '1', to_address: 'deposit', from_address: 'source', call_data: 'calldata' }
+    const ctx = {
+      swapData: { id: 'swap-prep', source_address: 'source', metadata: {} },
+      swapBasicData: { requested_amount: '1', source_network: { name: 'MONAD_MAINNET' } },
+      depositActions: [action], selectedWallet: { providerName: 'EVM', address: 'wallet-source' },
+      sourceAddress: 'source', setActionStateText() {}, setSwapTransaction: async () => {}, onSuccess() {},
+      onLifecycle: event => lifecycle.push(event.step),
+      layerswapApiClient: { GetDepositActionsAsync: async () => assert.fail('no refresh'), SwapCatchup: async () => {} },
+    }
+    await executeWalletTransfer(ctx, async props => {
+      if (signalsWalletRequest) {
+        await new Promise(resolve => setTimeout(resolve, 5))
+        assert.deepEqual(lifecycle, [], 'preparation is not a wallet prompt')
+        props.onWalletRequest()
+        assert.deepEqual(lifecycle, ['wallet_prompt_opened'], 'the prompt is reported when the wallet is asked')
+        props.onWalletRequest()
+      }
+      return 'hash'
+    })
+    assert.deepEqual(lifecycle, ['wallet_prompt_opened', 'transaction_submitted'], 'a request that never signals still reports the prompt before its outcome')
+    assert.equal(operations.length, 1)
+    assert.equal(operations[0].attributes.outcome, 'succeeded')
+    const preparation = operations[0].attributes.adapter_preparation_ms
+    if (signalsWalletRequest) assert.ok(Number.isInteger(preparation) && preparation >= 5, `preparation ${preparation}`)
+    else assert.equal(preparation, undefined)
+  })
+}
+
+const { TransferResolver } = await import('../dist/esm/lib/transfers/transferResolver.js')
+
+test('the transfer resolver signals the wallet request for providers that do not report it themselves', async () => {
+  const calls = []
+  const provider = (reportsWalletRequest, name) => ({
+    reportsWalletRequest, supportsNetwork: network => network.name === name,
+    async executeTransfer(params) { calls.push(`${name}:execute`); if (reportsWalletRequest) params.onWalletRequest?.(); return 'hash' },
+  })
+  const resolver = new TransferResolver([provider(true, 'prepares'), provider(false, 'direct')])
+  for (const name of ['prepares', 'direct']) {
+    await resolver.executeTransfer({ network: { name }, onWalletRequest: () => calls.push(`${name}:request`) })
+  }
+  assert.deepEqual(calls, ['prepares:execute', 'prepares:request', 'direct:request', 'direct:execute'])
+})
 
 const { useSwapTransactionStore } = await import('../dist/esm/stores/swapTransactionStore.js')
 
