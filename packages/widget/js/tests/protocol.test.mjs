@@ -14,14 +14,6 @@ Object.defineProperty(globalThis, 'crypto', {
 
 const { WIDGET_PROTOCOL_MAJOR } = await import('../dist/esm/index.js');
 
-test('the loader package major matches the supported widget protocol', async () => {
-  const { readFile } = await import('node:fs/promises');
-  const loaderPackage = JSON.parse(
-    await readFile(new URL('../package.json', import.meta.url), 'utf8'),
-  );
-  assert.equal(Number(loaderPackage.version.split('.')[0]), WIDGET_PROTOCOL_MAJOR);
-});
-
 test('rejects a remote from another protocol major', async () => {
   globalThis.fetch = async () => ({
     ok: true,

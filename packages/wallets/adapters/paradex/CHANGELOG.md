@@ -1,5 +1,39 @@
 # @layerswap/wallet-paradex
 
+## 2.6.0
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies
+  - @layerswap/wallet-evm@2.6.0
+  - @layerswap/widget-types@2.6.0
+  - @layerswap/wallet-core@2.6.0
+  - @layerswap/wallet-starknet@2.6.0
+  - @layerswap/utils@2.6.0
+
+## 2.5.1
+
+### Patch Changes
+
+- Updated dependencies [2463dd2]
+- Updated dependencies [18fc71c]
+- Updated dependencies [0dffcd2]
+- Updated dependencies [78fa843]
+- Updated dependencies [7427883]
+- Updated dependencies
+- Updated dependencies [a9c35f8]
+- Updated dependencies [419387b]
+- Updated dependencies [34da257]
+- Updated dependencies [a2136b6]
+- Updated dependencies [78fa843]
+- Updated dependencies [a2136b6]
+  - @layerswap/widget-types@2.5.1
+  - @layerswap/wallet-core@2.5.1
+  - @layerswap/wallet-evm@2.5.1
+  - @layerswap/wallet-starknet@2.5.1
+  - @layerswap/utils@2.5.1
+
 ## 2.4.0
 
 ### Patch Changes

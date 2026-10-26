@@ -9,8 +9,6 @@ const expectedRoutes = [
     { source: '/:path*', headers: [{ key: 'X-Content-Type-Options', value: 'nosniff' }] },
 ]
 
-const framingHeader = /^(x-frame-options|content-security-policy(-report-only)?)$/i
-
 async function routeHeaders(env, phase) {
     const config = await buildConfig(env, phase)
     assert.equal(typeof config.headers, 'function', `headers() must be defined under ${phase}`)
@@ -21,14 +19,6 @@ async function routeHeaders(env, phase) {
 
 test('production build emits exactly the intended route headers', async () => {
     assert.deepEqual(await routeHeaders({}, PHASE_PRODUCTION_BUILD), expectedRoutes)
-})
-
-test('no framing policy is emitted unless explicitly configured', async () => {
-    for (const phase of [PHASE_PRODUCTION_BUILD, PHASE_PRODUCTION_SERVER]) {
-        const keys = (await routeHeaders({}, phase)).flatMap(route => route.headers.map(header => header.key))
-        assert.ok(keys.length > 0, `${phase} emits route headers`)
-        assert.deepEqual(keys.filter(key => framingHeader.test(key)), [], `${phase} must not emit framing headers`)
-    }
 })
 
 test('route headers do not depend on the Next phase', async () => {

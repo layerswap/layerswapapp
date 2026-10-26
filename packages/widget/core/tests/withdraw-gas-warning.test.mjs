@@ -1,3 +1,5 @@
+import { widgetTelemetry } from '../dist/esm/lib/widgetTelemetry.js'
+import { createPortal } from 'react-dom'
 import assert from 'node:assert/strict'
 import test, { after, afterEach, beforeEach } from 'node:test'
 import { registerHooks } from 'node:module'
@@ -17,10 +19,10 @@ for (const [key, value] of Object.entries(globals)) {
 const mockUrl = `data:text/javascript,${encodeURIComponent(`
   import { createElement } from ${JSON.stringify(import.meta.resolve('react'))}
   export const state = {}
-  export const useSwapDataState = () => ({ swapBasicData: state.swap, quoteIsLoading: state.quoteLoading })
+  export const useSwapDataState = () => ({ swapBasicData: state.swap, depositActionsResponse: state.actions, quoteIsLoading: state.quoteLoading })
   export const useSwapDataUpdate = () => ({ setSubmitedFormValues(values) { state.submitted = values }, startFreshSwapAttempt() { state.freshAttempts++ }, canAdjustAmount: () => !state.locked })
   export const useSettingsState = () => ({ networks: [state.swap.source_network] })
-  export const useSelectedAccount = () => ({ address: 'source' })
+  export const useSelectedAccount = () => ({ address: state.walletAddress ?? 'source' })
   export const useBalance = () => ({ balances: state.balances, mutate() {}, isLoading: false })
   export const useFormikContext = () => ({ values: {}, setValues(values) { state.formValues = values } })
   export const useCallbacks = () => ({ onSwapLifecycle: event => state.events.push(event) })
@@ -40,7 +42,7 @@ const mockUrl = `data:text/javascript,${encodeURIComponent(`
 `)}`
 const gasUrl = `data:text/javascript,${encodeURIComponent(`
   import { state } from ${JSON.stringify(mockUrl)}
-  export default () => ({ gasData: state.gasData })
+  export default (...args) => { state.gasRequests.push(args); return { gasData: state.gasData } }
 `)}`
 const mocked = [
   '/context/swap', '/Summary', '/components/Widget/Index', '/SwapQuoteDetails',
@@ -65,14 +67,14 @@ const { state } = await import(mockUrl)
 const { createRoot } = await import('react-dom/client')
 const { default: Withdraw } = await import('../dist/esm/components/Pages/Swap/Withdraw/Withdraw.js')
 const token = { symbol: 'ETH', precision: 6, decimals: 18 }
-const network = { name: 'ETHEREUM_MAINNET', token }
+const network = { name: 'ETHEREUM_MAINNET', type: 'evm', token }
 let root, container
 beforeEach(() => {
   container = document.createElement('div')
   document.body.append(container)
   root = createRoot(container)
   Object.assign(state, {
-    events: [], locked: false, freshAttempts: 0, submitted: undefined, formValues: undefined, quoteLoading: false,
+    actions: undefined, gasRequests: [], events: [], walletAddress: undefined, locked: false, freshAttempts: 0, submitted: undefined, formValues: undefined, quoteLoading: false,
     swap: { source_network: network, source_token: token, destination_network: { name: 'BASE_MAINNET' }, destination_token: token, requested_amount: '0.95', use_deposit_address: false },
     balances: [{ network: network.name, token: token.symbol, amount: 1, isNativeCurrency: true }],
     gasData: { gas: 0.1, token },
@@ -127,15 +129,80 @@ test('a native reserve triggers a gas warning when the amount and fee are covere
   assert.doesNotMatch(container.textContent, /Insufficient balance for gas/)
 })
 
-test('a balance that exactly covers the amount, fee and reserve has no gas warning', async () => {
-  state.swap.requested_amount = '0.75'
+test('a balance that exactly covers the amount, buffered fee and reserve has no gas warning', async () => {
+  state.swap.requested_amount = '0.7475'
   state.gasData = { gas: 0.125, reserve: 0.125, token }
   await render()
   assert.doesNotMatch(container.textContent, /Insufficient balance for gas/)
 
-  state.swap.requested_amount = '0.750001'
+  state.swap.requested_amount = '0.747501'
   await render()
   assert.match(container.textContent, /Insufficient balance for gas/)
+})
+
+test('Adjust amount uses the maximum fee and retains the required native balance across updates', async () => {
+  state.balances[0].amount = 20
+  state.swap.requested_amount = '19'
+  state.gasData = { gas: 0.01, maxFee: 0.02, reserve: 10, token }
+  await render()
+  assert.match(container.textContent, /Insufficient balance for gas/)
+  const adjust = () => [...container.querySelectorAll('button')].find(button => button.textContent === 'Adjust amount')
+  await act(() => adjust().click())
+  assert.ok(Math.abs(Number(state.formValues.amount) - 9.9796) < 1e-6)
+  assert.equal(state.submitted.amount, state.formValues.amount)
+  assert.equal(state.freshAttempts, 1)
+
+  state.gasData = { ...state.gasData, maxFee: 0.04, reserve: 11 }
+  await render()
+  await act(() => adjust().click())
+  assert.ok(Math.abs(Number(state.formValues.amount) - 8.9592) < 1e-6)
+  assert.equal(state.freshAttempts, 2)
+})
+
+test('the gas warning uses the maximum fee when the expected fee is affordable', async () => {
+  state.swap.requested_amount = '0.74'
+  state.gasData = { gas: 0.01, maxFee: 0.125, reserve: 0.125, token }
+  await render()
+  assert.doesNotMatch(container.textContent, /Insufficient balance for gas/)
+
+  state.gasData.maxFee = 0.25
+  await render()
+  assert.match(container.textContent, /Insufficient balance for gas/)
+  assert.equal(sendButton().disabled, false)
+  assert.deepEqual(blocks(), [])
+})
+
+test('a balance covering the fee but missing its safety buffer offers Adjust amount', async () => {
+  state.swap.requested_amount = '0.855'
+  state.gasData = { gas: 0.01, maxFee: 0.125, reserve: 0.02, token }
+  await render()
+  assert.match(container.textContent, /Insufficient balance for gas/)
+  const adjust = [...container.querySelectorAll('button')].find(button => button.textContent === 'Adjust amount')
+  await act(() => adjust.click())
+  assert.ok(Math.abs(Number(state.formValues.amount) - 0.8525) < 1e-6)
+  assert.equal(sendButton().disabled, false)
+  assert.deepEqual(blocks(), [])
+})
+
+test('the warning and adjustment request the current deposit action payload', async () => {
+  state.actions = [{ type: 'transfer', to_address: 'recipient', amount: 0.95, amount_in_base_units: '950000000000000001', call_data: '0x1234', network, token }]
+  await render()
+  assert.ok(state.gasRequests.length > 0)
+  for (const args of state.gasRequests) {
+    assert.equal(args[3], 0.95)
+    assert.deepEqual(args[5].transaction, {
+      recipientAddress: 'recipient', callData: '0x1234', amountInBaseUnits: '950000000000000001',
+    })
+  }
+})
+
+test('deposit actions for another source account cannot replace its gas estimate', async () => {
+  state.actions = [{ type: 'transfer', from_address: 'other-source', to_address: 'recipient', amount: 0.5, call_data: '0x1234', network, token }]
+  await render()
+  for (const args of state.gasRequests) {
+    assert.equal(args[3], state.swap.requested_amount)
+    assert.equal(args[5].transaction, undefined)
+  }
 })
 
 test('a native reserve is required even when the gas fee is zero', async () => {
@@ -163,6 +230,14 @@ test('insufficient balance still replaces Send and reports a real block once', a
   assert.equal(sendButton(), undefined)
   assert.match(container.textContent, /Insufficient balance/)
   assert.deepEqual(blocks().map(event => event.reasonCode), ['insufficient_balance'])
+  const awaiting = state.events.find(event => event.step === 'awaiting_wallet_action')
+  for (const key of ['sourceWalletAddress', 'walletBalance', 'walletBalanceNetwork', 'walletBalanceToken', 'walletBalanceTimestamp']) {
+    assert.equal(key in awaiting, false, `awaiting callback must not expose ${key}`)
+  }
+  assert.equal(blocks()[0].sourceWalletAddress, 'source')
+  assert.equal(blocks()[0].walletBalance, 0.5)
+  assert.equal(blocks()[0].walletBalanceToken, token.symbol)
+  assert.equal(blocks()[0].walletBalanceNetwork, network.name)
 
   state.balances[0].amount = 1
   await render()
@@ -195,7 +270,9 @@ test('Adjust amount cannot abandon an executing swap', async () => {
   assert.equal(state.freshAttempts, 0)
 })
 
-test('Adjust amount rechecks execution safety if the swap locks after render', async () => {
+test('Adjust amount rechecks execution safety if the swap locks after render', async t => {
+  t.after(widgetTelemetry.mount(widgetTelemetry.createFlow({ source_network: network.name })))
+  widgetTelemetry.recordAmountInput('manual')
   await render()
   const button = adjustButton()
   assert.ok(button)
@@ -203,6 +280,7 @@ test('Adjust amount rechecks execution safety if the swap locks after render', a
   await act(() => button.click())
   assert.equal(state.freshAttempts, 0)
   assert.equal(state.submitted, undefined)
+  assert.equal(widgetTelemetry.amountInputMethod({ step: 'form_submitted' }), 'manual')
 })
 
 function setTokenBalance(amount) {
@@ -286,4 +364,36 @@ test('temporary quote loading retains a viable Adjust amount action in its loadi
   state.quoteLoading = false
   await render()
   assert.equal(adjustButton().disabled, false)
+})
+
+test('portaled Adjust amount records Max after its guard without changing the adjustment', async () => {
+  const unmount = widgetTelemetry.mount(widgetTelemetry.createFlow({ source_network: network.name, source_token: token.symbol }))
+  const portal = document.createElement('div'); document.body.append(portal)
+  try {
+    widgetTelemetry.recordAmountInput('manual')
+    await act(() => root.render(createElement(StrictMode, null, createPortal(createElement(Withdraw, { type: 'widget' }), portal))))
+    const button = [...portal.querySelectorAll('button')].find(button => button.textContent === 'Adjust amount')
+    assert.ok(button)
+    assert.equal(button.closest('[data-ls-form]'), null)
+    assert.equal(widgetTelemetry.amountInputMethod({ step: 'form_submitted' }), 'manual')
+    await act(() => button.click())
+    assert.equal(widgetTelemetry.amountInputMethod({ step: 'form_submitted' }), 'max')
+    assert.equal(state.freshAttempts, 1)
+    assert.equal(state.submitted.amountMode, 'max')
+    assert.equal(state.submitted.amount, '0.898')
+  } finally { unmount(); portal.remove() }
+})
+
+test('an insufficient-balance warning after wallet switching records the selected wallet balance', async () => {
+  await render()
+  assert.deepEqual(blocks(), [])
+  state.walletAddress = 'wallet-B'
+  state.balances = [{ ...state.balances[0], amount: 0.25, request_time: 'wallet-B-read' }]
+  await render()
+  assert.equal(blocks().length, 1)
+  assert.equal(blocks()[0].sourceWalletAddress, 'wallet-B')
+  assert.equal(blocks()[0].walletBalance, 0.25)
+  assert.equal(blocks()[0].walletBalanceToken, token.symbol)
+  assert.equal(blocks()[0].walletBalanceNetwork, network.name)
+  assert.equal(blocks()[0].walletBalanceTimestamp, 'wallet-B-read')
 })

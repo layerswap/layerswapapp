@@ -189,29 +189,6 @@ test('a stalled fresh submission capability check expires before opening a walle
     assert.equal(h.requests.some(request => request.method === 'wallet_sendCalls'), false)
 })
 
-test('MetaMask switch completion can repeat the target chain while creation shares discovery', async () => {
-    const h = walletHarness()
-    h.state.chainId = 534352
-    h.state.changed()
-    // The wallet's chainChanged event reaches Wagmi before switchChain resolves.
-    h.state.chainId = 42161
-    h.state.changed()
-
-    let release
-    h.state.capabilitiesWait = new Promise(resolve => { release = resolve })
-    const selectionCheck = h.provider.getCapabilities(h.context)
-    while (!h.requests.length) await new Promise(resolve => setImmediate(resolve))
-    const creationCheck = h.provider.getCapabilities(h.context)
-
-    // MetaMask's switchChain emits the same chain again after its sync check.
-    h.state.changed()
-    const laterCheck = h.provider.getCapabilities(h.context)
-    release()
-    assert.deepEqual(await Promise.all([selectionCheck, creationCheck, laterCheck]), ['supported', 'supported', 'supported'])
-    assert.equal(await h.provider.getCapabilities(h.context), 'supported')
-    assert.equal(h.requests.length, 1, 'duplicate events preserve both shared discovery and its cache')
-})
-
 test('real Wagmi change events do not invalidate a check when MetaMask repeats Arbitrum', async () => {
     const h = walletHarness()
     const transport = custom({ request: async () => assert.fail('discovery must only query the selected wallet') })
@@ -226,11 +203,13 @@ test('real Wagmi change events do not invalidate a check when MetaMask repeats A
     h.state.capabilitiesWait = new Promise(resolve => { release = resolve })
     const pending = provider.getCapabilities(h.context)
     while (!h.requests.length) await new Promise(resolve => setImmediate(resolve))
+    const creation = provider.getCapabilities(h.context)
     const previousConnections = config.state.connections
     config._internal.events.change({ uid, chainId: 42161 })
     assert.notEqual(config.state.connections, previousConnections)
+    const later = provider.getCapabilities(h.context)
     release()
-    assert.equal(await pending, 'supported')
+    assert.deepEqual(await Promise.all([pending, creation, later]), ['supported', 'supported', 'supported'])
     assert.equal(await provider.getCapabilities(h.context), 'supported')
     assert.equal(h.requests.length, 1)
 })

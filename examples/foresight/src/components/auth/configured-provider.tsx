@@ -16,6 +16,8 @@ const adapter = projectId ? new WagmiAdapter({ projectId, networks, ssr: true })
 const appUrl = getAppOrigin();
 const modal = adapter && projectId ? createAppKit({
   adapters: [adapter], projectId, networks, defaultNetwork: base,
+  // The host only needs an address; Layerswap selects the chain when funding.
+  allowUnsupportedChain: true,
   metadata: { name: 'Foresight', description: 'Foresight prediction market demo', url: appUrl, icons: [new URL('/icon.svg', appUrl).href] },
   themeMode: 'light', themeVariables: { '--w3m-accent': '#7655e8', '--w3m-border-radius-master': '2px' },
   features: { analytics: false, email: false, socials: false, swaps: false, onramp: false },
@@ -60,7 +62,7 @@ function Session({children}:{children:React.ReactNode}) {
   },[privy.authenticated]);
   const activeMethod = method || (reownAddress ? 'wallet' : privy.authenticated ? 'privy' : null);
   const address = activeMethod==='privy' ? privy.address : reownAddress;
-  const value = useMemo(()=>({address,email:activeMethod==='privy'?privy.email:null,authenticated:Boolean(address)||(activeMethod==='privy'&&privy.authenticated),method:activeMethod,ready:privy.ready,reownConfigured:Boolean(projectId),privyConfigured:Boolean(privyId),wagmiConfig:activeMethod==='wallet'?adapter?.wagmiConfig:undefined,connectWallet,login,disconnect}),[address,activeMethod,privy,connectWallet,login,disconnect]);
+  const value = useMemo(()=>({address,email:activeMethod==='privy'?privy.email:null,authenticated:Boolean(address)||(activeMethod==='privy'&&privy.authenticated),method:activeMethod,ready:privy.ready,reownConfigured:Boolean(projectId),privyConfigured:Boolean(privyId),connectWallet,login,disconnect}),[address,activeMethod,privy,connectWallet,login,disconnect]);
   return <WalletContext.Provider value={value}>
     {adapter?<ReownBridge onAddress={setReownAddress} actions={actions}/>:null}
     {privyId?<PrivyBridge onState={setPrivy} actions={actions}/>:null}

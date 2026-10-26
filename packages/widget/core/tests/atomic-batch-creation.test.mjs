@@ -5,6 +5,7 @@ import ts from 'typescript'
 import { JSDOM } from 'jsdom'
 import React, { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
+import useSWR, { SWRConfig } from 'swr'
 import { createSwapContext } from './helpers/swap-context.mjs'
 
 const dom = new JSDOM('<div id="root"></div>', { url: 'https://widget.example' })
@@ -36,7 +37,7 @@ const fixture = JSON.parse(readFileSync(new URL('./fixtures/atomic-batch.json', 
 const store = state => Object.assign(selector => selector(state), { getState: () => state })
 const flush = async () => { for (let i = 0; i < 10; i++) await Promise.resolve() }
 
-async function setup({ capability = async () => 'supported', gasless = false, native = false, depositAddress = false, existing = false, discover = false, provider = '0X' } = {}) {
+async function setup({ capability = async () => 'supported', gasless = false, native = false, depositAddress = false, existing = false, discover = false, provider = '0X', liveSource = false, submit = true, quoteReady = true, swrDedupingInterval = 2000 } = {}) {
     let update, state, wallet = { id: 'Selected', providerName: 'EVM', address: fixture.account, addresses: [fixture.account],
         asSourceSupportedNetworks: [fixture.network.name], chainId: 42161, isActive: true }
     const requests = [], checks = []
@@ -52,6 +53,9 @@ async function setup({ capability = async () => 'supported', gasless = false, na
         supports_gasless_deposit: true, gasless_standard: 'eip3009' }
     const values = { from: network, to: network, fromAsset: token, toAsset: { symbol: 'AAVE' },
         destination_address: fixture.account, amount: '1', depositMethod: depositAddress ? 'deposit_address' : 'wallet' }
+    const capabilityHook = pure('../src/hooks/useAtomicBatchCapability.ts', {
+        swr: { default: useSWR }, '@/lib/resolvers/resolverService': resolvers,
+    })
     const context = createSwapContext({
         Client: class {
             CreateSwapAsync = async data => { requests.push(data); return { data: { swap: { id: 'created' }, quote: {} } } }
@@ -59,9 +63,7 @@ async function setup({ capability = async () => 'supported', gasless = false, na
         },
         getSwapId: () => existing ? swapSnapshot.data.swap.id : undefined, getAccount: () => wallet,
         overrides: {
-            ...(discover ? { '@/hooks/useAtomicBatchCapability': pure('../src/hooks/useAtomicBatchCapability.ts', {
-                react: React, '@/lib/resolvers/resolverService': resolvers,
-            }) } : {}),
+            ...(discover ? { '@/hooks/useAtomicBatchCapability': capabilityHook } : {}),
             '@/hooks/useWallet': { default: () => ({ wallets: [wallet] }) },
             './settings': { useInitialSettings: () => ({ swapId: existing ? swapSnapshot.data.swap.id : undefined }), useSettingsState: () => settings },
             '@/helpers/atomicBatch': pure('../src/helpers/atomicBatch.ts'),
@@ -71,23 +73,39 @@ async function setup({ capability = async () => 'supported', gasless = false, na
             '@/stores/gaslessPreferenceStore': { useGaslessPreferenceStore: store(preferences) },
             '@/lib/extendedRoutes/registry': { resolveExtendedRoutePlan: () => undefined },
             '@/lib/resolvers/resolverService': resolvers,
-            '@/hooks/useFee': { transformSwapDataToQuoteArgs: () => undefined, useQuoteData: () => ({ quote: {
+            '@/hooks/useFee': { transformSwapDataToQuoteArgs: () => undefined, useQuoteData: () => ({ quote: quoteReady ? {
                 quote: { source_network: values.from, source_token: values.fromAsset,
                     destination_network: values.to, destination_token: values.toAsset,
                     path: [{ provider, order: 0 }] },
-            } }) },
+            } : undefined }) },
             '@/hooks/useSwapPolling': { useSwapPolling: id => ({ data: id ? swapSnapshot : undefined }) },
             '@/lib/swapLifecycle': { lifecycleContextFromForm: () => ({}) },
             '@/lib/swapCreation': { createSwapAttempt: async prepare => (await (await prepare()).request()).data },
             '@layerswap/utils': { KnownInternalNames: { Networks: {} } },
         },
     })
-    function Read() { update = context.useSwapDataUpdate(); state = context.useSwapDataState(); return null }
+    const labels = []
+    const Discovery = pure('../src/components/Pages/Swap/Form/AtomicBatchDiscovery.tsx', {
+        react: React,
+        formik: { useFormikContext: () => ({ values }) },
+        '@/context/swap': context,
+        '@/context/swapAccounts': { useSelectedAccount: () => wallet },
+        '@/hooks/useWallet': { default: () => ({ wallets: [wallet] }) },
+        '@/hooks/useAtomicBatchCapability': capabilityHook,
+        '@/lib/address/Address': { Address: { equals: (a, b) => a === b } },
+    }).default
+    function Read() { update = context.useSwapDataUpdate(); state = context.useSwapDataState(); labels.push(state.flow.actionButtonText); return null }
     const root = createRoot(document.getElementById('root'))
-    const render = () => act(() => root.render(createElement(context.SwapDataProvider, null, createElement(Read))))
+    const swrConfig = { provider: () => new Map(), dedupingInterval: swrDedupingInterval }
+    const render = () => act(() => root.render(createElement(SWRConfig, { value: swrConfig },
+        createElement(context.SwapDataProvider, null,
+            createElement(React.Fragment, null, liveSource ? createElement(Discovery) : null, createElement(Read))))))
     await render()
-    await act(() => update.setSubmitedFormValues(values))
-    return { requests, checks, values, preferences, get update() { return update }, get state() { return state }, root,
+    if (submit) await act(() => update.setSubmitedFormValues(values))
+    return { requests, checks, values, preferences, labels,
+        review: async () => { quoteReady = true; await act(() => update.setSubmitedFormValues(values)) },
+        changeSource: async changes => { Object.assign(values, changes); await render() },
+        get update() { return update }, get state() { return state }, root,
         changeWallet: async changes => { wallet = { ...wallet, ...changes }; await render() } }
 }
 
@@ -124,7 +142,7 @@ for (const [capability, kind, label] of [
     } finally { await act(() => h.root.unmount()) }
 })
 
-for (const mode of ['native', 'gasless', 'depositAddress', 'bridge']) test(`${mode} drafts never discover batching support`, async () => {
+for (const mode of ['native', 'gasless', 'depositAddress', 'bridge']) test(`${mode} drafts do not start batching discovery in the swap context`, async () => {
     const h = await setup({ discover: true, [mode]: true, provider: mode === 'bridge' ? 'ACROSS' : '0X' })
     try {
         assert.equal(h.checks.length, 0)
@@ -145,6 +163,66 @@ test('a stale capability response cannot relabel the newly selected account', as
         await act(async () => { responses[1]('unsupported'); await flush() })
         assert.equal(h.state.flow.actionButtonText, 'Sign to swap')
         assert.equal(h.requests.length, 0)
+    } finally { await act(() => h.root.unmount()) }
+})
+
+for (const capability of ['supported', 'unsupported']) test(`wallet discovery resolves ${capability} support before the quote and review`, async () => {
+    let respond
+    const h = await setup({ liveSource: true, submit: false, quoteReady: false, discover: true,
+        capability: () => new Promise(resolve => { respond = resolve }) })
+    try {
+        assert.equal(h.state.swapBasicData, undefined, 'no submitted draft is needed')
+        assert.equal(h.state.quote, undefined, 'wallet discovery does not wait for a quote')
+        assert.equal(h.checks.length, 1)
+        await act(async () => { respond(capability); await flush() })
+        h.labels.length = 0
+        await h.review()
+        const label = capability === 'supported' ? 'Approve and swap' : 'Sign to swap'
+        assert.equal(h.state.flow.actionButtonText, label)
+        assert.ok(h.labels.length > 0)
+        assert.ok(h.labels.every(value => value === label), 'the first review render uses the detected capability')
+        assert.equal(h.checks.length, 1, 'opening review reuses the result')
+        assert.equal(h.requests.length, 0)
+    } finally { await act(() => h.root.unmount()) }
+})
+
+test('token and amount edits reuse wallet support discovered on the form', async () => {
+    const h = await setup({ liveSource: true, submit: false, quoteReady: false, discover: true })
+    try {
+        assert.equal(h.checks.length, 1)
+        await h.changeSource({ fromAsset: { ...h.values.fromAsset, symbol: 'OTHER', contract: `0x${'5'.repeat(40)}` }, amount: '2' })
+        assert.equal(h.checks.length, 1)
+        await h.review()
+        assert.equal(h.state.flow.actionButtonText, 'Approve and swap')
+        assert.equal(h.checks.length, 1)
+    } finally { await act(() => h.root.unmount()) }
+})
+
+test('returning to a wallet refreshes its cached support without using another chain response', async () => {
+    const responses = []
+    const h = await setup({ discover: true, swrDedupingInterval: 0, capability: () => new Promise(resolve => responses.push(resolve)) })
+    try {
+        await act(async () => { responses[0]('supported'); await flush() })
+        assert.equal(h.state.flow.actionButtonText, 'Approve and swap')
+        await h.changeWallet({ chainId: 1 })
+        await h.changeWallet({ chainId: 42161 })
+        assert.equal(responses.length, 3)
+        assert.equal(h.state.flow.actionButtonText, 'Approve and swap')
+        await act(async () => { responses[1]('unsupported'); await flush() })
+        assert.equal(h.state.flow.actionButtonText, 'Approve and swap')
+        await act(async () => { responses[2]('unsupported'); await flush() })
+        assert.equal(h.state.flow.actionButtonText, 'Sign to swap')
+    } finally { await act(() => h.root.unmount()) }
+})
+
+test('changing the runtime connector identity rediscovers support', async () => {
+    let checks = 0
+    const h = await setup({ discover: true, capability: async () => ++checks === 1 ? 'supported' : 'unsupported' })
+    try {
+        assert.equal(h.state.flow.actionButtonText, 'Approve and swap')
+        await h.changeWallet({ metadata: { connectorId: 'selected', connectorUid: 'new-connection' } })
+        assert.equal(checks, 2)
+        assert.equal(h.state.flow.actionButtonText, 'Sign to swap')
     } finally { await act(() => h.root.unmount()) }
 })
 
@@ -193,17 +271,8 @@ test('switching source routes refreshes creation with stable wallet, account and
     } finally { await act(() => h.root.unmount()) }
 })
 
-test('atomic creation does not require browser coordination', async () => {
-    const h = await setup()
-    try {
-        await act(async () => { await h.update.createSwap(h.values, {}) })
-        assert.equal(h.checks.length, 1)
-        assert.equal(h.requests[0].use_atomic_batch, true)
-    } finally { await act(() => h.root.unmount()) }
-})
-
 test('existing and completed swaps never rediscover capabilities after wallet changes', async () => {
-    const h = await setup({ existing: true, discover: true })
+    const h = await setup({ existing: true, discover: true, liveSource: true })
     try {
         assert.equal(h.state.swapId, 'capability-discovery-swap')
         assert.equal(h.checks.length, 0)

@@ -151,6 +151,7 @@ test('Hyperliquid and Polymarket declines are declared with the original error a
         const err = new UserRejectedRequestError(new Error('Request declined'))
         const thrown = rejected(err)
         assert.equal(thrown.name, 'TransactionRejected')
+        assert.equal(thrown.reasonCode, 'user_rejected')
         assert.equal(thrown.cause, err)
         assert.equal(isUserRejection(thrown), true)
         assert.equal(typeof thrown.message, 'string')

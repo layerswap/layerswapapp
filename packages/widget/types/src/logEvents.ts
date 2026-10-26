@@ -288,6 +288,13 @@ export type SwapLifecycleEvent = {
   phase?: string;
   depositMethod?: string;
   requestedAmount?: string;
+  /** Last explicit input method, not the form's automatic behavior mode. */
+  amountMode?: 'manual' | 'min' | 'half' | 'max' | 'unknown';
+  sourceWalletAddress?: string;
+  walletBalance?: number;
+  walletBalanceNetwork?: string;
+  walletBalanceToken?: string;
+  walletBalanceTimestamp?: string;
   fromAddress?: string;
   toAddress?: string;
   sourceNetwork?: string;

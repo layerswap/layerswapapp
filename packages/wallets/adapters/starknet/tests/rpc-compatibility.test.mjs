@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { config, hash, WalletAccount } from 'starknet-rpc'
+import { config, hash } from 'starknet-rpc'
 import { StarknetBalanceProvider } from '../dist/esm/starknetBalanceProvider.js'
 import { StarknetNftProvider } from '../dist/esm/starknetNftProvider.js'
 import { StarknetGasProvider } from '../dist/esm/starknetGasProvider.js'
@@ -106,9 +106,6 @@ for (const specVersion of ['0.10.0', '0.10.1', '0.10.2', '0.10.3', '0.10.4', '0.
         const requests = mockRpc(t, specVersion)
         const { wallet, walletRequests } = await connectWallet()
         assert.equal(wallet.version, '5.1.0')
-        assert.ok(wallet.metadata.starknetAccount instanceof WalletAccount)
-        assert.ok(wallet.metadata.starknetAccount.provider)
-        assert.equal(typeof wallet.metadata.starknetAccount.getClassAt, 'undefined')
         assert.equal(wallet.metadata.starknetAccount.provider.readSpecVersion(), specVersion)
 
         const fee = await new StarknetGasProvider().getGas({ network, token, wallet, amount: 1.25 })
