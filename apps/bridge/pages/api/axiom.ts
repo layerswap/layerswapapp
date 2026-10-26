@@ -50,7 +50,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         res.status(403).end()
         return
     }
-    if (req.headers.origin) {
+    // The public /app reverse proxy can replace Host with the upstream host.
+    // Browsers set Sec-Fetch-Site themselves; same-origin requests remain valid
+    // across that proxy without trusting arbitrary forwarded host headers.
+    if (req.headers.origin && req.headers['sec-fetch-site'] !== 'same-origin') {
         try {
             if (new URL(req.headers.origin).host !== req.headers.host) {
                 res.status(403).end()
