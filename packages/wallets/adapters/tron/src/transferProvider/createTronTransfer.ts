@@ -58,7 +58,10 @@ export function createTronTransfer(): TransferProvider {
                 })
 
                 const data = Buffer.from(callData).toString('hex')
-                const transaction = await tronWeb.transactionBuilder.addUpdateData(initialTransaction, data, "hex")
+                // The memo only changes raw_data; recompute the transaction id locally.
+                // The default path posts the transaction to the node (getsignweight) and
+                // reports any RPC failure there as a generic transaction-id error.
+                const transaction = await tronWeb.transactionBuilder.addUpdateData(initialTransaction, data, "hex", { txLocal: true })
                 const signature = await tronAdapterManager.signTransaction(transaction)
                 const res = await tronWeb.trx.sendRawTransaction(signature)
 
