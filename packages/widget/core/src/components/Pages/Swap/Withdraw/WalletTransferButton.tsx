@@ -1,6 +1,6 @@
 import { WalletTransferView } from './Presentation/Page2Sections';
 import { FC } from 'react';
-import type { JSX } from 'react';
+import type { JSX, ReactNode } from 'react';
 import { SwapBasicData } from '@/lib/apiClients/layerSwapApiClient';
 import { WalletTransferAction } from './Wallet';
 
@@ -12,6 +12,7 @@ type Props = {
     onWalletWithdrawalSuccess?: () => void;
     onCancelWithdrawal?: () => void;
     showProgress?: boolean;
+    adjustAmount?: ReactNode;
 };
 const WalletTransferButton: FC<Props> = ({
     swapBasicData: swapData,
@@ -21,6 +22,7 @@ const WalletTransferButton: FC<Props> = ({
     onWalletWithdrawalSuccess,
     onCancelWithdrawal,
     showProgress,
+    adjustAmount,
 }) => {
     return (
         <>
@@ -32,6 +34,7 @@ const WalletTransferButton: FC<Props> = ({
                     onWalletWithdrawalSuccess={onWalletWithdrawalSuccess}
                     onCancelWithdrawal={onCancelWithdrawal}
                     showProgress={showProgress}
+                    adjustAmount={adjustAmount}
                 />
             </WalletTransferView>
         </>

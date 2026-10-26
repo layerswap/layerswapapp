@@ -3,12 +3,13 @@ import { useSwapDataState } from '@/context/swap';
 import { ErrorHandler } from '@/lib/ErrorHandler';
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore';
 import { ActionMessageType, Network } from '@layerswap/widget-types';
-import { FC, useEffect } from 'react';
+import { FC, type ReactNode, useEffect } from 'react';
 import { getActionMessage, ActionMessageView } from '../../Presentation/ActionMessageView';
 
-function useActionMessageProps({ error, isSignatureError, isLoading, selectedSourceAddress, sourceNetwork, active = true }: {
+function useActionMessageProps({ error, adjustAmount, isSignatureError, isLoading, selectedSourceAddress, sourceNetwork, active = true }: {
     active?: boolean;
     error: Error | undefined;
+    adjustAmount?: ReactNode;
     isLoading: boolean;
     isSignatureError?: boolean;
     selectedSourceAddress: string;
@@ -41,7 +42,7 @@ function useActionMessageProps({ error, isSignatureError, isLoading, selectedSou
     }, [error, active]);
 
     return {
-        error, isSignatureError, isLoading, selectedSourceAddress, sourceNetwork,
+        error, adjustAmount, isSignatureError, isLoading, selectedSourceAddress, sourceNetwork,
         gaslessUnavailable, gaslessErrorMessage: gaslessErrorMessage ?? undefined,
         swapError: !!swapError,
     };

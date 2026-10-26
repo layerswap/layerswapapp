@@ -1,5 +1,5 @@
 import { ActionMessageType } from '@layerswap/widget-types';
-import { FC } from "react"
+import { FC, type ReactNode } from "react"
 import WalletMessage, { WalletUnknownError } from "./Message"
 import { Address } from "@/lib/address/Address"
 
@@ -17,11 +17,14 @@ const TransactionInProgressMessage: FC = () => {
         details='Waiting for your transaction to be published' />
 }
 
-const InsufficientFundsMessage: FC = () => {
+const InsufficientFundsMessage: FC<{ adjustAmount?: ReactNode }> = ({ adjustAmount }) => {
     return <WalletMessage
         status="error"
         header='Insufficient funds'
-        details='The balance of the connected wallet is not enough' />
+        details={adjustAmount
+            ? 'The balance of the connected wallet does not cover the amount and the network fee'
+            : 'The balance of the connected wallet is not enough'}
+        action={adjustAmount} />
 }
 
 const TransactionRejectedMessage: FC<{ isSignature?: boolean }> = ({ isSignature }) => {

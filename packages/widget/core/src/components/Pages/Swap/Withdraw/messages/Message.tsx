@@ -26,10 +26,12 @@ export type WalletMessageProps = {
     header: string;
     details: string;
     status: 'pending' | 'error';
+    /** A recovery control rendered under the details, e.g. an amount adjustment. */
+    action?: ReactNode;
 };
-const WalletMessage: FC<WalletMessageProps> = ({ header, details, status }) => {
+const WalletMessage: FC<WalletMessageProps> = ({ header, details, status, action }) => {
     const inline = useContext(InlineWalletMessageContext);
-    if (inline) return <>{details || header}</>;
+    if (inline) return <>{details || header}{action ? <div className="mt-2">{action}</div> : null}</>;
 
     return (
         <>
@@ -60,6 +62,7 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status }) => {
                                 {details}
                             </p>
                         ) : null}
+                        {action ? <div className="mt-1">{action}</div> : null}
                     </div>
                 </div>
             </motion.div>

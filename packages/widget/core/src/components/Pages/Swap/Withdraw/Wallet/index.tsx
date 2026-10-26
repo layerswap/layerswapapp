@@ -41,8 +41,9 @@ type Props = {
     onWalletWithdrawalSuccess?: () => void
     onCancelWithdrawal?: () => void
     showProgress?: boolean
+    adjustAmount?: ReactNode
 };
-export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWalletWithdrawalSuccess, onCancelWithdrawal, showProgress }) => {
+export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWalletWithdrawalSuccess, onCancelWithdrawal, showProgress, adjustAmount }) => {
     const { source_network } = swapData
 
     const { provider, wallets } = useWallet(source_network, "withdrawal")
@@ -63,6 +64,7 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
                     swapId={swapId}
                     swapBasicData={swapData}
                     refuel={refuel}
+                    adjustAmount={adjustAmount}
                 />
             </WithdrawalProvider>
         }
@@ -72,7 +74,8 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
 export function useWalletWithdrawalController({
     swapBasicData,
     refuel,
-    swapId
+    swapId,
+    adjustAmount,
 }: WithdrawPageProps, active = true) {
 
     const { source_network, destination_network, destination_address } = swapBasicData
@@ -127,7 +130,7 @@ export function useWalletWithdrawalController({
         : undefined)
 
     const connection = useConnectWalletController();
-    const transfer = useTransferTokenController({ swapData: swapBasicData, refuel, chainId: Number(networkChainId), savedTransactionHash }, active && !!wallet && !sameAccountMismatch && !hasMultiStepHandler);
+    const transfer = useTransferTokenController({ swapData: swapBasicData, refuel, chainId: Number(networkChainId), savedTransactionHash, adjustAmount }, active && !!wallet && !sameAccountMismatch && !hasMultiStepHandler);
     const send = useSendTransactionController(transfer.sendProps, active && !!wallet && !sameAccountMismatch && !hasMultiStepHandler);
     const presentation = getSendTransactionPresentation(send);
     let controls: ReactNode = presentation.controls;
@@ -206,12 +209,14 @@ type TransferTokenButtonProps = {
     chainId?: number;
     swapData: SwapBasicData,
     refuel: boolean,
+    adjustAmount?: ReactNode,
 }
 export function useTransferTokenController({
     savedTransactionHash,
     chainId,
     swapData,
-    refuel
+    refuel,
+    adjustAmount,
 }: TransferTokenButtonProps, active = true) {
     const [buttonClicked, setButtonClicked] = useState(false)
     const [error, setError] = useState<Error | undefined>()
@@ -377,7 +382,7 @@ export function useTransferTokenController({
     }, [signGaslessDeposit, swapData.source_network, selectedSourceAccount?.address, wallet])
 
     const errorMessage = useActionMessage({
-        error: buttonClicked ? error : undefined, isSignatureError, isLoading: false,
+        error: buttonClicked ? error : undefined, adjustAmount, isSignatureError, isLoading: false,
         selectedSourceAddress: selectedSourceAccount?.address || '', sourceNetwork: swapData.source_network, active,
     });
     return {

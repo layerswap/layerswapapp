@@ -85,6 +85,7 @@ function WalletController(props: Props) {
             swapBasicData: props.swapBasicData,
             swapId: swapDetails?.id,
             refuel: !!refuel,
+            adjustAmount: balance.adjustAmount,
         },
         active && !balance.blocked,
     );

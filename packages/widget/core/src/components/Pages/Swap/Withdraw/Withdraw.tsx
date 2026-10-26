@@ -171,6 +171,11 @@ export function useWithdrawBalance(active = true) {
         startFreshSwapAttempt,
     ]);
 
+    // One live computation feeds every place that can offer a lower amount: the
+    // balance and gas warnings here and the wallet's own insufficient-funds error.
+    const adjustAmount = showAdjustAmount
+        ? <AdjustAmountButton compact onEditAmount={handleEditAmount} isLoading={quoteIsLoading} />
+        : undefined;
     let warning: JSX.Element | null = null;
     let actionKey = 'transfer';
     let blocked = false;
@@ -239,9 +244,9 @@ export function useWithdrawBalance(active = true) {
     } else if (!checkingSubmission && swapBasicData?.use_deposit_address === false && outOfGas && !presetIsSyncing) {
         // A changing gas warning must preserve the active wallet execution.
         actionKey = 'transfer';
-        warning = <GasWarningView adjustButton={showAdjustAmount && <AdjustAmountButton compact onEditAmount={handleEditAmount} isLoading={quoteIsLoading} />} />;
+        warning = <GasWarningView adjustButton={adjustAmount} />;
     }
-    return { warning, actionKey, blocked };
+    return { warning, actionKey, blocked, adjustAmount };
 }
 
 const Withdraw: FC<{
@@ -250,11 +255,11 @@ const Withdraw: FC<{
     onCancelWithdrawal?: () => void;
 }> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal }) => {
     const { swapBasicData, swapDetails, refuel } = useSwapDataState();
-    const { warning, actionKey, blocked } = useWithdrawBalance();
+    const { warning, actionKey, blocked, adjustAmount } = useWithdrawBalance();
     if (!swapBasicData) return null;
     return <Widget.Footer sticky={type === 'widget'}>
         <WalletActionTransition actionKey={actionKey}>
-            {blocked ? warning : <WalletTransferButton swapBasicData={swapBasicData} swapId={swapDetails?.id} refuel={!!refuel} warning={warning} showProgress={false} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal} />}
+            {blocked ? warning : <WalletTransferButton swapBasicData={swapBasicData} swapId={swapDetails?.id} refuel={!!refuel} warning={warning} adjustAmount={adjustAmount} showProgress={false} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal} />}
         </WalletActionTransition>
     </Widget.Footer>;
 };

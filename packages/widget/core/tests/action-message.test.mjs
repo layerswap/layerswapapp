@@ -14,8 +14,8 @@ const fixtures = moduleUrl(`
 // Keep the real message selection and copy; replace only the visual wrapper.
 const messageWrapper = moduleUrl(`
   import { createElement } from ${JSON.stringify(import.meta.resolve('react'))}
-  export default ({ header, details }) => createElement('section', null,
-    createElement('h2', null, header), createElement('p', null, details))
+  export default ({ header, details, action }) => createElement('section', null,
+    createElement('h2', null, header), createElement('p', null, details), action)
   export const WalletUnknownError = () => createElement('section', null, 'Wallet error')
 `)
 const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
@@ -67,6 +67,20 @@ test('a wallet RPC failure relayed over WalletConnect as 5000 is not shown as a 
   assert.match(html, /Optimism network settings/)
   assert.match(html, /remove any others/)
   assert.doesNotMatch(html, /rejected|eth_getBlockByNumber|5000/)
+})
+
+test('an insufficient-funds wallet error offers the live amount adjustment when one exists', () => {
+  const error = Object.assign(new Error('insufficient funds for gas * price + value'), { name: 'InsufficientFunds' })
+  const adjustAmount = createElement('button', null, 'Adjust amount')
+  const withAdjustment = renderError(error, { adjustAmount })
+  assert.match(withAdjustment, /Insufficient funds/)
+  assert.match(withAdjustment, /amount and the network fee/)
+  assert.match(withAdjustment, /<button>Adjust amount<\/button>/)
+  const withoutAdjustment = renderError(error)
+  assert.match(withoutAdjustment, /Insufficient funds/)
+  assert.doesNotMatch(withoutAdjustment, /Adjust amount/)
+  // The adjustment belongs to the funds error only; other failures keep their own recovery.
+  assert.doesNotMatch(renderError({ code: 4001 }, { adjustAmount }), /Adjust amount/)
 })
 
 test('recognized wallet failures give specific recovery guidance', () => {

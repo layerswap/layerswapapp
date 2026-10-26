@@ -4,8 +4,11 @@ import { ActionMessageType, type Network } from '@layerswap/widget-types';
 import WalletMessage, { WalletUnknownError } from '../messages/Message';
 import { ActionMessages } from '../messages/TransactionMessages';
 import { walletErrorMessage } from '../messages/walletErrorMessage';
+import type { ReactNode } from 'react';
 export type ActionMessageViewProps = {
     error?: { name: string; message?: string };
+    /** The live amount adjustment, when the current balance, fee and limits allow a lower amount. */
+    adjustAmount?: ReactNode;
     isLoading?: boolean;
     isSignatureError?: boolean;
     selectedSourceAddress: string;
@@ -17,6 +20,7 @@ export type ActionMessageViewProps = {
 };
 export function getActionMessage({
     error,
+    adjustAmount,
     isLoading,
     isSignatureError,
     selectedSourceAddress,
@@ -44,7 +48,7 @@ export function getActionMessage({
     } else if (error?.name === ActionMessageType.TransactionExpired) {
         return <ActionMessages.TransactionExpiredMessage />;
     } else if (error?.name === ActionMessageType.InsufficientFunds) {
-        return <ActionMessages.InsufficientFundsMessage />;
+        return <ActionMessages.InsufficientFundsMessage adjustAmount={adjustAmount} />;
     } else if (error?.name === ActionMessageType.WaletMismatch) {
         return (
             <ActionMessages.WalletMismatchMessage
