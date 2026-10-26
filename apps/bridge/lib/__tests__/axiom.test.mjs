@@ -135,3 +135,18 @@ test('promoted identifiers preserve bounded strings and explicit empty swap IDs'
         events: [{ name: limit, attributes: { swap_id: '' } }],
     })).statusCode, 204)
 })
+
+
+test('browser same-origin telemetry survives a reverse proxy host rewrite', async () => {
+    const post = harness(async () => Response.json({ ingested: 1, failed: 0 }))
+    const headers = {
+        host: 'bridge-upstream.vercel.app',
+        origin: 'https://layerswap.io',
+        'sec-fetch-site': 'same-origin',
+        'content-type': 'application/json',
+    }
+    assert.equal((await post(batch, { headers })).statusCode, 204)
+    assert.equal((await post(batch, { headers: { ...headers, 'sec-fetch-site': 'cross-site' } })).statusCode, 403)
+    assert.equal((await post(batch, { headers: { ...headers, 'sec-fetch-site': 'same-site' } })).statusCode, 403)
+    assert.equal((await post(batch, { headers: { ...headers, 'sec-fetch-site': undefined } })).statusCode, 403)
+})
