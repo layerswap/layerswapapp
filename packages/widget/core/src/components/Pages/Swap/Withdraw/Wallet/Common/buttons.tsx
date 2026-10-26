@@ -562,6 +562,7 @@ export function useSendTransactionController({
                         void mutateCache(gaslessAuthorizationKey(swapData.id), { data: authorization }, { revalidate: false })
                     },
                     setSwapError: value => { if (!signal.aborted) setSwapError?.(value) },
+                    inputTransactionStatus,
                     onSuccess: () => {
                         if (signal.aborted) {
                             return

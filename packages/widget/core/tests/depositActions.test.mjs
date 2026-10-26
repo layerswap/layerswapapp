@@ -204,6 +204,7 @@ function createWorkflow({
         './isUserRejection': rejection,
         '@/helpers/depositActions': depositActions,
         '@/helpers/gasless': gasless,
+        '@/helpers/swapProgress': swapProgress,
         '@/lib/address/explorerUrl': loadSource('../src/lib/address/explorerUrl.ts'),
         '@/lib/swapLifecycle': lifecycle,
         '@/lib/widgetTelemetry': { widgetTelemetry: { beginOperation: () => () => {} } },

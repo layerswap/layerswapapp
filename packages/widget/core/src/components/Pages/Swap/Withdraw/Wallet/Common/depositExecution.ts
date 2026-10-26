@@ -17,6 +17,7 @@ import { lifecycleContextFromSwap, lifecycleErrorDetails } from "@/lib/swapLifec
 import { widgetTelemetry } from '@/lib/widgetTelemetry';
 import { executeWalletOperation } from './executeWalletOperation';
 import { isGaslessDepositWorkflow, isGaslessAuthorizationSubmitted } from '@/helpers/gasless';
+import { hasUnacknowledgedWalletAction } from '@/helpers/swapProgress';
 
 export type WalletTransfer = (props: TransferProps) => Promise<string | undefined>
 export type GaslessSigner = (signAction: SignDepositAction) => Promise<string>
@@ -34,6 +35,8 @@ export type DepositExecutionContext = {
     cacheGaslessAuthorization: (authorization: GaslessAuthorizationResult) => void
     invalidateGaslessAuthorization: () => Promise<void>
     setSwapError?: (value: string | null) => void
+    /** Latest observed status of the recorded input transaction; only a failed one may be sent again. */
+    inputTransactionStatus?: { hash: string; status: string }
     onSuccess: () => void
     onLifecycle: (event: SwapLifecycleEvent) => void
 }
@@ -42,6 +45,19 @@ export { isSignAction, isTransferAction, getActionableDepositAction, getDepositA
 import { getActionableDepositAction, isTransferAction, isSignAction } from '@/helpers/depositActions';
 
 const isExpiredTransaction = (error: unknown) => (error as Error)?.name === ActionMessageType.TransactionExpired
+
+/**
+ * The deposit the store already records for this swap, read at wallet-request
+ * time rather than click time. A hash can be recorded by an earlier wallet
+ * request while this handler awaits preparation; the swap data it holds does
+ * not change, so only the store can tell that the deposit is already on its way.
+ */
+const recordedDeposit = (swapId: string, transactionStatus?: { hash: string; status: string }): { hash?: string } | undefined => {
+    const store = useSwapTransactionStore.getState()
+    const transaction = store.swapTransactions[swapId]
+    const submitted = hasUnacknowledgedWalletAction({ transaction, pendingSubmission: store.pendingSubmissions[swapId], transactionStatus })
+    return submitted ? { hash: transaction?.hash } : undefined
+}
 
 export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClick: WalletTransfer, action: DepositAction | undefined = getActionableDepositAction(ctx.depositActions)): Promise<string> => {
     const { swapData, swapBasicData, selectedWallet, sourceAddress, layerswapApiClient, setActionStateText, setSwapTransaction, onSuccess, onLifecycle, signal } = ctx
@@ -57,6 +73,8 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
     const finishTelemetry = widgetTelemetry.beginOperation('wallet_transfer', {
         swap_id: swapData.id, provider: selectedWallet.providerName, timing_kind: 'user_wait_included',
     })
+    // Approvals are prerequisites with their own receipts; only the deposit itself must never be requested twice.
+    const alreadySubmitted = () => action.step === 'approve_permit2' ? undefined : recordedDeposit(swapData.id, ctx.inputTransactionStatus)
     const requestWallet = (props: TransferProps, { retriesExpiry }: { retriesExpiry: boolean }) => {
         if (signal?.aborted) {
             finishTelemetry('cancelled')
@@ -77,6 +95,12 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
         }, () => onClick(props))
     }
 
+    // The recorded deposit already had its receipt, success hand-off and catch-up; this handler only stops.
+    const submitted = alreadySubmitted()
+    if (submitted) {
+        finishTelemetry('cancelled', { reason_code: 'deposit_already_submitted' })
+        return submitted.hash ?? ''
+    }
     try {
         hash = await requestWallet(transferProps, { retriesExpiry: true })
     } catch (error) {
@@ -106,6 +130,11 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
                 occurrence_id: lifecycleErrorDetails(refreshError).occurrenceId,
             })
             throw refreshError
+        }
+        const submittedDuringRefresh = alreadySubmitted()
+        if (submittedDuringRefresh) {
+            finishTelemetry('cancelled', { reason_code: 'deposit_already_submitted' })
+            return submittedDuringRefresh.hash ?? ''
         }
         setActionStateText(confirmationText)
         hash = await requestWallet(refreshedProps, { retriesExpiry: false })

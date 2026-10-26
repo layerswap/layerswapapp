@@ -10,7 +10,7 @@ import { userRejectedError, walletActionError } from '@layerswap/wallet-core/err
 const hooks = registerHooks({
   resolve(specifier, context, nextResolve) {
     if (specifier.endsWith('/lib/apiClients/layerSwapApiClient')) {
-      return { url: 'data:text/javascript,export const BackendTransactionStatus = { Pending: "pending" }', shortCircuit: true }
+      return { url: 'data:text/javascript,export const BackendTransactionStatus = { Pending: "pending", Failed: "failed" }; export const TransactionType = { Input: "input" }', shortCircuit: true }
     }
     if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
       return nextResolve(`${specifier}.js`, context)
@@ -220,6 +220,47 @@ for (const [label, thrown, expected] of [
     assert.equal(operations.length, 1)
     assert.equal(operations[0].attributes.operation, 'wallet_transfer')
     assert.equal(operations[0].attributes.outcome, expected.outcome)
+  })
+}
+
+const { useSwapTransactionStore } = await import('../dist/esm/stores/swapTransactionStore.js')
+
+for (const [label, record, transactionStatus, expectWalletRequest] of [
+  ['a recorded deposit hash', store => store.setSwapTransaction('swap-dup', 'recorded-hash', 'wallet-transfer'), undefined, false],
+  ['a pending provider submission', store => store.markSubmissionPending('swap-dup'), undefined, false],
+  ['a recorded hash whose transaction failed on chain', store => store.setSwapTransaction('swap-dup', 'recorded-hash', 'wallet-transfer'), { hash: 'recorded-hash', status: 'failed' }, true],
+]) {
+  test(`a transfer request reads the store at wallet time and never asks for a second deposit: ${label}`, async t => {
+    const operations = []
+    const lifecycle = []
+    const published = []
+    let prompts = 0
+    let successes = 0
+    t.after(widgetTelemetry.register(event => operations.push(event)))
+    t.after(() => useSwapTransactionStore.setState({ swapTransactions: {}, pendingSubmissions: {} }))
+    const ctx = {
+      swapData: { id: 'swap-dup', metadata: {} },
+      swapBasicData: { requested_amount: '1', source_network: { name: 'ETHEREUM_MAINNET' } },
+      depositActions: [{ type: 'transfer', amount: '1', to_address: 'deposit' }],
+      selectedWallet: { providerName: 'EVM', address: 'source' },
+      transactionStatus: undefined, inputTransactionStatus: transactionStatus,
+      setActionStateText() {},
+      setSwapTransaction: (...args) => published.push(args), onSuccess: () => { successes++ },
+      onLifecycle: event => lifecycle.push(event),
+      layerswapApiClient: { GetDepositActionsAsync: async () => assert.fail('no refresh'), SwapCatchup: async () => {} },
+    }
+    // The receipt arrived after this handler captured its swap data and before it reached the wallet.
+    record(useSwapTransactionStore.getState())
+    const hash = await executeWalletTransfer(ctx, async () => { prompts++; return 'second-hash' })
+    assert.equal(prompts, expectWalletRequest ? 1 : 0)
+    if (expectWalletRequest) return
+    assert.equal(hash, label.includes('pending') ? '' : 'recorded-hash')
+    assert.deepEqual(published, [], 'the stale handler records nothing')
+    assert.equal(successes, 0, 'the stale handler hands off nothing')
+    assert.deepEqual(lifecycle, [], 'no prompt was opened')
+    assert.equal(operations.length, 1)
+    assert.equal(operations[0].attributes.outcome, 'cancelled')
+    assert.equal(operations[0].attributes.reason_code, 'deposit_already_submitted')
   })
 }
 
