@@ -119,19 +119,22 @@ All EVM-compatible chains including:
 
 ## RPC preparation and retries
 
-Transfer preparation allows up to five seconds for application RPC reads, then
-up to five seconds for checked wallet reads. If optional provider or chain-ID
-probes fail with an unavailable, unclassified, or internal RPC error, the wallet
-can prepare the requested transaction itself. Wallet rejection, authorization,
-disconnection, and pending-request errors remain actionable failures. Transaction
-estimation reverts and insufficient-funds errors also propagate.
+Transfers hand the requested chain, account, target, value, and calldata directly
+to the wallet. The wallet selects gas and fees; application RPC estimates and
+balance checks do not delay or block the wallet request.
+
+After a wallet insufficient-funds error on a native-token send, a best-effort
+background estimate of the actual target can make Adjust amount available.
+Recovery never automatically resends, overrides the wallet error, or changes the
+amount. Estimates arriving after five seconds or after another send attempt are
+ignored. The existing gas warning and 2% Max reserve remain in place.
 
 The shared fallback transport now forwards an explicit `retryCount` to viem's
 outer fallback cycle. This also affects balance providers that supply retry
 options: `retryCount: 0` tries each eligible RPC once without additional cycles.
 Leaving it undefined retains viem's default three retries, or up to four cycles.
-Transfer preparation explicitly disables retries and uses a 1.5-second timeout
-per HTTP request within its five-second application-read budget.
+Background fee recovery explicitly disables retries and uses a 1.5-second
+timeout per HTTP request; its estimate is usable for at most five seconds.
 
 ## Documentation
 

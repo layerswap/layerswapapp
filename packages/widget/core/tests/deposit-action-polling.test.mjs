@@ -401,6 +401,47 @@ test('retry revalidates through SWR and never returns stale data after a failed 
     await act(async () => { await assert.rejects(result.refresh('s1', 'source'), /No deposit actions/) })
 })
 
+test('a retry reuses a read younger than its max age and refreshes an older one', async () => {
+    await render()
+    assert.equal(requests.length, 1)
+    let actions
+    await act(async () => { actions = await result.refresh('s1', 'source', { maxAgeMs: 3000 }) })
+    assert.equal(actions[0].step, 'sign')
+    assert.equal(requests.length, 1, 'the mount read is young enough for the retry')
+    response = { data: [{ ...sign, typed_data: { message: { nonce: 'fresh' } } }, publish] }
+    await act(async () => { actions = await result.refresh('s1', 'source') })
+    assert.equal(actions[0].typed_data.message.nonce, 'fresh')
+    assert.equal(requests.length, 2, 'without a max age the retry always revalidates')
+    await act(async () => { actions = await result.refresh('s1', 'source', { maxAgeMs: 0 }) })
+    assert.equal(requests.length, 3, 'a max age of zero never reuses a read')
+    assert.equal(actions[0].typed_data.message.nonce, 'fresh')
+    await act(async () => { await result.refresh('s1', 'source', { maxAgeMs: 3000, notBefore: Date.now() + 1 }) })
+    assert.equal(requests.length, 4, 'a read completed before the wallet action being retried is never reused')
+    await act(async () => { await result.refresh('s1', 'source', { maxAgeMs: 3000, notBefore: Date.now() - 1000 }) })
+    assert.equal(requests.length, 4, 'a read completed after it is reused')
+})
+
+test('a prefetch and the retry click share one refresh request', async () => {
+    await render()
+    let release
+    const gate = new Promise(resolve => { release = resolve })
+    const transport = globalThis.__depositTransport
+    globalThis.__depositTransport = async key => { await gate; return transport(key) }
+    let first, second
+    await act(async () => {
+        first = result.refresh('s1', 'source')
+        second = result.refresh('s1', 'source', { maxAgeMs: 3000 })
+        release()
+        await Promise.all([first, second])
+    })
+    assert.equal(await first, await second)
+    assert.equal(requests.length, 2, 'one request serves both callers')
+    failure = new Error('Refresh unavailable')
+    await act(async () => { await assert.rejects(result.refresh('s1', 'source'), /Refresh unavailable/) })
+    await act(async () => { await assert.rejects(result.refresh('s1', 'source', { maxAgeMs: 3000 }), /Refresh unavailable/) })
+    assert.equal(requests.length, 4, 'a failed read is never reused, however recent')
+})
+
 test('a newly created swap can start waiting before its SWR subscription mounts', async t => {
     t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 10000 })
     await render({ id: undefined })

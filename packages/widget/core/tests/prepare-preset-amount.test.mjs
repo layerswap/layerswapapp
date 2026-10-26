@@ -43,6 +43,55 @@ test('creation preparation bypasses cached balances, refreshes matching limits a
   assert.equal(probes[0].wallet, wallet)
 })
 
+test('the reviewed-amount gas estimate starts with the balance and limits reads, not after them', async () => {
+  const { preparePresetAmount, calls } = setup()
+  const order = []
+  const { useBalanceStore } = loadSource('stores/balanceStore.ts', {
+    zustand: require('zustand'), 'zustand/middleware': require('zustand/middleware'),
+    '../lib/resolvers/resolverService': { resolverService: { getBalanceResolver: () => ({ getBalance: async () => {
+      order.push('balance'); return { balances: [{ network: network.name, token: token.symbol, amount: 1 }] }
+    } }) } },
+  })
+  const { preparePresetAmount: prepare } = loadSource('lib/preparePresetAmount.ts', {
+    '@layerswap/widget-types': { usesDepository: () => false },
+    '@/hooks/useFee': { buildLimitsUrl: () => 'limits' },
+    './apiClients/layerSwapApiClient': { default: class { async fetcher() { order.push('limits'); return { data: { min_amount: 0.001, max_amount: 2 } } } } },
+    './extendedRoutes/registry': { resolveExtendedRoutePlan: () => undefined },
+    './extendedRoutes/transforms': {},
+    '@/stores/balanceStore': { useBalanceStore },
+    './resolvers/resolverService': { resolverService: { getGasResolver: () => ({ getGas: async ({ amount }) => {
+      order.push(`gas:${amount}`); return { gas: 0.1, token }
+    } }) } },
+    './amountPresets': amountPresets,
+  })
+  assert.equal(await prepare(values, 'source', {}, [], false), '0.898')
+  assert.deepEqual(order, ['gas:0.95', 'balance', 'limits', 'gas:0.898'], 'the reviewed amount is estimated before the reads settle')
+  assert.ok(preparePresetAmount && calls)
+})
+
+test('an eager estimate the preset never needs cannot surface as an unhandled rejection', async () => {
+  let unhandled
+  const onUnhandled = reason => { unhandled = reason }
+  process.on('unhandledRejection', onUnhandled)
+  try {
+    const { preparePresetAmount } = loadSource('lib/preparePresetAmount.ts', {
+      '@layerswap/widget-types': { usesDepository: () => false },
+      '@/hooks/useFee': { buildLimitsUrl: () => 'limits' },
+      './apiClients/layerSwapApiClient': { default: class { async fetcher() { throw new Error('limits down') } } },
+      './extendedRoutes/registry': { resolveExtendedRoutePlan: () => undefined },
+      './extendedRoutes/transforms': {},
+      '@/stores/balanceStore': { useBalanceStore: { getState: () => ({ fetchBalance: async () => ({ balances: [] }) }) } },
+      './resolvers/resolverService': { resolverService: { getGasResolver: () => ({ getGas: async () => { throw new Error('rpc down') } }) } },
+      './amountPresets': amountPresets,
+    })
+    await assert.rejects(preparePresetAmount(values, 'source', {}, [], false), /limits down/)
+    await new Promise(resolve => setTimeout(resolve, 10))
+    assert.equal(unhandled, undefined)
+  } finally {
+    process.off('unhandledRejection', onUnhandled)
+  }
+})
+
 test('creation preparation respects fresh route caps and refuses amounts below the minimum', async () => {
   const capped = setup({ limits: { min_amount: 0.1, max_amount: 0.5 } })
   assert.equal(await capped.preparePresetAmount(values, 'source', {}, [], false), '0.5')

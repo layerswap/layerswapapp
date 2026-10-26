@@ -355,6 +355,7 @@ export function SendTransactionView({
                         <ButtonWrapper
                             icon={icon}
                             {...props}
+                            data-ls-action="send_transaction"
                             isSubmitting={
                                 props.isSubmitting || loading || quoteIsLoading
                             }

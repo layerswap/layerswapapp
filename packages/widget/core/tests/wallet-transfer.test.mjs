@@ -274,16 +274,18 @@ for (const error of [Object.assign(new Error('HTTP 429'), { code: 4200 }), new E
   })
 }
 
-test('native final fee reaches recovery without marking preparation as submitted', async () => {
+test('native fee recovery can arrive after the wallet error without marking the swap as submitted', async () => {
   const id = 'contract-budget'
   const ctx = { ...calldataContext('0x', { name: 'ETHEREUM_MAINNET' }), swapData: { id, metadata: {} } }
-  let received
+  let received, reportFee
   const fee = { gas: 0.00012, token: { symbol: 'ETH' } }
   await assert.rejects(executeWalletTransfer({ ...ctx, onFeeEstimate: value => { received = value } }, async props => {
-    props.onSubmissionStateChange?.('preparing')
-    props.onFeeEstimate(fee)
+    props.onSubmissionStateChange?.('submitting')
+    reportFee = props.onFeeEstimate
     throw Object.assign(new Error('Insufficient funds'), { code: 'INSUFFICIENT_FUNDS' })
   }), /Insufficient funds/)
+  assert.equal(received, undefined)
+  reportFee(fee)
   assert.equal(received, fee)
   assert.equal(useSwapTransactionStore.getState().pendingSubmissions[id], undefined)
 })

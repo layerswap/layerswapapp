@@ -43,7 +43,7 @@ export class AmountPresetUnavailableError extends Error {
 }
 
 // Keep form/API amounts as plain decimals, including very small token balances.
-function amountText(value: number, decimals: number): string {
+export function amountText(value: number, decimals: number): string {
     const truncated = truncateToDecimals(String(value), decimals)
     return /e/i.test(truncated) ? Number(truncated).toFixed(decimals).replace(/\.?0+$/, '') : truncated
 }

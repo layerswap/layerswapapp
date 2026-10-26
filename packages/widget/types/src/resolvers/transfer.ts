@@ -29,7 +29,7 @@ export type TransferProps = {
      *  use these to resolve the SAME destination the swap was created/priced against,
      *  so availability-based fallback can't diverge between pricing and signing. Optional. */
     sourceRoutes?: NetworkRoute[]
-    /** Native fee estimate for amount adjustment when the transfer and fee exceed the balance. */
+    /** Best-effort native fee estimate for amount adjustment after a wallet insufficient-funds error. */
     onFeeEstimate?: (fee: GasWithToken) => void
     /** Opt-in submission tracking for relayed withdrawals. Report `preparing` before
      *  setup/signing and `submitting` before sending the signed withdrawal to the

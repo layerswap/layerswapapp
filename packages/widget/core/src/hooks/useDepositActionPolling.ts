@@ -17,9 +17,15 @@ export const depositActionsKey = (swapId: string, sourceAddress: string) =>
 export function useDepositActionPolling(swapId: string | undefined, sourceAddress: string | undefined, executing: boolean) {
     const key = swapId && sourceAddress ? depositActionsKey(swapId, sourceAddress) : null
     const { mutate, cache } = useSWRConfig()
+    // Completion time of the latest successful read per key, whether a poll or a
+    // refresh fetched it. A refresh with a max age reuses a read younger than that.
+    const fetchedAt = useRef(new Map<string, number>())
+    const pendingRefresh = useRef(new Map<string, Promise<DepositAction[]>>())
     const { data, error } = useSWR<ApiResponse<DepositAction[]>>(key, client.fetcher, {
         dedupingInterval: 1000,
         keepPreviousData: false,
+        onSuccess: (_response, fetchedKey) => { fetchedAt.current.set(fetchedKey, Date.now()) },
+        onError: (_error, fetchedKey) => { fetchedAt.current.delete(fetchedKey) },
     })
     // A sign-only payload cannot distinguish self-paid from gasless execution.
     // Observe the authorization endpoint until publication is known, sharing its
@@ -53,17 +59,31 @@ export function useDepositActionPolling(swapId: string | undefined, sourceAddres
         listeners.current.forEach(notify => notify())
     }, [key, data, error, authorizationKey, authorization, authorizationError, approvalHash, approvalNetwork, approvalStatus])
 
-    const refresh = useCallback(async (activeSwapId: string, address: string) => {
-        // Revalidate through the registered SWR subscription, never a parallel API loop.
+    const refresh = useCallback(async (activeSwapId: string, address: string, options?: RefreshOptions): Promise<DepositAction[]> => {
         const refreshKey = depositActionsKey(activeSwapId, address)
-        const response = await mutate<ApiResponse<DepositAction[]>>(refreshKey)
-        // SWR retains cached data when revalidation fails. A wallet retry must not
-        // treat that old payload as a successfully refreshed authorization.
-        const refreshError = cache.get(refreshKey)?.error
-        if (refreshError) throw refreshError
-        if (response?.error) throw response.error
-        if (!response?.data?.length) throw new Error('No deposit actions')
-        return response.data
+        if (options?.maxAgeMs != null) {
+            const fetched = fetchedAt.current.get(refreshKey)
+            const cached = cache.get(refreshKey)
+            const actions = cached?.error || cached?.data?.error ? undefined : cached?.data?.data
+            if (fetched != null && Date.now() - fetched <= options.maxAgeMs
+                && fetched >= (options.notBefore ?? Number.NEGATIVE_INFINITY) && actions?.length) return actions
+        }
+        // Concurrent refreshes (a prefetch and the retry click) share one request.
+        const pending = pendingRefresh.current.get(refreshKey)
+        if (pending) return pending
+        const request = (async () => {
+            // Revalidate through the registered SWR subscription, never a parallel API loop.
+            const response = await mutate<ApiResponse<DepositAction[]>>(refreshKey)
+            // SWR retains cached data when revalidation fails. A wallet retry must not
+            // treat that old payload as a successfully refreshed authorization.
+            const refreshError = cache.get(refreshKey)?.error
+            if (refreshError) throw refreshError
+            if (response?.error) throw response.error
+            if (!response?.data?.length) throw new Error('No deposit actions')
+            return response.data
+        })().finally(() => { pendingRefresh.current.delete(refreshKey) })
+        pendingRefresh.current.set(refreshKey, request)
+        return request
     }, [cache, mutate])
 
     // Own the subscription lifetime: completion, cancellation, timeout and cleanup.
@@ -239,6 +259,13 @@ function recordAuthorizationFailure(swapId: string, result: GaslessAuthorization
 export type DepositActionTransition = {
     actions: DepositAction[]
     authorization?: GaslessAuthorizationResult
+}
+
+type RefreshOptions = {
+    /** Reuse a successful read completed within this many milliseconds instead of requesting again. */
+    maxAgeMs?: number
+    /** Only reads completed at or after this `Date.now()` qualify, e.g. after the wallet action being retried. */
+    notBefore?: number
 }
 
 type WaitForTransitionOptions = {

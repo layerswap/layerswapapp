@@ -206,6 +206,7 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
     }
     const { SendTransactionButton, ButtonWrapper } = loadSource(`${walletPath}buttons.tsx`, {
         '@/lib/amountPresets': amountPresets,
+        '@/lib/widgetTelemetry': { widgetTelemetry: { beginOperation: () => () => {} } },
         '@/helpers/depositActions': depositActions,
         '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: event => calls.lifecycle.push(event) }) },
         '@/lib/swapLifecycle': lifecycle,
@@ -219,11 +220,18 @@ function createWorkflow({ mounted = false, realPolling = false } = {}) {
                 pollingKey = id && address ? `/swaps/${id}/deposit_actions?source_address=${address}` : null
                 return {
                     data: cache.get(pollingKey)?.data,
-                    refresh: async (id, address) => {
+                    // Mirrors the hook's rule: a refresh with a max age reuses a read that
+                    // completed within it; the hook's own tests cover that implementation.
+                    refresh: async (id, address, options) => {
+                        const key = `/swaps/${id}/deposit_actions?source_address=${address}`
+                        const now = () => state.now?.() ?? Date.now()
+                        const recent = cache.get(key)
+                        if (options?.maxAgeMs != null && recent?.fetchedAt != null && now() - recent.fetchedAt <= options.maxAgeMs
+                            && recent.fetchedAt >= (options.notBefore ?? -Infinity) && recent.data?.length) return recent.data
                         const response = await api.GetDepositActionsAsync(id, address)
                         if (response.error) throw response.error
                         if (!response.data?.length) throw new Error('No deposit actions')
-                        cache.set(`/swaps/${id}/deposit_actions?source_address=${address}`, response)
+                        cache.set(key, { ...response, fetchedAt: now() })
                         return response.data
                     },
                     waitForTransition: async ({ swapId: id, sourceAddress: address, previousAction, approvalTransaction, signal }) => {
@@ -540,18 +548,36 @@ for (const completes of [false, true]) {
     })
 }
 
+test('an immediate retry signs with the actions prefetched at rejection without another request', async () => {
+    const flow = createWorkflow()
+    await flow.render().button.props.onClick()
+    assert.equal(flow.state.rejected, true)
+    assert.deepEqual(flow.calls.refresh, [[swapId, sourceAddress], [swapId, sourceAddress]], 'attempt and prefetch')
+
+    flow.state.rejectSigning = false
+    await flow.render().button.props.onClick()
+
+    assert.deepEqual(flow.calls.sign, ['fresh', 'fresh'])
+    assert.deepEqual(flow.calls.refresh, [[swapId, sourceAddress], [swapId, sourceAddress]], 'the retry reuses the prefetched read')
+    assert.equal(flow.calls.success, 1)
+    assert.deepEqual(flow.calls.errors, [])
+})
+
 test('rejected signing retries on the same swap using refreshed typed data', async () => {
     const flow = createWorkflow()
     await flow.render().button.props.onClick()
     assert.deepEqual(flow.calls.sign, ['fresh'])
     assert.equal(flow.state.rejected, true)
+    assert.deepEqual(flow.calls.refresh, [[swapId, sourceAddress], [swapId, sourceAddress]], 'the rejection prefetches the next attempt')
 
+    // The user returns after the reuse window; the server has renewed the payload meanwhile.
+    flow.state.now = () => Date.now() + 10_000
     flow.state.apiActions = actionsFor('renewed-after-waiting')
     flow.state.rejectSigning = false
     await flow.render().button.props.onClick()
 
     assert.deepEqual(flow.calls.sign, ['fresh', 'renewed-after-waiting'])
-    assert.deepEqual(flow.calls.refresh, [[swapId, sourceAddress], [swapId, sourceAddress]])
+    assert.deepEqual(flow.calls.refresh, [[swapId, sourceAddress], [swapId, sourceAddress], [swapId, sourceAddress]])
     assert.deepEqual(flow.calls.authorize, [[swapId, 'fresh-signature', sourceAddress]])
     assert.equal(flow.calls.transfer[0].swapId, swapId)
     assert.equal(flow.calls.success, 1)
@@ -1059,7 +1085,8 @@ test('enabling gasless after rejecting self-paid signing creates a new swap with
     assert.equal(creates, 1, 'the changed preference replaces the unsubmitted self-paid swap')
     assert.equal(flow.state.swapId, 'gasless-swap')
     assert.deepEqual(flow.calls.sign, ['self-paid', 'gasless'], 'the old self-paid signature is never requested again')
-    assert.deepEqual(flow.calls.refresh, [[swapId, sourceAddress]], 'only the first attempt refreshes the old swap')
+    assert.deepEqual(flow.calls.refresh, [[swapId, sourceAddress], [swapId, sourceAddress], ['gasless-swap', sourceAddress]],
+        'the old swap is read by its attempt and prefetched at its rejection; the new swap is only prefetched after its own rejection')
     assert.deepEqual(flow.calls.transfer, [])
     assert.deepEqual(flow.calls.errors, [])
 })
@@ -1453,16 +1480,19 @@ test('a locally failed transaction does not prevent a deliberate new wallet requ
     assert.deepEqual(flow.calls.statusChecks ?? [], [])
 })
 
-test('the workflow records the final native fee for the current swap before preflight failure', async () => {
+test('the workflow records fee recovery arriving after a wallet insufficient-funds error', async () => {
     const flow = createWorkflow()
     flow.state.apiActions = [{ type: 'transfer', step: 'deposit', status: 'action_required', amount: '1', to_address: '0x456' }]
     const fee = { gas: 0.00012, token: { symbol: 'ETH', decimals: 18 } }
+    let reportFee
     flow.state.onWalletPrompt = (_, props) => {
-        props.onSubmissionStateChange?.('preparing')
-        props.onFeeEstimate(fee)
+        props.onSubmissionStateChange?.('submitting')
+        reportFee = props.onFeeEstimate
         throw Object.assign(new Error('Insufficient funds'), { code: 'INSUFFICIENT_FUNDS' })
     }
     await flow.render().button.props.onClick()
+    assert.equal(flow.state.transferFeeAdjustment, undefined, 'return the wallet error before recovery finishes')
+    reportFee(fee)
     assert.deepEqual(flow.state.transferFeeAdjustment, { swapId, sourceAddress, network: 'BASE_MAINNET', fee })
     assert.equal(flow.stores.useSwapTransactionStore.getState().pendingSubmissions[swapId], undefined)
     assert.equal(flow.calls.success, 0)
@@ -1475,14 +1505,13 @@ test('an affordable native transfer completes without storing fee-adjustment rec
     flow.state.apiActions = [{ type: 'transfer', step: 'deposit', status: 'action_required', amount: '1', to_address: '0x456' }]
     const { transactionBuilder } = loadSource('../../../wallets/adapters/evm/src/transferProvider/transactionBuilder.ts', {
         viem: require('viem'),
-        '../gasProviders/estimateTransferFee': { estimateTransferFee: async () => ({
-            gas: 21000n, fees: { gasPrice: 1000000000n }, l1Fee: 0n, fee: 21000000000000n,
-            client: { getBalance: async () => 2000000000000000000n },
-        }) },
+        '../gasProviders/estimateTransferFee': { estimateTransferFee: () => assert.fail('Sending must not read application fees') },
     })
     flow.state.onWalletPrompt = async (_, props) => {
         props.onSubmissionStateChange?.('preparing')
-        await transactionBuilder({ ...props, network: { ...props.network, token: native } }, {})
+        const tx = await transactionBuilder({ ...props, network: { ...props.network, token: native } })
+        assert.equal(tx.gas, undefined)
+        assert.equal(tx.maxFeePerGas, undefined)
         props.onSubmissionStateChange?.('submitting')
     }
     await flow.render().button.props.onClick()

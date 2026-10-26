@@ -7,7 +7,7 @@ import { resolveExtendedRoutePlan } from './extendedRoutes/registry'
 import { transformLimitsForExtendedRoute, type ExtendedLimits } from './extendedRoutes/transforms'
 import { useBalanceStore } from '@/stores/balanceStore'
 import { resolverService } from './resolvers/resolverService'
-import { calculatePresetAmount, isAmountPreset, isWalletAmountFlow, supportsLiveAmountPreset } from './amountPresets'
+import { amountText, calculatePresetAmount, isAmountPreset, isWalletAmountFlow, supportsLiveAmountPreset } from './amountPresets'
 
 /** Fresh reads before creation. Never changes a created swap or its actions. */
 export async function preparePresetAmount(values: SwapFormValues, address: string | undefined, wallet: Wallet | undefined, sourceRoutes: NetworkRoute[], useGasless: boolean, publishLimits?: (key: string, response: ApiResponse<ExtendedLimits>) => Promise<unknown>) {
@@ -32,6 +32,12 @@ export async function preparePresetAmount(values: SwapFormValues, address: strin
         useDepositAddress: plan ? !usesDepository(plan.mapping.provider) : false,
         useFrontendSwap: true, useGasless: !plan && useGasless,
     })
+    const estimateGas = async (amount: number) => resolverService.getGasResolver().getGas({ address, network: from, token: fromAsset, amount, wallet })
+    // The first estimate is for the reviewed amount whenever it fits the fresh bounds.
+    // Start it alongside the reads instead of after them; a mismatch costs one spare read.
+    const reviewed = Number(amountText(Number(values.amount), fromAsset.decimals))
+    const eager = Number.isFinite(reviewed) && reviewed > 0 ? { amount: reviewed, estimate: estimateGas(reviewed) } : undefined
+    eager?.estimate.catch(() => { /* surfaced where the estimate is awaited */ })
     const [balanceData, limitsResponse] = await Promise.all([
         useBalanceStore.getState().fetchBalance(address, from, { ignoreCache: true }),
         api.fetcher(limitsUrl),
@@ -48,7 +54,7 @@ export async function preparePresetAmount(values: SwapFormValues, address: strin
         network: from, token: fromAsset, probeAmount: values.amount, preserveAmount: true,
         balance: balanceData?.balances?.find(b => b.network === from.name && b.token === fromAsset.symbol),
         limit: limits?.max_amount,
-        estimateGas: async amount => resolverService.getGasResolver().getGas({ address: address!, network: from, token: fromAsset, amount, wallet }),
+        estimateGas: amount => eager && amount === eager.amount ? eager.estimate : estimateGas(amount),
     })
     if (Number(amount) <= 0 || (limits && Number(amount) < limits.min_amount))
         throw new Error('Your available balance is below the minimum swap amount.')

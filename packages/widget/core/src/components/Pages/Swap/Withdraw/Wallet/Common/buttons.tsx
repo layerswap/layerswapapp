@@ -28,6 +28,7 @@ import LayerSwapApiClient, {
 } from '@/lib/apiClients/layerSwapApiClient';
 import { useBalance } from '@/lib/balances/useBalance';
 import { ErrorHandler } from '@/lib/ErrorHandler';
+import { widgetTelemetry } from '@/lib/widgetTelemetry';
 import { resolvePriceImpactValues } from '@/lib/fees';
 import useSWRGas from '@/lib/gases/useSWRGas';
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore';
@@ -63,6 +64,9 @@ const layerswapApiClient = new LayerSwapApiClient();
 const MAX_DEPOSIT_WORKFLOW_ACTIONS = 10;
 const NO_NETWORK_SWITCH: ActionData = { isPending: false, isError: false, error: null };
 const SWITCH_PROMPT_DELAY_MS = 1000;
+// A retry reuses deposit actions read after the rejection it retries and this recently,
+// typically the prefetch started at that rejection. Anything else is refreshed.
+const RETRY_ACTIONS_MAX_AGE_MS = 3000;
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData, swapDetails } = useSwapDataState()
@@ -193,6 +197,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const [workflowState, setWorkflowState] = useState<{ swapId: string, actions: DepositAction[], swapData?: SwapDetails }>()
     const executionInFlight = useRef(false)
     const executionScope = useRef<AbortController | null>(null)
+    const lastRejection = useRef<{ swapId: string; at: number } | undefined>(undefined)
     // Closing the screen or changing accounts stops future wallet requests.
     // An already-open request still finishes so its submitted transaction is recorded.
     useClientLayoutEffect(() => {
@@ -245,6 +250,17 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         const signal = executionScope.current?.signal
         if (!signal || signal.aborted || executionInFlight.current) return
         executionInFlight.current = true
+        // Diagnostics for the time between the click and the first wallet request:
+        // each awaited phase records its own duration, the operation records the total.
+        const clock = () => globalThis.performance?.now() ?? Date.now()
+        const preparation: Record<string, string | number | boolean | undefined> = { network_switched: false }
+        const finishPreparation = widgetTelemetry.beginOperation('transfer_preparation', {
+            provider: selectedWallet?.providerName, source_network: swapBasicData.source_network.name,
+        })
+        const measure = async <T,>(key: string, run: () => Promise<T>): Promise<T> => {
+            const started = clock()
+            try { return await run() } finally { preparation[key] = Math.round(clock() - started) }
+        }
         const requestWallet = async <T,>(request: () => Promise<T>): Promise<T> => {
             signal.throwIfAborted()
             setWalletRequestSequence(walletRequestStore.getSnapshot()?.sequence ?? 0)
@@ -282,6 +298,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             // when cached details/actions are missing; existing polling owns progress.
             const transaction = swapId ? useSwapTransactionStore.getState().swapTransactions[swapId] : undefined
             if (transaction?.hash && transaction.status !== 'failed') {
+                finishPreparation('cancelled', { ...preparation, reason_code: 'already_submitted' })
                 if (!signal.aborted) onWalletWithdrawalSuccess?.()
                 return
             }
@@ -319,7 +336,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     depositMethod: 'wallet',
                 }
 
-                const newSwapData = await createSwap(swapValues, initialSettings).catch((e: any) => {
+                preparation.swap_source = 'created'
+                const newSwapData = await measure('swap_creation_ms', () => createSwap(swapValues, initialSettings).catch((e: any) => {
                     signal.throwIfAborted()
                     // Failed gasless attempt is surfaced as the switch prompt, not a raw API error.
                     if (useGaslessPreferenceStore.getState().gaslessUnavailable) {
@@ -328,7 +346,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                         setSwapError?.(e?.response?.data?.error?.message || e?.message || 'Could not create swap')
                     }
                     throw e
-                });
+                }));
                 signal.throwIfAborted()
                 const newSwapId = newSwapData?.swap?.id;
                 if (!newSwapId) {
@@ -346,6 +364,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 const priceImpactValues = newSwapData.quote ? resolvePriceImpactValues(newSwapData.quote, newSwapData.refuel) : undefined;
 
                 if (priceImpactValues?.criticalMarketPriceImpact) {
+                    finishPreparation('cancelled', { ...preparation, swap_id: newSwapId, reason_code: 'critical_price_impact' })
                     setCriticalConfirmation(newSwapData)
                     return
                 }
@@ -355,11 +374,11 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     setQuoteLoading(true)
                     try {
                         // Cancellation ends the pause immediately.
-                        await new Promise<void>(resolve => {
+                        await measure('quote_pause_ms', () => new Promise<void>(resolve => {
                             const done = () => { clearTimeout(timer); signal.removeEventListener('abort', done); resolve() }
                             const timer = setTimeout(done, 3500)
                             signal.addEventListener('abort', done, { once: true })
-                        })
+                        }))
                     } finally {
                         setQuoteLoading(false)
                     }
@@ -371,7 +390,11 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 // A signature or prepared transaction may have expired while the user
                 // paused or rejected a prompt. Never retry the cached action payload.
                 setActionStateText("Refreshing swap…")
-                const refreshed = await refreshDepositActions(executionSwapId, selectedSourceAccount.address)
+                preparation.swap_source = 'refreshed'
+                const refreshSwapId = executionSwapId
+                const rejection = lastRejection.current?.swapId === refreshSwapId ? lastRejection.current : undefined
+                const refreshed = await measure('deposit_actions_refresh_ms', () => refreshDepositActions(refreshSwapId, selectedSourceAccount.address,
+                    rejection ? { maxAgeMs: RETRY_ACTIONS_MAX_AGE_MS, notBefore: rejection.at } : undefined))
                 signal.throwIfAborted()
                 activeDepositActions = refreshed
                 if (activeDepositActions) {
@@ -403,6 +426,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                         // Server action completion can revert before funds are submitted.
                         // Only wallet transfer or confirmed gasless submission may clear
                         // the containing form and the signature needed to resume.
+                        finishPreparation('cancelled', { ...preparation, swap_id: swapData.id, reason_code: 'workflow_complete' })
                         return
                     }
                 }
@@ -415,7 +439,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 if (currentAction) {
                     let switchPrompt: ReturnType<typeof setTimeout> | undefined
                     try {
-                        await requestWallet(() => ensureSourceChain({
+                        await measure('chain_readiness_ms', () => requestWallet(() => ensureSourceChain({
                             wallet: selectedWalletRef.current ?? selectedWallet,
                             network: currentAction.network ?? swapBasicData.source_network,
                             switchChain: selectedSourceAccount.provider.switchChain,
@@ -425,13 +449,14 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                             path: 'SendTransactionButton',
                             onLifecycle: onSwapLifecycle,
                             onSwitchStart: () => {
+                                preparation.network_switched = true
                                 switchPrompt = setTimeout(() => {
                                     if (signal.aborted) return
                                     setActionStateText("Switching network")
                                     setNetworkSwitch({ isPending: true, isError: false, error: null })
                                 }, SWITCH_PROMPT_DELAY_MS)
                             },
-                        }))
+                        })))
                     } finally {
                         clearTimeout(switchPrompt)
                         if (!signal.aborted) setNetworkSwitch(NO_NETWORK_SWITCH)
@@ -464,6 +489,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     onLifecycle: onSwapLifecycle,
                 }
 
+                // The first wallet request ends preparation; later workflow steps are no-ops here.
+                finishPreparation('succeeded', { ...preparation, swap_id: swapData.id, deposit_action_step: currentAction?.step ?? currentAction?.type })
                 let approvalTransaction: { network: string; hash: string } | undefined
                 if (currentAction && isSignAction(currentAction)) {
                     if (!onSign) throw new Error('This wallet cannot sign the requested authorization')
@@ -496,7 +523,18 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             }
         }
         catch (e) {
-            if (signal.aborted) return
+            if (signal.aborted) {
+                finishPreparation('cancelled', preparation)
+                return
+            }
+            const switchFailure = e instanceof NetworkSwitchError ? e : undefined
+            const rejectedPreparation = switchFailure ? switchFailure.kind === 'rejected' : isUserRejection(e)
+            finishPreparation(rejectedPreparation ? 'rejected' : 'failed', {
+                ...preparation,
+                swap_id: executionSwapId,
+                reason_code: switchFailure ? `network_switch_${switchFailure.kind}` : lifecycleErrorDetails(e).reasonCode,
+                occurrence_id: lifecycleErrorDetails(e).occurrenceId,
+            })
             if (e instanceof AmountPresetChangedError) {
                 setSwapError?.(e.message)
                 return
@@ -508,6 +546,11 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             }
             if (isUserRejection(e)) {
                 setSwapError?.(null)
+                // Users retry within about a second. Have the refreshed actions ready for that click.
+                if (executionSwapId && selectedSourceAccount) {
+                    lastRejection.current = { swapId: executionSwapId, at: Date.now() }
+                    void refreshDepositActions(executionSwapId, selectedSourceAccount.address).catch(() => { /* the retry refreshes again */ })
+                }
                 return
             }
             const error = e as Error;

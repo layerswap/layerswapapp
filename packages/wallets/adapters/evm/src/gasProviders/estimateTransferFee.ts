@@ -35,7 +35,7 @@ async function estimateExecutionGas(client: PublicClient, request: TransferReque
     }
 }
 
-/** Use one gas/fee policy for Max and the request ultimately sent to the wallet. */
+/** Estimate fees for Max and best-effort recovery after a wallet funds error. */
 export async function estimateTransferFee(network: Network, request: TransferRequest, readClient?: PublicClient): Promise<{ client: PublicClient; gas: bigint; fees: TransferFees; l1Fee: bigint; fee: bigint }> {
     const client: PublicClient = readClient ?? createPublicClient({
         chain: resolveChain(network),
