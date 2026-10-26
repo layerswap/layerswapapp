@@ -102,6 +102,7 @@ await build({
         export { ProcessingView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/ProcessingView.js';
         export { isDepositWorkflowComplete } from '../../packages/widget/core/dist/esm/helpers/depositActions.js';
         export { gaslessFailureMessage } from '../../packages/widget/core/dist/esm/helpers/gaslessFailureMessage.js';
+        export { isGaslessAuthorizationSubmitted } from '../../packages/widget/core/dist/esm/helpers/gasless.js';
         export { SpecializedWithdrawalView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/SpecializedWithdrawalView.js';
         export { default as ProductionSummary } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Summary/Summary.js';
         export { SlippageView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Form/FeeDetails/SlippageView.js';
@@ -182,6 +183,7 @@ const {
     SendTransactionView,
     ProcessingView,
     gaslessFailureMessage,
+    isGaslessAuthorizationSubmitted,
     ConnectWalletView,
     SpecializedWithdrawalView,
     ProductionSummary,
@@ -220,18 +222,23 @@ const phase = (s) =>
     resolveSwapPhase({
         swapDetails: s.details,
         refuel: s.refuel,
-        storedWalletTransaction: s.storedWalletTransaction,
         inputTxStatusFromApi: s.inputTxStatusFromApi,
+        depositCompleted: isGaslessAuthorizationSubmitted(s.gaslessAuthorization)
+            || (!s.swap.use_deposit_address && isDepositWorkflowComplete(s.depositActions ?? [])),
+        walletActionExecuting: s.wallet.kind === 'send' && !!s.wallet.pending,
         gaslessFailureStatus: [
             'expired',
             'insufficient',
             'rejected',
         ].includes(s.gaslessAuthorization?.status) ? s.gaslessAuthorization.status : undefined,
         isDepositFlow: s.isDepositFlow,
-        depositCompleted: !s.swap.use_deposit_address && isDepositWorkflowComplete(s.depositActions ?? []),
     });
 
 const snapshotFlow = s => resolveSwapFlow({
+    isDraft: !s.swapId,
+    atomicBatchAvailable: s.atomicBatchAvailable,
+    gaslessEnabled: s.quoteState.gasless,
+    transaction: s.storedWalletTransaction,
     swapData: s.swap, depositActions: s.depositActions, quote: s.quote,
     stepTransactions: s.stepTransactions, gaslessAuthorization: s.gaslessAuthorization,
     sourceProvider: s.sourceProvider ?? (s.wallet.kind === 'specialized' ? s.wallet.provider : undefined),
@@ -345,6 +352,33 @@ test('lifecycle fixtures agree with the existing resolver, including refuel, ref
             phase(find(`gasless-${status}`, 'retry')).phase,
             SwapPhase.AwaitingUserDeposit,
         );
+    }
+});
+
+test('gasless previews keep signing and publication controls until execution finishes', () => {
+    const ready = scenarios.find(scenario => scenario.id === 'gasless-success').milestones[0].snapshot;
+    const unsigned = {
+        ...ready,
+        depositActions: [{ type: 'sign', step: 'sign', signing_standard: 'permit2', status: 'action_required' }],
+        gaslessAuthorization: { status: 'initiated' },
+    };
+    const publishing = {
+        ...unsigned,
+        gaslessAuthorization: { status: 'published' },
+        wallet: { kind: 'send', pending: true, label: 'Preparing transaction…' },
+    };
+    for (const mode of ['component', 'modal']) {
+        const text = snapshot => {
+            const rendered = new JSDOM(renderToStaticMarkup(preview(snapshot, 0, mode)));
+            const content = rendered.window.document.body.textContent;
+            rendered.window.close();
+            return content;
+        };
+        assert.match(text(unsigned), /Sign to swap/, `${mode}: initiated does not remove the unsigned action`);
+        assert.match(text(publishing), /Preparing transaction/, `${mode}: publication does not interrupt active execution`);
+        assert.equal(phase(publishing).phase, SwapPhase.InputPending, 'the fetched publication still determines progress');
+        assert.doesNotMatch(text({ ...publishing, wallet: { kind: 'send' } }), /Sign to swap|Preparing transaction/,
+            `${mode}: finished execution switches to processing`);
     }
 });
 
@@ -602,6 +636,8 @@ test('reduced-motion hydration matches the server markup in both modes', async (
     assert.deepEqual(forbidden, []);
 });
 
+const surface = node => node?.closest('[data-wallet-execution-panel="workflow"]') ?? node;
+
 test('all mounted previews ignore clicks and keyboard activation without requests, persistence or reports', async () => {
     const container = document.getElementById('root');
     const root = createRoot(container);
@@ -620,8 +656,8 @@ test('all mounted previews ignore clicks and keyboard activation without request
                         const panel = progress.closest('[data-steps-panel]');
                         const label = `${scenario.id}/${m.id}/${mode}`;
                         assert.ok(panel, `${label}: every flow uses the shared steps animation`);
-                        assert.equal(panel.style.height, 'auto', `${label}: reduced motion shows steps immediately`);
-                        assert.equal(panel.style.opacity, '1', label);
+                        assert.equal(surface(panel).style.height, 'auto', `${label}: reduced motion shows steps immediately`);
+                        assert.equal(surface(panel).style.opacity, '1', label);
                         assert.equal(panel.parentElement.closest('[data-steps-panel]'), null, `${label}: no nested panel animations`);
                         const heading = panel.querySelector('[data-transfer-title]');
                         assert.equal(heading.querySelector('[style]'), null, `${label}: reduced motion has no heading translation, blur or delay`);
@@ -688,6 +724,7 @@ const chooseOption = async (container, selector, label) => {
     await act(async () => option.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
 };
 const chooseGroup = (container, group) => chooseOption(container, '#timeline-group', group);
+const chooseScenario = (container, scenario) => chooseOption(container, '#timeline-scenario', scenario);
 const chooseWidget = async (container, label) => {
     const button = [...container.querySelectorAll('[aria-label="Widget"] button')].find(button => button.textContent === label);
     assert.ok(button, label);
@@ -730,7 +767,7 @@ test('deposit widget navigation shares canvas, modal and timeline controls', asy
         assert.match(container.textContent, /Choose how to fund this deposit/);
         const ready = container.querySelector('li[data-milestone-id="ready"]');
         assert.doesNotMatch(ready.textContent, /Swap now|Send to/);
-        assert.ok([...ready.querySelectorAll('button')].some(button => button.textContent === 'Deposit'));
+        assert.ok([...ready.querySelectorAll('button')].some(button => button.textContent === 'Preparing…' && button.disabled));
         await chooseMode(container, 'modal');
         const modals = container.querySelectorAll('[data-deposit-modal]');
         assert.equal(modals.length, scenarios.find(s => s.id === 'deposit-widget-wallet').milestones.length);
@@ -754,7 +791,7 @@ test('deposit widget navigation shares canvas, modal and timeline controls', asy
         assert.match(summary.textContent, /99 USDC/);
         assert.match(summary.textContent, /Base/);
         await act(async () => [...container.querySelectorAll('ol[aria-label="Milestones"] button')].find(button => button.textContent.includes('Deposit details')).click());
-        assert.equal(container.querySelector('[data-wallet-execution-panel="workflow"]'), null);
+        assert.equal(container.querySelector('[data-steps-panel]'), null);
         assert.equal(container.querySelector('[data-wallet-execution-panel="overview"]'), null);
         assert.match(container.querySelector('[data-wallet-execution-panel="controls"]').textContent, /Maximum/);
         await act(async () => [...container.querySelectorAll('ol[aria-label="Milestones"] button')].find(button => button.textContent.includes('Transfer complete')).click());
@@ -1201,6 +1238,185 @@ const fixtureDOM = (scenario, milestone, mode) => {
     return container;
 };
 
+for (const [scenarioId, callCount, stepLabel] of [
+    ['atomic-batch-success', 2, 'Approve and swap'],
+    ['atomic-batch-reset', 3, 'Approve and swap'],
+    ['atomic-batch-approved', 1, 'Confirm swap'],
+]) {
+    test(`${scenarioId} shows one wallet confirmation and two progress steps through completion`, () => {
+        const scenario = scenarios.find(scenario => scenario.id === scenarioId);
+        assert.equal(scenario.group, 'token-swap');
+        const confirming = frontendMilestone(scenarioId, 'confirming').snapshot;
+        assert.equal(confirming.depositActions.length, 1);
+        assert.equal(confirming.depositActions[0].type, callCount === 1 ? 'transfer' : 'send_calls');
+        if (callCount > 1) assert.equal(confirming.depositActions[0].calls.length, callCount);
+        else assert.equal(confirming.depositActions[0].calls, undefined);
+        assert.equal(scenario.milestones.filter(milestone => milestone.snapshot.wallet.pending && milestone.snapshot.walletExecutionStarted).length, 1);
+        assert.equal(scenario.milestones.some(milestone => milestone.id === 'prepared'), true, 'the confirmation click receives the plan before requesting wallet execution');
+
+        for (const mode of ['component', 'modal']) {
+            const ready = fixtureDOM(scenarioId, 'ready', mode);
+            const action = [...ready.querySelectorAll('button')].find(button => button.textContent === 'Approve and swap');
+            assert.ok(action && !action.disabled, `${scenarioId}: the frontend quote and wallet capability identify the draft batch`);
+            assert.equal(ready.querySelector('[aria-label="Progress"]'), null, 'batch availability cannot show execution progress');
+            assert.doesNotMatch(ready.textContent, /Swap in progress|Confirming transaction/);
+            assert.equal(ready.querySelector('[data-quote-layout]').dataset.quoteLayout, 'separate');
+            const preparing = fixtureDOM(scenarioId, 'preparing', mode);
+            assert.equal(preparing.querySelector('[aria-label="Progress"]'), null, 'loading with returned calls cannot start progress');
+            assert.equal(preparing.querySelector('[data-quote-layout]').dataset.quoteLayout, 'separate');
+            const busyButton = [...preparing.querySelectorAll('button')].find(button => button.textContent === 'Preparing swap…');
+            assert.ok(busyButton?.disabled, 'the same click remains busy through preparation');
+            const prepared = fixtureDOM(scenarioId, 'prepared', mode);
+            const confirm = [...prepared.querySelectorAll('button')].find(button => button.textContent === stepLabel);
+            assert.ok(confirm && !confirm.disabled, 'the actual calls determine the confirmation label');
+            assert.equal(prepared.querySelector('[aria-label="Progress"]'), null);
+            const prompt = fixtureDOM(scenarioId, 'confirming', mode);
+            const rows = prompt.querySelectorAll('[aria-label="Progress"] li');
+            assert.equal(rows.length, 2);
+            assert.match(rows[0].textContent, new RegExp(stepLabel));
+            assert.match(rows[1].textContent, /Receive .*ETH/);
+            assert.match(prompt.textContent, /Confirm in your wallet/);
+            assert.doesNotMatch(prompt.textContent, /Sign to swap|Approve token/);
+
+            const submitted = frontendMilestone(scenarioId, 'submitted');
+            assert.equal(phase(submitted.snapshot).phase, SwapPhase.AwaitingUserDeposit);
+            const confirmation = fixtureDOM(scenarioId, 'submitted', mode);
+            const input = fixtureDOM(scenarioId, 'input', mode);
+            const progress = view => [...view.querySelectorAll('[aria-label="Progress"] li')].map(row => ({
+                text: row.textContent,
+                loading: !!row.querySelector('.animate-spin'),
+            }));
+            assert.deepEqual(progress(confirmation), progress(input), 'wallet acceptance and fetched input share the confirmation timeline');
+            assert.match(confirmation.textContent, /Confirming transaction/);
+            assert.equal(confirmation.querySelector('[data-wallet-execution-panel="controls"]'), null);
+            assert.doesNotMatch(confirmation.textContent, /Checking wallet submission|Transaction submitted/);
+
+            const completed = fixtureDOM(scenarioId, 'completed', mode);
+            assert.equal(completed.querySelector('[data-swap-flow]').dataset.swapFlow, callCount === 1 ? 'frontend-swap' : 'atomic-batch');
+            assert.equal(completed.querySelectorAll('[aria-label="Progress"] li').length, 2);
+            assert.match(completed.textContent, /Transfer complete/);
+            assert.match(completed.textContent, /Received 0.0396 ETH/);
+            assert.doesNotMatch(completed.textContent, /Completed in|Sign to swap|Approve token/);
+        }
+    });
+}
+
+test('a standard transfer receipt replaces the full quote and submitted button before API catchup', () => {
+    assert.equal(phase(frontendMilestone('wallet-success', 'submitted').snapshot).phase, SwapPhase.AwaitingUserDeposit);
+    for (const mode of ['component', 'modal']) {
+        const view = fixtureDOM('wallet-success', 'submitted', mode);
+        assert.match(view.textContent, /Transfer in progress/);
+        assert.match(view.textContent, /Confirming transaction/);
+        assert.equal(view.querySelectorAll('[aria-label="Progress"] li').length, 2);
+        assert.equal(view.querySelector('[data-quote-layout]').dataset.quoteLayout, 'attached');
+        assert.equal(view.querySelector('[data-wallet-execution-panel="controls"] button'), null);
+        assert.ok(view.querySelector('[data-page2-quote-disclosure]').closest('[inert]'), 'quote details are collapsed and cannot be edited after submission');
+        assert.doesNotMatch(view.textContent, /Transaction submitted|Confirm in your wallet/);
+    }
+});
+
+test('receipt recovery keeps one progress card as action history and API transactions arrive', async () => {
+    const container = document.getElementById('root');
+    const receipt = frontendMilestone('atomic-batch-receipt', 'receipt').snapshot.storedWalletTransaction;
+    assert.deepEqual(Object.keys(receipt).sort(), ['hash', 'kind', 'timestamp']);
+    assert.equal(receipt.kind, 'atomic-batch');
+    for (const mode of ['component', 'modal']) {
+        const root = createRoot(container);
+        try {
+            let panel;
+            for (const milestoneId of ['restored', 'receipt', 'input', 'finalizing', 'completed']) {
+                const milestone = frontendMilestone('atomic-batch-receipt', milestoneId);
+                await act(async () => root.render(preview(milestone.snapshot, milestone.at, mode)));
+                if (milestoneId === 'restored' || milestoneId === 'receipt') {
+                    assert.equal(milestone.snapshot.walletExecutionStarted, false, 'reopening loses the local execution flag');
+                    assert.equal(phase(milestone.snapshot).phase, SwapPhase.AwaitingUserDeposit);
+                    assert.match(container.textContent, /Confirming transaction/);
+                    assert.doesNotMatch(container.textContent, /Transfer complete|Checking wallet submission|Transaction submitted/);
+                }
+                panel ??= container.querySelector('[data-steps-panel]');
+                assert.ok(panel);
+                assert.equal(panel.querySelectorAll('li').length, 2);
+                assert.equal(container.querySelector('[data-wallet-execution-panel="controls"]'), null);
+                assert.equal(container.querySelector('[data-steps-panel]'), panel, `${mode}: ${milestoneId}`);
+                assert.equal(panel.closest('[inert]'), null);
+                assert.equal(container.querySelector('[data-quote-layout]').dataset.quoteLayout, 'attached');
+                const visibleAction = [...container.querySelectorAll('button')].find(button =>
+                    !button.closest('[inert]') && /Swap now|Preparing|Transaction submitted|Try again/.test(button.textContent));
+                assert.equal(visibleAction, undefined, `${mode}: ${milestoneId} must not ask for another submission`);
+            }
+        } finally {
+            await act(async () => root.unmount());
+        }
+    }
+});
+
+test('restored batch snapshots distinguish confirmed identity from an ambiguous publication', () => {
+    const completed = frontendMilestone('atomic-batch-approved', 'completed').snapshot;
+    const snapshot = {
+        ...completed,
+        swap: { ...completed.swap, quote_revision: undefined },
+        depositActions: [{ step: 'publish', status: 'completed' }],
+        storedWalletTransaction: { kind: 'atomic-batch' },
+    };
+    for (const mode of ['component', 'modal']) {
+        const view = document.createElement('div');
+        view.innerHTML = renderToStaticMarkup(preview(snapshot, 70, mode));
+        assert.equal(view.querySelector('[data-swap-flow]').dataset.swapFlow, 'atomic-batch');
+        assert.equal(view.querySelectorAll('[aria-label="Progress"] li').length, 2);
+        assert.match(view.textContent, /Transfer complete/);
+
+        for (const storedWalletTransaction of [undefined, { kind: 'transaction', hash: 'legacy-hash', timestamp: 1 }]) {
+            view.innerHTML = renderToStaticMarkup(preview({ ...snapshot, storedWalletTransaction }, 70, mode));
+            assert.equal(view.querySelector('[data-swap-flow]').dataset.swapFlow, 'unresolved');
+            assert.equal(view.querySelector('[data-flow-evidence]').dataset.flowEvidence, 'ambiguous-publication');
+        }
+    }
+});
+
+test('atomic rejection can retry while a reverted batch uses the fetched failed outcome', () => {
+    const rejected = frontendMilestone('atomic-batch-rejected', 'rejected');
+    assert.equal(phase(rejected.snapshot).phase, SwapPhase.AwaitingUserDeposit);
+    assert.match(fixtureDOM('atomic-batch-rejected', 'rejected').textContent, /Try again/);
+    assert.match(fixtureDOM('atomic-batch-rejected', 'retry').textContent, /Confirm in your wallet/);
+    const failed = frontendMilestone('atomic-batch-reverted', 'failed');
+    assert.equal(failed.snapshot.details.status, 'failed');
+    assert.equal(failed.snapshot.details.transactions[0].status, 'failed');
+    assert.equal(phase(failed.snapshot).phase, SwapPhase.Failed);
+    assert.match(fixtureDOM('atomic-batch-reverted', 'failed').textContent, /Transfer failed/);
+    const staleReceipt = {
+        ...failed.snapshot,
+        wallet: { kind: 'send', disabled: true, submissionAccepted: true },
+    };
+    const failedView = renderToStaticMarkup(preview(staleReceipt, failed.at));
+    assert.match(failedView, /Transfer failed/);
+    assert.doesNotMatch(failedView, /Confirming transaction/);
+    assert.equal(phase(failed.snapshot).failureReason, undefined, 'a failed swap with a listed input does not offer a deposit retry');
+    const nextSwap = frontendMilestone('atomic-batch-reverted', 'new-swap');
+    assert.notEqual(nextSwap.snapshot.swapId, failed.snapshot.swapId);
+    assert.equal(phase(nextSwap.snapshot).phase, SwapPhase.AwaitingUserDeposit);
+});
+
+test('atomic batch scenarios are selectable in both canvas and timeline layouts', async () => {
+    const container = document.getElementById('root');
+    const root = createRoot(container);
+    try {
+        await act(async () => root.render(React.createElement(TimelinePage)));
+        await chooseGroup(container, 'Token swaps');
+        await chooseScenario(container, 'Atomic batch: approve and swap');
+        const scenario = scenarios.find(scenario => scenario.id === 'atomic-batch-success');
+        assert.equal(container.querySelector('#scenario-title').textContent, scenario.label);
+        assert.equal(container.querySelectorAll('[data-milestone-id]').length, scenario.milestones.length);
+        await chooseLayout(container, 'Timeline');
+        assert.equal(container.querySelector('#scenario-title').textContent, scenario.label);
+        await act(async () => container.querySelector('aside button[aria-label="Atomic batch: saved receipt"]').click());
+        assert.equal(container.querySelector('#scenario-title').textContent, 'Atomic batch: saved receipt');
+        assert.match(container.querySelector('[data-page2-preview]').textContent, /Confirming transaction/);
+        assert.deepEqual(forbidden, []);
+    } finally {
+        await act(async () => root.unmount());
+    }
+});
+
 const processingElement = (s) => {
     const input = s.details.transactions.find(transaction => transaction.type === 'input');
     return React.createElement(ProcessingView, {
@@ -1372,7 +1588,8 @@ test('receive links appear when loading and stay mounted through completion', as
                     ...completed, depositActions,
                     gaslessAuthorization: scenario === 'frontend-gasless-success' ? { status: 'published' } : undefined,
                     stepTransactions: { approve_permit2: approval },
-                    storedWalletTransaction: { hash: input.transaction_hash, status: 'pending', timestamp: 1 },
+                    storedWalletTransaction: { hash: input.transaction_hash, timestamp: 1 },
+                    inputTxStatusFromApi: 'pending',
                 };
                 const knownAtomicWorkflow = !!depositActions?.some(action => action.step === 'publish') || !!snapshot.gaslessAuthorization;
                 let executionLink;
@@ -1548,15 +1765,17 @@ test('wallet execution exchanges the preparing button for persistent steps and r
     try {
         await act(async () => root.render(preview(preparing.snapshot, preparing.at)));
         assert.match(container.querySelector('[data-wallet-execution-panel="controls"]').textContent, /Preparing swap/);
-        assert.equal(container.querySelector('[data-wallet-execution-panel="workflow"]'), null);
+        const preparingButton = [...container.querySelectorAll('button')].find(button => button.textContent.includes('Preparing swap'));
+        assert.ok(preparingButton);
+        assert.equal(container.querySelector('[data-steps-panel]'), null);
 
         await act(async () => root.render(preview(approving.snapshot, approving.at)));
         const workflow = container.querySelector('[data-wallet-execution-panel="workflow"]');
         const steps = workflow.querySelector('[aria-label="Progress"]');
         const panel = workflow.querySelector('[data-steps-panel]');
-        assert.equal(panel.style.height, 'auto', 'reduced motion shows the final height immediately');
-        assert.equal(panel.style.opacity, '1');
-        assert.equal(workflow.style.height, '', 'the wallet wrapper does not run a second height animation');
+        assert.equal(surface(panel).style.height, 'auto', 'reduced motion shows the final height immediately');
+        assert.equal(surface(panel).style.opacity, '1');
+        assert.equal(panel.style.height, '', 'the progress surface does not run a second height animation');
         // The controls panel stays available for wallet-request recovery while loading.
         // Compare booleans so failures do not inspect React's cyclic JSDOM nodes.
         assert.ok(container.querySelector('[data-wallet-execution-panel="controls"] button') === null, 'reduced motion removes the old button immediately');
@@ -1567,15 +1786,15 @@ test('wallet execution exchanges the preparing button for persistent steps and r
         assert.match(steps.textContent, /Sign in your wallet/);
 
         await act(async () => root.render(preview(preparing.snapshot, preparing.at)));
-        assert.equal(container.querySelector('[data-wallet-execution-panel="workflow"]'), null);
+        assert.equal(container.querySelectorAll('[data-steps-panel]').length, 0);
         assert.match(container.querySelector('[data-wallet-execution-panel="controls"]').textContent, /Preparing swap/);
     } finally {
         await act(async () => root.unmount());
     }
 
     const initial = fixtureDOM('frontend-permit2', 'approving').querySelector('[data-steps-panel]');
-    assert.equal(initial.style.height, 'auto', 'opening an existing workflow does not start it collapsed');
-    assert.equal(initial.style.opacity, '1');
+    assert.equal(surface(initial).style.height, 'auto', 'opening an existing workflow does not start it collapsed');
+    assert.equal(surface(initial).style.opacity, '1');
 });
 
 test('completed token swaps use the actual output and do not invent missing action history', async () => {
@@ -1727,6 +1946,7 @@ test('frontend snapshots keep automatic wallet execution busy until processing o
             const s = milestone.snapshot;
             const wallet = s.wallet;
             if (!s.depositActions?.length || !phase(s).showWithdrawScreen || wallet?.kind !== 'send') continue;
+            if (s.walletExecutionStarted === false || wallet.disabled) continue;
             if (wallet.error || wallet.swapError || wallet.gaslessUnavailable || wallet.critical === 'confirmation') continue;
 
             const label = `${scenario.id}/${milestone.id}`;
@@ -1771,7 +1991,7 @@ test('frontend quotes match the real full-to-compact lifecycle and sign-only/nat
     assert.equal(gasless.querySelector('[data-quote-layout]').dataset.quoteLayout, 'separate');
     assert.equal(fixtureDOM('wallet-success', 'ready').querySelector('[data-quote-layout]').dataset.quoteLayout, 'separate');
     assert.equal(gasless.querySelector('[aria-label="Swap progress"]'), null);
-    assert.match(fixtureDOM('frontend-native', 'ready').textContent, /Swap now/);
+    assert.match(fixtureDOM('frontend-native', 'ready').textContent, /Confirm swap/);
     assert.match(fixtureDOM('frontend-native', 'publishing').textContent, /Step 1 of 2: Confirm swap/);
     assert.match(fixtureDOM('frontend-native', 'publishing').textContent, /Confirm in your wallet/);
     assert.equal(fixtureDOM('frontend-native', 'publishing').querySelector('[data-quote-layout]').dataset.quoteLayout, 'attached');
@@ -1858,7 +2078,7 @@ test('manual network and exchange deposits use the shared instructions-to-progre
                     assert.equal(!!controls, !processing);
                     if (processing) {
                         assert.equal(overview.style.height, 'auto');
-                        assert.equal(steps.style.height, 'auto');
+                        assert.equal(surface(steps).style.height, 'auto');
                         assert.match(steps.textContent, /Processing your deposit/);
                         assert.doesNotMatch(container.textContent, /Copy the deposit address/);
                     } else {
@@ -1890,7 +2110,7 @@ test('gasless failure reasons replace the generic failed-step description withou
                 assert.equal(failedStep.textContent, `The transfer failed${reason}`);
                 assert.equal(container.textContent.split(reason).length - 1, 1, 'show the specific reason only once');
                 assert.doesNotMatch(container.textContent, /Something went wrong while processing|please contact our support|Gasless deposit failed/);
-                const actions = container.querySelector('[data-processing-actions]');
+                const actions = container.querySelector('[data-wallet-execution-panel="controls"]');
                 assert.equal(actions.textContent, 'Try againSwitch to standard transfer', 'retry area contains only its actions');
             }
             const retry = frontendMilestone('gasless-expired', 'retry');
@@ -1907,7 +2127,7 @@ test('unknown failures keep the generic support message and working support acti
     const input = frontendMilestone('input-failure', 'failed').snapshot;
     const withoutHash = {
         ...input,
-        storedWalletTransaction: { ...input.storedWalletTransaction, hash: '' },
+        storedWalletTransaction: undefined,
         details: { ...input.details, transactions: input.details.transactions.map(transaction => ({ ...transaction, transaction_hash: '' })) },
     };
     let supportCalls = 0;

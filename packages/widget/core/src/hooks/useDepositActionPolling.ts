@@ -6,6 +6,7 @@ import { getActionableDepositAction, isDepositWorkflowComplete } from '@/helpers
 import { isGaslessAuthorizationSubmitted, isGaslessDepositWorkflow } from '@/helpers/gasless'
 import { useDepositSignatureStore, useGaslessAuthorizationStore } from '@/stores/swapTransactionStore'
 import { useSwapDataState, useSwapDataUpdate, type ApprovalTransaction } from '@/context/swap'
+import { recordSwapExecution } from '@/lib/swapExecution'
 import { useClientLayoutEffect } from './useClientLayoutEffect'
 
 const client = new LayerSwapApiClient()
@@ -17,8 +18,12 @@ export const depositActionsKey = (swapId: string, sourceAddress: string) =>
 export function useDepositActionPolling(swapId: string | undefined, sourceAddress: string | undefined, executing: boolean) {
     const key = swapId && sourceAddress ? depositActionsKey(swapId, sourceAddress) : null
     const { mutate, cache } = useSWRConfig()
-    const { data, error } = useSWR<ApiResponse<DepositAction[]>>(key, client.fetcher, {
+    const { approvalTransaction, swapBasicData } = useSwapDataState()
+    const { data, error } = useSWR<ApiResponse<DepositAction[]>>(key, () => client.GetDepositActionsAsync(swapId!, sourceAddress), {
         dedupingInterval: 1000,
+        onSuccess: response => {
+            if (swapId && !response.error) recordSwapExecution(swapId, { swapData: swapBasicData, depositActions: response.data })
+        },
         keepPreviousData: false,
     })
     // A sign-only payload cannot distinguish self-paid from gasless execution.
@@ -35,7 +40,6 @@ export function useDepositActionPolling(swapId: string | undefined, sourceAddres
         refreshWhenHidden: true,
         keepPreviousData: false,
     })
-    const { approvalTransaction } = useSwapDataState()
     const { watchApprovalTransaction, setWalletActionExecuting } = useSwapDataUpdate()
     useClientLayoutEffect(() => {
         setWalletActionExecuting(executing)
@@ -206,17 +210,16 @@ function getAuthorizationTransition(
     if (!result) return
 
     const authorizationFailed = ['expired', 'insufficient', 'rejected'].includes(result.status)
-    if (authorizationFailed) recordAuthorizationFailure(swapId, result)
+    if (authorizationFailed) recordGaslessSignature(swapId)
     if (authorizationFailed || result.transaction?.status === 'failed') {
         throw new Error(`The swap authorization failed: ${result.status}`)
     }
 }
 
-function recordAuthorizationFailure(swapId: string, result: GaslessAuthorizationResult): void {
+function recordGaslessSignature(swapId: string): void {
     const signatures = useDepositSignatureStore.getState()
     const signature = signatures.signatures[swapId]
-    // Classify the accepted signature before clearing it so the resolved
-    // status and retry guard see the same terminal result.
+    // Preserve the signed-action receipt. The shared authorization response supplies its outcome.
     useGaslessAuthorizationStore.setState(state => {
         const current = state.authorizations[swapId]
         return {
@@ -226,9 +229,6 @@ function recordAuthorizationFailure(swapId: string, result: GaslessAuthorization
                     ...current,
                     kind: 'gasless',
                     validBefore: current?.validBefore ?? signature?.validBefore ?? Math.floor(Date.now() / 1000),
-                    status: result.status,
-                    // Omitted transaction data cannot erase a known submission.
-                    transaction: result.transaction ?? current?.transaction ?? null,
                 },
             },
         }

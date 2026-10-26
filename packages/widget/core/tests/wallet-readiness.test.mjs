@@ -33,6 +33,16 @@ const mockUrl = `data:text/javascript,${encodeURIComponent(`
   export const SendTransactionButton = () => createElement('button', null, 'Send transaction')
   export const WalletIcon = () => null
   export const ActionMessage = () => null
+  export const useActionMessage = () => null
+  export const useSwapDataUpdate = () => ({ reportWalletActionFeedback: () => () => {} })
+  export const useWalletWithdrawalState = () => ({ showProgress: false })
+  export const useConnectWalletController = () => ({})
+  export const useConnectModal = () => ({})
+  export const useSendTransactionController = () => ({})
+  export const getSendTransactionPresentation = () => ({ controls: createElement('button', null, 'Send transaction') })
+  export const ConnectWalletView = () => createElement('button', null, 'Connect wallet')
+  export const ProgressPanelView = () => null
+  export const getWalletProgress = () => null
   export const ActionMessages = { DifferentAccountsNotAllowedError: () => createElement('p', null, 'Accounts must match') }
   export const useBalance = () => ({ balances: [] })
   export const useTransfer = () => ({})
@@ -48,7 +58,7 @@ const mockedDependencies = [
   '/lib/balances/useBalance', '/Common/actionMessage', '/messages/TransactionMessages',
   '/hooks/useTransfer', '/hooks/useGasless', '/context/rpcHealthContext',
   '/RPCUnhealthyMessage', '/lib/extendedRoutes/registry',
-  '/WithdrawalProviders/Hyperliquid', '/WithdrawalProviders/Polymarket',
+  '/WithdrawalProviders/Hyperliquid', '/WithdrawalProviders/Polymarket', '/Presentation/WalletActionsView', '/Presentation/ProgressPanelView', '/Presentation/walletProgress',
 ]
 // Mocks apply only to imports made by the component under test. If that file
 // moves, update this path or the real wallet SDKs will load unmocked.

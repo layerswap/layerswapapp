@@ -15,7 +15,7 @@ export type ActionMessageViewProps = {
     swapError?: boolean;
     expanded?: boolean;
 };
-export function ActionMessageView({
+export function getActionMessage({
     error,
     isLoading,
     isSignatureError,
@@ -71,5 +71,7 @@ export function ActionMessageView({
         return <ActionMessages.SwapErrorMessage />;
     } else if (error) {
         return <WalletUnknownError expanded={expanded} />;
-    } else return <></>;
+    } else return null;
 }
+
+export const ActionMessageView = getActionMessage;

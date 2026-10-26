@@ -2,63 +2,62 @@ import { AnimatePresence, motion, useIsPresent } from 'framer-motion';
 import type { ReactNode } from 'react';
 import { useHydratedReducedMotion } from '@layerswap/ui-kit';
 import { swapFlowTransition } from './swapFlowAnimation';
-import { StepsPanelProvider } from '../Processing/StepsComponent';
 
+/** Callers resolve section visibility before constructing their views. */
 export function WalletExecutionTransition({
     overview,
     workflow,
     controls,
+    controlsKey = 'controls',
     animate = true,
+    gap = 8,
+    initial = false,
 }: {
     overview?: ReactNode;
     workflow?: ReactNode;
     controls?: ReactNode;
+    controlsKey?: string;
     animate?: boolean;
+    gap?: 8 | 12;
+    initial?: boolean;
 }) {
     const reducedMotion = useHydratedReducedMotion();
-    const panels = [
-        overview && (
-            <ExecutionPanel
-                key="overview"
-                kind="overview"
-                reducedMotion={reducedMotion}
-                animate={animate}
-            >
-                <div className="pb-2">{overview}</div>
-            </ExecutionPanel>
-        ),
-        workflow && (
-            <ExecutionPanel
-                key="workflow"
-                kind="workflow"
-                reducedMotion={reducedMotion}
-                animate={animate}
-            >
-                {workflow}
-            </ExecutionPanel>
-        ),
-        controls && (
-            <ExecutionPanel
-                key="controls"
-                kind="controls"
-                reducedMotion={reducedMotion}
-                animate={animate}
-                className={workflow ? 'pt-1' : undefined}
-            >
-                {controls}
-            </ExecutionPanel>
-        ),
-    ];
-
     return (
-        <div className="w-full">
-            {reducedMotion ? (
-                panels
-            ) : (
-                <AnimatePresence initial={false} mode="sync">
-                    {panels}
-                </AnimatePresence>
-            )}
+        <div data-wallet-execution-stack className="flex w-full flex-col">
+            <AnimatePresence initial={initial} mode="sync">
+                {overview ? (
+                    <ExecutionPanel
+                        key="overview"
+                        kind="overview"
+                        animate={animate}
+                        reducedMotion={reducedMotion}
+                    >
+                        {overview}
+                    </ExecutionPanel>
+                ) : null}
+                {workflow ? (
+                    <ExecutionPanel
+                        key="workflow"
+                        kind="workflow"
+                        gap={overview ? gap : 0}
+                        animate={true}
+                        reducedMotion={reducedMotion}
+                    >
+                        {workflow}
+                    </ExecutionPanel>
+                ) : null}
+                {controls ? (
+                    <ExecutionPanel
+                        key={controlsKey}
+                        kind="controls"
+                        gap={overview || workflow ? gap : 0}
+                        animate={animate}
+                        reducedMotion={reducedMotion}
+                    >
+                        {controls}
+                    </ExecutionPanel>
+                ) : null}
+            </AnimatePresence>
         </div>
     );
 }
@@ -66,37 +65,24 @@ export function WalletExecutionTransition({
 function ExecutionPanel({
     children,
     kind,
-    reducedMotion,
+    gap = 0,
     animate,
-    className,
+    reducedMotion,
 }: {
     children: ReactNode;
-    kind: 'overview' | 'workflow' | 'controls';
-    reducedMotion: boolean;
+    kind: string;
+    gap?: number;
     animate: boolean;
-    className?: string;
+    reducedMotion: boolean;
 }) {
     const isPresent = useIsPresent();
-
-    // The shared steps panel owns its height animation in every flow.
-    // Animate the overview and controls here; steps keep their own animation.
-    if (kind === 'workflow') {
-        return (
-            <div
-                data-wallet-execution-panel={animate ? kind : undefined}
-                aria-hidden={!isPresent}
-                inert={!isPresent}
-            >
-                <StepsPanelProvider>{children}</StepsPanelProvider>
-            </div>
-        );
-    }
-
     return (
         <motion.div
-            data-wallet-execution-panel={animate ? kind : undefined}
+            data-wallet-execution-panel={kind}
             className="w-full overflow-hidden"
-            initial={!animate || reducedMotion ? false : { height: 0, opacity: 0 }}
+            initial={
+                !animate || reducedMotion ? false : { height: 0, opacity: 0 }
+            }
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={
@@ -105,9 +91,12 @@ function ExecutionPanel({
             aria-hidden={!isPresent}
             inert={!isPresent}
         >
-            <StepsPanelProvider>
-                <div className={`flex w-full flex-col gap-2 ${className ?? ''}`}>{children}</div>
-            </StepsPanelProvider>
+            <div
+                style={{ paddingTop: gap }}
+                className="flex w-full flex-col gap-2"
+            >
+                {children}
+            </div>
         </motion.div>
     );
 }

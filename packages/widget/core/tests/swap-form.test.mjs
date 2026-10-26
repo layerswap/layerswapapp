@@ -24,6 +24,7 @@ const hooks = registerHooks({
   resolve(specifier, context, nextResolve) {
     if (specifier.endsWith('/context/swapAccounts')) return { url: 'data:text/javascript,export const useSelectedAccount = () => undefined', shortCircuit: true }
     if (specifier === './AmountPresetController') return { url: 'data:text/javascript,export default () => null', shortCircuit: true }
+    if (specifier === './AtomicBatchDiscovery') return { url: 'data:text/javascript,export default () => null', shortCircuit: true }
     if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
       const file = new URL(`${specifier}.js`, context.parentURL)
       return nextResolve(existsSync(file) ? `${specifier}.js` : `${specifier}/index.js`, context)
