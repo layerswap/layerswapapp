@@ -220,7 +220,7 @@ class StellarKitManager {
             ? await this.walletConnectModule.getConnectedAddress(expectedAddress)
             : activeWalletId === STELLAR_APPKIT_WALLET_CONNECT_ID && this.appKitWalletConnectModule
                 ? await this.getAppKitConnectedAddress(this.appKitWalletConnectModule, expectedAddress)
-                : await kit.fetchAddress().catch((error: { message: string }) => { throw new Error(error.message) })
+                : await kit.fetchAddress().catch((error: { message: string }) => { throw new Error(error.message, { cause: error }) })
         this.assertSourceAddress(address)
         if (address !== expectedAddress) {
             throw walletError(ActionMessageType.WaletMismatch, 'The connected Stellar account changed')

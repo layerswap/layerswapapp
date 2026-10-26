@@ -87,7 +87,9 @@ test('gasless Rainbow signatures use the selected connector with the same addres
 test('a disconnected selected connector cannot fall back to MetaMask', async () => {
     const { config, calls, wallet, metamask } = fixture()
     config.setState(state => ({ ...state, connections: new Map([[metamask.uid, state.connections.get(metamask.uid)]]) }))
-    assert.throws(() => resolveWalletConnector(config, wallet), /Reconnect your wallet/)
+    assert.throws(() => resolveWalletConnector(config, wallet), error =>
+        /Reconnect your wallet/.test(error.message) && /selected: .*Hidden WalletConnect|selected: .*connector/.test(error.message)
+        && /matches: 0/.test(error.message) && /connected: .*#/.test(error.message))
     assert.deepEqual(calls, [])
 })
 

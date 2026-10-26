@@ -151,6 +151,19 @@ test('ambiguous -32000 RPC codes do not override typed or nested wallet errors',
     assert.equal(normalizeWalletErrorCode(wrapped), 'contract_reverted')
 })
 
+test('throttling evidence outranks the codes wallets reuse for it, but never an explicit decline', () => {
+    for (const code of [-32002, 4200, -32603, -32000, 'SERVER_ERROR']) {
+        assert.equal(normalizeWalletErrorCode({ code, message: 'Too Many Requests' }), 'network_error', `code ${code}`)
+        assert.equal(normalizeWalletErrorCode({ code, message: 'Internal error', cause: { status: 429 } }), 'network_error', `status under ${code}`)
+    }
+    assert.equal(normalizeWalletErrorCode({ code: 4001, message: 'User rejected', cause: { status: 429 } }), 'user_rejected')
+    assert.equal(normalizeWalletErrorCode({ code: -32002, message: 'Request of type wallet_requestPermissions already pending' }), 'request_pending')
+    assert.equal(normalizeWalletErrorCode({ code: 4200, message: 'Unsupported method' }), 'unsupported_method')
+    assert.equal(normalizeWalletErrorCode('HTTP 429: too many requests'), 'network_error')
+    assert.equal(normalizeWalletErrorCode({ status: 429 }), 'network_error')
+    assert.equal(normalizeWalletErrorCode({ status: 500, message: 'bad gateway' }), 'unknown_error')
+})
+
 // ---- Corpus: every shape below has a provenance tag in wallet-error-fixtures.mjs.
 
 test('provenance-tagged corpus classifies as recorded', () => {

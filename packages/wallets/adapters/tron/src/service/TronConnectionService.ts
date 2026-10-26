@@ -91,7 +91,7 @@ export class TronConnectionService<Network> implements WalletConnectionService<n
             const snapshot = updatedWallets.find(w => w.name === connectedAdapter?.name) ?? target
             return this.resolveWallet(snapshot, connectedAdapter?.address ?? undefined)
         } catch (e: any) {
-            throw new Error(e?.message || e)
+            throw new Error(e?.message || e, { cause: e })
         }
     }
 

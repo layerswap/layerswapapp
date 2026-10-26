@@ -38,7 +38,7 @@ export class TronGasProvider implements GasProvider {
             const formatedGas = Number(formatUnits(BigInt(energyUsage * energyPrice), network.token?.decimals));
             if (formatedGas) return { gas: formatedGas, token: network.token }
         } catch (e) {
-            throw new Error(e.message)
+            throw new Error(e.message, { cause: e })
         }
 
     }

@@ -26,6 +26,14 @@ export const FIXTURES = [
     // MetaMask Mobile relays its own RPC failure over WalletConnect as 5000
     { label: 'CAIP-25 5000 carrying a wallet RPC failure', source: 'faro:local MetaMask Mobile via WalletConnect', error: { code: 5000, message: 'RPC 0xa Custom eth_getBlockByNumber: RPC endpoint returned HTTP client error.' }, expected: 'network_error' },
     { label: 'viem UserRejectedRequestError around a 5000 wallet RPC failure', source: 'faro:local MetaMask Mobile via WalletConnect', error: { name: 'UserRejectedRequestError', code: 4001, message: 'User rejected the request.', cause: { code: 5000, message: 'RPC 0xa Custom eth_getBlockByNumber: RPC endpoint returned HTTP client error.' } }, expected: 'network_error' },
+    // --- throttled RPCs relayed under codes that mean something else
+    { label: 'viem HttpRequestError with HTTP 429', source: 'sdk:viem errors/request.js HttpRequestError (status, "Status: 429")', error: { name: 'HttpRequestError', status: 429, message: 'HTTP request failed.\n\nStatus: 429\nURL: https://rpc.example\nRequest body: {"method":"eth_estimateGas"}' }, expected: 'network_error' },
+    { label: 'HTTP 429 relayed as -32002 resource unavailable', source: 'review:wallet-transfer-reliability brief (throttling shown as a pending request)', error: { code: -32002, message: 'RPC endpoint returned HTTP client error: 429 Too Many Requests' }, expected: 'network_error' },
+    { label: 'rate limit relayed as 4200 unsupported method', source: 'review:wallet-transfer-reliability brief (throttling shown as an unsupported method)', error: { code: 4200, message: 'Unsupported method: rate limit exceeded for eth_sendTransaction' }, expected: 'network_error' },
+    { label: 'rate limit relayed as an internal error', source: 'review:wallet-transfer-reliability brief (MetaMask fetch middleware answers a throttled RPC with an internal error)', error: { code: -32603, message: 'Request is being rate limited.' }, expected: 'network_error' },
+    { label: 'node TransactionRejectedRpcError around a throttled RPC', source: 'sdk:viem', error: { code: -32003, name: 'TransactionRejectedRpcError', message: 'Transaction rejected', cause: { status: 429, message: 'Too Many Requests' } }, expected: 'network_error' },
+    // A decline is still a decline when its text happens to mention a limit.
+    { label: 'EIP-1193 decline mentioning a rate limit', source: 'spec', error: { code: 4001, message: 'User rejected the request (rate limit warning shown)' }, expected: 'user_rejected' },
     // --- other reasons nested under the bucket
     { label: '-32603 with data.message insufficient funds', source: 'review:PR#2166', error: { code: -32603, message: 'Internal JSON-RPC error.', data: { message: 'insufficient funds for gas * price + value' } }, expected: 'insufficient_funds' },
     { label: 'TimeoutError name carrying -32603', source: 'review:PR#2166', error: { name: 'TimeoutError', code: -32603 }, expected: 'timeout' },

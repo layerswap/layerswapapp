@@ -9,6 +9,9 @@ type ErrorCandidate = {
     shortMessage?: string
     /** viem BaseError carries the cause text here. */
     details?: string
+    /** viem HttpRequestError (and fetch-style errors) carry the HTTP status here. */
+    status?: number
+    statusCode?: number
     cause?: unknown
 }
 
@@ -200,6 +203,24 @@ function isDeclineText(text: string, code?: string): boolean {
     return (isServerErrorCode(code) ? SERVER_ERROR_DECLINE_TEXT : DECLINE_TEXT).test(text)
 }
 
+// ---- Transport evidence. Wallets relay their RPC's transport failures under
+// ---- codes reserved for other conditions: a throttled endpoint comes back as
+// ---- -32603 "Request is being rate limited.", -32002 (resource unavailable,
+// ---- otherwise "request already pending"), 4200 (unsupported method) or a
+// ---- generic transaction failure, while viem's own HttpRequestError keeps the
+// ---- HTTP status. Concrete throttling evidence anywhere in the chain outranks
+// ---- those codes; only an explicit decline comes first.
+const HTTP_TOO_MANY_REQUESTS = 429
+const THROTTLED_TEXT = /too many requests|rate.?limit|\b429\b/i
+
+function transportReason(chain: ErrorCandidate[]): WalletErrorReasonCode | undefined {
+    for (const candidate of chain) {
+        const status = candidate.status ?? candidate.statusCode
+        if (status === HTTP_TOO_MANY_REQUESTS || THROTTLED_TEXT.test(textOf(candidate))) return 'network_error'
+    }
+    return undefined
+}
+
 const MESSAGE_RULES: Record<TextTier, NameRules> = {
     descriptive: [
         // user_rejected is decided by isDeclineText, ahead of these rules.
@@ -229,7 +250,7 @@ function isErrorLike(value: unknown): value is ErrorCandidate {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return false
     return 'code' in value || 'message' in value || 'name' in value || 'cause' in value || 'reasonCode' in value
         || 'error' in value || 'originalError' in value || 'shortMessage' in value
-        || 'data' in value || 'info' in value || 'details' in value
+        || 'data' in value || 'info' in value || 'details' in value || 'status' in value || 'statusCode' in value
 }
 
 /** Innermost first: deeper nodes describe the raw failure, wrappers add noise. */
@@ -326,6 +347,7 @@ function caip25FailureReason(chain: ErrorCandidate[]): WalletErrorReasonCode | u
 function rawTextReason(error: unknown, tier: TextTier): WalletErrorReasonCode | undefined {
     if (typeof error !== 'string') return undefined
     if (tier === 'descriptive' && isDeclineText(error)) return 'user_rejected'
+    if (tier === 'descriptive' && THROTTLED_TEXT.test(error)) return 'network_error'
     return MESSAGE_RULES[tier].find(([pattern]) => pattern.test(error))?.[1]
 }
 
@@ -335,6 +357,8 @@ function rawTextReason(error: unknown, tier: TextTier): WalletErrorReasonCode | 
  *      userRejectedError) wins anywhere in the chain, outermost first;
  *      then a CAIP-25 5000 whose own text names a non-decline failure;
  *   1. a definitive cancellation signal anywhere in the tree;
+ *   1b. throttling evidence (HTTP 429, "too many requests", "rate limit") anywhere
+ *      in the tree: wallets relay it under codes reserved for other conditions;
  *   2. definitive codes/names, innermost first;
  *   3. descriptive message text, innermost first (SDK bucket classes contribute no text);
  *      decline text must name the user, never inside a revert reason, and on a
@@ -357,6 +381,8 @@ export function normalizeWalletErrorCode(error: unknown): WalletErrorReasonCode 
     for (const candidate of chain) {
         if (codeReason(candidate, 'definitive') === 'user_rejected' || nameReason(candidate, 'definitive') === 'user_rejected') return 'user_rejected'
     }
+    const throttled = transportReason(chain)
+    if (throttled) return throttled
     for (const candidate of chain) {
         const reason = codeReason(candidate, 'definitive') ?? nameReason(candidate, 'definitive')
         if (reason) return reason
