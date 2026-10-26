@@ -290,6 +290,7 @@ function createWorkflow({
         }
     }
     const buttonImports = {
+        '@/lib/widgetTelemetry': { widgetTelemetry: { beginOperation: () => () => {} } },
         '@/lib/amountPresets': amountPresets,
         '@/helpers/depositActions': depositActions,
         '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: event => calls.lifecycle.push(event) }) },
@@ -1345,18 +1346,22 @@ for (const completes of [false, true]) {
     })
 }
 
-test('rejected signing retries on the same swap using refreshed typed data', async () => {
+test('rejected signing retries on the same swap using refreshed typed data', async t => {
+    t.mock.timers.enable({ apis: ['Date'] })
     const flow = createWorkflow()
     await flow.render().button.props.onClick()
     assert.deepEqual(flow.calls.sign, ['fresh'])
     assert.equal(flow.state.rejected, true)
 
+    // The backend renews the payload while the user waits past the reuse window of the rejection-time refresh.
+    t.mock.timers.tick(5001)
     flow.state.apiActions = actionsFor('renewed-after-waiting')
     flow.state.rejectSigning = false
     await flow.render().button.props.onClick()
 
     assert.deepEqual(flow.calls.sign, ['fresh', 'renewed-after-waiting'])
-    assert.deepEqual(flow.calls.refresh, [[swapId, sourceAddress], [swapId, sourceAddress]])
+    assert.deepEqual(flow.calls.refresh, [[swapId, sourceAddress], [swapId, sourceAddress], [swapId, sourceAddress]],
+        'the first attempt, the refresh started at its rejection, and a fresh read after waiting')
     assert.deepEqual(flow.calls.authorize, [[swapId, 'fresh-signature', sourceAddress]])
     assert.equal(flow.calls.transfer[0].swapId, swapId)
     assert.equal(flow.calls.success, 1)
@@ -1948,7 +1953,8 @@ test('enabling gasless after rejecting self-paid signing creates a new swap with
     assert.equal(creates, 1, 'the changed preference replaces the unsubmitted self-paid swap')
     assert.equal(flow.state.swapId, 'gasless-swap')
     assert.deepEqual(flow.calls.sign, ['self-paid', 'gasless'], 'the old self-paid signature is never requested again')
-    assert.deepEqual(flow.calls.refresh, [[swapId, sourceAddress]], 'only the first attempt refreshes the old swap')
+    assert.deepEqual(flow.calls.refresh, [[swapId, sourceAddress], [swapId, sourceAddress], ['gasless-swap', sourceAddress]],
+        'the first attempt and its rejection refresh the old swap; the replacement only refreshes itself when its prompt is declined')
     assert.deepEqual(flow.calls.transfer, [])
     assert.deepEqual(flow.calls.errors, [])
 })
@@ -2217,7 +2223,7 @@ test('a rejected network switch preserves the workflow and retries before signin
     flow.state.switchChain = async () => { throw { code: 4001 } }
     await flow.render().button.props.onClick()
     assert.equal(flow.state.swapId, swapId)
-    assert.deepEqual(flow.calls.refresh, [[swapId, sourceAddress]])
+    assert.deepEqual(flow.calls.refresh, [[swapId, sourceAddress], [swapId, sourceAddress]], 'the declined switch starts the retry\'s refresh')
     assert.deepEqual(flow.calls.sign, [])
     assert.deepEqual(flow.calls.errors, [])
     assert.equal(flow.render().viewProps.networkSwitch.error.kind, 'rejected')
@@ -2227,6 +2233,7 @@ test('a rejected network switch preserves the workflow and retries before signin
     await flow.render().button.props.onClick()
     assert.equal(flow.calls.success, 1)
     assert.equal(flow.state.swapId, swapId)
+    assert.equal(flow.calls.refresh.length, 2, 'an immediate retry reuses the refresh started at the rejection')
     assert.equal(flow.render().viewProps.networkSwitch.isError, false)
 })
 

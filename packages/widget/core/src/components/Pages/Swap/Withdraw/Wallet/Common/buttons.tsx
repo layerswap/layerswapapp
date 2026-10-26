@@ -34,6 +34,7 @@ import { useBalance } from '@/lib/balances/useBalance';
 import { ErrorHandler } from '@/lib/ErrorHandler';
 import { resolvePriceImpactValues } from '@/lib/fees';
 import useSWRGas from '@/lib/gases/useSWRGas';
+import { widgetTelemetry } from '@/lib/widgetTelemetry';
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore';
 import { useDepositSignatureStore, useGaslessAuthorizationStore, useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import { NetworkRoute } from '@layerswap/widget-types';
@@ -68,6 +69,8 @@ const MAX_DEPOSIT_WORKFLOW_ACTIONS = 10;
 const NO_NETWORK_SWITCH: ActionData = { isPending: false, isError: false, error: null };
 const SWITCH_PROMPT_DELAY_MS = 1000;
 const SUBMISSION_DETECTION_TIMEOUT_MS = 150_000;
+/** How long the deposit-action refresh started at a declined prompt stays current for the retry. */
+const RETRY_REFRESH_REUSE_MS = 5_000;
 export function useConnectWalletController(props: SubmitButtonProps = {}) {
     const { swapBasicData, swapDetails } = useSwapDataState()
     const { source_network } = swapBasicData || {}
@@ -216,6 +219,11 @@ export function useSendTransactionController({
     const [criticalConfirmation, setCriticalConfirmation] = useState<SwapResponse>()
     const [workflowState, setWorkflowState] = useState<{ swapId: string, actions: DepositAction[], swapData?: SwapDetails }>()
     const executionInFlight = useRef(false)
+    // The deposit-action refresh started when the wallet declined a prompt. An
+    // immediate retry of the same swap uses it instead of requesting again;
+    // nothing the declined prompt could have consumed is older than it, and a
+    // prepared payload cannot expire within the reuse window.
+    const retryRefresh = useRef<{ swapId: string; startedAt: number; result: Promise<DepositAction[]> } | undefined>(undefined)
     // A saved swap keeps its backend mode when reopened. Only a preference
     // changed in this view can request a replacement before submission.
     const reviewedGaslessPreference = useRef(gaslessEnabled)
@@ -353,6 +361,20 @@ export function useSendTransactionController({
                 gaslessAuthorization,
             })
         let executionSwapId = forceNewSwap ? undefined : swapId
+        // One operation from the click to the action's wallet prompt, with the
+        // time each preparation stage took, so slow prompts can be attributed.
+        const finishPreparation = widgetTelemetry.beginOperation('transfer_preparation', {
+            provider: selectedWallet?.providerName, fresh_swap: !executionSwapId,
+        })
+        const stages: Record<string, number> = {}
+        const timed = async <T,>(stage: string, work: () => Promise<T>): Promise<T> => {
+            const started = Date.now()
+            try {
+                return await work()
+            } finally {
+                stages[`${stage}_ms`] = (stages[`${stage}_ms`] ?? 0) + Date.now() - started
+            }
+        }
         // An open wallet request can finish after this view unmounts. Its lock
         // belongs to the workflow, independently of the polling hook's lifetime.
         const releaseWalletExecution = acquireWalletExecution()
@@ -403,7 +425,7 @@ export function useSendTransactionController({
                     depositMethod: 'wallet',
                 }
 
-                const newSwapData = await createSwapForCurrentSelection.current(swapValues, initialSettings).catch((e: any) => {
+                const newSwapData = await timed('swap_creation', () => createSwapForCurrentSelection.current(swapValues, initialSettings)).catch((e: any) => {
                     signal.throwIfAborted()
                     // Failed gasless attempt is surfaced as the switch prompt, not a raw API error.
                     if (useGaslessPreferenceStore.getState().gaslessUnavailable) {
@@ -444,11 +466,11 @@ export function useSendTransactionController({
                     setQuoteLoading(true)
                     try {
                         // Cancellation ends the pause immediately.
-                        await new Promise<void>(resolve => {
+                        await timed('quote_update', () => new Promise<void>(resolve => {
                             const done = () => { clearTimeout(timer); signal.removeEventListener('abort', done); resolve() }
                             const timer = setTimeout(done, 3500)
                             signal.addEventListener('abort', done, { once: true })
-                        })
+                        }))
                     } finally {
                         setQuoteLoading(false)
                     }
@@ -460,7 +482,12 @@ export function useSendTransactionController({
                 // A signature or prepared transaction may have expired while the user
                 // paused or rejected a prompt. Never retry the cached action payload.
                 setActionStateText("Refreshing swap…")
-                const refreshed = await refreshDepositActions(executionSwapId, selectedSourceAccount.address)
+                const activeSwapId = executionSwapId
+                const prefetched = retryRefresh.current
+                retryRefresh.current = undefined
+                const refreshed = await timed('deposit_actions', () => prefetched?.swapId === activeSwapId && Date.now() - prefetched.startedAt <= RETRY_REFRESH_REUSE_MS
+                    ? prefetched.result
+                    : refreshDepositActions(activeSwapId, selectedSourceAccount.address))
                 signal.throwIfAborted()
                 activeDepositActions = refreshed
                 if (activeDepositActions) {
@@ -515,7 +542,7 @@ export function useSendTransactionController({
                 if (currentAction) {
                     let switchPrompt: ReturnType<typeof setTimeout> | undefined
                     try {
-                        await requestWallet(() => ensureSourceChain({
+                        await timed('chain_readiness', () => requestWallet(() => ensureSourceChain({
                             wallet: selectedWalletRef.current ?? selectedWallet,
                             network: currentAction.network ?? swapBasicData.source_network,
                             switchChain: selectedSourceAccount.provider.switchChain,
@@ -533,7 +560,7 @@ export function useSendTransactionController({
                                     setNetworkSwitch({ isPending: true, isError: false, error: null })
                                 }, SWITCH_PROMPT_DELAY_MS)
                             },
-                        }))
+                        })))
                     } catch (error) {
                         expectedSourceChainSwitch.current = undefined
                         throw error
@@ -576,6 +603,9 @@ export function useSendTransactionController({
                     onLifecycle: onSwapLifecycle,
                 }
 
+                // Preparation ends at the action's own wallet request; later loop
+                // iterations are follow-up actions of the same workflow.
+                finishPreparation('succeeded', stages)
                 let approvalTransaction: { network: string; hash: string } | undefined
                 if (currentAction && isBatchTransferAction(currentAction)) {
                     const executionModeChanged = executionGaslessEnabled !== useGaslessPreferenceStore.getState().gaslessEnabled
@@ -630,17 +660,29 @@ export function useSendTransactionController({
             }
         }
         catch (e) {
+            finishPreparation(signal.aborted ? 'cancelled' : isUserRejection(e) ? 'rejected' : 'failed', stages)
             if (signal.aborted) return
+            // A declined prompt keeps the prepared swap; its retry refreshes the
+            // actions, so start that refresh now and let the retry use it.
+            const prefetchForRetry = () => {
+                if (!executionSwapId || !selectedSourceAccount) return
+                const result = refreshDepositActions(executionSwapId, selectedSourceAccount.address)
+                const started = { swapId: executionSwapId, startedAt: Date.now(), result }
+                retryRefresh.current = started
+                // A failed prefetch is not reused; the retry requests again.
+                result.catch(() => { if (retryRefresh.current === started) retryRefresh.current = undefined })
+            }
             if (e instanceof AmountPresetChangedError) {
                 setSwapError?.(e.message)
                 return
             }
             if (e instanceof NetworkSwitchError) {
-                // Keep the prepared swap intact; retry refreshes it before asking the wallet again.
+                prefetchForRetry()
                 setNetworkSwitch({ isPending: false, isError: true, error: e })
                 return
             }
             if (isUserRejection(e)) {
+                prefetchForRetry()
                 setSwapError?.(null)
                 return
             }
@@ -681,6 +723,7 @@ export function useSendTransactionController({
             }
         }
         finally {
+            finishPreparation('cancelled', stages)
             releaseWalletExecution()
             executionInFlight.current = false
             if (executionScope.current) setLoading(false)

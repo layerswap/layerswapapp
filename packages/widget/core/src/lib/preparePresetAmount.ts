@@ -1,4 +1,4 @@
-import type { ApiResponse, NetworkRoute, Wallet } from '@layerswap/widget-types'
+import type { ApiResponse, GasWithToken, NetworkRoute, Wallet } from '@layerswap/widget-types'
 import { usesDepository } from '@layerswap/widget-types'
 import type { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
 import { buildLimitsUrl } from '@/hooks/useFee'
@@ -32,6 +32,18 @@ export async function preparePresetAmount(values: SwapFormValues, address: strin
         useDepositAddress: plan ? !usesDepository(plan.mapping.provider) : false,
         useFrontendSwap: true, useGasless: !plan && useGasless,
     })
+    // The confirmation usually keeps the reviewed amount, so its estimate is the
+    // one the preset needs. Start it with the balance and limits reads instead of after them.
+    const estimates = new Map<number, Promise<GasWithToken | undefined>>()
+    const estimateGas = (amount: number) => {
+        const cached = estimates.get(amount)
+        if (cached) return cached
+        const estimate = Promise.resolve(resolverService.getGasResolver().getGas({ address, network: from, token: fromAsset, amount, wallet }))
+        estimates.set(amount, estimate)
+        return estimate
+    }
+    const reviewedAmount = Number(values.amount)
+    if (Number.isFinite(reviewedAmount) && reviewedAmount > 0) estimateGas(reviewedAmount).catch(() => undefined)
     const [balanceData, limitsResponse] = await Promise.all([
         useBalanceStore.getState().fetchBalance(address, from, { ignoreCache: true }),
         api.fetcher(limitsUrl),
@@ -48,7 +60,7 @@ export async function preparePresetAmount(values: SwapFormValues, address: strin
         network: from, token: fromAsset, probeAmount: values.amount, preserveAmount: true,
         balance: balanceData?.balances?.find(b => b.network === from.name && b.token === fromAsset.symbol),
         limit: limits?.max_amount,
-        estimateGas: async amount => resolverService.getGasResolver().getGas({ address: address!, network: from, token: fromAsset, amount, wallet }),
+        estimateGas,
     })
     if (Number(amount) <= 0 || (limits && Number(amount) < limits.min_amount))
         throw new Error('Your available balance is below the minimum swap amount.')

@@ -43,6 +43,29 @@ test('creation preparation bypasses cached balances, refreshes matching limits a
   assert.equal(probes[0].wallet, wallet)
 })
 
+test('the reviewed amount\'s estimate starts with the balance and limits reads and is not requested twice', async () => {
+  const order = []
+  const balance = Promise.withResolvers()
+  const { preparePresetAmount } = loadSource('lib/preparePresetAmount.ts', {
+    '@layerswap/widget-types': { usesDepository: () => false },
+    '@/hooks/useFee': { buildLimitsUrl: () => 'limits' },
+    './apiClients/layerSwapApiClient': { default: class { async fetcher() { order.push('limits'); return { data: { min_amount: 0.001, max_amount: 2 } } } } },
+    './extendedRoutes/registry': { resolveExtendedRoutePlan: () => undefined },
+    './extendedRoutes/transforms': {},
+    '@/stores/balanceStore': { useBalanceStore: { getState: () => ({ fetchBalance: () => { order.push('balance'); return balance.promise } }) } },
+    './resolvers/resolverService': { resolverService: { getGasResolver: () => ({ getGas: async ({ amount }) => {
+      order.push(`gas:${amount}`); return { gas: 0.1, token }
+    } }) } },
+    './amountPresets': amountPresets,
+  })
+  const preparation = preparePresetAmount({ ...values, amount: '0.898' }, 'source', {}, [], false)
+  await Promise.resolve()
+  assert.deepEqual(order, ['gas:0.898', 'balance', 'limits'], 'the estimate does not wait for the reads')
+  balance.resolve({ balances: [{ network: network.name, token: token.symbol, amount: 1 }] })
+  assert.equal(await preparation, '0.898')
+  assert.deepEqual(order.filter(entry => entry.startsWith('gas')), ['gas:0.898'])
+})
+
 test('creation preparation respects fresh route caps and refuses amounts below the minimum', async () => {
   const capped = setup({ limits: { min_amount: 0.1, max_amount: 0.5 } })
   assert.equal(await capped.preparePresetAmount(values, 'source', {}, [], false), '0.5')
