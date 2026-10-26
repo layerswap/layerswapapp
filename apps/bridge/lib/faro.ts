@@ -53,8 +53,11 @@ export function initFaro(): Faro | undefined {
     if (initializationAttempted) return undefined
     initializationAttempted = true
 
-    const localLogging = process.env.NODE_ENV === 'development'
-    const collectorUrl = localLogging
+    const axiomEnabled = process.env.NEXT_PUBLIC_TELEMETRY_PROVIDER === 'axiom'
+    const localLogging = process.env.NODE_ENV === 'development' && !axiomEnabled
+    const collectorUrl = axiomEnabled
+        ? `${window.location.origin}${process.env.NEXT_PUBLIC_AXIOM_TELEMETRY_PATH || '/api/axiom'}`
+        : localLogging
         ? `${window.location.origin}${process.env.NEXT_PUBLIC_LOCAL_TELEMETRY_PATH || '/api/local-telemetry'}`
         : process.env.NEXT_PUBLIC_FARO_COLLECTOR_URL
     if (!collectorUrl) {
@@ -114,8 +117,8 @@ export function initFaro(): Faro | undefined {
                     },
                 },
             },
-            sessionTracking: localLogging
-                // A stored unsampled session must not suppress local debugging either.
+            sessionTracking: (localLogging || axiomEnabled)
+                // Keep lifecycle counts complete in Axiom, including previously unsampled sessions.
                 ? { enabled: true, persistent: true, sampler: () => 1 }
                 : getSessionTrackingConfig(process.env.NEXT_PUBLIC_FARO_SAMPLE_RATE, () => PersistentSessionsManager.fetchUserSession()),
             experimental: {
