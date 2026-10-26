@@ -44,6 +44,11 @@ export function useProviderWithdrawal({ swapBasicData, refuel, swapId }: Withdra
     const [rejected, setRejected] = useState(false);
     const lastFailureWasUserRejection = useRef(false);
 
+    // Preparation belongs to the selected wallet, even while its old request settles.
+    useEffect(() => {
+        setProgress(undefined);
+    }, [selectionKey]);
+
     // Lazy creation can precede context updates. Scope its fallback ID to the
     // reviewed draft so adjusted inputs cannot reuse an old provider's calldata.
     const draftKey = JSON.stringify([

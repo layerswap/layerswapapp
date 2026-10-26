@@ -1074,6 +1074,41 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
   })
 
   for (const change of ['account', 'provider', 'source']) {
+    test(`${useWithdrawal.name} clears prerequisite progress after ${change} changes`, async () => {
+      const transfer = Promise.withResolvers()
+      let reportProgress
+      state.executeTransfer = (_params, _wallet, onProgress) => {
+        reportProgress = onProgress
+        onProgress({ title: 'Preparing previous wallet' })
+        return transfer.promise
+      }
+      const props = { swapBasicData }
+      const mounted = await mountWithdrawal(useWithdrawal, props)
+      let pending
+      try {
+        await act(() => { pending = mounted.result.handleWithdraw() })
+        assert.equal(mounted.result.progress?.title, 'Preparing previous wallet')
+        if (change === 'account') state.sourceAddress = 'different-account'
+        if (change === 'provider') state.provider = { name: 'different-provider' }
+        if (change === 'source') props.swapBasicData = { ...swapBasicData, source_network: { name: 'different-source' } }
+        await mounted.rerender()
+        assert.equal(mounted.result.progress, undefined, 'selection changes clear the previous preparation')
+        await act(() => reportProgress({ title: 'Late previous-wallet progress' }))
+        assert.equal(mounted.result.progress, undefined, 'obsolete progress cannot reappear')
+        await act(async () => { transfer.reject(new Error('Previous preparation cancelled')); await pending })
+        assert.equal(mounted.result.loading, false)
+        assert.equal(mounted.result.progress, undefined)
+        assert.equal(mounted.result.error, undefined)
+        assert.equal(state.successes, 0)
+      } finally {
+        transfer.resolve('')
+        await pending
+        await mounted.unmount()
+      }
+    })
+  }
+
+  for (const change of ['account', 'provider', 'source']) {
     test(`${useWithdrawal.name} records a late receipt after ${change} cancellation without a stale handoff`, async () => {
       const transfer = Promise.withResolvers()
       state.executeTransfer = () => transfer.promise
