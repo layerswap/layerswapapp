@@ -47,7 +47,7 @@ export const calculateGasFeeAmounts = ({
 
     return {
         gasLimit,
-        estimatedFee: gasLimit * expectedGasPrice,
+        estimatedFee: (policy.chargesSignedGasLimit ? gasLimit : estimatedGas) * expectedGasPrice,
         maximumFee: gasLimit * maximumGasPrice,
     }
 }

@@ -220,7 +220,7 @@ test('a valid zero priority fee does not trigger a fallback estimate', async () 
     assert.equal(state.priorityRequests, 0)
 })
 
-test('Optimism L1 fees serialize the same deposit payload as the execution estimate', async () => {
+test('Optimism L1 data fees are quoted on the same deposit payload as the execution estimate', async () => {
     const action = {
         ...params, callData: '0x1234',
         network: { ...params.network, chain_id: '10', metadata: { evm_oracle_contract: `0x${'78'.repeat(20)}` } },
@@ -230,10 +230,41 @@ test('Optimism L1 fees serialize the same deposit payload as the execution estim
         address: action.selectedWallet.address, recipientAddress: action.depositAddress,
     })
     assert.ok(quote)
-    const serialized = parseTransaction(state.l1Estimate.data)
-    assert.equal(serialized.data, action.callData)
-    assert.equal(serialized.to, action.depositAddress)
-    assert.equal(serialized.value, 10n ** 18n)
+    assert.equal(state.l1Estimate.data, action.callData)
+    assert.equal(state.l1Estimate.to, action.depositAddress)
+    assert.equal(state.l1Estimate.value, 10n ** 18n)
+    assert.equal(state.l1Estimate.gasPriceOracleAddress, action.network.metadata.evm_oracle_contract)
     assert.deepEqual(state.nodes, [action.network.node_url])
     assert.equal(parseUnits(String(quote.gas), 18), 22_515n * state.fees.maxFeePerGas + state.l1Fee)
+    assert.equal(parseUnits(String(quote.maxFee), 18), 33_773n * state.fees.maxFeePerGas + state.l1Fee)
+})
+
+test('a quote without a deposit action models the eventual transfer and reserves the wallet-signed limit', async () => {
+    const network = { ...params.network, chain_id: '1', metadata: { evm_oracle_contract: `0x${'78'.repeat(20)}` } }
+    const quote = await new EVMGasProvider().getGas({ network, token, amount: 0.5, address: params.selectedWallet.address })
+    assert.ok(quote)
+    // Execution gas is estimated without value: the stand-in recipient is an EOA and no balance funds an unknown fee.
+    assert.equal(state.estimate.value, 0n)
+    assert.match(state.estimate.data, /^0x[0-9a-f]{64,}$/)
+    assert.equal(state.estimate.stateOverride, undefined)
+    // The data-posting fee is quoted on the payload the wallet will post, including its value.
+    assert.equal(state.l1Estimate.to, state.estimate.to)
+    assert.equal(state.l1Estimate.data, state.estimate.data)
+    assert.equal(state.l1Estimate.value, parseUnits('0.5', 18))
+    assert.equal(parseUnits(String(quote.gas), 18), 22_515n * state.fees.maxFeePerGas + state.l1Fee)
+    assert.equal(parseUnits(String(quote.maxFee), 18), 33_773n * state.fees.maxFeePerGas + state.l1Fee)
+    assert.equal(quote.reserve, undefined)
+})
+
+test('a token quote without a deposit action targets the token contract with a transfer plus memo', async () => {
+    const contract = `0x${'56'.repeat(20)}`
+    const quote = await new EVMGasProvider().getGas({
+        network: { ...params.network, chain_id: '1' }, token: { ...token, contract }, amount: 0.5, address: params.selectedWallet.address,
+    })
+    assert.ok(quote)
+    assert.equal(state.estimate.to, contract)
+    assert.equal(state.estimate.value, 0n)
+    assert.match(state.estimate.data, /^0xa9059cbb/)
+    assert.equal(state.l1Estimate, undefined)
+    assert.equal(parseUnits(String(quote.maxFee), 18), 33_773n * state.fees.maxFeePerGas)
 })

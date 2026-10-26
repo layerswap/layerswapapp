@@ -18,7 +18,10 @@ const defaultPolicy = resolveEVMGasPolicy(1)
 
 test('applies Monad\'s 7.5% gas-limit margin with ceiling division', () => {
     assert.equal(applyGasLimitMargin(22_515n, monadPolicy), 24_204n)
-    assert.equal(applyGasLimitMargin(22_515n, defaultPolicy), 22_515n)
+})
+
+test('other EVM chains reserve the 50% gas-limit buffer wallets sign for data-carrying transactions', () => {
+    assert.equal(applyGasLimitMargin(22_515n, defaultPolicy), 33_773n)
 })
 
 test('separates Monad expected and maximum fees', () => {
@@ -36,16 +39,16 @@ test('separates Monad expected and maximum fees', () => {
     })
 })
 
-test('preserves the maximum-fee quote on non-Monad EVM chains', () => {
+test('non-Monad EVM chains quote the expected fee on the estimate and reserve the wallet-signed limit', () => {
     assert.deepEqual(calculateGasFeeAmounts({
         policy: defaultPolicy,
         estimatedGas: 21_000n,
         gasPrice: 30_000_000_000n,
         maxFeePerGas: 40_000_000_000n,
     }), {
-        gasLimit: 21_000n,
+        gasLimit: 31_500n,
         estimatedFee: 840_000_000_000_000n,
-        maximumFee: 840_000_000_000_000n,
+        maximumFee: 1_260_000_000_000_000n,
     })
 })
 

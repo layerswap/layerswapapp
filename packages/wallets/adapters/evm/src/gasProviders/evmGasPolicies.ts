@@ -10,17 +10,25 @@ export type EVMAccountBalanceReserve = Readonly<{
 }>
 
 export type EVMGasPolicy = Readonly<{
+    /** Margin over the execution estimate in the signed gas limit: ours when the
+     *  transaction carries explicit gas, otherwise the buffer wallets add to a
+     *  data-carrying transaction. The maximum fee is always reserved on it. */
     gasLimitMarginBps: bigint
     feeQuoteMode: EVMFeeQuoteMode
-    reserveMaximumFee: boolean
+    /** The chain charges the signed gas limit instead of refunding unused gas,
+     *  so the expected fee is quoted on the limit rather than the estimate. */
+    chargesSignedGasLimit: boolean
     transactionGasMode: EVMTransactionGasMode
     accountBalanceReserve?: EVMAccountBalanceReserve
 }>
 
+/** Wallets sign 150% of the execution estimate for transactions with calldata (MetaMask's buffer). */
+const WALLET_GAS_LIMIT_MARGIN_BPS = 15_000n
+
 const DEFAULT_EVM_GAS_POLICY: EVMGasPolicy = Object.freeze({
-    gasLimitMarginBps: BASIS_POINTS,
+    gasLimitMarginBps: WALLET_GAS_LIMIT_MARGIN_BPS,
     feeQuoteMode: 'maximum',
-    reserveMaximumFee: false,
+    chargesSignedGasLimit: false,
     transactionGasMode: 'wallet',
 })
 
@@ -50,7 +58,7 @@ export const createFullGasLimitEIP1559Policy = ({
     createEVMGasPolicy({
         gasLimitMarginBps,
         feeQuoteMode: 'current-capped',
-        reserveMaximumFee: true,
+        chargesSignedGasLimit: true,
         transactionGasMode: 'explicit-eip1559',
         accountBalanceReserve,
     })
