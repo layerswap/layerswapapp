@@ -34,7 +34,7 @@ Pages can choose their wrapper with Next.js's `getLayout` convention. The defaul
 
 ### Local browser logs
 
-`pnpm dev` automatically writes browser telemetry to `apps/bridge/.next/local-logs/browser.jsonl`
+Unless Axiom is selected below, `pnpm dev` automatically writes browser telemetry to `apps/bridge/.next/local-logs/browser.jsonl`
 (relative to the repository root). No Faro configuration or access is needed;
 an existing `NEXT_PUBLIC_FARO_COLLECTOR_URL` is ignored during development.
 
@@ -55,6 +55,25 @@ Next.js server/terminal output still goes to the terminal.
 
 The local collector only accepts writes during `next dev`. Restart the dev server
 and reload the browser after changing this setup.
+
+### Axiom browser telemetry
+
+Create an Axiom dataset and an API token with ingest-only access to it. Add the
+following to `apps/bridge/.env` or `.env.local`, then restart `pnpm dev` and reload
+the browser:
+
+```dotenv
+NEXT_PUBLIC_TELEMETRY_PROVIDER=axiom
+AXIOM_TOKEN=your-ingest-only-token
+AXIOM_DATASET=layerswap-frontend-dev
+AXIOM_EDGE=https://us-east-1.aws.edge.axiom.co
+# For an EU dataset: https://eu-central-1.aws.edge.axiom.co
+```
+
+Keep `AXIOM_TOKEN` server-side; never prefix it with `NEXT_PUBLIC_`.
+Axiom mode sends browser telemetry to Axiom instead of the local log file or Faro
+collector. Verify that POST requests to `/api/axiom` return **204** and events
+appear in the dataset.
 
 ### Faro browser observability (production builds)
 

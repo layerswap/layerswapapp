@@ -1,5 +1,27 @@
 # @layerswap/widget
 
+## 2.6.0
+
+### Minor Changes
+
+- Add atomic approve-and-swap support for compatible EVM wallets, including WalletConnect. Discover wallet capabilities, submit approval and swap calls together, and track accepted or uncertain submissions without duplicate wallet requests.
+
+  Add shared atomic batch types and prevent read-only WalletConnect capability and status requests from opening the wallet on mobile.
+
+### Patch Changes
+
+- Improve EVM gas estimates using deposit calldata and exact transaction values. Account for Monad gas fees and delegated-account reserves in Max and Adjust amounts, and resolve Hyperliquid fees when native token metadata is missing.
+- Improve swap and withdrawal progress, loading transitions, retry handling, and recovery of pending submissions in swap history. Keep gasless preferences consistent through submission and reset them after a successful withdrawal.
+
+  Keep connected wallets selected for extended deposits with insufficient balance, showing balance validation at the amount step.
+
+- Updated dependencies
+- Updated dependencies
+  - @layerswap/widget-types@2.6.0
+  - @layerswap/wallet-core@2.6.0
+  - @layerswap/utils@2.6.0
+  - @layerswap/ui-kit@2.6.0
+
 ## 2.5.1
 
 ### Minor Changes
