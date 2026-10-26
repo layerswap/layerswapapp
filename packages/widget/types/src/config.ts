@@ -157,7 +157,9 @@ export type DepositConfig = {
   defaultAmountUsd?: number;
   /** The deposit funding methods to offer, e.g. `['wallet','deposit_address']`.
    * Acts as an allow-list: only listed methods can appear (a method also still
-   * needs its own runtime condition). Defaults to all available methods. */
+   * needs its own runtime condition). Defaults to all available methods.
+   * A recognized embedded host connector in `wagmiConfig` overrides this list:
+   * only the deposit-address flow is available. */
   methods?: DepositMethodId[];
 };
 

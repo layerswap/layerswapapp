@@ -1,6 +1,7 @@
 'use client';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LayerswapDepositWidget } from '@layerswap/widget-react';
+import type { Config as WagmiConfig } from 'wagmi';
 import { foresightLayerswapColorOverrides, foresightLayerswapTheme } from '@/lib/layerswap-theme';
 import { getAppOrigin } from '@/lib/app-origin';
 
@@ -12,7 +13,7 @@ const config = {apiKey,version:'mainnet' as const,theme:foresightLayerswapTheme}
 const appUrl = getAppOrigin();
 const walletDefaults = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID ? {walletConnect:{projectId:process.env.NEXT_PUBLIC_REOWN_PROJECT_ID,name:'Foresight',description:'Fund your Foresight wallet',url:appUrl,icons:[`${appUrl}/icon.svg`]}} : undefined;
 
-export default function DepositWidget({address,request,onComplete,onStatus}:{address:`0x${string}`;request:DepositRequest|null;onComplete:()=>void;onStatus:(message:string)=>void}) {
+export default function DepositWidget({address,request,wagmiConfig,onComplete,onStatus}:{address:`0x${string}`;request:DepositRequest|null;wagmiConfig?:WagmiConfig;onComplete:()=>void;onStatus:(message:string)=>void}) {
   const host = useRef<HTMLDivElement>(null);
   const openedRequest = useRef<number|null>(null);
   const latestRequest = useRef(request);
@@ -65,7 +66,7 @@ export default function DepositWidget({address,request,onComplete,onStatus}:{add
     <style>{foresightLayerswapColorOverrides}</style>
     <LayerswapDepositWidget key={retryKey} config={config} destination={destination} destinationAddress={address}
       mode="button" buttonLabel="Deposit" buttonClassName="layerswap-deposit-trigger"
-      methods={methods} walletDefaults={walletDefaults}
+      methods={methods} walletDefaults={walletDefaults} wagmiConfig={wagmiConfig}
       showDestinationAddress title="Add funds" callbacks={callbacks} fallback={null}
       onError={handleLoadError}/>
   </div>;

@@ -8,6 +8,7 @@ import { type DefaultWalletConfig } from '@layerswap/wallets';
 import type { DepositWidgetProps as SharedDepositWidgetProps } from '@layerswap/widget-types';
 import type { Config as WagmiConfig } from 'wagmi';
 import { useWalletProviders } from './useWalletProviders';
+import { useHostWalletStatus } from './useHostWalletStatus';
 import '@layerswap/widget/index.css';
 
 /**
@@ -38,12 +39,13 @@ const DepositWidget: FC<DepositWidgetProps> = ({
   ...depositProps
 }) => {
   const walletProviders = useWalletProviders(walletDefaults, walletProvidersConfig, wagmiConfig);
+  const hostWalletStatus = useHostWalletStatus(wagmiConfig);
 
   // `Deposit` wraps `LayerswapProvider` itself (and installs its own
   // deposit-shaped loading skeleton), so unlike `./Widget` there is no
   // provider wrapper here.
   return (
-    <Deposit config={config} walletProviders={walletProviders} callbacks={callbacks} {...depositProps} />
+    <Deposit config={config} walletProviders={walletProviders} callbacks={callbacks} {...depositProps} hostWalletStatus={hostWalletStatus} />
   );
 };
 

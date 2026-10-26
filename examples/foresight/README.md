@@ -47,13 +47,15 @@ The Polymarket option also depends on a supported route and Layerswap feature co
 
 The receiving address **always comes from the connected session**. It is never a hard-coded example address. The default destination is USDC on Base; override the network/token with supported Layerswap canonical identifiers. The destination address is visible in the live widget quote.
 
-The CDN loader intentionally receives no `wagmiConfig`. Reown manages the app's wallet login, while Layerswap creates its own EVM config and manages the funding wallet connection inside the widget. The app passes the signed-in Reown or Privy address as `destinationAddress`; host wallet connection changes are not synchronized with the widget's funding connection.
+The CDN loader receives the app's stable `wagmiConfig`. Reown and Layerswap share that connection; Privy's already authenticated provider is bridged into the same config using its actual connector ID. Privy-only setups create a fallback config without adding another authentication SDK. Login waits for this handoff before opening the widget, and logout removes the bridged connection and its event listeners.
 
-`walletDefaults.walletConnect` supplies the project credentials and app metadata for the widget's own wallet connectors. The demo leaves `walletProvidersConfig` unset so available funding wallets are not restricted to EVM and Solana; providers that require additional credentials still need those configured. See [Wallets](https://docs.layerswap.io/widget/wallets).
+When the active host connector is a recognized embedded wallet, Layerswap opens directly into the deposit-address flow and hides every other funding method. This overrides the `methods` list, including the Polymarket banner's shortcut. External and unknown connectors retain the normal method options. Connector-based detection distinguishes embedded wallets, not email versus Google login.
 
-Every Deposit entry point opens Layerswap's own dialog directly through the SDK's `mode="button"` trigger. There is no app-specific deposit picker or confirmation step. The Polymarket banner limits the widget to the Polymarket method; other Deposit buttons let Layerswap show the available methods. If the receiving wallet is not connected, login is required first and Layerswap opens automatically after connection. Missing widget credentials produce a status message instead of a simulated funding dialog.
+`walletDefaults.walletConnect` supplies project credentials and metadata for bundled providers. EVM uses the shared host config's connectors. The demo leaves `walletProvidersConfig` unset so available funding wallets are not restricted to EVM and Solana; providers that require additional credentials still need those configured. See [Wallets](https://docs.layerswap.io/widget/wallets).
 
-The host bundle preloads while browsing. Once the receiving wallet is connected, the SDK mounts in the background and remains mounted between opens, so repeated clicks reuse the verified CDN code and initialized providers. Changing accounts creates a fresh widget for the new receiving address. A click before background loading completes opens automatically when ready; a failed CDN load retries on the next click. Live route, balance, and quote requests still depend on Layerswap and network response times.
+Every Deposit entry point opens Layerswap's own dialog directly through the SDK's `mode="button"` trigger. There is no app-specific deposit picker or confirmation step. For external wallets, the Polymarket banner limits the widget to the Polymarket method; other Deposit buttons let Layerswap show the available methods. If the receiving wallet is not connected, login is required first and Layerswap opens automatically after connection. Missing widget credentials produce a status message instead of a simulated funding dialog.
+
+The host bundle preloads while browsing. Once the receiving wallet is connected, the SDK mounts in the background and remains mounted between opens, so repeated clicks reuse the verified CDN code and initialized providers. An opened deposit retains its recipient across account changes or logout; the next explicit Deposit request selects the new recipient. A click before background loading completes opens automatically when ready; a failed CDN load retries on the next click. Live route, balance, and quote requests still depend on Layerswap and network response times.
 
 The widget's native `config.theme` is defined in `src/lib/layerswap-theme.ts`. It uses white dialog surfaces, subtle neutral panels, distinct cool-neutral selectors, Foresight violet actions/focus, and semantic amber/green/rose status colors. Both full color scales are supplied.
 
@@ -93,5 +95,7 @@ The dependency overrides deliberately align the SDKs on Wagmi 2. The Layerswap l
 ## Verification
 
 `npm run build` compiles and checks TypeScript. `npm run typecheck` provides a separate type check.
+
+`npm test` checks the Privy-to-wagmi bridge with EIP-1193 fixtures: canonical connector identity, account handoff, logout, delayed-provider cancellation, error recovery, and event-listener cleanup. These tests do not authenticate a live Privy account or submit a transaction.
 
 Browser verification covered filtering, saving a market, demo order math, portfolio persistence after reload, mobile search and navigation, the Polymarket method selection, missing-credential states, and a test-only injected wallet fixture for connection/disconnection and recipient binding. No real transaction was submitted.

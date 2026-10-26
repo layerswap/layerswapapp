@@ -12,6 +12,8 @@ export type DepositSettingsValue = {
     /** Allow-list of deposit methods the picker may show. Defaults to all
      * methods; a method also still needs its own runtime condition to appear. */
     methods: DepositMethodId[];
+    /** Internal restriction inferred from the host's embedded connector. */
+    depositAddressOnly: boolean;
     /** True when rendered inside the Deposit widget. Drives deposit-specific
      * copy in the shared processing timeline. Not integrator-configurable. */
     isDepositFlow: boolean;
@@ -24,12 +26,14 @@ const CONTEXT_DEFAULTS: DepositSettingsValue = {
     actionButtonText: undefined,
     defaultAmountUsd: 1,
     methods: [...DEPOSIT_METHODS],
+    depositAddressOnly: false,
     isDepositFlow: false,
 };
 
 // The deposit flow's own default label. Lives here as the single source of
 // truth — DepositCard passes the integrator's raw prop and this fills the gap.
 const DEPOSIT_ACTION_BUTTON_TEXT = "Deposit";
+const DEPOSIT_ADDRESS_METHODS: DepositMethodId[] = ["deposit_address"];
 
 const DepositSettingsContext = createContext<DepositSettingsValue>(CONTEXT_DEFAULTS);
 
@@ -52,10 +56,11 @@ export function DepositSettingsProvider({
             showDestinationAddress: value.showDestinationAddress ?? false,
             actionButtonText: value.actionButtonText || DEPOSIT_ACTION_BUTTON_TEXT,
             defaultAmountUsd: value.defaultAmountUsd ?? 1,
-            methods: value.methods ?? [...DEPOSIT_METHODS],
+            methods: value.depositAddressOnly ? DEPOSIT_ADDRESS_METHODS : value.methods ?? [...DEPOSIT_METHODS],
+            depositAddressOnly: value.depositAddressOnly ?? false,
             isDepositFlow: true,
         }),
-        [value.showDestinationAddress, value.actionButtonText, value.defaultAmountUsd, value.methods],
+        [value.showDestinationAddress, value.actionButtonText, value.defaultAmountUsd, value.methods, value.depositAddressOnly],
     );
     return (
         <DepositSettingsContext.Provider value={merged}>

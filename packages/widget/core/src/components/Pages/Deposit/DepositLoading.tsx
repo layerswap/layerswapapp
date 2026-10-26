@@ -25,7 +25,7 @@ const MethodCardSkeleton: FC = () => (
  * be shown while settings are still being fetched — e.g. as `LayerswapProvider`'s
  * loading fallback for deposit integrations.
  */
-export const DepositLoading: FC = () => {
+export const DepositLoading: FC<{ neutral?: boolean }> = ({ neutral = false }) => {
     return (
         <>
             <ColorSchema themeData={AppSettings.ThemeData} />
@@ -45,8 +45,9 @@ export const DepositLoading: FC = () => {
                                         </div>
                                         <div className="h-px w-full bg-secondary-400" />
 
-                                        {/* Method-picker body */}
-                                        <div className="flex flex-col gap-2 w-full animate-pulse">
+                                        {neutral ? (
+                                            <div role="status" aria-label="Loading deposit" className="h-64 rounded-xl bg-secondary-500 animate-pulse" />
+                                        ) : <div className="flex flex-col gap-2 w-full animate-pulse">
                                             {/* "Choose how to fund this deposit" label */}
                                             <div className="h-3 w-44 bg-secondary-500 rounded-sm ml-1 mt-0.5 mb-1" />
 
@@ -56,7 +57,7 @@ export const DepositLoading: FC = () => {
                                                 <MethodCardSkeleton />
                                                 <MethodCardSkeleton />
                                             </div>
-                                        </div>
+                                        </div>}
 
                                         {!AppSettings.ThemeData?.hidePoweredBy && <PoweredByFooter />}
                                     </div>

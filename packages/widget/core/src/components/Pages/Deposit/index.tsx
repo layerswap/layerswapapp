@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/shadcn/dialog
 import { FamilyDrawer, ViewsRegistry } from "@/components/Modal/FamilyDrawer";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
-import { DepositStep, DepositStepProvider, useDepositStep } from "./depositStepContext";
+import { DepositStep, DepositStepProvider, useDepositStep, type DepositHostWalletStatus } from "./depositStepContext";
 import { DepositMethodId } from "./depositMethods";
 import { DepositSelectionProvider } from "./depositSelectionContext";
 import { DepositPrefetchProvider } from "./depositPrefetchContext";
@@ -54,8 +54,12 @@ export type DepositProps = {
     defaultAmountUsd?: number;
     /** The deposit funding methods to offer, e.g. `['wallet','deposit_address']`.
      * Acts as an allow-list: only listed methods can appear (a method also still
-     * needs its own runtime condition). Defaults to all available methods. */
+     * needs its own runtime condition). Defaults to all available methods.
+     * The CDN entry overrides this with deposit-address-only routing when the
+     * shared host config is connected to a recognized embedded wallet. */
     methods?: DepositMethodId[];
+    /** @internal Computed by the CDN entry from the supplied host wagmi config. */
+    hostWalletStatus?: DepositHostWalletStatus;
 };
 
 const StepRouter: FC<{ step: DepositStep; partner?: Partner; hasWalletMethods: boolean }> = ({
@@ -64,6 +68,7 @@ const StepRouter: FC<{ step: DepositStep; partner?: Partner; hasWalletMethods: b
     hasWalletMethods,
 }) => {
     switch (step) {
+        case "host-wallet-loading": return <div role="status" className="py-12 text-center text-primary-text">Preparing your wallet…</div>;
         case "method-picker": return <MethodPicker />;
         case "transfer-crypto": return <TransferCrypto partner={partner} showDestinationPicker={!hasWalletMethods} />;
         case "wallet-connect":
@@ -99,28 +104,36 @@ const DepositForm: FC<Pick<DepositProps, "partner" | "title"> & { onClose?: () =
     );
 };
 
-const DepositCard: FC<Pick<DepositProps, "partner" | "destination" | "destinationAddress" | "showDestinationAddress" | "title" | "actionButtonText" | "defaultAmountUsd" | "methods"> & { onClose?: () => void }> = ({ partner, destination, destinationAddress, showDestinationAddress, title, actionButtonText, defaultAmountUsd, methods, onClose }) => {
+type DepositCardProps = Pick<DepositProps, "partner" | "destination" | "destinationAddress" | "showDestinationAddress" | "title" | "actionButtonText" | "defaultAmountUsd" | "methods" | "hostWalletStatus"> & { onClose?: () => void };
+
+const DepositSession: FC<DepositCardProps> = ({ partner, destination, destinationAddress, showDestinationAddress, title, actionButtonText, defaultAmountUsd, methods, onClose }) => {
+    const { depositAddressOnly } = useDepositStep();
     return (
         <DepositSettingsProvider value={{
             showDestinationAddress,
             actionButtonText,
             defaultAmountUsd,
             methods,
+            depositAddressOnly,
         }}>
-            <ThemeWrapper>
-                <Widget hideMenu fitHeight>
-                    <DepositSelectionProvider destination={destination} destinationAddress={destinationAddress}>
-                        <DepositStepProvider>
-                            <DepositPrefetchProvider>
-                                <DepositForm partner={partner} title={title} onClose={onClose} />
-                            </DepositPrefetchProvider>
-                        </DepositStepProvider>
-                    </DepositSelectionProvider>
-                </Widget>
-            </ThemeWrapper>
+            <DepositSelectionProvider destination={destination} destinationAddress={destinationAddress}>
+                <DepositPrefetchProvider>
+                    <DepositForm partner={partner} title={title} onClose={onClose} />
+                </DepositPrefetchProvider>
+            </DepositSelectionProvider>
         </DepositSettingsProvider>
     );
 };
+
+const DepositCard: FC<DepositCardProps> = (props) => (
+    <ThemeWrapper>
+        <Widget hideMenu fitHeight>
+            <DepositStepProvider hostWalletStatus={props.hostWalletStatus}>
+                <DepositSession {...props} />
+            </DepositStepProvider>
+        </Widget>
+    </ThemeWrapper>
+);
 
 export const DepositComponent: FC<DepositProps> = ({ mode = "inline", buttonLabel = "Deposit", buttonClassName, ...props }) => {
     const [open, setOpen] = useState(false);
@@ -205,7 +218,7 @@ export const DepositComponent: FC<DepositProps> = ({ mode = "inline", buttonLabe
 export const Deposit: FC<LayerswapContextProps & DepositProps> = ({ callbacks, config, walletProviders, children, ...depositProps }) => {
     const resolvedConfig: LayerswapContextProps['config'] = {
         ...config,
-        loadingComponent: <DepositLoading />
+        loadingComponent: <DepositLoading neutral={depositProps.hostWalletStatus !== undefined && depositProps.hostWalletStatus !== "other"} />
     }
     return (
         <LayerswapProvider callbacks={callbacks} config={resolvedConfig} walletProviders={walletProviders}>

@@ -88,6 +88,19 @@ Use the config your app already provides to `WagmiProvider`. The widget adds
 supported EVM chains that are missing from it and preserves your existing chain
 order and transports.
 
+For `LayerswapDepositWidget`, the active connector in this shared config also
+determines funding options. Recognized Privy embedded/smart-wallet connectors
+and Dynamic embedded connectors (Turnkey, Turnkey HD, and WaaS) open directly
+into the deposit-address flow. All other methods are hidden, even if `methods`
+requests them. Destination-token selection remains available. Reconnecting
+sessions show loading until their connector resolves; an active transfer and
+its result remain visible if the host changes wallets or logs out.
+
+Detection uses connector IDs, not display names or the fact that Privy/Dynamic
+is installed. External wallets connected through either SDK retain the normal
+options. Address-only integrations and unknown/custom connector IDs also retain
+their existing behavior; the widget cannot infer authentication from an address.
+
 If the same wallet appears twice after a refresh, check whether your wagmi config
 combines a bare `injected()` connector with EIP-6963 discovery. The
 [example host](../../../examples/widget-react-host/src/wagmi.ts) relies on

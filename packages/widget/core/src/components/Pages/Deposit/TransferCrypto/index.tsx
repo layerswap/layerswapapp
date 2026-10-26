@@ -37,7 +37,7 @@ const ReportDepositCloseLock: FC = () => {
     const { swapDetails } = useSwapDataState();
     const { isTerminal } = useResolvedSwapStatus();
     const inputDetected = !!swapDetails?.transactions?.some(t => t.type === TransactionType.Input);
-    useReportCloseLock(inputDetected && !isTerminal);
+    useReportCloseLock(inputDetected && !isTerminal, inputDetected || isTerminal);
     return null;
 };
 
