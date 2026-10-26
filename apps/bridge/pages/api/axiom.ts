@@ -28,6 +28,11 @@ const QUERY_ATTRIBUTES = [
 const isRecord = (value: unknown): value is Record<string, unknown> =>
     value !== null && typeof value === 'object' && !Array.isArray(value)
 
+// These fields are outside QUERY_ATTRIBUTES, but must not create nested columns either.
+function queryString(value: unknown): string | undefined {
+    return typeof value === 'string' && value.length <= 256 ? value : undefined
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
     if (process.env.NEXT_PUBLIC_TELEMETRY_PROVIDER !== 'axiom') {
         res.status(404).end()
@@ -95,10 +100,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             ? payload.timestamp : receivedAt
         const record = JSON.stringify({
             ...dimensions,
-            journey_id: attributes.journey_id ?? context.journey_id,
-            swap_id: attributes.swap_id ?? context.swap_id,
+            journey_id: queryString(attributes.journey_id ?? context.journey_id),
+            swap_id: queryString(attributes.swap_id ?? context.swap_id),
             _time: timestamp, received_at: receivedAt, type,
-            name: payload.name, session_id: session.id,
+            name: queryString(payload.name), session_id: queryString(session.id),
             payload_json: JSON.stringify(payload), meta_json: JSON.stringify(body.meta),
         })
         outputBytes += Buffer.byteLength(record, 'utf8') + 1

@@ -88,3 +88,50 @@ test('dynamic nested attributes cannot expand the Axiom column schema', async ()
         name: 'swap_lifecycle', attributes: { step: 'transfer_blocked', reason_code: 'insufficient_balance', nested },
     }] })).statusCode, 204)
 })
+
+
+for (const [label, value] of [
+    ['nested object', { unexpected: { column: 'value' } }],
+    ['array', [{ unexpected: 'column' }]],
+    ['number', 42],
+    ['boolean', true],
+    ['oversized string', 'x'.repeat(257)],
+]) {
+    test(`promoted identifiers omit a ${label} while preserving diagnostic data`, async () => {
+        const post = harness(async (_url, options) => {
+            const [event] = JSON.parse(options.body)
+            for (const field of ['journey_id', 'swap_id', 'name', 'session_id']) {
+                assert.equal(Object.hasOwn(event, field), false, field)
+            }
+            assert(!Object.values(event).some(item => item !== null && typeof item === 'object'))
+            assert.deepEqual(JSON.parse(event.payload_json).name, value)
+            assert.deepEqual(JSON.parse(event.meta_json).session.id, value)
+            return Response.json({ ingested: 1, failed: 0 })
+        })
+        assert.equal((await post({
+            meta: { session: { id: value, attributes: { journey_id: value, swap_id: value } } },
+            events: [{ name: value, attributes: { journey_id: value, swap_id: value } }],
+        })).statusCode, 204)
+        // The session fallback must be checked as well as explicit event fields.
+        assert.equal((await post({
+            meta: { session: { id: value, attributes: { journey_id: value, swap_id: value } } },
+            events: [{ name: value, attributes: {} }],
+        })).statusCode, 204)
+    })
+}
+
+test('promoted identifiers preserve bounded strings and explicit empty swap IDs', async () => {
+    const limit = 'x'.repeat(256)
+    const post = harness(async (_url, options) => {
+        const [event] = JSON.parse(options.body)
+        assert.equal(event.journey_id, limit)
+        assert.equal(event.swap_id, '')
+        assert.equal(event.name, limit)
+        assert.equal(event.session_id, limit)
+        return Response.json({ ingested: 1, failed: 0 })
+    })
+    assert.equal((await post({
+        meta: { session: { id: limit, attributes: { journey_id: limit, swap_id: 'previous-swap' } } },
+        events: [{ name: limit, attributes: { swap_id: '' } }],
+    })).statusCode, 204)
+})
