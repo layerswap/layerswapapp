@@ -4,7 +4,7 @@ import { EventEmitter } from 'node:events';
 import { createConfig, getAccount } from '@wagmi/core';
 import { mainnet } from 'wagmi/chains';
 import { createPrivyWagmiBridge } from '../src/components/auth/privy-wagmi-bridge.ts';
-import { areWalletAddressesEqual, getReownAddress } from '../src/components/auth/wallet-session.ts';
+import { areWalletAddressesEqual, getReownAddress, hasPrivyConnection } from '../src/components/auth/wallet-session.ts';
 
 const firstAddress = '0x1234567890123456789012345678901234567890';
 const secondAddress = '0x2345678901234567890123456789012345678901';
@@ -144,4 +144,19 @@ test('independent Reown connections remain discoverable while an external Privy 
   await bridge.sync(null);
   assert.equal(getAccount(config).connector.uid, connector.uid);
   assert.equal(getReownAddress(getAccount(config), [...config.state.connections.values()]), secondAddress);
+});
+
+test('an active funding wallet does not make the retained Privy login unready or change its recipient', async () => {
+  const address = '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd';
+  const { config, bridge, wallet } = fixture(address);
+  await bridge.sync(wallet);
+  assert.equal(hasPrivyConnection(address, [...config.state.connections.values()]), true);
+  const connector = { uid: 'funding', id: 'io.metamask', type: 'injected' };
+  config.setState(state => ({ ...state, current: connector.uid, connections: new Map([...state.connections, [connector.uid, { connector, accounts: [secondAddress], chainId: 1 }]]) }));
+  assert.equal(getAccount(config).address, secondAddress);
+  assert.equal(hasPrivyConnection(address, [...config.state.connections.values()]), true);
+  assert.equal(hasPrivyConnection(secondAddress, [...config.state.connections.values()]), false);
+  await bridge.sync(null);
+  assert.equal(hasPrivyConnection(address, [...config.state.connections.values()]), false);
+  assert.equal(getAccount(config).address, secondAddress);
 });

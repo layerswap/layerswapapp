@@ -12,8 +12,9 @@ export type DepositSettingsValue = {
     /** Allow-list of deposit methods the picker may show. Defaults to all
      * methods; a method also still needs its own runtime condition to appear. */
     methods: DepositMethodId[];
-    /** Internal restriction inferred from the host's embedded connector. */
-    depositAddressOnly: boolean;
+    /** Internal restriction inferred from the host's embedded connector.
+     * More wallets remains available independently of the primary methods. */
+    embeddedHostWallet: boolean;
     /** True when rendered inside the Deposit widget. Drives deposit-specific
      * copy in the shared processing timeline. Not integrator-configurable. */
     isDepositFlow: boolean;
@@ -26,7 +27,7 @@ const CONTEXT_DEFAULTS: DepositSettingsValue = {
     actionButtonText: undefined,
     defaultAmountUsd: 1,
     methods: [...DEPOSIT_METHODS],
-    depositAddressOnly: false,
+    embeddedHostWallet: false,
     isDepositFlow: false,
 };
 
@@ -56,11 +57,11 @@ export function DepositSettingsProvider({
             showDestinationAddress: value.showDestinationAddress ?? false,
             actionButtonText: value.actionButtonText || DEPOSIT_ACTION_BUTTON_TEXT,
             defaultAmountUsd: value.defaultAmountUsd ?? 1,
-            methods: value.depositAddressOnly ? DEPOSIT_ADDRESS_METHODS : value.methods ?? [...DEPOSIT_METHODS],
-            depositAddressOnly: value.depositAddressOnly ?? false,
+            methods: value.embeddedHostWallet ? DEPOSIT_ADDRESS_METHODS : value.methods ?? [...DEPOSIT_METHODS],
+            embeddedHostWallet: value.embeddedHostWallet ?? false,
             isDepositFlow: true,
         }),
-        [value.showDestinationAddress, value.actionButtonText, value.defaultAmountUsd, value.methods, value.depositAddressOnly],
+        [value.showDestinationAddress, value.actionButtonText, value.defaultAmountUsd, value.methods, value.embeddedHostWallet],
     );
     return (
         <DepositSettingsContext.Provider value={merged}>

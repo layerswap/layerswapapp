@@ -22,3 +22,13 @@ export function getReownAddress(
     )?.accounts[0] ?? null
   );
 }
+
+export function hasPrivyConnection(
+  address: string | null,
+  connections: readonly Connection[],
+): boolean {
+  return connections.some(connection =>
+    connection.connector.type === 'privy-session' &&
+    connection.accounts.some(account => areWalletAddressesEqual(account, address)),
+  );
+}

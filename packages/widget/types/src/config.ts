@@ -159,7 +159,7 @@ export type DepositConfig = {
    * Acts as an allow-list: only listed methods can appear (a method also still
    * needs its own runtime condition). Defaults to all available methods.
    * A recognized embedded host connector in `wagmiConfig` overrides this list:
-   * only the deposit-address flow is available. */
+   * show Deposit address and More wallets, excluding the login connector. */
   methods?: DepositMethodId[];
 };
 

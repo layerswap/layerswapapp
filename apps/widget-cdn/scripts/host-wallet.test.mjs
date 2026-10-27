@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createConfig } from 'wagmi';
 import { mainnet } from 'wagmi/chains';
-import { getAccount, watchAccount } from 'wagmi/actions';
+import { getAccount, getConnections, watchAccount } from 'wagmi/actions';
 import { isEmbeddedHostConnector, resolveHostWalletStatus } from '../src/hostWallet.ts';
 
 const address = '0x1234567890123456789012345678901234567890';
@@ -37,7 +37,7 @@ test('waits for connection restoration and ignores stale disconnected connector 
   assert.equal(resolveHostWalletStatus({ status: 'connected', connector: { id: 'io.metamask' } }), 'other');
 });
 
-test('the shared host config reports active connection changes rather than every installed connector', () => {
+test('a connected embedded login remains detected when a funding wallet becomes active', () => {
   const config = createConfig({ chains: [mainnet], connectors: [], storage: null, ssr: true });
   const external = { id: 'io.metamask', uid: 'external' };
   const embedded = { id: `io.privy.wallet.${address}`, uid: 'embedded' };
@@ -46,15 +46,15 @@ test('the shared host config reports active connection changes rather than every
   }]));
   const observed = [];
   const stop = watchAccount(config, {
-    onChange: account => observed.push(resolveHostWalletStatus(account)),
+    onChange: account => observed.push(resolveHostWalletStatus(account, getConnections(config))),
   });
   try {
     config.setState(state => ({ ...state, connections, current: external.uid, status: 'connected' }));
-    assert.equal(resolveHostWalletStatus(getAccount(config)), 'other');
+    assert.equal(resolveHostWalletStatus(getAccount(config), getConnections(config)), 'embedded');
     config.setState(state => ({ ...state, current: embedded.uid, status: 'reconnecting' }));
     config.setState(state => ({ ...state, status: 'connected' }));
     config.setState(state => ({ ...state, current: null, status: 'disconnected' }));
-    assert.deepEqual(observed, ['other', 'loading', 'embedded', 'other']);
+    assert.deepEqual(observed, ['embedded', 'loading', 'embedded', 'other']);
   } finally {
     stop();
   }

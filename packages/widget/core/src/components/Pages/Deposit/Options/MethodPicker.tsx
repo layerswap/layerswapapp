@@ -16,7 +16,7 @@ import { useExtendedDepositOption } from "./useExtendedDepositOption";
 import { MethodCard, MethodPickerView } from "./MethodPickerView";
 
 const MethodPicker: FC = () => {
-    const { push, setPresetSourceNetwork } = useDepositStep();
+    const { push, setPresetSourceNetwork, embeddedHostWallet, hasWalletMethods } = useDepositStep();
     const { wallets } = useWallet();
     const { destination, destinationToken } = useDepositSelection();
     const selectSourceAccount = useSelectSwapAccount("from");
@@ -27,6 +27,9 @@ const MethodPicker: FC = () => {
     const canShow = (m: DepositMethodId) => methods.includes(m);
     const primaryWallet = wallets[0];
     const hasWallet = !!primaryWallet;
+    const showMoreWallets = embeddedHostWallet
+        ? hasWalletMethods
+        : canShow("wallet") && hasWallet;
     const destinationReady = !!destination && !!destinationToken;
     // Extended-source shortcuts (e.g. Hyperliquid, Polymarket). Each card renders
     // whenever its source is configured; its enabled/loading state (not its
@@ -153,7 +156,7 @@ const MethodPicker: FC = () => {
                     />
                 );
             })}
-            {canShow("wallet") && hasWallet && (
+            {showMoreWallets && (
                 <MethodCard
                     icon={<WalletIcon className="h-6 w-6 text-primary-text" strokeWidth={2} />}
                     title="More wallets"

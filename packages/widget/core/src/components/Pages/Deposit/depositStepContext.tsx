@@ -25,7 +25,9 @@ type DepositStepContextValue = {
      * address is the only funding method, so the flow opens straight on it and
      * the method picker is never shown. */
     hasWalletMethods: boolean;
-    depositAddressOnly: boolean;
+    /** Restricts the picker to Deposit address and More wallets. The login
+     * connector is filtered from the funding provider by the CDN entry. */
+    embeddedHostWallet: boolean;
     /** Whether the header's close button should be locked (hidden) because a
      * transfer is mid-flight. Each flow computes its own condition and reports
      * it via `useReportCloseLock` from inside its SwapDataProvider, so steps
@@ -50,7 +52,7 @@ export type DepositHostWalletStatus = "loading" | "embedded" | "other";
 type DepositRouting = {
     rootStep: DepositStep;
     hasWalletMethods: boolean;
-    depositAddressOnly: boolean;
+    embeddedHostWallet: boolean;
 };
 
 export function DepositStepProvider({ children, hostWalletStatus = "other" }: {
@@ -68,21 +70,22 @@ export function DepositStepProvider({ children, hostWalletStatus = "other" }: {
     // flashing the deposit-address flow and re-rooting once entries land.
     const hasConfiguredWalletProviders = useHasConfiguredWalletProviders();
     const requestedRouting = useMemo<DepositRouting>(() => {
-        const depositAddressOnly = hostWalletStatus === "embedded";
-        const hasWalletMethods = hasConfiguredWalletProviders && !depositAddressOnly;
+        const embeddedHostWallet = hostWalletStatus === "embedded";
+        const hasWalletMethods = hasConfiguredWalletProviders;
         let rootStep: DepositStep = "transfer-crypto";
         if (hostWalletStatus === "loading") {
             rootStep = "host-wallet-loading";
         } else if (hasWalletMethods) {
             rootStep = "method-picker";
         }
-        return { rootStep, hasWalletMethods, depositAddressOnly };
+        return { rootStep, hasWalletMethods, embeddedHostWallet };
     }, [hasConfiguredWalletProviders, hostWalletStatus]);
     // Once funds/signing are in flight, retain the flow AND its completion
     // screen until the surface is closed or explicitly reset. A host logout
     // must not unmount the SwapDataProvider that is tracking that transfer.
     const [frozenRouting, setFrozenRouting] = useState<DepositRouting>();
     const [stack, setStack] = useState<DepositStep[]>([requestedRouting.rootStep]);
+    const [stackHostEmbedded, setStackHostEmbedded] = useState(requestedRouting.embeddedHostWallet);
     const routing = useMemo<DepositRouting>(() => {
         if (frozenRouting) {
             return frozenRouting;
@@ -94,11 +97,11 @@ export function DepositStepProvider({ children, hostWalletStatus = "other" }: {
             && hasConfiguredWalletProviders
             && stack[stack.length - 1] === "wallet-connect";
         if (connectingFundingWallet) {
-            return { rootStep: stack[0], hasWalletMethods: true, depositAddressOnly: false };
+            return { rootStep: stack[0], hasWalletMethods: true, embeddedHostWallet: stackHostEmbedded };
         }
         return requestedRouting;
-    }, [frozenRouting, requestedRouting, hostWalletStatus, hasConfiguredWalletProviders, stack]);
-    const { rootStep, hasWalletMethods, depositAddressOnly } = routing;
+    }, [frozenRouting, requestedRouting, hostWalletStatus, hasConfiguredWalletProviders, stack, stackHostEmbedded]);
+    const { rootStep, hasWalletMethods, embeddedHostWallet } = routing;
 
     const [closeLocked, updateCloseLocked] = useState(false);
     const [presetSourceNetwork, setPresetSourceNetwork] = useState<string | undefined>(undefined);
@@ -108,12 +111,15 @@ export function DepositStepProvider({ children, hostWalletStatus = "other" }: {
     // the flow doesn't stay stuck on a step that no longer applies (e.g. left on
     // "method-picker" after the methods disappear, or vice versa). The functional
     // update makes this a no-op on mount and during normal navigation, firing only
-    // when the root step actually changes. closeLocked clears itself: the unmounted
+    // when the root or embedded-login policy changes. The picker remains the
+    // root for both login types, but an idle flow must adopt its new policy.
+    // closeLocked clears itself: the unmounted
     // step's `useReportCloseLock` cleanup resets it.
     useEffect(() => {
-        setStack(prev => prev[0] === rootStep ? prev : [rootStep]);
+        setStack(prev => prev[0] === rootStep && stackHostEmbedded === embeddedHostWallet ? prev : [rootStep]);
+        setStackHostEmbedded(embeddedHostWallet);
         setPresetSourceNetwork(undefined);
-    }, [rootStep]);
+    }, [rootStep, embeddedHostWallet, stackHostEmbedded]);
 
     const setCloseLocked = useCallback((locked: boolean) => {
         updateCloseLocked(locked);
@@ -126,21 +132,21 @@ export function DepositStepProvider({ children, hostWalletStatus = "other" }: {
     }, [routing]);
 
     const push = useCallback((next: DepositStep) => {
-        if (rootStep === "host-wallet-loading" || (depositAddressOnly && next !== "transfer-crypto")) {
+        if (rootStep === "host-wallet-loading") {
             return;
         }
         if (next === "wallet-processing") {
             setFrozenRouting(previous => previous ?? routing);
         }
         setStack(prev => prev[prev.length - 1] === next ? prev : [...prev, next]);
-    }, [rootStep, depositAddressOnly, routing]);
+    }, [rootStep, routing]);
 
     const replace = useCallback((next: DepositStep) => {
-        if (rootStep === "host-wallet-loading" || (depositAddressOnly && next !== "transfer-crypto")) {
+        if (rootStep === "host-wallet-loading") {
             return;
         }
         setStack(prev => prev[prev.length - 1] === next ? prev : [...prev.slice(0, -1), next]);
-    }, [rootStep, depositAddressOnly]);
+    }, [rootStep]);
 
     const back = useCallback(() => {
         setFrozenRouting(undefined);
@@ -170,7 +176,7 @@ export function DepositStepProvider({ children, hostWalletStatus = "other" }: {
 
     // Use the new root during this render, before the stack-reset effect, so
     // a connector switch never flashes now-forbidden funding options.
-    const currentStack = stack[0] === rootStep ? stack : [rootStep];
+    const currentStack = stack[0] === rootStep && stackHostEmbedded === embeddedHostWallet ? stack : [rootStep];
 
     const value = useMemo<DepositStepContextValue>(() => ({
         step: currentStack[currentStack.length - 1],
@@ -181,13 +187,13 @@ export function DepositStepProvider({ children, hostWalletStatus = "other" }: {
         startNewDeposit,
         canGoBack: currentStack.length > 1,
         hasWalletMethods,
-        depositAddressOnly,
+        embeddedHostWallet,
         closeLocked,
         setCloseLocked,
         preserveRouting,
         presetSourceNetwork,
         setPresetSourceNetwork,
-    }), [currentStack, push, replace, back, reset, startNewDeposit, hasWalletMethods, depositAddressOnly, closeLocked, setCloseLocked, preserveRouting, presetSourceNetwork, setPresetSourceNetwork]);
+    }), [currentStack, push, replace, back, reset, startNewDeposit, hasWalletMethods, embeddedHostWallet, closeLocked, setCloseLocked, preserveRouting, presetSourceNetwork, setPresetSourceNetwork]);
 
     return (
         <DepositStepContext.Provider value={value}>

@@ -14,6 +14,7 @@ type CreateEvmConnectionOptions = {
     extraMultiStepHandlers?: MultiStepHandler[]
     additionalSupportedNetworks?: EvmAdditionalSupportedNetworks
     ethereumChainIds?: readonly number[]
+    connectorFilter?: (connector: { id: string }) => boolean
 }
 
 /**
@@ -33,6 +34,7 @@ export function createEvmConnection<Network>(
         extraMultiStepHandlers = [],
         additionalSupportedNetworks,
         ethereumChainIds = [],
+        connectorFilter,
     } = options
     const isMobilePlatform = isMobile()
 
@@ -51,6 +53,7 @@ export function createEvmConnection<Network>(
         recentConnectors: additionalConnectorsStore.getSnapshot().recentConnectors,
         isMobilePlatform,
         ethereumChainIds,
+        connectorFilter,
     })
 
     const transferProvider = createEvmTransfer()

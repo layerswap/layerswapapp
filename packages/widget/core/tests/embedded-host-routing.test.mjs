@@ -46,7 +46,7 @@ function ReadSettings() {
 function Probe({ methods, completed = false }) {
   navigation = useDepositStep();
   useReportCloseLock(false, completed);
-  return createElement(DepositSettingsProvider, { value: { methods, depositAddressOnly: navigation.depositAddressOnly } },
+  return createElement(DepositSettingsProvider, { value: { methods, embeddedHostWallet: navigation.embeddedHostWallet } },
     createElement('output', { 'data-step': true }, navigation.step),
     createElement(ReadSettings));
 }
@@ -72,18 +72,24 @@ after(() => {
   }
 });
 
-test('embedded wallets open directly on deposit addresses and override every method list', async () => {
+test('embedded logins keep the picker and external-wallet flow while overriding every method list', async () => {
   for (const methods of [undefined, [], ['wallet'], ['polymarket', 'hyperliquid']]) {
     await render('embedded', methods);
-    assert.equal(navigation.step, 'transfer-crypto');
+    assert.equal(navigation.step, 'method-picker');
     assert.equal(navigation.canGoBack, false);
-    assert.equal(navigation.hasWalletMethods, false, 'destination picker must remain visible at the flow root');
+    assert.equal(navigation.hasWalletMethods, true, 'More wallets must remain available');
     assert.equal(container.querySelector('[data-methods]').textContent, 'deposit_address');
   }
-  await act(() => navigation.push('method-picker'));
-  await act(() => navigation.replace('wallet-connect'));
-  await act(() => navigation.back());
+  await act(() => navigation.push('transfer-crypto'));
   assert.equal(navigation.step, 'transfer-crypto');
+  await act(() => navigation.back());
+  assert.equal(navigation.step, 'method-picker');
+  await act(() => navigation.push('wallet-connect'));
+  assert.equal(navigation.step, 'wallet-connect');
+  await act(() => navigation.replace('wallet-source'));
+  assert.equal(navigation.step, 'wallet-source');
+  await act(() => navigation.back());
+  assert.equal(navigation.step, 'method-picker');
   assert.equal(navigation.canGoBack, false);
 });
 
@@ -102,7 +108,7 @@ test('reconnect and idle connector changes re-root navigation without leaving a 
   await act(() => navigation.push('wallet-source'));
   assert.equal(navigation.step, 'host-wallet-loading');
   await render('embedded');
-  assert.equal(navigation.step, 'transfer-crypto');
+  assert.equal(navigation.step, 'method-picker');
   assert.equal(navigation.canGoBack, false);
   await render('other');
   assert.equal(navigation.step, 'method-picker');
@@ -114,13 +120,14 @@ for (const scenario of [
   { name: 'extended source approval', connectorId: 'io.metamask', preset: 'POLYMARKET_MAINNET' },
   { name: 'embedded connection', connectorId: 'io.privy.wallet' },
   { name: 'rejected approval', connectorId: 'walletConnect', reject: true },
+  { name: 'funding for an embedded login', connectorId: 'walletConnect', embeddedLogin: true },
 ]) {
   test(`pending ${scenario.name} keeps its UI and source preset until the connection settles`, async () => {
     const chain = { id: 1, name: 'Ethereum', nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 }, rpcUrls: { default: { http: [] } } };
     const config = createConfig({ chains: [chain], connectors: [], storage: null, ssr: true, multiInjectedProviderDiscovery: false });
     const address = '0x1234567890123456789012345678901234567890';
-    if (scenario.alreadyConnected) {
-      const connector = { id: 'io.metamask', uid: 'external' };
+    if (scenario.alreadyConnected || scenario.embeddedLogin) {
+      const connector = { id: scenario.embeddedLogin ? 'io.privy.wallet' : 'io.metamask', uid: 'login' };
       config.setState(state => ({ ...state, status: 'connected', current: connector.uid, connections: new Map([[connector.uid, { connector, accounts: [address], chainId: 1 }]]) }));
     }
     let finish;
@@ -158,6 +165,7 @@ for (const scenario of [
       assert.equal(mounts, 1);
       assert.equal(unmounts, 0, 'pending approval must never run connect-view cleanup');
       assert.equal(navigation.presetSourceNetwork, scenario.preset);
+      assert.equal(navigation.embeddedHostWallet, !!scenario.embeddedLogin);
     } finally {
       await act(async () => {
         if (scenario.reject) reject(new Error('User rejected connection'));
@@ -166,14 +174,15 @@ for (const scenario of [
       });
     }
     if (scenario.connectorId === 'io.privy.wallet') {
-      assert.equal(navigation.step, 'transfer-crypto');
-      assert.equal(navigation.depositAddressOnly, true);
+      assert.equal(navigation.step, 'method-picker');
+      assert.equal(navigation.embeddedHostWallet, true);
       assert.equal(navigation.canGoBack, false);
       assert.equal(unmounts, 1);
     } else {
       assert.equal(navigation.step, 'wallet-connect');
       assert.equal(navigation.presetSourceNetwork, scenario.preset);
       assert.equal(unmounts, 0);
+      assert.equal(navigation.embeddedHostWallet, !!scenario.embeddedLogin);
       await act(() => navigation.back());
       assert.equal(navigation.step, 'method-picker');
       assert.equal(unmounts, 1);
@@ -195,9 +204,9 @@ for (const switchBeforeCancel of [false, true]) {
       await act(() => navigation.back());
       await render('embedded');
     }
-    assert.equal(navigation.step, 'transfer-crypto');
-    assert.equal(navigation.depositAddressOnly, true);
-    assert.equal(navigation.hasWalletMethods, false);
+    assert.equal(navigation.step, 'method-picker');
+    assert.equal(navigation.embeddedHostWallet, true);
+    assert.equal(navigation.hasWalletMethods, true);
     assert.equal(navigation.canGoBack, false);
     assert.equal(container.querySelector('[data-methods]').textContent, 'deposit_address');
   });
@@ -211,10 +220,10 @@ test('starting another deposit releases the preserved route while retaining an u
   assert.equal(navigation.step, 'transfer-crypto');
   await act(() => navigation.preserveRouting());
   await render('embedded');
-  assert.equal(navigation.depositAddressOnly, false, 'keep the previous result until an explicit new deposit');
+  assert.equal(navigation.embeddedHostWallet, false, 'keep the previous result until an explicit new deposit');
   await act(() => navigation.startNewDeposit());
-  assert.equal(navigation.step, 'transfer-crypto');
-  assert.equal(navigation.depositAddressOnly, true);
+  assert.equal(navigation.step, 'method-picker');
+  assert.equal(navigation.embeddedHostWallet, true);
   assert.equal(navigation.canGoBack, false);
   await render('other');
   assert.equal(navigation.step, 'method-picker', 'the new session is no longer frozen');
@@ -232,17 +241,18 @@ test('a processing transfer and its completion survive host reconnect/logout unt
   await act(() => navigation.setCloseLocked(false));
   assert.equal(navigation.step, 'wallet-processing', 'keep the result after close unlocks');
   await act(() => navigation.reset());
-  assert.equal(navigation.step, 'transfer-crypto');
+  assert.equal(navigation.step, 'method-picker');
   assert.equal(container.querySelector('[data-methods]').textContent, 'deposit_address');
 });
 
 test('an embedded deposit keeps its address and result on disconnect; reopening uses the latest connector', async () => {
   await render('embedded');
+  await act(() => navigation.push('transfer-crypto'));
   await act(() => navigation.setCloseLocked(true));
   await render('other');
   await act(() => navigation.setCloseLocked(false));
   assert.equal(navigation.step, 'transfer-crypto');
-  assert.equal(navigation.depositAddressOnly, true);
+  assert.equal(navigation.embeddedHostWallet, true);
   await act(() => root.unmount());
   root = createRoot(container);
   await render('other');
@@ -250,11 +260,13 @@ test('an embedded deposit keeps its address and result on disconnect; reopening 
 });
 
 test('a deposit first observed as completed preserves its result without having locked close', async () => {
+  await render('embedded');
+  await act(() => navigation.push('transfer-crypto'));
   await render('embedded', undefined, providers, true);
   assert.equal(navigation.closeLocked, false);
   await render('other', undefined, providers, true);
   assert.equal(navigation.step, 'transfer-crypto');
-  assert.equal(navigation.depositAddressOnly, true);
+  assert.equal(navigation.embeddedHostWallet, true);
 });
 
 test('the host subscription updates mounted routing and switches config subscriptions cleanly', async () => {
@@ -277,13 +289,30 @@ test('the host subscription updates mounted routing and switches config subscrip
   await act(() => setAccount(first, 'io.privy.wallet', 'reconnecting'));
   assert.equal(navigation.step, 'host-wallet-loading');
   await act(() => setAccount(first, 'io.privy.wallet', 'connected'));
-  assert.equal(navigation.step, 'transfer-crypto');
+  assert.equal(navigation.step, 'method-picker');
+  assert.equal(navigation.embeddedHostWallet, true);
   await act(() => root.render(createElement(HostRouting, { config: second })));
   assert.equal(navigation.step, 'method-picker');
   await act(() => setAccount(first, 'io.metamask', 'connected'));
   assert.equal(navigation.step, 'method-picker');
   await act(() => setAccount(second, 'dynamic-dynamicwaas-1', 'connected'));
-  assert.equal(navigation.step, 'transfer-crypto');
+  assert.equal(navigation.step, 'method-picker');
+  assert.equal(navigation.embeddedHostWallet, true);
+  // Funding-wallet activation and later login removal can leave the active
+  // account unchanged. The connection subscription must still update policy.
+  await act(() => second.setState(state => {
+    const connector = { id: 'io.metamask', uid: 'funding' };
+    const connections = new Map(state.connections);
+    connections.set(connector.uid, { connector, accounts: [address], chainId: 1 });
+    return { ...state, current: connector.uid, connections };
+  }));
+  assert.equal(navigation.embeddedHostWallet, true);
+  await act(() => second.setState(state => {
+    const connections = new Map(state.connections);
+    connections.delete('dynamic-dynamicwaas-1');
+    return { ...state, connections };
+  }));
+  assert.equal(navigation.embeddedHostWallet, false);
   await act(() => root.render(createElement(HostRouting, { config: undefined })));
   assert.equal(navigation.step, 'method-picker');
 });

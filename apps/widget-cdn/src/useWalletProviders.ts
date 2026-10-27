@@ -22,6 +22,7 @@ export function useWalletProviders(
   walletDefaults: DefaultWalletConfig | undefined,
   walletProvidersConfig: WalletProvidersConfig | undefined,
   wagmiConfig: WagmiConfig | undefined,
+  connectorFilter?: (connector: { id: string }) => boolean,
 ): ReturnType<typeof getDefaultProviders> {
   return useMemo(() => {
     let providers = getDefaultProviders(walletDefaults ?? {});
@@ -53,10 +54,11 @@ export function useWalletProviders(
         providers[evmIndex] = createEVMProvider({
           walletConnectConfigs: walletDefaults?.walletConnect,
           wagmiConfig,
+          connectorFilter,
         });
       }
     }
 
     return providers;
-  }, [wagmiConfig, walletDefaults, walletProvidersConfig]);
+  }, [wagmiConfig, walletDefaults, walletProvidersConfig, connectorFilter]);
 }

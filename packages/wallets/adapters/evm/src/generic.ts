@@ -31,6 +31,7 @@ export function createEVMProvider<TNetwork = NetworkWithTokens>(
         wagmiConfig,
         additionalSupportedNetworks,
         ethereumChainIds,
+        connectorFilter,
     } = config
 
     const moduleMultiStepHandlers = walletProviderModules
@@ -57,6 +58,7 @@ export function createEVMProvider<TNetwork = NetworkWithTokens>(
             extraMultiStepHandlers: moduleMultiStepHandlers,
             additionalSupportedNetworks,
             ethereumChainIds,
+            connectorFilter,
         })
     }
 

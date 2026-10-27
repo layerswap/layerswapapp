@@ -1,6 +1,6 @@
 import { useCallback, useSyncExternalStore } from 'react';
 import type { Config } from 'wagmi';
-import { getAccount, watchAccount } from 'wagmi/actions';
+import { getAccount, getConnections, watchAccount, watchConnections } from 'wagmi/actions';
 import { resolveHostWalletStatus, type HostWalletStatus } from './hostWallet';
 
 const getServerSnapshot = (): HostWalletStatus => 'loading';
@@ -13,12 +13,16 @@ export function useHostWalletStatus(
   const subscribe = useCallback(
     (onChange: () => void) => {
       if (!config) return () => {};
-      return watchAccount(config, { onChange });
+      const stopAccount = watchAccount(config, { onChange });
+      const stopConnections = watchConnections(config, { onChange });
+      return () => { stopAccount(); stopConnections(); };
     },
     [config],
   );
   const getSnapshot = useCallback((): HostWalletStatus => {
-    return config ? resolveHostWalletStatus(getAccount(config)) : 'other';
+    // Connecting a funding wallet changes wagmi's active account. The embedded
+    // login still owns this session until its connection is actually removed.
+    return config ? resolveHostWalletStatus(getAccount(config), getConnections(config)) : 'other';
   }, [config]);
 
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);

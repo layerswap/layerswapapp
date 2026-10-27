@@ -19,12 +19,17 @@ export type HostWalletStatus = 'loading' | 'embedded' | 'other';
 export function resolveHostWalletStatus(account: {
   status: 'connected' | 'connecting' | 'reconnecting' | 'disconnected';
   connector?: { id: string };
-}): HostWalletStatus {
+}, connections: readonly { connector: { id: string } }[] = []): HostWalletStatus {
   if (account.status === 'connecting' || account.status === 'reconnecting') {
     return 'loading';
   }
   return account.status === 'connected' &&
-    isEmbeddedHostConnector(account.connector)
+    (isEmbeddedHostConnector(account.connector) ||
+      connections.some(connection => isEmbeddedHostConnector(connection.connector)))
     ? 'embedded'
     : 'other';
 }
+
+/** Embedded login providers are recipients, never funding-wallet connectors. */
+export const isFundingConnector = (connector: { id: string }): boolean =>
+  !isEmbeddedHostConnector(connector);

@@ -55,8 +55,8 @@ export type DepositProps = {
     /** The deposit funding methods to offer, e.g. `['wallet','deposit_address']`.
      * Acts as an allow-list: only listed methods can appear (a method also still
      * needs its own runtime condition). Defaults to all available methods.
-     * The CDN entry overrides this with deposit-address-only routing when the
-     * shared host config is connected to a recognized embedded wallet. */
+     * Embedded host sessions show Deposit address and More wallets; the login
+     * connector is excluded from funding-wallet choices. */
     methods?: DepositMethodId[];
     /** @internal Computed by the CDN entry from the supplied host wagmi config. */
     hostWalletStatus?: DepositHostWalletStatus;
@@ -107,14 +107,14 @@ const DepositForm: FC<Pick<DepositProps, "partner" | "title"> & { onClose?: () =
 type DepositCardProps = Pick<DepositProps, "partner" | "destination" | "destinationAddress" | "showDestinationAddress" | "title" | "actionButtonText" | "defaultAmountUsd" | "methods" | "hostWalletStatus"> & { onClose?: () => void };
 
 const DepositSession: FC<DepositCardProps> = ({ partner, destination, destinationAddress, showDestinationAddress, title, actionButtonText, defaultAmountUsd, methods, onClose }) => {
-    const { depositAddressOnly } = useDepositStep();
+    const { embeddedHostWallet } = useDepositStep();
     return (
         <DepositSettingsProvider value={{
             showDestinationAddress,
             actionButtonText,
             defaultAmountUsd,
             methods,
-            depositAddressOnly,
+            embeddedHostWallet,
         }}>
             <DepositSelectionProvider destination={destination} destinationAddress={destinationAddress}>
                 <DepositPrefetchProvider>

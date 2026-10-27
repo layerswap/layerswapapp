@@ -17,12 +17,13 @@ import {
   useConnections,
 } from 'wagmi';
 import { disconnect as disconnectWagmi } from '@wagmi/core';
+import { injected } from 'wagmi/connectors';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PrivyProvider, usePrivy, useWallets } from '@privy-io/react-auth';
 import { WalletContext } from './context';
 import { getAppOrigin } from '@/lib/app-origin';
 import { createPrivyWagmiBridge } from './privy-wagmi-bridge';
-import { areWalletAddressesEqual, getReownAddress } from './wallet-session';
+import { areWalletAddressesEqual, getReownAddress, hasPrivyConnection } from './wallet-session';
 
 const projectId = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID;
 const privyId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
@@ -46,7 +47,7 @@ const wagmiConfig =
       [arbitrum.id]: http(),
       [optimism.id]: http(),
     },
-    connectors: [],
+    connectors: [injected()],
     ssr: true,
   });
 const privyWalletBridge = createPrivyWagmiBridge(wagmiConfig);
@@ -194,7 +195,7 @@ function PrivyBridge({
   return null;
 }
 function Session({ children }: { children: React.ReactNode }) {
-  const activeAccount = useAccount();
+  const connections = useConnections();
   const [reownAddress, setReownAddress] = useState<Address>(null);
   const [privy, setPrivy] = useState<PrivyState>({
     address: null,
@@ -235,11 +236,11 @@ function Session({ children }: { children: React.ReactNode }) {
     setMethod(null);
   }, [privy.authenticated]);
   const activeMethod =
-    method || (reownAddress ? 'wallet' : privy.authenticated ? 'privy' : null);
+    method || (privy.authenticated ? 'privy' : reownAddress ? 'wallet' : null);
   const address = activeMethod === 'privy' ? privy.address : reownAddress;
-  const connectionReady =
-    activeAccount.isConnected &&
-    areWalletAddressesEqual(activeAccount.address, address);
+  // A funding wallet can become wagmi's active account without changing the
+  // app's Privy login or recipient. Read the owned connection, not the active one.
+  const connectionReady = hasPrivyConnection(address, connections);
   const value = useMemo(
     () => ({
       address,

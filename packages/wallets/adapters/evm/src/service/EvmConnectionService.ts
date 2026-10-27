@@ -33,6 +33,7 @@ type RuntimeDeps = {
     recentConnectors?: readonly InternalConnector[]
     isMobilePlatform?: boolean
     ethereumChainIds?: readonly number[]
+    connectorFilter?: (connector: { id: string }) => boolean
 }
 
 export class EvmConnectionService<Network> implements WalletConnectionService<RuntimeDeps, Network> {
@@ -59,6 +60,10 @@ export class EvmConnectionService<Network> implements WalletConnectionService<Ru
         this._deps = { ...this._deps, ...deps }
     }
 
+    private isConnectorAllowed(connector: { id: string }): boolean {
+        return this._deps.connectorFilter?.(connector) ?? true
+    }
+
     getNetworks(): Network[] {
         return this._networks
     }
@@ -73,7 +78,7 @@ export class EvmConnectionService<Network> implements WalletConnectionService<Ru
 
     getConfiguredConnectors(allConnectors: readonly Connector[]): InternalConnector[] {
         return computeConfiguredConnectors({
-            allConnectors,
+            allConnectors: allConnectors.filter(connector => this.isConnectorAllowed(connector)),
             walletConnectConnectors: this._deps.registryConnectors ?? [],
             isMobilePlatform: this._deps.isMobilePlatform ?? false,
         })
@@ -97,11 +102,11 @@ export class EvmConnectionService<Network> implements WalletConnectionService<Ru
         const supportsRegistry = supportsRegistryConnects(allConnectors)
         const { featured } = this.getSplitRegistryConnectors(allConnectors)
         const recent = supportsRegistry ? (this._deps.recentConnectors ?? []) : []
-        return [...configured, ...featured, ...recent]
+        return [...configured, ...featured, ...recent].filter(connector => this.isConnectorAllowed(connector))
     }
 
     getAdditionalConnectors(allConnectors: readonly Connector[]): InternalConnector[] {
-        return this.getSplitRegistryConnectors(allConnectors).additional
+        return this.getSplitRegistryConnectors(allConnectors).additional.filter(connector => this.isConnectorAllowed(connector))
     }
 
     getConnectedWallets(
@@ -110,6 +115,7 @@ export class EvmConnectionService<Network> implements WalletConnectionService<Ru
     ): Wallet[] {
         const disconnectFn = this.disconnectWallet.bind(this)
         return connections
+            .filter(connection => this.isConnectorAllowed(connection.connector))
             .map(connection => resolveWallet({
                 activeConnection,
                 connection,
@@ -134,6 +140,7 @@ export class EvmConnectionService<Network> implements WalletConnectionService<Ru
     ): boolean {
         if (!network) return false
         if (!connectorId) return true
+        if (!this.isConnectorAllowed({ id: connectorId })) return true
 
         if (!purpose) {
             return resolveSupportedNetworks([network], connectorId).length === 0
@@ -151,7 +158,8 @@ export class EvmConnectionService<Network> implements WalletConnectionService<Ru
         try {
             const config = getEvmConfig()
             const connections = getConnections(config)
-            const connector = connections.find(c => c.connector.name.toLowerCase() === connectorName.toLowerCase())?.connector
+            const connector = connections.find(c => this.isConnectorAllowed(c.connector) && c.connector.name.toLowerCase() === connectorName.toLowerCase())?.connector
+            if (!connector) return
             await disconnect(config, { connector })
         } catch (e) {
             // Disconnect is best-effort — log but do not rethrow.
@@ -164,7 +172,7 @@ export class EvmConnectionService<Network> implements WalletConnectionService<Ru
         try {
             const config = getEvmConfig()
             const connections = getConnections(config)
-            await Promise.all(connections.map(c => this.disconnectWallet(c.connector.name)))
+            await Promise.all(connections.filter(c => this.isConnectorAllowed(c.connector)).map(c => this.disconnectWallet(c.connector.name)))
         } catch (e) {
             const msg = e instanceof Error ? e.message : String(e)
             console.error(`[EVM] Failed to disconnect wallets: ${msg}`)
@@ -185,7 +193,7 @@ export class EvmConnectionService<Network> implements WalletConnectionService<Ru
         )
         const connectors = params.query?.trim() ? [...featured, ...additional] : additional
         return {
-            connectors,
+            connectors: connectors.filter(connector => this.isConnectorAllowed(connector)),
             nextPage: result.nextPage,
             totalCount: result.totalCount,
         }
@@ -247,6 +255,9 @@ export class EvmConnectionService<Network> implements WalletConnectionService<Ru
 
         try {
             if (!internalConnector) return
+            if (!this.isConnectorAllowed(internalConnector)) {
+                throw new Error('This login wallet cannot be used as a funding wallet. Please choose another wallet.')
+            }
             let connector = availableConnectors.find(w => w.id === internalConnector.id) as InternalConnector & LSConnector
             let actualConnector = connector
 
@@ -280,6 +291,10 @@ export class EvmConnectionService<Network> implements WalletConnectionService<Ru
                 }) as unknown as InternalConnector & LSConnector
             } else if (!connector || typeof (connector as LSConnector).disconnect !== 'function') {
                 throw new Error('Connector not found')
+            }
+
+            if (!this.isConnectorAllowed(actualConnector)) {
+                throw new Error('This login wallet cannot be used as a funding wallet. Please choose another wallet.')
             }
 
             const iconString = (typeof connector.icon === 'string' ? connector.icon : undefined)

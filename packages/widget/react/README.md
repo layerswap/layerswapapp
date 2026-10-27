@@ -88,11 +88,14 @@ Use the config your app already provides to `WagmiProvider`. The widget adds
 supported EVM chains that are missing from it and preserves your existing chain
 order and transports.
 
-For `LayerswapDepositWidget`, the active connector in this shared config also
-determines funding options. Recognized Privy embedded/smart-wallet connectors
-and Dynamic embedded connectors (Turnkey, Turnkey HD, and WaaS) open directly
-into the deposit-address flow. All other methods are hidden, even if `methods`
-requests them. Destination-token selection remains available. Reconnecting
+For `LayerswapDepositWidget`, connected sessions in this shared config also
+determine funding options. Recognized Privy embedded/smart-wallet connectors
+and Dynamic embedded connectors (Turnkey, Turnkey HD, and WaaS) show a picker
+with Deposit address and More wallets. Other shortcuts are hidden, even if
+`methods` requests them. The login connector is excluded from funding-wallet
+lists, existing funding accounts, and connection attempts; other wallets remain
+available. This restriction stays in place while the embedded login remains
+connected, including when a funding wallet becomes active. Reconnecting
 sessions show loading until their connector resolves; an active transfer and
 its result remain visible if the host changes wallets or logs out.
 
