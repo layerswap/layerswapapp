@@ -1,5 +1,5 @@
 import { type Wallet } from '@layerswap/widget-types';
-import { useCallback, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { usePersistedState } from "@layerswap/wallet-core";
 import { isMobile } from "@layerswap/utils";
 import type { WalletConnectionProvider, WalletModalConnector } from "@layerswap/wallet-core/types";
@@ -22,15 +22,32 @@ export function useWalletConnection({ featuredProviders, onFinish, }: UseWalletC
     const lastAttemptRef = useRef<{ connector: WalletModalConnector, provider: WalletConnectionProvider } | null>(null)
     const providersRef = useRef(featuredProviders)
     providersRef.current = featuredProviders
+    const mountedRef = useRef(false)
+    const attemptRef = useRef(0)
+    useEffect(() => {
+        mountedRef.current = true
+        return () => {
+            mountedRef.current = false
+            attemptRef.current++
+        }
+    }, [])
 
     const connect = useCallback(async (
         connector: WalletModalConnector,
         provider: WalletConnectionProvider
     ) => {
+        if (!mountedRef.current) {
+            return
+        }
+        const attempt = ++attemptRef.current
+        const isCurrentAttempt = () => mountedRef.current && attemptRef.current === attempt
+        const isProviderAllowed = (id: string) => providersRef.current.some(
+            allowed => allowed.id === id && !allowed.connectionDisabled
+        )
         try {
             setConnectionError(undefined)
 
-            if (!providersRef.current.some(allowed => allowed.id === provider.id)) {
+            if (!isProviderAllowed(provider.id)) {
                 setConnectionError("This wallet ecosystem is not available.")
                 return
             }
@@ -50,6 +67,9 @@ export function useWalletConnection({ featuredProviders, onFinish, }: UseWalletC
             ) {
                 setSelectedConnector(connector)
                 await awaitProvidersSettled()
+                if (!isCurrentAttempt() || !isProviderAllowed(provider.id)) {
+                    return
+                }
 
                 const settledVariants = getLiveVariants(connector)
                 if (settledVariants.length > 1) {
@@ -73,8 +93,11 @@ export function useWalletConnection({ featuredProviders, onFinish, }: UseWalletC
             const liveProvider = provider.isStub
                 ? await awaitLiveProvider(provider.id) ?? provider
                 : provider
+            if (!isCurrentAttempt()) {
+                return
+            }
 
-            if (liveProvider.connectionDisabled || !providersRef.current.some(allowed => allowed.id === liveProvider.id)) {
+            if (liveProvider.connectionDisabled || !isProviderAllowed(liveProvider.id)) {
                 setConnectionError("This wallet ecosystem is not available.")
                 return
             }
@@ -87,6 +110,11 @@ export function useWalletConnection({ featuredProviders, onFinish, }: UseWalletC
             }
 
             const result = liveProvider.connectWallet && await liveProvider.connectWallet({ connector })
+            // Wallet approval can outlive this screen or its funding policy.
+            // Never let that old result select an account or navigate a new flow.
+            if (!isCurrentAttempt() || !isProviderAllowed(liveProvider.id)) {
+                return
+            }
 
             if (!result) {
                 setConnectionError("Connection didn't complete. Please try again.")
@@ -97,6 +125,9 @@ export function useWalletConnection({ featuredProviders, onFinish, }: UseWalletC
             onFinish(result)
             setSelectedConnector(undefined)
         } catch (error) {
+            if (!isCurrentAttempt() || !isProviderAllowed(provider.id)) {
+                return
+            }
             console.log(error)
             setConnectionError(getConnectionError(error))
         }

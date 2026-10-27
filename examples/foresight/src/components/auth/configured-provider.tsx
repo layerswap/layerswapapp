@@ -23,7 +23,12 @@ import { PrivyProvider, usePrivy, useWallets } from '@privy-io/react-auth';
 import { WalletContext } from './context';
 import { getAppOrigin } from '@/lib/app-origin';
 import { createPrivyWagmiBridge } from './privy-wagmi-bridge';
-import { areWalletAddressesEqual, getReownAddress, hasPrivyConnection } from './wallet-session';
+import {
+  areWalletAddressesEqual,
+  getReownAddress,
+  hasPrivyConnection,
+  selectPrivySessionWallet,
+} from './wallet-session';
 
 const projectId = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID;
 const privyId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
@@ -131,8 +136,7 @@ function PrivyBridge({
 }) {
   const { ready, authenticated, user, login, logout } = usePrivy();
   const { wallets, ready: walletsReady } = useWallets();
-  const sessionWallet =
-    wallets.find((wallet) => wallet.walletClientType === 'privy') ?? wallets[0];
+  const sessionWallet = selectPrivySessionWallet(wallets, user?.wallet?.address);
   const address = (sessionWallet?.address ||
     user?.wallet?.address ||
     null) as Address;

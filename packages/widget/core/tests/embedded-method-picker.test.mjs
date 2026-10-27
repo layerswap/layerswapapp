@@ -13,7 +13,7 @@ for (const [key, value] of Object.entries({ window: dom.window, document: dom.wi
 }
 const react = JSON.stringify(import.meta.resolve('react'))
 const mocks = new Map([
-    ['/hooks/useWallet', 'export default () => ({ wallets: globalThis.__pickerFixture.wallets })'],
+    ['/hooks/useWallet', 'export default () => ({ wallets: globalThis.__pickerFixture.wallets, providers: globalThis.__pickerFixture.providers })'],
     ['/context/swapAccounts', 'export const useSelectSwapAccount = () => () => { throw new Error("The login wallet must not be selected") }'],
     ['/depositSelectionContext', 'export const useDepositSelection = () => globalThis.__pickerFixture'],
     ['/DestinationTokenPicker', `import { createElement } from ${react}; export default () => createElement('select', { 'aria-label': 'Destination token' }, createElement('option', null, 'USDC'), createElement('option', null, 'USDT'))`],
@@ -55,7 +55,7 @@ const render = (methods, status = 'embedded') => act(() => root.render(
 const buttons = () => [...container.querySelectorAll('button')]
 const titles = () => buttons().map(button => button.querySelector('.font-semibold').textContent)
 beforeEach(() => {
-    globalThis.__pickerFixture = { wallets: [], destination: { name: 'BASE_MAINNET' }, destinationToken: { symbol: 'USDC' } }
+    globalThis.__pickerFixture = { wallets: [], providers: [{ id: 'svm', name: 'Solana', isStub: true, ready: false }], destination: { name: 'BASE_MAINNET' }, destinationToken: { symbol: 'USDC' } }
     container = document.createElement('div')
     document.body.append(container)
     root = createRoot(container)
@@ -101,4 +101,15 @@ test('both choices remain visible while destination selection is incomplete', as
     assert.ok(buttons().every(button => button.disabled))
     await act(() => buttons()[1].click())
     assert.equal(navigation.step, 'method-picker')
+})
+
+test('More wallets is hidden when no visible and enabled funding provider remains', async () => {
+    for (const fundingProviders of [[], [{ id: 'svm', hideFromList: true }], [{ id: 'svm', connectionDisabled: true }]]) {
+        globalThis.__pickerFixture.providers = fundingProviders
+        await render()
+        assert.deepEqual(titles(), ['Deposit address'])
+        await act(() => buttons()[0].click())
+        assert.equal(navigation.step, 'transfer-crypto')
+        await act(() => navigation.back())
+    }
 })

@@ -4,7 +4,7 @@ import { EventEmitter } from 'node:events';
 import { createConfig, getAccount } from '@wagmi/core';
 import { mainnet } from 'wagmi/chains';
 import { createPrivyWagmiBridge } from '../src/components/auth/privy-wagmi-bridge.ts';
-import { areWalletAddressesEqual, getReownAddress, hasPrivyConnection } from '../src/components/auth/wallet-session.ts';
+import { areWalletAddressesEqual, getReownAddress, hasPrivyConnection, selectPrivySessionWallet } from '../src/components/auth/wallet-session.ts';
 
 const firstAddress = '0x1234567890123456789012345678901234567890';
 const secondAddress = '0x2345678901234567890123456789012345678901';
@@ -159,4 +159,25 @@ test('an active funding wallet does not make the retained Privy login unready or
   await bridge.sync(null);
   assert.equal(hasPrivyConnection(address, [...config.state.connections.values()]), false);
   assert.equal(getAccount(config).address, secondAddress);
+});
+
+test('connecting an unlinked external wallet cannot replace the authenticated Privy recipient', async () => {
+  const authenticatedAddress = '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd';
+  const { config, bridge, wallet } = fixture(authenticatedAddress);
+  const authenticatedWallet = { ...wallet, walletClientType: 'metamask', linked: true, meta: { id: 'io.metamask', name: 'MetaMask' } };
+  const fundingWallet = { ...fixture(secondAddress).wallet, walletClientType: 'coinbase', linked: false, meta: { id: 'com.coinbase.wallet', name: 'Coinbase' } };
+  await bridge.sync(selectPrivySessionWallet([authenticatedWallet], authenticatedAddress));
+  const loginUid = getAccount(config).connector.uid;
+  for (const wallets of [[fundingWallet, authenticatedWallet], [authenticatedWallet, fundingWallet]]) {
+    const selected = selectPrivySessionWallet(wallets, authenticatedAddress.toUpperCase());
+    assert.equal(selected, authenticatedWallet);
+    await bridge.sync(selected);
+    assert.equal(getAccount(config).connector.uid, loginUid, 'funding-wallet order must not reconnect the login');
+    assert.equal(hasPrivyConnection(authenticatedAddress, [...config.state.connections.values()]), true);
+    assert.equal(hasPrivyConnection(secondAddress, [...config.state.connections.values()]), false);
+  }
+  assert.equal(selectPrivySessionWallet([fundingWallet], authenticatedAddress), undefined, 'wait for the authenticated wallet instead of adopting another connected wallet');
+  assert.equal(selectPrivySessionWallet([fundingWallet], undefined), undefined);
+  assert.equal(selectPrivySessionWallet([fundingWallet, authenticatedWallet, wallet], authenticatedAddress), wallet, 'an embedded Privy wallet keeps priority');
+  await bridge.sync(null);
 });

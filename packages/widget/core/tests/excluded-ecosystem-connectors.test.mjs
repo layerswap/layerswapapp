@@ -4,7 +4,7 @@ import { registerHooks } from 'node:module'
 import { existsSync } from 'node:fs'
 import { extname } from 'node:path'
 import { JSDOM } from 'jsdom'
-import { act, createElement } from 'react'
+import { act, createElement, StrictMode } from 'react'
 
 const dom = new JSDOM('<!doctype html><html><body></body></html>')
 const previous = Object.getOwnPropertyDescriptors(globalThis)
@@ -39,6 +39,8 @@ const { createRoot } = await import('react-dom/client')
 const { ConnectorsList } = await import('../../../ui-kit/dist/esm/components/ConnectorsList.js')
 const { useFeaturedProviders } = await import('../../../ui-kit/dist/esm/components/connectors-list/useFeaturedProviders.js')
 const { useWalletConnection } = await import('../../../ui-kit/dist/esm/components/connectors-list/useWalletConnection.js')
+const { DepositStepProvider, useDepositStep } = await import('../dist/esm/components/Pages/Deposit/depositStepContext.js')
+const { WalletProvidersRegistryProvider } = await import('../../../wallets/core/dist/esm/context/WalletProvidersRegistryProvider.js')
 let root, container, connection, featured, calls, finished, fixture
 const evm = { id: 'evm', name: 'EVM', ready: true, connectWallet: async () => { calls.push('evm'); return { id: 'MetaMask' } } }
 const svm = { id: 'svm', name: 'Solana', ready: true, connectWallet: async () => { calls.push('svm'); return { id: 'Phantom' } } }
@@ -110,4 +112,64 @@ test('a stale EVM QR selection cannot revive the excluded connector view', async
     await render(ConnectorsList, { providers: [{ ...evm, connectionDisabled: true }, svm], onFinish() {} })
     assert.equal(container.textContent, 'ConnectorsBrowser')
     assert.deepEqual(calls, [])
+})
+
+for (const outcome of ['approval', 'rejection']) {
+    test(`a late ${outcome} cannot revive EVM funding after the host policy unmounts its connection screen`, async () => {
+        let approve, reject, navigation
+        const provider = { ...evm, connectWallet: () => new Promise((resolve, fail) => { approve = resolve; reject = fail }) }
+        const modalWrites = []
+        fixture.modal.setSelectedConnector = value => modalWrites.push(value)
+        function ConnectView() {
+            const { push } = useDepositStep()
+            connection = useWalletConnection({ featuredProviders: [provider], onFinish: wallet => { finished.push(wallet); push('wallet-source') } })
+            return 'Waiting for approval'
+        }
+        function Router() {
+            navigation = useDepositStep()
+            return navigation.step === 'wallet-connect' ? createElement(ConnectView) : navigation.step
+        }
+        const configuredProviders = [{ id: 'evm', loadProvider: async () => { throw new Error('SDK must stay lazy') } }]
+        function Host({ status }) {
+            return createElement(WalletProvidersRegistryProvider, { walletProviders: configuredProviders, networks: [], networkAdapter: {} },
+                createElement(DepositStepProvider, { hostWalletStatus: status }, createElement(Router)))
+        }
+        await render(Host, { status: 'other' })
+        await act(() => navigation.push('wallet-connect'))
+        let pending
+        await act(async () => { pending = connection.connect({ id: 'metamask', name: 'MetaMask' }, provider) })
+        await render(Host, { status: 'embedded' })
+        assert.equal(navigation.step, 'method-picker')
+        assert.equal(navigation.embeddedHostWallet, true)
+        const writesBeforeResult = modalWrites.length
+        await act(async () => {
+            if (outcome === 'approval') approve({ id: 'MetaMask', providerName: 'EVM' })
+            else reject(new Error('Delayed rejection'))
+            await pending
+        })
+        assert.equal(navigation.step, 'method-picker')
+        assert.deepEqual(finished, [])
+        assert.equal(modalWrites.length, writesBeforeResult, 'the old result must not update another screen')
+    })
+}
+
+test('an approval is ignored when its provider is disabled while the hook stays mounted', async () => {
+    let approve
+    const provider = { ...svm, connectWallet: () => new Promise(resolve => { approve = resolve }) }
+    await render(Probe, { providers: [provider] })
+    let pending
+    await act(async () => { pending = connection.connect(variants[1], provider) })
+    await render(Probe, { providers: [{ ...provider, connectionDisabled: true }] })
+    await act(async () => { approve({ id: 'Phantom' }); await pending })
+    assert.deepEqual(finished, [])
+})
+
+test('a current deferred approval still completes once under StrictMode', async () => {
+    let approve
+    const provider = { ...svm, connectWallet: () => new Promise(resolve => { approve = resolve }) }
+    await act(() => root.render(createElement(StrictMode, null, createElement(Probe, { providers: [provider] }))))
+    let pending
+    await act(async () => { pending = connection.connect(variants[1], provider) })
+    await act(async () => { approve({ id: 'Phantom' }); await pending })
+    assert.deepEqual(finished, [{ id: 'Phantom' }])
 })

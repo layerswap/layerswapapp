@@ -7,6 +7,20 @@ export function areWalletAddressesEqual(
   return Boolean(first && second && first.toLowerCase() === second.toLowerCase());
 }
 
+export function selectPrivySessionWallet<
+  Wallet extends { address: string; walletClientType: string },
+>(
+  wallets: readonly Wallet[],
+  authenticatedAddress: string | null | undefined,
+): Wallet | undefined {
+  // Connected external wallets can be unlinked and reordered by connection
+  // time. Only the authenticated wallet may supply an external recipient.
+  return (
+    wallets.find(wallet => wallet.walletClientType === 'privy') ??
+    wallets.find(wallet => areWalletAddressesEqual(wallet.address, authenticatedAddress))
+  );
+}
+
 export function getReownAddress(
   account: Pick<GetAccountReturnType, 'address' | 'isConnected' | 'connector'>,
   connections: readonly Connection[],

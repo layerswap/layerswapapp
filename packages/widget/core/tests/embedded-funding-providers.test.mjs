@@ -16,11 +16,23 @@ const networks = [{ name: 'ETHEREUM_MAINNET' }, { name: 'SOLANA_MAINNET' }]
 globalThis.__fundingNetworks = networks
 const mocks = new Map([
     ['/context/settings', 'export const useSettingsState = () => ({ networks: globalThis.__fundingNetworks })'],
-    ['/lib/address/Address', 'export class Address { static equals(a, b) { return a === b } }'],
+    ['/lib/address/Address', 'export class Address { static equals(a, b) { return a === b } toShortString() { return "wallet" } }'],
     ['/stores/balanceStore', 'export const getKey = () => "unused"; export const useBalanceStore = () => undefined'],
     ['/stores/manualDestAddressesStore', 'const state = { manualDestAddresses: [], addManualDestAddress() {} }; export const useManualDestAddressesStore = select => select(state)'],
 ])
 const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
+    if (context.parentURL?.endsWith('/Options/MethodPicker.js')) {
+        const pickerMocks = new Map([
+            ['/depositSelectionContext', 'export const useDepositSelection = () => ({ destination: { name: "BASE_MAINNET" }, destinationToken: { symbol: "USDC" } })'],
+            ['/DestinationTokenPicker', 'export default () => null'],
+            ['/useExtendedDepositOption', 'export const useExtendedDepositOption = () => ({ present: false })'],
+            ['/Icons/ConnectorIcons', 'export const ResolveConnectorIcon = () => null'],
+            ['@layerswap/ui-kit/components', 'export const WalletIcon = () => null; export const ImageWithFallback = () => null'],
+        ])
+        for (const [suffix, source] of pickerMocks) {
+            if (specifier.endsWith(suffix)) return { url: `data:text/javascript,${encodeURIComponent(source)}`, shortCircuit: true }
+        }
+    }
     if (context.parentURL?.includes('/dist/esm/')) {
         for (const [suffix, source] of mocks) {
             if (specifier.endsWith(suffix)) return { url: `data:text/javascript,${encodeURIComponent(source)}`, shortCircuit: true }
@@ -39,6 +51,7 @@ const { DepositStepProvider, useDepositStep } = await import('../dist/esm/compon
 const { DepositSettingsProvider } = await import('../dist/esm/context/depositSettings.js')
 const { SwapAccountsProvider, useSwapAccounts } = await import('../dist/esm/context/swapAccounts.js')
 const { default: useWallet } = await import('../dist/esm/hooks/useWallet.js')
+const { default: MethodPicker } = await import('../dist/esm/components/Pages/Deposit/Options/MethodPicker.js')
 const wallet = (id, providerName, network) => ({ id, internalId: id, address: id, addresses: [id], providerName, autofillSupportedNetworks: [network], withdrawalSupportedNetworks: [network], asSourceSupportedNetworks: [network] })
 const evmWallets = [wallet('Privy', 'EVM', networks[0].name), wallet('MetaMask', 'EVM', networks[0].name)]
 const solanaWallet = wallet('Phantom', 'Solana', networks[1].name)
@@ -51,7 +64,7 @@ const makeProvider = (id, name, connectedWallets, network) => ({
     })) }),
 })
 const providers = [makeProvider('evm', 'EVM', evmWallets, networks[0].name), makeProvider('svm', 'Solana', [solanaWallet], networks[1].name)]
-let root, container, navigation, funding, accounts, peerAccounts, connectors
+let root, container, navigation, funding, accounts, peerAccounts, connectors, showPicker
 const staleSearchResults = [
     { id: 'evm-phantom', name: 'Phantom', type: 'injected', providerName: 'EVM' },
     { id: 'svm-phantom', name: 'Phantom', type: 'injected', providerName: 'Solana' },
@@ -60,17 +73,17 @@ function Peer() { peerAccounts = useSwapAccounts('from'); return null }
 function Probe() {
     funding = useWallet(); accounts = useSwapAccounts('from')
     connectors = useConnectors({ featuredProviders: funding.providers, filteredProviders: funding.providers, recentConnectors: [], searchValue: 'phantom', searchResults: staleSearchResults })
-    return null
+    return showPicker && navigation.step === 'method-picker' ? createElement(MethodPicker) : null
 }
 function Session() {
     navigation = useDepositStep()
     return createElement(DepositSettingsProvider, { value: { embeddedHostWallet: navigation.embeddedHostWallet } },
         createElement(SwapAccountsProvider, null, createElement(Probe)))
 }
-const render = status => act(() => root.render(createElement(WalletProvidersRegistryProvider, { walletProviders: providers, networks, networkAdapter: {} },
+const render = (status, walletProviders = providers) => act(() => root.render(createElement(WalletProvidersRegistryProvider, { walletProviders, networks, networkAdapter: {} },
     createElement(SwapAccountsProvider, null, createElement(Peer),
         createElement(DepositStepProvider, { hostWalletStatus: status }, createElement(Session))))))
-beforeEach(() => { container = document.createElement('div'); document.body.append(container); root = createRoot(container) })
+beforeEach(() => { showPicker = false; container = document.createElement('div'); document.body.append(container); root = createRoot(container) })
 afterEach(async () => { await act(() => root.unmount()); container.remove() })
 after(() => {
     hooks.deregister(); dom.window.close(); delete globalThis.__fundingNetworks
@@ -117,4 +130,16 @@ test('host reconnection keeps non-EVM funding choices and the pending connection
     await render('embedded')
     assert.equal(navigation.step, 'wallet-connect')
     assert.deepEqual(funding.providers.map(provider => provider.id), ['svm'])
+})
+
+test('an EVM-only configuration hides More wallets after the EVM provider is excluded', async () => {
+    showPicker = true
+    await render('other', [providers[0]])
+    assert.deepEqual(funding.providers.map(provider => provider.id), ['evm'])
+    await render('embedded', [providers[0]])
+    assert.deepEqual(funding.providers, [])
+    const buttons = [...container.querySelectorAll('button')]
+    assert.deepEqual(buttons.map(button => button.querySelector('.font-semibold').textContent), ['Deposit address'])
+    await act(() => buttons[0].click())
+    assert.equal(navigation.step, 'transfer-crypto')
 })
