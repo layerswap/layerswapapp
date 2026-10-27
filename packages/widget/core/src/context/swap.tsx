@@ -7,6 +7,7 @@ import type { ApiResponse } from '@layerswap/widget-types';
 import { Partner } from '@/Models/Partner';
 import type { ApiError } from '@layerswap/widget-types';
 import useWallet from '@/hooks/useWallet';
+import { useWithdrawalProvider } from '@/hooks/useWithdrawalProvider';
 import { Network } from '@layerswap/widget-types';
 import { useSettingsState } from './settings';
 import { QuoteError, transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
@@ -344,6 +345,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
 
     // Restored swaps must resolve their account before a fresh retry populates form state.
     const sourceNetwork = swapBasicData?.source_network
+    const withdrawalProvider = useWithdrawalProvider(sourceNetwork)
     const selectedSourceAccount = useSelectedAccount("from", sourceNetwork?.name);
     const { wallets } = useWallet(sourceNetwork, 'asSource')
     const selectedWallet = selectedSourceAccount?.address && sourceNetwork
@@ -505,7 +507,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         stepTransactions,
         quote,
         gaslessAuthorization,
-        sourceProvider: extendedSwapData?.sourceProvider,
+        sourceProvider: withdrawalProvider?.id ?? extendedSwapData?.sourceProvider,
         walletExecutionStarted,
         isDepositFlow,
         hasRefuel: !!refuel,
@@ -513,7 +515,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         outputTransactionHash: swapDetails?.transactions.find(transaction => transaction.type === TransactionType.Output)?.transaction_hash,
         resolved,
     }), [swapId, swapBasicData, atomicBatchAvailable, draftGasless, depositActionsResponse, storedWalletTransaction, stepTransactions, quote, gaslessAuthorization,
-        extendedSwapData?.sourceProvider, walletExecutionStarted, isDepositFlow, refuel, resolved, inputTransactionHash, swapDetails])
+        withdrawalProvider?.id, extendedSwapData?.sourceProvider, walletExecutionStarted, isDepositFlow, refuel, resolved, inputTransactionHash, swapDetails])
     // Observe every API status here, regardless of which screen is mounted.
     useSwapStatusNotification(swapDetails?.id, swapDetails?.status, {
         path: 'SwapDataProvider',

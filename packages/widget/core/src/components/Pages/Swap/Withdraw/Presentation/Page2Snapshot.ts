@@ -37,7 +37,8 @@ export type Page2WalletState =
       }
     | {
           kind: 'specialized';
-          provider: 'Hyperliquid' | 'Polymarket';
+          provider: string;
+          preparationLabel?: string;
           connected: boolean;
           accountMismatch?: boolean;
           pending?: boolean;

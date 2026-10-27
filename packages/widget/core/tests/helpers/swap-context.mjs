@@ -41,6 +41,7 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
             useInitialSettings: () => ({ swapId: getSwapId() }),
             useSettingsState: () => ({ sourceRoutes: [], destinationRoutes: [], networks: [] }),
         },
+        '@/hooks/useWithdrawalProvider': { useWithdrawalProvider: () => undefined },
         '@/hooks/useWallet': { default: () => {
             const account = getAccount()
             return { wallets: account ? [{

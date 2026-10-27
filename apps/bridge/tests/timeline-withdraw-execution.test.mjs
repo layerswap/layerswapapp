@@ -235,6 +235,15 @@ test('exact gas loading preserves the pending wallet request and its execution l
         base + 'Wallet/Common/buttons.tsx',
         {
             ...imports,
+            '../../useWithdrawalExecution': loadSource(base + 'useWithdrawalExecution.ts', {
+                '@/hooks/useClientLayoutEffect': {
+                    useClientLayoutEffect: React.useLayoutEffect,
+                },
+            }),
+            '../../withdrawalHelpers': loadSource(base + 'withdrawalHelpers.ts'),
+            '../../reportWithdrawalError': loadSource(base + 'reportWithdrawalError.ts', {
+                '@/lib/ErrorHandler': { ErrorHandler: noop },
+            }),
             '@/context/callbackProvider': {
                 useCallbacks: () => ({ onSwapLifecycle: noop }),
             },
