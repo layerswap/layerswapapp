@@ -334,6 +334,7 @@ function createWorkflow({
         '@layerswap/ui-kit/components': { WalletIcon: noop },
         '@/components/Buttons/submitButton': { default: noop },
         '@/hooks/useWallet': { default: () => ({ wallets: [wallet] }) },
+        '@/hooks/useWithdrawalProvider': { useWithdrawalProvider: () => undefined },
         '@/context/swap': {
             useSwapDataState: () => renderResolvedScreen ? { ...state, ...swapContext.useSwapDataState() }
                 : state.resolveCurrentFlow ? { ...state, flow: loadSource('../src/components/utils/resolveSwapFlow.ts').resolveSwapFlow({
@@ -422,6 +423,11 @@ function createWorkflow({
             } }),
         },
     }
+    const withdrawalHelpers = loadSource('../src/components/Pages/Swap/Withdraw/withdrawalHelpers.ts', buttonImports)
+    const withdrawalExecution = loadSource('../src/components/Pages/Swap/Withdraw/useWithdrawalExecution.ts', buttonImports)
+    buttonImports['../../withdrawalHelpers'] = withdrawalHelpers
+    buttonImports['../../useWithdrawalExecution'] = withdrawalExecution
+    buttonImports['../../reportWithdrawalError'] = loadSource('../src/components/Pages/Swap/Withdraw/reportWithdrawalError.ts', buttonImports)
     const { SendTransactionButton, ButtonWrapper, useSendTransactionController, useConnectWalletController } = loadSource(`${walletPath}buttons.tsx`, buttonImports)
     let WalletWithdrawal
     let Page2Controller
@@ -451,6 +457,8 @@ function createWorkflow({
         })
         const walletComponents = loadSource('../src/components/Pages/Swap/Withdraw/Wallet/index.tsx', {
             ...buttonImports,
+            '../withdrawalHelpers': withdrawalHelpers,
+            '../useWithdrawalExecution': withdrawalExecution,
             '@layerswap/widget-types': { ...walletTypes, NetworkType: { Polymarket: 'polymarket' } },
             '@/context/withdrawalContext': { WithdrawalProvider: ({ children }) => children, useWalletWithdrawalState: () => ({}) },
             './Common/buttons': { SendTransactionButton, ConnectWalletButton: noop, useSendTransactionController: (...args) => { view = useSendTransactionController(...args); return view; }, useConnectWalletController },
@@ -465,8 +473,7 @@ function createWorkflow({
             '@/context/rpcHealthContext': { useRpcHealth: (_, enabled) => { calls.rpcEnabled = enabled; return { health: { status: state.rpcUnhealthy ? 'unhealthy' : 'healthy' } }; } },
             './RPCUnhealthyMessage': { default: () => createElement('div', null, 'RPC unhealthy') },
             '@/lib/extendedRoutes/registry': { isExtendedSourceNetwork: () => false },
-            '../WithdrawalProviders/Hyperliquid': {},
-            '../WithdrawalProviders/Polymarket': {},
+            '../WithdrawalProviders/ProviderWalletWithdrawal': {},
             '@layerswap/wallet-core': { isProviderHydrated: () => true },
             './Common/isUserRejection': rejection,
         })
@@ -513,11 +520,11 @@ function createWorkflow({
                     return model;
                 } },
                 './ManualWithdraw': {},
-                './WithdrawalProviders/Hyperliquid/useHyperliquidWithdrawal': {},
-                './WithdrawalProviders/Polymarket/usePolymarketWithdrawal': {},
+                '@/hooks/useWithdrawalProvider': { useWithdrawalProvider: () => undefined },
+                './WithdrawalProviders/useProviderWithdrawal': {},
+                './WithdrawalProviders/ProviderWalletWithdrawal': {},
                 './Wallet/Common/buttons': { useConnectWalletController },
                 './Presentation/WalletActionsView': walletViews,
-                './Presentation/SpecializedWithdrawalView': {},
                 './Presentation/Page2Sections': { WalletTransferView: ({ children }) => children },
             }).Page2Controller
         }

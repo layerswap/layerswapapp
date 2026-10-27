@@ -57,6 +57,10 @@ function loadSource(path, imports = {}) {
         if (name === '../Wallet/Common/actionMessage') return { useActionMessage: () => null };
         if (name === '@/components/utils/resolveSwapFlow') return loadSource('components/utils/resolveSwapFlow.ts');
         if (name === '@/lib/swapExecution') return { recordSwapExecution: noop };
+        if (name === '@/hooks/useWithdrawalProvider') return { useWithdrawalProvider: () => undefined };
+        if (name.endsWith('/useWithdrawalExecution')) return loadSource(`${withdraw}useWithdrawalExecution.ts`);
+        if (name.endsWith('/withdrawalHelpers')) return loadSource(`${withdraw}withdrawalHelpers.ts`);
+        if (name.endsWith('/reportWithdrawalError')) return loadSource(`${withdraw}reportWithdrawalError.ts`, imports);
         if (name === '@/hooks/useAtomicBatchCapability') return { useAtomicBatchCapability: () => false };
         if (name === '@/helpers/atomicBatch') return { isAtomicBatchEligible: () => false };
         if (name === '@/lib/extendedRoutes/registry') return { isExtendedSourceNetwork: () => false };
@@ -1265,8 +1269,9 @@ for (const provider of ['Hyperliquid', 'Polymarket']) {
                     '@/lib/apiClients/layerSwapApiClient': harness.api,
                 }),
             });
-            const name = `use${provider}Withdrawal`;
-            const { [name]: useWithdrawal } = loadSource(`${withdraw}WithdrawalProviders/${provider}/${name}.ts`, {
+            const providerId = provider.toLowerCase();
+            const definition = loadSource(`../../../wallets/adapters/evm/src/additionalProviders/${providerId}/withdrawal.ts`)[`${providerId}Withdrawal`];
+            const { useProviderWithdrawal } = loadSource(`${withdraw}WithdrawalProviders/useProviderWithdrawal.ts`, {
                 '@/stores/swapTransactionStore': providerStores,
                 ...walletHooks,
                 '@/context/swap': swapContext,
@@ -1277,10 +1282,11 @@ for (const provider of ['Hyperliquid', 'Polymarket']) {
                     if (walletRequests.length === 1) throw { code: 4001 };
                     return transfer.promise;
                 } }) },
-                '@/components/Pages/Swap/Withdraw/Wallet/Common/executeWalletOperation': { executeWalletOperation: (_, execute) => execute() },
+                '../Wallet/Common/executeWalletOperation': { executeWalletOperation: (_, execute) => execute() },
                 '@layerswap/wallet-core/errors': rejection,
                 '@layerswap/widget-types': { ActionMessageType: { TransactionRejected: 'TransactionRejected' } },
-                '../executeProviderWithdrawal': providerExecution,
+                './executeProviderWithdrawal': providerExecution,
+                '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
                 '@/lib/ErrorHandler': { ErrorHandler: noop },
                 '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: noop }) },
                 '@/lib/swapLifecycle': { lifecycleContextFromSwap: () => ({}) },
@@ -1288,7 +1294,7 @@ for (const provider of ['Hyperliquid', 'Polymarket']) {
             });
             function Withdrawal({ data }) {
                 React.useEffect(() => { mounts++; }, []);
-                current = useWithdrawal({ swapBasicData: data.swapBasicData, swapId: data.swapId, refuel: false });
+                current = useProviderWithdrawal({ swapBasicData: data.swapBasicData, swapId: data.swapId, refuel: false }, definition);
                 return React.createElement('div', { 'data-withdrawal': true }, current.error?.details || (current.loading ? 'Preparing' : 'Ready'));
             }
             function Screen() {

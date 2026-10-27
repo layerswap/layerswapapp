@@ -28,19 +28,19 @@ export const ResolverProviders: React.FC<React.PropsWithChildren<{
         // Descriptors carry no resolvers; they re-enter this list as real
         // providers after `loadProvider()` resolves and `LayerswapProvider`
         // swaps them in.
-        const realProviders = useMemo(
+        const realProviders: WalletProvider[] = useMemo(
             () => walletProviders.filter(isWalletProviderWithResolvers),
             [walletProviders],
         );
 
-        const transferProviders = useMemo(() => realProviders
+        const transferProviders: TransferProvider[] = useMemo(() => realProviders
             .map(provider => provider.transferProvider)
             .flat()
             .filter((provider): provider is (() => TransferProvider) => Boolean(provider))
             .map(provider => provider()),
             [realProviders]);
 
-        const gaslessProviders = useMemo(() => realProviders
+        const gaslessProviders: GaslessProvider[] = useMemo(() => realProviders
             .map(provider => provider.gaslessProvider)
             .flat()
             .filter((provider): provider is (() => GaslessProvider) => Boolean(provider))
