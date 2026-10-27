@@ -51,7 +51,7 @@ function Probe({ providers }) {
     connection = useWalletConnection({ featuredProviders: featured, onFinish: wallet => finished.push(wallet) })
     return null
 }
-const render = (component, props) => act(() => root.render(createElement(component, props)))
+const render = (component, props) => act(() => root.render(createElement(StrictMode, null, createElement(component, props))))
 beforeEach(() => {
     calls = []; finished = []
     fixture = {
@@ -162,14 +162,4 @@ test('an approval is ignored when its provider is disabled while the hook stays 
     await render(Probe, { providers: [{ ...provider, connectionDisabled: true }] })
     await act(async () => { approve({ id: 'Phantom' }); await pending })
     assert.deepEqual(finished, [])
-})
-
-test('a current deferred approval still completes once under StrictMode', async () => {
-    let approve
-    const provider = { ...svm, connectWallet: () => new Promise(resolve => { approve = resolve }) }
-    await act(() => root.render(createElement(StrictMode, null, createElement(Probe, { providers: [provider] }))))
-    let pending
-    await act(async () => { pending = connection.connect(variants[1], provider) })
-    await act(async () => { approve({ id: 'Phantom' }); await pending })
-    assert.deepEqual(finished, [{ id: 'Phantom' }])
 })

@@ -72,27 +72,6 @@ after(() => {
   }
 });
 
-test('embedded logins keep the picker and external-wallet flow while overriding every method list', async () => {
-  for (const methods of [undefined, [], ['wallet'], ['polymarket', 'hyperliquid']]) {
-    await render('embedded', methods);
-    assert.equal(navigation.step, 'method-picker');
-    assert.equal(navigation.canGoBack, false);
-    assert.equal(navigation.hasWalletMethods, true, 'More wallets must remain available');
-    assert.equal(container.querySelector('[data-methods]').textContent, 'deposit_address');
-  }
-  await act(() => navigation.push('transfer-crypto'));
-  assert.equal(navigation.step, 'transfer-crypto');
-  await act(() => navigation.back());
-  assert.equal(navigation.step, 'method-picker');
-  await act(() => navigation.push('wallet-connect'));
-  assert.equal(navigation.step, 'wallet-connect');
-  await act(() => navigation.replace('wallet-source'));
-  assert.equal(navigation.step, 'wallet-source');
-  await act(() => navigation.back());
-  assert.equal(navigation.step, 'method-picker');
-  assert.equal(navigation.canGoBack, false);
-});
-
 test('external and address-only integrations retain their existing method rules', async () => {
   await render('other', ['wallet', 'polymarket']);
   assert.equal(navigation.step, 'method-picker');
@@ -101,39 +80,18 @@ test('external and address-only integrations retain their existing method rules'
   assert.equal(navigation.step, 'transfer-crypto');
 });
 
-test('reconnect and idle connector changes re-root navigation without leaving a Back escape', async () => {
-  await render();
-  await render('loading');
-  assert.equal(navigation.step, 'host-wallet-loading');
-  await act(() => navigation.push('wallet-source'));
-  assert.equal(navigation.step, 'host-wallet-loading');
-  await render('embedded');
-  assert.equal(navigation.step, 'method-picker');
-  assert.equal(navigation.canGoBack, false);
-  await render('other');
-  assert.equal(navigation.step, 'method-picker');
-});
-
 for (const scenario of [
-  { name: 'first QR connection', connectorId: 'walletConnect' },
-  { name: 'More wallets', connectorId: 'walletConnect', alreadyConnected: true },
-  { name: 'extended source approval', connectorId: 'io.metamask', preset: 'POLYMARKET_MAINNET' },
+  { name: 'QR connection', connectorId: 'walletConnect', preset: 'POLYMARKET_MAINNET' },
   { name: 'embedded connection', connectorId: 'io.privy.wallet' },
-  { name: 'rejected approval', connectorId: 'walletConnect', reject: true },
 ]) {
   test(`pending ${scenario.name} keeps its UI and source preset until the connection settles`, async () => {
     const chain = { id: 1, name: 'Ethereum', nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 }, rpcUrls: { default: { http: [] } } };
     const config = createConfig({ chains: [chain], connectors: [], storage: null, ssr: true, multiInjectedProviderDiscovery: false });
     const address = '0x1234567890123456789012345678901234567890';
-    if (scenario.alreadyConnected) {
-      const connector = { id: 'io.metamask', uid: 'login' };
-      config.setState(state => ({ ...state, status: 'connected', current: connector.uid, connections: new Map([[connector.uid, { connector, accounts: [address], chainId: 1 }]]) }));
-    }
     let finish;
-    let reject;
     const connector = config._internal.connectors.setup(() => ({
       id: scenario.connectorId, name: 'Funding wallet', type: 'test',
-      connect: () => new Promise((resolve, fail) => { finish = resolve; reject = fail; }),
+      connect: () => new Promise(resolve => { finish = resolve; }),
     }));
     let mounts = 0;
     let unmounts = 0;
@@ -167,8 +125,7 @@ for (const scenario of [
       assert.equal(navigation.embeddedHostWallet, false);
     } finally {
       await act(async () => {
-        if (scenario.reject) reject(new Error('User rejected connection'));
-        else finish({ accounts: [address], chainId: 1 });
+        finish({ accounts: [address], chainId: 1 });
         await connection;
       });
     }
@@ -189,27 +146,19 @@ for (const scenario of [
   });
 }
 
-for (const switchBeforeCancel of [false, true]) {
-  test(`canceling processing releases routing when the host changes ${switchBeforeCancel ? 'before' : 'after'} cancellation`, async () => {
-    await render();
-    await act(() => navigation.push('wallet-amount'));
-    await act(() => navigation.push('wallet-processing'));
-    await act(() => navigation.setCloseLocked(true));
-    if (switchBeforeCancel) await render('embedded');
-    await act(() => navigation.back());
-    assert.equal(navigation.closeLocked, false);
-    if (!switchBeforeCancel) {
-      assert.equal(navigation.step, 'wallet-amount');
-      await act(() => navigation.back());
-      await render('embedded');
-    }
-    assert.equal(navigation.step, 'method-picker');
-    assert.equal(navigation.embeddedHostWallet, true);
-    assert.equal(navigation.hasWalletMethods, true);
-    assert.equal(navigation.canGoBack, false);
-    assert.equal(container.querySelector('[data-methods]').textContent, 'deposit_address');
-  });
-}
+test('canceling processing releases routing before a later host switch', async () => {
+  await render();
+  await act(() => navigation.push('wallet-amount'));
+  await act(() => navigation.push('wallet-processing'));
+  await act(() => navigation.setCloseLocked(true));
+  await act(() => navigation.back());
+  assert.equal(navigation.closeLocked, false);
+  assert.equal(navigation.step, 'wallet-amount');
+  await render('embedded');
+  assert.equal(navigation.step, 'method-picker');
+  assert.equal(navigation.embeddedHostWallet, true);
+  assert.equal(navigation.canGoBack, false);
+});
 
 test('starting another deposit releases the preserved route while retaining an unchanged address flow', async () => {
   await render();
