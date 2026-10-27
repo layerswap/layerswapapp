@@ -30,6 +30,7 @@ export function resolveHostWalletStatus(account: {
     : 'other';
 }
 
-/** Embedded login providers are recipients, never funding-wallet connectors. */
-export const isFundingConnector = (connector: { id: string }): boolean =>
-  !isEmbeddedHostConnector(connector);
+/** An embedded EVM login excludes the entire EVM funding ecosystem. */
+export const isEvmFundingAllowed = (
+  connections: readonly { connector: { id: string } }[],
+): boolean => !connections.some(connection => isEmbeddedHostConnector(connection.connector));

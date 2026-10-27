@@ -120,14 +120,13 @@ for (const scenario of [
   { name: 'extended source approval', connectorId: 'io.metamask', preset: 'POLYMARKET_MAINNET' },
   { name: 'embedded connection', connectorId: 'io.privy.wallet' },
   { name: 'rejected approval', connectorId: 'walletConnect', reject: true },
-  { name: 'funding for an embedded login', connectorId: 'walletConnect', embeddedLogin: true },
 ]) {
   test(`pending ${scenario.name} keeps its UI and source preset until the connection settles`, async () => {
     const chain = { id: 1, name: 'Ethereum', nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 }, rpcUrls: { default: { http: [] } } };
     const config = createConfig({ chains: [chain], connectors: [], storage: null, ssr: true, multiInjectedProviderDiscovery: false });
     const address = '0x1234567890123456789012345678901234567890';
-    if (scenario.alreadyConnected || scenario.embeddedLogin) {
-      const connector = { id: scenario.embeddedLogin ? 'io.privy.wallet' : 'io.metamask', uid: 'login' };
+    if (scenario.alreadyConnected) {
+      const connector = { id: 'io.metamask', uid: 'login' };
       config.setState(state => ({ ...state, status: 'connected', current: connector.uid, connections: new Map([[connector.uid, { connector, accounts: [address], chainId: 1 }]]) }));
     }
     let finish;
@@ -165,7 +164,7 @@ for (const scenario of [
       assert.equal(mounts, 1);
       assert.equal(unmounts, 0, 'pending approval must never run connect-view cleanup');
       assert.equal(navigation.presetSourceNetwork, scenario.preset);
-      assert.equal(navigation.embeddedHostWallet, !!scenario.embeddedLogin);
+      assert.equal(navigation.embeddedHostWallet, false);
     } finally {
       await act(async () => {
         if (scenario.reject) reject(new Error('User rejected connection'));
@@ -182,7 +181,7 @@ for (const scenario of [
       assert.equal(navigation.step, 'wallet-connect');
       assert.equal(navigation.presetSourceNetwork, scenario.preset);
       assert.equal(unmounts, 0);
-      assert.equal(navigation.embeddedHostWallet, !!scenario.embeddedLogin);
+      assert.equal(navigation.embeddedHostWallet, false);
       await act(() => navigation.back());
       assert.equal(navigation.step, 'method-picker');
       assert.equal(unmounts, 1);

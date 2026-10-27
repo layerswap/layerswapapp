@@ -92,9 +92,11 @@ For `LayerswapDepositWidget`, connected sessions in this shared config also
 determine funding options. Recognized Privy embedded/smart-wallet connectors
 and Dynamic embedded connectors (Turnkey, Turnkey HD, and WaaS) show a picker
 with Deposit address and More wallets. Other shortcuts are hidden, even if
-`methods` requests them. The login connector is excluded from funding-wallet
-lists, existing funding accounts, and connection attempts; other wallets remain
-available. This restriction stays in place while the embedded login remains
+`methods` requests them. The entire EVM funding provider is excluded: MetaMask's EVM connector,
+WalletConnect's EVM option, other EVM connectors, and connected EVM funding
+accounts are hidden, and EVM connection attempts are blocked. More wallets
+offers other ecosystems, including their non-EVM multi-chain wallet variants.
+This restriction stays in place while the embedded login remains
 connected, including when a funding wallet becomes active. Reconnecting
 sessions show loading until their connector resolves; an active transfer and
 its result remain visible if the host changes wallets or logs out.

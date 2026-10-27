@@ -160,7 +160,7 @@ const MethodPicker: FC = () => {
                 <MethodCard
                     icon={<WalletIcon className="h-6 w-6 text-primary-text" strokeWidth={2} />}
                     title="More wallets"
-                    subtitle="Use MetaMask, Phantom and more"
+                    subtitle={embeddedHostWallet ? "Use wallets from other ecosystems" : "Use MetaMask, Phantom and more"}
                     onClick={handleMoreWalletsClick}
                     disabled={!destinationReady}
                     disabledReason="Pick a destination first"

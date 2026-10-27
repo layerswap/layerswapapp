@@ -6,6 +6,8 @@ import {
 } from '@layerswap/wallets';
 import type { WalletProviderId } from '@layerswap/widget-types';
 import type { Config as WagmiConfig } from 'wagmi';
+import { getConnections } from 'wagmi/actions';
+import { isEvmFundingAllowed } from './hostWallet';
 
 export type WalletProvidersConfig = {
   include?: Array<WalletProviderId>;
@@ -22,7 +24,7 @@ export function useWalletProviders(
   walletDefaults: DefaultWalletConfig | undefined,
   walletProvidersConfig: WalletProvidersConfig | undefined,
   wagmiConfig: WagmiConfig | undefined,
-  connectorFilter?: (connector: { id: string }) => boolean,
+  restrictEmbeddedEvmFunding = false,
 ): ReturnType<typeof getDefaultProviders> {
   return useMemo(() => {
     let providers = getDefaultProviders(walletDefaults ?? {});
@@ -54,11 +56,13 @@ export function useWalletProviders(
         providers[evmIndex] = createEVMProvider({
           walletConnectConfigs: walletDefaults?.walletConnect,
           wagmiConfig,
-          connectorFilter,
+          canConnect: restrictEmbeddedEvmFunding
+            ? () => isEvmFundingAllowed(getConnections(wagmiConfig))
+            : undefined,
         });
       }
     }
 
     return providers;
-  }, [wagmiConfig, walletDefaults, walletProvidersConfig, connectorFilter]);
+  }, [wagmiConfig, walletDefaults, walletProvidersConfig, restrictEmbeddedEvmFunding]);
 }

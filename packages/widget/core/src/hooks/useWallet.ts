@@ -6,22 +6,25 @@ import { useCallback, useMemo } from "react";
 import { isMobile } from "@layerswap/utils";
 import { useSettingsState } from "@/context/settings";
 import { useWalletProviderSnapshots } from "@layerswap/wallet-core";
+import { useDepositSettings } from "@/context/depositSettings";
 
 export type WalletPurpose = "autofill" | "withdrawal" | "asSource"
 
 export default function useWallet(network?: Network | undefined, purpose?: WalletPurpose) {
     const allSnapshots = useWalletProviderSnapshots()
     const { networks } = useSettingsState()
+    const { embeddedHostWallet } = useDepositSettings()
     const isMobilePlatform = isMobile()
 
     const walletProviders = useMemo(() => allSnapshots.filter(provider =>
+        !(embeddedHostWallet && provider.id === 'evm') &&
         (isMobilePlatform ? !provider.unsupportedPlatforms?.includes('mobile') : !provider.unsupportedPlatforms?.includes('desktop')) &&
         networks.some(net =>
             provider.autofillSupportedNetworks?.includes(net.name) ||
             provider.withdrawalSupportedNetworks?.includes(net.name) ||
             provider.asSourceSupportedNetworks?.includes(net.name)
         )
-    ), [allSnapshots, networks, isMobilePlatform])
+    ), [allSnapshots, networks, isMobilePlatform, embeddedHostWallet])
 
     const provider = useMemo(() => network && resolveProvider(network, walletProviders, purpose), [network, purpose, walletProviders])
 

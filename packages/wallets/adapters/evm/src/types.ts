@@ -24,9 +24,9 @@ export type EVMProviderConfig<Network = NetworkWithTokens> = BaseWalletProviderC
      * connectors appear in the modal.
      */
     wagmiConfig?: Config
-    /** Filters funding connectors and connected accounts without mutating the
-     * host config. Rejected connectors cannot be connected by this provider. */
-    connectorFilter?: (connector: { id: string }) => boolean
+    /** Live guard for connection attempts, including attempts from stale UI.
+     * Existing connections and in-progress transfers remain intact. */
+    canConnect?: () => boolean
     additionalSupportedNetworks?: EvmAdditionalSupportedNetworks
     ethereumChainIds?: readonly number[]
 }

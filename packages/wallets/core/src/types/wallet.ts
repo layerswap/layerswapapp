@@ -120,6 +120,9 @@ export type WalletConnectionProvider = {
     unsupportedPlatforms?: string[],
     hideFromList?: boolean,
     ready: boolean,
+    /** Existing accounts may remain alive while this provider is excluded from
+     * new connections, including globally hosted and scoped wallet pickers. */
+    connectionDisabled?: boolean,
     /**
      * True only for the synthetic stub served while a {@link WalletProviderDescriptor}
      * has not loaded its real provider yet. Consumers MUST NOT gate connect/modal

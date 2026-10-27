@@ -27,7 +27,7 @@ export const ConnectorsList: FC<ConnectorsListProps> = ({
 }) => {
     const rootRef = useRef<HTMLDivElement>(null)
     const {
-        selectedConnector,
+        selectedConnector: modalSelectedConnector,
         selectedMultiChainConnector,
         selectedProvider,
         setSelectedProvider,
@@ -44,6 +44,13 @@ export const ConnectorsList: FC<ConnectorsListProps> = ({
         selectedProvider,
         setSelectedProvider,
     })
+
+    // A selection from an earlier provider scope must not revive an excluded
+    // ecosystem's QR/approval view when this list opens.
+    const selectedConnector = modalSelectedConnector?.providerName
+        && !featuredProviders.some(provider => provider.name === modalSelectedConnector.providerName)
+        ? undefined
+        : modalSelectedConnector
 
     const {
         connect,
@@ -126,13 +133,15 @@ export const ConnectorsList: FC<ConnectorsListProps> = ({
             />
         )
     } else if (selectedMultiChainConnector) {
+        const allowedNames = new Set(featuredProviders.map(provider => provider.name))
         const liveVariants = getLiveVariants(selectedMultiChainConnector)
-        const pickerConnector = (
-            liveVariants.length
-            > (selectedMultiChainConnector.variants?.length ?? 0)
-        )
-            ? { ...selectedMultiChainConnector, variants: liveVariants }
-            : selectedMultiChainConnector
+            .filter(variant => variant.providerName && allowedNames.has(variant.providerName))
+        const previousVariants = (selectedMultiChainConnector.variants ?? [])
+            .filter(variant => variant.providerName && allowedNames.has(variant.providerName))
+        const pickerConnector = {
+            ...selectedMultiChainConnector,
+            variants: liveVariants.length > previousVariants.length ? liveVariants : previousVariants,
+        }
 
         content = (
             <MultichainConnectorPicker

@@ -9,7 +9,6 @@ import type { DepositWidgetProps as SharedDepositWidgetProps } from '@layerswap/
 import type { Config as WagmiConfig } from 'wagmi';
 import { useWalletProviders } from './useWalletProviders';
 import { useHostWalletStatus } from './useHostWalletStatus';
-import { isFundingConnector } from './hostWallet';
 import '@layerswap/widget/index.css';
 
 /**
@@ -39,7 +38,7 @@ const DepositWidget: FC<DepositWidgetProps> = ({
   wagmiConfig,
   ...depositProps
 }) => {
-  const walletProviders = useWalletProviders(walletDefaults, walletProvidersConfig, wagmiConfig, isFundingConnector);
+  const walletProviders = useWalletProviders(walletDefaults, walletProvidersConfig, wagmiConfig, true);
   const hostWalletStatus = useHostWalletStatus(wagmiConfig);
 
   // `Deposit` wraps `LayerswapProvider` itself (and installs its own

@@ -20,6 +20,8 @@ export function useWalletConnection({ featuredProviders, onFinish, }: UseWalletC
     const [connectionError, setConnectionError] = useState<string | undefined>()
     const isMobilePlatform = isMobile()
     const lastAttemptRef = useRef<{ connector: WalletModalConnector, provider: WalletConnectionProvider } | null>(null)
+    const providersRef = useRef(featuredProviders)
+    providersRef.current = featuredProviders
 
     const connect = useCallback(async (
         connector: WalletModalConnector,
@@ -27,6 +29,11 @@ export function useWalletConnection({ featuredProviders, onFinish, }: UseWalletC
     ) => {
         try {
             setConnectionError(undefined)
+
+            if (!providersRef.current.some(allowed => allowed.id === provider.id)) {
+                setConnectionError("This wallet ecosystem is not available.")
+                return
+            }
 
             if (connector.isMultiChain) {
                 setSelectedMultiChainConnector(connector)
@@ -66,6 +73,11 @@ export function useWalletConnection({ featuredProviders, onFinish, }: UseWalletC
             const liveProvider = provider.isStub
                 ? await awaitLiveProvider(provider.id) ?? provider
                 : provider
+
+            if (liveProvider.connectionDisabled || !providersRef.current.some(allowed => allowed.id === liveProvider.id)) {
+                setConnectionError("This wallet ecosystem is not available.")
+                return
+            }
 
             if (liveProvider.isStub || !liveProvider.ready) {
                 setConnectionError(

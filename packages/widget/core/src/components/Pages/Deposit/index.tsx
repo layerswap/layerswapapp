@@ -24,6 +24,7 @@ import ThemeWrapper from "@/components/themeWrapper";
 import useAllWithdrawalBalances from "@/hooks/useAllWithdrawalBalances";
 import { DepositLoading, LayerswapProvider } from "@/index";
 import { LayerswapContextProps } from "@/context/LayerswapProvider";
+import { SwapAccountsProvider } from "@/context/swapAccounts";
 
 export type DepositMode = "inline" | "button";
 
@@ -56,7 +57,7 @@ export type DepositProps = {
      * Acts as an allow-list: only listed methods can appear (a method also still
      * needs its own runtime condition). Defaults to all available methods.
      * Embedded host sessions show Deposit address and More wallets; the login
-     * connector is excluded from funding-wallet choices. */
+     * EVM provider is excluded from funding-wallet choices. */
     methods?: DepositMethodId[];
     /** @internal Computed by the CDN entry from the supplied host wagmi config. */
     hostWalletStatus?: DepositHostWalletStatus;
@@ -116,11 +117,14 @@ const DepositSession: FC<DepositCardProps> = ({ partner, destination, destinatio
             methods,
             embeddedHostWallet,
         }}>
-            <DepositSelectionProvider destination={destination} destinationAddress={destinationAddress}>
-                <DepositPrefetchProvider>
-                    <DepositForm partner={partner} title={title} onClose={onClose} />
-                </DepositPrefetchProvider>
-            </DepositSelectionProvider>
+            {/* Account selection must use this session's funding-provider policy. */}
+            <SwapAccountsProvider>
+                <DepositSelectionProvider destination={destination} destinationAddress={destinationAddress}>
+                    <DepositPrefetchProvider>
+                        <DepositForm partner={partner} title={title} onClose={onClose} />
+                    </DepositPrefetchProvider>
+                </DepositSelectionProvider>
+            </SwapAccountsProvider>
         </DepositSettingsProvider>
     );
 };

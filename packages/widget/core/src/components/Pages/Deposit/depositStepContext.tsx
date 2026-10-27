@@ -25,8 +25,8 @@ type DepositStepContextValue = {
      * address is the only funding method, so the flow opens straight on it and
      * the method picker is never shown. */
     hasWalletMethods: boolean;
-    /** Restricts the picker to Deposit address and More wallets. The login
-     * connector is filtered from the funding provider by the CDN entry. */
+    /** Restricts the picker to Deposit address and More wallets. The entire
+     * EVM funding provider is excluded for this embedded EVM login. */
     embeddedHostWallet: boolean;
     /** Whether the header's close button should be locked (hidden) because a
      * transfer is mid-flight. Each flow computes its own condition and reports

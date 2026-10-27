@@ -14,7 +14,7 @@ export function useFeaturedProviders({ providers, selectedProvider, setSelectedP
     // These lists feed `useConnectors`' memo deps, so their identity must stay
     // stable across unrelated renders such as search and pagination updates.
     const filteredProviders = useMemo(
-        () => providers.filter(provider => !provider.hideFromList),
+        () => providers.filter(provider => !provider.hideFromList && !provider.connectionDisabled),
         [providers]
     )
 
@@ -22,9 +22,9 @@ export function useFeaturedProviders({ providers, selectedProvider, setSelectedP
     // Resolve it against the live list, including hidden providers used by
     // scoped connection flows.
     const resolvedSelectedProvider = useMemo(() => (
-        selectedProvider && !selectedProvider.isSelectedFromFilter
-            ? providers.find(provider => provider.name === selectedProvider.name) || selectedProvider
-            : selectedProvider
+        selectedProvider
+            ? providers.find(provider => provider.id === selectedProvider.id && !provider.connectionDisabled)
+            : undefined
     ), [providers, selectedProvider])
 
     const featuredProviders = useMemo(() => {

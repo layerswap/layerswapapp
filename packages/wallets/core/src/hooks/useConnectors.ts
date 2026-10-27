@@ -87,6 +87,12 @@ export function useConnectors({
 }: UseConnectorsParams) {
 
     const { featuredConnectors, additionalConnectors, resolvedSearchResults } = useMemo(() => {
+        const allowedProviderNames = new Set(featuredProviders.map(provider => provider.name))
+        // Search results can outlive a provider scope change while requests
+        // settle. Never let that cached metadata restore an excluded ecosystem.
+        const allowedSearchResults = searchResults?.filter(connector =>
+            !connector.providerName || allowedProviderNames.has(connector.providerName),
+        )
         const collect = (pick: (p: WalletConnectionProvider) => InternalConnector[] | undefined) =>
             featuredProviders
                 .filter(p => (pick(p)?.length ?? 0) > 0)
@@ -97,7 +103,7 @@ export function useConnectors({
         const [featured, additional, search] = resolveNames([
             collect(p => p.availableConnectors),
             collect(p => p.additionalConnectors),
-            searchResults ?? [],
+            allowedSearchResults ?? [],
         ])
         return {
             featuredConnectors: featured,

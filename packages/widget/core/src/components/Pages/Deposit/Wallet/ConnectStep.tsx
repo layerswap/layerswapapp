@@ -42,7 +42,7 @@ const ConnectStep: FC = () => {
         const lockedProvider = presetSourceNetwork && isExtendedSourceNetwork(presetSourceNetwork)
             ? providers.find(p => p.withdrawalSupportedNetworks?.includes(presetSourceNetwork))
             : undefined;
-        if (lockedProvider) setSelectedProvider(lockedProvider);
+        setSelectedProvider(lockedProvider);
         setOpen(true);
         return () => {
             setSelectedProvider(undefined);

@@ -4,7 +4,7 @@ import { registerHooks } from 'node:module'
 import { extname } from 'node:path'
 import { connect, createConfig, createConnector, getConnections, http } from '@wagmi/core'
 import { mainnet } from 'viem/chains'
-import { isFundingConnector } from '../../../../../apps/widget-cdn/src/hostWallet.ts'
+import { isEvmFundingAllowed } from '../../../../../apps/widget-cdn/src/hostWallet.ts'
 
 const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
     if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
@@ -12,13 +12,11 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
     }
     return nextResolve(specifier, context)
 } })
-const { EvmConnectionService } = await import('../dist/esm/service/EvmConnectionService.js')
 const { createEvmConnection } = await import('../dist/esm/service/createEvmConnection.js')
 const { provideExternalEvmConfig } = await import('../dist/esm/service/getEvmConfig.js')
 const { attachWagmiSync } = await import('../dist/esm/service/syncWagmi.js')
 const address = '0x1234567890123456789012345678901234567890'
-const embeddedIds = ['io.privy.wallet', `io.privy.wallet.${address}`, 'io.privy.smart_wallet', 'dynamic-turnkey-1', 'dynamic-turnkeyhd-12', 'dynamic-dynamicwaas-3']
-const externalIds = ['io.metamask', 'dynamic-metamask-1']
+const ids = ['io.metamask', 'walletConnect', 'dynamic-metamask-1', 'io.privy.wallet', `io.privy.wallet.${address}`, 'io.privy.smart_wallet', 'dynamic-turnkey-1']
 const calls = []
 const connector = id => createConnector(() => ({
     id, name: id, type: 'test',
@@ -27,47 +25,39 @@ const connector = id => createConnector(() => ({
     getAccounts: async () => [address], getChainId: async () => 1,
     onAccountsChanged() {}, onChainChanged() {}, onDisconnect() {},
 }))
-const config = createConfig({ chains: [mainnet], connectors: [...externalIds, ...embeddedIds].map(connector), transports: { 1: http() }, storage: null, ssr: true, multiInjectedProviderDiscovery: false })
-for (const connector of config.connectors) await connect(config, { connector })
+const config = createConfig({ chains: [mainnet], connectors: ids.map(connector), transports: { 1: http() }, storage: null, ssr: true, multiInjectedProviderDiscovery: false })
+await connect(config, { connector: config.connectors.find(c => c.id === 'io.privy.wallet') })
 provideExternalEvmConfig(config)
 const stopSync = attachWagmiSync(config)
-after(() => { stopSync(); hooks.deregister() })
-
-test('deposit provider hides embedded connectors and existing login accounts without changing the host or peer providers', () => {
-    const restricted = createEvmConnection({ networks: [], networkAdapter: {} }, { connectorFilter: isFundingConnector })
-    const unrestricted = createEvmConnection({ networks: [], networkAdapter: {} })
-    try {
-        const snapshot = restricted.store.getState()
-        assert.deepEqual(snapshot.availableConnectors.map(c => c.id).sort(), externalIds.toSorted())
-        assert.deepEqual(snapshot.connectedWallets.map(w => w.metadata.connectorId).sort(), externalIds.toSorted())
-        assert.equal(snapshot.activeWallet, undefined, 'the active login must not be a funding account')
-        assert.equal(config.state.connections.size, embeddedIds.length + externalIds.length)
-        assert.equal(unrestricted.store.getState().connectedWallets.length, embeddedIds.length + externalIds.length)
-    } finally { restricted.destroy(); unrestricted.destroy() }
+const connection = createEvmConnection({ networks: [], networkAdapter: {} }, {
+    canConnect: () => isEvmFundingAllowed(getConnections(config)),
 })
+after(() => { connection.destroy(); stopSync(); hooks.deregister() })
 
-test('stale and direct embedded connection attempts are rejected before any provider action', async () => {
-    const service = new EvmConnectionService()
-    service.configure({ connectorFilter: isFundingConnector })
+test('every EVM connector is blocked while the embedded EVM login remains connected', async () => {
+    assert.equal(connection.store.getState().connectionDisabled, true)
     calls.length = 0
-    for (const id of embeddedIds) {
-        await assert.rejects(service.connectWallet({ connector: { id, name: id, type: 'other' } }), /login wallet cannot be used/)
+    // Capture the actual provider action, as a stale modal or retry would.
+    const staleConnect = connection.store.getState().connectWallet
+    for (const id of ids) {
+        await assert.rejects(staleConnect({ connector: { id, name: id, type: 'other' } }), /EVM wallets cannot fund/)
     }
-    assert.deepEqual(calls, [], 'blocked attempts must neither disconnect nor reconnect the login')
-    assert.equal(config.state.connections.size, embeddedIds.length + externalIds.length)
+    assert.deepEqual(calls, [], 'no EVM provider may be disconnected or prompted')
+    assert.deepEqual(getConnections(config).map(c => c.connector.id), ['io.privy.wallet'])
 })
 
-test('external funding can connect and disconnect without removing embedded login connections', async () => {
-    const service = new EvmConnectionService()
-    service.setNetworks([], {})
-    service.configure({ connectorFilter: isFundingConnector })
+test('the guard observes the live login state rather than capturing a previous connector classification', async () => {
+    const staleConnect = connection.store.getState().connectWallet
+    config.setState(state => ({ ...state, connections: new Map(), current: null, status: 'disconnected' }))
+    assert.equal(connection.store.getState().connectionDisabled, false)
     calls.length = 0
-    const wallet = await service.connectWallet({ connector: { id: 'io.metamask', name: 'MetaMask', type: 'injected' } })
+    const wallet = await staleConnect({ connector: { id: 'io.metamask', name: 'MetaMask', type: 'injected' } })
     assert.equal(wallet.metadata.connectorId, 'io.metamask')
     assert.ok(calls.some(([action, id]) => action === 'connect' && id === 'io.metamask'))
-    assert.ok(calls.every(([, id]) => !embeddedIds.includes(id)))
-    assert.equal(getConnections(config).filter(c => embeddedIds.includes(c.connector.id)).length, embeddedIds.length)
-    await service.disconnectWallets()
-    assert.deepEqual(getConnections(config).map(c => c.connector.id).sort(), embeddedIds.toSorted())
-    assert.ok(calls.every(([, id]) => !embeddedIds.includes(id)))
+    // A new login must block the same previously captured funding action.
+    await connect(config, { connector: config.connectors.find(c => c.id === 'dynamic-turnkey-1') })
+    assert.equal(connection.store.getState().connectionDisabled, true)
+    calls.length = 0
+    await assert.rejects(staleConnect({ connector: { id: 'walletConnect', name: 'WalletConnect', type: 'other' } }), /EVM wallets cannot fund/)
+    assert.deepEqual(calls, [])
 })
