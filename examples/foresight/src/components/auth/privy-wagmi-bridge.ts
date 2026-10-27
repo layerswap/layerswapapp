@@ -14,16 +14,6 @@ export type PrivyBridgeWallet = Pick<
   'address' | 'meta' | 'walletClientType' | 'getEthereumProvider'
 >;
 
-export function isPrivyConnector(
-  connector: { id: string } | undefined,
-): boolean {
-  return (
-    connector?.id === 'io.privy.wallet' ||
-    connector?.id.startsWith('io.privy.wallet.') === true ||
-    connector?.id === 'io.privy.smart_wallet'
-  );
-}
-
 function createSessionConnector(
   wallet: PrivyBridgeWallet,
   provider: EIP1193Provider,

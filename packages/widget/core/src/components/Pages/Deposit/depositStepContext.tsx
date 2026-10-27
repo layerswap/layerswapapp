@@ -19,6 +19,7 @@ type DepositStepContextValue = {
     replace: (next: DepositStep) => void;
     back: () => void;
     reset: () => void;
+    startNewDeposit: () => void;
     canGoBack: boolean;
     /** Whether any wallet-connection method is available. When false, the deposit
      * address is the only funding method, so the flow opens straight on it and
@@ -81,10 +82,24 @@ export function DepositStepProvider({ children, hostWalletStatus = "other" }: {
     // screen until the surface is closed or explicitly reset. A host logout
     // must not unmount the SwapDataProvider that is tracking that transfer.
     const [frozenRouting, setFrozenRouting] = useState<DepositRouting>();
-    const routing = frozenRouting ?? requestedRouting;
+    const [stack, setStack] = useState<DepositStep[]>([requestedRouting.rootStep]);
+    const routing = useMemo<DepositRouting>(() => {
+        if (frozenRouting) {
+            return frozenRouting;
+        }
+        // The shared config also reports "connecting" while the user scans a
+        // funding wallet's QR or approves it. Keep that interactive view mounted;
+        // initial host restoration still uses the neutral loading route.
+        const connectingFundingWallet = hostWalletStatus === "loading"
+            && hasConfiguredWalletProviders
+            && stack[stack.length - 1] === "wallet-connect";
+        if (connectingFundingWallet) {
+            return { rootStep: stack[0], hasWalletMethods: true, depositAddressOnly: false };
+        }
+        return requestedRouting;
+    }, [frozenRouting, requestedRouting, hostWalletStatus, hasConfiguredWalletProviders, stack]);
     const { rootStep, hasWalletMethods, depositAddressOnly } = routing;
 
-    const [stack, setStack] = useState<DepositStep[]>([rootStep]);
     const [closeLocked, updateCloseLocked] = useState(false);
     const [presetSourceNetwork, setPresetSourceNetwork] = useState<string | undefined>(undefined);
 
@@ -128,8 +143,23 @@ export function DepositStepProvider({ children, hostWalletStatus = "other" }: {
     }, [rootStep, depositAddressOnly]);
 
     const back = useCallback(() => {
-        setStack(prev => prev.length > 1 ? prev.slice(0, -1) : prev);
-    }, []);
+        setFrozenRouting(undefined);
+        updateCloseLocked(false);
+        setStack(previous => {
+            if (previous[0] !== requestedRouting.rootStep) {
+                return [requestedRouting.rootStep];
+            }
+            return previous.length > 1 ? previous.slice(0, -1) : previous;
+        });
+    }, [requestedRouting.rootStep]);
+
+    // "Deposit more" ends the preserved session, but keeps the address view
+    // when the host still supports it. A changed host applies its new root.
+    const startNewDeposit = useCallback(() => {
+        setFrozenRouting(undefined);
+        updateCloseLocked(false);
+        setStack(previous => previous[0] === requestedRouting.rootStep ? previous : [requestedRouting.rootStep]);
+    }, [requestedRouting.rootStep]);
 
     const reset = useCallback(() => {
         setFrozenRouting(undefined);
@@ -148,6 +178,7 @@ export function DepositStepProvider({ children, hostWalletStatus = "other" }: {
         replace,
         back,
         reset,
+        startNewDeposit,
         canGoBack: currentStack.length > 1,
         hasWalletMethods,
         depositAddressOnly,
@@ -156,7 +187,7 @@ export function DepositStepProvider({ children, hostWalletStatus = "other" }: {
         preserveRouting,
         presetSourceNetwork,
         setPresetSourceNetwork,
-    }), [currentStack, push, replace, back, reset, hasWalletMethods, depositAddressOnly, closeLocked, setCloseLocked, preserveRouting, presetSourceNetwork, setPresetSourceNetwork]);
+    }), [currentStack, push, replace, back, reset, startNewDeposit, hasWalletMethods, depositAddressOnly, closeLocked, setCloseLocked, preserveRouting, presetSourceNetwork, setPresetSourceNetwork]);
 
     return (
         <DepositStepContext.Provider value={value}>

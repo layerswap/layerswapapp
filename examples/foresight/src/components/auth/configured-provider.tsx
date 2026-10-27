@@ -21,7 +21,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PrivyProvider, usePrivy, useWallets } from '@privy-io/react-auth';
 import { WalletContext } from './context';
 import { getAppOrigin } from '@/lib/app-origin';
-import { createPrivyWagmiBridge, isPrivyConnector } from './privy-wagmi-bridge';
+import { createPrivyWagmiBridge } from './privy-wagmi-bridge';
+import { areWalletAddressesEqual, getReownAddress } from './wallet-session';
 
 const projectId = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID;
 const privyId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
@@ -99,16 +100,11 @@ function ReownBridge({
   onAddress: (a: Address) => void;
   actions: React.RefObject<Actions>;
 }) {
-  const { address, isConnected, connector } = useAccount();
+  const account = useAccount();
   const connections = useConnections();
   // A bridged Privy account also appears in wagmi; never report it as a Reown
   // login. Retain a separately connected external account when Privy is active.
-  const externalAddress =
-    isConnected && !isPrivyConnector(connector)
-      ? address
-      : connections.find(
-          (connection) => !isPrivyConnector(connection.connector),
-        )?.accounts[0];
+  const externalAddress = getReownAddress(account, connections);
   useEffect(
     () => onAddress(externalAddress ?? null),
     [externalAddress, onAddress],
@@ -170,7 +166,7 @@ function PrivyBridge({
     };
   }, [active, authenticated, walletsReady, sessionWallet]);
   const connectionReady =
-    !active || !authenticated || Boolean(address && bridgedAddress === address);
+    !active || !authenticated || areWalletAddressesEqual(address, bridgedAddress);
   useEffect(
     () =>
       onState({
@@ -242,7 +238,8 @@ function Session({ children }: { children: React.ReactNode }) {
     method || (reownAddress ? 'wallet' : privy.authenticated ? 'privy' : null);
   const address = activeMethod === 'privy' ? privy.address : reownAddress;
   const connectionReady =
-    activeAccount.isConnected && activeAccount.address === address;
+    activeAccount.isConnected &&
+    areWalletAddressesEqual(activeAccount.address, address);
   const value = useMemo(
     () => ({
       address,

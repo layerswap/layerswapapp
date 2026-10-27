@@ -12,7 +12,7 @@ import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import { useDepositInitialValues, useDepositSelection } from "../depositSelectionContext";
 import { useDepositPrefetch } from "../depositPrefetchContext";
-import { useReportCloseLock } from "../depositStepContext";
+import { useDepositStep, useReportCloseLock } from "../depositStepContext";
 import { useResolvedSwapStatus } from "@/hooks/useResolvedSwapStatus";
 import { SwapResponse, TransactionType } from "@/lib/apiClients/layerSwapApiClient";
 
@@ -80,6 +80,7 @@ const DepositDestinationRow: FC = () => {
 };
 
 const DepositAddressFlow: FC<Props & { initialSwapData?: SwapResponse }> = ({ partner, showDestinationPicker, initialSwapData }) => {
+    const { startNewDeposit } = useDepositStep();
     const initialSettings = useInitialSettings();
     const { destinationAddress } = useDepositSelection();
     const { prefetchedSource, claimPrefetchedSwap, markSwapUsed } = useDepositPrefetch();
@@ -142,6 +143,7 @@ const DepositAddressFlow: FC<Props & { initialSwapData?: SwapResponse }> = ({ pa
                         lockDestinationAddress
                         hideEasyDepositBanner
                         hidePoweredBy
+                        onNewDeposit={startNewDeposit}
                     />
                 </ValidationProvider>
             </div>

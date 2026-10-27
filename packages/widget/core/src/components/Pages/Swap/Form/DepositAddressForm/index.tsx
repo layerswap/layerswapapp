@@ -62,9 +62,11 @@ type Props = {
      * wallet-less picker here so the no-wallet flow matches the default
      * Send/Receive layout while keeping the destination locked to its config. */
     destinationPicker?: ReactNode;
+    /** Explicitly begins a new session after the completed deposit is cleared. */
+    onNewDeposit?: () => void;
 };
 
-const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPicker, lockDestinationAddress, hideEasyDepositBanner, hidePoweredBy, destinationPicker }) => {
+const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPicker, lockDestinationAddress, hideEasyDepositBanner, hidePoweredBy, destinationPicker, onNewDeposit }) => {
     const {
         values, isSubmitting, setFieldValue, submitForm
     } = useFormikContext<SwapFormValues>();
@@ -348,7 +350,10 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
                 isCompleted={isCompleted}
                 hasDepositError={!!depositError}
                 onRetry={retryDeposit}
-                onDepositMore={resetSwap}
+                onDepositMore={() => {
+                    resetSwap();
+                    onNewDeposit?.();
+                }}
             />
         </Widget.Footer>
     );

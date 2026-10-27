@@ -3,7 +3,8 @@ import test from 'node:test';
 import { EventEmitter } from 'node:events';
 import { createConfig, getAccount } from '@wagmi/core';
 import { mainnet } from 'wagmi/chains';
-import { createPrivyWagmiBridge, isPrivyConnector } from '../src/components/auth/privy-wagmi-bridge.ts';
+import { createPrivyWagmiBridge } from '../src/components/auth/privy-wagmi-bridge.ts';
+import { areWalletAddressesEqual, getReownAddress } from '../src/components/auth/wallet-session.ts';
 
 const firstAddress = '0x1234567890123456789012345678901234567890';
 const secondAddress = '0x2345678901234567890123456789012345678901';
@@ -30,7 +31,7 @@ test('shares an authenticated Privy connection with its canonical ID and cleans 
   await bridge.sync(wallet);
   assert.equal(getAccount(config).address, firstAddress);
   assert.equal(getAccount(config).connector.id, `io.privy.wallet.${firstAddress}`);
-  assert.equal(isPrivyConnector(getAccount(config).connector), true);
+  assert.equal(getAccount(config).connector.type, 'privy-session');
   assert.equal(events.listenerCount('accountsChanged'), 1);
   await bridge.sync(wallet);
   assert.equal(config.state.connections.size, 1);
@@ -75,7 +76,6 @@ test('account changes replace only the bridged wallet and preserve external conn
   await bridge.sync(null);
   assert.equal(getAccount(config).connector.id, 'io.metamask');
   assert.equal(config.state.connections.size, 1);
-  assert.equal(isPrivyConnector(external), false);
 });
 
 test('provider errors are reported and a later connection can recover', async () => {
@@ -90,9 +90,58 @@ test('an external wallet supplied by Privy keeps its external connector identity
   const { config, bridge, wallet, events } = fixture();
   await bridge.sync({ ...wallet, walletClientType: 'metamask', meta: { id: 'io.metamask', name: 'MetaMask' } });
   assert.equal(getAccount(config).connector.id, 'io.metamask');
-  assert.equal(isPrivyConnector(getAccount(config).connector), false);
+  assert.equal(getAccount(config).connector.type, 'privy-session');
   events.emit('disconnect');
   assert.equal(getAccount(config).status, 'disconnected');
   assert.equal(events.eventNames().length, 0);
   await bridge.sync(null);
+});
+
+test('lowercase Privy addresses become ready after wagmi checksums the connected account', async () => {
+  const address = '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd';
+  const { config, bridge, wallet } = fixture(address);
+  await bridge.sync(wallet);
+  const account = getAccount(config);
+  assert.notEqual(account.address, address, 'fixture must exercise checksummed casing');
+  assert.equal(account.isConnected && areWalletAddressesEqual(account.address, address), true);
+  assert.equal(areWalletAddressesEqual(account.address, secondAddress), false);
+  assert.equal(areWalletAddressesEqual(undefined, address), false);
+  assert.equal(areWalletAddressesEqual(null, null), false);
+  await bridge.sync(null);
+});
+
+test('restored external Privy sessions stay selected without being reported as Reown logins', async () => {
+  const { config, bridge, wallet, events } = fixture();
+  const externalWallet = { ...wallet, walletClientType: 'metamask', meta: { id: 'io.metamask', name: 'MetaMask' } };
+  let previousConnector;
+  for (let render = 0; render < 6; render++) {
+    const reownAddress = getReownAddress(getAccount(config), [...config.state.connections.values()]);
+    assert.equal(reownAddress, null);
+    // The restored authenticated session has no explicit selection. This is
+    // Session's fallback selection, using the production ownership helper.
+    const activeMethod = reownAddress ? 'wallet' : 'privy';
+    await bridge.sync(activeMethod === 'privy' ? externalWallet : null);
+    const connector = getAccount(config).connector;
+    assert.equal(connector.id, 'io.metamask', 'external funding identity is retained');
+    assert.equal(connector.type, 'privy-session');
+    if (previousConnector) assert.equal(connector.uid, previousConnector.uid, 'restoration must not reconnect');
+    previousConnector = connector;
+  }
+  assert.equal(events.listenerCount('accountsChanged'), 1);
+  await bridge.sync(null);
+  assert.equal(getReownAddress(getAccount(config), [...config.state.connections.values()]), null);
+});
+
+test('independent Reown connections remain discoverable while an external Privy wallet is active', async () => {
+  const { config, bridge, wallet } = fixture();
+  const connector = { uid: 'reown', id: 'io.metamask', name: 'MetaMask', type: 'injected' };
+  const connection = { connector, accounts: [secondAddress], chainId: 1 };
+  config.setState(state => ({ ...state, connections: new Map([[connector.uid, connection]]), current: connector.uid, status: 'connected' }));
+  assert.equal(getReownAddress(getAccount(config), [...config.state.connections.values()]), secondAddress);
+  await bridge.sync({ ...wallet, walletClientType: 'metamask', meta: { id: 'io.metamask', name: 'MetaMask' } });
+  assert.equal(getAccount(config).address, firstAddress);
+  assert.equal(getReownAddress(getAccount(config), [...config.state.connections.values()]), secondAddress);
+  await bridge.sync(null);
+  assert.equal(getAccount(config).connector.uid, connector.uid);
+  assert.equal(getReownAddress(getAccount(config), [...config.state.connections.values()]), secondAddress);
 });
