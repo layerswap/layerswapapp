@@ -10,6 +10,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Drawer } from './vaul';
 import AppSettings from '@/lib/AppSettings';
 
+export type DrawerPlacement = 'default' | 'widget-body';
+
 export type VaulDrawerProps = {
     children: ReactNode;
     show: boolean;
@@ -21,11 +23,13 @@ export type VaulDrawerProps = {
     onAnimationEnd?: (open: boolean) => void;
     className?: string;
     mode?: 'snapPoints' | 'fitHeight';
+    /** Keep the drawer below the widget header on mobile when using widget-body. */
+    placement?: DrawerPlacement;
     dismissible?: boolean;
     nonModal?: boolean;
 }
 
-const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd, className, modalId, mode = 'snapPoints', dismissible = true, nonModal }) => {
+const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd, className, modalId, mode = 'snapPoints', placement = 'default', dismissible = true, nonModal }) => {
     const { isMobileWithPortal: isMobile, isMobile: isMobileWithoutPortal } = useWindowDimensions();
     let [headerRef, { height }] = useMeasure();
     const { setHeaderHeight } = useSnapPoints()
@@ -148,8 +152,9 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
 
     if (!loaded) return null;
 
-    // render the non dismissible easy deposit popup on mobileunder the widget header so the tabs stay visible
-    const widgetBody = isMobileWithoutPortal && !dismissible ? document.getElementById('widget_body') : null;
+    const widgetBody = isMobileWithoutPortal && placement === 'widget-body'
+        ? document.getElementById('widget_body')
+        : null;
     const container = widgetBody ?? ((isMobile && AppSettings.ThemeData?.enablePortal) ? undefined : document.getElementById('widget'));
 
     return (
