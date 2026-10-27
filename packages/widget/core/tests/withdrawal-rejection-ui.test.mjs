@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test, { after, afterEach, beforeEach } from 'node:test'
 import { registerHooks } from 'node:module'
+import { existsSync } from 'node:fs'
 import { extname } from 'node:path'
 import { JSDOM } from 'jsdom'
 import { act, createElement } from 'react'
@@ -65,7 +66,10 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
   if ((/\/use(?:Hyperliquid|Polymarket)Withdrawal\.js$/.test(context.parentURL ?? '') || context.parentURL?.endsWith('/executeProviderWithdrawal.js')) && mocked.some(path => specifier.endsWith(path))) {
     return { url: fixtureUrl, shortCircuit: true }
   }
-  if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) return nextResolve(`${specifier}.js`, context)
+  if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
+    const file = new URL(`${specifier}.js`, context.parentURL)
+    return nextResolve(existsSync(file) ? `${specifier}.js` : `${specifier}/index.js`, context)
+  }
   return nextResolve(specifier, context)
 } })
 after(() => {
@@ -93,7 +97,7 @@ const { usePolymarketWithdrawal } = await import('../dist/esm/components/Pages/S
 const stores = await import('../dist/esm/stores/swapTransactionStore.js')
 const { useSwapTransactionStore } = stores
 const phases = await import('../dist/esm/components/utils/resolveSwapPhase.js')
-const { getExplorerUrl } = await import('../dist/esm/lib/address/explorerUrl.js')
+const { getExplorerUrl } = await import('@layerswap/utils')
 const { WalletExecutionTransition } = await import('../dist/esm/components/Pages/Swap/Withdraw/Presentation/WalletExecutionTransition.js')
 const providerExecutionUrl = new URL('../dist/esm/components/Pages/Swap/Withdraw/WithdrawalProviders/executeProviderWithdrawal.js', import.meta.url)
 const { executeProviderWithdrawal } = await import(providerExecutionUrl)

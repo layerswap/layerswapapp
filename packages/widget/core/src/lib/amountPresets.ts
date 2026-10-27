@@ -1,6 +1,6 @@
 import type { GasWithToken, NetworkRoute, Token, TokenBalance } from '@layerswap/widget-types'
 import { resolveMaxAllowedAmount } from '@/components/Input/Amount/helpers'
-import { ceilToDecimals, truncateToDecimals } from '@/components/utils/RoundDecimals'
+import { ceilToDecimals, truncateToDecimals } from '@layerswap/utils'
 import KnownInternalNames from '@layerswap/utils/known-ids'
 
 export type AmountPreset = 'min' | 'half' | 'max'

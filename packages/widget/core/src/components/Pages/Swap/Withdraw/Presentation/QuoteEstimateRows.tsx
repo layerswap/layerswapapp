@@ -3,8 +3,8 @@ import {
     Tooltip,
     TooltipContent,
     TooltipTrigger,
-} from '@/components/shadcn/tooltip';
-import { truncateDecimals } from '@/components/utils/RoundDecimals';
+} from '@layerswap/ui-kit';
+import { truncateDecimals } from '@layerswap/utils';
 import { resolveTokenUsdPrice } from '@/helpers/tokenHelper';
 import type {
     QuoteReward,

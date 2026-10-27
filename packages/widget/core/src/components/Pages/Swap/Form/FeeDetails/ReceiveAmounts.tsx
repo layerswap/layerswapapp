@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { Token } from "@layerswap/widget-types";
-import { truncateDecimals } from "@/components/utils/RoundDecimals";
+import { truncateDecimals } from "@layerswap/utils";
 import { Quote } from "@/lib/apiClients/layerSwapApiClient";
 import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
 

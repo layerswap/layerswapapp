@@ -2,8 +2,8 @@ import {
     SwapPhase,
     type ResolvedSwapStatus,
 } from '@/components/utils/resolveSwapPhase';
-import { truncateDecimals } from '@/components/utils/RoundDecimals';
-import { getExplorerUrl } from '@/lib/address/explorerUrl';
+import { truncateDecimals } from '@layerswap/utils';
+import { getExplorerUrl } from '@layerswap/utils';
 import {
     TransactionType,
     type SwapBasicData,
@@ -23,7 +23,7 @@ import {
     StatusStep,
 } from '../Processing/types';
 import { getDepositWorkflowProgress } from './DepositWorkflowView';
-import shortenString from '@/components/utils/ShortenString';
+import { shortenString } from '@layerswap/utils';
 import type { SwapStepTransactions } from '@/stores/swapTransactionStore';
 import { getDepositActionLabel } from '@/helpers/depositActions';
 import {

@@ -5,7 +5,7 @@ import CountdownTimer from '@/components/Common/CountDownTimer';
 import { useCallbacks } from '@/context/callbackProvider';
 import { useDepositSettings } from '@/context/depositSettings';
 import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
-import { getExplorerUrl } from '@/lib/address/explorerUrl';
+import { getExplorerUrl } from '@layerswap/utils';
 import {
     BackendTransactionStatus,
     SwapBasicData,

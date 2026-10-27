@@ -1,7 +1,7 @@
 import { Check, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import clsx from 'clsx';
-import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion';
+import { useHydratedReducedMotion } from '@layerswap/ui-kit';
 import { ProgressStatus, type StatusStep } from './types';
 import { StepTransactionLink } from './StepTransactionLink';
 import { StepText } from '../Presentation/StepText';

@@ -312,20 +312,20 @@ test('exact gas loading preserves the pending wallet request and its execution l
         );
     }
     const motionModule = coreReq('framer-motion');
-    const hydrated = loadSource('hooks/useHydratedReducedMotion.ts', {
+    const hydrated = loadSource('../../../ui-kit/src/lib/useHydratedReducedMotion.ts', {
         'framer-motion': motionModule,
     });
     const transition = loadSource(
         base + 'Presentation/WalletActionTransition.tsx',
         {
             'framer-motion': motionModule,
-            '@/hooks/useHydratedReducedMotion': hydrated,
+            '@layerswap/ui-kit': hydrated,
         },
     );
-    const decimals = loadSource('components/utils/RoundDecimals.ts');
+    const decimals = loadSource('../../../utils/src/truncateDecimals.ts');
     const { default: Withdraw } = loadSource(base + 'Withdraw.tsx', {
         ...imports,
-        '@/components/utils/RoundDecimals': decimals,
+        '@layerswap/utils': decimals,
         '@/components/Widget/Index': { Widget: { Footer: childrenOnly } },
         '@/helpers/swapFlow': { isDepositAddressSwap: () => false },
         '@/hooks/useFee': {
@@ -339,7 +339,7 @@ test('exact gas loading preserves the pending wallet request and its execution l
         '@/components/Input/Amount/helpers': loadSource(
             'components/Input/Amount/helpers.ts',
             {
-                '@/components/utils/RoundDecimals': decimals,
+                '@layerswap/utils': decimals,
                 '@/lib/gases/resolveGasBalanceBudget': budget,
             },
         ),

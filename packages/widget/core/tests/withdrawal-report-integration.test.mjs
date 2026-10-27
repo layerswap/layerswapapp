@@ -98,6 +98,9 @@ const formFixtures = ['/context/asyncModal', '/stores/contractAddressStore', '/h
   '/lib/generateSwapInitialValues', '/Common/Sceletons', '/Input/Address/ContractAddressNote',
   '/Input/Address/UrlAddressNote', '/validationError/ContractAddressValidationCache']
 const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
+  if (context.parentURL?.endsWith('/Presentation/walletProgress.js') && specifier === '@layerswap/utils') {
+    return nextResolve(specifier, context)
+  }
   if (specifier.endsWith('/AppSettings')) return { url: settingsUrl, shortCircuit: true }
   if (specifier.endsWith('/context/swap') && ['/useSwapRetry.js', '/useResolvedSwapStatus.js', '/useDepositActionPolling.js'].some(path => context.parentURL?.endsWith(path))) {
     return { url: fixtureUrl, shortCircuit: true }
@@ -112,7 +115,7 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
     if (specifier.endsWith('/Buttons/submitButton')) return { url: buttonUrl, shortCircuit: true }
     if (specifier.endsWith('/hooks/useWallet')) return { url: moduleUrl(`import { state } from ${JSON.stringify(fixtureUrl)}; export default () => ({ wallets:[state.wallet], getProvider() {} })`), shortCircuit: true }
     if (specifier.endsWith('/lib/gases/useSWRGas')) return { url: moduleUrl('export default () => ({})'), shortCircuit: true }
-    if (fixtures.some(s => specifier.endsWith(s)) || ['@layerswap/utils', '@layerswap/ui-kit/components', 'lucide-react'].includes(specifier)) return { url: fixtureUrl, shortCircuit: true }
+    if (fixtures.some(s => specifier.endsWith(s)) || ['@layerswap/utils', '@layerswap/ui-kit', 'lucide-react'].includes(specifier)) return { url: fixtureUrl, shortCircuit: true }
   }
   if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
     const file = new URL(specifier + '.js', context.parentURL)

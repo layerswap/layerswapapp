@@ -1,6 +1,6 @@
 import { useMemo, type ReactNode } from 'react';
 import { Copy, Check } from 'lucide-react';
-import { StyledQRCode } from '@layerswap/ui-kit/components';
+import { StyledQRCode } from '@layerswap/ui-kit';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { Network } from '@layerswap/widget-types';
 

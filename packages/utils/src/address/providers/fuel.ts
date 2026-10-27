@@ -11,7 +11,7 @@ export class FuelAddressUtilsProvider implements AddressUtilsProvider {
     readonly selection = AddressSelectionMode.Auto;
 
     supportsNetwork(network: Network): boolean {
-        return (KnownInternalNames.Networks.FuelMainnet.includes(network.name) || KnownInternalNames.Networks.FuelTestnet.includes(network.name))
+        return KnownInternalNames.Networks.FuelMainnet.includes(network.name) || KnownInternalNames.Networks.FuelTestnet.includes(network.name) || KnownInternalNames.Networks.FuelDevnet.includes(network.name)
     }
 
     isValidAddress(props: AddressUtilsProviderProps): boolean {

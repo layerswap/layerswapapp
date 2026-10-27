@@ -3,7 +3,7 @@ import {
     Tooltip,
     TooltipContent,
     TooltipTrigger,
-} from '@/components/shadcn/tooltip';
+} from '@layerswap/ui-kit';
 import { Check, CopyIcon } from 'lucide-react';
 import { type FC } from 'react';
 import { ButtonWrapper } from './WalletActionsView';

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test, { after, afterEach, beforeEach } from 'node:test'
 import { registerHooks } from 'node:module'
+import { existsSync } from 'node:fs'
 import { extname } from 'node:path'
 import { JSDOM } from 'jsdom'
 import { act, createElement, StrictMode } from 'react'
@@ -67,12 +68,13 @@ const hooks = registerHooks({
   resolve(specifier, context, nextResolve) {
     if (context.parentURL?.endsWith('/components/Pages/Swap/Withdraw/Wallet/index.js')) {
       if (specifier === '@layerswap/wallet-core') return { url: providerReadinessUrl, shortCircuit: true }
-      if (specifier === '@layerswap/ui-kit/components' || mockedDependencies.some(path => specifier.endsWith(path))) {
+      if (specifier === '@layerswap/ui-kit' || mockedDependencies.some(path => specifier.endsWith(path))) {
         return { url: mockUrl, shortCircuit: true }
       }
     }
     if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
-      return nextResolve(`${specifier}.js`, context)
+      const file = new URL(`${specifier}.js`, context.parentURL)
+      return nextResolve(existsSync(file) ? `${specifier}.js` : `${specifier}/index.js`, context)
     }
     return nextResolve(specifier, context)
   },

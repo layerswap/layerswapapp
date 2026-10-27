@@ -100,19 +100,13 @@ export class Address {
 
   /**
    * Return the first network in the list that `address` is valid for, or undefined.
-   * Dedupes probes by NetworkType so we only validate once per chain family.
    */
   static resolveNetwork<T extends { name: string; type: string }>(
     address: string,
     networks: T[]
   ): T | undefined {
     if (!address) return undefined;
-    const seen = new Set<string>();
-    return networks.find(n => {
-      if (seen.has(n.type)) return false;
-      seen.add(n.type);
-      return Address.isValid(address, n);
-    });
+    return networks.find(network => Address.isValid(address, network));
   }
 
   /**

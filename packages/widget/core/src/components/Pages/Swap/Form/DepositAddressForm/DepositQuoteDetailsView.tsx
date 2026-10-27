@@ -7,12 +7,12 @@ import {
     AccordionContent,
     AccordionItem,
     AccordionTrigger,
-} from '@/components/shadcn/accordion';
+} from '@layerswap/ui-kit';
 import {
     Tooltip,
     TooltipContent,
     TooltipTrigger,
-} from '@/components/shadcn/tooltip';
+} from '@layerswap/ui-kit';
 
 type RowWrapperProps = {
     title: string;

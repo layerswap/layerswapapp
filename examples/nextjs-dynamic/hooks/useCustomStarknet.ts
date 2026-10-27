@@ -13,6 +13,7 @@ const DYNAMIC_CONNECTOR_ID = "dynamic-starknet"
 const STARKNET_PROVIDER_NAME = "Starknet"
 
 export const customStarknetNetworkAdapter: WalletConnectionProviderProps["networkAdapter"] = {
+  getNetworkType: network => network.type,
   getId: network => network.name,
   getDisplayName: network => network.display_name,
   getChainId: network => network.chain_id,
@@ -27,13 +28,6 @@ export const customStarknetNetworkAdapter: WalletConnectionProviderProps["networ
     decimals: network.token.decimals,
   },
   getMulticallAddress: network => network.metadata?.evm_multicall_contract ?? undefined,
-  isEvmNetwork: network => network.type === NetworkType.EVM,
-  isSolanaNetwork: network => network.type === NetworkType.Solana,
-  isStarknetNetwork: network => network.type === NetworkType.Starknet,
-  isTronNetwork: network => network.type === NetworkType.Tron,
-  isBitcoinNetwork: network => network.type === NetworkType.Bitcoin,
-  isTonNetwork: network => network.type === NetworkType.TON,
-  isFuelNetwork: network => network.type === NetworkType.Fuel,
 }
 
 function useStarknet({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {

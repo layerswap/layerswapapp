@@ -1,13 +1,13 @@
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 import { NetworkElement, RowElement } from "@/Models/Route";
 import { useVirtualizer } from "@/lib/virtual";
-import { Accordion } from "@/components/shadcn/accordion";
+import { Accordion } from "@layerswap/ui-kit";
 import Row from "./Rows";
 import { LayoutGroup, motion } from "framer-motion";
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import useWallet from "@/hooks/useWallet";
 import { useProvidersConnectReady } from "@layerswap/wallet-core";
-import ConnectWalletButton from "@/components/Common/ConnectWalletButton";
+import { ConnectWalletButton } from "@layerswap/ui-kit";
 import { SwapDirection } from "@/components/Pages/Swap/Form/SwapFormValues";
 import clsx from "clsx";
 import RouteSearch from "./RouteSearch";

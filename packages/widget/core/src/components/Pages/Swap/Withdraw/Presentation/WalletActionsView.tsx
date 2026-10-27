@@ -16,7 +16,7 @@ import { ProgressPanelView } from './ProgressPanelView';
 import { getWalletProgress, getWalletWorkflowState } from './walletProgress';
 import { WalletExecutionTransition } from './WalletExecutionTransition';
 import { resolvePriceImpactValues } from '@/lib/fees';
-import { WalletIcon } from '@layerswap/ui-kit/components';
+import { WalletIcon } from '@layerswap/ui-kit';
 import { Loader2 } from 'lucide-react';
 import { type FC, type ReactNode } from 'react';
 import { ICON_CLASSES_WARNING } from '../../Form/SecondaryComponents/validationError/constants';

@@ -3,13 +3,13 @@ import {
     RecipientAddressView,
     type RecipientPresentation,
 } from '@/components/Common/RecipientAddressView';
-import { truncateDecimals } from '@/components/utils/RoundDecimals';
+import { truncateDecimals } from '@layerswap/utils';
 import { Address } from '@/lib/address/Address';
 import type {
     SwapBasicData,
     SwapQuote,
 } from '@/lib/apiClients/layerSwapApiClient';
-import { ImageWithFallback } from '@layerswap/ui-kit/components';
+import { ImageWithFallback } from '@layerswap/ui-kit';
 import type { ReactNode } from 'react';
 export function ManualInstructionsView({
     swapBasicData,

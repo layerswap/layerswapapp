@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test, { after } from 'node:test'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { registerHooks } from 'node:module'
 import { extname } from 'node:path'
 import { JSDOM } from 'jsdom'
@@ -30,7 +30,8 @@ dom.window.matchMedia = () => ({
 const hooks = registerHooks({
     resolve(specifier, context, nextResolve) {
         if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
-            return nextResolve(`${specifier}.js`, context)
+            const file = new URL(`${specifier}.js`, context.parentURL)
+            return nextResolve(existsSync(file) ? `${specifier}.js` : `${specifier}/index.js`, context)
         }
         return nextResolve(specifier, context)
     },

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import assert from 'node:assert/strict'
 import test, { after, afterEach, beforeEach } from 'node:test'
 import { registerHooks } from 'node:module'
+import { existsSync } from 'node:fs'
 import { extname } from 'node:path'
 import { JSDOM } from 'jsdom'
 import { act, createElement, StrictMode } from 'react'
@@ -59,7 +60,10 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
   if (parent.endsWith('/Withdraw/WalletTransferButton.js') && specifier === './Wallet') return { url: mockUrl, shortCircuit: true }
   if (parent.includes('/dist/esm/') && specifier.endsWith('/useSWRGas')) return { url: gasUrl, shortCircuit: true }
   if (parent.includes('/dist/esm/hooks/') && specifier.endsWith('/context/callbackProvider')) return { url: mockUrl, shortCircuit: true }
-  if (specifier.startsWith('.') && !extname(specifier) && parent.includes('/dist/esm/')) return nextResolve(`${specifier}.js`, context)
+  if (specifier.startsWith('.') && !extname(specifier) && parent.includes('/dist/esm/')) {
+    const file = new URL(`${specifier}.js`, context.parentURL)
+    return nextResolve(existsSync(file) ? `${specifier}.js` : `${specifier}/index.js`, context)
+  }
   return nextResolve(specifier, context)
 } })
 
