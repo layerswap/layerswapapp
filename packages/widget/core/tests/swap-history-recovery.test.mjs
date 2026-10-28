@@ -48,6 +48,7 @@ const imports = {
         }
     } },
     '@/stores/swapTransactionStore': stores,
+    '@/stores/swapRouteHistoryStore': { recordFetchedSwapRouteHistory: () => {} },
     './useExtendedSourceSkin': { useExtendedSourceSkin: () => identity },
     '@/lib/address/Address': { Address: class {
         constructor(address) { this.normalized = address.toLowerCase() }
