@@ -353,7 +353,8 @@ test('an authorization error from the wallet keeps its cause and is reported as 
     })
 })
 
-test('Fuel chain resolution retains numeric 0 instead of assuming mainnet', async () => {
+test('Fuel chain resolution retains numeric 0 without querying the RPC', async t => {
+    t.mock.method(globalThis, 'fetch', () => assert.fail('a reported chain ID must not trigger RPC discovery'))
     assert.equal(await getFuelChainId({ currentNetwork: async () => ({ chainId: 0 }) }), 0)
 })
 
@@ -362,6 +363,49 @@ test('legacy connectors resolve their chain from the RPC instead of guessing fro
     assert.equal(await getFuelChainId({ currentNetwork: async () => ({ url: 'https://custom.fuel.example' }) }), 0)
     assert.equal(chain.mock.calls[0].this.url, 'https://custom.fuel.example')
 })
+
+for (const hasCachedWallet of [false, true]) {
+    test(`a legacy RPC timeout lets healthy wallets synchronize (cached wallet: ${hasCachedWallet})`, async t => {
+        const legacy = connector('Legacy Fuel Wallet')
+        legacy.currentNetwork = async () => ({ url: 'https://stalled-legacy.fuel.example' })
+        const healthy = connector('Fuelet', [addressC])
+        useFuelStore.getState()._setConnectors([legacy, healthy])
+        if (hasCachedWallet) {
+            useFuelStore.getState().connectWallet({ ...wallet(legacy.name, addressA), chainId: 9889 })
+        }
+
+        const deadline = new AbortController()
+        const timeout = t.mock.method(AbortSignal, 'timeout', milliseconds => {
+            assert.equal(milliseconds, 10_000)
+            return deadline.signal
+        })
+        const started = Promise.withResolvers()
+        const fetch = t.mock.method(globalThis, 'fetch', async (_url, init) => {
+            started.resolve(init.signal)
+            return new Promise((_, reject) => {
+                if (!init.signal) {
+                    reject(new Error('Missing RPC deadline'))
+                    return
+                }
+                init.signal.addEventListener('abort', () => reject(init.signal.reason), { once: true })
+            })
+        })
+        const healthyNetwork = t.mock.method(healthy, 'currentNetwork', healthy.currentNetwork)
+        t.mock.method(console, 'error', () => {})
+
+        const pending = new FuelConnectionService().syncConnectedWallets()
+        const requestSignal = await started.promise
+        deadline.abort(new DOMException('RPC deadline exceeded', 'TimeoutError'))
+        await pending
+
+        assert.equal(requestSignal, deadline.signal)
+        assert.equal(timeout.mock.callCount(), 1)
+        assert.equal(fetch.mock.callCount(), 1, 'timed-out discovery is not retried')
+        assert.equal(healthyNetwork.mock.callCount(), 1)
+        assert.deepEqual(useFuelStore.getState().connectedWallets.map(w => w.id),
+            hasCachedWallet ? [legacy.name, healthy.name] : [healthy.name])
+    })
+}
 
 test('a connector on testnet cannot prepare a mainnet transaction despite a stale wallet snapshot', async t => {
     const fixture = transferFixture(t)
