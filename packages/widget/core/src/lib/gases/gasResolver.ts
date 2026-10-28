@@ -10,13 +10,14 @@ export class GasResolver {
         this.providers = providers || [];
     }
 
-    getGas({ address, network, token, recipientAddress, amount, wallet }: GasProps) {
+    getGas(args: GasProps) {
+        const { network, token } = args
         const provider = this.providers.find(p => p.supportsNetwork(network));
         if (!provider) return;
 
         const finishTelemetry = widgetTelemetry.beginOperation('gas_estimation', { network: network.name, token: token?.symbol })
         try {
-            return provider.getGas({ address, network, token, recipientAddress, wallet, amount }).then(result => {
+            return provider.getGas(args).then(result => {
                 finishTelemetry(result ? 'succeeded' : 'unavailable')
                 return result
             }, error => {

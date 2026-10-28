@@ -1,32 +1,39 @@
-import { NetworkType, type TransferBlockedReasonCode } from '@layerswap/widget-types';
-import { FC, Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import { PublishedSwapTransactions, SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
+import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect';
+import { useSwapDataUpdate } from '@/context/swap';
+import { ProgressPanelView } from '../Presentation/ProgressPanelView';
+import { getWalletProgress } from '../Presentation/walletProgress';
+import { useWalletWithdrawalState } from '@/context/withdrawalContext';
+import { ConnectWalletView, getSendTransactionPresentation } from '../Presentation/WalletActionsView';
+import type { TransferBlockedReasonCode } from '@layerswap/widget-types';
+import { FC, Suspense, useCallback, useEffect, useMemo, useState, useRef, type ReactNode } from "react";
+import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { WithdrawalProvider } from "@/context/withdrawalContext";
 import useWallet from "@/hooks/useWallet";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import { useSwapDataState } from "@/context/swap";
 import { WithdrawPageProps } from "./Common/sharedTypes";
-import { ConnectWalletButton, SendTransactionButton } from "./Common/buttons";
+import { useConnectWalletController, useSendTransactionController } from "./Common/buttons";
 import { GaslessSigner } from "./Common/depositExecution";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
-import { WalletSubmissionView } from "../Presentation/Page2Sections";
 import { useBalance } from "@/lib/balances/useBalance";
 import { TransferProps } from "@layerswap/widget-types";
-import { ActionMessage } from "./Common/actionMessage";
+import { useActionMessage } from "./Common/actionMessage";
 import { ActionMessages } from "../messages/TransactionMessages";
 import { useTransfer } from "@/hooks/useTransfer";
 import { useGasless } from "@/hooks/useGasless";
 import { useRpcHealth } from "@/context/rpcHealthContext";
 import RPCUnhealthyMessage from "./RPCUnhealthyMessage";
-import { isExtendedSourceNetwork } from "@/lib/extendedRoutes/registry";
-import { HyperliquidWalletWithdraw } from "../WithdrawalProviders/Hyperliquid";
-import { PolymarketWalletWithdraw } from "../WithdrawalProviders/Polymarket";
+import { useWithdrawalProvider } from '@/hooks/useWithdrawalProvider';
+import { ProviderWalletWithdrawal } from '../WithdrawalProviders/ProviderWalletWithdrawal';
 import { useCallbacks } from "@/context/callbackProvider";
 import { lifecycleContextFromSwap, lifecycleErrorDetails } from "@/lib/swapLifecycle";
 import { useTransferBlocked } from "@/hooks/useTransferBlocked";
 import { isProviderHydrated } from "@layerswap/wallet-core";
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 import { isUserRejection } from "./Common/isUserRejection";
+import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
+import { useWithdrawalScope } from '../useWithdrawalExecution';
+import { withdrawalSelectionKey } from '../withdrawalHelpers';
 
 type Props = {
     swapData: SwapBasicData
@@ -34,8 +41,9 @@ type Props = {
     refuel: boolean
     onWalletWithdrawalSuccess?: () => void
     onCancelWithdrawal?: () => void
+    showProgress?: boolean
 };
-export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWalletWithdrawalSuccess, onCancelWithdrawal }) => {
+export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWalletWithdrawalSuccess, onCancelWithdrawal, showProgress }) => {
     const { source_network } = swapData
 
     const { provider, wallets } = useWallet(source_network, "withdrawal")
@@ -51,7 +59,7 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
     return <>
         {
             swapData &&
-            <WithdrawalProvider onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal}>
+            <WithdrawalProvider onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal} showProgress={showProgress}>
                 <WalletWithdrawal
                     swapId={swapId}
                     swapBasicData={swapData}
@@ -62,11 +70,11 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
     </>;
 };
 
-export const WalletWithdrawal: FC<WithdrawPageProps> = ({
+export function useWalletWithdrawalController({
     swapBasicData,
     refuel,
     swapId
-}) => {
+}: WithdrawPageProps, active = true) {
 
     const { source_network, destination_network, destination_address } = swapBasicData
     const selectedSourceAccount = useSelectedAccount("from", swapBasicData.source_network.name);
@@ -76,7 +84,7 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
     const { onSwapLifecycle } = useCallbacks()
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id && w.withdrawalSupportedNetworks?.includes(source_network?.name))
     const networkChainId = source_network?.chain_id ?? undefined
-    const [savedTransactionHash, setSavedTransactionHash] = useState<string>()
+    const savedTransactionHash = useSwapTransactionStore(state => swapId ? state.swapTransactions[swapId]?.hash : undefined)
     const lifecycleContext = useMemo(
         () => lifecycleContextFromSwap(swapBasicData, swapDetails),
         [
@@ -100,21 +108,7 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
         && selectedSourceAccount.address.toLowerCase() !== destination_address.toLowerCase()
     )
 
-    useEffect(() => {
-        if (!swapId) return;
-        try {
-            const data: PublishedSwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
-            const hash = data?.[swapId!]?.hash
-            if (hash)
-                setSavedTransactionHash(hash)
-        }
-        catch (e) {
-            //TODO log to logger
-            console.error(e.message)
-        }
-    }, [swapId])
-
-    const isExtendedSource = source_network?.type === NetworkType.Polymarket || isExtendedSourceNetwork(source_network?.name)
+    const providerWithdrawal = useWithdrawalProvider(source_network)
     const hasMultiStepHandler = !!provider?.multiStepHandlers?.some(handler => handler.supportedNetworks.includes(source_network?.name))
     // The account can restore before its provider publishes the connected wallet.
     // useWallet's network provider may belong to another account, so check the
@@ -124,44 +118,39 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
         && selectedProvider.pendingSessionRestore !== true
     // A connected account whose wallet cannot withdraw on this network only
     // sees the connect button again; report that as a blocked transfer step.
-    const blockedReason: TransferBlockedReasonCode | undefined = isExtendedSource || hasMultiStepHandler ? undefined
+    const blockedReason: TransferBlockedReasonCode | undefined = providerWithdrawal || hasMultiStepHandler ? undefined
         : sameAccountMismatch ? 'same_account_required'
         : selectedProviderReady && !wallet ? 'wallet_unsupported_for_network'
         : undefined
-    useTransferBlocked(blockedReason, lifecycleContext, 'WalletWithdrawal',
+    useTransferBlocked(active ? blockedReason : undefined, lifecycleContext, 'WalletWithdrawal',
         blockedReason === 'same_account_required' ? 'The selected source and destination accounts must match for this route'
         : blockedReason === 'wallet_unsupported_for_network' ? `${selectedSourceAccount?.providerName ?? 'The selected wallet'} cannot send from ${source_network?.name}`
         : undefined)
 
-    // Extended sources (Hyperliquid, Polymarket) have their own withdraw flow — the chain
-    // logic comes from the wallet package's TransferProvider, the UI lives here. Polymarket
-    // is checked first: its synthesized networks are also extended sources.
-    if (source_network?.type === NetworkType.Polymarket) {
-        return <PolymarketWalletWithdraw
-            swapId={swapId}
-            swapBasicData={swapBasicData}
-            refuel={refuel}
-        />
+    const connection = useConnectWalletController();
+    const transfer = useTransferTokenController({ swapData: swapBasicData, refuel, chainId: Number(networkChainId), savedTransactionHash }, active && !!wallet && !sameAccountMismatch && !hasMultiStepHandler);
+    const send = useSendTransactionController(transfer.sendProps, active && !!wallet && !sameAccountMismatch && !hasMultiStepHandler);
+    const presentation = getSendTransactionPresentation(send);
+    let controls: ReactNode = presentation.controls;
+    const observingSubmission = send.pendingSubmission || send.submissionAccepted;
+    if (!observingSubmission && transfer.rpcMessage) controls = transfer.rpcMessage;
+    if (!observingSubmission && !wallet) controls = <ConnectWalletView {...connection} />;
+    if (!observingSubmission && sameAccountMismatch) {
+        const network = source_network.name.toLowerCase() === sameAccountNetwork?.toLowerCase() ? source_network : destination_network;
+        controls = <ActionMessages.DifferentAccountsNotAllowedError network={network.display_name} />;
     }
-    if (isExtendedSourceNetwork(source_network?.name)) {
-        return <HyperliquidWalletWithdraw
-            swapId={swapId}
-            swapBasicData={swapBasicData}
-            refuel={refuel}
-        />
-    }
-
-    if (provider?.multiStepHandlers) {
+    // Custom multi-step handlers retain their existing completion/error contract.
+    if (!observingSubmission && provider?.multiStepHandlers) {
         const MultiStepHandler = provider.multiStepHandlers.find(handler => handler.supportedNetworks.includes(source_network?.name))?.component
 
         if (MultiStepHandler) {
-            return <Suspense fallback={null}>
+            controls = <Suspense fallback={null}>
                 <MultiStepHandler
                     swapId={swapId}
                     swapBasicData={swapBasicData}
                     refuel={refuel}
                     onTransferComplete={(hash: string) => {
-                        setSavedTransactionHash(hash)
+                        if (swapId) useSwapTransactionStore.getState().setSwapTransaction(swapId, hash, 'wallet-transfer')
                         onSwapLifecycle({
                             step: 'transaction_submitted',
                             stage: 'input_transfer',
@@ -194,21 +183,20 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
         }
     }
 
-    if (sameAccountMismatch) {
-        const network = source_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase() ? source_network : destination_network
-        return <ActionMessages.DifferentAccountsNotAllowedError network={network?.display_name!} />
-    }
+    return { controls: active ? controls : null, actionKey: !wallet ? 'connect' : transfer.rpcMessage ? 'rpc' : 'transfer', walletProgress: presentation.walletProgress, feedback: send.walletActionFeedback };
+}
 
-    if (!wallet) {
-        return <ConnectWalletButton />
-    }
-    // A wallet on another chain is switched by the send button itself (see ensureSourceChain).
-    return <TransferTokenButton
-        swapData={swapBasicData}
-        refuel={refuel}
-        chainId={Number(networkChainId)}
-        savedTransactionHash={savedTransactionHash as `0x${string}`}
-    />
+export const WalletWithdrawal: FC<WithdrawPageProps> = props => {
+    const definition = useWithdrawalProvider(props.swapBasicData.source_network);
+    if (definition) return <ProviderWalletWithdrawal key={definition.id} {...props} definition={definition} />;
+    return <RegularWalletWithdrawal {...props} />;
+};
+function RegularWalletWithdrawal(props: WithdrawPageProps) {
+    const model = useWalletWithdrawalController(props);
+    const { reportWalletActionFeedback } = useSwapDataUpdate();
+    const { showProgress = true } = useWalletWithdrawalState();
+    useClientLayoutEffect(() => reportWalletActionFeedback(model.feedback), [reportWalletActionFeedback, model.feedback]);
+    return <>{showProgress ? <ProgressPanelView data={getWalletProgress(model.walletProgress)} /> : null}{model.controls}</>;
 }
 
 
@@ -218,16 +206,35 @@ type TransferTokenButtonProps = {
     swapData: SwapBasicData,
     refuel: boolean,
 }
-const TransferTokenButton: FC<TransferTokenButtonProps> = ({
+export function useTransferTokenController({
     savedTransactionHash,
     chainId,
     swapData,
     refuel
-}) => {
+}: TransferTokenButtonProps, active = true) {
     const [buttonClicked, setButtonClicked] = useState(false)
     const [error, setError] = useState<Error | undefined>()
     const [isSignatureError, setIsSignatureError] = useState(false)
-    const { swapDetails, swapError } = useSwapDataState()
+    const pendingOperations = useRef(0);
+    const wasActive = useRef(active);
+    useClientLayoutEffect(() => {
+        const becameEligible = active && !wasActive.current;
+        wasActive.current = active;
+        if (!becameEligible || pendingOperations.current > 0) return;
+        setButtonClicked(false);
+        setError(undefined);
+        setIsSignatureError(false);
+    }, [active]);
+    const { swapDetails, swapError, swapId } = useSwapDataState()
+    const checkingSubmission = useSwapTransactionStore(state => {
+        const currentSwapId = swapId ?? swapDetails?.id
+        if (!currentSwapId) return false
+        const transaction = state.swapTransactions[currentSwapId]
+        return !!state.pendingSubmissions[currentSwapId]
+            || (transaction?.kind === 'atomic-batch'
+                && !!transaction.providerSubmissionAccepted
+                && !transaction.hash)
+    })
     const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
     const gaslessErrorMessage = useGaslessPreferenceStore(s => s.gaslessErrorMessage)
 
@@ -237,11 +244,13 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
     const networkWithTokens = networks.find(n => n.name === swapData.source_network.name)
 
     const { provider, wallets } = useWallet(swapData.source_network, "withdrawal")
-    const { balances } = useBalance(selectedSourceAccount?.address, networkWithTokens)
+    const { balances } = useBalance(active ? selectedSourceAccount?.address : undefined, networkWithTokens)
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
     const { executeTransfer } = useTransfer()
     const { signGaslessDeposit, isGaslessSupported } = useGasless()
-    const rpcHealth = useRpcHealth(swapData.source_network)
+    // Backend observation must continue when the wallet's RPC is unavailable.
+    const rpcHealth = useRpcHealth(swapData.source_network, active && !checkingSubmission)
+    const rpcUnhealthy = !checkingSubmission && rpcHealth?.health.status === 'unhealthy'
     const lifecycleContext = useMemo(
         () => lifecycleContextFromSwap(swapData, swapDetails),
         [
@@ -260,16 +269,26 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
     // Every state that replaces the send button with a message, in display priority. A swap or
     // deposit-actions error keeps the send button rendered, so it is not a block.
     const blockedReason: TransferBlockedReasonCode | undefined =
-        rpcHealth?.health.status === 'unhealthy' ? 'rpc_unhealthy'
+        rpcUnhealthy ? 'rpc_unhealthy'
         : gaslessUnavailable ? 'gasless_unavailable'
         : undefined
-    useTransferBlocked(blockedReason, lifecycleContext, 'TransferTokenButton',
+    useTransferBlocked(active ? blockedReason : undefined, lifecycleContext, 'TransferTokenButton',
         blockedReason === 'rpc_unhealthy' ? (rpcHealth?.health.status === 'unhealthy' ? rpcHealth.health.reason : undefined)
         : blockedReason === 'gasless_unavailable' ? gaslessErrorMessage ?? undefined
         : undefined)
 
+    const selectionKey = withdrawalSelectionKey(swapData.source_network.name, selectedSourceAccount, wallet);
+    const selectionScope = useWithdrawalScope(selectionKey);
+    useClientLayoutEffect(() => {
+        setButtonClicked(false);
+        setError(undefined);
+        setIsSignatureError(false);
+    }, [selectionKey]);
+
     const clickHandler = useCallback(async (transferProps: TransferProps) => {
         const { amount, depositAddress } = transferProps
+        const signal = selectionScope.current?.signal;
+        pendingOperations.current++;
         setButtonClicked(true)
         setError(undefined)
         try {
@@ -300,6 +319,7 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
                 }
             } catch (e) {
                 if (typeof e === 'string' && e?.includes('No transfer provider found for network:')) {
+                    signal?.throwIfAborted();
                     if (!provider?.transfer) throw new Error('No provider transfer')
 
                     const tx = await provider.transfer(resolvedTransferProps, wallet)
@@ -316,14 +336,19 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
 
             }
         } catch (e) {
-            setIsSignatureError(false)
-            setError(e)
-
-            throw e
+            if (!signal?.aborted) {
+                setIsSignatureError(false);
+                setError(e);
+            }
+            throw e;
+        } finally {
+            pendingOperations.current--;
         }
     }, [executeTransfer, chainId, selectedSourceAccount?.address, wallet, swapData, balances])
 
     const signHandler: GaslessSigner = useCallback(async (signAction) => {
+        const signal = selectionScope.current?.signal;
+        pendingOperations.current++;
         setButtonClicked(true)
         setError(undefined)
         try {
@@ -338,40 +363,42 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
                 wallet,
             })
         } catch (e) {
-            setIsSignatureError(true)
-            setError(e)
-            throw e
+            if (!signal?.aborted) {
+                setIsSignatureError(true);
+                setError(e);
+            }
+            throw e;
+        } finally {
+            pendingOperations.current--;
         }
     }, [signGaslessDeposit, swapData.source_network, selectedSourceAccount?.address, wallet])
 
-    // Show RPC health message if available and unhealthy (EVM wallets only)
-    if (rpcHealth?.health.status === 'unhealthy') {
-        return <RPCUnhealthyMessage
+    const errorMessage = useActionMessage({
+        error: buttonClicked ? error : undefined, isSignatureError, isLoading: false,
+        selectedSourceAddress: selectedSourceAccount?.address || '', sourceNetwork: swapData.source_network, active,
+    });
+    return {
+        rpcMessage: rpcUnhealthy ? <RPCUnhealthyMessage
             network={swapData.source_network}
             suggestRpcForCurrentChain={rpcHealth.suggestRpcForCurrentChain}
             isSuggestingRpc={rpcHealth.isSuggestingRpc}
             checkManually={rpcHealth.checkManually}
-        />
-    }
-
-    return <WalletSubmissionView>
-        <SendTransactionButton
-            errorMessage={
-                (buttonClicked || !!swapError) &&
-                <ActionMessage
-                    error={error}
-                    isSignatureError={isSignatureError}
-                    isLoading={false}
-                    selectedSourceAddress={selectedSourceAccount?.address || ''}
-                    sourceNetwork={swapData.source_network}
-                />
-            }
-            onClick={clickHandler}
-            onSign={isGaslessSupported(swapData.source_network) ? signHandler : undefined}
-            error={!!error && buttonClicked}
-            clearError={() => setError(undefined)}
-            swapData={swapData}
-            refuel={refuel}
-        />
-    </WalletSubmissionView>
+        /> : null,
+        sendProps: {
+            errorMessage,
+            onClick: clickHandler,
+            onSign: isGaslessSupported(swapData.source_network) ? signHandler : undefined,
+            onWalletActionError: (cause: unknown) => {
+                setButtonClicked(true);
+                setIsSignatureError(false);
+                setError(cause instanceof Error ? cause : new Error('Wallet request failed', { cause }));
+            },
+            error: !!error && buttonClicked,
+            walletError: error,
+            isSignatureError,
+            clearError: () => setError(undefined),
+            swapData,
+            refuel,
+        },
+    };
 }

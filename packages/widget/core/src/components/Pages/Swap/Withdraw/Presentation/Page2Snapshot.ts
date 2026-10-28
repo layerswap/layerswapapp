@@ -21,6 +21,8 @@ export type Page2WalletState =
     | {
           kind: 'send';
           pending?: boolean;
+          disabled?: boolean;
+          submissionAccepted?: boolean;
           label?: string;
           isSignatureError?: boolean;
           error?: ActionMessageType | 'unknown';
@@ -35,7 +37,8 @@ export type Page2WalletState =
       }
     | {
           kind: 'specialized';
-          provider: 'Hyperliquid' | 'Polymarket';
+          provider: string;
+          preparationLabel?: string;
           connected: boolean;
           accountMismatch?: boolean;
           pending?: boolean;
@@ -50,6 +53,7 @@ export type Page2LoadedSnapshot = {
     details: SwapDetails;
     swapId?: string;
     walletExecutionStarted?: boolean;
+    atomicBatchAvailable?: boolean;
     sourceProvider?: string;
     depositActions?: DepositAction[];
     quote?: SwapQuote;

@@ -77,14 +77,18 @@ export function SwapContentView({
     summary,
     quote,
     compactQuote = flow?.compactQuote ?? false,
-    transferStage = flow?.transferStage,
+    stage = flow?.transferStage,
+    animateControls = flow ? !!flow.transferStage : true,
+    progress,
     children,
 }: {
     flow?: ResolvedSwapFlow;
     summary: ReactNode;
     quote?: ReactNode;
     compactQuote?: boolean;
-    transferStage?: 'withdraw' | 'processing';
+    stage?: 'withdraw' | 'processing';
+    animateControls?: boolean;
+    progress?: ReactNode;
     children?: ReactNode;
 }) {
     const overview = summary ? (
@@ -96,12 +100,13 @@ export function SwapContentView({
     ) : undefined;
 
     return (
-        <div className="w-full flex flex-col gap-2 text-secondary-text" data-swap-flow={flow?.kind} data-flow-evidence={flow?.evidence}>
+        <div className="w-full text-secondary-text" data-swap-flow={flow?.kind} data-flow-evidence={flow?.evidence}>
             <WalletExecutionTransition
-                animate={!!transferStage}
+                animate={animateControls}
                 overview={overview}
-                workflow={transferStage === 'processing' ? children : undefined}
-                controls={transferStage !== 'processing' ? children : undefined}
+                workflow={progress}
+                controls={children}
+                controlsKey={stage}
             />
         </div>
     );
@@ -114,7 +119,7 @@ export function WalletTransferView({
     children: ReactNode;
 }) {
     return (
-        <div className="space-y-2.5">
+        <div className="flex flex-col gap-2">
             {warning}
             {children}
         </div>
@@ -124,16 +129,16 @@ export function ProcessingSectionView({
     children,
     actions,
 }: {
-    children: ReactNode;
+    children?: ReactNode;
     actions?: ReactNode;
 }) {
     const reducedMotion = useHydratedReducedMotion();
     const controls = actions ? (
-        <ProcessingActions>{actions}</ProcessingActions>
+        <ProcessingActions hasContent={!!children}>{actions}</ProcessingActions>
     ) : null;
 
     return (
-        <div className="w-full">
+        <div className="flex w-full flex-col empty:hidden">
             {children}
             {reducedMotion ? (
                 controls
@@ -146,7 +151,7 @@ export function ProcessingSectionView({
     );
 }
 
-function ProcessingActions({ children }: { children: ReactNode }) {
+function ProcessingActions({ children, hasContent }: { children: ReactNode; hasContent: boolean }) {
     const reducedMotion = useHydratedReducedMotion();
     const isPresent = useIsPresent();
 
@@ -161,8 +166,8 @@ function ProcessingActions({ children }: { children: ReactNode }) {
             aria-hidden={!isPresent}
             inert={!isPresent}
         >
-            {/* Collapse the retry controls and their spacing with the steps. */}
-            <div className="pt-3">{children}</div>
+            {/* Keep section spacing inside the height animation so it collapses on exit. */}
+            <div className={hasContent ? 'pt-2' : undefined}>{children}</div>
         </motion.div>
     );
 }
@@ -188,7 +193,7 @@ export function PendingSwapView({
 
 export function WalletSubmissionView({ children }: { children: ReactNode }) {
     return (
-        <div className="w-full space-y-2 flex flex-col justify-between h-full text-primary-text">
+        <div className="w-full gap-2 flex flex-col justify-between h-full text-primary-text">
             {children}
         </div>
     );

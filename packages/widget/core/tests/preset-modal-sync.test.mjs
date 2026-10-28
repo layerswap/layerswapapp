@@ -53,6 +53,8 @@ const { default: Controller } = loadSource('components/Pages/Swap/Form/AmountPre
 })
 const usdStore = create(set => ({ isUsdMode: false, usdAmount: '', setUsdAmount: usdAmount => set({ usdAmount }) }))
 const { useUsdTokenSync } = loadSource('hooks/useUsdTokenSync.ts', {
+  '@layerswap/widget-types': require('@layerswap/widget-types'),
+  '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
   '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput() {} } },
   '@/components/utils/formatTokenAmount': loadSource('components/utils/formatTokenAmount.ts'),
   react: React, '@/lib/amountPresets': amountPresets, '@/stores/usdModeStore': { useUsdModeStore: usdStore },
@@ -67,7 +69,7 @@ const { default: Summary } = loadSource('components/Pages/Swap/Withdraw/Summary/
 })
 const passthrough = ({ children }) => children
 const gasHook = { default: () => ({ gasData: state.gas }) }
-const { default: useOutOfGas } = loadSource('lib/gases/useOutOfGas.ts', { './useSWRGas': gasHook })
+const { default: useOutOfGas } = loadSource('lib/gases/useOutOfGas.ts', { './useSWRGas': gasHook, './resolveGasBalanceBudget': loadSource('lib/gases/resolveGasBalanceBudget.ts') })
 const errorDisplay = loadSource('components/Pages/Swap/Form/SecondaryComponents/validationError/ErrorDisplay.tsx', { react: React })
 const availabilityView = loadSource('components/Pages/Swap/Withdraw/Presentation/QuoteAvailabilityView.tsx', {
   'lucide-react': { RouteOff: () => null },
@@ -94,6 +96,8 @@ const { SendTransactionView } = loadSource('components/Pages/Swap/Withdraw/Prese
   '@/components/Icons/FailIcon': { default: noop }, '@/components/Icons/InfoIcon': { default: noop },
   '@/helpers/depositActions': { getActionableDepositAction: noop, isDepositWorkflowComplete: () => false },
   './DepositWorkflowView': { DepositWorkflowView: noop },
+  './ProgressPanelView': { ProgressPanelView: noop },
+  './walletProgress': { getWalletProgress: noop, getWalletWorkflowState: () => ({}) },
   './WalletExecutionTransition': { WalletExecutionTransition: ({ controls }) => controls },
   '@layerswap/ui-kit/components': { WalletIcon: noop }, 'lucide-react': { Loader2: noop },
   '../../Form/SecondaryComponents/validationError/constants': {},
@@ -121,10 +125,13 @@ const { default: WalletTransferButton } = loadSource('components/Pages/Swap/With
   } },
 })
 const { default: Withdraw } = loadSource('components/Pages/Swap/Withdraw/Withdraw.tsx', {
+  '@layerswap/widget-types': require('@layerswap/widget-types'),
+  '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
   '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput() {} } },
   react: React, formik: require('formik'), '@/context/swap': context,
   '@/components/utils/RoundDecimals': rounding, '@/components/Input/Amount/helpers': maxHelpers,
   '@/lib/amountPresets': amountPresets,
+  '@/stores/swapTransactionStore': { useSwapTransactionStore: selector => selector({ swapTransactions: {}, pendingSubmissions: {} }) },
   '@/components/Widget/Index': { Widget: { Footer: passthrough } },
   '@/context/settings': { useSettingsState: () => ({ networks: [source, destination] }) },
   '@/context/swapAccounts': { useSelectedAccount: () => state.account },

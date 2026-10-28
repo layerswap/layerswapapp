@@ -7,24 +7,11 @@ import {
     getDepositActionLabel,
     getCurrentDepositActionIndex,
 } from '@/helpers/depositActions';
-import Steps, { StepsPanel } from '../Processing/StepsComponent';
 import { ProgressStatus, type StatusStep } from '../Processing/types';
-import { TransferStatusHeader } from './TransferStatusHeader';
+import { ProgressPanelView, type ProgressPanelData } from './ProgressPanelView';
 import type { SwapStepTransactions } from '@/stores/swapTransactionStore';
 
-export function DepositWorkflowView({
-    actions,
-    stepTransactions,
-    loading,
-    error,
-    errorDescription,
-    actionStateText,
-    destinationToken,
-    receiveAmount,
-    processing,
-    completed,
-    readOnly,
-}: {
+export type DepositWorkflowData = {
     actions?: DepositAction[];
     stepTransactions?: SwapStepTransactions;
     loading?: boolean;
@@ -33,6 +20,7 @@ export function DepositWorkflowView({
     actionStateText?: string;
     destinationToken?: Token;
     receiveAmount?: number;
+    showDeliveryStep?: boolean;
     readOnly?: boolean;
     processing?: {
         title?: string;
@@ -48,25 +36,70 @@ export function DepositWorkflowView({
         completionTime: string | null;
         explorerUrl?: string;
     };
-}) {
-    const workflowActions = actions?.filter((action) => !!action.step) ?? [];
-    if ((processing || completed) && stepTransactions?.approve_permit2 &&
-        !workflowActions.some(action => action.step === 'approve_permit2')) {
-        workflowActions.unshift({ step: 'approve_permit2', status: 'completed' });
+};
+
+export function DepositWorkflowView(props: DepositWorkflowData) {
+    return <ProgressPanelView data={getDepositWorkflowProgress(props)} />;
+}
+
+export function getDepositWorkflowProgress({
+    actions,
+    stepTransactions,
+    loading,
+    error,
+    errorDescription,
+    actionStateText,
+    destinationToken,
+    receiveAmount,
+    showDeliveryStep,
+    processing,
+    completed,
+    readOnly,
+}: DepositWorkflowData): ProgressPanelData | null {
+    // Terminal responses expose flat approval/publication placeholders again.
+    // They still describe the same single atomic wallet operation.
+    const hasAtomicApproval =
+        !!actions?.some((action) => action.step === 'approve') &&
+        !!actions?.some((action) => action.step === 'publish');
+    const workflowActions =
+        actions?.filter(
+            (action) =>
+                !!action.step &&
+                (!hasAtomicApproval || action.step !== 'approve'),
+        ) ?? [];
+    if (
+        (processing || completed) &&
+        stepTransactions?.approve_permit2 &&
+        !workflowActions.some((action) => action.step === 'approve_permit2')
+    ) {
+        workflowActions.unshift({
+            step: 'approve_permit2',
+            status: 'completed',
+        });
     }
     const hasDeliveryStep =
         !!destinationToken &&
-        workflowActions.some((action) => action.step === 'publish');
+        workflowActions.some(
+            (action) =>
+                action.step === 'publish' ||
+                (showDeliveryStep && action.step === 'deposit'),
+        );
     // Between signing and publication the backend is preparing a waiting step.
     // Keep that status attached to the step when there is no wallet prompt yet.
-    const currentStepIndex = getCurrentDepositActionIndex(workflowActions, !!loading || !!error);
+    const currentStepIndex = getCurrentDepositActionIndex(
+        workflowActions,
+        !!loading || !!error,
+    );
     const currentStepHasError =
         !loading &&
         error &&
         workflowActions[currentStepIndex]?.status !== 'pending';
     const steps: StatusStep[] = workflowActions.map((action, index) => ({
         id: `action:${action.step}`,
-        name: getDepositActionLabel(action),
+        name:
+            hasAtomicApproval && action.step === 'publish'
+                ? getDepositActionLabel({ step: 'approve' })
+                : getDepositActionLabel(action),
         status:
             action.status === 'completed'
                 ? ProgressStatus.Complete
@@ -83,13 +116,16 @@ export function DepositWorkflowView({
             action.status === 'failed'
                 ? action.detail || errorDescription
                 : index === currentStepIndex
-                  ? errorDescription || (loading || action.status === 'pending'
+                  ? errorDescription ||
+                    (loading || action.status === 'pending'
                         ? actionStateText
-                        : undefined) || getDepositActionDescription(action)
+                        : undefined) ||
+                    getDepositActionDescription(action)
                   : undefined,
-        explorerUrl: action.step === 'approve_permit2'
-            ? stepTransactions?.[action.step]?.explorerUrl
-            : undefined,
+        explorerUrl:
+            action.step === 'approve_permit2'
+                ? stepTransactions?.[action.step]?.explorerUrl
+                : undefined,
         readOnly,
         index: index + 1,
     }));
@@ -131,7 +167,12 @@ export function DepositWorkflowView({
             index: steps.length + 1,
         });
     }
-    if (steps.length <= 1 && !completed && !steps.some(step => step.explorerUrl)) return null;
+    if (
+        steps.length <= 1 &&
+        !completed &&
+        !steps.some((step) => step.explorerUrl)
+    )
+        return null;
     const currentStep = steps.find(
         (step) =>
             step.status === ProgressStatus.Current ||
@@ -150,34 +191,21 @@ export function DepositWorkflowView({
         ? completed.completionTime
         : processing?.elapsedTime;
 
-    return (
-        <StepsPanel
-            label={
-                completed
-                    ? 'Swap complete'
-                    : hasDeliveryStep
-                      ? 'Swap progress'
-                      : 'Wallet confirmation progress'
-            }
-        >
-            <TransferStatusHeader
-                title={title}
-                description={description}
-                progress={progress}
-                completed={!!completed}
-            />
-            <p className="sr-only" aria-live="polite" aria-atomic="true">
-                {completed
-                    ? 'Transfer complete.'
-                    : currentStep
-                      ? `Step ${currentStep.index} of ${steps.length}: ${currentStep.name}. ${typeof currentStep.description === 'string' ? currentStep.description : ''}`
-                      : 'Wallet confirmation steps complete.'}
-            </p>
-            {steps.length > 0 && (
-                <div className="pt-4">
-                    <Steps steps={steps} />
-                </div>
-            )}
-        </StepsPanel>
-    );
+    return {
+        title,
+        description,
+        progress,
+        completed: !!completed,
+        label: completed
+            ? 'Swap complete'
+            : hasDeliveryStep
+              ? 'Swap progress'
+              : 'Wallet confirmation progress',
+        announcement: completed
+            ? 'Transfer complete.'
+            : currentStep
+              ? `Step ${currentStep.index} of ${steps.length}: ${currentStep.name}. ${typeof currentStep.description === 'string' ? currentStep.description : ''}`
+              : 'Wallet confirmation steps complete.',
+        steps,
+    };
 }

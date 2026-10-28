@@ -6,7 +6,8 @@ import WalletMessage from '../messages/Message';
 import { ActionMessages } from '../messages/TransactionMessages';
 import { ButtonWrapper } from './WalletActionsView';
 export type SpecializedWithdrawalViewProps = {
-    provider: 'Hyperliquid' | 'Polymarket';
+    provider: string;
+    preparationLabel?: string;
     network: Network;
     isConnected: boolean;
     accountMismatch: boolean;
@@ -20,6 +21,7 @@ export type SpecializedWithdrawalViewProps = {
 };
 export function SpecializedWithdrawalView({
     provider,
+    preparationLabel = 'Preparing withdrawal',
     network,
     isConnected,
     accountMismatch,
@@ -33,7 +35,7 @@ export function SpecializedWithdrawalView({
 }: SpecializedWithdrawalViewProps) {
     if (!isConnected) {
         return (
-            <div className="w-full space-y-3">
+            <div className="flex w-full flex-col gap-2">
                 <WalletMessage
                     status="pending"
                     header={`Connect your ${provider} wallet`}
@@ -54,7 +56,7 @@ export function SpecializedWithdrawalView({
     }
 
     return (
-        <div className="w-full space-y-3 text-primary-text">
+        <div className="flex w-full flex-col gap-2 text-primary-text">
             {error && (
                 <WalletMessage
                     status="error"
@@ -63,7 +65,7 @@ export function SpecializedWithdrawalView({
                 />
             )}
             {rejected && <ActionMessages.TransactionRejectedMessage />}
-            {/* Provider-surfaced prerequisite step (e.g. moving funds between HL Spot/Perps). */}
+            {/* Provider-surfaced prerequisite, such as account setup or balance preparation. */}
             {progress && (
                 <WalletMessage
                     status="pending"
@@ -88,9 +90,7 @@ export function SpecializedWithdrawalView({
                     icon={<Loader2 className="h-6 w-6 animate-spin" />}
                 >
                     {progress
-                        ? provider === 'Hyperliquid'
-                            ? 'Preparing balance'
-                            : 'Setting up your account'
+                        ? preparationLabel
                         : 'Withdrawing'}
                 </ButtonWrapper>
             )}

@@ -20,6 +20,7 @@ const hooks = registerHooks({
 })
 after(() => hooks.deregister())
 const { executeWalletTransfer } = await import('../dist/esm/components/Pages/Swap/Withdraw/Wallet/Common/depositExecution.js')
+const { resolveAtomicDepositActions } = await import('../dist/esm/lib/atomicBatchActions.js')
 const { widgetTelemetry } = await import('../dist/esm/lib/widgetTelemetry.js')
 
 const require = createRequire(import.meta.url)
@@ -45,6 +46,41 @@ function calldataContext(callData, network) {
     layerswapApiClient: { SwapCatchup: async () => {} },
   }
 }
+
+test('a sufficient-allowance backend transfer with only base units submits one zero-value transaction', async () => {
+  const fixture = JSON.parse(readFileSync(new URL('./fixtures/atomic-batch.json', import.meta.url)))
+  const publication = fixture.deposit_actions.sufficient_allowance[0]
+  assert.equal(publication.amount, undefined)
+  const actions = await resolveAtomicDepositActions([publication], async () => ({
+    step: 'publish', status: 'action_required', action: publication,
+  }))
+  const { transactionBuilder } = loadAdapterSource('../../../wallets/adapters/evm/src/transferProvider/transactionBuilder.ts', {
+    './resolveEVMTransactionRequest': loadAdapterSource('../../../wallets/adapters/evm/src/transferProvider/resolveEVMTransactionRequest.ts', {}),
+    '../gasProviders/resolveEVMTransactionGasParameters': { resolveEVMTransactionGasParameters: async () => undefined },
+  })
+  const transactions = [], receipts = [], catchups = []
+  let successes = 0
+  const ctx = {
+    swapData: { id: 'sufficient-allowance', metadata: {} },
+    swapBasicData: fixture.swap, depositActions: actions,
+    selectedWallet: { address: fixture.account },
+    setActionStateText() {}, onLifecycle() {},
+    setSwapTransaction: (...args) => receipts.push(args),
+    onSuccess: () => { successes++ },
+    layerswapApiClient: { SwapCatchup: async (...args) => { catchups.push(args) } },
+  }
+  await executeWalletTransfer(ctx, async props => {
+    transactions.push(await transactionBuilder(props))
+    return 'intake-hash'
+  })
+  assert.equal(transactions.length, 1)
+  assert.equal(transactions[0].value, 0n)
+  assert.equal(transactions[0].to, publication.to_address)
+  assert.equal(transactions[0].data, publication.call_data)
+  assert.deepEqual(receipts, [['sufficient-allowance', 'intake-hash', 'frontend-swap']])
+  assert.deepEqual(catchups, [['sufficient-allowance', 'intake-hash']])
+  assert.equal(successes, 1)
+})
 
 for (const [callData, expectedMemo] of [[null, ''], [undefined, ''], ['', ''], ['swap memo', '73776170206d656d6f'], ['0x', '3078']]) {
   test(`Tron preserves the memo bytes of deposit calldata ${JSON.stringify(callData)}`, async () => {
@@ -74,7 +110,8 @@ for (const [callData, expectedMemo] of [[null, ''], [undefined, ''], ['', ''], [
 for (const [callData, expectedData] of [[null, '0x'], [undefined, '0x'], ['', '0x'], ['0x1234', '0x1234']]) {
   test(`EVM normalizes deposit calldata ${JSON.stringify(callData)} at the adapter boundary`, async () => {
     const { transactionBuilder } = loadAdapterSource('../../../wallets/adapters/evm/src/transferProvider/transactionBuilder.ts', {
-      viem: { parseEther: () => 0n },
+      './resolveEVMTransactionRequest': loadAdapterSource('../../../wallets/adapters/evm/src/transferProvider/resolveEVMTransactionRequest.ts', {}),
+      '../gasProviders/resolveEVMTransactionGasParameters': { resolveEVMTransactionGasParameters: async () => undefined },
     })
     const ctx = calldataContext(callData, { name: 'ETHEREUM_MAINNET', type: 'evm', chain_id: '1' })
     await executeWalletTransfer(ctx, async props => {
@@ -145,7 +182,7 @@ for (const result of ['success', 'rejected', 'expired-again', 'refresh-failed', 
     assert.equal(operations[0].attributes.outcome, result === 'success' ? 'succeeded' : result === 'rejected' ? 'rejected' : 'failed')
     assert.equal(operations[0].attributes.reason_code, retried ? undefined : 'deposit_action_refresh_failed')
     assert.equal(successes, result === 'success' ? 1 : 0)
-    assert.deepEqual(published, result === 'success' ? [['swap-stellar', 'pending', 'stellar-hash']] : [])
+    assert.deepEqual(published, result === 'success' ? [['swap-stellar', 'stellar-hash', 'wallet-transfer']] : [])
     assert.deepEqual(catchups, result === 'success' ? [['swap-stellar', 'stellar-hash']] : [])
   })
 }
@@ -221,6 +258,6 @@ for (const hash of ['transaction-hash', '', undefined]) {
     assert.equal(operations[0].attributes.outcome, hash ? 'succeeded' : 'failed')
     assert.equal(operations[0].attributes.reason_code, hash ? undefined : 'missing_transaction_hash')
     assert.equal(successes, hash ? 1 : 0)
-    assert.deepEqual(published, hash ? [['swap-standard', 'pending', hash]] : [])
+    assert.deepEqual(published, hash ? [['swap-standard', hash, 'wallet-transfer']] : [])
   })
 }

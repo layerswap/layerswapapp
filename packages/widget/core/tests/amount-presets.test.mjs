@@ -41,7 +41,7 @@ const { default: Controller } = loadSource('components/Pages/Swap/Form/AmountPre
     if (state.deferred) return state.deferred.promise
     if (state.error) throw state.error
     if (state.providerGas) return state.providerGas()
-    return { gas: state.gas, reserve: state.reserve, token }
+    return { gas: state.gas, maxFee: state.maxFee, reserve: state.reserve, token }
   } }) } },
 })
 const token = { symbol: 'ETH', decimals: 6, price_in_usd: 2000 }
@@ -103,7 +103,7 @@ const render = () => act(async () => root.render(createElement(StrictMode, null,
 beforeEach(() => {
   container = document.createElement('div'); document.body.append(container); root = createRoot(container)
   Object.assign(state, { account: { id: 'wallet', address: 'source' }, wallets: [{ id: 'wallet' }],
-    balances: [{ amount: 1, network: network.name, token: 'ETH', request_time: 1 }], gas: 0.01, reserve: 0,
+    balances: [{ amount: 1, network: network.name, token: 'ETH', request_time: 1 }], gas: 0.01, maxFee: undefined, reserve: 0,
     usdMode: false, renderTelemetry: false, exchangeInput: false, renderPresets: false, renderValidation: false, providerGas: undefined, previewGas: undefined,
     usdPrice: 2000, limit: 10, minimum: 0.001, probes: [], locked: false, revision: 0, preparedDraft: undefined, deferred: undefined, error: undefined, balanceError: undefined, limitsError: undefined, quoteError: undefined })
   initialValues = { amountMode: 'max', amountPresetSource: amountPresets.amountPresetSource(network.name, 'ETH', 'wallet', 'source'),
@@ -827,4 +827,12 @@ test('wallet and deposit-method changes clear input telemetry without changing m
   await act(() => formik.setFieldValue('depositMethod', 'deposit_address', false))
   assert.equal(formik.values.amount, editedAmount)
   assert.equal(widgetTelemetry.amountInputMethod({ step: 'form_submitted' }), 'unknown')
+})
+
+
+test('a maximum fee exhausting the balance uses the network fee message', async () => {
+  state.maxFee = 2
+  await render()
+  assert.equal(formik.values.amount, '0')
+  assert.equal(formik.values.amountPresetError, 'Not enough ETH for network fees')
 })

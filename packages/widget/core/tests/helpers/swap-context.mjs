@@ -1,4 +1,4 @@
-import { resolveSwapFlow } from '../../dist/esm/components/utils/resolveSwapFlow.js'
+import { isFrontendSwapQuote, resolveSwapFlow } from '../../dist/esm/components/utils/resolveSwapFlow.js'
 import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import React from 'react'
@@ -16,7 +16,7 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
     const snapshots = new Map()
     const store = state => Object.assign(selector => selector(state), { getState: () => state })
     const emptyStores = {
-        useSwapTransactionStore: store({ swapTransactions, pendingSubmissions: {}, stepTransactions: {}, setSwapTransaction: noop }),
+        useSwapTransactionStore: store({ swapTransactions, pendingSubmissions: {}, stepTransactions: {}, setSwapTransaction: noop, setSwapTransactionKind: noop }),
         useGaslessAuthorizationStore: store({ authorizations: {} }),
         useDepositSignatureStore: store({ signatures: {}, removeDepositSignature: noop }),
     }
@@ -34,15 +34,20 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
         '@/lib/apiClients/layerSwapApiClient': {
             default: Client,
             BackendTransactionStatus: { Completed: 'completed', Pending: 'pending' },
+            TransactionStatus: { Completed: 'completed', Pending: 'pending', Failed: 'failed' },
             TransactionType: { Input: 'input' },
         },
         './settings': {
             useInitialSettings: () => ({ swapId: getSwapId() }),
             useSettingsState: () => ({ sourceRoutes: [], destinationRoutes: [], networks: [] }),
         },
-        '@/hooks/useWallet': { default: () => ({ wallets: [{
-            ...getAccount(), asSourceSupportedNetworks: [network.name],
-        }] }) },
+        '@/hooks/useWithdrawalProvider': { useWithdrawalProvider: () => undefined },
+        '@/hooks/useWallet': { default: () => {
+            const account = getAccount()
+            return { wallets: account ? [{
+                ...account, addresses: account.addresses ?? [account.address], asSourceSupportedNetworks: [network.name],
+            }] : [] }
+        } },
         './swapAccounts': { useSelectedAccount: getAccount },
         '@/hooks/useFee': { transformSwapDataToQuoteArgs: noop, useQuoteData: () => ({}) },
         '@/stores/recentRoutesStore': { useRecentNetworksStore: store({ updateRecentNetworks: noop }) },
@@ -50,15 +55,17 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
         './callbackProvider': { useCallbacks: () => ({ onSwapCreate: noop, onSwapLifecycle: noop }) },
         '@/lib/address/Address': { Address: { equals: (a, b) => a === b } },
         '@/stores': stores ?? emptyStores,
+        '@/stores/swapTransactionStore': overrides['@/stores'] ?? stores ?? emptyStores,
         '@/helpers/depositActions': { isDepositWorkflowComplete: () => false },
         '@/components/utils/resolveSwapPhase': { resolveSwapPhase: () => resolved },
-        '@/components/utils/resolveSwapFlow': { resolveSwapFlow },
+        '@/components/utils/resolveSwapFlow': { isFrontendSwapQuote, resolveSwapFlow },
         './depositSettings': { useDepositSettings: () => ({ isDepositFlow: false }) },
         '@/hooks/useGaslessAuthorization': { useGaslessAuthorization: () => ({}) },
+        '@/hooks/useGaslessAuthorizationStatus': { useGaslessAuthorizationStatus: noop },
         '@/stores/contractAddressStore': { useContractAddressStore: () => ({}) },
         '@/hooks/useExtendedSwapDisplay': { useExtendedSwapData: noop },
         '@/stores/gaslessPreferenceStore': { useGaslessPreferenceStore: store({ gaslessEnabled: false }) },
-        '@/helpers/gasless': {},
+        '@/helpers/gasless': { isGaslessAuthorizationSubmitted: () => false },
         '@/lib/extendedRoutes/registry': {},
         '@/lib/extendedRoutes/transforms': {},
         '@/stores/extendedRoutesStore': {},
@@ -71,9 +78,22 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
             return { data: id ? snapshots.get(id) : undefined, mutate: noop }
         } },
         '@/hooks/useSwapStatusNotification': { useSwapStatusNotification: noop },
+        '@/hooks/useClientLayoutEffect': { useClientLayoutEffect: React.useLayoutEffect },
+        '@/helpers/atomicBatch': { isAtomicBatchEligible: () => false },
+        '@/hooks/useAtomicBatchCapability': { useAtomicBatchCapability: () => false },
+        '@/lib/resolvers/resolverService': {},
         '@/lib/swapLifecycle': {},
         '@/lib/swapCreation': {},
+        '@/lib/swapExecution': { recordSwapExecution: noop },
         ...overrides,
+    }
+    imports['@/stores/swapTransactionStore'] = {
+        ...emptyStores, ...stores,
+        ...overrides['@/stores/swapTransactionStore'],
+    }
+    imports['@/helpers/gasless'] = {
+        isGaslessAuthorizationSubmitted: () => false,
+        ...imports['@/helpers/gasless'],
     }
     const { outputText } = ts.transpileModule(readFileSync(new URL('../../src/context/swap.tsx', import.meta.url), 'utf8'), {
         compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },

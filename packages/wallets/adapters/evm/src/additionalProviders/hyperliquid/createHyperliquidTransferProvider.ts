@@ -10,6 +10,7 @@ import { resolveHyperliquidConfig, HyperliquidConfig, HYPERLIQUID_DEX_SPOT, HYPE
 import { resolveHyperliquidError } from "./resolveError"
 import { isEvmUserRejection } from "../../evmUtils/resolveError"
 import { userRejectedError } from "@layerswap/wallet-core/errors"
+import { hyperliquidWithdrawal } from './withdrawal'
 
 const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
 
@@ -72,6 +73,7 @@ export function createHyperliquidTransfer(): TransferProvider {
 
     return {
         supportsNetwork,
+        withdrawal: hyperliquidWithdrawal,
 
         async executeTransfer(params: TransferProps, _wallet, onProgress?: (info: TransferProgress | undefined) => void): Promise<string> {
             params.onSubmissionStateChange?.('preparing')

@@ -73,7 +73,7 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
     const feeToken = gas?.token ?? values.from?.token
     const feeExhaustsBalance = !!gas && balance?.amount != null && balance.amount > 0
         && (!feeToken || feeToken.symbol === values.fromAsset?.symbol)
-        && gas.gas * 1.02 + (gas.reserve ?? 0) >= balance.amount
+        && (gas.maxFee ?? gas.gas) * 1.02 + (gas.reserve ?? 0) >= balance.amount
     const retrying = !!error && isValidating
     const message = balanceError || balance?.error || missingSettledBalance ? 'Balance unavailable'
         : limitsError ? resolveQuoteError(quoteError ?? limitsError)?.message
