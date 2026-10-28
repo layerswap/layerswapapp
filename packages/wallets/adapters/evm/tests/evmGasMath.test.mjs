@@ -14,7 +14,7 @@ import {
 } from '../dist/esm/gasProviders/evmGasPolicies.js'
 
 const monadPolicy = resolveEVMGasPolicy(143)
-const defaultPolicy = resolveEVMGasPolicy(1)
+const defaultPolicy = resolveEVMGasPolicy(10)
 
 test('applies Monad\'s 7.5% gas-limit margin with ceiling division', () => {
     assert.equal(applyGasLimitMargin(22_515n, monadPolicy), 24_204n)

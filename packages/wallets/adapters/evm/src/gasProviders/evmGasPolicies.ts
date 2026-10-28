@@ -1,7 +1,7 @@
 export const BASIS_POINTS = 10_000n
 
 export type EVMFeeQuoteMode = 'maximum' | 'current-capped'
-export type EVMTransactionGasMode = 'wallet' | 'explicit-eip1559'
+export type EVMTransactionGasMode = 'wallet' | 'explicit-eip1559' | 'explicit-legacy'
 export type EVMAccountReserveCondition = 'eip7702-delegated'
 
 export type EVMAccountBalanceReserve = Readonly<{
@@ -14,6 +14,7 @@ export type EVMGasPolicy = Readonly<{
     feeQuoteMode: EVMFeeQuoteMode
     reserveMaximumFee: boolean
     transactionGasMode: EVMTransactionGasMode
+    checkBalanceBeforeSend: boolean
     accountBalanceReserve?: EVMAccountBalanceReserve
 }>
 
@@ -22,6 +23,7 @@ const DEFAULT_EVM_GAS_POLICY: EVMGasPolicy = Object.freeze({
     feeQuoteMode: 'maximum',
     reserveMaximumFee: false,
     transactionGasMode: 'wallet',
+    checkBalanceBeforeSend: false,
 })
 
 export const createEVMGasPolicy = (
@@ -65,6 +67,22 @@ const MONAD_GAS_POLICY = createFullGasLimitEIP1559Policy({
 })
 
 const EVM_GAS_POLICIES_BY_CHAIN_ID = new Map<number, EVMGasPolicy>([
+    // Quote the same limit and fees we pass to the wallet. Otherwise a wallet's
+    // fee defaults can make a native MAX transfer exceed the account balance.
+    // Keep 20% execution headroom in both paths, rather than adding it only
+    // when submitting a transaction whose MAX amount has already been set.
+    [1, createEVMGasPolicy({
+        gasLimitMarginBps: 12_000n,
+        reserveMaximumFee: true,
+        transactionGasMode: 'explicit-eip1559',
+        checkBalanceBeforeSend: true,
+    })],
+    [56, createEVMGasPolicy({
+        gasLimitMarginBps: 12_000n,
+        reserveMaximumFee: true,
+        transactionGasMode: 'explicit-legacy',
+        checkBalanceBeforeSend: true,
+    })],
     // Monad charges the complete signed gas limit and applies a 10 MON reserve
     // to EIP-7702-delegated accounts.
     [143, MONAD_GAS_POLICY],

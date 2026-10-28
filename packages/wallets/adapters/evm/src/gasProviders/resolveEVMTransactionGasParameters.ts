@@ -1,5 +1,5 @@
 import { Network } from "@layerswap/widget-types";
-import { createPublicClient } from "viem";
+import { BaseError, createPublicClient, InsufficientFundsError } from "viem";
 import resolveChain from "../evmUtils/resolveChain";
 import { resolveFallbackTransport } from "../evmUtils/resolveTransports";
 import { buildTransactionGasParameters } from "./evmGasMath";
@@ -35,15 +35,32 @@ export const resolveEVMTransactionGasParameters = async ({
         resolveEVMFeeData(publicClient, network),
     ])
 
-    const { maxFeePerGas, maxPriorityFeePerGas } = feesPerGas
-    if (maxFeePerGas === undefined || maxPriorityFeePerGas === undefined) {
-        throw new Error(`EIP-1559 fee data is unavailable for chain ${chainId}`)
-    }
-
-    return buildTransactionGasParameters({
+    const gasParameters = buildTransactionGasParameters({
         policy,
         estimatedGas,
-        maxFeePerGas,
-        maxPriorityFeePerGas,
+        ...feesPerGas,
     })
+
+    if (!gasParameters || !policy.checkBalanceBeforeSend) {
+        return gasParameters
+    }
+
+    // Validate the exact payload using the fees passed to the wallet. Never
+    // silently reduce a deposit amount: it belongs to an already-created swap.
+    // Pending balance also accounts for transactions not yet mined.
+    const balance = await publicClient.getBalance({ address: account, blockTag: 'pending' })
+    const feePerGas = gasParameters.gasPrice ?? gasParameters.maxFeePerGas
+    if (feePerGas === undefined) {
+        throw new Error('Transaction fee is unavailable')
+    }
+    const requiredBalance = (value ?? 0n) + gasParameters.gas * feePerGas
+    if (balance < requiredBalance) {
+        throw new InsufficientFundsError({
+            cause: new BaseError(
+                'Balance does not cover the transfer and its current maximum gas fee. Recalculate the amount before sending.',
+            ),
+        })
+    }
+
+    return gasParameters
 }

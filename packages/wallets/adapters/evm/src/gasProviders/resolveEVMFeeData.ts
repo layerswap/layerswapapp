@@ -1,6 +1,7 @@
 import { ErrorHandler, type Network } from '@layerswap/widget-types'
 import { parseGwei, type PublicClient } from 'viem'
 import NetworkSettings from '../NetworkSettings'
+import { resolveEVMGasPolicy } from './evmGasPolicies'
 
 const resolveFeeEstimate = async <T>(type: 'GasPriceError' | 'FeesPerGasError' | 'MaxPriorityFeePerGasError', estimate: () => Promise<T>): Promise<T | undefined> => {
     try {
@@ -14,6 +15,12 @@ const resolveFeeEstimate = async <T>(type: 'GasPriceError' | 'FeesPerGasError' |
 
 /** Shared RPC fallbacks and priority-fee floors for fee quotes and signed transactions. */
 export const resolveEVMFeeData = async (publicClient: PublicClient, network: Network) => {
+    if (resolveEVMGasPolicy(Number(network.chain_id)).transactionGasMode === 'explicit-legacy') {
+        // Do not mix a legacy transaction's price with an unrelated EIP-1559 cap.
+        const gasPrice = await resolveFeeEstimate('GasPriceError', () => publicClient.getGasPrice())
+        return { gasPrice, maxFeePerGas: undefined, maxPriorityFeePerGas: undefined }
+    }
+
     const [gasPrice, feesPerGas] = await Promise.all([
         resolveFeeEstimate('GasPriceError', () => publicClient.getGasPrice()),
         resolveFeeEstimate('FeesPerGasError', () => publicClient.estimateFeesPerGas()),
