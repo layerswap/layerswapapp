@@ -503,7 +503,9 @@ export function useSendTransactionController({
                             onLifecycle: onSwapLifecycle,
                             onSwitchStart: () => {
                                 const chainId = (currentAction.network ?? swapBasicData.source_network).chain_id
-                                if (chainId) expectedSourceChainSwitch.current = { signal, chainId }
+                                if (chainId != null && chainId !== '') {
+                                    expectedSourceChainSwitch.current = { signal, chainId }
+                                }
                                 switchPrompt = setTimeout(() => {
                                     if (signal.aborted) return
                                     setActionStateText("Switching network")

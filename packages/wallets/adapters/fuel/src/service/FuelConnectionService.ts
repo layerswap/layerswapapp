@@ -8,6 +8,7 @@ import { name as PROVIDER_NAME, id as PROVIDER_ID } from '../constants'
 import { BAKO_STATE } from '../connectors/bako-safe/Bako'
 import { resolveFuelWalletConnectorIcon } from '../utils'
 import { useFuelStore } from './fuelStore'
+import { getFuelChainId } from './getFuelChainId'
 
 export class FuelConnectionService<Network> implements WalletConnectionService<never, Network> {
     // All services share the wallet store. An older account query must not
@@ -89,8 +90,7 @@ export class FuelConnectionService<Network> implements WalletConnectionService<n
     }
 
     async resolveFuelWallet(connector: FuelConnector, address: string, addresses: string[]): Promise<Wallet> {
-        const network = await connector.currentNetwork()
-        const chainId = network.chainId ?? (network.url.toLowerCase().includes('testnet') ? 0 : 9889)
+        const chainId = await getFuelChainId(connector)
         const icon = this.resolveConnectorImageIcon(connector.metadata.image)
 
         return {
@@ -199,6 +199,10 @@ export class FuelConnectionService<Network> implements WalletConnectionService<n
             if (!fuelConnector) throw new Error('Connector not found')
             const res = await fuelConnector.selectNetwork({ chainId: Number(chainId) })
             if (!res) throw new Error('Could not switch chain')
+            const actualChainId = await getFuelChainId(fuelConnector)
+            if (actualChainId !== Number(chainId)) {
+                throw new Error(`Fuel wallet is still on chain ${actualChainId}; expected ${chainId}`)
+            }
         } catch (e) {
             const msg = e instanceof Error ? e.message : String(e)
             console.error(`[Fuel] Failed to switch chain to ${chainId}: ${msg}`)

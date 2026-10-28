@@ -26,6 +26,7 @@ const { FuelConnectionService } = await import('../dist/esm/service/FuelConnecti
 const { attachFuelSync, registerFuelWalletSynchronizer } = await import('../dist/esm/service/syncFuel.js')
 const { setFuelInstance } = await import('../dist/esm/service/getFuel.js')
 const { createFuelTransfer } = await import('../dist/esm/transferProvider/createFuelTransfer.js')
+const { getFuelChainId } = await import('../dist/esm/service/getFuelChainId.js')
 
 const addressA = `0x${'11'.repeat(32)}`
 const addressB = `0x${'ab'.repeat(32)}`
@@ -292,7 +293,7 @@ function transferFixture(t, accounts = [addressA, addressB]) {
     const params = {
         sourceAddress: addressB,
         selectedWallet: wallet('Fuel Wallet', addressA),
-        network: { name: 'FUEL_MAINNET', node_url: 'https://mock.fuel.example' },
+        network: { name: 'FUEL_MAINNET', chain_id: '9889', node_url: 'https://mock.fuel.example' },
         callData: JSON.stringify({ script: {}, quantities: [] }),
         swapId: 'fuel-swap',
     }
@@ -350,4 +351,68 @@ test('an authorization error from the wallet keeps its cause and is reported as 
         assert.equal(error.message, original.message)
         return true
     })
+})
+
+test('Fuel chain resolution retains numeric 0 instead of assuming mainnet', async () => {
+    assert.equal(await getFuelChainId({ currentNetwork: async () => ({ chainId: 0 }) }), 0)
+})
+
+test('legacy connectors resolve their chain from the RPC instead of guessing from its hostname', async t => {
+    const chain = t.mock.method(Provider.prototype, 'getChainId', async () => 0)
+    assert.equal(await getFuelChainId({ currentNetwork: async () => ({ url: 'https://custom.fuel.example' }) }), 0)
+    assert.equal(chain.mock.calls[0].this.url, 'https://custom.fuel.example')
+})
+
+test('a connector on testnet cannot prepare a mainnet transaction despite a stale wallet snapshot', async t => {
+    const fixture = transferFixture(t)
+    t.mock.method(fixture.fuelWallet, 'currentNetwork', async () => ({ chainId: 0 }))
+    await assert.rejects(fixture.transfer.executeTransfer(fixture.params), /Switch your Fuel wallet to FUEL_MAINNET/)
+    assert.deepEqual(fixture.owners, [])
+    assert.equal(fixture.simulate.mock.callCount(), 0)
+    assert.equal(fixture.send.mock.callCount(), 0)
+})
+
+test('a network change during preparation blocks submission', async t => {
+    const fixture = transferFixture(t)
+    t.mock.method(Provider.prototype, 'simulate', async () => {
+        fixture.fuelWallet.currentNetwork = async () => ({ chainId: 0 })
+    })
+    await assert.rejects(fixture.transfer.executeTransfer(fixture.params), /Switch your Fuel wallet/)
+    assert.deepEqual(fixture.owners, [addressB])
+    assert.equal(fixture.send.mock.callCount(), 0)
+})
+
+for (const chainId of [0, 9889]) {
+    test(`a confirmed chain switch to ${chainId} succeeds`, async t => {
+        const fuelWallet = connector()
+        fuelWallet.selectNetwork = async () => true
+        t.mock.method(fuelWallet, 'currentNetwork', async () => ({ chainId }))
+        useFuelStore.getState()._setConnectors([fuelWallet])
+        await new FuelConnectionService().switchChain(wallet('Fuel Wallet', addressA), String(chainId))
+    })
+}
+
+test('a successful selectNetwork response cannot hide a wallet still on the wrong chain', async t => {
+    const fuelWallet = connector()
+    fuelWallet.selectNetwork = async () => true
+    t.mock.method(fuelWallet, 'currentNetwork', async () => ({ chainId: 0 }))
+    t.mock.method(console, 'error', () => {})
+    useFuelStore.getState()._setConnectors([fuelWallet])
+    await assert.rejects(new FuelConnectionService().switchChain(wallet('Fuel Wallet', addressA), '9889'), /still on chain 0/)
+})
+
+test('the observed funding rejection has an insufficient-funds UI label and preserves the RPC cause', async t => {
+    const fixture = transferFixture(t)
+    const original = Object.assign(new Error(
+        'Insufficient funds.\nAsset ID: ETH.\nThe Fuel Node is using fuel-core version 0.48.3; SDK supports 0.43.1.'
+    ), { code: 'not-enough-funds' })
+    t.mock.method(ScriptTransactionRequest.prototype, 'estimateAndFund', async () => { throw original })
+    await assert.rejects(fixture.transfer.executeTransfer(fixture.params), error => {
+        assert.equal(error.name, 'InsufficientFunds')
+        assert.equal(normalizeWalletErrorCode(error), 'insufficient_funds')
+        assert.equal(error.cause, original)
+        return true
+    })
+    assert.equal(fixture.simulate.mock.callCount(), 0)
+    assert.equal(fixture.send.mock.callCount(), 0)
 })
