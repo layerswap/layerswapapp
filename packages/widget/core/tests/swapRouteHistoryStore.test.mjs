@@ -1,21 +1,27 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { SwapResponse } from '@/lib/apiClients/layerSwapApiClient'
-import type { PersistedSwapRoute, SwapRouteHistoryRepository } from '@/lib/swapRouteHistoryDb'
-import {
+import assert from 'node:assert/strict'
+import { beforeEach, describe, it } from 'node:test'
+import { createRequire } from 'node:module'
+import { loadSource } from './helpers/source.mjs'
+
+const require = createRequire(import.meta.url)
+const historyDb = loadSource('lib/swapRouteHistoryDb.ts')
+const historyStore = loadSource('stores/swapRouteHistoryStore.ts', {
+    react: require('react'),
+    zustand: require('zustand'),
+    // These tests do not make API requests; avoid initializing the API client.
+    '@/lib/apiClients/layerSwapApiClient': { default: {} },
+    '@/lib/swapRouteHistoryDb': historyDb,
+})
+const {
     buildSwapRouteRecency,
     getRouteRecency,
     hydrateSwapRouteHistory,
     mergeSwapRouteHistoryRecords,
     toPersistedSwapRoute,
     useSwapRouteHistoryStore,
-} from '@/stores/swapRouteHistoryStore'
+} = historyStore
 
-function response(overrides: {
-    id?: string;
-    createdDate?: string;
-    sourceExchange?: boolean;
-    status?: string;
-} = {}): SwapResponse {
+function response(overrides = {}) {
     return {
         swap: {
             id: overrides.id ?? 'swap-id',
@@ -27,14 +33,10 @@ function response(overrides: {
             destination_token: { symbol: 'DST' },
             status: overrides.status ?? 'Completed',
         },
-    } as SwapResponse
+    }
 }
 
-function record(
-    swapId: string,
-    createdAt: number,
-    sourceNetwork: string = 'SOURCE',
-): PersistedSwapRoute {
+function record(swapId, createdAt, sourceNetwork = 'SOURCE') {
     return {
         swapId,
         environment: 'environment',
@@ -53,52 +55,45 @@ beforeEach(() => {
 })
 
 describe('compact swap route records', () => {
-    it.each(['PendingDeposit', 'Completed', 'Refunded'])(
-        'extracts routes regardless of the %s status',
-        status => {
+    for (const status of ['PendingDeposit', 'Completed', 'Refunded']) {
+        it(`extracts routes regardless of the ${status} status`, () => {
             const persisted = toPersistedSwapRoute(response({ status }), 'environment')
-
-            expect(persisted).toMatchObject({
+            assert.deepEqual(persisted, {
+                createdAt: Date.parse('2026-01-02T03:04:05.000Z'),
                 swapId: 'swap-id',
                 environment: 'environment',
                 sourceRoute: { network: 'SOURCE', token: 'SRC' },
                 destinationRoute: { network: 'DESTINATION', token: 'DST' },
             })
-        },
-    )
+        })
+    }
 
     it('omits exchange sources and supports an extended-route identity override', () => {
-        expect(toPersistedSwapRoute(response({ sourceExchange: true }), 'environment')?.sourceRoute).toBeUndefined()
-
-        expect(toPersistedSwapRoute(response(), 'environment', {
+        assert.equal(toPersistedSwapRoute(response({ sourceExchange: true }), 'environment')?.sourceRoute, undefined)
+        assert.deepEqual(toPersistedSwapRoute(response(), 'environment', {
             sourceRoute: { network: 'EXTENDED', token: 'EXT' },
-        })?.sourceRoute).toEqual({ network: 'EXTENDED', token: 'EXT' })
+        })?.sourceRoute, { network: 'EXTENDED', token: 'EXT' })
     })
 
     it('deduplicates records and indexes the latest use in each direction', () => {
-        const records = mergeSwapRouteHistoryRecords(
-            [record('same-id', 1), record('older', 2, 'OTHER')],
-            [record('same-id', 3)],
-        )
+        const records = mergeSwapRouteHistoryRecords([record('same-id', 1), record('older', 2, 'OTHER')], [record('same-id', 3)])
         const recency = buildSwapRouteRecency(records)
-
-        expect(records).toHaveLength(2)
-        expect(records[0].createdAt).toBe(3)
-        expect(getRouteRecency(recency, 'from', 'SOURCE', 'SRC')).toBe(3)
-        expect(getRouteRecency(recency, 'to', 'DESTINATION', 'DST')).toBe(3)
+        assert.equal(records.length, 2)
+        assert.equal(records[0].createdAt, 3)
+        assert.equal(getRouteRecency(recency, 'from', 'SOURCE', 'SRC'), 3)
+        assert.equal(getRouteRecency(recency, 'to', 'DESTINATION', 'DST'), 3)
     })
 
     it('does not overwrite an in-memory write that lands during hydration', async () => {
-        let resolveRead: (records: PersistedSwapRoute[]) => void = () => undefined
-        const read = new Promise<PersistedSwapRoute[]>(resolve => {
+        let resolveRead = () => undefined
+        const read = new Promise(resolve => {
             resolveRead = resolve
         })
-        const repository: SwapRouteHistoryRepository = {
+        const repository = {
             getRecent: () => read,
-            upsert: vi.fn().mockResolvedValue(undefined),
-            close: vi.fn(),
+            upsert: async () => {},
+            close: () => {},
         }
-
         const hydration = hydrateSwapRouteHistory('environment', repository)
         useSwapRouteHistoryStore.setState({
             environment: 'environment',
@@ -106,10 +101,9 @@ describe('compact swap route records', () => {
         })
         resolveRead([record('same-id', 1, 'PERSISTED'), record('older', 2, 'OTHER')])
         await hydration
-
         const state = useSwapRouteHistoryStore.getState()
-        expect(state.hydratedEnvironment).toBe('environment')
-        expect(state.records.find(item => item.swapId === 'same-id')?.sourceRoute?.network).toBe('IN_MEMORY')
-        expect(state.records.map(item => item.swapId)).toContain('older')
+        assert.equal(state.hydratedEnvironment, 'environment')
+        assert.equal(state.records.find(item => item.swapId === 'same-id')?.sourceRoute?.network, 'IN_MEMORY')
+        assert.ok(state.records.some(item => item.swapId === 'older'))
     })
 })

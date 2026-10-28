@@ -113,7 +113,6 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "tailwindcss": "^4.0.15",
-    "vitest": "^3.0.9",
     "zustand": "catalog:"
   },
   "engines": {
