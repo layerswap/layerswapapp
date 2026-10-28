@@ -10,6 +10,7 @@ import { useRecentNetworksStore } from "@/stores/recentRoutesStore";
 import { useRouteSortingStore } from "@/stores/routeSortingStore";
 import useSuggestionsLimit from "@/hooks/useSuggestionsLimit";
 import DestinationWalletPicker from "./DestinationWalletPicker";
+import { useSwapRouteRecency } from "@/stores/swapRouteHistoryStore";
 
 type ReceivePickerProps = {
     selectedDestination: { network: NetworkRoute; token: NetworkRouteToken } | null;
@@ -40,6 +41,7 @@ const ReceivePicker: FC<ReceivePickerProps> = ({
     const { suggestionsLimit } = useSuggestionsLimit({ hasWallet: wallets.length > 0 });
     const sortingOption = useRouteSortingStore((s) => s.sortingOption);
     const routesHistory = useRecentNetworksStore(state => state.recentRoutes);
+    const swapRecency = useSwapRouteRecency();
 
     // Skip the network fetch entirely when the caller supplies a fixed route set.
     const { data: destinationRoutesData } = useDepositAddressDestinations({ enabled: !routes });
@@ -59,6 +61,7 @@ const ReceivePicker: FC<ReceivePickerProps> = ({
             balances: null,
             groupBy: 'token',
             recents: routesHistory,
+            swapRecency,
             balancesLoaded: false,
             search: searchQuery,
             suggestionsLimit,
@@ -66,7 +69,7 @@ const ReceivePicker: FC<ReceivePickerProps> = ({
             skipBalanceGate: true,
             hideSuggestions: true,
         });
-    }, [availableRoutes, searchQuery, routesHistory, suggestionsLimit, sortingOption]);
+    }, [availableRoutes, searchQuery, routesHistory, swapRecency, suggestionsLimit, sortingOption]);
 
     const hasMultipleOptions = availableRoutes.length > 1 || availableRoutes.some(r => r.tokens.length > 1);
 

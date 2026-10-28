@@ -51,6 +51,7 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
         './swapAccounts': { useSelectedAccount: getAccount },
         '@/hooks/useFee': { transformSwapDataToQuoteArgs: noop, useQuoteData: () => ({}) },
         '@/stores/recentRoutesStore': { useRecentNetworksStore: store({ updateRecentNetworks: noop }) },
+        '@/stores/swapRouteHistoryStore': { recordSwapRouteHistory: noop },
         '@/stores/slippageStore': { useSlippageStore: store({}) },
         './callbackProvider': { useCallbacks: () => ({ onSwapCreate: noop, onSwapLifecycle: noop }) },
         '@/lib/address/Address': { Address: { equals: (a, b) => a === b } },

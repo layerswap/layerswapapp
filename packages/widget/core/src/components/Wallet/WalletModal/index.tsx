@@ -5,6 +5,7 @@ import { connectModalStore } from "@layerswap/wallet-core"
 import * as UiKit from "@layerswap/ui-kit/components"
 import type { ModalWalletProvider } from "@layerswap/ui-kit/components"
 import type { WalletConnectionProvider, WalletModalConnector } from "@layerswap/wallet-core/types";
+import type { DrawerPlacement } from '@/components/Modal/vaulModal';
 import { widgetTelemetry } from '@/lib/widgetTelemetry';
 
 export type { WalletModalConnector } from "@layerswap/wallet-core/types"
@@ -13,6 +14,7 @@ export type { ModalWalletProvider } from "@layerswap/ui-kit/components"
 export type ConnectPresentation = "modal" | "inline"
 
 type ConnectOptions = {
+    placement?: DrawerPlacement
     dismissible?: boolean
     topContent?: ReactNode
     fullHeight?: boolean
@@ -35,6 +37,7 @@ type ConnectModalContextType = {
     isWalletModalOpen: boolean
     presentation: ConnectPresentation
     setPresentation: (presentation: ConnectPresentation) => void
+    placement: DrawerPlacement
     dismissible: boolean
     topContent: ReactNode
     fullHeight: boolean
@@ -67,6 +70,7 @@ function WalletModalShell({ children }: { children: ReactNode }) {
     const [open, setOpen] = useState(false)
     const [isWalletModalOpen, setIsWalletModalOpen] = useState(false)
     const [presentation, setPresentation] = useState<ConnectPresentation>("modal")
+    const [placement, setPlacement] = useState<DrawerPlacement>("default")
     const [dismissible, setDismissible] = useState(true)
     const [topContent, setTopContent] = useState<ReactNode>(null)
     const [fullHeight, setFullHeight] = useState(false)
@@ -77,6 +81,7 @@ function WalletModalShell({ children }: { children: ReactNode }) {
         options: ConnectOptions = {},
     ) => {
         setPresentation("modal")
+        setPlacement(options.placement ?? "default")
         setDismissible(options.dismissible ?? true)
         setTopContent(options.topContent ?? null)
         setFullHeight(options.fullHeight ?? false)
@@ -110,6 +115,7 @@ function WalletModalShell({ children }: { children: ReactNode }) {
             setSelectedProvider(undefined)
         }
         if (!open) {
+            setPlacement("default")
             setDismissible(true)
             setTopContent(null)
             setFullHeight(false)
@@ -136,6 +142,7 @@ function WalletModalShell({ children }: { children: ReactNode }) {
         isWalletModalOpen,
         presentation,
         setPresentation,
+        placement,
         dismissible,
         topContent,
         fullHeight,
@@ -143,6 +150,7 @@ function WalletModalShell({ children }: { children: ReactNode }) {
     }), [
         cancel,
         connect,
+        placement,
         dismissible,
         fullHeight,
         goBack,

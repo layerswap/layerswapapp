@@ -33,6 +33,7 @@ import { shouldUseDepository } from '@/helpers/depository';
 import { resolveExtendedRoutePlan } from '@/lib/extendedRoutes/registry';
 import { buildCreateSwapParamsForExtendedRoute } from '@/lib/extendedRoutes/transforms';
 import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
+import { recordSwapRouteHistory } from '@/stores/swapRouteHistoryStore';
 import { isDepositAddressFlow, isDepositAddressSwap, wantsFrontendSwap } from '@/helpers/swapFlow';
 import { useSwapPolling } from '@/hooks/useSwapPolling';
 import { useSwapStatusNotification } from '@/hooks/useSwapStatusNotification';
@@ -650,6 +651,15 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
                             from: !fromExchange ? { network: from.name, token: fromCurrency.symbol } : undefined,
                             to: { network: to.name, token: toCurrency.symbol }
                         }),
+                    },
+                    {
+                        name: 'swapRouteHistory.recordSwapRouteHistory',
+                        run: swap => {
+                            void recordSwapRouteHistory(swap, {
+                                sourceRoute: fromExchange ? null : { network: from.name, token: fromCurrency.symbol },
+                                destinationRoute: { network: to.name, token: toCurrency.symbol },
+                            })
+                        },
                     },
                 ],
             }
