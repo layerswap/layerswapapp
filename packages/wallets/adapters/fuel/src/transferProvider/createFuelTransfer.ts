@@ -6,7 +6,7 @@ import { transactionBuilder } from "./transactionBuilder"
 import { toTransferError } from "./toTransferError"
 import { KnownInternalNames } from "@layerswap/utils";
 import { getFuelInstance, hasFuelInstance } from "../service/getFuel"
-import { getFuelChainId } from "../service/getFuelChainId"
+import { ensureFuelChain } from "../service/ensureFuelChain"
 
 const supportedNetworks = [
     KnownInternalNames.Networks.FuelTestnet,
@@ -40,10 +40,13 @@ export function createFuelTransfer(): TransferProvider {
                         throw new Error("address is not authorized for this connection.")
                     }
                     if (network.chain_id != null && network.chain_id !== '') {
-                        const actualChainId = await getFuelChainId(connector)
-                        if (actualChainId !== Number(network.chain_id)) {
-                            throw new Error(`Switch your Fuel wallet to ${network.display_name ?? network.name} before sending`)
-                        }
+                        await ensureFuelChain({
+                            connector,
+                            chainId: network.chain_id,
+                            displayName: network.display_name ?? network.name,
+                            knownNetworks: [{ chainId: network.chain_id, rpcUrls: [network.node_url, ...(network.nodes ?? [])] }],
+                            allowSwitch: false,
+                        })
                     }
                 }
                 await assertReady()

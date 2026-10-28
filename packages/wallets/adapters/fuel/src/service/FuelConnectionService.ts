@@ -1,5 +1,5 @@
 import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
-import type { WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types";
+import type { EnsureWalletChainOptions, WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types";
 import type { AppNetworkAdapter } from "@layerswap/wallet-core"
 import { sleep } from "@layerswap/utils"
 import type { FuelConnector } from '@fuel-ts/account'
@@ -8,7 +8,8 @@ import { name as PROVIDER_NAME, id as PROVIDER_ID } from '../constants'
 import { BAKO_STATE } from '../connectors/bako-safe/Bako'
 import { resolveFuelWalletConnectorIcon } from '../utils'
 import { useFuelStore } from './fuelStore'
-import { getFuelChainId } from './getFuelChainId'
+import { resolveFuelChainId, type KnownFuelNetwork } from './resolveFuelChainId'
+import { ensureFuelChain } from './ensureFuelChain'
 
 export class FuelConnectionService<Network> implements WalletConnectionService<never, Network> {
     // All services share the wallet store. An older account query must not
@@ -16,7 +17,6 @@ export class FuelConnectionService<Network> implements WalletConnectionService<n
     private static _walletSyncVersion = 0
     private _networks: Network[] = []
     private _networkAdapter: AppNetworkAdapter<Network> | undefined
-    private _networksKey = ''
     // `connectWallet` mutates the module-global `BAKO_STATE.{state.last_req,
     // period_durtion}` while connecting. Rapid double-clicks or a retry firing
     // while a connect is still in flight would interleave those writes. Chain
@@ -24,11 +24,20 @@ export class FuelConnectionService<Network> implements WalletConnectionService<n
     private _connectQueue: Promise<unknown> = Promise.resolve()
 
     setNetworks(networks: Network[], networkAdapter: AppNetworkAdapter<Network>): void {
-        const key = networks.map(network => networkAdapter.getId(network)).join('|')
-        if (this._networksKey === key) return
+        // RPC URLs can change even when the configured network IDs stay the same.
         this._networks = networks
         this._networkAdapter = networkAdapter
-        this._networksKey = key
+    }
+
+    private getKnownNetworks(): KnownFuelNetwork[] {
+        const adapter = this._networkAdapter
+        if (!adapter) {
+            return []
+        }
+        return this._networks.filter(network => adapter.isFuelNetwork(network)).map(network => ({
+            chainId: adapter.getChainId(network),
+            rpcUrls: adapter.getRpcUrls(network),
+        }))
     }
 
     private addWallet(wallet: Wallet): void {
@@ -90,7 +99,8 @@ export class FuelConnectionService<Network> implements WalletConnectionService<n
     }
 
     async resolveFuelWallet(connector: FuelConnector, address: string, addresses: string[]): Promise<Wallet> {
-        const chainId = await getFuelChainId(connector)
+        const network = await connector.currentNetwork()
+        const chainId = resolveFuelChainId(network, this.getKnownNetworks())
         const icon = this.resolveConnectorImageIcon(connector.metadata.image)
 
         return {
@@ -190,24 +200,16 @@ export class FuelConnectionService<Network> implements WalletConnectionService<n
         }
     }
 
-    // Unlike the best-effort account switch above, a failed chain switch must reach the
-    // caller: the send flow switches right before transferring and would otherwise go on
-    // with the wallet on the wrong network.
-    async switchChain(connector: Wallet, chainId: string | number): Promise<void> {
-        try {
-            const fuelConnector = useFuelStore.getState().connectors.find(c => c.name === connector.id)
-            if (!fuelConnector) throw new Error('Connector not found')
-            const res = await fuelConnector.selectNetwork({ chainId: Number(chainId) })
-            if (!res) throw new Error('Could not switch chain')
-            const actualChainId = await getFuelChainId(fuelConnector)
-            if (actualChainId !== Number(chainId)) {
-                throw new Error(`Fuel wallet is still on chain ${actualChainId}; expected ${chainId}`)
-            }
-        } catch (e) {
-            const msg = e instanceof Error ? e.message : String(e)
-            console.error(`[Fuel] Failed to switch chain to ${chainId}: ${msg}`)
-            throw e
+    async switchChain(wallet: Wallet, chainId: string | number): Promise<void> {
+        await this.ensureChain(wallet, chainId)
+    }
+
+    async ensureChain(wallet: Wallet, chainId: string | number, options: EnsureWalletChainOptions = {}): Promise<void> {
+        const connector = useFuelStore.getState().connectors.find(c => c.name === wallet.id)
+        if (!connector) {
+            throw new Error('Fuel connector not found')
         }
+        await ensureFuelChain({ ...options, connector, chainId, knownNetworks: this.getKnownNetworks() })
     }
 
     async resolveConnectedWallets(): Promise<Wallet[]> {
@@ -258,6 +260,7 @@ export class FuelConnectionService<Network> implements WalletConnectionService<n
             disconnectWallets: this.disconnectWallets.bind(this),
             switchAccount: this.switchAccount.bind(this),
             switchChain: this.switchChain.bind(this),
+            ensureChain: this.ensureChain.bind(this),
 
             availableConnectors: this.getAvailableConnectors(),
             autofillSupportedNetworks: this.getSupportedNetworks(),

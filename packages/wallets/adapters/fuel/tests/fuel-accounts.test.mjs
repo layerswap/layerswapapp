@@ -26,7 +26,7 @@ const { FuelConnectionService } = await import('../dist/esm/service/FuelConnecti
 const { attachFuelSync, registerFuelWalletSynchronizer } = await import('../dist/esm/service/syncFuel.js')
 const { setFuelInstance } = await import('../dist/esm/service/getFuel.js')
 const { createFuelTransfer } = await import('../dist/esm/transferProvider/createFuelTransfer.js')
-const { getFuelChainId } = await import('../dist/esm/service/getFuelChainId.js')
+const { resolveFuelChainId } = await import('../dist/esm/service/resolveFuelChainId.js')
 
 const addressA = `0x${'11'.repeat(32)}`
 const addressB = `0x${'ab'.repeat(32)}`
@@ -355,17 +355,11 @@ test('an authorization error from the wallet keeps its cause and is reported as 
 
 test('Fuel chain resolution retains numeric 0 without querying the RPC', async t => {
     t.mock.method(globalThis, 'fetch', () => assert.fail('a reported chain ID must not trigger RPC discovery'))
-    assert.equal(await getFuelChainId({ currentNetwork: async () => ({ chainId: 0 }) }), 0)
-})
-
-test('legacy connectors resolve their chain from the RPC instead of guessing from its hostname', async t => {
-    const chain = t.mock.method(Provider.prototype, 'getChainId', async () => 0)
-    assert.equal(await getFuelChainId({ currentNetwork: async () => ({ url: 'https://custom.fuel.example' }) }), 0)
-    assert.equal(chain.mock.calls[0].this.url, 'https://custom.fuel.example')
+    assert.equal(resolveFuelChainId({ chainId: 0 }), 0)
 })
 
 for (const hasCachedWallet of [false, true]) {
-    test(`a legacy RPC timeout lets healthy wallets synchronize (cached wallet: ${hasCachedWallet})`, async t => {
+    test(`unknown legacy networks cannot block wallet restoration (cached wallet: ${hasCachedWallet})`, async t => {
         const legacy = connector('Legacy Fuel Wallet')
         legacy.currentNetwork = async () => ({ url: 'https://stalled-legacy.fuel.example' })
         const healthy = connector('Fuelet', [addressC])
@@ -374,38 +368,55 @@ for (const hasCachedWallet of [false, true]) {
             useFuelStore.getState().connectWallet({ ...wallet(legacy.name, addressA), chainId: 9889 })
         }
 
-        const deadline = new AbortController()
-        const timeout = t.mock.method(AbortSignal, 'timeout', milliseconds => {
-            assert.equal(milliseconds, 10_000)
-            return deadline.signal
-        })
-        const started = Promise.withResolvers()
-        const fetch = t.mock.method(globalThis, 'fetch', async (_url, init) => {
-            started.resolve(init.signal)
-            return new Promise((_, reject) => {
-                if (!init.signal) {
-                    reject(new Error('Missing RPC deadline'))
-                    return
-                }
-                init.signal.addEventListener('abort', () => reject(init.signal.reason), { once: true })
-            })
-        })
+        const fetch = t.mock.method(globalThis, 'fetch', () => assert.fail('restoration must not query the node'))
         const healthyNetwork = t.mock.method(healthy, 'currentNetwork', healthy.currentNetwork)
         t.mock.method(console, 'error', () => {})
 
-        const pending = new FuelConnectionService().syncConnectedWallets()
-        const requestSignal = await started.promise
-        deadline.abort(new DOMException('RPC deadline exceeded', 'TimeoutError'))
-        await pending
+        await new FuelConnectionService().syncConnectedWallets()
 
-        assert.equal(requestSignal, deadline.signal)
-        assert.equal(timeout.mock.callCount(), 1)
-        assert.equal(fetch.mock.callCount(), 1, 'timed-out discovery is not retried')
+        assert.equal(fetch.mock.callCount(), 0)
         assert.equal(healthyNetwork.mock.callCount(), 1)
-        assert.deepEqual(useFuelStore.getState().connectedWallets.map(w => w.id),
-            hasCachedWallet ? [legacy.name, healthy.name] : [healthy.name])
+        const wallets = useFuelStore.getState().connectedWallets
+        assert.deepEqual(wallets.map(w => w.id), [legacy.name, healthy.name])
+        assert.equal(wallets[0].chainId, undefined, 'unknown metadata must not retain a stale mainnet guess')
     })
 }
+
+test('legacy network metadata follows configured RPC URLs, including updates with unchanged network IDs', async t => {
+    const fuelWallet = connector()
+    t.mock.method(fuelWallet, 'currentNetwork', async () => ({ url: 'https://custom.fuel.example/' }))
+    t.mock.method(globalThis, 'fetch', () => assert.fail('metadata resolution must not query the node'))
+    const adapter = {
+        getId: network => network.name,
+        getChainId: network => network.chainId,
+        getRpcUrls: network => network.rpcUrls,
+        getIcon: () => undefined,
+        isFuelNetwork: () => true,
+    }
+    const service = new FuelConnectionService()
+    service.setNetworks([{ name: 'custom', chainId: 0, rpcUrls: ['https://custom.fuel.example'] }], adapter)
+    assert.equal((await service.resolveFuelWallet(fuelWallet, addressA, [addressA])).chainId, 0)
+
+    service.setNetworks([{ name: 'custom', chainId: 0, rpcUrls: ['https://new.fuel.example'] }], adapter)
+    assert.equal((await service.resolveFuelWallet(fuelWallet, addressA, [addressA])).chainId, undefined)
+})
+
+test('the connection provider checks live readiness even when the published wallet chain is stale', async () => {
+    const fuelWallet = connector()
+    let chainId = 0
+    let switches = 0
+    let starts = 0
+    fuelWallet.currentNetwork = async () => ({ chainId })
+    fuelWallet.selectNetwork = async target => { switches++; chainId = target.chainId; return true }
+    useFuelStore.getState()._setConnectors([fuelWallet])
+    const provider = new FuelConnectionService().buildProvider()
+    await provider.ensureChain({ ...wallet('Fuel Wallet', addressA), chainId: 9889 }, '9889', {
+        onSwitchStart: () => { starts++ },
+    })
+    assert.equal(switches, 1)
+    assert.equal(starts, 1)
+    assert.equal(chainId, 9889)
+})
 
 test('a connector on testnet cannot prepare a mainnet transaction despite a stale wallet snapshot', async t => {
     const fixture = transferFixture(t)
