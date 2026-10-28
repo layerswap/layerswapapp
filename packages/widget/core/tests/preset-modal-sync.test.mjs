@@ -127,6 +127,7 @@ const { default: WalletTransferButton } = loadSource('components/Pages/Swap/With
 })
 const { default: Withdraw } = loadSource('components/Pages/Swap/Withdraw/Withdraw.tsx', {
   './TransferBlock': loadSource('components/Pages/Swap/Withdraw/TransferBlock.tsx', {
+    '@/context/callbackProvider': { useOptionalCallbacks: () => ({}) },
     '@/context/swap': context, '@/lib/swapLifecycle': { lifecycleContextFromSwap: swap => ({ amount: swap.requested_amount }) },
     '@/hooks/useTransferBlocked': loadSource('hooks/useTransferBlocked.ts', callbackImports),
   }),

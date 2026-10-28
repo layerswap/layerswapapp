@@ -15,7 +15,6 @@ export type SpecializedWithdrawalViewProps = {
     sourceAddress?: string;
     loading?: boolean;
     submissionAccepted?: boolean;
-    readOnly?: boolean;
     progress?: { title: string; description?: string } | null;
     error?: { header: string; details: string } | null;
     rejected?: boolean;
@@ -31,7 +30,6 @@ export function SpecializedWithdrawalView({
     sourceAddress,
     loading,
     submissionAccepted,
-    readOnly,
     progress,
     error,
     rejected,
@@ -56,7 +54,7 @@ export function SpecializedWithdrawalView({
 
     if (accountMismatch) {
         return (
-            <TransferBlock readOnly={readOnly} reasonCode="wallet_account_mismatch" path="ProviderWalletWithdrawal">
+            <TransferBlock reasonCode="wallet_account_mismatch" path="ProviderWalletWithdrawal">
                 <ActionMessages.WalletMismatchMessage
                     address={sourceAddress || ''}
                     network={network}

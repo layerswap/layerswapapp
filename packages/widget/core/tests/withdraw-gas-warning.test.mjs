@@ -25,6 +25,7 @@ const mockUrl = `data:text/javascript,${encodeURIComponent(`
   export const useSelectedAccount = () => ({ address: state.walletAddress ?? 'source' })
   export const useBalance = () => ({ balances: state.balances, mutate() {}, isLoading: false })
   export const useFormikContext = () => ({ values: {}, setValues(values) { state.formValues = values } })
+  export const useOptionalCallbacks = () => ({})
   export const useCallbacks = () => ({ onSwapLifecycle: event => state.events.push(event) })
   export const useQuoteData = () => ({ minAllowedAmount: state.minAllowedAmount, maxAllowedAmount: state.maxAllowedAmount })
   export const transformSwapDataToQuoteArgs = () => ({})
@@ -62,7 +63,7 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
   }
   if (parent.endsWith('/Withdraw/WalletTransferButton.js') && specifier === './Wallet') return { url: mockUrl, shortCircuit: true }
   if (parent.includes('/dist/esm/') && specifier.endsWith('/useSWRGas')) return { url: gasUrl, shortCircuit: true }
-  if (parent.includes('/dist/esm/hooks/') && specifier.endsWith('/context/callbackProvider')) return { url: mockUrl, shortCircuit: true }
+  if ((parent.includes('/dist/esm/hooks/') || parent.endsWith('/TransferBlock.js')) && specifier.endsWith('/context/callbackProvider')) return { url: mockUrl, shortCircuit: true }
   if (specifier.startsWith('.') && !extname(specifier) && parent.includes('/dist/esm/')) return nextResolve(`${specifier}.js`, context)
   return nextResolve(specifier, context)
 } })

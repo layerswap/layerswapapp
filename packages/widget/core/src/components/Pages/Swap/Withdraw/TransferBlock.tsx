@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { TransferBlockedReasonCode } from '@layerswap/widget-types';
+import { useOptionalCallbacks } from '@/context/callbackProvider';
 import { useSwapDataState } from '@/context/swap';
 import { useTransferBlocked } from '@/hooks/useTransferBlocked';
 import { lifecycleContextFromSwap, type SwapLifecycleContext } from '@/lib/swapLifecycle';
@@ -10,14 +11,14 @@ type TransferBlockProps = {
     path: string;
     context?: SwapLifecycleContext;
     children: ReactNode;
-    readOnly?: boolean;
 };
 
 /** Mount only in the branch that actually replaces or disables a transfer action.
  * Unrendered controller models cannot report a block through this boundary. */
 export function TransferBlock(props: TransferBlockProps) {
-    // Snapshot previews render the same controls without live providers or telemetry.
-    if (props.readOnly) {
+    const callbacks = useOptionalCallbacks();
+    // Without a live observer, this boundary only renders its presentation.
+    if (!callbacks) {
         return <>{props.children}</>;
     }
     return <ObservedTransferBlock {...props} />;

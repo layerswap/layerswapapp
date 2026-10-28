@@ -269,7 +269,7 @@ export function getSendTransactionPresentation({
 
     if (showCriticalMarketPriceImpactButtons) {
         return { walletProgress, controls: (
-                    <TransferBlock readOnly={readOnly} reasonCode="critical_price_impact" path="SendTransactionButton">
+                    <TransferBlock reasonCode="critical_price_impact" path="SendTransactionButton">
                         {message}
                         {quote && priceImpactValues && (
                             <ErrorDisplay
@@ -340,7 +340,7 @@ export function getSendTransactionPresentation({
                         />
                     )}
                     {needsGaslessRecovery ? (
-                        <TransferBlock readOnly={readOnly} reasonCode="gasless_unavailable" path="SendTransactionButton">
+                        <TransferBlock reasonCode="gasless_unavailable" path="SendTransactionButton">
                             <div className="flex flex-col gap-2">
                                 {gaslessFailureStage === 'deposit' && (
                                     <ButtonWrapper
@@ -380,7 +380,7 @@ export function getSendTransactionPresentation({
                             </div>
                         </TransferBlock>
                     ) : quoteBlocksTransfer ? (
-                        <TransferBlock readOnly={readOnly} reasonCode="quote_unavailable" path="SendTransactionButton">
+                        <TransferBlock reasonCode="quote_unavailable" path="SendTransactionButton">
                             {sendButton}
                         </TransferBlock>
                     ) : (

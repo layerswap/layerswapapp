@@ -482,7 +482,6 @@ function getPreviewWallet({
     if (state.kind === 'specialized')
         return (
             <SpecializedWithdrawalView
-                readOnly
                 preparationLabel={state.preparationLabel}
                 provider={state.provider}
                 network={s.swap.source_network}

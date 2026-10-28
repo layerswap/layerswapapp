@@ -438,6 +438,7 @@ function createWorkflow({
         '@/stores/swapTransactionStore': stores,
     })
     const blockBoundary = loadSource('../src/components/Pages/Swap/Withdraw/TransferBlock.tsx', {
+        '@/context/callbackProvider': { useOptionalCallbacks: () => state.observeBlocks === false ? undefined : {} },
         '@/context/swap': buttonImports['@/context/swap'],
         '@/lib/swapLifecycle': lifecycle,
         '@/hooks/useTransferBlocked': loadSource('../src/hooks/useTransferBlocked.ts', {
@@ -2559,7 +2560,7 @@ for (const condition of ['unhealthy RPC', 'spent balance', 'disconnected wallet'
 // Assert the rendered affordance and its event together, including models that
 // a parent computes but discards. The real boundary owns the lifecycle effect.
 for (const scenario of [
-    { name: 'read-only quote failure preview', props: { quoteError: true, readOnly: true }, text: /Swap now/, disabled: true },
+    { name: 'quote failure preview without an observer', observeBlocks: false, props: { quoteError: true }, text: /Swap now/, disabled: true },
     { name: 'quote failure', props: { quoteError: true }, reason: 'quote_unavailable', text: /Swap now/, disabled: true },
     { name: 'gasless fallback', props: { gaslessUnavailable: true }, reason: 'gasless_unavailable', text: /Switch to standard transfer/ },
     { name: 'critical confirmation', props: { showCriticalMarketPriceImpactButtons: true }, reason: 'critical_price_impact', text: /Continue anyway/ },
@@ -2581,6 +2582,7 @@ for (const scenario of [
             }
         })
         const flow = createWorkflow({ mounted: true })
+        flow.state.observeBlocks = scenario.observeBlocks
         let visible = false
         const props = { flow: { kind: 'wallet-transfer', walletProgress: 'none', resolution: 'ready' }, ...scenario.props }
         function Parent() {
