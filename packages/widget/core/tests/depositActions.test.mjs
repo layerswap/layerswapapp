@@ -336,7 +336,7 @@ function createWorkflow({
         react: mounted ? React : { useState, useRef: initial => useState({ current: initial })[0], useMemo: fn => fn(), useCallback: fn => fn, useEffect: noop },
         '@layerswap/ui-kit/components': { WalletIcon: noop },
         '@/components/Buttons/submitButton': { default: noop },
-        '@/hooks/useWallet': { default: () => ({ wallets: [wallet] }) },
+        '@/hooks/useWallet': { default: () => ({ wallets: state.disconnected ? [] : [wallet] }) },
         '@/hooks/useWithdrawalProvider': { useWithdrawalProvider: () => undefined },
         '@/context/swap': {
             useSwapDataState: () => renderResolvedScreen ? { ...state, ...swapContext.useSwapDataState() }
@@ -2640,4 +2640,53 @@ for (const scenario of [
         }
         assert.deepEqual(flow.calls.blocked, scenario.reason ? [scenario.reason] : [])
     })
+}
+
+for (const signatureState of ['completed sign-only action', 'saved signature before action history']) {
+    for (const readiness of ['disconnected wallet', 'unhealthy RPC']) {
+        test(`${signatureState} preserves ${readiness} recovery before a funding submission`, async t => {
+            const dom = new JSDOM('<div id="root"></div>')
+            const previous = Object.getOwnPropertyDescriptors(globalThis)
+            Object.assign(globalThis, { window: dom.window, document: dom.window.document, IS_REACT_ACT_ENVIRONMENT: true })
+            const root = createRoot(document.getElementById('root'))
+            t.after(async () => {
+                await act(() => root.unmount())
+                dom.window.close()
+                for (const key of ['window', 'document', 'IS_REACT_ACT_ENVIRONMENT']) {
+                    if (previous[key]) Object.defineProperty(globalThis, key, previous[key])
+                    else delete globalThis[key]
+                }
+            })
+            // Keep the real Page 2 balance controller, wallet controller and send
+            // presenter: a mocked send model would hide the Preparing… regression.
+            const flow = createWorkflow({ mounted: true, walletController: true, page2Host: true, realBalance: true })
+            flow.state.swapBasicData = { ...atomicFixtures.swap,
+                source_network: { ...flow.network, type: 'evm' }, destination_network: flow.network }
+            flow.state.resolveCurrentFlow = true
+            flow.state.apiActions = signatureState === 'completed sign-only action'
+                ? [{ type: 'sign', step: 'sign', status: 'completed' }] : undefined
+            flow.state.depositActionsResponse = flow.state.apiActions
+            if (signatureState === 'saved signature before action history') {
+                flow.stores.useDepositSignatureStore.getState().setDepositSignature(swapId, Date.now() / 1000 + 600)
+            }
+            flow.state.disconnected = readiness === 'disconnected wallet'
+            flow.state.rpcUnhealthy = readiness === 'unhealthy RPC'
+            flow.state.balances = [{ network: flow.network.name, token: atomicFixtures.token.symbol, amount: 0 }]
+            flow.state.outOfGas = true
+
+            await act(() => root.render(createElement(flow.Component)))
+            assert.equal(flow.view.pendingSubmission, false)
+            assert.equal(flow.view.submissionAccepted, false)
+            assert.match(document.getElementById('root').textContent,
+                readiness === 'disconnected wallet' ? /Send from wallet/ : /RPC unhealthy/)
+            if (readiness === 'disconnected wallet') assert.equal(document.querySelector('button').disabled, false)
+            else assert.equal(flow.calls.rpcEnabled, true)
+            // Authorization uncertainty still protects funding/amount handling;
+            // narrowing readiness must not bring back spent-balance warnings.
+            assert.doesNotMatch(document.body.textContent, /Insufficient balance|Insufficient gas/)
+            assert.deepEqual(flow.calls.transfer, [])
+            assert.deepEqual(flow.calls.batches, [])
+            assert.deepEqual(flow.stores.useSwapTransactionStore.getState().swapTransactions, {})
+        })
+    }
 }

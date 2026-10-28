@@ -27,7 +27,7 @@ import { ProviderWalletWithdrawal } from '../WithdrawalProviders/ProviderWalletW
 import { useCallbacks } from "@/context/callbackProvider";
 import { lifecycleContextFromSwap, lifecycleErrorDetails } from "@/lib/swapLifecycle";
 import { TransferBlock } from '../TransferBlock';
-import { useHasSubmittedTransfer } from '@/hooks/useHasSubmittedTransfer';
+import { useHasSubmittedWalletTransaction } from '@/hooks/useHasSubmittedTransfer';
 import { isProviderHydrated } from "@layerswap/wallet-core";
 import { isUserRejection } from "./Common/isUserRejection";
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
@@ -119,7 +119,7 @@ export function useWalletWithdrawalController({
     const send = useSendTransactionController(transfer.sendProps, active && !!wallet && !sameAccountMismatch && !hasMultiStepHandler);
     const presentation = getSendTransactionPresentation(send);
     let controls: ReactNode = presentation.controls;
-    const hasSubmittedTransfer = useHasSubmittedTransfer();
+    const hasSubmittedTransfer = useHasSubmittedWalletTransaction();
     const observingSubmission = send.pendingSubmission || send.submissionAccepted || hasSubmittedTransfer;
     if (!observingSubmission && transfer.rpcMessage) controls = transfer.rpcMessage;
     if (!observingSubmission && !wallet) {
@@ -224,7 +224,7 @@ export function useTransferTokenController({
         setError(undefined);
         setIsSignatureError(false);
     }, [active]);
-    const hasSubmittedTransfer = useHasSubmittedTransfer();
+    const hasSubmittedTransfer = useHasSubmittedWalletTransaction();
 
     const selectedSourceAccount = useSelectedAccount("from", swapData.source_network.name);
 
