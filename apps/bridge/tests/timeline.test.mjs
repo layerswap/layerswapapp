@@ -1127,6 +1127,7 @@ test('shared production wallet actions keep live callbacks outside the preview b
         await act(async () =>
             root.render(
                 React.createElement(SendTransactionView, {
+                    readOnly: true,
                     gaslessUnavailable: true,
                     gaslessFailureStage: 'deposit',
                     retryGasless: () => calls.push('retry'),
@@ -2182,6 +2183,7 @@ test('production critical-amount confirmation resumes through its dedicated call
     const calls = [];
     try {
         await act(async () => root.render(React.createElement(SendTransactionView, {
+            readOnly: true,
             showCriticalMarketPriceImpactButtons: true,
             depositActions: frontendMilestone('frontend-critical', 'critical').snapshot.depositActions,
             handleClick: () => calls.push('start'),

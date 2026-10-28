@@ -65,6 +65,10 @@ const mockedDependencies = [
 const providerReadinessUrl = new URL('../../../wallets/core/dist/esm/lib/providerReadiness.js', import.meta.url).href
 const hooks = registerHooks({
   resolve(specifier, context, nextResolve) {
+    if (context.parentURL?.endsWith('/helpers/swapProgress.js') && specifier.endsWith('/lib/apiClients/layerSwapApiClient')) {
+      return { url: 'data:text/javascript,export const TransactionType = { Input: "input" }; export const BackendTransactionStatus = { Failed: "failed" };', shortCircuit: true }
+    }
+    if (['/TransferBlock.js', '/useHasSubmittedTransfer.js'].some(path => context.parentURL?.endsWith(path)) && specifier.endsWith('/context/swap')) return { url: mockUrl, shortCircuit: true }
     if (context.parentURL?.endsWith('/components/Pages/Swap/Withdraw/Wallet/index.js')) {
       if (specifier === '@layerswap/wallet-core') return { url: providerReadinessUrl, shortCircuit: true }
       if (specifier === '@layerswap/ui-kit/components' || mockedDependencies.some(path => specifier.endsWith(path))) {
@@ -107,7 +111,7 @@ beforeEach(() => {
   }
   // The first provider supporting a network need not own the selected account.
   state.walletState = { wallets: [], provider: { id: 'other-provider', ready: true } }
-  state.swapState = { swapDetails: { id: 'swap-readiness' } }
+  state.swapState = { swapBasicData, swapDetails: { id: 'swap-readiness' } }
   state.initialSettings = {}
 })
 afterEach(async () => {
@@ -159,7 +163,7 @@ test('a ready selected provider reports a truly unsupported wallet once regardle
   state.account = { ...state.account, provider: { id: 'selected-provider', ready: true } }
   state.walletState = { wallets: [], provider: { id: 'other-provider', ready: false } }
   await render()
-  state.swapState = { swapDetails: { id: 'swap-readiness', source_address: 'restored-source' } }
+  state.swapState = { swapBasicData, swapDetails: { id: 'swap-readiness', source_address: 'restored-source' } }
   await render()
   await render()
 

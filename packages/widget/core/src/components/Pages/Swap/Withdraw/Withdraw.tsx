@@ -26,9 +26,9 @@ import {
 import WalletTransferButton from './WalletTransferButton';
 import { WalletActionTransition } from './Presentation/WalletActionTransition';
 import { lifecycleContextFromSwap } from '@/lib/swapLifecycle';
-import { useTransferBlocked } from '@/hooks/useTransferBlocked';
+import { TransferBlock } from './TransferBlock';
+import { useHasSubmittedTransfer } from '@/hooks/useHasSubmittedTransfer';
 import { type ObservedLifecycleEvent, useLifecycleObservation } from '@/hooks/useLifecycleObservation';
-import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import { getActionableDepositAction, isTransferAction } from '@/helpers/depositActions';
 
 // "Transfer screen shown": reported once while the screen is visible, before any swap exists.
@@ -44,16 +44,7 @@ export function useWithdrawBalance(active = true) {
     const { swapBasicData, swapDetails, swapId, amountPresetLocked, depositActionsResponse, refuel, quoteIsLoading } =
         useSwapDataState();
     const { setSubmitedFormValues, startFreshSwapAttempt, canAdjustAmount } = useSwapDataUpdate();
-    const checkingSubmission = useSwapTransactionStore(state => {
-        if (!swapId) {
-            return false;
-        }
-        const transaction = state.swapTransactions[swapId];
-        return !!state.pendingSubmissions[swapId]
-            || (transaction?.kind === 'atomic-batch'
-                && !!transaction.providerSubmissionAccepted
-                && !transaction.hash);
-    });
+    const hasSubmittedTransfer = useHasSubmittedTransfer();
 
     const { networks } = useSettingsState();
     const source_network =
@@ -183,7 +174,7 @@ export function useWithdrawBalance(active = true) {
         && (swapBasicData?.amountPresetPending || !Object.is(swapBasicData?.amountPresetBalance, walletBalanceAmount));
     // A submitted swap only needs a read-only status check. Its original balance
     // may already be spent, so funding warnings must not replace recovery controls.
-    const showInsufficientBalanceWarning = !checkingSubmission && !presetIsSyncing &&
+    const showInsufficientBalanceWarning = !hasSubmittedTransfer && !presetIsSyncing &&
         swapBasicData?.use_deposit_address === false &&
         swapBasicData?.requested_amount &&
         Number(swapBasicData?.requested_amount) &&
@@ -200,15 +191,6 @@ export function useWithdrawBalance(active = true) {
         transaction: gasTransaction,
     });
 
-    // The gas warning keeps WalletTransferButton available, so it is not a block.
-    useTransferBlocked(
-        active && swapBasicData?.use_deposit_address === false && showInsufficientBalanceWarning ? 'insufficient_balance'
-        : undefined,
-        { ...lifecycleContext,
-            sourceWalletAddress: selectedSourceAccount?.address, walletBalance: walletBalance?.amount,
-            walletBalanceNetwork: walletBalance?.network, walletBalanceToken: walletBalance?.token,
-            walletBalanceTimestamp: walletBalance?.request_time }, 'Withdraw')
-
     if (
         swapBasicData?.use_deposit_address === false &&
         showInsufficientBalanceWarning
@@ -224,6 +206,14 @@ export function useWithdrawBalance(active = true) {
         actionKey = 'insufficient';
         blocked = true;
         warning = (
+            <TransferBlock reasonCode="insufficient_balance" path="Withdraw" context={{
+                ...lifecycleContext,
+                sourceWalletAddress: selectedSourceAccount?.address,
+                walletBalance: walletBalance?.amount,
+                walletBalanceNetwork: walletBalance?.network,
+                walletBalanceToken: walletBalance?.token,
+                walletBalanceTimestamp: walletBalance?.request_time,
+            }}>
                 <BalanceWarningView
                     amount={balanceAmount}
                     asset={swapBasicData?.source_token?.asset}
@@ -235,8 +225,9 @@ export function useWithdrawBalance(active = true) {
                         </>
                     }
                 />
+            </TransferBlock>
         );
-    } else if (!checkingSubmission && swapBasicData?.use_deposit_address === false && outOfGas && !presetIsSyncing) {
+    } else if (!hasSubmittedTransfer && swapBasicData?.use_deposit_address === false && outOfGas && !presetIsSyncing) {
         // A changing gas warning must preserve the active wallet execution.
         actionKey = 'transfer';
         warning = <GasWarningView adjustButton={showAdjustAmount && <AdjustAmountButton compact onEditAmount={handleEditAmount} isLoading={quoteIsLoading} />} />;

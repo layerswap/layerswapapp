@@ -91,6 +91,7 @@ const { default: SubmitButton } = loadSource('components/Buttons/submitButton.ts
 })
 const noop = () => null
 const { SendTransactionView } = loadSource('components/Pages/Swap/Withdraw/Presentation/WalletActionsView.tsx', {
+  '../TransferBlock': { TransferBlock: ({ children }) => children },
   '@/components/utils/resolveSwapFlow': { resolveSwapFlow },
   '@/components/Buttons/submitButton': { default: SubmitButton },
   '@/components/Icons/FailIcon': { default: noop }, '@/components/Icons/InfoIcon': { default: noop },
@@ -125,6 +126,11 @@ const { default: WalletTransferButton } = loadSource('components/Pages/Swap/With
   } },
 })
 const { default: Withdraw } = loadSource('components/Pages/Swap/Withdraw/Withdraw.tsx', {
+  './TransferBlock': loadSource('components/Pages/Swap/Withdraw/TransferBlock.tsx', {
+    '@/context/swap': context, '@/lib/swapLifecycle': { lifecycleContextFromSwap: swap => ({ amount: swap.requested_amount }) },
+    '@/hooks/useTransferBlocked': loadSource('hooks/useTransferBlocked.ts', callbackImports),
+  }),
+  '@/hooks/useHasSubmittedTransfer': { useHasSubmittedTransfer: () => false },
   '@layerswap/widget-types': require('@layerswap/widget-types'),
   '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
   '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput() {} } },

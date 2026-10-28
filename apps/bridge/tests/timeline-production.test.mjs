@@ -83,6 +83,8 @@ function loadSource(path, imports = {}) {
                 './isUserRejection': imports['./isUserRejection'],
             });
         }
+        if (name.endsWith('/TransferBlock')) return { TransferBlock: ({ children }) => React.createElement(React.Fragment, null, children) };
+        if (name === '@/hooks/useHasSubmittedTransfer') return { useHasSubmittedTransfer: () => false };
         throw new Error(`Unexpected dependency: ${name}`);
     }, module, module.exports);
     return module.exports;

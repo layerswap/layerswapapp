@@ -30,6 +30,8 @@ function loadSource(path, imports = {}) {
             if (name === 'react' || name === 'react/jsx-runtime')
                 return req(name);
             if (name in imports) return imports[name];
+            if (name.endsWith('/TransferBlock')) return { TransferBlock: ({ children }) => React.createElement(React.Fragment, null, children) };
+            if (name === '@/hooks/useHasSubmittedTransfer') return { useHasSubmittedTransfer: () => false };
             throw new Error(`Unexpected dependency: ${name} at ${path}`);
         },
         module,

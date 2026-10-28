@@ -184,7 +184,7 @@ export function useProviderWithdrawal({ swapBasicData, refuel, swapId }: Withdra
         destination_token, networks, sourceRoutes, onWalletWithdrawalSuccess]);
 
     return {
-        handleWithdraw, loading: loading || submissionAccepted, progress, error, rejected,
+        handleWithdraw, loading: loading || submissionAccepted, submissionAccepted, progress, error, rejected,
         isConnected: !!wallet, wallet, activeAddress: wallet?.address, sourceAddress,
     };
 }

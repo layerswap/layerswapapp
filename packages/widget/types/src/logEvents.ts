@@ -165,6 +165,8 @@ export type SwapLifecycleOutcome =
 export type TransferBlockedReasonCode =
   | 'rpc_unhealthy'
   | 'same_account_required'
+  | 'wallet_account_mismatch'
+  | 'quote_unavailable'
   | 'wallet_unsupported_for_network'
   | 'deposit_actions_unavailable'
   | 'swap_error'
