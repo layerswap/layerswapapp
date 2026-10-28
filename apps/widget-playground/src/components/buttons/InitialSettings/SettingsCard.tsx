@@ -24,7 +24,7 @@ const resolveSelectItem = (item: any) => {
     }
 
     const value = item.value ?? item.name ?? item.symbol;
-    const label = item.label ?? item.display_name ?? item.symbol;
+    const label = item.label ?? item.display_name ?? item.asset ?? item.symbol;
     const logo = item.logo;
     const icon = item.icon;
 

@@ -1,7 +1,7 @@
 'use client'
 import useSWR from "swr";
 import { useEffect, useMemo, useState } from "react";
-import { ApiResponse } from "../Models/ApiResponse";
+import type { ApiResponse } from "@layerswap/widget-types";
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import { useInitialSettings, useSettingsState } from "../context/settings";
 import { NetworkElement, RowElement, NetworkTokenElement, TitleElement, GroupedTokenElement, TokenSceletonElement } from "../Models/Route";
@@ -294,7 +294,7 @@ function sortTokensByMostUsed(
         if (bUsage !== aUsage) {
             return bUsage - aUsage;
         }
-        return a.symbol.localeCompare(b.symbol);
+        return a.asset.localeCompare(b.asset);
     });
 }
 
@@ -310,7 +310,7 @@ function sortTokensByTrending(
         if (aRank !== bRank) {
             return aRank - bRank;
         }
-        return a.symbol.localeCompare(b.symbol);
+        return a.asset.localeCompare(b.asset);
     });
 }
 
@@ -319,7 +319,7 @@ function sortTokensAlphabetically(
     ascending: boolean = true
 ): NetworkRouteToken[] {
     return [...tokens].sort((a, b) => {
-        const comparison = a.symbol.localeCompare(b.symbol);
+        const comparison = a.asset.localeCompare(b.asset);
         return ascending ? comparison : -comparison;
     });
 }
@@ -379,7 +379,7 @@ function sortGroupedTokens(
             return groupsWithSortedItems.sort((a, b) => {
                 const aUsage = symbolUsageMap.get(a.symbol) || 0;
                 const bUsage = symbolUsageMap.get(b.symbol) || 0;
-                return bUsage - aUsage || a.symbol.localeCompare(b.symbol);
+                return bUsage - aUsage || a.asset.localeCompare(b.asset);
             });
         }
         case 'trending': {
@@ -388,12 +388,12 @@ function sortGroupedTokens(
                 ...g,
                 minRank: g.items.reduce((min, i) => Math.min(min, i.route.token[rankKey] || 999999), 999999),
             }));
-            return withMinRank.sort((a, b) => a.minRank - b.minRank || a.symbol.localeCompare(b.symbol));
+            return withMinRank.sort((a, b) => a.minRank - b.minRank || a.asset.localeCompare(b.asset));
         }
         case 'alphabetical_asc':
-            return groupsWithSortedItems.sort((a, b) => a.symbol.localeCompare(b.symbol));
+            return groupsWithSortedItems.sort((a, b) => a.asset.localeCompare(b.asset));
         case 'alphabetical_desc':
-            return groupsWithSortedItems.sort((a, b) => b.symbol.localeCompare(a.symbol));
+            return groupsWithSortedItems.sort((a, b) => b.asset.localeCompare(a.asset));
         default:
             return groupsWithSortedItems;
     }
@@ -499,7 +499,7 @@ function sortTokensByRelevance(
         const bRank = b[rankKey] || 999999;
         if (aRank !== bRank) return aRank - bRank;
 
-        return a.symbol.localeCompare(b.symbol);
+        return a.asset.localeCompare(b.asset);
     });
 }
 
@@ -535,7 +535,7 @@ function sortGroupedTokensByRelevance(
 
         if (a.minRank !== b.minRank) return a.minRank - b.minRank;
 
-        return a.symbol.localeCompare(b.symbol);
+        return a.asset.localeCompare(b.asset);
     });
 }
 
@@ -601,6 +601,7 @@ const searchInTokens = (routes: NetworkRoute[], search: string): NetworkTokenEle
     return extractTokenElementsAsSuggested(routes).filter(e => {
         const { token, route } = e.route;
 
+        const assetMatch = token.asset.toLowerCase().includes(lower);
         const symbolMatch = token.symbol.toLowerCase().includes(lower);
         const contractMatch = token.contract?.toLowerCase().includes(lower);
         const nameMatch = token.display_asset?.toLowerCase().includes(lower);
@@ -609,16 +610,16 @@ const searchInTokens = (routes: NetworkRoute[], search: string): NetworkTokenEle
         const secondpart = splitted?.[1]
 
         const combo = (firstpart && secondpart) ? (
-            (token.symbol.toLowerCase().includes(firstpart) && route.name.toLowerCase().includes(secondpart))
+            (token.asset.toLowerCase().includes(firstpart) && route.name.toLowerCase().includes(secondpart))
             ||
-            (token.symbol.toLowerCase().includes(secondpart) && route.name.toLowerCase().includes(firstpart))
+            (token.asset.toLowerCase().includes(secondpart) && route.name.toLowerCase().includes(firstpart))
             ||
-            (token.symbol.toLowerCase().includes(firstpart) && route.display_name.toLowerCase().includes(secondpart))
+            (token.asset.toLowerCase().includes(firstpart) && route.display_name.toLowerCase().includes(secondpart))
             ||
-            (token.symbol.toLowerCase().includes(secondpart) && route.display_name.toLowerCase().includes(firstpart))
+            (token.asset.toLowerCase().includes(secondpart) && route.display_name.toLowerCase().includes(firstpart))
         ) : false
 
-        return symbolMatch || contractMatch || nameMatch || combo;
+        return assetMatch || symbolMatch || contractMatch || nameMatch || combo;
     });
 };
 // ---------- Route Grouping ----------
@@ -750,6 +751,7 @@ function groupByTokens(routes: NetworkRoute[]): GroupedTokenElement[] {
         .map(([symbol, items]) => ({
             type: 'grouped_token',
             symbol,
+            asset: items[0]?.route.token.asset ?? symbol,
             items
         }));
     return result;
@@ -768,7 +770,7 @@ function sortNetworkTokens(
             return balanceB - balanceA; // Descending by balance
         }
 
-        return a.symbol.localeCompare(b.symbol); // Ascending by symbol
+        return a.asset.localeCompare(b.asset); // Ascending by display asset
     });
 }
 

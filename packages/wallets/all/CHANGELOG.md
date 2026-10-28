@@ -1,5 +1,192 @@
 # @layerswap/wallets
 
+## 2.6.0
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies
+  - @layerswap/wallet-evm@2.6.0
+  - @layerswap/widget-types@2.6.0
+  - @layerswap/wallet-core@2.6.0
+  - @layerswap/wallet-bitcoin@2.6.0
+  - @layerswap/wallet-fuel@2.6.0
+  - @layerswap/wallet-imtbl-passport@2.6.0
+  - @layerswap/wallet-paradex@2.6.0
+  - @layerswap/wallet-starknet@2.6.0
+  - @layerswap/wallet-stellar@2.6.0
+  - @layerswap/wallet-svm@2.6.0
+  - @layerswap/wallet-ton@2.6.0
+  - @layerswap/wallet-tron@2.6.0
+  - @layerswap/utils@2.6.0
+
+## 2.5.1
+
+### Patch Changes
+
+- Updated dependencies [2463dd2]
+- Updated dependencies [18fc71c]
+- Updated dependencies [0dffcd2]
+- Updated dependencies [78fa843]
+- Updated dependencies [7427883]
+- Updated dependencies
+- Updated dependencies [a9c35f8]
+- Updated dependencies [419387b]
+- Updated dependencies [34da257]
+- Updated dependencies [a2136b6]
+- Updated dependencies [78fa843]
+- Updated dependencies [a2136b6]
+  - @layerswap/widget-types@2.5.1
+  - @layerswap/wallet-core@2.5.1
+  - @layerswap/wallet-fuel@2.5.1
+  - @layerswap/wallet-evm@2.5.1
+  - @layerswap/wallet-tron@2.5.1
+  - @layerswap/wallet-starknet@2.5.1
+  - @layerswap/wallet-ton@2.5.1
+  - @layerswap/wallet-svm@2.5.1
+  - @layerswap/wallet-bitcoin@2.5.1
+  - @layerswap/wallet-imtbl-passport@2.5.1
+  - @layerswap/wallet-paradex@2.5.1
+  - @layerswap/wallet-stellar@2.5.1
+  - @layerswap/utils@2.5.1
+
+## 2.4.0
+
+### Minor Changes
+
+- Register WalletConnect chains during provider initialization instead of hardcoding them in wallet-core.
+  - `@layerswap/wallet-core` exports `WalletConnectChainRegistry`, `defaultWalletConnectChainRegistry`, and `WalletConnectChainDefinition` for namespace, network type, and wallet explorer chain definitions.
+  - EVM, Solana, and Stellar adapters export their chain definitions and registration helpers, and register their chains when their connection providers initialize.
+  - `@layerswap/wallets` exports `registerDefaultWalletConnectChains`, which is also called by `getDefaultProviders`.
+  - Custom integrations that query wallet explorer chains before initializing providers must register their namespace first. An unregistered namespace now throws an explicit error.
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @layerswap/wallet-evm@2.4.0
+  - @layerswap/widget-types@2.4.0
+  - @layerswap/wallet-fuel@2.4.0
+  - @layerswap/wallet-core@2.4.0
+  - @layerswap/wallet-svm@2.4.0
+  - @layerswap/wallet-stellar@2.4.0
+  - @layerswap/wallet-bitcoin@2.4.0
+  - @layerswap/wallet-imtbl-passport@2.4.0
+  - @layerswap/wallet-paradex@2.4.0
+  - @layerswap/wallet-starknet@2.4.0
+  - @layerswap/wallet-ton@2.4.0
+  - @layerswap/wallet-tron@2.4.0
+  - @layerswap/utils@2.4.0
+
+## 2.3.1
+
+### Patch Changes
+
+- @layerswap/wallet-bitcoin@2.3.1
+- @layerswap/wallet-evm@2.3.1
+- @layerswap/wallet-fuel@2.3.1
+- @layerswap/wallet-imtbl-passport@2.3.1
+- @layerswap/wallet-paradex@2.3.1
+- @layerswap/wallet-starknet@2.3.1
+- @layerswap/wallet-stellar@2.3.1
+- @layerswap/wallet-svm@2.3.1
+- @layerswap/wallet-ton@2.3.1
+- @layerswap/wallet-tron@2.3.1
+- @layerswap/wallet-core@2.3.1
+- @layerswap/utils@2.3.1
+
+## 2.3.0
+
+### Patch Changes
+
+- Updated dependencies [dc962d6]
+- Updated dependencies [95d95a1]
+- Updated dependencies [31d0d1f]
+- Updated dependencies [5bd03c7]
+- Updated dependencies [bdf46a0]
+- Updated dependencies [f26c1e7]
+- Updated dependencies [bdf46a0]
+  - @layerswap/wallet-starknet@2.3.0
+  - @layerswap/wallet-paradex@2.3.0
+  - @layerswap/wallet-stellar@2.3.0
+  - @layerswap/wallet-fuel@2.3.0
+  - @layerswap/wallet-ton@2.3.0
+  - @layerswap/wallet-tron@2.3.0
+  - @layerswap/wallet-bitcoin@2.3.0
+  - @layerswap/wallet-svm@2.3.0
+  - @layerswap/widget-types@2.3.0
+  - @layerswap/wallet-core@2.3.0
+  - @layerswap/wallet-evm@2.3.0
+  - @layerswap/wallet-imtbl-passport@2.3.0
+  - @layerswap/utils@2.3.0
+
+## 2.2.0
+
+### Minor Changes
+
+- Global improvements and bug fixes
+
+### Patch Changes
+
+- Updated dependencies
+  - @layerswap/utils@2.2.0
+  - @layerswap/wallet-bitcoin@2.2.0
+  - @layerswap/wallet-evm@2.2.0
+  - @layerswap/wallet-fuel@2.2.0
+  - @layerswap/wallet-imtbl-passport@2.2.0
+  - @layerswap/wallet-paradex@2.2.0
+  - @layerswap/wallet-starknet@2.2.0
+  - @layerswap/wallet-stellar@2.2.0
+  - @layerswap/wallet-svm@2.2.0
+  - @layerswap/wallet-ton@2.2.0
+  - @layerswap/wallet-tron@2.2.0
+  - @layerswap/wallet-core@2.2.0
+  - @layerswap/widget-types@2.2.0
+
+## 2.1.0
+
+### Minor Changes
+
+- Global fixes and improvements
+
+### Patch Changes
+
+- Updated dependencies
+  - @layerswap/utils@2.1.0
+  - @layerswap/wallet-bitcoin@2.1.0
+  - @layerswap/wallet-evm@2.1.0
+  - @layerswap/wallet-fuel@2.1.0
+  - @layerswap/wallet-imtbl-passport@2.1.0
+  - @layerswap/wallet-paradex@2.1.0
+  - @layerswap/wallet-starknet@2.1.0
+  - @layerswap/wallet-stellar@2.1.0
+  - @layerswap/wallet-svm@2.1.0
+  - @layerswap/wallet-ton@2.1.0
+  - @layerswap/wallet-tron@2.1.0
+  - @layerswap/wallet-core@2.1.0
+  - @layerswap/widget-types@2.1.0
+
+## 2.0.1
+
+### Patch Changes
+
+- Wallet connection readiness fixes
+- Updated dependencies
+  - @layerswap/wallet-bitcoin@2.0.1
+  - @layerswap/wallet-evm@2.0.1
+  - @layerswap/wallet-fuel@2.0.1
+  - @layerswap/wallet-imtbl-passport@2.0.1
+  - @layerswap/wallet-paradex@2.0.1
+  - @layerswap/wallet-starknet@2.0.1
+  - @layerswap/wallet-svm@2.0.1
+  - @layerswap/wallet-ton@2.0.1
+  - @layerswap/wallet-tron@2.0.1
+  - @layerswap/wallet-core@2.0.1
+  - @layerswap/widget-types@1.0.1
+
 ## 2.0.0
 
 ### Major Changes

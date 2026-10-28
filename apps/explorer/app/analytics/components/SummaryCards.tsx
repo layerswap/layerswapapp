@@ -37,7 +37,7 @@ export default function SummaryCards({ totals, assets, }: { totals: AnalyticsTot
                 <div className={`${CARD_CLASS} flex-[1.4_1_236px]`}>
                     <span className="flex items-center gap-2 text-[12.5px] text-secondary-text">
                         <span className="h-2 w-2 shrink-0 rounded-[2px]" style={{ background: FLOW_COLORS.inflow }} />
-                        Inflow
+                        <span>Inflow</span>
                     </span>
                     <span className="text-[27px] font-semibold leading-[1.05] tracking-[-0.025em] tabular-nums text-primary-text">
                         {fmtUsd(totalIn)}
@@ -49,7 +49,7 @@ export default function SummaryCards({ totals, assets, }: { totals: AnalyticsTot
                 <div className={`${CARD_CLASS} flex-[1.4_1_236px]`}>
                     <span className="flex items-center gap-2 text-[12.5px] text-secondary-text">
                         <span className="h-2 w-2 shrink-0 rounded-[2px]" style={{ background: FLOW_COLORS.outflow }} />
-                        Outflow
+                        <span>Outflow</span>
                     </span>
                     <span className="text-[27px] font-semibold leading-[1.05] tracking-[-0.025em] tabular-nums text-primary-text">
                         {fmtUsd(totalOut)}

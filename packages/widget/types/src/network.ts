@@ -8,12 +8,18 @@ export enum NetworkType {
   Fuel = 'fuel',
   Bitcoin = 'bitcoin',
   Tron = 'tron',
+  Stellar = 'stellar',
   Hyperliquid = 'hyperliquid',
   Polymarket = 'polymarket',
 }
 
+export type GaslessStandard = 'none' | 'eip3009' | 'erc2612' | 'permit2';
+
 type RefuelToken = {
+  /** Canonical identifier used in Layerswap API requests and lookups. */
   symbol: string;
+  /** User-facing ticker used in labels and messages. */
+  asset: string;
   display_asset?: string;
   logo: string;
   contract: string | null | undefined;
@@ -23,6 +29,7 @@ type RefuelToken = {
   listing_date: string;
   status?: 'active' | 'inactive' | 'not_found';
   supports_gasless_deposit?: boolean;
+  gasless_standard?: GaslessStandard | null;
   source_rank?: number;
   destination_rank?: number;
 };

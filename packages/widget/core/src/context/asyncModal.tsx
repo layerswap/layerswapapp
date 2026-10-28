@@ -1,6 +1,5 @@
 import React, { Context, FC } from "react";
-import SubmitButton from "../components/Buttons/submitButton";
-import SecondaryButton from "../components/Buttons/secondaryButton";
+import { ConfirmationContent } from "../components/Modal/ConfirmationContent";
 import VaulDrawer, { VaulDrawerProps } from "@/components/Modal/vaulModal";
 
 
@@ -16,19 +15,7 @@ const AsyncModal: FC<AsyncModalProps> = ({ onConfirm, onDismiss, children, submi
     return (
         <VaulDrawer onClose={onDismiss} {...props}>
             <VaulDrawer.Snap id="item-1">
-                <div className="flex flex-col items-center gap-2 mt-2">
-                    {children}
-                    <div className="h-full w-full space-y-3">
-                        <SubmitButton type="button" onClick={onConfirm}>
-                            {submitText ?? 'Confirm'}
-                        </SubmitButton>
-                        {dismissText &&
-                            <SecondaryButton className="w-full h-full py-3 !text-base text-primary-text" size="xl" onClick={onDismiss}>
-                                {dismissText}
-                            </SecondaryButton>
-                        }
-                    </div>
-                </div>
+                <ConfirmationContent submitText={submitText} dismissText={dismissText} onConfirm={onConfirm} onDismiss={onDismiss}>{children}</ConfirmationContent>
             </VaulDrawer.Snap>
         </VaulDrawer>
     );

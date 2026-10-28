@@ -5,9 +5,12 @@ export {
     createReactHookConnectionAdapter,
     findRegistryWalletByName,
     subscribeDisplayUri,
+    subscribeWalletRequests,
     isWalletConnectRegistryConnector,
     chainsToNetworkTypes,
     getProvidersForWalletConnectNetworkType,
+    defaultWalletConnectChainRegistry,
+    WalletConnectChainRegistry,
     mapConnectError,
     getDynamicWcMetadata,
     getPendingDynamicWcMetadata,
@@ -28,6 +31,7 @@ export {
 export { isProviderConnectReady, isProviderHydrated, PROVIDER_HYDRATION_TIMEOUT_MS } from "@/lib/providerReadiness";
 export { useProvidersConnectReady, useConnectorSourcesStatus, useWalletProviderReadiness } from "@/hooks/useProviderReadiness";
 export type { DisplayUriSource, WalletConnectRegistryConnector, WalletConnectWalletBase, WalletConnectLink } from "@/lib/walletConnect";
+export type { WalletConnectChainDefinition } from '@/lib/walletConnect';
 export { useConnectors, connectorKey, resolveChainConnectors } from "@/hooks/useConnectors";
 export { useWalletProviderSnapshots } from "@/hooks/useWalletProviderSnapshots";
 export { usePersistedState } from "@/hooks/usePersistedState";
@@ -35,6 +39,7 @@ export { checkStorageIsAvailable } from "@/lib/storageAvailable";
 export type { storageType } from "@/lib/storageAvailable";
 export { WalletProvidersRegistryProvider, DescriptorHydrationBoundary, useHasConfiguredWalletProviders, useWalletProvidersRegistry, useWalletProvidersReady } from "@/context/WalletProvidersRegistryProvider";
 export { walletKey } from "@/lib/walletKey";
+export { walletRequestStore } from '@/lib/walletConnect/walletRequestStore';
 export type { WalletConnectWallet } from "@/types/WalletConnectWallet";
 
 export * from "@/icons/knownConnectorIcons";

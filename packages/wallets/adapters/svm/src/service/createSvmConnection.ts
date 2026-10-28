@@ -1,13 +1,11 @@
 import type { MultiStepHandler, WalletConnectionProvider, WalletConnectionProviderProps, WalletConnectionStore, WalletModalConnector } from "@layerswap/wallet-core/types"
 import { isMobile } from "@layerswap/utils"
 import { connectModalStore, createMemoizedConnectionStore, getAdditionalConnectorsStore, type AppNetworkAdapter } from "@layerswap/wallet-core"
-import { id as PROVIDER_ID } from '../constants'
 import { createSvmTransfer } from '../transferProvider/createSvmTransfer'
 import { getWalletConnectConfig } from './walletConnectConfig'
 import { SvmConnectionService } from './SvmConnectionService'
 import { useSvmStore } from './svmStore'
-
-const SVM_NS = PROVIDER_ID
+import { registerSolanaWalletConnectChain, solanaWalletConnectChain } from '../constants'
 
 type CreateSvmConnectionOptions = {
     extraMultiStepHandlers?: MultiStepHandler[]
@@ -21,6 +19,8 @@ export function createSvmConnection<Network>(
     initialProps: WalletConnectionProviderProps<Network>,
     options: CreateSvmConnectionOptions = {},
 ): WalletConnectionStore<Network> {
+    registerSolanaWalletConnectChain()
+
     const { extraMultiStepHandlers = [] } = options
     const isMobilePlatform = isMobile()
 
@@ -31,7 +31,7 @@ export function createSvmConnection<Network>(
 
     const walletConnectConfig = getWalletConnectConfig()
     const additionalConnectorsStore = getAdditionalConnectorsStore(
-        SVM_NS,
+        solanaWalletConnectChain.namespace,
         walletConnectConfig?.projectId,
     )
 

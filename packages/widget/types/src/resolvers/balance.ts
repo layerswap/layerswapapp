@@ -1,21 +1,14 @@
 import { TokenBalance } from "./balanceModels";
 import { Network, NetworkWithTokens, Token } from "../types";
-import { ErrorHandler } from "../errorHandler";
 import { extractErrorDetails } from "./errorUtils";
 import { classifyNodeError } from "./nodeErrorClassifier";
 
 export abstract class BalanceProvider {
     abstract supportsNetwork: (network: NetworkWithTokens) => boolean
     abstract fetchBalance: (address: string, network: NetworkWithTokens, options?: { timeoutMs?: number, retryCount?: number }) => Promise<TokenBalance[] | null | undefined>
+    // Not reported here: BalanceResolver reports one error per fetch listing every
+    // failed token, instead of one report per token.
     protected resolveTokenBalanceFetchError = (err: Error, token: Token, network: Network, isNativeCurrency?: boolean) => {
-        ErrorHandler({
-            type: 'BalanceProviderError',
-            message: err.message,
-            name: err.name,
-            stack: err.stack,
-            cause: err
-        });
-
         const errorDetails = extractErrorDetails(err);
         const category = classifyNodeError(err);
         

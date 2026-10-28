@@ -3,14 +3,19 @@ import useSWR from "swr";
 import { Network } from "@layerswap/widget-types";
 import { resolverService } from "../resolvers/resolverService";
 
-const useSWRNftBalance = (address: string, network: Network | undefined, contractAddress: string) => {
+const useSWRNftBalance = (
+    address: string,
+    network: Network | undefined,
+    contractAddress: string,
+    { enabled = true }: { enabled?: boolean } = {},
+) => {
     const { data: balance, error, isLoading } = useSWR(
-        (network && address && contractAddress) ? `/nft-balance/${address}/${network.name}/${contractAddress}` : null,
+        (enabled && network && address && contractAddress) ? `/nft-balance/${address}/${network.name}/${contractAddress}` : null,
         () => {
             if (!network || !contractAddress || !address) return 0;
             return resolverService.getNftResolver().getBalance({ address, network, contractAddress });
         },
-        { refreshInterval: 60000 }
+        { refreshInterval: enabled ? 60000 : 0, keepPreviousData: !enabled }
     );
 
     return {
@@ -20,4 +25,4 @@ const useSWRNftBalance = (address: string, network: Network | undefined, contrac
     };
 };
 
-export default useSWRNftBalance; 
+export default useSWRNftBalance;

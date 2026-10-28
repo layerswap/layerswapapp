@@ -74,3 +74,4 @@ export function createSVMProvider<Network = NetworkWithTokens>(
 export { createSvmConnection } from "./service/createSvmConnection"
 export { useSvmStore } from "./service/svmStore"
 export { svmAdapterManager } from "./service/svmAdapterManager"
+export { solanaWalletConnectChain, registerSolanaWalletConnectChain } from './constants'

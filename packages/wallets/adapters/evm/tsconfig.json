@@ -11,6 +11,9 @@
       "@layerswap/wallet-core/types": [
         "../../core/src/types/index.ts"
       ],
+      "@layerswap/wallet-core/errors": [
+        "../../core/src/lib/walletErrors.ts"
+      ],
       "@layerswap/utils": [
         "../../../utils/src/index.ts"
       ],

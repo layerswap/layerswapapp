@@ -11,7 +11,7 @@ export const walletNetworkAdapter = defineNetworkAdapter<NetworkWithTokens>({
     getTransactionExplorerUrl: network => network.transaction_explorer_template,
     getAccountExplorerUrl: network => network.account_explorer_template,
     getNativeCurrency: network => network.token && {
-        symbol: network.token.symbol,
+        symbol: network.token.asset,
         decimals: network.token.decimals,
     },
     getMulticallAddress: network => network.metadata?.evm_multicall_contract ?? undefined,
@@ -19,6 +19,7 @@ export const walletNetworkAdapter = defineNetworkAdapter<NetworkWithTokens>({
     isSolanaNetwork: network => network.type === NetworkType.Solana,
     isStarknetNetwork: network => network.type === NetworkType.Starknet,
     isTronNetwork: network => network.type === NetworkType.Tron,
+    isStellarNetwork: network => network.type === NetworkType.Stellar,
     isBitcoinNetwork: network => network.type === NetworkType.Bitcoin,
     isTonNetwork: network => network.type === NetworkType.TON,
     isFuelNetwork: network => network.type === NetworkType.Fuel,

@@ -5,6 +5,7 @@ export enum ActionMessageType {
   TransactionRejected = 'TransactionRejected',
   WaletMismatch = 'WaletMismatch',
   TransactionFailed = 'TransactionFailed',
+  TransactionExpired = 'TransactionExpired',
   UnexpectedErrorMessage = 'UnexpectedErrorMessage',
   DifferentAccountsNotAllowedError = 'DifferentAccountsNotAllowedError',
 }

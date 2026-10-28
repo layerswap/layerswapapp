@@ -1,10 +1,8 @@
-import { ActionMessageType } from '@layerswap/widget-types';
 import { Network } from "@layerswap/widget-types";
 import { TransferProvider, TransferProps } from "@layerswap/widget-types";
 import { sendTransaction, Config } from '@wagmi/core'
-import { BaseError } from "viem"
-import { foregroundWalletApp } from "@layerswap/wallet-core"
-import { resolveError } from "../evmUtils/resolveError"
+import { toTransferError } from "./toTransferError"
+import { resolveWalletConnector } from '../service/resolveWalletConnector'
 
 type TransactionBuilder = (params: TransferProps) => Promise<any>
 
@@ -21,10 +19,8 @@ export function createEVMTransferProvider(
 
             try {
                 const tx = await buildTransaction(params)
-
-                await foregroundWalletApp(selectedWallet?.metadata?.deepLink)
-
-                const hash = await sendTransaction(config, tx)
+                const connector = resolveWalletConnector(config, selectedWallet)
+                const hash = await sendTransaction(config, { ...tx, connector })
 
                 if (hash) {
                     return hash
@@ -32,22 +28,7 @@ export function createEVMTransferProvider(
 
                 throw new Error("No transaction hash returned")
             } catch (error) {
-                const transactionResolvedError = resolveError(error as BaseError)
-                const e = new Error()
-                e.message = error instanceof Error ? error.message : String(error)
-
-                if (transactionResolvedError && transactionResolvedError === "insufficient_funds") {
-                    e.name = ActionMessageType.InsufficientFunds
-                    throw e
-                }
-                else if (transactionResolvedError && transactionResolvedError === "transaction_rejected") {
-                    e.name = ActionMessageType.TransactionRejected
-                    throw e
-                }
-                else {
-                    e.name = ActionMessageType.UnexpectedErrorMessage
-                    throw e
-                }
+                throw toTransferError(error)
             }
         }
     }

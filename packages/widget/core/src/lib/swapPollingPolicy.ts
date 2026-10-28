@@ -1,5 +1,6 @@
-import { SwapPhase, TERMINAL_PHASES } from '@/components/utils/resolveSwapPhase'
-import { parseHmsString } from '@/components/utils/formatTime'
+import { SwapStatus } from '@layerswap/widget-types'
+import type { SwapResponse } from './apiClients/layerSwapApiClient'
+import { hmsToMs } from '@/components/utils/formatTime'
 
 /** Must stay below HOT_INTERVAL_MS so SWR dedup never swallows a scheduled poll. */
 export const SWAP_POLL_DEDUPE_MS = 200
@@ -10,11 +11,11 @@ const HOT_WINDOW_MS = 6_000
 /** A swap with no payload change for this long is an outlier — relax polling. */
 const MIN_OUTLIER_THRESHOLD_MS = 60_000
 
-// Terminal swaps never change again; Delayed swaps change too slowly to be worth polling.
-const NO_POLL_PHASES: ReadonlySet<SwapPhase> = new Set([...TERMINAL_PHASES, SwapPhase.Delayed])
-
 export type SwapPollingInput = {
-    phase: SwapPhase
+    /** Only backend facts can end observation. UI phases and local failures are not inputs. */
+    swap?: Pick<SwapResponse['swap'], 'status' | 'transactions' | 'use_deposit_address'>
+    refuelRequired?: boolean
+    hasError?: boolean
     now: number
     /** Last time the swap payload changed (or polling started). */
     lastChangeAt: number
@@ -22,29 +23,34 @@ export type SwapPollingInput = {
     txSubmittedAt?: number
     /** Quote's avg_completion_time in "H:MM:SS.fff" format. */
     avgCompletionTime?: string
-    isDepositAddressFlow?: boolean
 }
 
 /** [elapsed is below this ms, use this interval] — first match wins. */
 type Step = [belowMs: number, intervalMs: number]
 
 export function resolveSwapPollingInterval(input: SwapPollingInput): number {
-    const { phase, now, lastChangeAt, txSubmittedAt, avgCompletionTime, isDepositAddressFlow } = input
-
-    if (NO_POLL_PHASES.has(phase)) return 0
-
+    const { swap, refuelRequired, now, lastChangeAt, txSubmittedAt, avgCompletionTime } = input
+    if (!swap?.status) return input.hasError ? 5000 : 1000
+    if ([SwapStatus.Failed, SwapStatus.Expired, SwapStatus.Refunded].includes(swap.status)) return 0
+    const outputReady = swap.transactions?.some(t => t.type === 'output' && t.transaction_hash && t.amount)
+    const refuelReady = !refuelRequired || swap.transactions?.some(t => t.type === 'refuel' && t.transaction_hash && t.amount)
+    // Backend completion and settlement data are both required. Early UI completion must
+    // not hide the eventual backend transition, and completed can precede output/refuel data.
+    if (swap.status === SwapStatus.Completed && outputReady && refuelReady) return 0
 
     const sinceActivity = Math.max(0, now - Math.max(lastChangeAt, txSubmittedAt ?? 0))
 
-    if (phase === SwapPhase.AwaitingUserDeposit) {
+    const awaitingDeposit = (swap.status === SwapStatus.Created || swap.status === SwapStatus.UserTransferPending)
+        && !swap.transactions?.some(t => t.type === 'input') && txSubmittedAt == null
+    if (awaitingDeposit) {
         // Wallet flow before the user signs: nothing changes server-side until they act.
-        if (!isDepositAddressFlow && !txSubmittedAt)
+        if (!swap.use_deposit_address)
             return withJitter(stepInterval(sinceActivity, [[30_000, 3_000], [120_000, 5_000]], 10_000))
         // Deposit-address flow: the server can detect an incoming transfer at any moment.
         return withJitter(stepInterval(sinceActivity, [[60_000, 1_000], [180_000, 2_000]], 5_000))
     }
 
-    if (phase === SwapPhase.PendingRefund)
+    if (swap.status === SwapStatus.PendingRefund)
         return withJitter(stepInterval(sinceActivity, [[60_000, 2_000]], 5_000))
 
     // Hot phases (InputPending / OutputPending / SettlingOutput): completion is expected
@@ -70,10 +76,4 @@ function stepInterval(elapsedMs: number, steps: Step[], fallbackMs: number): num
 /** ±15% so simultaneously-started clients don't synchronize into request spikes. */
 function withJitter(ms: number): number {
     return Math.round(ms * (0.85 + Math.random() * 0.3))
-}
-
-function hmsToMs(value: string | undefined): number | undefined {
-    const parts = parseHmsString(value)
-    if (!parts) return undefined
-    return ((parts.hours * 60 + parts.minutes) * 60 + parts.seconds) * 1000
 }

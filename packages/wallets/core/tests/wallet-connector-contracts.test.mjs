@@ -13,7 +13,17 @@ import {
 import {
     resolveChainConnectors,
 } from '../dist/esm/hooks/useConnectors.js'
+import {
+    chainsForNamespace,
+} from '../dist/esm/lib/walletConnect/api.js'
+import {
+    chainsToNetworkTypes,
+} from '../dist/esm/lib/walletConnect/types.js'
+import { defaultWalletConnectChainRegistry } from '../dist/esm/lib/walletConnect/chainRegistry.js'
 
+defaultWalletConnectChainRegistry.register({ namespace: 'eip155', networkType: 'evm', explorerChainIds: ['eip155:1'] })
+defaultWalletConnectChainRegistry.register({ namespace: 'solana', networkType: 'solana', explorerChainIds: ['solana:mainnet'] })
+defaultWalletConnectChainRegistry.register({ namespace: 'stellar', networkType: 'stellar', explorerChainIds: ['stellar:pubnet', 'stellar:testnet'] })
 const registryWallet = {
     walletConnectProjectId: 'test-project',
     id: 'rainbow',
@@ -30,33 +40,6 @@ const registryWallet = {
     order: 1,
 }
 
-test('configured WalletConnect metadata does not imply registry source', () => {
-    const configuredConnector = {
-        id: 'rainbow',
-        name: 'Rainbow',
-        providerName: 'EVM',
-        type: 'walletConnect',
-        source: 'configured',
-        mobile: {
-            native: 'rainbow://',
-            universal: 'https://rnbwapp.com',
-        },
-    }
-
-    assert.equal(isWalletConnectRegistryConnector(configuredConnector), false)
-})
-
-test('registry connector source is explicit', () => {
-    const registryConnector = createRegistryConnector(registryWallet, false, 'EVM')
-
-    assert.equal(isWalletConnectRegistryConnector(registryConnector), true)
-    assert.equal(registryConnector.source, 'registry')
-    assert.equal(isWalletConnectRegistryConnector({
-        ...registryConnector,
-        type: 'injected',
-    }), false)
-})
-
 test('connector composition preserves configured transport and synthesizes registry variants', () => {
     const configuredConnector = {
         id: 'rainbow-configured',
@@ -68,6 +51,9 @@ test('connector composition preserves configured transport and synthesizes regis
         mobile: registryWallet.mobile,
     }
     const registryConnector = createRegistryConnector(registryWallet, false, 'EVM')
+    assert.equal(isWalletConnectRegistryConnector(configuredConnector), false)
+    assert.equal(isWalletConnectRegistryConnector(registryConnector), true)
+    assert.equal(isWalletConnectRegistryConnector({ ...registryConnector, type: 'injected' }), false)
     const providers = [
         {
             id: 'evm-provider',
@@ -136,5 +122,13 @@ test('provider capability matching does not depend on provider id', () => {
     assert.deepEqual(
         getProvidersForWalletConnectNetworkType(providers, 'solana').map(provider => provider.name),
         ['Custom Multichain', 'Solana'],
+    )
+})
+
+test('maps Stellar WalletConnect chains into registry capabilities', () => {
+    assert.equal(chainsForNamespace('stellar'), 'stellar:pubnet,stellar:testnet')
+    assert.deepEqual(
+        chainsToNetworkTypes(['stellar:pubnet', 'stellar:testnet']),
+        ['stellar'],
     )
 })

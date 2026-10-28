@@ -76,7 +76,7 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, quote }) => {
                     {
                         refuel && !quote &&
                         <p className="text-xs">
-                            <span>You&apos;ll get</span> <span>{toCurrency.refuel?.token.symbol}</span> <span>for gas fees</span>
+                            <span>You&apos;ll get</span> <span>{toCurrency.refuel?.token.asset}</span> <span>for gas fees</span>
                         </p>
                     }
                 </button>

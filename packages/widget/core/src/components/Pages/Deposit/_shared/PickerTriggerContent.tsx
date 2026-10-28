@@ -8,7 +8,7 @@ type PickerTriggerContentProps = {
     label: string;
     /** When provided, the trigger shows the token + network. When omitted,
      * the placeholder is shown instead. */
-    token?: { logo?: string; symbol: string };
+    token?: { logo?: string; asset: string };
     network?: { logo?: string; display_name: string };
     placeholder?: string;
     showChevron?: boolean;
@@ -34,7 +34,7 @@ const PickerTriggerContent: FC<PickerTriggerContentProps> = ({
             {hasSelection ? (
                 <TokenChainBadge
                     tokenLogo={token!.logo}
-                    tokenSymbol={token!.symbol}
+                    tokenSymbol={token!.asset}
                     networkLogo={network!.logo}
                     networkName={network!.display_name}
                     size={32}
@@ -48,7 +48,7 @@ const PickerTriggerContent: FC<PickerTriggerContentProps> = ({
                 </span>
                 {hasSelection ? (
                     <span className="leading-tight truncate">
-                        <span className="text-base font-semibold text-primary-text">{token!.symbol}</span>
+                        <span className="text-base font-semibold text-primary-text">{token!.asset}</span>
                         <span className="ml-1 text-sm font-normal text-secondary-text">on {network!.display_name}</span>
                     </span>
                 ) : (

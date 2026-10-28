@@ -2,9 +2,7 @@ import { THEME_COLORS, ThemeData } from "@layerswap/widget";
 import { useRouter } from 'next/router';
 import Head from "next/head";
 import AppWrapper from "./AppWrapper";
-import { useEffect } from "react";
 import type { JSX } from 'react';
-import { capture } from "../lib/posthog";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -18,35 +16,6 @@ export default function Layout({ children, themeData }: Props) {
 
   const basePath = router?.basePath ?? ""
   const isCanonical = (router.pathname === "/app" || router.pathname === "/") && Object.keys(router.query).length === 0;
-
-  useEffect(() => {
-    function prepareUrl(params) {
-      const url = new URL(location.href)
-      const queryParams = new URLSearchParams(location.search)
-      let customUrl = url.protocol + "//" + url.hostname + url.pathname.replace(/\/$/, '')
-      for (const paramName of params) {
-        const paramValue = queryParams.get(paramName)
-        if (paramValue) customUrl = customUrl + '/' + paramValue
-      }
-      return customUrl
-    }
-    const customUrl = prepareUrl([
-      'destNetwork', // obsolete
-      'sourceExchangeName', // obsolete
-      'addressSource', // obsolete
-      'from',
-      'to',
-      'appName',
-      'asset',
-      'amount',
-      'destAddress'
-    ])
-
-    // This fires before `_app.js`'s idle-time posthog init, and posthog-js
-    // drops pre-init captures — `capture` from lib/posthog holds the event
-    // until init completes, keeping posthog-js out of this eager chunk.
-    capture('$pageview', { custom_url: customUrl })
-  }, [])
 
   return (<>
     <Head>

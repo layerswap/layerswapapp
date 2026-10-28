@@ -1,4 +1,5 @@
-import React, { createContext, useMemo, ReactNode } from 'react';
+import React, { createContext, useMemo, ReactNode, useEffect } from 'react';
+import { widgetTelemetry } from '@/lib/widgetTelemetry';
 import { useFormikContext } from 'formik';
 import { useInitialSettings } from './settings';
 import { transformFormValuesToQuoteArgs, useQuoteData } from '@/hooks/useFee';
@@ -78,6 +79,11 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
         quoteError: routeError,
         noExchangeWithdrawalRoute
     })
+
+    const validationCode = formValidation.code
+    useEffect(() => {
+        widgetTelemetry.validation(validationCode)
+    }, [validationCode])
 
     const value = useMemo(
         () => ({

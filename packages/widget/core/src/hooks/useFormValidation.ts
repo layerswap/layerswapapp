@@ -1,8 +1,10 @@
+import { isAmountPreset } from '@/lib/amountPresets';
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues';
 import { QuoteError } from './useFee';
 import { Address } from '@/lib/address/Address';
-import { ceilUsd, floorUsd } from '@/components/utils/formatUsdAmount';
+import { floorUsd } from '@/components/utils/formatUsdAmount';
 import { isDepositAddressFlow } from '@/helpers/swapFlow';
+import { minimumAmountMessage } from '@/lib/amountMessages';
 
 interface Params {
     values: SwapFormValues;
@@ -23,6 +25,11 @@ export const FORM_VALIDATION_ERROR_CODES = {
     PRICE_IMPACT_TOO_HIGH: "PRICE_IMPACT_TOO_HIGH",
     MIN_AMOUNT_ERROR: "MIN_AMOUNT_ERROR",
     MAX_AMOUNT_ERROR: "MAX_AMOUNT_ERROR",
+    INVALID_AMOUNT: "INVALID_AMOUNT",
+    NO_SOURCE_ROUTE: "NO_SOURCE_ROUTE",
+    INVALID_DESTINATION_ADDRESS: "INVALID_DESTINATION_ADDRESS",
+    ADDRESS_UPDATE_REQUIRED: "ADDRESS_UPDATE_REQUIRED",
+    MANUAL_TRANSFER_UNSUPPORTED: "MANUAL_TRANSFER_UNSUPPORTED",
 }
 
 
@@ -48,7 +55,8 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
         return { message: 'Select destination asset' };
     }
     if (!depositAddressFlow) {
-        if (amount === undefined || isNaN(Number(amount))) {
+        if (isAmountPreset(values.amountMode) && values.amountPresetError) return { message: values.amountPresetError };
+        if (amount === undefined || amount === 0 || isNaN(Number(amount))) {
             return { message: 'Enter an amount' };
         }
         if (amount < 0) {
@@ -60,17 +68,15 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
             return { code: FORM_VALIDATION_ERROR_CODES.MAX_AMOUNT_ERROR, message: `Max amount is ${displayAmount}` };
         }
         if (minAllowedAmount != undefined && amount < minAllowedAmount) {
-            // In USD mode, ceil the USD limit so the displayed min, when entered, always satisfies the token limit
-            const displayAmount = isUsdMode && minAllowedAmountInUsd != undefined ? `$${ceilUsd(minAllowedAmountInUsd)}` : minAllowedAmount;
-            return { code: FORM_VALIDATION_ERROR_CODES.MIN_AMOUNT_ERROR, message: `Min amount is ${displayAmount}` };
+            return { code: FORM_VALIDATION_ERROR_CODES.MIN_AMOUNT_ERROR, message: minimumAmountMessage(minAllowedAmount, values.fromAsset, minAllowedAmountInUsd, isUsdMode) };
         }
-        if (!/^[0-9]*[.,]?[0-9]*$/i.test(amount.toString())) {
-            return { message: 'Invalid amount' };
+        if (!/^[0-9]*[.,]?[0-9]*$/i.test(values.amount ?? '')) {
+            return { message: 'Invalid amount', code: FORM_VALIDATION_ERROR_CODES.INVALID_AMOUNT };
         }
     }
     if (depositAddressFlow) {
         if (!values.from || !values.fromAsset) {
-            return { message: 'No source route available' };
+            return { message: 'No source route available', code: FORM_VALIDATION_ERROR_CODES.NO_SOURCE_ROUTE };
         }
         if (!values.destination_address) {
             return { message: 'Enter destination address' };
@@ -79,7 +85,7 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
 
     if (values.to) {
         if (values.destination_address && !Address.isValid(values.destination_address, values.to)) {
-            return { message: `Enter a valid ${values.to?.display_name} address` };
+            return { message: `Enter a valid ${values.to?.display_name} address`, code: FORM_VALIDATION_ERROR_CODES.INVALID_DESTINATION_ADDRESS };
         }
     }
 
@@ -93,15 +99,19 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
                 values.destination_address &&
                 sourceAddress.toLowerCase() !== values.destination_address.toLowerCase()
             ) {
-                return { message: `Address update required` };
+                return { message: `Address update required`, code: FORM_VALIDATION_ERROR_CODES.ADDRESS_UPDATE_REQUIRED };
             }
 
             if (values.depositMethod === "deposit_address") {
-                return { message: 'Manual Transfer is not supported' };
+                return { message: 'Manual Transfer is not supported', code: FORM_VALIDATION_ERROR_CODES.MANUAL_TRANSFER_UNSUPPORTED };
             }
         }
     }
 
+    return resolveQuoteError(quoteError) ?? { message: '' };
+}
+
+export function resolveQuoteError(quoteError?: QuoteError) {
     const quoteErrorCode = quoteError?.response?.data?.error?.code || quoteError?.code;
     const quoteErrorMessage = quoteError?.response?.data?.error?.message || quoteError?.message;
     if (quoteError && quoteErrorCode !== "QUOTE_REQUIRES_NO_DEPOSIT_ADDRESS") {
@@ -114,5 +124,4 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
         return { message: 'Route not found', code: FORM_VALIDATION_ERROR_CODES.ROUTE_NOT_FOUND };
     }
 
-    return { message: '' };
 }

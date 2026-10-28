@@ -1,3 +1,4 @@
+import { widgetTelemetry } from '@/lib/widgetTelemetry';
 import { useFormikContext } from "formik";
 import { forwardRef, useEffect, useMemo, useRef } from "react";
 import NumericInput from "../NumericInput";
@@ -20,7 +21,7 @@ interface AmountFieldProps {
 }
 
 const AmountField = forwardRef(function AmountField({ actionValue, actionValueUsd, fee, quoteTokenPrices, className, showToggle }: AmountFieldProps, ref: any) {
-    const { values, handleChange } = useFormikContext<SwapFormValues>();
+    const { values, setValues } = useFormikContext<SwapFormValues>();
     const { fromAsset: fromCurrency, amount, toAsset: toCurrency, fromExchange } = values || {};
     const { setFieldValue } = useFormikContext<SwapFormValues>();
     const name = "amount"
@@ -37,6 +38,7 @@ const AmountField = forwardRef(function AmountField({ actionValue, actionValueUs
         quote: quoteTokenPrices ?? fee?.quote,
         fromCurrency,
         amount,
+        amountMode: values.amountMode,
         setFieldValue,
     });
 
@@ -144,7 +146,7 @@ const AmountField = forwardRef(function AmountField({ actionValue, actionValueUs
                             {`${previewToken ?? formattedTokenAmount}`}
                         </span>
                         <span className="shrink-0">
-                            {` ${fromCurrency?.symbol || ''}`}
+                            {` ${fromCurrency?.asset || ''}`}
                         </span>
                     </span>
                 </div>
@@ -166,7 +168,10 @@ const AmountField = forwardRef(function AmountField({ actionValue, actionValueUs
                 tempValue={actionValue}
                 className="w-full text-[28px] leading-[34px] rounded-xl text-primary-text focus:outline-none focus:border-none focus:ring-0 duration-300 ease-in-out bg-secondary-500! font-normal! group-[.exchange-amount-field]:text-xl group-[.exchange-amount-field]:px-2.5 group-[.exchange-amount-field]:py-2 group-[.exchange-amount-field]:pr-2 group-[.exchange-amount-field]:bg-secondary-300! px-0 truncate"
                 onChange={e => {
-                    /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
+                    if (/^[0-9]*[.,]?[0-9]*$/.test(e.target.value)) {
+                        widgetTelemetry.recordAmountInput('manual');
+                        void setValues({ ...values, amount: e.target.value, amountMode: 'manual', amountPresetSource: undefined, amountPresetPending: false, amountPresetError: undefined }, true);
+                    }
                 }}
             />
             <div className={clsx(
@@ -201,4 +206,3 @@ function getFontFromElement(el: HTMLElement | null): string {
     const style = window.getComputedStyle(el);
     return `${style.fontSize} ${style.fontFamily}`;
 }
-

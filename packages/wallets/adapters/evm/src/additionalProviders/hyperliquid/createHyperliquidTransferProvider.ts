@@ -1,21 +1,25 @@
-import { ActionMessageType, NetworkType } from '@layerswap/widget-types';
+import { NetworkType } from '@layerswap/widget-types';
 import { TransferProvider, TransferProps, TransferProgress } from "@layerswap/widget-types";
 import { switchChain } from "@wagmi/core"
+import { formatUnits, parseUnits } from "viem"
 import { getEvmConfig } from "../../service/getEvmConfig"
 import { HyperliquidClient } from "./hyperliquidClient"
 import { signSendToEvm, signUsdClassTransfer } from "./withdraw"
 import { planWithdrawal } from "./planWithdrawal"
 import { resolveHyperliquidConfig, HyperliquidConfig, HYPERLIQUID_DEX_SPOT, HYPERLIQUID_WITHDRAW_HEADROOM, HYPERLIQUID_TRANSFER_POLL_INTERVAL_MS, HYPERLIQUID_TRANSFER_POLL_TIMEOUT_MS } from "./constants"
-import { resolveHyperliquidError, isUserRejection } from "./resolveError"
+import { resolveHyperliquidError } from "./resolveError"
+import { isEvmUserRejection } from "../../evmUtils/resolveError"
+import { userRejectedError } from "@layerswap/wallet-core/errors"
+import { hyperliquidWithdrawal } from './withdrawal'
 
 const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
 
-/** Thrown for a user-declined wallet prompt; the widget maps this to a "rejected" UI. */
-const rejected = (): Error => {
-    const e = new Error('Transaction rejected')
-    e.name = ActionMessageType.TransactionRejected
-    return e
-}
+/**
+ * Thrown for a user-declined wallet prompt: rejected UI copy plus the
+ * `user_rejected` classification the host and telemetry read. Exported so the
+ * mapping is testable without a wallet.
+ */
+export const rejected = (cause: unknown): Error => userRejectedError({ cause })
 
 /** A surfaced failure: `message` is the user-facing detail, `header` the title. */
 const fail = (header: string, details: string): Error => {
@@ -35,12 +39,13 @@ async function pollUntilTargetCovers(
     sourceAddress: string,
     coin: string,
     sourceDex: string,
-    required: number,
+    required: bigint,
+    decimals: number,
 ): Promise<boolean> {
     const deadline = Date.now() + HYPERLIQUID_TRANSFER_POLL_TIMEOUT_MS
     while (Date.now() < deadline) {
         await sleep(HYPERLIQUID_TRANSFER_POLL_INTERVAL_MS)
-        const split = await client.getWithdrawableSplit(sourceAddress, nodeUrl, coin)
+        const split = await client.getWithdrawableSplit(sourceAddress, nodeUrl, coin, decimals)
         const targetAvailable = sourceDex === HYPERLIQUID_DEX_SPOT ? split.spot : split.perps
         if (targetAvailable >= required) return true
     }
@@ -68,16 +73,29 @@ export function createHyperliquidTransfer(): TransferProvider {
 
     return {
         supportsNetwork,
+        withdrawal: hyperliquidWithdrawal,
 
         async executeTransfer(params: TransferProps, _wallet, onProgress?: (info: TransferProgress | undefined) => void): Promise<string> {
+            params.onSubmissionStateChange?.('preparing')
             const config = getEvmConfig()
             const { token: sourceToken, sourceAddress, depositAddress } = params
-            // Verbatim string carries 6dp precision; `params.amount` (number) would round.
-            const amount = params.amountExact ?? String(params.amount)
             const hlConfig = resolveConfig(params)
             if (!hlConfig) throw fail('Unsupported network', 'No Hyperliquid route for this destination.')
             if (!sourceAddress) throw fail('No account', 'No connected Hyperliquid account.')
             if (!depositAddress) throw fail('No deposit address', 'Missing destination deposit address.')
+            if (!params.amountInBaseUnits || !/^\d+$/.test(params.amountInBaseUnits)) {
+                throw fail('Invalid amount', 'Missing or invalid withdrawal amount.')
+            }
+            const amountInBaseUnits = BigInt(params.amountInBaseUnits)
+            if (amountInBaseUnits <= 0n) throw fail('Invalid amount', 'Withdrawal amount must be greater than zero.')
+            const decimals = sourceToken.decimals ?? 6
+            // The backend action is net of forwarding; HyperCore must send the gross amount.
+            // Keep amounts and balance requirements in base units through signing and polling.
+            const forwardingFeeInBaseUnits = parseUnits(hlConfig.forwardingFee.toString(), decimals)
+            const grossAmountInBaseUnits = amountInBaseUnits + forwardingFeeInBaseUnits
+            const amount = formatUnits(grossAmountInBaseUnits, decimals)
+            const headroomInBaseUnits = parseUnits(HYPERLIQUID_WITHDRAW_HEADROOM.toString(), decimals)
+            const required = grossAmountInBaseUnits + headroomInBaseUnits
 
             // Both signatures use a fixed Ethereum (mainnet/Sepolia) typed-data domain, so the
             // wallet must be on that chain — wallets reject signing a foreign-domain payload.
@@ -85,21 +103,25 @@ export function createHyperliquidTransfer(): TransferProvider {
             try {
                 await switchChain(config, { chainId: hlConfig.signatureChainId })
             } catch (switchErr) {
-                if (isUserRejection(switchErr)) throw rejected()
+                if (isEvmUserRejection(switchErr)) throw rejected(switchErr)
                 throw fail('Wrong network', 'Switch your wallet to Ethereum to sign the withdrawal, then try again.')
             }
 
-            const decimals = sourceToken.decimals ?? 6
-            const required = Number(amount) + HYPERLIQUID_WITHDRAW_HEADROOM
             const client = new HyperliquidClient()
 
             // Step 1 — read the fresh on-chain split and decide which pool to withdraw
             // from. If neither pool alone covers it but the combined does, consolidate
             // via `usdClassTransfer` and wait for it to settle.
-            const split = await client.getWithdrawableSplit(sourceAddress, hlConfig.nodeUrl, sourceToken.symbol)
+            const split = await client.getWithdrawableSplit(sourceAddress, hlConfig.nodeUrl, sourceToken.symbol, decimals)
             const plan = planWithdrawal(split, required, decimals)
             if (plan.insufficient) {
-                throw fail('Insufficient balance', `Your available Hyperliquid balance (${split.combined} ${sourceToken.symbol}) is below ${amount} ${sourceToken.symbol}.`)
+                const asset = sourceToken.asset ?? sourceToken.symbol
+                const available = formatUnits(split.combined, decimals)
+                const requiredAmount = formatUnits(required, decimals)
+                const forwardingFee = formatUnits(forwardingFeeInBaseUnits, decimals)
+                const headroom = formatUnits(headroomInBaseUnits, decimals)
+                const shortfall = formatUnits(required - split.combined, decimals)
+                throw fail('Insufficient balance', `Your available Hyperliquid balance (${available} ${asset}) is below the required ${requiredAmount} ${asset}: ${amount} ${asset} to withdraw (including a ${forwardingFee} ${asset} forwarding fee), plus a ${headroom} ${asset} processing reserve. Shortfall: ${shortfall} ${asset}.`)
             }
 
             let sourceDex = plan.sourceDex
@@ -112,7 +134,7 @@ export function createHyperliquidTransfer(): TransferProvider {
                 // signature) and let it paint before the wallet prompt opens.
                 onProgress?.({
                     title: 'Approve moving your balance',
-                    description: `Moving ${plan.transfer.amount} ${sourceToken.symbol} from your Hyperliquid ${fromLabel} balance to ${toLabel} so this withdrawal can be funded. The funds stay on Hyperliquid and there's no fee — you'll approve the withdrawal itself next.`,
+                    description: `Moving ${plan.transfer.amount} ${sourceToken.asset} from your Hyperliquid ${fromLabel} balance to ${toLabel} so this withdrawal can be funded. The funds stay on Hyperliquid and there's no fee — you'll approve the withdrawal itself next.`,
                 })
                 await sleep(50)
                 transferNonce = Date.now()
@@ -126,7 +148,7 @@ export function createHyperliquidTransfer(): TransferProvider {
                     })
                 } catch (signErr) {
                     onProgress?.(undefined)
-                    if (isUserRejection(signErr)) throw rejected()
+                    if (isEvmUserRejection(signErr)) throw rejected(signErr)
                     throw signErr
                 }
 
@@ -138,7 +160,7 @@ export function createHyperliquidTransfer(): TransferProvider {
                 }
 
                 onProgress?.({ title: 'Updating your balance', description: 'Applying the move on Hyperliquid. This usually takes a few seconds…' })
-                const settled = await pollUntilTargetCovers(client, hlConfig.nodeUrl, sourceAddress, sourceToken.symbol, plan.sourceDex, required)
+                const settled = await pollUntilTargetCovers(client, hlConfig.nodeUrl, sourceAddress, sourceToken.symbol, plan.sourceDex, required, decimals)
                 onProgress?.(undefined)
                 if (!settled) {
                     throw fail('Balance is updating', 'Your funds are moving between your Hyperliquid balances. Please try again in a moment.')
@@ -159,12 +181,18 @@ export function createHyperliquidTransfer(): TransferProvider {
                     sourceDex,
                 })
             } catch (signErr) {
-                if (isUserRejection(signErr)) throw rejected()
+                if (isEvmUserRejection(signErr)) throw rejected(signErr)
                 throw signErr
             }
 
+            params.onSubmissionStateChange?.('submitting')
             const response = await client.withdraw(signed.action, signed.signature, hlConfig.nodeUrl)
             if (response.status === 'err') {
+                // Only an explicit funding refusal makes retry safe. Nonce errors
+                // and transport failures can still refer to an accepted withdrawal.
+                if (/^insufficient (?:spot |withdrawable |perps? )?balance\b/i.test(response.response.trim())) {
+                    params.onSubmissionStateChange?.('not_submitted')
+                }
                 const { header, details } = resolveHyperliquidError(response.response)
                 throw fail(header, details)
             }

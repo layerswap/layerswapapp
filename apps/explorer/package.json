@@ -10,7 +10,8 @@
     "check:types": "tsc --noEmit"
   },
   "dependencies": {
-    "@layerswap/widget": "workspace:^",
+    "@layerswap/utils": "workspace:^",
+    "@layerswap/widget-types": "workspace:^",
     "@radix-ui/react-accordion": "^1.1.2",
     "@radix-ui/react-dropdown-menu": "^2.0.5",
     "@radix-ui/react-slot": "^1.0.2",
@@ -21,7 +22,7 @@
     "framer-motion": "^10.16.15",
     "heroicons": "^2.0.18",
     "lucide-react": "^0.379.0",
-    "next": "15.5.22",
+    "next": "15.5.28",
     "react": "catalog:",
     "react-dom": "catalog:",
     "recharts": "^3.10.1",
@@ -36,7 +37,7 @@
     "@types/react-dom": "catalog:",
     "autoprefixer": "^10.4.5",
     "eslint": "8.43.0",
-    "eslint-config-next": "^15.5.19",
+    "eslint-config-next": "^15.5.28",
     "postcss": "^8.5.10",
     "tailwindcss": "^4.0.15",
     "typescript": "^5"

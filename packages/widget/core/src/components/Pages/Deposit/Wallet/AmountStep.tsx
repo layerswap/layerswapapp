@@ -1,9 +1,9 @@
+import { isAmountPreset } from '@/lib/amountPresets';
 import { FC, useCallback } from "react";
 import { useFormikContext } from "formik";
 import SubmitButton from "@/components/Buttons/submitButton";
 import SourcePicker from "@/components/Input/SourcePicker";
 import { useQuoteData } from "@/hooks/useFee";
-import { useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import { useValidationContext } from "@/context/validationContext";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
@@ -12,10 +12,8 @@ import { useDepositStep } from "../depositStepContext";
 import QuoteSummary from "../_shared/QuoteSummary";
 
 const AmountStep: FC = () => {
-    const { values, setFieldValue } = useFormikContext<SwapFormValues>();
-    const { push, back } = useDepositStep();
-    const { setSwapId, setSubmitedFormValues } = useSwapDataUpdate();
-    const { setSwapError } = useSwapDataState();
+    const { values, setFieldValue, submitForm } = useFormikContext<SwapFormValues>();
+    const { back } = useDepositStep();
 
     const from = values?.from;
     const fromAsset = values?.fromAsset;
@@ -30,7 +28,7 @@ const AmountStep: FC = () => {
         minAllowedAmountInUsd,
         maxAllowedAmountInUsd,
         quoteTokenPrices,
-        isQuoteLoading,
+        isQuoteLoading: quoteLoading,
         quoteError,
     } = useQuoteData(
         from && fromAsset && to && toAsset
@@ -46,21 +44,20 @@ const AmountStep: FC = () => {
             : undefined,
     );
 
+    const isQuoteLoading = quoteLoading || (isAmountPreset(values.amountMode) && !!values.amountPresetPending);
     const { formValidation } = useValidationContext();
 
     const hasQuote = !!fee?.quote && !quoteError;
     const isValid = !formValidation.message;
     const canContinue = isValid && hasQuote && !isQuoteLoading && !!sourceAccount?.address;
 
+    // Submitting through Formik lets the owning SwapForm (Wallet/index.tsx)
+    // report form_submitted and move to the processing step.
     const handleContinue = useCallback(() => {
-        if (!canContinue) return;
-        if (!values?.amount) return;
-        if (setSwapError) setSwapError("");
+        if (!canContinue || !values?.amount) return;
         setFieldValue("depositMethod", "wallet", false);
-        setSubmitedFormValues({ ...values, depositMethod: "wallet" });
-        setSwapId(undefined);
-        push("wallet-processing");
-    }, [canContinue, values, setSwapError, setFieldValue, setSubmitedFormValues, setSwapId, push]);
+        submitForm();
+    }, [canContinue, values?.amount, setFieldValue, submitForm]);
 
     const receiveAmount = fee?.quote?.receive_amount;
     const destinationPriceInUsd = fee?.quote?.destination_token?.price_in_usd;
@@ -91,7 +88,7 @@ const AmountStep: FC = () => {
                     <QuoteSummary
                         receiveAmount={receiveAmount != null ? Number(receiveAmount) : undefined}
                         receiveAmountInUsd={receiveAmountInUsd}
-                        tokenSymbol={toAsset?.symbol}
+                        tokenSymbol={toAsset?.asset}
                         token={toAsset}
                         isLoading={isQuoteLoading}
                     />

@@ -1,0 +1,585 @@
+import { Page2Presenter } from './Page2Presenter';
+import { WidgetFooterView } from '@/components/Widget/Footer';
+import { CopyButtonView } from '@layerswap/ui-kit/components';
+import { ConfirmationContent } from '@/components/Modal/ConfirmationContent';
+import { DetailedEstimatesView } from '../../Form/FeeDetails/SwapQuote/DetailedEstimatesView';
+import { GasFeeView } from '../../Form/FeeDetails/SwapQuote/GasFeeView';
+import { SlippageView } from '../../Form/FeeDetails/SlippageView';
+import { QuoteAvailabilityView } from './QuoteAvailabilityView';
+import { ManualSourceSelectorView } from './ManualSourceSelectorView';
+import { DepositQRCodeView } from './DepositQRCodeView';
+import { ManualDepositButtonView } from './ManualDepositButtonView';
+import { WalletTransferView, PendingSwapView } from './Page2Sections';
+import { Page2PreviewFrame, type Page2PreviewMode } from './Page2PreviewFrame';
+import { ElapsedTime } from '@/components/Common/ElapsedTime';
+import { SwapDetailsSceleton } from '@/components/Common/Sceletons';
+import { resolveSwapPhase } from '@/components/utils/resolveSwapPhase';
+import {
+    resolveSwapFlow,
+    type ResolvedSwapFlow,
+} from '@/components/utils/resolveSwapFlow';
+import { isDepositWorkflowComplete } from '@/helpers/depositActions';
+import { gaslessFailureMessage } from '@/helpers/gaslessFailureMessage';
+import { isGaslessAuthorizationSubmitted } from '@/helpers/gasless';
+import { TransactionType } from '@/lib/apiClients/layerSwapApiClient';
+import { resolvePriceImpactValues } from '@/lib/fees';
+import { ReadOnlyPreview } from './ReadOnlyPreview';
+import { ActionMessages } from '../messages/TransactionMessages';
+import { getActionMessage } from './ActionMessageView';
+import {
+    AdjustAmountButtonView,
+    RefreshBalanceButtonView,
+} from './BalanceButtonsView';
+import { BalanceWarningView, GasWarningView } from './BalanceWarningView';
+import { FailedView } from './FailedView';
+import { ManualInstructionsView } from './ManualInstructionsView';
+import { ManualQuoteView } from './ManualQuoteView';
+import { NotFoundView } from './NotFoundView';
+import type {
+    Page2LoadedSnapshot,
+    Page2Snapshot,
+    Page2WalletState,
+} from './Page2Snapshot';
+import { getProcessingProgress } from './ProcessingView';
+import { QuoteDetailsSummary } from './QuoteDetailsSummary';
+import { QuoteSummaryView } from './QuoteSummaryView';
+import { QuoteUpdated } from './QuoteUpdatedView';
+import { QuoteView } from './QuoteView';
+import { RPCUnhealthyView } from './RPCUnhealthyView';
+import { RetryView } from './RetryView';
+import { SpecializedWithdrawalView } from './SpecializedWithdrawalView';
+import SummaryView from './SummaryView';
+import {
+    ConnectWalletView,
+    getSendTransactionPresentation,
+} from './WalletActionsView';
+import { NetworkSwitchError } from '../Wallet/Common/ensureSourceChain';
+import type { ActionData } from '../Wallet/Common/sharedTypes';
+import type { Network } from '@layerswap/widget-types';
+import { type ReactNode } from 'react';
+
+/** Maps synthetic state to the same presenters used by the live controllers. */
+export function Page2Preview({
+    snapshot,
+    now,
+    mode = 'component',
+    onQuoteExpandedChange,
+}: {
+    mode?: Page2PreviewMode;
+    snapshot: Page2Snapshot;
+    now: number;
+    onQuoteExpandedChange?: (expanded: boolean) => void;
+}) {
+    return (
+        <ReadOnlyPreview
+            mode={mode}
+            allowQuoteDisclosure={!!onQuoteExpandedChange}
+        >
+            <Page2PreviewFrame
+                mode={mode}
+                wallets={
+                    snapshot.kind === 'swap'
+                        ? snapshot.connectedWallets
+                        : undefined
+                }
+                confirmation={
+                    snapshot.kind === 'swap' && snapshot.quoteUpdate ? (
+                        <ConfirmationContent
+                            submitText="Continue"
+                            dismissText="Cancel"
+                        >
+                            <QuoteUpdated
+                                {...snapshot.quoteUpdate}
+                                network={
+                                    snapshot.swap.source_network.display_name
+                                }
+                                token={snapshot.swap.source_token.asset}
+                            />
+                        </ConfirmationContent>
+                    ) : undefined
+                }
+            >
+                {snapshot.kind === 'loading' ? (
+                    <PendingSwapView contained={mode === 'modal'}>
+                        <SwapDetailsSceleton />
+                    </PendingSwapView>
+                ) : snapshot.kind === 'not-found' ? (
+                    <PendingSwapView contained={mode === 'modal'}>
+                        <NotFoundView />
+                    </PendingSwapView>
+                ) : (
+                    <Page2LoadedPreview
+                        snapshot={snapshot}
+                        now={now}
+                        onQuoteExpandedChange={onQuoteExpandedChange}
+                    />
+                )}
+            </Page2PreviewFrame>
+        </ReadOnlyPreview>
+    );
+}
+
+export function Page2LoadedPreview({
+    snapshot: s,
+    now,
+    onQuoteExpandedChange,
+}: {
+    snapshot: Page2LoadedSnapshot;
+    now: number;
+    onQuoteExpandedChange?: (expanded: boolean) => void;
+}) {
+    // Opening a snapshot is settled; navigating an existing preview runs the
+    // same entrance as live swap creation, including a newly mounted workflow.
+    const input = s.details.transactions.find(
+        (t) => t.type === TransactionType.Input,
+    );
+    const output = s.details.transactions.find(
+        (t) => t.type === TransactionType.Output,
+    );
+    const gaslessFailed =
+        s.gaslessAuthorization &&
+        ['expired', 'insufficient', 'rejected'].includes(
+            s.gaslessAuthorization.status,
+        );
+    const resolved = resolveSwapPhase({
+        swapDetails: s.details,
+        refuel: s.refuel,
+        inputTxStatusFromApi: s.inputTxStatusFromApi,
+        depositCompleted:
+            isGaslessAuthorizationSubmitted(s.gaslessAuthorization) ||
+            (!s.swap.use_deposit_address &&
+                isDepositWorkflowComplete(s.depositActions ?? [])),
+        walletActionExecuting: s.wallet.kind === 'send' && !!s.wallet.pending,
+        gaslessFailureStatus: gaslessFailed
+            ? (s.gaslessAuthorization?.status as
+                  | 'expired'
+                  | 'insufficient'
+                  | 'rejected')
+            : undefined,
+        isDepositFlow: s.isDepositFlow,
+    });
+    const flow = resolveSwapFlow({
+        swapData: s.swap,
+        isDraft: !s.swapId,
+        atomicBatchAvailable: s.atomicBatchAvailable,
+        gaslessEnabled: s.quoteState.gasless,
+        depositActions: s.depositActions,
+        transaction: s.storedWalletTransaction,
+        stepTransactions: s.stepTransactions,
+        quote: s.quote,
+        gaslessAuthorization: s.gaslessAuthorization,
+        sourceProvider:
+            s.sourceProvider ??
+            (s.wallet.kind === 'specialized' ? s.wallet.provider : undefined),
+        walletExecutionStarted: s.walletExecutionStarted,
+        isDepositFlow: s.isDepositFlow,
+        hasRefuel: !!s.refuel,
+        transactionHash:
+            input?.transaction_hash ||
+            s.gaslessAuthorization?.transaction?.transaction_hash ||
+            s.storedWalletTransaction?.hash,
+        outputTransactionHash: output?.transaction_hash,
+        resolved,
+    });
+    const { compactQuote } = flow;
+    const summary = (
+        <SummaryView
+            swap={{
+                ...s.swap,
+                requested_amount: String(
+                    input?.amount ?? s.swap.requested_amount,
+                ),
+            }}
+            quote={{ quote: s.quote!, refuel: s.refuel }}
+            sourceAccountAddress={s.sourceAddress}
+            receiveAmount={output?.amount || s.quote?.receive_amount}
+            quoteIsLoading={s.quoteState.status === 'loading'}
+            isUsdMode={s.usdMode}
+        />
+    );
+    const authTx = s.gaslessAuthorization?.transaction;
+    const processingProgress = getProcessingProgress({
+        flow: flow,
+        walletProgress: previewWalletProgress(s),
+        swapBasicData: s.swap,
+        swapDetails: s.details,
+        depositActions: s.depositActions,
+        stepTransactions: s.stepTransactions,
+        quote: s.quote,
+        refuel: s.refuel,
+        resolved: resolved,
+        inputFailureMessage: gaslessFailed
+            ? gaslessFailureMessage(s.gaslessAuthorization?.status)
+            : undefined,
+        isDepositFlow: s.isDepositFlow,
+        readOnly: true,
+        transactionHash:
+            input?.transaction_hash ||
+            authTx?.transaction_hash ||
+            s.storedWalletTransaction?.hash,
+        inputConfirmations: input?.confirmations ?? authTx?.confirmations,
+        inputMaxConfirmations:
+            input?.max_confirmations ?? authTx?.max_confirmations,
+        elapsedTime: s.quote?.avg_completion_time ? (
+            <ElapsedTime
+                swapDetails={s.details}
+                elapsedMs={
+                    input?.timestamp
+                        ? Math.max(0, now - Date.parse(input.timestamp))
+                        : 0
+                }
+            />
+        ) : null,
+        failedPanel: (
+            <FailedView
+                status={s.details.status}
+                isDepositFlow={s.isDepositFlow}
+            />
+        ),
+    });
+    const progress = s.swapId ? processingProgress : null;
+    let controls: ReactNode = null;
+    let footer: ReactNode = null;
+    if (!resolved.showWithdrawScreen) {
+        footer = resolved.failureReason ? (
+            <RetryView
+                canSwitchToStandard={
+                    resolved.failureReason === 'gasless_deposit_failed'
+                }
+            />
+        ) : null;
+    } else if (s.swap.use_deposit_address) {
+        controls = (
+            <ManualInstructionsView
+                swapBasicData={s.swap}
+                quote={s.quote}
+                loading={s.manual?.loading}
+                depositAddress={s.manual?.address}
+                sourceSelector={
+                    <ManualSourceSelectorView
+                        network={
+                            s.manual?.selectedNetwork ?? s.swap.source_network
+                        }
+                        withdrawalNetworks={s.manual?.withdrawalNetworks}
+                    />
+                }
+                recipient={s.recipient}
+                qr={
+                    <DepositQRCodeView
+                        depositAddress={s.manual?.address}
+                        showQR={s.manual?.qrOpen}
+                    />
+                }
+                amountCopy={
+                    <CopyButtonView
+                        isCopied={s.manual?.amountCopied}
+                        iconClassName="text-secondary-text"
+                    />
+                }
+                addressCopy={
+                    <CopyButtonView
+                        isCopied={s.manual?.addressCopied}
+                        className="flex"
+                    />
+                }
+                quoteDetails={
+                    <PreviewQuote
+                        snapshot={s}
+                        onExpandedChange={onQuoteExpandedChange}
+                    />
+                }
+            />
+        );
+        footer = <ManualDepositButtonView copied={s.manual?.addressCopied} />;
+    } else {
+        footer = getPreviewWallet({ snapshot: s, flow });
+    }
+    return (
+        <Page2Presenter
+            progress={progress}
+            controls={controls}
+            footer={footer}
+            actionKey={
+                resolved.showWithdrawScreen
+                    ? (s.balanceWarning?.kind ?? s.wallet.kind)
+                    : 'retry'
+            }
+            renderFooter={(children) => (
+                <WidgetFooterView sticky={false}>{children}</WidgetFooterView>
+            )}
+            stage={resolved.showWithdrawScreen ? 'withdraw' : 'processing'}
+            flow={flow}
+            summary={
+                s.swap.use_deposit_address && resolved.showWithdrawScreen
+                    ? null
+                    : summary
+            }
+            quote={
+                !s.swap.use_deposit_address && (
+                    <PreviewQuote
+                        snapshot={s}
+                        compact={compactQuote}
+                        onExpandedChange={onQuoteExpandedChange}
+                    />
+                )
+            }
+        />
+    );
+}
+
+function PreviewQuote({
+    snapshot: s,
+    onExpandedChange,
+    compact,
+}: {
+    snapshot: Page2LoadedSnapshot;
+    onExpandedChange?: (expanded: boolean) => void;
+    compact?: boolean;
+}) {
+    if (
+        !s.swap.use_deposit_address &&
+        (s.quoteState.status === 'error' || !s.quote)
+    )
+        return (
+            <QuoteAvailabilityView
+                error={s.quoteState.status === 'error'}
+                available={!!s.quote}
+            />
+        );
+    const values = {
+        amount: s.swap.requested_amount,
+        from: s.swap.source_network,
+        to: s.swap.destination_network,
+        fromAsset: s.swap.source_token,
+        toAsset: s.swap.destination_token,
+        destination_address: s.swap.destination_address,
+        fromExchange: s.swap.source_exchange,
+        depositMethod: s.swap.use_deposit_address
+            ? ('deposit_address' as const)
+            : ('wallet' as const),
+    };
+    const gas = (
+        <GasFeeView
+            gasFeeInUsd={s.quoteState.gasFeeInUsd}
+            isGaslessCapable={
+                s.quoteState.gaslessCapable ?? s.quoteState.gasless
+            }
+            gaslessEnabled={s.quoteState.gasless}
+            {...s.quoteState.gas}
+        />
+    );
+    const slippage = (
+        <SlippageView quoteData={s.quote} {...s.quoteState.slippage} />
+    );
+    const details = (
+        <DetailedEstimatesView
+            quote={s.quote}
+            reward={s.quoteState.reward}
+            showReward={s.quoteState.showReward}
+            values={values}
+            variant={s.swap.use_deposit_address ? 'extended' : 'base'}
+            gasFee={gas}
+            slippage={slippage}
+        />
+    );
+    const detailsButton = (
+        <QuoteDetailsSummary
+            gasFeeInUsd={s.quoteState.gasFeeInUsd}
+            isGasless={s.quoteState.gasless}
+            isExchange={!!s.swap.source_exchange}
+            isQuoteLoading={s.quoteState.status === 'loading'}
+            averageCompletionTime={s.quote?.avg_completion_time}
+            reward={s.quoteState.reward}
+            showReward={s.quoteState.showReward}
+        />
+    );
+    if (s.swap.use_deposit_address)
+        return (
+            <ManualQuoteView
+                available={!!s.quote}
+                isAccordionOpen={s.quoteState.expanded}
+                setIsAccordionOpen={onExpandedChange}
+                isQuoteLoading={s.quoteState.status === 'loading'}
+                detailsButton={detailsButton}
+                details={details}
+            />
+        );
+    return (
+        <QuoteView
+            compact={compact}
+            isOpen={s.quoteState.expanded}
+            setIsOpen={onExpandedChange}
+            summary={
+                <QuoteSummaryView
+                    compact={compact}
+                    quoteData={{ quote: s.quote!, refuel: s.refuel }}
+                    values={values}
+                    isOpen={s.quoteState.expanded}
+                    onOpen={() => onExpandedChange?.(true)}
+                    sourceAddress={s.sourceAddress}
+                    showDestinationAddress={s.showDestinationAddress ?? true}
+                    recipient={s.recipient}
+                    slippage={slippage}
+                    gasFee={gas}
+                    detailsButton={detailsButton}
+                />
+            }
+            details={details}
+        />
+    );
+}
+
+function getPreviewWallet({
+    snapshot: s,
+    flow,
+}: {
+    snapshot: Page2LoadedSnapshot;
+    flow: ResolvedSwapFlow;
+}) {
+    const state = s.wallet;
+    if (s.balanceWarning?.kind === 'balance')
+        return (
+            <BalanceWarningView
+                amount={s.balanceWarning.amount}
+                asset={s.swap.source_token.asset}
+                refreshing={s.balanceWarning.refreshing}
+                refreshButton={
+                    <>
+                        <RefreshBalanceButtonView
+                            showSpinner={s.balanceWarning.refreshing}
+                        />
+                        <AdjustAmountButtonView
+                            disabled={
+                                s.quoteState.status === 'loading' ||
+                                !!s.walletExecutionStarted
+                            }
+                        />
+                    </>
+                }
+            />
+        );
+    if (s.rpc)
+        return (
+            <RPCUnhealthyView
+                RPCUrl={s.swap.source_network.node_url}
+                isSuggestingRpc={s.rpc.pending}
+                rpcAddStatus={s.rpc.status}
+            />
+        );
+    if (state.kind === 'connect')
+        return (
+            <ConnectWalletView
+                loading={state.pending}
+                connectError={state.error}
+            />
+        );
+    if (state.kind === 'account-mismatch')
+        return (
+            <ActionMessages.DifferentAccountsNotAllowedError
+                network={s.swap.source_network.display_name}
+            />
+        );
+    if (state.kind === 'specialized')
+        return (
+            <SpecializedWithdrawalView
+                preparationLabel={state.preparationLabel}
+                provider={state.provider}
+                network={s.swap.source_network}
+                sourceAddress={s.sourceAddress}
+                isConnected={state.connected}
+                accountMismatch={!!state.accountMismatch}
+                loading={state.pending}
+                progress={state.progress}
+                rejected={state.rejected}
+                error={state.error}
+                connectButton={<ConnectWalletView />}
+            />
+        );
+    const send = getSendTransactionPresentation({
+        ...previewWalletProgress(s),
+        flow,
+        swapId: s.swapId,
+        quoteIsLoading: s.quoteState.status === 'loading',
+        quoteError: s.quoteState.status === 'error',
+        isDisabled: state.disabled,
+        networkSwitch: previewNetworkSwitch(
+            state.networkSwitch,
+            s.swap.source_network,
+        ),
+        sourceNetworkName: s.swap.source_network.display_name,
+        actionButtonText: s.actionButtonText,
+        criticalMarketPriceImpact: !!state.critical,
+        showCriticalMarketPriceImpactButtons: state.critical === 'confirmation',
+        priceImpactValues: s.quote
+            ? resolvePriceImpactValues(s.quote, s.refuel)
+            : undefined,
+        gaslessFailureStage: state.gaslessFailureStage,
+    });
+    if (s.balanceWarning?.kind !== 'gas') return send.controls;
+    return (
+        <WalletTransferView>
+            <GasWarningView
+                adjustButton={
+                    <AdjustAmountButtonView
+                        compact
+                        disabled={s.quoteState.status === 'loading'}
+                    />
+                }
+            />
+            {send.controls}
+        </WalletTransferView>
+    );
+}
+
+function previewWalletProgress(s: Page2LoadedSnapshot) {
+    const state = s.wallet;
+    if (state.kind !== 'send') return undefined;
+    return {
+        quote: s.quote,
+        depositActions: s.depositActions,
+        stepTransactions: s.stepTransactions,
+        readOnly: true,
+        loading: state.pending,
+        walletExecutionStarted: s.walletExecutionStarted,
+        submissionAccepted: state.submissionAccepted,
+        actionStateText: state.label,
+        error: !!state.error,
+        swapError: state.swapError,
+        gaslessUnavailable: state.gaslessUnavailable,
+        errorMessage: getActionMessage({
+            error: state.error ? { name: state.error } : undefined,
+            isSignatureError: state.isSignatureError,
+            sourceNetwork: s.swap.source_network,
+            selectedSourceAddress: s.sourceAddress,
+            expanded: state.errorExpanded ?? false,
+            swapError: state.swapError,
+            gaslessUnavailable: state.gaslessUnavailable,
+        }),
+    };
+}
+
+type PreviewNetworkSwitch = Extract<
+    Page2WalletState,
+    { kind: 'send' }
+>['networkSwitch'];
+
+/** The same switch state the live send button holds while `ensureSourceChain` runs or fails. */
+function previewNetworkSwitch(
+    state: PreviewNetworkSwitch,
+    network: Network,
+): ActionData | undefined {
+    if (!state) return undefined;
+    if (state === 'pending')
+        return { isPending: true, isError: false, error: null };
+    const error =
+        state === 'rejected'
+            ? new NetworkSwitchError(network, 'rejected', {
+                  shortMessage: 'The request was rejected.',
+              })
+            : new NetworkSwitchError(
+                  network,
+                  state === 'still-waiting' ? 'pending' : 'timeout',
+                  null,
+              );
+    return { isPending: false, isError: true, error };
+}

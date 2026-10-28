@@ -20,6 +20,7 @@ export interface NetworkAssetInfo {
     token?: {
         logo?: string;
         symbol?: string;
+        asset?: string;
         precision?: number;
     };
     exchange?: {
@@ -27,4 +28,3 @@ export interface NetworkAssetInfo {
         display_name?: string;
     };
 }
-

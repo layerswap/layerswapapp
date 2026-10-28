@@ -1,8 +1,8 @@
-import { ActionMessageType } from '@layerswap/widget-types';
 import { Network } from "@layerswap/widget-types";
 import { TransferProvider, TransferProps } from "@layerswap/widget-types";
 import { TronWeb } from 'tronweb'
 import { buildInitialTransaction } from "./transactionBuilder"
+import { toTransferError } from "./toTransferError"
 import { TronGasProvider } from "../tronGasProvider"
 import { KnownInternalNames } from "@layerswap/utils";
 import { tronAdapterManager } from "../service/tronAdapterManager"
@@ -42,7 +42,8 @@ export function createTronTransfer(): TransferProvider {
                 const gasData = await new TronGasProvider().getGas({
                     address: selectedWallet.address,
                     network,
-                    token
+                    token,
+                    amount
                 })
 
                 const amountInWei = Math.pow(10, token.decimals) * amount
@@ -67,19 +68,7 @@ export function createTronTransfer(): TransferProvider {
 
                 throw new Error("Transaction failed")
             } catch (error) {
-                const e = new Error()
-                e.message = error.message
-
-                if (error.message === "BANDWITH_ERROR") {
-                    e.name = ActionMessageType.InsufficientFunds
-                    throw e
-                } else if (error.message === "user reject this request") {
-                    e.name = ActionMessageType.TransactionRejected
-                    throw e
-                } else {
-                    e.name = ActionMessageType.UnexpectedErrorMessage
-                    throw e
-                }
+                throw toTransferError(error)
             }
         }
     }

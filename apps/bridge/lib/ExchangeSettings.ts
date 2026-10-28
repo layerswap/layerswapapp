@@ -1,4 +1,4 @@
-import KnownInternalNames from "./knownIds";
+import KnownInternalNames from "@layerswap/utils/known-ids";
 
 const destinationOrder = [
     KnownInternalNames.Exchanges.Okex,

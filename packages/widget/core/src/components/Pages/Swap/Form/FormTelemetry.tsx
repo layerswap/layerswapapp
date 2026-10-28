@@ -1,0 +1,29 @@
+import { useSelectedAccount } from '@/context/swapAccounts'
+import { useRef } from 'react'
+import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect'
+import { useFormikContext } from 'formik'
+import type { SwapFormValues } from './SwapFormValues'
+import type { SwapFormMode } from './SwapForm'
+import { widgetTelemetry } from '@/lib/widgetTelemetry'
+
+
+/** Owns the pre-submit flow independently from the existing swap lifecycle. Rendered only by SwapForm. */
+export default function FormTelemetry({ mode }: { mode: SwapFormMode }) {
+    const { values } = useFormikContext<SwapFormValues>()
+    const current = useRef<ReturnType<typeof widgetTelemetry.createFlow> | null>(null)
+    current.current ??= widgetTelemetry.createFlow({ form_mode: mode })
+    const flow = current.current
+    const source = values.from?.name
+    const destination = values.to?.name
+    const sourceToken = values.fromAsset?.symbol
+    const destinationToken = values.toAsset?.symbol
+    const method = values.depositMethod
+    const account = useSelectedAccount('from', source)
+    const walletKey = account && JSON.stringify([account.id, account.providerName, account.address])
+    useClientLayoutEffect(() => {
+        widgetTelemetry.update(flow, { form_mode: mode, source_network: source, destination_network: destination,
+            source_token: sourceToken, destination_token: destinationToken, deposit_method: method }, walletKey)
+    }, [flow, mode, source, destination, sourceToken, destinationToken, method, walletKey])
+    useClientLayoutEffect(() => widgetTelemetry.mount(flow), [flow])
+    return null
+}

@@ -2,7 +2,7 @@ import { SwapStatus } from '@layerswap/widget-types';
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSwrSwaps } from './useSwrSwaps'
 import LayerSwapApiClient, { SwapResponse } from '@/lib/apiClients/layerSwapApiClient'
-import { ApiResponse } from '@/Models/ApiResponse'
+import type { ApiResponse } from '@layerswap/widget-types'
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore'
 import { useExtendedSourceSkin } from './useExtendedSourceSkin'
 import { Address } from '@/lib/address/Address'
@@ -12,7 +12,8 @@ export function useSwapHistoryData(addresses?: string[], networks?: string[]) {
     const [revalidateAll, setRevalidateAll] = useState(false)
     const [localStorageSwaps, setLocalStorageSwaps] = useState<SwapResponse[]>([])
     const [isLoadingLocalSwaps, setIsLoadingLocalSwaps] = useState(false)
-    const { swapTransactions } = useSwapTransactionStore()
+    const swapTransactions = useSwapTransactionStore(state => state.swapTransactions)
+    const pendingSubmissions = useSwapTransactionStore(state => state.pendingSubmissions)
     const fetchedIdsRef = useRef<Set<string>>(new Set())
     const skinSwap = useExtendedSourceSkin()
 
@@ -45,15 +46,18 @@ export function useSwapHistoryData(addresses?: string[], networks?: string[]) {
         revalidateFirstPage: true,
     })
 
-    // Stable key for swapTransactions (only include non-completed swaps from the last 30 minutes)
+    // Unknown submissions remain recoverable until reconciled, even without a
+    // timestamp or a backend result. Other local receipts use the recent window.
     const storeSwapIds = useMemo(() => {
         const thirtyMinutesAgo = Date.now() - 30 * 60 * 1000
-        return Object.entries(swapTransactions || {})
-            .filter(([, tx]) => tx.timestamp >= thirtyMinutesAgo)
-            .map(([id]) => id)
-            .sort()
-            .join(',')
-    }, [swapTransactions])
+        const ids = new Set(Object.keys(pendingSubmissions))
+        for (const [id, transaction] of Object.entries(swapTransactions)) {
+            if (transaction.timestamp != null && transaction.timestamp >= thirtyMinutesAgo) {
+                ids.add(id)
+            }
+        }
+        return [...ids].sort().join(',')
+    }, [swapTransactions, pendingSubmissions])
 
     // Fetch swaps from store that are not in the backend results
     useEffect(() => {

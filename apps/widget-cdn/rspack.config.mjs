@@ -5,7 +5,7 @@ import rspack from '@rspack/core';
 import { ModuleFederationPlugin } from '@module-federation/enhanced/rspack';
 import { resolveBuildIdentity } from './scripts/build-id.mjs';
 import { ASSET_BASE, CHUNK_HASH_LENGTH } from './scripts/cdn-layout.mjs';
-import { WIDGET_PROTOCOL_MAJOR } from '@layerswap/widget-types';
+import { WIDGET_PROTOCOL_MAJOR } from '@layerswap/widget-js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
@@ -34,6 +34,8 @@ const depVersion = (pkg) => {
 // Versions that must match between host and remote (catalog-aligned).
 const SHARED_SINGLETONS = {
   react: { singleton: true, requiredVersion: false, eager: false, version: depVersion('react') },
+  'react/jsx-runtime': { singleton: true, requiredVersion: false, eager: false, version: depVersion('react') },
+  'react/jsx-dev-runtime': { singleton: true, requiredVersion: false, eager: false, version: depVersion('react') },
   'react-dom': { singleton: true, requiredVersion: false, eager: false, version: depVersion('react-dom') },
   wagmi: { singleton: true, requiredVersion: false, eager: false, version: depVersion('wagmi') },
   viem: { singleton: true, requiredVersion: false, eager: false, version: depVersion('viem') },

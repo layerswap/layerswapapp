@@ -2,6 +2,7 @@ import type { Config as WagmiConfig } from 'wagmi';
 import type {
   WidgetProps as VanillaWidgetProps,
   DepositWidgetProps as VanillaDepositWidgetProps,
+  WidgetCallbacks,
 } from '@layerswap/widget-js';
 import type { RemoteWidgetProps } from '../src/LayerswapWidget';
 import type { RemoteDepositWidgetProps } from '../src/LayerswapDepositWidget';
@@ -53,11 +54,43 @@ const reactDepositProps: RemoteDepositWidgetProps = {
   mode: 'button',
 };
 
-void vanillaProps;
-void invalidVanillaWagmi;
-void invalidVanillaLoading;
-void reactProps;
-void vanillaDepositProps;
-void invalidDepositMissingDestination;
-void invalidDepositMethod;
-void reactDepositProps;
+const typedCallbacks: WidgetCallbacks = {
+  onTelemetry(event) {
+    const schemaVersion: 1 = event.attributes.schema_version;
+    const eventId: string = event.attributes.event_id;
+    if (event.name === 'widget_operation') {
+      const duration: number = event.attributes.duration_ms;
+      // @ts-expect-error An operation duration is always numeric.
+      const invalid: string = event.attributes.duration_ms;
+    }
+    if (event.name === 'widget_flow') {
+      const step: string = event.attributes.step;
+    }
+  },
+  onSwapLifecycle(event) {
+    const step: string = event.step;
+    // @ts-expect-error Lifecycle observations are not full swap responses.
+    event.swap;
+  },
+  onSwapStatusChange(event) {
+    const id: string = event.swapId;
+    // @ts-expect-error API status events do not include lifecycle steps.
+    event.step;
+    // @ts-expect-error UI phase is reported on onSwapLifecycle.
+    event.phase;
+  },
+  onError(event) {
+    const message: string = event.message;
+    if (event.type === 'APIError') {
+      const method: string = event.requestMethod;
+    }
+    if (event.type === 'CallbackError') {
+      const type: 'CallbackError' = event.type;
+      const cause: unknown = event.cause;
+    }
+    // @ts-expect-error Error payload fields must not silently become any.
+    const invalid: number = event.message;
+  },
+};
+const vanillaCallbacks: VanillaWidgetProps = { callbacks: typedCallbacks };
+const reactCallbacks: RemoteWidgetProps = { callbacks: typedCallbacks };

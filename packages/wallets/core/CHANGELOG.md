@@ -1,5 +1,162 @@
 # @layerswap/wallet-core
 
+## 2.6.0
+
+### Patch Changes
+
+- Add atomic approve-and-swap support for compatible EVM wallets, including WalletConnect. Discover wallet capabilities, submit approval and swap calls together, and track accepted or uncertain submissions without duplicate wallet requests.
+
+  Add shared atomic batch types and prevent read-only WalletConnect capability and status requests from opening the wallet on mobile.
+
+- Updated dependencies
+- Updated dependencies
+  - @layerswap/widget-types@2.6.0
+  - @layerswap/utils@2.6.0
+
+## 2.5.1
+
+### Minor Changes
+
+- 2463dd2: Switch the wallet to the source chain from the send button instead of a separate step.
+  - The standalone "Switch network" button on the wallet withdrawal step is gone. When the connected wallet reports a chain other than the swap's source chain (EVM and Fuel wallets), tapping the send button now asks the wallet to switch and continues to swap creation and the transaction or gasless signature prompt without another tap. A switch the wallet completes without asking shows nothing; if the wallet is still waiting after a second, the button reads "Switching network" with a "confirm in your wallet" message. Already-approved WalletConnect chains switch locally with no wallet prompt. Rejections and failures keep the button as "Try again" with the "Network switch failed" message.
+  - `ChangeNetworkButton` is no longer exported from `@layerswap/widget/internal`.
+  - Preview snapshots (`@layerswap/widget/internal`): `Page2WalletState` drops `{ kind: 'network' }`; the send state gains `networkSwitch` (`'pending' | 'rejected' | 'still-waiting' | 'timeout'`) rendered through the send button, and `ChangeNetworkView` is removed.
+  - `onSwapLifecycle` still emits `network_switch_started`, `network_switched`, `network_switch_rejected` and `network_switch_failed`; their `path` is now `SendTransactionButton`.
+  - The switch waits at most 60 seconds for the wallet, so an in-app browser that never answers a dismissed prompt no longer leaves the send flow stuck; the attempt is reported with `reasonCode: timeout`.
+  - New `WalletErrorReasonCode` `request_pending` (`@layerswap/widget-types`), recognised by `normalizeWalletErrorCode` from EIP-1193 `-32002` and "already pending" / "already processing" messages. A second tap while the wallet still shows the switch prompt is reported as `network_switch_failed` with `reasonCode: request_pending` and tells the user to confirm the pending request in the wallet.
+  - `@layerswap/wallet-fuel`: `switchChain` now rethrows after logging instead of swallowing the failure, so the send flow stops rather than transferring on the wrong network.
+
+### Patch Changes
+
+- 34da257: Show generic Starknet execution failures as wallet errors instead of user rejections. Preserve nested provider codes in lifecycle events and allowlisted RPC simulation/revert details in error reports, with bounded serialization. Expose the wallet-reported version when available for diagnostics.
+- a2136b6: Match mobile wallet-request recovery to the WalletConnect session that received
+  the request. Recorded requests now carry their session `topic`, and EVM and
+  Solana WalletConnect wallets expose theirs as `Wallet.metadata.walletConnectTopic`.
+  Wallets connected through the generic WalletConnect connector recover their
+  requests, and another wallet app using the same account no longer does.
+
+  Let users reopen the wallet's pending request without submitting it again.
+
+  Show reconnect guidance when the wallet disconnects during source-network
+  readiness, and report readiness failures that happen before a network switch.
+
+- 78fa843: Keep RPC failures distinct from user cancellations when Viem wraps transaction
+  errors with its unknown-error code (-1). Require actual user-rejection evidence
+  and classify wallet RPC HTTP failures as network errors while preserving their
+  original cause and diagnostic code.
+
+  Show recovery guidance for network failures, RPC errors, disconnected wallets,
+  pending requests, and timeouts before falling back to a generic swap error.
+  For EVM network failures, direct users to check the source network's RPC settings
+  in their wallet. Keep raw provider diagnostics in telemetry.
+
+- a2136b6: Stop reporting wallet RPC failures relayed over WalletConnect as user rejections.
+  MetaMask Mobile answers a failed request with CAIP-25 code 5000 and the failure
+  as the message; when that text names a non-decline failure, classify by it.
+  EVM network failures now tell users to select a working RPC URL in their
+  wallet's network settings and remove the others.
+- Updated dependencies [2463dd2]
+- Updated dependencies
+- Updated dependencies [a9c35f8]
+- Updated dependencies [419387b]
+- Updated dependencies [34da257]
+- Updated dependencies [a2136b6]
+  - @layerswap/widget-types@2.5.1
+  - @layerswap/utils@2.5.1
+
+## 2.4.0
+
+### Minor Changes
+
+- Route mobile WalletConnect signing requests to the wallet that owns the selected session.
+  - Export `subscribeWalletRequests` from wallet-core. EVM and Solana WalletConnect connectors open the session's wallet after the signing request reaches the relay, using the request ID and session topic. Link-mode sessions retain the SDK's app link behavior.
+  - Resolve deep links from session metadata and matching registry metadata, including native and universal mobile links, with the MetaMask app link workaround.
+  - Add optional `Wallet.metadata.evmConnectorUid` and use the selected connector for EVM transfers and gasless signatures. Ambiguous or disconnected selections require reconnection instead of falling back to another wallet using the same address.
+  - Clean up signing-request listeners when connectors are replaced or reset.
+
+- Register WalletConnect chains during provider initialization instead of hardcoding them in wallet-core.
+  - `@layerswap/wallet-core` exports `WalletConnectChainRegistry`, `defaultWalletConnectChainRegistry`, and `WalletConnectChainDefinition` for namespace, network type, and wallet explorer chain definitions.
+  - EVM, Solana, and Stellar adapters export their chain definitions and registration helpers, and register their chains when their connection providers initialize.
+  - `@layerswap/wallets` exports `registerDefaultWalletConnectChains`, which is also called by `getDefaultProviders`.
+  - Custom integrations that query wallet explorer chains before initializing providers must register their namespace first. An unregistered namespace now throws an explicit error.
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @layerswap/widget-types@2.4.0
+  - @layerswap/utils@2.4.0
+
+## 2.3.1
+
+### Patch Changes
+
+- @layerswap/utils@2.3.1
+
+## 2.3.0
+
+### Minor Changes
+
+- bdf46a0: Share wallet error classification through `@layerswap/wallet-core/errors`.
+  - `@layerswap/wallet-core/errors` is a new subpath exporting `isUserRejection`, `normalizeWalletErrorCode` and `walletErrorCode`, so the widget and wallet adapters classify wallet cancellations and failures the same way.
+  - It also exports the helpers transfer providers throw with: `walletActionError(name, { message, cause?, reasonCode? })` builds the error whose `name` is the `ActionMessageType` the widget renders and whose optional `reasonCode` (a `WalletErrorReasonCode`) is what hosts and telemetry are told; `userRejectedError({ message?, cause? })` is the only sanctioned way to pair the rejected label with `user_rejected`; `isWalletErrorReasonCode(value)` narrows to the bounded taxonomy; `WalletActionError` is the thrown type. An explicit `reasonCode` on the error, anywhere in its `cause` chain, wins over every inferred signal (outermost first).
+  - ActionMessageType labels are UI copy and never classify: a bare `TransactionRejected` name no longer yields `user_rejected`. A custom `TransferProvider` that only sets `name = 'TransactionRejected'` shows the rejected copy but is reported to the host as a failure (`onError`, `wallet_action_failed`, `reasonCode: unknown_error`); declare declines with `userRejectedError` instead. The message rules additionally recognise the chain wallets' own decline phrases (`USER_REFUSED_OP`, `Reject request`, `user reject this request`).
+  - `@layerswap/wallet-evm` resolves user rejections through the shared helper. The Hyperliquid and Polymarket transfer providers use the common `evmUtils/resolveError` instead of private copies, and the adapter keeps its legacy nested `-1` / `data.code` cancellation handling at the adapter boundary.
+  - Classification precedence is by evidence, not by which field a signal came from: a definitive code/name (4001, 5000, `ACTION_REJECTED`, `UserRejectedRequestError`, …) or descriptive message text (`user rejected`, `denied by the user`, `insufficient funds`, …) anywhere in the error tree beats the `-32603` / `SERVER_ERROR` / `InternalRpcError` / `internal error` buckets. viem bucket classes (`InternalRpcError`, `InvalidInputRpcError`, `UnknownRpcError`) contribute no text of their own, so a wrapper can never change what it wraps.
+  - `cause`, `data`, `originalError` and `error` are inspected (bounded), covering viem/ethers wrappers, JSON-RPC `data`, MetaMask's `-32603` serializer fallback and ethers v5 `SERVER_ERROR` bodies.
+  - Host-visible `reason_code` shifts: wrapped declines that were `internal_rpc_error` become `user_rejected` (Faro impact `expected` via `widget_diagnostic` instead of `user` via `captureException`; `onSwapLifecycle` emits `wallet_action_rejected` instead of `wallet_action_failed`), and viem-wrapped node `-32000` errors report the underlying reason (`insufficient_funds`, `nonce_or_replacement`, `contract_reverted`, `timeout`, `unknown_error`) instead of `invalid_parameters`.
+
+### Patch Changes
+
+- f26c1e7: Wallet declines are reported as declines, and node errors no longer pass for declines.
+  - `@layerswap/wallet-core/errors` exports `errorMessage(error)`: an Error's message, a string as is, or a plain `{ message }` object's string message, else `String(error)`. Every adapter's `toTransferError` uses it, so plain-object wallet rejections keep their text instead of `[object Object]`.
+  - Classifier: decline text must name the user (`user rejected`, `user denied`, `denied by the user`, …); the generic `rejected the request` phrase is gone, so a node's `origin rejected the request` is no longer `user_rejected`. A revert reason (`execution reverted: …`) never counts as a decline, and on a JSON-RPC server error (`-32000`..`-32099`) the text must start with `user rejected` / `user denied` — WalletConnect wallets that decline with `-32000 "User rejected the request."` stay `user_rejected`. Definitive codes (4001, 5000, `ACTION_REJECTED`, `UserRejectedRequestError`) are unchanged.
+  - EVM: `resolveError` checks decline evidence before the nested `-32000` insufficient-funds branch, so a decline relayed as `-32000` is no longer shown as insufficient funds.
+  - Starknet: a plain `{ code: 113, message: 'An error occurred (USER_REFUSED_OP)' }` rejection is a declared decline carrying its real message.
+  - Stellar: the signing-prompt vocabulary includes `reject` again, so Albedo's `Action request was rejected by the user.` is a decline.
+  - TON: TON Connect's `UserRejectsError` is a declared decline (with a name/message fallback for a duplicate SDK copy); the `Reject request` string is still recognised.
+
+- Updated dependencies [95d95a1]
+- Updated dependencies [31d0d1f]
+- Updated dependencies [5bd03c7]
+- Updated dependencies [bdf46a0]
+  - @layerswap/widget-types@2.3.0
+  - @layerswap/utils@2.3.0
+
+## 2.2.0
+
+### Minor Changes
+
+- Global improvements and bug fixes
+
+### Patch Changes
+
+- Updated dependencies
+  - @layerswap/utils@2.2.0
+  - @layerswap/widget-types@2.2.0
+
+## 2.1.0
+
+### Minor Changes
+
+- Global fixes and improvements
+
+### Patch Changes
+
+- Updated dependencies
+  - @layerswap/utils@2.1.0
+  - @layerswap/widget-types@2.1.0
+
+## 2.0.1
+
+### Patch Changes
+
+- Wallet connection readiness fixes
+- Updated dependencies
+  - @layerswap/utils@2.0.1
+  - @layerswap/widget-types@1.0.1
+
 ## 2.0.0
 
 ### Major Changes

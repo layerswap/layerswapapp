@@ -66,7 +66,7 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
 
     let initialSourceCurrency = filteredSourceCurrencies?.find(c => c.symbol?.toUpperCase() == fromAsset?.toUpperCase())
     if (!initialSourceCurrency && !fromAsset && sourceNetwork) {
-        initialSourceCurrency = filteredSourceCurrencies?.sort((a, b) => a.symbol.localeCompare(b.symbol))?.find(c => c.status === "active")
+        initialSourceCurrency = filteredSourceCurrencies?.sort((a, b) => a.asset.localeCompare(b.asset))?.find(c => c.status === "active")
     }
 
     let initialDestinationCurrency = filteredDestinationCurrencies?.find(c => c.symbol?.toUpperCase() == toAsset?.toUpperCase())
@@ -77,7 +77,7 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
                 ?.filter(c => c.status === "active")
                 ?.sort((a, b) => rank(a) - rank(b))[0];
         } else {
-            initialDestinationCurrency = filteredDestinationCurrencies?.sort((a, b) => a.symbol.localeCompare(b.symbol))?.find(c => c.status === "active")
+            initialDestinationCurrency = filteredDestinationCurrencies?.sort((a, b) => a.asset.localeCompare(b.asset))?.find(c => c.status === "active")
         }
     }
 
@@ -127,7 +127,12 @@ export function generateSwapInitialValuesFromSwap(swapResponse: SwapBasicData, r
     const result: SwapFormValues = {
         from,
         to,
-        amount: requested_amount?.toString(),
+        amount: requested_amount,
+        // A form remount can reuse an open review draft. Restore its intent as
+        // well as its amount so the controller can keep that draft synchronized.
+        // Created swaps remain protected by the swap provider's execution lock.
+        amountMode: swapResponse.amountMode,
+        amountPresetSource: swapResponse.amountPresetSource,
         fromAsset: fromCurrency,
         toAsset: toCurrency,
         destination_address,

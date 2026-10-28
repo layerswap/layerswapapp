@@ -20,6 +20,7 @@ import { Address } from '@/lib/address/Address';
 import AddressIcon from '@/components/Common/AddressIcon';
 import WalletIconView from '@/components/Wallet/WalletIconView';
 import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon';
+import { formatTokenAmount } from '@/components/utils/formatTokenAmount';
 
 type Props = {
     swapResponse: SwapResponse
@@ -50,7 +51,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
             const swapType = (source_exchange || destination_exchange) ? 'exchange' : 'cross-chain'
             const newSwapData = generateSwapInitialValuesFromSwap({
                 ...swap,
-                requested_amount: swap.requested_amount.toString()
+                requested_amount: formatTokenAmount(swap.requested_amount, swap.source_token.decimals)
             }, false, settings, swapType)
             setSubmitedFormValues(newSwapData)
 
@@ -175,7 +176,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                                                 :
                                                                 <a
                                                                     target="_blank"
-                                                                    href={getExplorerUrl(output_tx_explorer_template, refundTransaction.transaction_hash)}
+                                                                    href={getExplorerUrl(input_tx_explorer_template, refundTransaction.transaction_hash)}
                                                                     className='group/addressItem flex items-center space-x-1 cursor-pointer hover:text-secondary-text transition duration-200'
                                                                     rel="noopener noreferrer"
                                                                 >
