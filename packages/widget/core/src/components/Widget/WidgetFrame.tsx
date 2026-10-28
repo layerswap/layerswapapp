@@ -50,7 +50,7 @@ export function WidgetFrame({
                     </div>
                 )}
                 {header}
-                <div className="relative flex-col px-4 h-full min-h-0 flex flex-1">
+                <div id={`${id}_body`} className="relative flex-col px-4 h-full min-h-0 flex flex-1">
                     <div className="flex flex-col flex-1 items-start h-full min-h-0 w-full gap-2">
                         {children}
                     </div>
