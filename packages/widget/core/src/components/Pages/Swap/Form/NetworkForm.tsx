@@ -1,3 +1,4 @@
+import { isAmountPreset } from '@/lib/amountPresets';
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { Form, FormikHelpers, useFormikContext } from "formik";
 import { Partner } from "@/Models/Partner";
@@ -15,6 +16,7 @@ import FormButton from "./SecondaryComponents/FormButton";
 import { WalletConnectionProvider } from "@layerswap/wallet-core/types"
 import { updateFormBulk } from "./updateForm";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
+import { useReportFormQuote } from "@/context/formQuote";
 import { useValidationContext } from "@/context/validationContext";
 import { useSwapDataState } from "@/context/swap";
 import { useSelectedAccount } from "@/context/swapAccounts";
@@ -54,7 +56,9 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
     const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
-    const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isQuoteLoading, quote, quoteTokenPrices } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval });
+    const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isQuoteLoading: quoteLoading, quote, quoteTokenPrices } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval });
+    const isQuoteLoading = quoteLoading || (isAmountPreset(values.amountMode) && !!values.amountPresetPending);
+    useReportFormQuote(quote?.quote);
     const prerequisites = useSwapPrerequisites(prerequisitesFromForm(values, quote?.quote.receive_amount));
 
     const toAsset = values.toAsset;

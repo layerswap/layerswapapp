@@ -5,7 +5,11 @@ offline regression tests.
 
 ## Browser configuration
 
-Set `NEXT_PUBLIC_FARO_COLLECTOR_URL` and restart/rebuild the app. It is the
+Local `pnpm dev` sessions write to a [local JSONL file](../README.md#local-browser-logs)
+instead of the remote collector, including all sessions, request traces, console
+levels, repeated diagnostics and successful balance reads. Redaction still applies.
+
+For production builds, set `NEXT_PUBLIC_FARO_COLLECTOR_URL` and restart/rebuild the app. It is the
 only required Faro runtime variable.
 
 ```yaml
@@ -46,6 +50,19 @@ To keep volume bounded (`lib/faro-policy.ts`, `components/utils/logError.ts`):
   and each distinct diagnostic once per page load.
 Full page and request URLs retain their query strings for diagnosis; only
 credential values are redacted.
+
+Amount diagnostics use existing telemetry interactions to label `amount_mode` as
+`manual`, `min`, `half`, `max`, or `unknown`. Preset clicks, accepted amount
+edits and the guarded Adjust Amount action update the existing telemetry flow; source-asset, source-wallet and deposit-method changes
+clear it, and unrelated/restored swaps report `unknown`. This describes the last observed
+input action, not a captured Max calculation. No form or swap state is added. Rejected edits do not change the label.
+
+Insufficient-balance event rows include the selected wallet address and the token
+balance being checked, with network, token and read timestamp when available.
+Balances appear only on insufficient-balance blocks, including in public callbacks;
+they are absent from submission, awaiting-wallet-action, session and stall data.
+No balances are fetched for telemetry. Transfer, preset, USD and reporting behavior
+is unchanged; this PR does not claim to fix an insufficient-funds bug.
 
 ## Dashboards and investigation
 
@@ -173,6 +190,15 @@ the input/output/refund transaction hashes.
 
 - A wallet rejection is `outcome="rejected"`, `reason_code="user_rejected"`; it
   is not reported as an exception.
+- Issue views and alert definitions exclude explicit `user_rejected` reasons or
+  `expected` impact, never the `TransactionRejected` presentation name alone.
+  Historical generic execution failures can carry that name.
+- `wallet_prompt_opened` marks the start of a wallet request, not confirmation
+  that a wallet prompt became visible. Its elapsed time includes wallet processing.
+- Wallet lifecycle `error_code` includes nested provider codes. Exception causes
+  retain allowlisted RPC wrappers and simulation/revert details with depth, node
+  and size limits; request bodies and arbitrary provider fields are omitted.
+  Session `connected_wallets` entries include `wallet_version` when exposed.
 - `suspected_stall` fires after a stage-specific threshold on a pending step. It
   is an investigation signal, not proof of failure; later transitions stay in
   the same journey.

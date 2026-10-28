@@ -10,6 +10,7 @@ export * from './mapConnectError'
 export * from "./mapWallet"
 export * from "./registry"
 export * from './subscribeDisplayUri'
+export * from './subscribeWalletRequests'
 export * from "./types"
 export * from "./additionalConnectorsStore"
 export * from "./connectModalStore"

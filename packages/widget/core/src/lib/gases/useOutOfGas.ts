@@ -1,6 +1,8 @@
 import { TokenBalance } from "@layerswap/widget-types";
 import { Network, Token } from "@layerswap/widget-types";
 import useSWRGas from "./useSWRGas"
+import { resolveGasBalanceBudget } from "./resolveGasBalanceBudget"
+import type { GasProps } from "@layerswap/widget-types"
 
 interface UseOutOfGasParams {
     address: string | undefined
@@ -10,6 +12,7 @@ interface UseOutOfGasParams {
     balances: TokenBalance[] | null | undefined
     minAllowedAmount?: number
     maxAllowedAmount?: number
+    transaction?: Pick<GasProps, 'recipientAddress' | 'callData' | 'amountInBaseUnits'>
 }
 
 const useOutOfGas = ({
@@ -19,9 +22,10 @@ const useOutOfGas = ({
     amount,
     balances,
     minAllowedAmount,
-    maxAllowedAmount
+    maxAllowedAmount,
+    transaction,
 }: UseOutOfGasParams): { outOfGas: boolean } => {
-    const { gasData } = useSWRGas(address, network, token, amount)
+    const { gasData } = useSWRGas(address, network, token, amount, undefined, { transaction })
     const nativeTokenBalance = balances?.find(b => b.token === network?.token?.symbol)
 
     const balance = nativeTokenBalance?.amount
@@ -32,9 +36,10 @@ const useOutOfGas = ({
     }
 
     const numAmount = Number(amount)
-    const totalNeeded = numAmount + gasData.gas
+    const gasAndReserve = resolveGasBalanceBudget(gasData)
+    const totalNeeded = numAmount + gasAndReserve
     const balanceCoversAmount = numAmount <= balance
-    const balanceExceedsMaxWithGas = balance > (maxAllowedAmount + gasData.gas)
+    const balanceExceedsMaxWithGas = balance > (maxAllowedAmount + gasAndReserve)
     const balanceAboveMin = balance > minAllowedAmount
 
     const outOfGas = totalNeeded > balance

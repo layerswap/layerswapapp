@@ -1,5 +1,6 @@
 "use client";
 import type { DynamicWcMetadata } from "./types"
+import type { WalletConnectLink } from './types'
 
 const STORAGE_KEY = 'ls_walletconnect_dynamic_metadata'
 
@@ -93,7 +94,7 @@ export const clearPendingDynamicWcMetadata = (namespace: string): void => {
  */
 export const setPendingMetadataForRegistry = (
     namespace: string,
-    registry: { name: string; icon?: string; id: string; deepLink?: string } | undefined
+    registry: { name: string; icon?: string; id: string; deepLink?: string; mobile?: WalletConnectLink } | undefined
 ): DynamicWcMetadata | undefined => {
     if (!registry) {
         clearPendingDynamicWcMetadata(namespace)
@@ -103,7 +104,7 @@ export const setPendingMetadataForRegistry = (
         name: registry.name,
         icon: registry.icon || '',
         id: registry.id,
-        deepLink: registry.deepLink,
+        deepLink: registry.deepLink || registry.mobile?.native || registry.mobile?.universal || undefined,
     }
     setPendingDynamicWcMetadata(namespace, meta)
     return meta

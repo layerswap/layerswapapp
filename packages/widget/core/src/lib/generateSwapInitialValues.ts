@@ -127,7 +127,12 @@ export function generateSwapInitialValuesFromSwap(swapResponse: SwapBasicData, r
     const result: SwapFormValues = {
         from,
         to,
-        amount: requested_amount?.toString(),
+        amount: requested_amount,
+        // A form remount can reuse an open review draft. Restore its intent as
+        // well as its amount so the controller can keep that draft synchronized.
+        // Created swaps remain protected by the swap provider's execution lock.
+        amountMode: swapResponse.amountMode,
+        amountPresetSource: swapResponse.amountPresetSource,
         fromAsset: fromCurrency,
         toAsset: toCurrency,
         destination_address,

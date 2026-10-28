@@ -11,7 +11,7 @@ export type {
   SupportedDestination,
 } from './config';
 export { NetworkType } from './network';
-export type { Refuel, AvailableSourceNetworkTypes } from './network';
+export type { Refuel, AvailableSourceNetworkTypes, GaslessStandard } from './network';
 export { SwapStatus } from './SwapStatus';
 export { LSAPIKnownErrorCode, type ApiError } from './ApiError';
 export { ApiResponse, EmptyApiResponse } from './ApiResponse';
@@ -95,6 +95,6 @@ export type {
   RpcHealthCheckStore,
   RpcHealthCheckProvider,
 } from './resolvers/rpcHealth';
-export type { TransferProps, TransferProgress, TransferProvider } from './resolvers/transfer';
+export type { TransferProps, TransferProgress, TransferProvider, WalletWithdrawal, WithdrawalAction, AtomicBatchProvider, AtomicBatchContext, AtomicBatchCall } from './resolvers/transfer';
 export type { SwapPrerequisiteContext, SwapPrerequisiteResult, SwapPrerequisiteExecution, SwapPrerequisiteProvider } from './resolvers/prerequisite';
 export { LazySwapPrerequisiteProvider } from './resolvers/prerequisite';

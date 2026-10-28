@@ -1,3 +1,4 @@
+import { isAmountPreset } from '@/lib/amountPresets';
 import { type Wallet } from '@layerswap/widget-types';
 import { FC, useEffect, useMemo, useState } from "react";
 import ValidationError from "@/components/Pages/Swap/Form/SecondaryComponents/validationError";
@@ -14,6 +15,7 @@ import { Address as AddressClass } from "@/lib/address/Address";
 import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
 import MinMax from "@/components/Input/Amount/MinMax";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
+import { useReportFormQuote } from "@/context/formQuote";
 import { useValidationContext } from "@/context/validationContext";
 import clsx from "clsx";
 import { useSwapDataState } from "@/context/swap";
@@ -52,7 +54,9 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
 
     const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
-    const { isQuoteLoading, quote, quoteTokenPrices, minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval });
+    const { isQuoteLoading: quoteLoading, quote, quoteTokenPrices, minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval });
+    const isQuoteLoading = quoteLoading || (isAmountPreset(values.amountMode) && !!values.amountPresetPending);
+    useReportFormQuote(quote?.quote);
     const prerequisites = useSwapPrerequisites(prerequisitesFromForm(values, quote?.quote.receive_amount));
     const { formValidation } = useValidationContext();
 
@@ -118,8 +122,8 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                     {
                                         from && fromCurrency && minAllowedAmount && maxAmountFromApi &&
                                         <div className={clsx({
-                                            "hidden": !showQuickActions,
-                                            "block": showQuickActions,
+                                            "hidden": !showQuickActions && !isAmountPreset(values.amountMode),
+                                            "block": showQuickActions || isAmountPreset(values.amountMode),
                                         },
                                             "group-hover:block"
                                         )}>

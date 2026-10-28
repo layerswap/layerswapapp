@@ -73,33 +73,72 @@ function scalar(value: unknown): string | number | undefined {
   return typeof value === 'number' && Number.isFinite(value) ? value : text(value);
 }
 
-/** No copying/spreading of foreign objects, and no arbitrary recursive serialization. */
-export function summarizeError(value: unknown, depth = 0): ErrorSummary | undefined {
-  if (value == null || depth >= 4) return undefined;
-  if (typeof value !== 'object') {
-    const message = text(value);
-    return message === undefined ? undefined : { message };
+type SummaryBudget = { remaining: number; nodes: number; seen: WeakSet<object> };
+
+/** Account for JSON escaping and field names, so a branching error fits one telemetry attribute. */
+function summaryField<K extends keyof ErrorSummary>(result: ErrorSummary, key: K, value: ErrorSummary[K], budget: SummaryBudget): void {
+  if (value === undefined) return;
+  let cost = JSON.stringify(key).length + JSON.stringify(value).length + 2;
+  while (cost > budget.remaining && typeof value === 'string' && value.length) {
+    value = value.slice(0, Math.floor(value.length / 2)) as ErrorSummary[K];
+    cost = JSON.stringify(key).length + JSON.stringify(value).length + 2;
   }
+  if (cost > budget.remaining) return;
+  budget.remaining -= cost;
+  result[key] = value;
+}
+
+function summarizeErrorNode(value: unknown, depth: number, budget: SummaryBudget): ErrorSummary | undefined {
+  if (value == null || depth >= 8 || budget.nodes >= 16 || budget.remaining < 32) return undefined;
+  if (typeof value === 'object') {
+    if (budget.seen.has(value) || Array.isArray(value)) return undefined;
+    budget.seen.add(value);
+  }
+  budget.nodes++;
+  budget.remaining -= 2; // Object braces.
   const result: ErrorSummary = {};
-  for (const key of ['name', 'message', 'stack', 'method'] as const) {
-    const field = text(read(value, key));
-    if (field !== undefined) result[key] = field;
+  if (typeof value !== 'object') {
+    summaryField(result, 'message', text(value), budget);
+    return Object.keys(result).length ? result : undefined;
+  }
+  for (const key of ['name', 'message', 'shortMessage', 'details', 'method', 'revert_reason', 'contract_address', 'class_hash', 'selector'] as const) {
+    summaryField(result, key, text(read(value, key)), budget);
   }
   for (const key of ['code', 'status'] as const) {
-    const field = scalar(read(value, key));
-    if (field !== undefined) result[key] = field;
+    summaryField(result, key, scalar(read(value, key)), budget);
+  }
+  const transactionIndex = read(value, 'transaction_index');
+  if (typeof transactionIndex === 'number' && Number.isSafeInteger(transactionIndex) && transactionIndex >= 0) {
+    summaryField(result, 'transaction_index', transactionIndex, budget);
   }
   // Axios transport details are read explicitly; config/request/body never leave this boundary.
   const config = read(value, 'config');
   const method = text(read(config, 'method'));
   const status = scalar(read(read(value, 'response'), 'status'));
-  if (result.method === undefined && method !== undefined) result.method = method;
-  if (result.status === undefined && status !== undefined) result.status = status;
+  if (result.method === undefined) summaryField(result, 'method', method, budget);
+  if (result.status === undefined) summaryField(result, 'status', status, budget);
   const safeUrl = nodeUrl(read(value, 'url') ?? read(config, 'url'));
-  if (safeUrl !== undefined) result.url = safeUrl;
-  const cause = summarizeError(read(value, 'cause'), depth + 1);
-  if (cause) result.cause = cause;
+  summaryField(result, 'url', safeUrl, budget);
+  // Known SDK wrappers and Starknet RPC execution traces only. Never copy request bodies,
+  // signatures, arbitrary data keys, getters or toJSON from a provider object.
+  for (const key of ['cause', 'error', 'data', 'originalError', 'info', 'revert_error', 'execution_error'] as const) {
+    const nested = read(value, key);
+    if (nested == null) continue;
+    // `data`/`info` may contain an opaque serialized request, not an error message.
+    // Inspect their object fields only; execution-error string leaves remain useful.
+    if ((key === 'data' || key === 'info') && typeof nested !== 'object') continue;
+    budget.remaining -= key.length + 4; // Quoted key, colon, comma; children debit their own fields.
+    const summary = summarizeErrorNode(nested, depth + 1, budget);
+    if (summary) result[key] = summary;
+  }
+  // Prefer the structured failure to a verbose wrapper stack when nearing the budget.
+  summaryField(result, 'stack', text(read(value, 'stack')), budget);
   return Object.keys(result).length ? result : undefined;
+}
+
+/** Allowlisted diagnostics with a shared 8,000-character JSON budget, node and depth limits. */
+export function summarizeError(value: unknown, depth = 0): ErrorSummary | undefined {
+  return summarizeErrorNode(value, depth, { remaining: 8000, nodes: 0, seen: new WeakSet() });
 }
 
 function response(value: unknown): ErrorResponseSummary | undefined {

@@ -1,5 +1,69 @@
 # @layerswap/wallet-svm
 
+## 2.6.0
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies
+  - @layerswap/widget-types@2.6.0
+  - @layerswap/wallet-core@2.6.0
+  - @layerswap/utils@2.6.0
+
+## 2.5.1
+
+### Patch Changes
+
+- 419387b: Keep Solana's rent-exempt minimum when Max or Adjust amount is used on native SOL, so the transfer no longer leaves a sub-rent balance that fails wallet simulation. Gas estimates may now report a `reserve` that must stay in the account.
+- a2136b6: Match mobile wallet-request recovery to the WalletConnect session that received
+  the request. Recorded requests now carry their session `topic`, and EVM and
+  Solana WalletConnect wallets expose theirs as `Wallet.metadata.walletConnectTopic`.
+  Wallets connected through the generic WalletConnect connector recover their
+  requests, and another wallet app using the same account no longer does.
+
+  Let users reopen the wallet's pending request without submitting it again.
+
+  Show reconnect guidance when the wallet disconnects during source-network
+  readiness, and report readiness failures that happen before a network switch.
+
+- Updated dependencies [2463dd2]
+- Updated dependencies
+- Updated dependencies [a9c35f8]
+- Updated dependencies [419387b]
+- Updated dependencies [34da257]
+- Updated dependencies [a2136b6]
+- Updated dependencies [78fa843]
+- Updated dependencies [a2136b6]
+  - @layerswap/widget-types@2.5.1
+  - @layerswap/wallet-core@2.5.1
+  - @layerswap/utils@2.5.1
+
+## 2.4.0
+
+### Minor Changes
+
+- Register WalletConnect chains during provider initialization instead of hardcoding them in wallet-core.
+  - `@layerswap/wallet-core` exports `WalletConnectChainRegistry`, `defaultWalletConnectChainRegistry`, and `WalletConnectChainDefinition` for namespace, network type, and wallet explorer chain definitions.
+  - EVM, Solana, and Stellar adapters export their chain definitions and registration helpers, and register their chains when their connection providers initialize.
+  - `@layerswap/wallets` exports `registerDefaultWalletConnectChains`, which is also called by `getDefaultProviders`.
+  - Custom integrations that query wallet explorer chains before initializing providers must register their namespace first. An unregistered namespace now throws an explicit error.
+
+### Patch Changes
+
+- Route mobile WalletConnect signing requests to the wallet that owns the selected session.
+  - Export `subscribeWalletRequests` from wallet-core. EVM and Solana WalletConnect connectors open the session's wallet after the signing request reaches the relay, using the request ID and session topic. Link-mode sessions retain the SDK's app link behavior.
+  - Resolve deep links from session metadata and matching registry metadata, including native and universal mobile links, with the MetaMask app link workaround.
+  - Add optional `Wallet.metadata.evmConnectorUid` and use the selected connector for EVM transfers and gasless signatures. Ambiguous or disconnected selections require reconnection instead of falling back to another wallet using the same address.
+  - Clean up signing-request listeners when connectors are replaced or reset.
+
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @layerswap/widget-types@2.4.0
+  - @layerswap/wallet-core@2.4.0
+  - @layerswap/utils@2.4.0
+
 ## 2.3.1
 
 ### Patch Changes

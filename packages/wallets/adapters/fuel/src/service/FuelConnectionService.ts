@@ -10,6 +10,9 @@ import { resolveFuelWalletConnectorIcon } from '../utils'
 import { useFuelStore } from './fuelStore'
 
 export class FuelConnectionService<Network> implements WalletConnectionService<never, Network> {
+    // All services share the wallet store. An older account query must not
+    // overwrite a newer permissions snapshot, even from another widget.
+    private static _walletSyncVersion = 0
     private _networks: Network[] = []
     private _networkAdapter: AppNetworkAdapter<Network> | undefined
     private _networksKey = ''
@@ -28,10 +31,12 @@ export class FuelConnectionService<Network> implements WalletConnectionService<n
     }
 
     private addWallet(wallet: Wallet): void {
+        FuelConnectionService._walletSyncVersion++
         useFuelStore.getState().connectWallet(wallet)
     }
 
     private removeWallet(connectorName?: string): void {
+        FuelConnectionService._walletSyncVersion++
         useFuelStore.getState().disconnectWallet(connectorName)
     }
 
@@ -124,7 +129,7 @@ export class FuelConnectionService<Network> implements WalletConnectionService<n
                 await fuelConnector?.connect()
 
                 const addresses = (await fuelConnector?.accounts())?.map(a => new Address(a).toB256())
-                if (!addresses || !fuelConnector) return undefined
+                if (!addresses?.length || !fuelConnector) return undefined
 
                 const result = await this.resolveFuelWallet(fuelConnector, addresses[0], addresses)
                 this.addWallet(result)
@@ -185,6 +190,9 @@ export class FuelConnectionService<Network> implements WalletConnectionService<n
         }
     }
 
+    // Unlike the best-effort account switch above, a failed chain switch must reach the
+    // caller: the send flow switches right before transferring and would otherwise go on
+    // with the wallet on the wrong network.
     async switchChain(connector: Wallet, chainId: string | number): Promise<void> {
         try {
             const fuelConnector = useFuelStore.getState().connectors.find(c => c.name === connector.id)
@@ -194,31 +202,48 @@ export class FuelConnectionService<Network> implements WalletConnectionService<n
         } catch (e) {
             const msg = e instanceof Error ? e.message : String(e)
             console.error(`[Fuel] Failed to switch chain to ${chainId}: ${msg}`)
+            throw e
         }
     }
 
     async resolveConnectedWallets(): Promise<Wallet[]> {
-        const connectors = useFuelStore.getState().connectors.filter(c => c.connected)
+        const { connectors, connectedWallets } = useFuelStore.getState()
+        const lastKnownWallets = new Map(connectedWallets.map(wallet => [wallet.id, wallet]))
         const wallets: Wallet[] = []
-        for (const connector of connectors) {
+        for (const connector of connectors.filter(c => c.connected)) {
+            const lastKnownWallet = lastKnownWallets.get(connector.name)
+            let addresses: string[]
             try {
-                const addresses = (await connector.accounts()).map(a => Address.fromAddressOrString(a).toB256())
-                if (connector.connected && addresses.length > 0) {
-                    const w = await this.resolveFuelWallet(connector, addresses[0], addresses)
-                    wallets.push(w)
-                }
+                addresses = (await connector.accounts()).map(a => new Address(a).toB256())
+            } catch (e) {
+                const msg = e instanceof Error ? e.message : String(e)
+                console.error(`[Fuel] Failed to query accounts for ${connector.name}: ${msg}`)
+                // Keep the full snapshot only when account permissions are unknown.
+                if (connector.connected && lastKnownWallet) wallets.push(lastKnownWallet)
+                continue
+            }
+            if (!connector.connected || addresses.length === 0) continue
+
+            try {
+                const w = await this.resolveFuelWallet(connector, addresses[0], addresses)
+                if (connector.connected) wallets.push(w)
             } catch (e) {
                 const msg = e instanceof Error ? e.message : String(e)
                 console.error(`[Fuel] Failed to resolve connected wallet for ${connector.name}: ${msg}`)
+                // Preserve cached network metadata, but always apply confirmed permissions.
+                if (connector.connected && lastKnownWallet) {
+                    wallets.push({ ...lastKnownWallet, address: addresses[0], addresses })
+                }
             }
         }
         return wallets
     }
 
     async syncConnectedWallets(): Promise<void> {
+        const version = ++FuelConnectionService._walletSyncVersion
         const wallets = await this.resolveConnectedWallets()
-        for (const wallet of wallets) {
-            this.addWallet(wallet)
+        if (version === FuelConnectionService._walletSyncVersion) {
+            useFuelStore.getState()._setConnectedWallets(wallets)
         }
     }
 

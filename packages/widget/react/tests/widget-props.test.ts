@@ -54,15 +54,6 @@ const reactDepositProps: RemoteDepositWidgetProps = {
   mode: 'button',
 };
 
-void vanillaProps;
-void invalidVanillaWagmi;
-void invalidVanillaLoading;
-void reactProps;
-void vanillaDepositProps;
-void invalidDepositMissingDestination;
-void invalidDepositMethod;
-void reactDepositProps;
-
 const typedCallbacks: WidgetCallbacks = {
   onTelemetry(event) {
     const schemaVersion: 1 = event.attributes.schema_version;
@@ -71,21 +62,15 @@ const typedCallbacks: WidgetCallbacks = {
       const duration: number = event.attributes.duration_ms;
       // @ts-expect-error An operation duration is always numeric.
       const invalid: string = event.attributes.duration_ms;
-      void duration;
-      void invalid;
     }
     if (event.name === 'widget_flow') {
       const step: string = event.attributes.step;
-      void step;
     }
-    void schemaVersion;
-    void eventId;
   },
   onSwapLifecycle(event) {
     const step: string = event.step;
     // @ts-expect-error Lifecycle observations are not full swap responses.
     event.swap;
-    void step;
   },
   onSwapStatusChange(event) {
     const id: string = event.swapId;
@@ -93,27 +78,19 @@ const typedCallbacks: WidgetCallbacks = {
     event.step;
     // @ts-expect-error UI phase is reported on onSwapLifecycle.
     event.phase;
-    void id;
   },
   onError(event) {
     const message: string = event.message;
     if (event.type === 'APIError') {
       const method: string = event.requestMethod;
-      void method;
     }
     if (event.type === 'CallbackError') {
       const type: 'CallbackError' = event.type;
       const cause: unknown = event.cause;
-      void type;
-      void cause;
     }
     // @ts-expect-error Error payload fields must not silently become any.
     const invalid: number = event.message;
-    void message;
-    void invalid;
   },
 };
 const vanillaCallbacks: VanillaWidgetProps = { callbacks: typedCallbacks };
 const reactCallbacks: RemoteWidgetProps = { callbacks: typedCallbacks };
-void vanillaCallbacks;
-void reactCallbacks;

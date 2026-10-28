@@ -5,4 +5,5 @@ export type LSConnector = Connector & {
     order?: number,
     isAvailable?: boolean,
     deepLink?: string,
+    getSessionTopic?: () => string | undefined,
 }

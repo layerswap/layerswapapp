@@ -40,33 +40,6 @@ const registryWallet = {
     order: 1,
 }
 
-test('configured WalletConnect metadata does not imply registry source', () => {
-    const configuredConnector = {
-        id: 'rainbow',
-        name: 'Rainbow',
-        providerName: 'EVM',
-        type: 'walletConnect',
-        source: 'configured',
-        mobile: {
-            native: 'rainbow://',
-            universal: 'https://rnbwapp.com',
-        },
-    }
-
-    assert.equal(isWalletConnectRegistryConnector(configuredConnector), false)
-})
-
-test('registry connector source is explicit', () => {
-    const registryConnector = createRegistryConnector(registryWallet, false, 'EVM')
-
-    assert.equal(isWalletConnectRegistryConnector(registryConnector), true)
-    assert.equal(registryConnector.source, 'registry')
-    assert.equal(isWalletConnectRegistryConnector({
-        ...registryConnector,
-        type: 'injected',
-    }), false)
-})
-
 test('connector composition preserves configured transport and synthesizes registry variants', () => {
     const configuredConnector = {
         id: 'rainbow-configured',
@@ -78,6 +51,9 @@ test('connector composition preserves configured transport and synthesizes regis
         mobile: registryWallet.mobile,
     }
     const registryConnector = createRegistryConnector(registryWallet, false, 'EVM')
+    assert.equal(isWalletConnectRegistryConnector(configuredConnector), false)
+    assert.equal(isWalletConnectRegistryConnector(registryConnector), true)
+    assert.equal(isWalletConnectRegistryConnector({ ...registryConnector, type: 'injected' }), false)
     const providers = [
         {
             id: 'evm-provider',

@@ -21,6 +21,9 @@ for (const [key, value] of Object.entries(globals)) {
 // The widget emits extensionless relative imports for bundlers; resolve those in Node.
 const hooks = registerHooks({
   resolve(specifier, context, nextResolve) {
+    if (specifier.endsWith('/context/swapAccounts')) return { url: 'data:text/javascript,export const useSelectedAccount = () => undefined', shortCircuit: true }
+    if (specifier === './AmountPresetController') return { url: 'data:text/javascript,export default () => null', shortCircuit: true }
+    if (specifier === './AtomicBatchDiscovery') return { url: 'data:text/javascript,export default () => null', shortCircuit: true }
     if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
       return nextResolve(`${specifier}.js`, context)
     }
@@ -31,7 +34,7 @@ const hooks = registerHooks({
 // Import after installing the DOM so the provider uses its client layout effect.
 const { createRoot } = await import('react-dom/client')
 const { CallbackProvider, useCallbacks } = await import('../dist/esm/context/callbackProvider.js')
-const { captureWidgetInteraction } = await import('../dist/esm/lib/widgetTelemetry.js')
+const { captureWidgetInteraction, widgetTelemetry } = await import('../dist/esm/lib/widgetTelemetry.js')
 const { default: SwapForm } = await import('../dist/esm/components/Pages/Swap/Form/SwapForm.js')
 
 const MODES = ['cross-chain', 'exchange', 'deposit-address', 'deposit-widget-address', 'deposit-widget-wallet']
@@ -58,11 +61,12 @@ after(() => {
 
 /** Exposes Formik's submitForm and the provider's onSwapLifecycle to the test. */
 function Probe({ handle }) {
-  const { submitForm } = useFormikContext()
+  const { submitForm, setFieldValue } = useFormikContext()
   const { onSwapLifecycle } = useCallbacks()
   handle.submitForm = submitForm
+  handle.setFieldValue = setFieldValue
   handle.onSwapLifecycle = onSwapLifecycle
-  return createElement('input', { 'data-testid': 'amount' })
+  return createElement('input', { name: 'amount', 'data-testid': 'amount' })
 }
 
 /** The form can be unmounted while the provider (and its telemetry registration) stays. */
@@ -161,4 +165,25 @@ test('a synchronous onSubmit still resolves Formik submission', async () => {
   const { handle } = await mount({ mode: 'cross-chain', submitAction: 'submit', onSubmit: () => { calls++ } })
   await act(async () => { await handle.submitForm() })
   assert.equal(calls, 1)
+})
+
+test('existing captured actions identify Max/manual without changing form state', async () => {
+  const { handle, lifecycle } = await mount({ mode: 'cross-chain' })
+  const input = container.querySelector('[data-testid="amount"]')
+  const max = document.createElement('button')
+  max.setAttribute('data-attr', 'max-amount')
+  input.parentElement.append(max)
+  captureWidgetInteraction({ target: max, type: 'click' })
+  await act(async () => { await handle.submitForm() })
+  assert.equal(lifecycle.at(-1).amountMode, 'max')
+  captureWidgetInteraction({ target: input, type: 'change' })
+  assert.equal(widgetTelemetry.amountInputMethod({ step: 'form_submitted' }), 'max', 'capture cannot decide whether an edit will be accepted')
+  widgetTelemetry.recordAmountInput('manual')
+  await act(async () => { await handle.submitForm() })
+  assert.equal(lifecycle.at(-1).amountMode, 'manual', 'edits update the label even after form_edited events are deduplicated')
+  await act(() => handle.setFieldValue('from', { name: 'OTHER' }, false))
+  await act(async () => { await handle.submitForm() })
+  assert.equal(lifecycle.at(-1).amountMode, 'unknown', 'source changes discard old input history')
+  await act(() => handle.onSwapLifecycle({ step: 'transfer_blocked', swapId: 'restored', stage: 'wallet_action', outcome: 'blocked', path: 'test' }))
+  assert.equal(lifecycle.at(-1).amountMode, 'unknown', 'unrelated swaps never inherit form input history')
 })

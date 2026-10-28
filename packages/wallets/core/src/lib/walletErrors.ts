@@ -16,6 +16,11 @@ const RAW_CODE_LIMIT = 128
 const MAX_NODES = 16
 
 export function walletErrorCode(candidate: unknown): string | undefined {
+    // viem assigns 4902 to every SwitchChainError, even a synchronization failure.
+    // Only the provider's cause can establish that a chain is actually unknown.
+    // Likewise UnknownRpcError's -1 is viem's placeholder; the wallet's code is its cause.
+    const name = (candidate as ErrorCandidate | undefined)?.name
+    if (name === 'SwitchChainError' || name === 'UnknownRpcError') return undefined
     const code = (candidate as ErrorCandidate | undefined)?.code
     if (typeof code === 'string' && code) return code.slice(0, RAW_CODE_LIMIT)
     if (typeof code === 'number' && Number.isFinite(code)) return String(code)
@@ -52,6 +57,7 @@ const REASON_CODES: Record<WalletErrorReasonCode, true> = {
     internal_rpc_error: true,
     network_error: true,
     timeout: true,
+    request_pending: true,
     unknown_error: true,
 }
 
@@ -125,6 +131,9 @@ const CODE_RULES: Record<Tier, Record<string, WalletErrorReasonCode>> = {
         ECONNRESET: 'network_error',
         TIMEOUT: 'timeout',
         ETIMEDOUT: 'timeout',
+        // EIP-1193 "resource unavailable": MetaMask answers with it while an earlier
+        // prompt of the same type (chain switch, account request) is still open.
+        '-32002': 'request_pending',
     },
     fallback: {
         // JSON-RPC "Internal error": the spec catch-all and @metamask/rpc-errors' serializer fallback.
@@ -146,7 +155,7 @@ const NAME_RULES: Record<Tier, NameRules> = {
         [/EstimateGas|GasEstimat|UnpredictableGas/i, 'gas_estimation_failed'],
         [/ContractFunction|CallException|Revert/i, 'contract_reverted'],
         [/Nonce|Replacement/i, 'nonce_or_replacement'],
-        [/ChainNotConfigured|ChainNotAdded|SwitchChain/i, 'chain_not_added'],
+        [/ChainNotConfigured|ChainNotAdded/i, 'chain_not_added'],
         [/Disconnected|ProviderDisconnected/i, 'wallet_disconnected'],
         [/UnsupportedProviderMethod|MethodNotSupported|MethodNotFound/i, 'unsupported_method'],
         [/InvalidParams/i, 'invalid_parameters'],
@@ -163,7 +172,7 @@ const NAME_RULES: Record<Tier, NameRules> = {
 // under "Details:". The cause node is already a candidate, so these contribute
 // no descriptive text. viem maps every node -32000 to InvalidInputRpcError
 // although geth uses -32000 for funds / nonce / revert failures.
-const BUCKET_NAMES = /InternalRpc|UnknownRpc|InvalidInputRpc|^RpcError$|^RpcRequestError$|^BaseError$/i
+const BUCKET_NAMES = /InternalRpc|UnknownRpc|InvalidInputRpc|^SwitchChainError$|^RpcError$|^RpcRequestError$|^BaseError$/i
 
 // ---- Decline text. Only phrasing that names the user (or a wallet SDK's own
 // ---- decline token) counts: "origin rejected the request" is a node or relay
@@ -202,8 +211,9 @@ const MESSAGE_RULES: Record<TextTier, NameRules> = {
         [/disconnected|not connected/i, 'wallet_disconnected'],
         [/method not (supported|found)|unsupported method|does not support/i, 'unsupported_method'],
         [/invalid (params|parameters|argument)/i, 'invalid_parameters'],
-        [/network error|failed to fetch|load failed|econnre|socket hang up|fetch failed/i, 'network_error'],
+        [/network error|failed to fetch|load failed|econnre|socket hang up|fetch failed|RPC endpoint returned HTTP (?:client|server) error/i, 'network_error'],
         [/timed? ?out|timeout/i, 'timeout'],
+        [/already pending|already processing/i, 'request_pending'],
     ],
     fallback: [
         [/internal (json-rpc|rpc) error|internal error/i, 'internal_rpc_error'],
@@ -213,17 +223,40 @@ const MESSAGE_RULES: Record<TextTier, NameRules> = {
 // ---- Candidate collection: a bounded tree walk over the edges wallets and
 // ---- SDKs actually use to nest the real failure (viem/ethers `cause`,
 // ---- JSON-RPC `data`, ethers v5 `error`, MetaMask `originalError`).
-const NESTED_KEYS = ['cause', 'data', 'originalError', 'error'] as const
+const NESTED_KEYS = ['cause', 'data', 'originalError', 'error', 'info'] as const
 
 function isErrorLike(value: unknown): value is ErrorCandidate {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return false
     return 'code' in value || 'message' in value || 'name' in value || 'cause' in value || 'reasonCode' in value
         || 'error' in value || 'originalError' in value || 'shortMessage' in value
+        || 'data' in value || 'info' in value || 'details' in value
 }
 
 /** Innermost first: deeper nodes describe the raw failure, wrappers add noise. */
 function collectCandidates(error: unknown): ErrorCandidate[] {
     return collectNodes(error).sort((a, b) => b.depth - a.depth).map(node => node.value)
+}
+
+/** Preserve the outer raw code; look through known wrappers only when it is absent. */
+export function walletErrorCodeFromChain(error: unknown): string | undefined {
+    for (const { value } of collectNodes(error).sort((a, b) => a.depth - b.depth)) {
+        try {
+            const code = walletErrorCode(value)
+            if (code !== undefined) return code
+        } catch { /* A foreign code getter must not prevent reporting the remaining causes. */ }
+    }
+    return undefined
+}
+
+/** Bounded cause text; retain the adapter's code unless it is missing or synthetic. */
+export function walletErrorDetails(error: unknown): { message: string; code?: string } {
+    const candidates = collectCandidates(error)
+    const messages = candidates.map(candidate => candidate.shortMessage || candidate.message)
+        .filter((message): message is string => typeof message === 'string' && !!message)
+    return {
+        message: ([...new Set(messages)].join(' | ') || errorMessage(error)).slice(0, 2048),
+        code: walletErrorCodeFromChain(error),
+    }
 }
 
 /** Outermost first: the adapter that wrapped a failure has the final say on its meaning. */
@@ -276,6 +309,20 @@ function messageReason(candidate: ErrorCandidate, tier: TextTier): WalletErrorRe
     return MESSAGE_RULES[tier].find(([pattern]) => pattern.test(text))?.[1]
 }
 
+// CAIP-25 5000 is what WalletConnect wallets answer *any* failed request with:
+// MetaMask Mobile relays its own RPC failures as 5000 with the failure as the
+// message ("RPC 0xa Custom eth_getBlockByNumber: RPC endpoint returned HTTP
+// client error."). When the 5000 node's own text names a non-decline failure,
+// that text is the reason; viem's UserRejectedRequestError wrapper adds nothing.
+function caip25FailureReason(chain: ErrorCandidate[]): WalletErrorReasonCode | undefined {
+    for (const candidate of chain) {
+        if (walletErrorCode(candidate) !== '5000') continue
+        const reason = messageReason(candidate, 'descriptive')
+        if (reason && reason !== 'user_rejected') return reason
+    }
+    return undefined
+}
+
 function rawTextReason(error: unknown, tier: TextTier): WalletErrorReasonCode | undefined {
     if (typeof error !== 'string') return undefined
     if (tier === 'descriptive' && isDeclineText(error)) return 'user_rejected'
@@ -286,6 +333,7 @@ function rawTextReason(error: unknown, tier: TextTier): WalletErrorReasonCode | 
  * Evidence tier decides precedence, not the field a signal came from:
  *   0. an explicit `reasonCode` set by an adapter (walletActionError /
  *      userRejectedError) wins anywhere in the chain, outermost first;
+ *      then a CAIP-25 5000 whose own text names a non-decline failure;
  *   1. a definitive cancellation signal anywhere in the tree;
  *   2. definitive codes/names, innermost first;
  *   3. descriptive message text, innermost first (SDK bucket classes contribute no text);
@@ -297,13 +345,15 @@ function rawTextReason(error: unknown, tier: TextTier): WalletErrorReasonCode | 
  * `TransactionRejected` name is a failure until an adapter declares otherwise.
  * -32603 is the JSON-RPC catch-all and @metamask/rpc-errors' serializer fallback,
  * so it can never outrank text or a nested cause. Wrappers under cause/data/
- * originalError/error are transparent. Returns `unknown_error` when nothing
+ * originalError/error/info are transparent. Returns `unknown_error` when nothing
  * recognizable exists, never a guess from arbitrary text.
  */
 export function normalizeWalletErrorCode(error: unknown): WalletErrorReasonCode {
     const declared = declaredReason(error)
     if (declared) return declared
     const chain = collectCandidates(error)
+    const caip25Failure = caip25FailureReason(chain)
+    if (caip25Failure) return caip25Failure
     for (const candidate of chain) {
         if (codeReason(candidate, 'definitive') === 'user_rejected' || nameReason(candidate, 'definitive') === 'user_rejected') return 'user_rejected'
     }

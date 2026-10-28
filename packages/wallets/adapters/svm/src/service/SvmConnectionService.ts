@@ -10,6 +10,9 @@ import { SolanaWalletConnectAdapter } from '../connectors/SolanaWalletConnectAda
 import { svmAdapterManager } from './svmAdapterManager'
 import { useSvmStore } from './svmStore'
 
+const walletConnectTopic = (adapter: unknown) =>
+    adapter instanceof SolanaWalletConnectAdapter ? adapter.sessionTopic : undefined
+
 const SOLANA_WC_MODAL_NAME = 'WalletConnect'
 const SOLANA_HIDDEN_WC_NAME = 'Hidden WalletConnect'
 const SVM_NS = solanaWalletConnectChain.namespace
@@ -126,7 +129,7 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
 
         const isWalletConnect = snapshot.name === SOLANA_WC_MODAL_NAME || snapshot.name === SOLANA_HIDDEN_WC_NAME
         const dynamicMeta = isWalletConnect
-            ? (getDynamicWcMetadata(SVM_NS, activeAddress) || getPendingDynamicWcMetadata(SVM_NS))
+            ? (getPendingDynamicWcMetadata(SVM_NS) || getDynamicWcMetadata(SVM_NS, activeAddress))
             : null
 
         const normalizedName = normalizeWcName(snapshot.name) || snapshot.name
@@ -152,7 +155,7 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
             autofillSupportedNetworks: supported,
             withdrawalSupportedNetworks: supported,
             networkIcon: this.getNetworkIcon(),
-            metadata: { deepLink: dynamicMeta?.deepLink },
+            metadata: { deepLink: dynamicMeta?.deepLink, walletConnectTopic: walletConnectTopic(svmAdapterManager.getAdapter(snapshot.name)) },
         }
     }
 
@@ -259,6 +262,10 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
             const targetAdapter = useWalletConnect ? hiddenWcAdapter : installedAdapter
             if (!targetAdapter) throw new Error('Connector not found')
 
+            // Every registry wallet uses the same hidden transport. A new wallet
+            // selection must pair again, not relabel its predecessor's session.
+            if (useWalletConnect) await targetAdapter.disconnect()
+
             if (useSvmStore.getState().activeAddress) {
                 const activeAdapter = svmAdapterManager.getActiveAdapter()
                 const adaptersToDisconnect = svmAdapterManager.getAdapters().filter(adapter =>
@@ -341,7 +348,7 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
                 autofillSupportedNetworks: supported,
                 withdrawalSupportedNetworks: supported,
                 networkIcon: this.getNetworkIcon(),
-                metadata: { deepLink: wcDeepLink },
+                metadata: { deepLink: wcDeepLink, walletConnectTopic: walletConnectTopic(connectedAdapter) },
             }
             return wallet
         } catch (e) {

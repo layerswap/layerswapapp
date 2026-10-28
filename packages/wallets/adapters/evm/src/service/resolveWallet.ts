@@ -50,7 +50,7 @@ export function resolveWallet<Network>(props: ResolveWalletProps<Network>): Wall
 
     const isHiddenConnector = connector.id === HIDDEN_WALLETCONNECT_ID
     const dynamicMetadata = isHiddenConnector
-        ? (getDynamicWcMetadata(EIP155_NAMESPACE, address) || getPendingDynamicWcMetadata(EIP155_NAMESPACE))
+        ? (getPendingDynamicWcMetadata(EIP155_NAMESPACE) || getDynamicWcMetadata(EIP155_NAMESPACE, address))
         : null
 
     const walletName = dynamicMetadata?.name || connector.name
@@ -79,7 +79,11 @@ export function resolveWallet<Network>(props: ResolveWalletProps<Network>): Wall
         withdrawalSupportedNetworks: resolveSupportedNetworks(supportedNetworks.withdrawal, walletId),
         networkIcon: iconNetwork ? networkAdapter.getIcon(iconNetwork) : undefined,
         metadata: {
-            deepLink: (connector as LSConnector).deepLink,
+            connectorId: connector.id,
+            connectorUid: connector.uid,
+            deepLink: dynamicMetadata?.deepLink || (connector as LSConnector).deepLink,
+            evmConnectorUid: connector.uid,
+            walletConnectTopic: (connector as LSConnector).getSessionTopic?.(),
         },
     }
 }

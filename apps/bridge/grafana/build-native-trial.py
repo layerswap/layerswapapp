@@ -97,7 +97,7 @@ ERRORS = BASE + ' | kind="exception" or event_name="widget_diagnostic"'
 ERRORS += (' | label_format type=`{{ if .type }}{{ .type }}{{ else if .event_data_error_type }}{{ .event_data_error_type }}{{ else }}(unknown type){{ end }}`'
     ' | label_format error_message=`{{ if .value }}{{ .value }}{{ else }}{{ .event_data_message }}{{ end }}`'
     ' | label_format category=`{{ if .context_eventType }}{{ .context_eventType }}{{ else }}{{ .event_data_error_category }}{{ end }}`'
-    ' | label_format signal=`{{ if or (eq .type "TransactionRejected") (eq .event_data_impact "expected") }}expected{{ else if or (eq .context_impact "diagnostic") (eq .event_data_impact "diagnostic") (eq .category ' + ' '.join(json.dumps(t) for t in BACKGROUND_TYPES.split('|')) + ') }}diagnostic{{ else }}issue{{ end }}`')
+    ' | label_format signal=`{{ if or (eq .context_reason_code "user_rejected") (eq .event_data_reason_code "user_rejected") (eq .context_impact "expected") (eq .event_data_impact "expected") }}expected{{ else if or (eq .context_impact "diagnostic") (eq .event_data_impact "diagnostic") (eq .category ' + ' '.join(json.dumps(t) for t in BACKGROUND_TYPES.split('|')) + ') }}diagnostic{{ else }}issue{{ end }}`')
 ERRORS += decoded('error_marker') + ' | label_format matched=`{{ or (contains (lower .needle_error_marker) (lower .error_message)) (contains (lower .needle_error_marker) (lower .type)) }}` | matched="true"'
 ERRORS += ' | label_format normalized=`{{ .error_message | trim }}`'
 for pattern, replacement in NORMALIZATIONS:

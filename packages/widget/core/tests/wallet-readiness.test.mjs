@@ -29,18 +29,27 @@ const mockUrl = `data:text/javascript,${encodeURIComponent(`
   export const useSettingsState = () => ({ networks: [] })
   export const WithdrawalProvider = ({ children }) => children
   export const ConnectWalletButton = () => createElement('button', null, 'Connect wallet')
-  export const ChangeNetworkButton = () => createElement('button', null, 'Change network')
   export const SendTransactionButton = () => createElement('button', null, 'Send transaction')
   export const WalletIcon = () => null
   export const ActionMessage = () => null
+  export const useActionMessage = () => null
+  export const useSwapDataUpdate = () => ({ reportWalletActionFeedback: () => () => {} })
+  export const useWalletWithdrawalState = () => ({ showProgress: false })
+  export const useConnectWalletController = () => ({})
+  export const useConnectModal = () => ({})
+  export const useSendTransactionController = () => ({})
+  export const getSendTransactionPresentation = () => ({ controls: createElement('button', null, 'Send transaction') })
+  export const ConnectWalletView = () => createElement('button', null, 'Connect wallet')
+  export const ProgressPanelView = () => null
+  export const getWalletProgress = () => null
   export const ActionMessages = { DifferentAccountsNotAllowedError: () => createElement('p', null, 'Accounts must match') }
   export const useBalance = () => ({ balances: [] })
   export const useTransfer = () => ({})
   export const useGasless = () => ({ isGaslessSupported: () => false })
   export const useRpcHealth = () => undefined
   export const isExtendedSourceNetwork = () => false
-  export const HyperliquidWalletWithdraw = () => null
-  export const PolymarketWalletWithdraw = () => null
+  export const ProviderWalletWithdrawal = () => null
+  export const useWithdrawalProvider = () => undefined
 `)}`
 const mockedDependencies = [
   '/context/withdrawalContext', '/hooks/useWallet', '/context/swapAccounts',
@@ -48,7 +57,7 @@ const mockedDependencies = [
   '/lib/balances/useBalance', '/Common/actionMessage', '/messages/TransactionMessages',
   '/hooks/useTransfer', '/hooks/useGasless', '/context/rpcHealthContext',
   '/RPCUnhealthyMessage', '/lib/extendedRoutes/registry',
-  '/WithdrawalProviders/Hyperliquid', '/WithdrawalProviders/Polymarket',
+  '/hooks/useWithdrawalProvider', '/WithdrawalProviders/ProviderWalletWithdrawal', '/Presentation/WalletActionsView', '/Presentation/ProgressPanelView', '/Presentation/walletProgress',
 ]
 // Mocks apply only to imports made by the component under test. If that file
 // moves, update this path or the real wallet SDKs will load unmocked.

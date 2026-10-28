@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from 'react'
 import useSWR from 'swr'
 import LayerSwapApiClient, { type SwapResponse } from '@/lib/apiClients/layerSwapApiClient'
 import type { ApiResponse } from '@layerswap/widget-types'
+import { recordSwapExecution } from '@/lib/swapExecution'
 import { resolveSwapPollingInterval, SWAP_POLL_DEDUPE_MS } from '@/lib/swapPollingPolicy'
 
 const client = new LayerSwapApiClient()
@@ -27,6 +28,7 @@ export function useSwapPolling(swapId: string | undefined, initialSwapData?: Swa
     const { data, mutate } = result
     useEffect(() => {
         const swap = data?.data?.swap
+        if (swap && !data?.error) recordSwapExecution(swap.id, { swapData: swap, depositActions: data?.data?.deposit_actions })
         const fingerprint = swap && [swap.id, swap.status,
             ...(swap.transactions?.map(t => `${t.type}:${t.status}:${t.confirmations >= t.max_confirmations}:${t.transaction_hash}:${t.amount}`) ?? []),
         ].join('|')

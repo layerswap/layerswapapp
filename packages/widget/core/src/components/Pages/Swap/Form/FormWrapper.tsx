@@ -30,6 +30,10 @@ import ContractAddressValidationCache, { ContractSourceAddressValidationCache } 
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 import { useCheckSwapPrerequisites } from '@/hooks/useSwapPrerequisites';
 import { prerequisitesFromForm } from '@/lib/prerequisites/context';
+import { SwapQuote } from "@/lib/apiClients/layerSwapApiClient";
+import { FormQuoteReportProvider } from "@/context/formQuote";
+import { isVerySlowRoute } from "@/lib/routeSpeed";
+import SlowRouteNote from "./SecondaryComponents/SlowRouteNote";
 import { lifecycleContextFromForm, lifecycleContextFromSwap, resolveFlowClosedEvent } from "@/lib/swapLifecycle";
 import { useResolvedSwapStatus } from "@/hooks/useResolvedSwapStatus";
 import SwapForm, { type SwapFormMode } from './SwapForm';
@@ -49,6 +53,9 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
     const [isAddressFromQueryConfirmed, setIsAddressFromQueryConfirmed] = useState(false);
     const dontShowContractWarningRef = useRef(false);
+    // Live quote of the rendered form, reported via `useReportFormQuote`; read at submit time only.
+    const formQuoteRef = useRef<SwapQuote | undefined>(undefined);
+    const reportFormQuote = useCallback((quote: SwapQuote | undefined) => { formQuoteRef.current = quote }, []);
 
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
     const settings = useSettingsState();
@@ -161,6 +168,26 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
             }
         }
 
+        const avgCompletionTime = formQuoteRef.current?.avg_completion_time
+        if (type !== 'deposit-address' && isVerySlowRoute(avgCompletionTime)) {
+            const confirmed = await getConfirmation({
+                content: <SlowRouteNote avgCompletionTime={avgCompletionTime} />,
+                submitText: 'Continue',
+                dismissText: 'Choose another route'
+            });
+            if (!confirmed) {
+                onSwapLifecycle({
+                    step: 'form_confirmation_cancelled',
+                    stage: 'form',
+                    outcome: 'cancelled',
+                    path: 'SlowRouteConfirmation',
+                    reasonCode: 'slow_route_confirmation_cancelled',
+                    ...lifecycleContext,
+                })
+                return;
+            }
+        }
+
         try {
             await handleCreateSwap({
                 setSwapId,
@@ -206,6 +233,9 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                 })
             }
             if (walletWihdrawDone) {
+                // Keep the active swap's fee presentation stable through submission.
+                // The next form attempt gets the default after this modal closes.
+                useGaslessPreferenceStore.getState().resetGaslessPreference()
                 mutateBalances()
                 setWalletWihdrawDone(false)
             }
@@ -248,7 +278,9 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                                 <Suspense fallback={<SwapDetailsSceleton />}>
                                     <SwapDetails type="contained" onWalletWithdrawalSuccess={() => {
                                         setWalletWihdrawDone(true)
-                                        useGaslessPreferenceStore.getState().resetGaslessPreference()
+                                        setFieldValue('amountMode', 'manual')
+                                        setFieldValue('amountPresetPending', false)
+                                        setFieldValue('amountPresetError', undefined)
                                         setFieldValue('amount', 0)
                                         mutateBalances()
                                     }} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />
@@ -256,7 +288,9 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                             ) : null
                         }
                     </VaulDrawer >
-                    {children}
+                    <FormQuoteReportProvider value={reportFormQuote}>
+                        {children}
+                    </FormQuoteReportProvider>
                     < ContractAddressValidationCache
                         source_network={values.from}
                         destination_network={values.to}

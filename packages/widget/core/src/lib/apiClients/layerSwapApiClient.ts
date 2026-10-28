@@ -1,3 +1,4 @@
+import type { AmountMode } from '@/lib/amountPresets';
 import { SwapStatus, type Refuel } from '@layerswap/widget-types';
 import AppSettings from "../AppSettings";
 import { InitializeUnauthInstance, InitializeAuthInstance } from "../axiosInterceptor"
@@ -9,6 +10,7 @@ import { NetworkWithTokens, Network, Token } from "@layerswap/widget-types";
 import { Exchange } from "../../Models/Exchange";
 import { ErrorHandler } from "@/lib/ErrorHandler";
 import { startApiOperation } from '../widgetTelemetry';
+import { resolveAtomicDepositActions } from '../atomicBatchActions';
 
 const IGNORED_API_ERROR_CODES = [
     'ROUTE_NOT_FOUND_ERROR',
@@ -28,10 +30,11 @@ export default class LayerSwapApiClient {
         this._unauthInterceptor = InitializeUnauthInstance(LayerSwapApiClient.apiBaseEndpoint)
     }
 
-    fetcher = (url: string) => this.AuthenticatedRequest<ApiResponse<any>>("GET", url)
+    fetcher = (url: string, options?: { signal?: AbortSignal }) =>
+        this.AuthenticatedRequest<ApiResponse<any>>("GET", url, undefined, undefined, options?.signal)
 
-    async GetRoutesAsync(direction: 'sources' | 'destinations'): Promise<ApiResponse<NetworkWithTokens[]>> {
-        return await this.UnauthenticatedRequest<ApiResponse<NetworkWithTokens[]>>("GET", `/${direction}?include_unmatched=true&include_swaps=true&include_unavailable=true`)
+    async GetRoutesAsync(direction: 'sources' | 'destinations', _useFrontendSwap: true = true): Promise<ApiResponse<NetworkWithTokens[]>> {
+        return await this.UnauthenticatedRequest<ApiResponse<NetworkWithTokens[]>>("GET", `/${direction}?include_unmatched=true&include_swaps=true&include_unavailable=true&use_frontend_swap=true`)
     }
 
     async GetSourceExchangesAsync(): Promise<ApiResponse<Exchange[]>> {
@@ -44,7 +47,12 @@ export default class LayerSwapApiClient {
 
     async CreateSwapAsync(params: CreateSwapParams): Promise<ApiResponse<SwapResponse>> {
         const correlationId = uuidv4()
-        return await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("POST", `/swaps`, params, { 'X-LS-CORRELATION-ID': correlationId });
+        const response = await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("POST", `/swaps`, {
+            ...params,
+            use_frontend_swap: true,
+            use_gasless: params.use_gasless === true,
+        }, { 'X-LS-CORRELATION-ID': correlationId });
+        return this.resolveSwapDepositActions(response, response.data?.swap?.source_address ?? params.source_address);
     }
 
     async GetTransactionStatus(network: string, tx_id: string): Promise<ApiResponse<any>> {
@@ -65,24 +73,65 @@ export default class LayerSwapApiClient {
     }
 
     async GetDepositActionsAsync(swapId: string, sourceAddress?: string): Promise<ApiResponse<DepositAction[]>> {
-        const query = sourceAddress ? `?source_address=${sourceAddress}` : "";
-        return await this.AuthenticatedRequest<ApiResponse<DepositAction[]>>("GET", `/swaps/${swapId}/deposit_actions${query}`);
+        const query = sourceAddress ? `?source_address=${encodeURIComponent(sourceAddress)}` : "";
+        const response = await this.AuthenticatedRequest<ApiResponse<DepositAction[]>>("GET", `/swaps/${swapId}/deposit_actions${query}`);
+        if (response.error || !Array.isArray(response.data)) {
+            return response;
+        }
+        const actions = await this.resolveDepositActions(swapId, response.data, sourceAddress);
+        return { ...response, data: actions };
     }
 
-    async GetSwapAsync(swapId: string): Promise<ApiResponse<SwapResponse>> {
-        return await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("GET", `/swaps/${swapId}`);
+    async GetNextActionAsync(swapId: string, sourceAddress?: string): Promise<ApiResponse<NextActionResponse>> {
+        const query = sourceAddress ? `?source_address=${encodeURIComponent(sourceAddress)}` : '';
+        return this.AuthenticatedRequest('GET', `/swaps/${swapId}/next_action${query}`);
     }
 
-    private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
+    async GetSwapAsync(swapId: string, sourceAddress?: string): Promise<ApiResponse<SwapResponse>> {
+        const query = sourceAddress ? `?source_address=${encodeURIComponent(sourceAddress)}` : "";
+        const response = await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("GET", `/swaps/${swapId}${query}`);
+        return this.resolveSwapDepositActions(response, sourceAddress);
+    }
+
+    private resolveDepositActions(swapId: string, actions: DepositAction[], sourceAddress?: string): Promise<DepositAction[]> {
+        return resolveAtomicDepositActions(actions, async () => {
+            const next = await this.GetNextActionAsync(swapId, sourceAddress);
+            if (!next.data || next.error) {
+                throw new Error(next.error?.message || 'Could not load the atomic swap action');
+            }
+            return next.data;
+        });
+    }
+
+    private async resolveSwapDepositActions(response: ApiResponse<SwapResponse>, sourceAddress?: string): Promise<ApiResponse<SwapResponse>> {
+        const swapData = response.data;
+        if (response.error || !swapData?.swap?.id || !Array.isArray(swapData.deposit_actions)) {
+            return response;
+        }
+        const { swap, deposit_actions: actions } = swapData;
+        try {
+            const resolved = await this.resolveDepositActions(swap.id, actions, sourceAddress ?? swap.source_address);
+            return { ...response, data: { ...swapData, deposit_actions: resolved } };
+        } catch {
+            // Preserve an authoritative swap (especially a successful create).
+            // A later action refresh must succeed before opening the wallet.
+            return { ...response, data: { ...swapData, deposit_actions: undefined } };
+        }
+    }
+
+    private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}, signal?: AbortSignal): Promise<T> {
         const finishTelemetry = startApiOperation(method, endpoint)
         let uri = LayerSwapApiClient.apiBaseEndpoint + "/api/v2" + endpoint;
-        return await this._authInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
+        return await this._authInterceptor(uri, { method: method, data: data, signal, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
             .then(res => {
-                finishTelemetry(res?.data?.error ? 'failed' : 'succeeded', { http_status: res?.status })
+                finishTelemetry(res?.data?.error ? 'failed' : 'succeeded', { http_status: res?.status }, res?.data?.data)
                 return res?.data;
             })
             .catch(async reason => {
                 finishTelemetry(reason?.code === 'ERR_CANCELED' ? 'cancelled' : 'failed', { http_status: reason?.response?.status })
+                if (signal?.aborted && reason?.code === 'ERR_CANCELED') {
+                    return Promise.reject(reason);
+                }
                 if (reason instanceof AuthRefreshFailedError) {
                     return Promise.resolve(new EmptyApiResponse());
                 }
@@ -171,7 +220,9 @@ export type CreateSwapParams = {
     destination_exchange?: string
     use_deposit_address: boolean
     use_depository?: boolean
-    use_gasless?: boolean
+    use_gasless: boolean
+    use_frontend_swap: true
+    use_atomic_batch?: boolean
     app_name?: string,
 }
 
@@ -183,6 +234,14 @@ export type SwapResponse = {
 }
 
 export type SwapBasicData = {
+    /** Present only when the backend persisted a frontend settlement leg. */
+    quote_revision?: number;
+    /** Local amount intent; never serialized as an API parameter. */
+    amountMode?: AmountMode
+    amountPresetSource?: string
+    amountPresetError?: string
+    amountPresetPending?: boolean
+    amountPresetBalance?: number
     source_network: Network,
     source_token: Token,
     source_exchange?: Exchange,
@@ -211,6 +270,7 @@ export type SwapDetails = {
 }
 
 export type SwapItem = {
+    quote_revision?: number;
     id: string,
     created_date: string,
 
@@ -247,21 +307,33 @@ export type EIP712TypedData = {
     message: Record<string, string | number>,
 }
 
-type DepositActionBase = {
-    step?: 'approve_permit2' | 'sign' | 'publish' | 'deposit',
-    status?: 'action_required' | 'pending' | 'waiting' | 'completed' | 'failed',
-    amount: number,
-    amount_in_base_units: string,
-    call_data: string | null,
+export type DepositActionStep = 'approve_permit2' | 'sign' | 'publish' | 'deposit' | string
+export type DepositActionStatus = 'action_required' | 'pending' | 'waiting' | 'completed' | 'failed' | string
+
+type DepositActionWorkflow = {
+    step?: DepositActionStep,
+    status?: DepositActionStatus,
+    signing_standard?: string,
+    expires_at?: string,
+    detail?: string,
+}
+
+type DepositActionBase = DepositActionWorkflow & {
+    amount?: number,
+    amount_in_base_units?: string,
+    call_data?: `0x${string}` | string | null,
+    gas_limit?: string,
     encoded_args?: string[] | null,
     from_address?: string,
-    gas_limit?: string,
-    fee: any | null,//TODO: clarify this field type
-    network: Network,
-    order: number,
+    fee?: any | null,//TODO: clarify this field type
+    network?: Network,
+    order?: number,
     to_address?: string,
-    token: Token,
-    fee_token: Token,
+    token?: Token,
+    fee_token?: Token,
+    valid_after?: number,
+    valid_before?: number,
+    nonce?: string,
 }
 
 export type TransferDepositAction = DepositActionBase & {
@@ -276,7 +348,20 @@ export type SignDepositAction = DepositActionBase & {
     nonce?: string,
 }
 
-export type DepositAction = TransferDepositAction | SignDepositAction
+export type PendingDepositAction = Partial<DepositActionBase> & {
+    type?: undefined,
+}
+
+export type BatchTransferDepositAction = DepositActionBase & {
+    type: 'send_calls',
+    calls: { to: string; data: string | null; value: string }[],
+}
+
+export type NextActionResponse = DepositActionWorkflow & {
+    action?: DepositAction,
+}
+
+export type DepositAction = TransferDepositAction | SignDepositAction | PendingDepositAction | BatchTransferDepositAction
 
 export type Quote = {
     quote: SwapQuote,
@@ -301,12 +386,14 @@ export type GetQuoteParams = {
     destination_token: string,
     destination_address: string,
     use_deposit_address: boolean,
+    use_frontend_swap: true,
     include_gas?: boolean,
     amount: number,
     refuel?: boolean
 }
 
 export type SwapQuote = {
+    path?: { provider: string; order: number }[],
     source_network?: Network,
     source_token?: Token,
     destination_network?: Network,
@@ -395,20 +482,6 @@ export type Fee = {
     max_amount: number,
     fee_amount: number,
     deposit_type: DepositType
-}
-
-export type PublishedSwapTransactions = {
-    state: {
-        swapTransactions: {
-            [key: string]: SwapTransaction
-        }
-    }
-}
-
-
-export type SwapTransaction = {
-    hash: string,
-    status: BackendTransactionStatus
 }
 
 export enum SwapType {
