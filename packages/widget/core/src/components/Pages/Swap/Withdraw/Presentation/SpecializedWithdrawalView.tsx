@@ -36,10 +36,8 @@ export function SpecializedWithdrawalView({
     connectButton,
     handleWithdraw,
 }: SpecializedWithdrawalViewProps) {
-    if (submissionAccepted) {
-        return <ButtonWrapper isDisabled isSubmitting>Transaction submitted</ButtonWrapper>;
-    }
-    if (!isConnected) {
+    // Once submitted, retain the existing progress UI across wallet changes.
+    if (!submissionAccepted && !isConnected) {
         return (
             <div className="flex w-full flex-col gap-2">
                 <WalletMessage
@@ -52,7 +50,7 @@ export function SpecializedWithdrawalView({
         );
     }
 
-    if (accountMismatch) {
+    if (!submissionAccepted && accountMismatch) {
         return (
             <TransferBlock reasonCode="wallet_account_mismatch" path="ProviderWalletWithdrawal">
                 <ActionMessages.WalletMismatchMessage

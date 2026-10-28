@@ -2604,7 +2604,8 @@ for (const scenario of [
 for (const scenario of [
     { name: 'wrong provider account', isConnected: true, accountMismatch: true, reason: 'wallet_account_mismatch', text: /Wrong account/ },
     { name: 'normal provider connection', isConnected: false, accountMismatch: true, text: /Connect wallet/ },
-    { name: 'submitted provider transfer after account change', isConnected: true, accountMismatch: true, submissionAccepted: true, text: /Transaction submitted/ },
+    { name: 'submitted provider transfer after account change', isConnected: true, accountMismatch: true, submissionAccepted: true, loading: true, text: /Withdrawing/ },
+    { name: 'submitted provider transfer after disconnect', isConnected: false, accountMismatch: true, submissionAccepted: true, loading: true, progress: { title: 'Provider progress' }, text: /Provider progress/ },
 ]) {
     test(`${scenario.name} traces only a rendered transfer interruption`, async t => {
         const dom = new JSDOM('<div id="root"></div>')
@@ -2633,6 +2634,10 @@ for (const scenario of [
             connectButton: createElement('button', null, 'Connect wallet'),
         })))
         assert.match(document.getElementById('root').textContent, scenario.text)
+        if (scenario.submissionAccepted) {
+            assert.equal(document.querySelector('button').disabled, true)
+            assert.doesNotMatch(document.getElementById('root').textContent, /Transaction submitted|Connect wallet|Wrong account/)
+        }
         assert.deepEqual(flow.calls.blocked, scenario.reason ? [scenario.reason] : [])
     })
 }
