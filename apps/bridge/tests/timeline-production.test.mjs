@@ -722,6 +722,7 @@ function createSwapHistoryHarness(fetcher, { onCreate, selectedAccount } = {}) {
         './callbackProvider': { useCallbacks: () => ({ onSwapCreate: noop, onSwapLifecycle: noop }) },
         '@/hooks/useFee': { transformSwapDataToQuoteArgs: noop, useQuoteData: () => ({}) },
         '@/stores/recentRoutesStore': { useRecentNetworksStore: () => noop },
+        '@/stores/swapRouteHistoryStore': { recordSwapRouteHistory: noop },
         '@/stores/slippageStore': { useSlippageStore: { getState: () => ({}) } },
         '@/lib/address/Address': { Address: { equals: (left, right) => left === right } },
         '@/stores': stores,
