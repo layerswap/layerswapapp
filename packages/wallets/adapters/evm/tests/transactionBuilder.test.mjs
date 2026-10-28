@@ -11,9 +11,9 @@ const rpcUrl = `data:text/javascript,${encodeURIComponent(`
         state.clients++
         return {
             estimateGas: async args => { state.estimate = args; return state.estimateGas(args) },
-            estimateFeesPerGas: async () => state.fees,
+            estimateFeesPerGas: async () => { if (state.feesError) throw state.feesError; return state.fees },
             getGasPrice: async () => state.gasPrice,
-            estimateMaxPriorityFeePerGas: async () => { state.priorityRequests++; return state.priorityFee },
+            estimateMaxPriorityFeePerGas: async () => { state.priorityRequests++; if (state.priorityError) throw state.priorityError; return state.priorityFee },
             getCode: async () => state.accountCode,
             getBalance: async args => { state.balanceArgs = args; state.balanceRequests++; if (state.balanceError) throw state.balanceError; return state.balance },
             extend: () => ({ estimateL1Fee: async args => { state.l1Estimate = args; return state.l1Fee } }),
@@ -57,7 +57,7 @@ const params = {
 beforeEach(() => Object.assign(state, {
     clients: 0, estimate: undefined,
     nodes: undefined, settings: {}, gasPrice: 102_000_000_000n, priorityFee: 2_000_000_000n,
-    priorityRequests: 0, accountCode: '0x', estimateGas: () => 22_515n,
+    priorityRequests: 0, feesError: undefined, priorityError: undefined, accountCode: '0x', estimateGas: () => 22_515n,
     balanceRequests: 0, balanceArgs: undefined, balanceError: undefined, balance: 20n * 10n ** 18n,
     l1Fee: 1_000_000_000n, l1Estimate: undefined,
     fees: { maxFeePerGas: 122_000_000_000n, maxPriorityFeePerGas: 2_000_000_000n },
@@ -250,6 +250,31 @@ const quoteAction = action => new EVMGasProvider().getGas({
     address: action.selectedWallet.address, network: action.network,
     token: action.token, amount: action.amount, amountInBaseUnits: action.amountInBaseUnits,
     recipientAddress: action.depositAddress, callData: action.callData,
+})
+
+test('Ethereum does not quote gasPrice when its EIP-1559 cap RPC fails', async () => {
+    state.feesError = new Error('fee estimate unavailable')
+    const action = { ...bscAction, network: { ...bscAction.network, chain_id: '1' } }
+    assert.equal(await quoteAction(action), undefined)
+    await assert.rejects(transactionBuilder(action), /EIP-1559 fee data is unavailable/)
+})
+
+test('Ethereum does not quote an executable fee when priority data and its fallback fail', async () => {
+    state.fees = { maxFeePerGas: 200_000_000n }
+    state.priorityError = new Error('priority fee unavailable')
+    const action = { ...bscAction, network: { ...bscAction.network, chain_id: '1' } }
+    assert.equal(await quoteAction(action), undefined)
+    await assert.rejects(transactionBuilder(action), /EIP-1559 fee data is unavailable/)
+})
+
+test('Ethereum quotes and submits a valid zero priority fee without requesting a fallback', async () => {
+    state.fees.maxPriorityFeePerGas = 0n
+    const action = { ...bscAction, network: { ...bscAction.network, chain_id: '1' } }
+    const quote = await quoteAction(action)
+    const tx = await transactionBuilder(action)
+    assert.equal(parseUnits(String(quote.maxFee), 18), tx.gas * tx.maxFeePerGas)
+    assert.equal(tx.maxPriorityFeePerGas, 0n)
+    assert.equal(state.priorityRequests, 0)
 })
 
 test('BSC Max reserves and submits the same legacy price and buffered limit', async () => {

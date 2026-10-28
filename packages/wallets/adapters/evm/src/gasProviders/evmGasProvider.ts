@@ -215,6 +215,7 @@ class getEthereumGas extends getEVMGas {
             estimatedGas: estimatedGasLimit,
             gasPrice: feeData.gasPrice,
             maxFeePerGas: feeData.maxFeePerGas,
+            maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
         })
 
         if (!feeAmounts)

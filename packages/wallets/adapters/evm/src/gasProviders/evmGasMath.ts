@@ -24,11 +24,29 @@ export const resolveAccountBalanceReserve = ({
     }
 }
 
-type CalculateGasFeeAmountsArgs = {
+type EVMFeeData = {
     policy: EVMGasPolicy
-    estimatedGas: bigint
     gasPrice?: bigint
     maxFeePerGas?: bigint
+    maxPriorityFeePerGas?: bigint
+}
+
+/** Quotes must have every fee field required to prepare an explicit transaction. */
+const resolveExplicitTransactionFees = ({ policy, gasPrice, maxFeePerGas, maxPriorityFeePerGas }: EVMFeeData) => {
+    if (policy.transactionGasMode === 'explicit-legacy') {
+        return gasPrice === undefined ? undefined : { gasPrice }
+    }
+
+    if (policy.transactionGasMode === 'explicit-eip1559'
+        && maxFeePerGas !== undefined && maxPriorityFeePerGas !== undefined) {
+        return { maxFeePerGas, maxPriorityFeePerGas }
+    }
+
+    return undefined
+}
+
+type CalculateGasFeeAmountsArgs = EVMFeeData & {
+    estimatedGas: bigint
 }
 
 export const calculateGasFeeAmounts = ({
@@ -36,7 +54,14 @@ export const calculateGasFeeAmounts = ({
     estimatedGas,
     gasPrice,
     maxFeePerGas,
+    maxPriorityFeePerGas,
 }: CalculateGasFeeAmountsArgs) => {
+    if (policy.transactionGasMode !== 'wallet' && !resolveExplicitTransactionFees({
+        policy, gasPrice, maxFeePerGas, maxPriorityFeePerGas,
+    })) {
+        return undefined
+    }
+
     const maximumGasPrice = policy.transactionGasMode === 'explicit-legacy'
         ? gasPrice
         : maxFeePerGas ?? gasPrice
@@ -54,12 +79,8 @@ export const calculateGasFeeAmounts = ({
     }
 }
 
-type BuildTransactionGasParametersArgs = {
-    policy: EVMGasPolicy
+type BuildTransactionGasParametersArgs = EVMFeeData & {
     estimatedGas: bigint
-    gasPrice?: bigint
-    maxFeePerGas?: bigint
-    maxPriorityFeePerGas?: bigint
 }
 
 export const buildTransactionGasParameters = ({
@@ -73,21 +94,16 @@ export const buildTransactionGasParameters = ({
         return undefined
     }
 
-    const gas = applyGasLimitMargin(estimatedGas, policy)
-    if (policy.transactionGasMode === 'explicit-legacy') {
-        if (gasPrice === undefined) {
-            throw new Error('Legacy gas price is unavailable')
-        }
-        return { gas, gasPrice }
-    }
-
-    if (maxFeePerGas === undefined || maxPriorityFeePerGas === undefined) {
-        throw new Error('EIP-1559 fee data is unavailable')
+    const fees = resolveExplicitTransactionFees({ policy, gasPrice, maxFeePerGas, maxPriorityFeePerGas })
+    if (!fees) {
+        const message = policy.transactionGasMode === 'explicit-legacy'
+            ? 'Legacy gas price is unavailable'
+            : 'EIP-1559 fee data is unavailable'
+        throw new Error(message)
     }
 
     return {
-        gas,
-        maxFeePerGas,
-        maxPriorityFeePerGas,
+        gas: applyGasLimitMargin(estimatedGas, policy),
+        ...fees,
     }
 }

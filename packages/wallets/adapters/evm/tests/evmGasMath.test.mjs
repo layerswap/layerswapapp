@@ -16,6 +16,26 @@ import {
 const monadPolicy = resolveEVMGasPolicy(143)
 const defaultPolicy = resolveEVMGasPolicy(10)
 
+for (const chainId of [1, 143, 10143]) {
+    for (const missing of ['maxFeePerGas', 'maxPriorityFeePerGas']) {
+        test(`chain ${chainId} rejects incomplete ${missing} in quotes and submission`, () => {
+            const args = {
+                policy: resolveEVMGasPolicy(chainId), estimatedGas: 22_615n,
+                gasPrice: 100_000_000n, maxFeePerGas: 200_000_000n,
+                maxPriorityFeePerGas: 0n, [missing]: undefined,
+            }
+            assert.equal(calculateGasFeeAmounts(args), undefined)
+            assert.throws(() => buildTransactionGasParameters(args), /EIP-1559 fee data is unavailable/)
+        })
+    }
+}
+
+test('wallet-controlled policies retain gas-price fallback without EIP-1559 fields', () => {
+    const args = { policy: defaultPolicy, estimatedGas: 21_000n, gasPrice: 100_000_000n }
+    assert.equal(calculateGasFeeAmounts(args).maximumFee, 2_100_000_000_000n)
+    assert.equal(buildTransactionGasParameters(args), undefined)
+})
+
 test('applies Monad\'s 7.5% gas-limit margin with ceiling division', () => {
     assert.equal(applyGasLimitMargin(22_515n, monadPolicy), 24_204n)
     assert.equal(applyGasLimitMargin(22_515n, defaultPolicy), 22_515n)
@@ -27,6 +47,7 @@ test('separates Monad expected and maximum fees', () => {
         estimatedGas: 22_515n,
         gasPrice: 102_000_000_000n,
         maxFeePerGas: 122_000_000_000n,
+        maxPriorityFeePerGas: 2_000_000_000n,
     })
 
     assert.deepEqual(result, {
