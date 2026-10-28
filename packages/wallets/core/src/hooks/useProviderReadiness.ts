@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react"
+import { isMobile } from "@layerswap/utils"
 import type { WalletConnectionProvider } from "@/types/wallet"
 import type { WalletModalConnector } from "@/types/provider"
 import { useWalletProvidersReady, useWalletProvidersRegistry } from "@/context/WalletProvidersRegistryProvider"
@@ -122,7 +123,7 @@ export function useWalletProviderReadiness(featuredProviders: WalletConnectionPr
             )),
         ]
 
-        return resolveChainConnectors(connectorPool, providerStates)
+        return resolveChainConnectors(connectorPool, providerStates, isMobile())
             .get(connectorKey(connector.name))
             ?? []
     }, [registry])
