@@ -155,6 +155,7 @@ export type SendTransactionViewProps = SubmitButtonProps & {
     showCriticalMarketPriceImpactButtons?: boolean;
     priceImpactValues?: ReturnType<typeof resolvePriceImpactValues>;
     gaslessUnavailable?: boolean;
+    gaslessErrorMessage?: string;
     gaslessFailureStage?: 'create' | 'deposit' | null;
     canSwitchToStandard?: boolean;
     handleClick?: () => void;
@@ -192,6 +193,7 @@ export function getSendTransactionPresentation({
     showCriticalMarketPriceImpactButtons,
     priceImpactValues,
     gaslessUnavailable,
+    gaslessErrorMessage,
     gaslessFailureStage,
     canSwitchToStandard = true,
     handleClick,
@@ -340,7 +342,7 @@ export function getSendTransactionPresentation({
                         />
                     )}
                     {needsGaslessRecovery ? (
-                        <TransferBlock reasonCode="gasless_unavailable" path="SendTransactionButton">
+                        <TransferBlock reasonCode="gasless_unavailable" path="TransferTokenButton" reason={gaslessErrorMessage}>
                             <div className="flex flex-col gap-2">
                                 {gaslessFailureStage === 'deposit' && (
                                     <ButtonWrapper

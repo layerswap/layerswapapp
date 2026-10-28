@@ -157,6 +157,7 @@ export function useSendTransactionController({
 }: SendFromWalletButtonProps, active = true) {
     const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, flow, refuel: refuelData, swapError, setSwapError, walletExecutionStarted, gaslessAuthorization, inputTransactionStatus } = useSwapDataState()
     const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
+    const gaslessErrorMessage = useGaslessPreferenceStore(s => s.gaslessErrorMessage)
     const gaslessFailureStage = useGaslessPreferenceStore(s => s.gaslessFailureStage)
     const gaslessEnabled = useGaslessPreferenceStore(s => s.gaslessEnabled)
     const switchToStandardTransfer = useGaslessPreferenceStore(s => s.switchToStandardTransfer)
@@ -749,6 +750,7 @@ export function useSendTransactionController({
             showCriticalMarketPriceImpactButtons: !!activeCriticalConfirmation,
             priceImpactValues: priceImpactValues,
             gaslessUnavailable: gaslessUnavailable,
+            gaslessErrorMessage: gaslessErrorMessage ?? undefined,
             gaslessFailureStage: gaslessFailureStage,
             canSwitchToStandard: !hasProgress && !hasRecordedWalletAction(),
             handleClick: handleClick,

@@ -321,6 +321,8 @@ test('real transfer button, gasless execution, API client and host logger share 
   assert.doesNotMatch(JSON.stringify(errors), /test-secret-|X-LS-APIKEY|echoedRequest|"config"|"headers"/)
   assert.deepEqual(lifecycle.map(e => e.step), ['wallet_prompt_opened', 'gasless_authorization_failed', 'transfer_blocked'])
   assert.equal(lifecycle[2].reasonCode, 'gasless_unavailable')
+  assert.equal(lifecycle[2].reason, 'Unavailable')
+  assert.equal(lifecycle[2].path, 'TransferTokenButton')
   assert.equal(errors[0].occurrenceId, errors[1].occurrenceId)
   assert.equal(errors[0].occurrenceId, lifecycle[1].occurrenceId)
   assert.equal(errors[1].cause.method, 'post')

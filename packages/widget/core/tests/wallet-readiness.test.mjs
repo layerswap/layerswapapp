@@ -46,7 +46,10 @@ const mockUrl = `data:text/javascript,${encodeURIComponent(`
   export const useBalance = () => ({ balances: [] })
   export const useTransfer = () => ({})
   export const useGasless = () => ({ isGaslessSupported: () => false })
-  export const useRpcHealth = () => undefined
+  export const useRpcHealth = (_, enabled) => {
+    state.rpcEnabled = enabled
+    return state.rpcUnhealthy ? { health: { status: 'unhealthy', reason: 'RPC probe failed' } } : undefined
+  }
   export const isExtendedSourceNetwork = () => false
   export const ProviderWalletWithdrawal = () => null
   export const useWithdrawalProvider = () => undefined
@@ -70,6 +73,7 @@ const hooks = registerHooks({
     }
     if (['/TransferBlock.js', '/useHasSubmittedTransfer.js'].some(path => context.parentURL?.endsWith(path)) && specifier.endsWith('/context/swap')) return { url: mockUrl, shortCircuit: true }
     if (context.parentURL?.endsWith('/components/Pages/Swap/Withdraw/Wallet/index.js')) {
+      if (specifier.endsWith('/RPCUnhealthyMessage')) return { url: 'data:text/javascript,export default () => %22RPC unhealthy%22', shortCircuit: true }
       if (specifier === '@layerswap/wallet-core') return { url: providerReadinessUrl, shortCircuit: true }
       if (specifier === '@layerswap/ui-kit/components' || mockedDependencies.some(path => specifier.endsWith(path))) {
         return { url: mockUrl, shortCircuit: true }
@@ -86,6 +90,8 @@ const { state } = await import(mockUrl)
 const { createRoot } = await import('react-dom/client')
 const { CallbackProvider } = await import('../dist/esm/context/callbackProvider.js')
 const { WalletWithdrawal } = await import('../dist/esm/components/Pages/Swap/Withdraw/Wallet/index.js')
+const { useSwapTransactionStore } = await import('../dist/esm/stores/swapTransactionStore.js')
+const { TransferBlock } = await import('../dist/esm/components/Pages/Swap/Withdraw/TransferBlock.js')
 const sourceNetwork = { name: 'ETHEREUM_MAINNET', type: 'evm', chain_id: '1' }
 const swapBasicData = {
   source_network: sourceNetwork,
@@ -113,6 +119,8 @@ beforeEach(() => {
   state.walletState = { wallets: [], provider: { id: 'other-provider', ready: true } }
   state.swapState = { swapBasicData, swapDetails: { id: 'swap-readiness' } }
   state.initialSettings = {}
+  state.rpcUnhealthy = false
+  useSwapTransactionStore.setState({ swapTransactions: {}, pendingSubmissions: {} })
 })
 afterEach(async () => {
   await act(() => root.unmount())
@@ -179,4 +187,70 @@ test('provider restoration does not hide a definite same-account block', async (
   await render()
   assert.equal(container.textContent, 'Accounts must match')
   assert.deepEqual(events.map(event => event.reasonCode), ['same_account_required'])
+})
+
+for (const reason of ['rpc_unhealthy', 'wallet_unsupported_for_network', 'same_account_required']) {
+  for (const receipt of ['hash', 'accepted-without-hash', 'pending']) {
+    test(`${reason} cannot replace execution controls while ${receipt} exists`, async () => {
+      state.account = { ...state.account, provider: { id: 'selected-provider', ready: true } }
+      state.walletState.wallets = [{ id: 'selected-wallet', withdrawalSupportedNetworks: [sourceNetwork.name] }]
+      if (reason === 'rpc_unhealthy') state.rpcUnhealthy = true
+      if (reason === 'wallet_unsupported_for_network') state.walletState.wallets = []
+      if (reason === 'same_account_required') state.initialSettings.sameAccountNetwork = sourceNetwork.name
+      const id = state.swapState.swapDetails.id
+      const transaction = receipt === 'hash'
+        ? { kind: 'wallet-transfer', hash: '0xsubmitted' }
+        : { kind: 'wallet-transfer', providerSubmissionAccepted: true }
+      useSwapTransactionStore.setState(receipt === 'pending'
+        ? { pendingSubmissions: { [id]: true } }
+        : { swapTransactions: { [id]: transaction } })
+      await render()
+      assert.equal(container.textContent, 'Send transaction', 'existing execution controls remain rendered')
+      assert.deepEqual(events, [], 'hidden readiness branches must not emit block events')
+      assert.equal(state.rpcEnabled, false, 'submission observation must not require a healthy wallet RPC')
+
+      // Prove the same readiness condition is a real UI block once reconciliation
+      // establishes there is no outstanding submission.
+      await act(() => useSwapTransactionStore.setState({ swapTransactions: {}, pendingSubmissions: {} }))
+      await render()
+      const expectedText = reason === 'rpc_unhealthy' ? 'RPC unhealthy'
+        : reason === 'same_account_required' ? 'Accounts must match' : 'Connect wallet'
+      assert.equal(container.textContent, expectedText)
+      assert.deepEqual(events.map(event => event.reasonCode), [reason])
+      if (reason === 'rpc_unhealthy') assert.equal(events[0].reason, 'RPC probe failed')
+    })
+  }
+}
+
+function renderBoundary({ key = 'block', visible = true, reasonCode = 'rpc_unhealthy', reason = 'RPC probe failed' } = {}) {
+  return act(() => root.render(createElement(StrictMode, null,
+    createElement(CallbackProvider, { callbacks: { onSwapLifecycle: event => events.push(event) } },
+      visible ? createElement(TransferBlock, { key, reasonCode, reason, path: 'BoundaryTest' },
+        createElement('p', null, reasonCode)) : null),
+  )))
+}
+
+test('remounted boundaries report once per mount without StrictMode duplicates', async () => {
+  await renderBoundary()
+  await renderBoundary()
+  assert.equal(events.length, 1, 'rerenders and StrictMode replay do not repeat a mounted block')
+  await renderBoundary({ key: 'remounted' })
+  assert.equal(events.length, 2, 'transfer_blocked is repeatable for a newly mounted blocking screen')
+  await renderBoundary({ visible: false })
+  assert.equal(events.length, 2, 'unmounting does not emit a block')
+  await renderBoundary({ key: 'returned' })
+  await renderBoundary({ key: 'returned' })
+  assert.equal(container.textContent, 'rpc_unhealthy')
+  assert.deepEqual(events.map(event => event.reasonCode), ['rpc_unhealthy', 'rpc_unhealthy', 'rpc_unhealthy'])
+})
+
+test('changing a mounted boundary reason reports the new visible block once', async () => {
+  await renderBoundary()
+  await renderBoundary({ reasonCode: 'gasless_unavailable', reason: 'Paymaster unavailable' })
+  await renderBoundary({ reasonCode: 'gasless_unavailable', reason: 'Paymaster unavailable' })
+  assert.equal(container.textContent, 'gasless_unavailable')
+  assert.deepEqual(events.map(event => [event.reasonCode, event.reason]), [
+    ['rpc_unhealthy', 'RPC probe failed'],
+    ['gasless_unavailable', 'Paymaster unavailable'],
+  ])
 })
