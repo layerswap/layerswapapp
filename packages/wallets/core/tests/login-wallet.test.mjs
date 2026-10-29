@@ -1,8 +1,28 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import test from 'node:test'
+import ts from 'typescript'
 
-import { isLoginWalletMatch, markLoginWallet } from '../dist/esm/lib/loginWallet.js'
 import { createWalletProvidersRegistry } from '../dist/esm/lib/walletConnect/walletProvidersRegistry.js'
+
+// @layerswap/utils' ESM build doesn't load in plain Node, so transpile the
+// helper from source with a stand-in Address (EVM compares case-insensitively).
+const Address = {
+    equals: (a, b, _network, providerName) => !!a && !!b
+        && (providerName === 'EVM' ? a.toLowerCase() === b.toLowerCase() : a === b),
+}
+function loadLoginWallet() {
+    const { outputText } = ts.transpileModule(readFileSync(new URL('../src/lib/loginWallet.ts', import.meta.url), 'utf8'), {
+        compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+    })
+    const module = { exports: {} }
+    new Function('require', 'module', 'exports', outputText)(name => {
+        if (name === '@layerswap/utils') return { Address }
+        throw new Error(`Unexpected loginWallet dependency: ${name}`)
+    }, module, module.exports)
+    return module.exports
+}
+const { isLoginWalletMatch, markLoginWallet } = loadLoginWallet()
 
 const LOGIN = { address: '0xAbC0000000000000000000000000000000000001', providerId: 'evm' }
 const OTHER = '0x0000000000000000000000000000000000000002'
