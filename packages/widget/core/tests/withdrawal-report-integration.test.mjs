@@ -20,6 +20,7 @@ const fixtureUrl = moduleUrl(`
   export const useSelectedAccount = () => state.wallet
   export const useSwapDataState = () => state.swap
   export const useSwapDataUpdate = () => ({
+    getExecutionPrerequisites: () => undefined,
     setSwapId(id) { state.swap.swapId = id }, setQuoteLoading() {}, markWalletExecutionStarted() {},
     reportWalletActionFeedback() { return () => {} }, setWalletActionExecuting() {}, setSwapModalOpen(open) { state.swap.swapModalOpen = open },
     acquireWalletExecution() { return () => {} },
@@ -99,7 +100,7 @@ const formFixtures = ['/context/asyncModal', '/stores/contractAddressStore', '/h
   '/Input/Address/UrlAddressNote', '/validationError/ContractAddressValidationCache']
 const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
   if (specifier.endsWith('/AppSettings')) return { url: settingsUrl, shortCircuit: true }
-  if (specifier.endsWith('/context/swap') && ['/useSwapRetry.js', '/useResolvedSwapStatus.js', '/useDepositActionPolling.js'].some(path => context.parentURL?.endsWith(path))) {
+  if (specifier.endsWith('/context/swap') && ['/useSwapRetry.js', '/useResolvedSwapStatus.js', '/useDepositActionPolling.js', '/useBeforeSwapExecution.js'].some(path => context.parentURL?.endsWith(path))) {
     return { url: fixtureUrl, shortCircuit: true }
   }
   if (context.parentURL?.endsWith('/Form/FormWrapper.js')) {

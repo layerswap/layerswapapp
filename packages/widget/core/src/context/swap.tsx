@@ -1,6 +1,7 @@
-import { SwapStatus, type Refuel, type Wallet } from '@layerswap/widget-types';
+import { SwapStatus, type Refuel, type Wallet, type SwapPrerequisiteContext } from '@layerswap/widget-types';
 import { Context, useCallback, useEffect, useState, createContext, useContext, useMemo, useRef } from 'react'
 import LayerSwapApiClient, { BackendTransactionStatus, CreateSwapParams, TransactionStatus, WithdrawType, GaslessAuthorizationResult, SwapResponse, DepositAction, SwapBasicData, SwapQuote, SwapDetails, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
+import { resolveExecutionPrerequisites, type SwapPrerequisiteSnapshot } from '@layerswap/wallet-core';
 import { InitialSettings } from '@/Models/InitialSettings';
 import useSWR, { KeyedMutator, useSWRConfig } from 'swr';
 import type { ApiResponse } from '@layerswap/widget-types';
@@ -39,6 +40,8 @@ import { useSwapPolling } from '@/hooks/useSwapPolling';
 import { useSwapStatusNotification } from '@/hooks/useSwapStatusNotification';
 import { lifecycleContextFromForm } from '@/lib/swapLifecycle';
 import { createSwapAttempt } from '@/lib/swapCreation';
+import { useCheckSwapPrerequisites } from '@/hooks/useSwapPrerequisites';
+import { prerequisitesFromForm, prerequisitesFromSwap } from '@/lib/prerequisites/context';
 import { recordSwapExecution } from '@/lib/swapExecution';
 import { isAtomicBatchEligible } from '@/helpers/atomicBatch';
 import { useAtomicBatchCapability } from '@/hooks/useAtomicBatchCapability';
@@ -71,6 +74,7 @@ export type WalletActionFeedback = {
 };
 
 export type UpdateSwapInterface = {
+    getExecutionPrerequisites: (swapId?: string) => SwapPrerequisiteContext,
     createSwap: (values: SwapFormValues, query: InitialSettings, partner?: Partner) => Promise<SwapResponse>,
     canAdjustAmount: () => boolean
     syncAmountPresetDraft: (values: SwapFormValues) => boolean
@@ -124,6 +128,7 @@ export type SwapContextData = {
 }
 
 export function SwapDataProvider({ children, initialSwapData }: { children: React.ReactNode, initialSwapData?: SwapResponse | null }) {
+    const checkPrerequisites = useCheckSwapPrerequisites()
     const initialSettings = useInitialSettings()
     const { onSwapCreate, onSwapLifecycle } = useCallbacks()
     const { mutate: mutateCache } = useSWRConfig()
@@ -140,6 +145,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     // id and, via SWR fallbackData below, the swap details — so consumers render
     // with data on first paint instead of a loading state.
     const [swapId, setSwapId] = useState<string | undefined>(initialSettings.swapId?.toString() ?? initialSwapData?.swap.id)
+    const createdExecutionRef = useRef<SwapPrerequisiteSnapshot | undefined>(undefined)
+    const currentExecutionRef = useRef<SwapPrerequisiteSnapshot | undefined>(undefined)
     // A rejected attempt must not compact the quote after the user changes modes.
     const gaslessEnabled = useGaslessPreferenceStore(state => state.gaslessEnabled)
     const [walletExecution, setWalletExecution] = useState<{ swapId: string, gaslessEnabled: boolean }>()
@@ -196,8 +203,12 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const { quote: formDataQuote, quoteError: formDataQuoteError, isQuoteLoading: draftQuoteLoading } = useQuoteData(quoteArgs, { refreshInterval: swapId ? 0 : undefined, skipLimits: isDepositAddressSwap(swapBasicFormData) });
 
     const handleUpdateSwapid = (value: string | undefined) => {
+        if (createdExecutionRef.current?.swapId !== value) createdExecutionRef.current = undefined
         setSwapId(value)
     }
+
+    const getExecutionPrerequisites = useCallback((id?: string) =>
+        resolveExecutionPrerequisites(currentExecutionRef.current, createdExecutionRef.current, id), [])
 
     const setSubmitedFormValues = useCallback((values: NonNullable<SwapFormValues>) => {
         if (isAmountPreset(values.amountMode) && !isWalletAmountFlow(values)) {
@@ -315,6 +326,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         setPresetCreated(false)
         setSwapError(null)
         setWalletExecution(undefined)
+        createdExecutionRef.current = undefined
         setSwapId(undefined)
     }, [swapBasicData, swapId])
 
@@ -329,6 +341,11 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         }
         return formDataQuote?.quote
     }, [formDataQuote, data, swapId, extendedSwapData]);
+
+    const executionContext = prerequisitesFromSwap(swapBasicData, quote?.receive_amount)
+    currentExecutionRef.current = swapDetails?.id === swapId && swapId && executionContext
+        ? { swapId, context: executionContext }
+        : undefined
 
     const quoteError = useMemo(() => {
         if (swapId && data?.data) {
@@ -540,6 +557,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             throw new Error("Form data is missing")
 
         return createSwapAttempt(async () => {
+            await checkPrerequisites(prerequisitesFromForm(values))
+
             const sourceWalletIsSupported = selectedWallet && WalletIsSupportedForSource({
                 sourceNetwork: from,
                 sourceWallet: selectedWallet
@@ -626,6 +645,22 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
                 useGasless,
                 onCreated: [
                     {
+                        name: 'swapPrerequisites.setExecutionContext',
+                        run: (swap: SwapResponse) => {
+                            createdExecutionRef.current = {
+                                swapId: swap.swap.id,
+                                context: prerequisitesFromSwap({
+                                    ...swap.swap,
+                                    source_network: from,
+                                    source_token: fromCurrency,
+                                    destination_network: to,
+                                    destination_token: toCurrency,
+                                    requested_amount: amount || '',
+                                }, swap.quote.receive_amount)!,
+                            }
+                        },
+                    },
+                    {
                         name: 'swapTransactions.setKind',
                         run: response => recordSwapExecution(response.swap.id, { swapData: response.swap, depositActions: response.deposit_actions }),
                     },
@@ -669,7 +704,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             onLifecycle: onSwapLifecycle,
             onGaslessUnavailable: () => useGaslessPreferenceStore.getState().reportGaslessUnavailable('create'),
         })
-    }, [selectedSourceAccount, selectedWallet, selectionKey, onSwapCreate, onSwapLifecycle, updateRecentTokens, swapDetails?.id, networks, sourceRoutes])
+    }, [selectedSourceAccount, selectedWallet, selectionKey, onSwapCreate, onSwapLifecycle, updateRecentTokens, swapDetails?.id, networks, sourceRoutes, checkPrerequisites])
 
     const canAdjustAmount = useCallback(() => {
         // The provider may have submitted before the API sees an input transaction.
@@ -734,6 +769,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     }, [createSwapRequest, selectedSourceAccount, selectedWallet, sourceRoutes, mutateCache])
 
     const updateFns = useMemo<UpdateSwapInterface>(() => ({
+        getExecutionPrerequisites,
         createSwap,
         syncAmountPresetDraft,
         canAdjustAmount,
@@ -752,7 +788,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         setSubmitedFormValues,
         setQuoteLoading,
         setSwapModalOpen
-    }), [createSwap, syncAmountPresetDraft, canAdjustAmount, mutate, mutateDepositActions, setWalletActionExecuting, acquireWalletExecution, handleUpdateSwapid, markWalletExecutionStarted, startFreshSwapAttempt, watchApprovalTransaction, setSubmitedFormValues, reportWalletActionFeedback]);
+    }), [createSwap, syncAmountPresetDraft, canAdjustAmount, mutate, mutateDepositActions, setWalletActionExecuting, acquireWalletExecution, handleUpdateSwapid, markWalletExecutionStarted, startFreshSwapAttempt, watchApprovalTransaction, setSubmitedFormValues, reportWalletActionFeedback, getExecutionPrerequisites]);
 
     const stateValue = useMemo(() => ({
         gaslessAuthorization,

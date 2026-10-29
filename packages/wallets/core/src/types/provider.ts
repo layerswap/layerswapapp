@@ -7,7 +7,7 @@ import { ContractAddressCheckerProvider } from '@layerswap/widget-types';
 import { RpcHealthCheckProvider } from '@layerswap/widget-types';
 import { ExtendedRouteProvider } from '@layerswap/widget-types';
 import { GaslessProvider } from '@layerswap/widget-types';
-import type { NetworkWithTokens } from '@layerswap/widget-types';
+import type { NetworkWithTokens, SwapPrerequisiteProvider } from '@layerswap/widget-types';
 import type { WalletConnectionProviderProps, WalletConnectionStore, MultiStepHandler } from './wallet';
 
 export type WalletModalConnector = InternalConnector & {
@@ -36,6 +36,7 @@ export type WalletInitContext = {
 
 export type WalletWrapper = {
     id: string,
+    swapPrerequisiteProvider?: SwapPrerequisiteProvider | SwapPrerequisiteProvider[],
     /**
      * Optional React-tree wrapper. Use this only when the wallet integrates
      * with an upstream React-only library that needs to live in the tree
@@ -77,6 +78,7 @@ export type WalletProviderModule = {
 }
 
 export type BaseWalletProviderConfig<Network = NetworkWithTokens> = {
+    swapPrerequisiteProviders?: SwapPrerequisiteProvider | SwapPrerequisiteProvider[]
     /**
      * Optional custom connection-store factory. Replaces the previous
      * hook-shaped `customHook` field. Implementations build their own

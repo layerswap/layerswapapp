@@ -13,6 +13,7 @@ import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 import { isUserRejection } from "./isUserRejection";
 import { TransferProps } from "@layerswap/widget-types";
 import { ErrorHandler } from "@/lib/ErrorHandler";
+import { SwapPrerequisiteError } from '@layerswap/wallet-core';
 import { lifecycleContextFromSwap, lifecycleErrorDetails } from "@/lib/swapLifecycle";
 import { widgetTelemetry } from '@/lib/widgetTelemetry';
 import { executeWalletOperation } from './executeWalletOperation';
@@ -214,8 +215,8 @@ export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, 
             reasonCode,
             ...lifecycleContext,
         })
-        // Don't flag the route unavailable when the user simply declined.
-        if (isGaslessDepositWorkflow(depositActions) === true && !rejected) {
+        // Account readiness and a user declining do not make gasless signing unavailable.
+        if (isGaslessDepositWorkflow(depositActions) === true && !rejected && !(e instanceof SwapPrerequisiteError)) {
             const message = e?.response?.data?.error?.message || e?.message
             useGaslessPreferenceStore.getState().reportGaslessUnavailable('deposit', message)
         }

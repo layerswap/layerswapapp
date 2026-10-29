@@ -22,6 +22,7 @@ function loadSource(path, imports = {}) {
         if (name === '../components/utils/resolveSwapFlow.js' || name === '@/components/utils/resolveSwapFlow') return loadSource("../src/components/utils/resolveSwapFlow.ts");
         if (name === '../../helpers/depositActions.js') return loadSource('../src/helpers/depositActions.ts');
         if (name in imports) return imports[name]
+        if (name === '@layerswap/wallet-core') return loadSource('../../../wallets/core/src/lib/swapPrerequisites.ts')
         if (name === '@/lib/swapExecution') return { recordSwapExecution: () => {} }
         throw new Error(`Unexpected dependency: ${name}`)
     }, module, module.exports)
@@ -398,7 +399,7 @@ function createWorkflow({
         '@/helpers/swapProgress': swapProgress,
         '@/helpers/atomicBatch': { isAtomicBatchEligible: () => state.atomicBatchEligible ?? false },
         '@/lib/extendedRoutes/registry': { isExtendedSourceNetwork: () => false },
-        '@/lib/atomicBatchExecution': { executeAtomicBatch: async (ctx, action) => {
+        '@/hooks/useAtomicBatch': { useAtomicBatch: () => async (ctx, action) => {
             if (!atomic) assert.fail('legacy workflow cannot execute a batch')
             calls.batches.push(action)
             ctx.setActionStateText(`${depositActions.getDepositActionLabel(action)} in your wallet`)

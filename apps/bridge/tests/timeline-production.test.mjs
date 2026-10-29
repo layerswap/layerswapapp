@@ -58,6 +58,22 @@ function loadSource(path, imports = {}) {
         if (name === '@/components/utils/resolveSwapFlow') return loadSource('components/utils/resolveSwapFlow.ts');
         if (name === '@/lib/swapExecution') return { recordSwapExecution: noop };
         if (name === '@/hooks/useWithdrawalProvider') return { useWithdrawalProvider: () => undefined };
+        // These EVM timeline fixtures have no account-setup requirements. Keep
+        // prerequisite context/snapshot logic real, with readiness supplied here.
+        if (name === '@layerswap/wallet-core') return loadSource('../../../wallets/core/src/lib/swapPrerequisites.ts');
+        if (name === '@/hooks/useSwapPrerequisites') return {
+            useSwapPrerequisites: () => ({ isReady: true }),
+            useCheckSwapPrerequisites: () => async () => {},
+        };
+        if (name === '@/lib/prerequisites/context') return loadSource('lib/prerequisites/context.ts', {
+            '../address/Address': { Address: { isValid: () => true } },
+        });
+        if (name === '@/components/SwapPrerequisites/PrerequisiteNotice') return {
+            PrerequisiteNotice: () => assert.fail('EVM timeline fixtures do not require account setup'),
+        };
+        if (name === '@/hooks/useAtomicBatch') return {
+            useAtomicBatch: () => () => assert.fail('legacy flow cannot submit an atomic batch'),
+        };
         if (name.endsWith('/useWithdrawalExecution')) return loadSource(`${withdraw}useWithdrawalExecution.ts`);
         if (name.endsWith('/withdrawalHelpers')) return loadSource(`${withdraw}withdrawalHelpers.ts`);
         if (name.endsWith('/reportWithdrawalError')) return loadSource(`${withdraw}reportWithdrawalError.ts`, imports);
@@ -1357,7 +1373,10 @@ for (const gaslessEnabled of [true, false]) {
             selectedAccount: account,
             onCreate: async params => {
                 requests.push(params);
-                return { data: { swap: { ...swap, id: 'replacement' } } };
+                return { data: {
+                    swap: { ...swap, id: 'replacement' },
+                    quote: { receive_amount: 1 },
+                } };
             },
         });
         function Retry() {

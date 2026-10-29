@@ -132,6 +132,7 @@ export function createEVMProvider<TNetwork = NetworkWithTokens>(
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
         transferProvider: finalTransferProviders,
+        swapPrerequisiteProvider: config.swapPrerequisiteProviders,
         gaslessProvider: finalGaslessProviders,
         contractAddressProvider: finalContractAddressProviders,
         rpcHealthCheckProvider: finalRPCHealthCheckProviders,
