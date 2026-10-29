@@ -1500,7 +1500,6 @@ for (const failure of ['rejected', 'failed']) {
             '@/hooks/useFee': { transformSwapDataToQuoteArgs: noop, useQuoteData: () => ({ minAllowedAmount: 0.001, maxAllowedAmount: 10 }) },
             '@/lib/gases/useOutOfGas': { default: () => ({ outOfGas: true }) },
             '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput: noop } },
-            formik: { useFormikContext: () => ({ values: {}, setValues: values => { formAmount = values.amount; } }) },
             '../Form/SecondaryComponents/validationError/AdjustAmountButton': {
                 AdjustAmountButton: ({ onEditAmount }) => React.createElement('button', { onClick: onEditAmount }, 'Adjust amount'),
             },
@@ -1519,7 +1518,8 @@ for (const failure of ['rejected', 'failed']) {
         });
         function Screen() {
             harness.state = harness.context.useSwapDataState();
-            return harness.state.swapBasicData ? React.createElement(Withdraw, { type: 'contained' }) : null;
+            const formUpdate = harness.context.useSwapDataUpdate();
+            return harness.state.swapBasicData ? React.createElement(Withdraw, { type: 'contained', onAdjustAmount: updates => { formAmount = updates.amount; formUpdate.setSubmitedFormValues(updates); } }) : null;
         }
         const root = createRoot(container);
         useGaslessPreferenceStore.getState().resetGaslessPreference();
