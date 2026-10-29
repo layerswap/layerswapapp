@@ -1500,7 +1500,7 @@ for (const failure of ['rejected', 'failed']) {
             '@/hooks/useFee': { transformSwapDataToQuoteArgs: noop, useQuoteData: () => ({ minAllowedAmount: 0.001, maxAllowedAmount: 10 }) },
             '@/lib/gases/useOutOfGas': { default: () => ({ outOfGas: true }) },
             '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput: noop } },
-            formik: { useFormikContext: () => ({ values: {}, setValues: values => { formAmount = values.amount; } }) },
+            '../Form/withdrawalAmountAdjustment': { useWithdrawalAmountAdjustment: () => updates => { formAmount = updates.amount; return updates; } },
             '../Form/SecondaryComponents/validationError/AdjustAmountButton': {
                 AdjustAmountButton: ({ onEditAmount }) => React.createElement('button', { onClick: onEditAmount }, 'Adjust amount'),
             },

@@ -13,12 +13,12 @@ import { resolveMaxAllowedAmount } from '@/components/Input/Amount/helpers';
 import { amountPresetSource, isAmountPreset } from '@/lib/amountPresets';
 import { truncateToDecimals } from '@/components/utils/RoundDecimals';
 import { NetworkRoute, NetworkType } from '@layerswap/widget-types';
-import { useFormikContext } from 'formik';
 import type { JSX } from 'react';
 import { FC, useCallback, useMemo } from 'react';
 import { AdjustAmountButton } from '../Form/SecondaryComponents/validationError/AdjustAmountButton';
 import { RefreshBalanceButton } from '../Form/SecondaryComponents/validationError/RefreshBalanceButton';
-import { SwapFormValues } from '../Form/SwapFormValues';
+import { useWithdrawalAmountAdjustment } from '../Form/withdrawalAmountAdjustment';
+import type { SwapFormValues } from '../Form/SwapFormValues';
 import {
     BalanceWarningView,
     GasWarningView,
@@ -95,7 +95,7 @@ export function useWithdrawBalance(active = true) {
         swapBasicData?.source_token,
         gasEstimationAmount, undefined, { enabled: active, transaction: gasTransaction },
     );
-    const { setValues, values } = useFormikContext<SwapFormValues>();
+    const adjustFormAmount = useWithdrawalAmountAdjustment();
 
     const lifecycleContext = useMemo(
         () => swapBasicData ? lifecycleContextFromSwap(swapBasicData, swapDetails) : undefined,
@@ -136,17 +136,18 @@ export function useWithdrawBalance(active = true) {
         return amount > 0 && amount >= minAllowedAmount && amount < Number(swapBasicData.requested_amount)
             ? newAmount : undefined;
     })();
-    const showAdjustAmount = adjustedAmount !== undefined && canAdjustAmount();
+    const showAdjustAmount = !!adjustFormAmount && adjustedAmount !== undefined && canAdjustAmount();
 
     const handleEditAmount = useCallback(() => {
         // Execution can start between rendering the action and clicking it.
-        if (!canAdjustAmount() || adjustedAmount === undefined || !swapBasicData) return;
+        if (!adjustFormAmount || !canAdjustAmount() || adjustedAmount === undefined || !swapBasicData) {
+            return;
+        }
         widgetTelemetry.recordAmountInput('max');
         const maxFields = { amountMode: 'max' as const,
             amountPresetSource: amountPresetSource(swapBasicData.source_network.name, swapBasicData.source_token.symbol, selectedSourceAccount?.id, selectedSourceAccount?.address),
             amountPresetPending: true, amountPresetError: undefined };
-        const nextValues: SwapFormValues = {
-            ...values,
+        const updates: SwapFormValues = {
             ...maxFields,
             amount: adjustedAmount,
             from: swapBasicData.source_network as NetworkRoute,
@@ -160,13 +161,13 @@ export function useWithdrawBalance(active = true) {
                 : 'wallet',
         };
         startFreshSwapAttempt();
-        void setValues(nextValues, true);
+        const nextValues = adjustFormAmount(updates);
         setSubmitedFormValues(nextValues);
     }, [
         adjustedAmount,
         swapBasicData,
         refuel,
-        setValues, values, canAdjustAmount, selectedSourceAccount,
+        adjustFormAmount, canAdjustAmount, selectedSourceAccount,
         setSubmitedFormValues,
         startFreshSwapAttempt,
     ]);

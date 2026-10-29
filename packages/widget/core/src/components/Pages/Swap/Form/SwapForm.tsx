@@ -7,6 +7,7 @@ import type { SwapFormValues } from './SwapFormValues'
 import FormTelemetry from './FormTelemetry'
 import AmountPresetController from './AmountPresetController'
 import AtomicBatchDiscovery from './AtomicBatchDiscovery'
+import { WithdrawalAmountAdjustmentContext } from './withdrawalAmountAdjustment'
 
 /**
  * 'deposit-address' is the Swap page tab; deposit-widget-* is the standalone
@@ -57,7 +58,13 @@ export default function SwapForm({ mode, submitPath, submitAction = 'submit', on
                     <FormTelemetry mode={mode} />
                     <AmountPresetController />
                     <AtomicBatchDiscovery />
-                    {typeof children === 'function' ? children(props) : children}
+                    <WithdrawalAmountAdjustmentContext.Provider value={updates => {
+                        const nextValues = { ...props.values, ...updates }
+                        void props.setValues(nextValues, true)
+                        return nextValues
+                    }}>
+                        {typeof children === 'function' ? children(props) : children}
+                    </WithdrawalAmountAdjustmentContext.Provider>
                 </div>
             )}
         </Formik>

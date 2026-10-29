@@ -36,6 +36,7 @@ const { createRoot } = await import('react-dom/client')
 const { CallbackProvider, useCallbacks } = await import('../dist/esm/context/callbackProvider.js')
 const { captureWidgetInteraction, widgetTelemetry } = await import('../dist/esm/lib/widgetTelemetry.js')
 const { default: SwapForm } = await import('../dist/esm/components/Pages/Swap/Form/SwapForm.js')
+const { useWithdrawalAmountAdjustment } = await import('../dist/esm/components/Pages/Swap/Form/withdrawalAmountAdjustment.js')
 
 const MODES = ['cross-chain', 'exchange', 'deposit-address', 'deposit-widget-address', 'deposit-widget-wallet']
 
@@ -61,7 +62,9 @@ after(() => {
 
 /** Exposes Formik's submitForm and the provider's onSwapLifecycle to the test. */
 function Probe({ handle }) {
-  const { submitForm, setFieldValue } = useFormikContext()
+  const { submitForm, setFieldValue, values } = useFormikContext()
+  handle.values = values
+  handle.adjustWithdrawalAmount = useWithdrawalAmountAdjustment()
   const { onSwapLifecycle } = useCallbacks()
   handle.submitForm = submitForm
   handle.setFieldValue = setFieldValue
@@ -187,3 +190,20 @@ test('existing captured actions identify Max/manual without changing form state'
   await act(() => handle.onSwapLifecycle({ step: 'transfer_blocked', swapId: 'restored', stage: 'wallet_action', outcome: 'blocked', path: 'test' }))
   assert.equal(lifecycle.at(-1).amountMode, 'unknown', 'unrelated swaps never inherit form input history')
 })
+
+for (const mode of ['cross-chain', 'deposit-widget-wallet']) {
+  test(`${mode} owns amount adjustment and preserves the latest draft fields`, async () => {
+    const { handle } = await mount({ mode })
+    await act(() => handle.setFieldValue('destination_address', 'latest-destination', false))
+    let updated
+    await act(() => {
+      updated = handle.adjustWithdrawalAmount({ amount: '0.9', amountMode: 'max', amountPresetPending: true })
+    })
+    assert.equal(updated.destination_address, 'latest-destination')
+    assert.equal(updated.from.name, 'A')
+    assert.deepEqual(handle.values, updated)
+    assert.equal(handle.values.amount, '0.9')
+    assert.equal(handle.values.amountMode, 'max')
+    assert.equal(handle.values.amountPresetPending, true)
+  })
+}

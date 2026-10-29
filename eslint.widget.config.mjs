@@ -134,6 +134,20 @@ export default [
     rules: { 'widget-react-shares/no-unshared-entry': 'error' },
   },
   {
+    files: ['packages/widget/core/src/components/Pages/Swap/Withdraw/**/*.{ts,tsx}'],
+    rules: {
+      // These components also render on direct swap links, outside any form.
+      // Restrict the dependency itself so aliases and alternate Formik hooks
+      // cannot silently reintroduce the missing-provider crash.
+      'no-restricted-imports': ['error', {
+        patterns: [
+          { group: ['formik', 'formik/**'], message: 'Withdrawal screens render without Formik on direct swap links. Use the form-owned withdrawal amount adjustment callback.' },
+          { group: ['react-dom/server', 'react-dom/server.*', 'react-dom/server/**', 'react-dom/static', 'react-dom/static.*', 'react-dom/static/**', 'react-server-dom-*'], message },
+        ],
+      }],
+    },
+  },
+  {
     files: ['apps/widget-cdn/rspack.config.mjs', 'packages/widget/react/src/remoteWidgetHost.tsx'],
     plugins: { 'widget-react-shares': reactSharesPlugin },
     rules: { 'widget-react-shares/required': 'error' },

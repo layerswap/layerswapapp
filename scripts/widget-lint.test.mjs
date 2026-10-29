@@ -160,3 +160,30 @@ for (const filePath of [
     assert.equal(config?.rules?.['no-restricted-syntax'], undefined);
   });
 }
+
+for (const code of [
+  "import { useFormikContext } from 'formik';",
+  "import { FormikContext as Context } from 'formik';",
+  "import * as form from 'formik';",
+  "export { useFormikContext } from 'formik';",
+  "import { useFormikContext } from 'formik/dist/index';",
+]) {
+  test(`withdrawal screens reject form dependencies: ${code}`, async () => {
+    const [result] = await eslint.lintText(code, {
+      filePath: 'packages/widget/core/src/components/Pages/Swap/Withdraw/Wallet/Common/buttons.tsx',
+    });
+    assert.equal(result.errorCount, 1);
+    assert.match(result.messages[0].message, /Withdrawal screens render without Formik/);
+  });
+}
+
+test('form owners can use Formik and withdrawal screens can consume their callback', async () => {
+  const [form] = await eslint.lintText("import { useFormikContext } from 'formik';", {
+    filePath: 'packages/widget/core/src/components/Pages/Swap/Form/SwapForm.tsx',
+  });
+  const [withdrawal] = await eslint.lintText("import { useWithdrawalAmountAdjustment } from '../Form/withdrawalAmountAdjustment';", {
+    filePath: 'packages/widget/core/src/components/Pages/Swap/Withdraw/Withdraw.tsx',
+  });
+  assert.deepEqual(form.messages, []);
+  assert.deepEqual(withdrawal.messages, []);
+});
