@@ -105,6 +105,26 @@ test('a failure while preparing the request is terminal but never sends the requ
   assert.equal(h.gaslessUnavailable(), 0)
 })
 
+test('a created swap that fails verification fails the attempt before any effect runs and is not a gasless refusal', async () => {
+  const error = new Error('Increase your USDC receiving limit')
+  const verified = []
+  const calls = []
+  const h = harness({
+    prepare: async () => ({
+      request: async () => ({ data: swap }),
+      useGasless: true,
+      verify: async created => { verified.push(created); throw error },
+      onCreated: [{ name: 'onSwapCreate', run: () => calls.push('onSwapCreate') }],
+    }),
+  })
+  await assert.rejects(h.attempt, caught => caught === error)
+  assert.deepEqual(verified, [swap])
+  assert.deepEqual(h.steps(), ['swap_creation_started', 'swap_creation_failed'])
+  assert.equal(h.lifecycle[1].reason, 'Increase your USDC receiving limit')
+  assert.deepEqual(calls, [])
+  assert.equal(h.gaslessUnavailable(), 0)
+})
+
 test('a throwing post-creation effect is reported as SideEffectError and neither fails the attempt nor skips later effects', async () => {
   const quota = Object.assign(new Error('The quota has been exceeded.'), { name: 'QuotaExceededError' })
   const calls = []

@@ -75,3 +75,31 @@ test('ready provider transfers retain normal submission reporting', async () => 
     assert.equal(hooks.submissions[0][0], request)
     assert.deepEqual(states, [])
 })
+
+test('a failed action-time check rejects without awaiting rechecks of other mounted consumers', async () => {
+    const { prerequisitesReady, swapPrerequisiteKey } = await import('../../../wallets/core/dist/esm/lib/swapPrerequisites.js')
+    const failed = [{ provider: {}, result: { status: 'unavailable', title: 'Couldn’t check account setup' } }]
+    const resolver = { supports: () => true, check: async () => failed }
+    const published = []
+    let revalidationFilter
+    const { useCheckSwapPrerequisites } = loadSource('hooks/useSwapPrerequisites.ts', {
+        react: { useCallback: callback => callback, useEffect: effect => { effect() }, useRef: current => ({ current }), useMemo: factory => factory(), useState: () => [] },
+        swr: { default: () => ({}), useSWRConfig: () => ({ mutate: (key, data) => {
+            if (typeof key === 'function') {
+                revalidationFilter = key
+                return new Promise(() => {})
+            }
+            published.push([key, data])
+            return Promise.resolve()
+        } }) },
+        '@layerswap/wallet-core': { prerequisitesReady, SwapPrerequisiteError, swapPrerequisiteKey },
+        '../context/swapPrerequisites': { useSwapPrerequisiteResolver: () => resolver },
+    })
+    const context = { destination: { network: { name: 'STELLAR_MAINNET' }, token: { symbol: 'USDC' }, address: 'recipient' }, receiveAmount: '11' }
+    const other = { ...context, receiveAmount: '9' }
+    await assert.rejects(useCheckSwapPrerequisites()(context), SwapPrerequisiteError)
+    assert.deepEqual(published, [[['swap-prerequisites', resolver, swapPrerequisiteKey(context)], failed]])
+    assert.equal(revalidationFilter(['swap-prerequisites', resolver, swapPrerequisiteKey(context)]), false)
+    assert.equal(revalidationFilter(['swap-prerequisites', resolver, swapPrerequisiteKey(other)]), true)
+    assert.equal(revalidationFilter(['swap-prerequisites', {}, swapPrerequisiteKey(other)]), false)
+})

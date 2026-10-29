@@ -95,7 +95,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
         setWalletWihdrawDone(false)
 
         try {
-            await checkPrerequisites(prerequisitesFromForm(values))
+            await checkPrerequisites(prerequisitesFromForm(values, formQuoteRef.current?.receive_amount))
         } catch (error) {
             setSwapError?.(error instanceof Error ? error.message : 'Could not check account setup')
             return

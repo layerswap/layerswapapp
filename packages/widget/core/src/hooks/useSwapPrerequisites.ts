@@ -24,12 +24,13 @@ export function useCheckSwapPrerequisites() {
         if (!context || !resolver.supports(context)) return
         const entries = await resolver.check(context)
         assertActive()
+        const checkedKey = swapPrerequisiteKey(context)
         await mutate(cacheKey(resolver, context), entries, { revalidate: false })
         assertActive()
         if (!prerequisitesReady(entries)) {
             // A newly created quote may have a different cache key from the visible form.
-            // Recheck mounted consumers so action-time failures always surface as setup UI.
-            await mutate(key => Array.isArray(key) && key[0] === 'swap-prerequisites' && key[1] === resolver)
+            // Recheck other mounted consumers in the background so the failure surfaces immediately.
+            void mutate(key => Array.isArray(key) && key[0] === 'swap-prerequisites' && key[1] === resolver && key[2] !== checkedKey)
             throw new SwapPrerequisiteError(entries)
         }
     }, [resolver, mutate])

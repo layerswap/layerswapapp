@@ -640,24 +640,24 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
                 data.slippage = slippage.toString()
             }
 
+            const executionContext = (swap: SwapResponse) => prerequisitesFromSwap({
+                ...swap.swap,
+                source_network: from,
+                source_token: fromCurrency,
+                destination_network: to,
+                destination_token: toCurrency,
+                requested_amount: amount || '',
+            }, swap.quote?.receive_amount)!
+
             return {
                 request: () => layerswapApiClient.CreateSwapAsync(data),
                 useGasless,
+                verify: swap => checkPrerequisites(executionContext(swap)),
                 onCreated: [
                     {
                         name: 'swapPrerequisites.setExecutionContext',
                         run: (swap: SwapResponse) => {
-                            createdExecutionRef.current = {
-                                swapId: swap.swap.id,
-                                context: prerequisitesFromSwap({
-                                    ...swap.swap,
-                                    source_network: from,
-                                    source_token: fromCurrency,
-                                    destination_network: to,
-                                    destination_token: toCurrency,
-                                    requested_amount: amount || '',
-                                }, swap.quote.receive_amount)!,
-                            }
+                            createdExecutionRef.current = { swapId: swap.swap.id, context: executionContext(swap) }
                         },
                     },
                     {
