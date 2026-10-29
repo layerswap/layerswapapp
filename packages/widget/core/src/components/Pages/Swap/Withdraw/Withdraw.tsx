@@ -17,8 +17,7 @@ import type { JSX } from 'react';
 import { FC, useCallback, useMemo } from 'react';
 import { AdjustAmountButton } from '../Form/SecondaryComponents/validationError/AdjustAmountButton';
 import { RefreshBalanceButton } from '../Form/SecondaryComponents/validationError/RefreshBalanceButton';
-import { useWithdrawalAmountAdjustment } from '../Form/withdrawalAmountAdjustment';
-import type { SwapFormValues } from '../Form/SwapFormValues';
+import type { AdjustWithdrawalAmount, SwapFormValues } from '../Form/SwapFormValues';
 import {
     BalanceWarningView,
     GasWarningView,
@@ -40,7 +39,7 @@ const AWAITING_WALLET_ACTION: ObservedLifecycleEvent = {
     action: 'send_from_wallet',
 }
 
-export function useWithdrawBalance(active = true) {
+export function useWithdrawBalance(active = true, adjustFormAmount?: AdjustWithdrawalAmount) {
     const { swapBasicData, swapDetails, swapId, amountPresetLocked, depositActionsResponse, refuel, quoteIsLoading } =
         useSwapDataState();
     const { setSubmitedFormValues, startFreshSwapAttempt, canAdjustAmount } = useSwapDataUpdate();
@@ -95,7 +94,6 @@ export function useWithdrawBalance(active = true) {
         swapBasicData?.source_token,
         gasEstimationAmount, undefined, { enabled: active, transaction: gasTransaction },
     );
-    const adjustFormAmount = useWithdrawalAmountAdjustment();
 
     const lifecycleContext = useMemo(
         () => swapBasicData ? lifecycleContextFromSwap(swapBasicData, swapDetails) : undefined,
@@ -249,9 +247,10 @@ const Withdraw: FC<{
     type: 'widget' | 'contained';
     onWalletWithdrawalSuccess?: () => void;
     onCancelWithdrawal?: () => void;
-}> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal }) => {
+    onAdjustAmount?: AdjustWithdrawalAmount;
+}> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal, onAdjustAmount }) => {
     const { swapBasicData, swapDetails, refuel } = useSwapDataState();
-    const { warning, actionKey, blocked } = useWithdrawBalance();
+    const { warning, actionKey, blocked } = useWithdrawBalance(true, onAdjustAmount);
     if (!swapBasicData) return null;
     return <Widget.Footer sticky={type === 'widget'}>
         <WalletActionTransition actionKey={actionKey}>

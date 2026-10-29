@@ -181,7 +181,7 @@ test('form owners can use Formik and withdrawal screens can consume their callba
   const [form] = await eslint.lintText("import { useFormikContext } from 'formik';", {
     filePath: 'packages/widget/core/src/components/Pages/Swap/Form/SwapForm.tsx',
   });
-  const [withdrawal] = await eslint.lintText("import { useWithdrawalAmountAdjustment } from '../Form/withdrawalAmountAdjustment';", {
+  const [withdrawal] = await eslint.lintText("import type { AdjustWithdrawalAmount } from '../Form/SwapFormValues';", {
     filePath: 'packages/widget/core/src/components/Pages/Swap/Withdraw/Withdraw.tsx',
   });
   assert.deepEqual(form.messages, []);

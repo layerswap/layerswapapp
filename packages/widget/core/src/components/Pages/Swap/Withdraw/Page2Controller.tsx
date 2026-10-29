@@ -1,3 +1,4 @@
+import type { AdjustWithdrawalAmount } from '../Form/SwapFormValues';
 import { WalletTransferView } from './Presentation/Page2Sections';
 import type { ReactNode } from 'react';
 import type { SwapBasicData } from '@/lib/apiClients/layerSwapApiClient';
@@ -31,6 +32,7 @@ type Props = {
     partner?: Partner;
     onWalletWithdrawalSuccess?: () => void;
     onCancelWithdrawal?: () => void;
+    onAdjustAmount?: AdjustWithdrawalAmount;
     children: (model: Model) => ReactNode;
 };
 
@@ -53,7 +55,7 @@ export function Page2Controller(props: Props) {
 function WalletController(props: Props) {
     const { swapDetails, refuel } = useSwapDataState();
     const active = useResolvedSwapStatus().showWithdrawScreen;
-    const balance = useWithdrawBalance(active);
+    const balance = useWithdrawBalance(active, props.onAdjustAmount);
     const { provider, wallets } = useWallet(
         props.swapBasicData.source_network,
         'withdrawal',
@@ -129,7 +131,7 @@ function ProviderController({ definition, ...props }: Props & { definition: Wall
         swapId: swapDetails?.id,
         refuel: !!refuel,
     }, definition, active);
-    const balance = useWithdrawBalance(active);
+    const balance = useWithdrawBalance(active, props.onAdjustAmount);
     const connection = useConnectWalletController();
     const network = props.swapBasicData.source_network;
     return props.children({

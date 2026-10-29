@@ -27,3 +27,6 @@ export type SwapFormValues = {
 
 
 export type SwapDirection = "from" | "to";
+
+/** Optional form-owned draft edit; direct swap links have no form to update. */
+export type AdjustWithdrawalAmount = (updates: SwapFormValues) => SwapFormValues;

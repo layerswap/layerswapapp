@@ -8,12 +8,6 @@ import ts from 'typescript';
 
 const require = createRequire(import.meta.url);
 const core = new URL('../../../packages/widget/core/', import.meta.url);
-const adjustmentSource = ts.transpileModule(readFileSync(new URL('src/components/Pages/Swap/Form/withdrawalAmountAdjustment.ts', core), 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-});
-const adjustmentModule = { exports: {} };
-new Function('require', 'module', 'exports', adjustmentSource.outputText)(require, adjustmentModule, adjustmentModule.exports);
-const adjustment = adjustmentModule.exports;
 const noop = () => {};
 const token = { symbol: 'ETH', decimals: 6 };
 const network = { name: 'BASE_MAINNET', type: 'evm', token };
@@ -43,7 +37,6 @@ const imports = {
     '@/components/Input/Amount/helpers': { resolveMaxAllowedAmount: () => 0.9 },
     '@/lib/amountPresets': { amountPresetSource: noop, isAmountPreset: () => false },
     '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
-    '../Form/withdrawalAmountAdjustment': adjustment,
     '../Form/SecondaryComponents/validationError/AdjustAmountButton': {
         AdjustAmountButton: ({ onEditAmount }) => { adjust = onEditAmount; return React.createElement('button', null, 'Adjust amount'); },
     },
@@ -84,9 +77,10 @@ test('direct swap links SSR without Formik and retain balance warnings without d
 
 test('in-form withdrawals keep amount adjustment and guard stale callbacks after execution starts', () => {
     let updated;
-    const html = renderToString(React.createElement(adjustment.WithdrawalAmountAdjustmentContext.Provider, {
-        value: updates => { updated = { amount: '2', ...updates }; return updated; },
-    }, React.createElement(Withdraw, { type: 'contained' })));
+    const html = renderToString(React.createElement(Withdraw, {
+        type: 'contained',
+        onAdjustAmount: updates => { updated = { amount: '2', ...updates }; return updated; },
+    }));
     assert.match(html, /Adjust amount/);
     adjust();
     assert.equal(updated.amount, '0.9');
