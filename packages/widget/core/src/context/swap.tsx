@@ -312,6 +312,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             amountMode: current?.amountMode,
             amountPresetSource: current?.amountPresetSource,
         }))
+        // Adjust amount must not restore a cached Max calculated before the warning.
+        setAmountPresetRevision(current => current + 1)
         setPresetCreated(false)
         setSwapError(null)
         setWalletExecution(undefined)

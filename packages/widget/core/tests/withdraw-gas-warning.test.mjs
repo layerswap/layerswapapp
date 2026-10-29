@@ -19,7 +19,7 @@ for (const [key, value] of Object.entries(globals)) {
 const mockUrl = `data:text/javascript,${encodeURIComponent(`
   import { createElement } from ${JSON.stringify(import.meta.resolve('react'))}
   export const state = {}
-  export const useSwapDataState = () => ({ swapBasicData: state.swap, swapId: state.swapId, swapDetails: state.swapDetails, inputTransactionStatus: state.inputTransactionStatus, depositActionsResponse: state.actions, quoteIsLoading: state.quoteLoading })
+  export const useSwapDataState = () => ({ swapBasicData: state.swap, amountPresetLocked: state.locked, swapId: state.swapId, swapDetails: state.swapDetails, inputTransactionStatus: state.inputTransactionStatus, depositActionsResponse: state.actions, quoteIsLoading: state.quoteLoading })
   export const useSwapDataUpdate = () => ({ setSubmitedFormValues(values) { state.submitted = values }, startFreshSwapAttempt() { state.freshAttempts++ }, canAdjustAmount: () => !state.locked })
   export const useSettingsState = () => ({ networks: [state.swap.source_network] })
   export const useSelectedAccount = () => ({ address: state.walletAddress ?? 'source' })
@@ -458,4 +458,50 @@ test('a definitively failed hash restores the actual funding block', async () =>
   assert.equal(sendButton(), undefined)
   assert.match(container.textContent, /Refresh balance/)
   assert.deepEqual(blocks().map(event => event.reasonCode), ['insufficient_balance'])
+})
+
+
+test('live Max automatically reduces the draft when the withdrawal fee increases', async () => {
+  state.swap.amountMode = 'max'
+  state.swap.amountPresetBalance = 1
+  await render()
+  assert.equal(state.freshAttempts, 1, 'StrictMode must start only one adjustment')
+  assert.equal(state.submitted.amountMode, 'max')
+  assert.equal(state.submitted.amount, '0.898')
+  assert.equal(container.textContent.includes('Insufficient balance for gas'), false)
+  state.swap = { ...state.swap, requested_amount: state.submitted.amount }
+  await render()
+  assert.equal(state.freshAttempts, 1)
+  assert.equal(container.textContent.includes('Insufficient balance for gas'), false)
+
+  state.gasData = { token, gas: 0.12 }
+  await render()
+  assert.equal(state.freshAttempts, 2, 'another fee increase must refresh Max again')
+  assert.equal(state.submitted.amount, '0.8776')
+})
+
+for (const frozen of ['manual', 'wallet execution', 'created swap', 'submitted']) {
+  test(`${frozen} never changes its amount automatically after a fee increase`, async () => {
+    state.swap.amountMode = frozen === 'manual' ? 'manual' : 'max'
+    state.swap.amountPresetBalance = 1
+    if (frozen === 'wallet execution') state.locked = true
+    if (frozen === 'created swap') state.swapId = 'existing'
+    if (frozen === 'submitted') {
+      state.swapId = 'submitted'
+      useSwapTransactionStore.setState({ swapTransactions: { submitted: { hash: '0xtest' } } })
+    }
+    await render()
+    assert.equal(state.freshAttempts, 0)
+    assert.equal(state.submitted, undefined)
+    assert.equal(state.swap.requested_amount, '0.95')
+  })
+}
+
+test('Max retains a real gas warning when no valid reduced amount meets the minimum', async () => {
+  state.swap.amountMode = 'max'
+  state.swap.amountPresetBalance = 1
+  state.minAllowedAmount = 0.94
+  await render()
+  assert.equal(state.freshAttempts, 0)
+  assert.equal(container.textContent.includes('Insufficient balance for gas'), true)
 })

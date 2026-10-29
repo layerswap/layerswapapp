@@ -23,7 +23,8 @@ const { default: FormTelemetry } = loadSource('components/Pages/Swap/Form/FormTe
 const SwapDataStateContext = createContext(null)
 const SwapDataUpdateContext = createContext(null)
 const { default: Controller } = loadSource('components/Pages/Swap/Form/AmountPresetController.tsx', {
-  react: React, formik: require('formik'), swr: { default: useSWR },
+  react: React, formik: require('formik'), swr: { default: useSWR, useSWRConfig },
+  '@/lib/gases/amountGasKey': loadSource('lib/gases/amountGasKey.ts'),
   '@/context/swap': { SwapDataStateContext, SwapDataUpdateContext },
   '@/context/swapAccounts': { useSelectedAccount: () => state.account },
   '@/hooks/useWallet': { default: () => ({ wallets: state.wallets }) },
@@ -290,9 +291,9 @@ test('tiny fee increases on every RPC read do not turn a valid balance into an e
     balance: { amount: balance }, limit: 10, probeAmount: '0.05399123503545234',
     estimateGas: async () => { reads++; latestFee += 0.000000000001; return { token: native, gas: latestFee } },
   })
-  assert.equal(reads, 2)
+  assert.equal(reads, 3)
   assert.ok(Number(result) > 0)
-  assert.ok(Number(result) + latestFee <= balance, 'The newest fee is covered')
+  assert.ok(Number(result) + latestFee * 1.02 <= balance, 'The newest buffered fee is covered')
 })
 
 test('large fee increases still reduce the amount before returning an affordable result', async () => {
@@ -835,4 +836,66 @@ test('a maximum fee exhausting the balance uses the network fee message', async 
   await render()
   assert.equal(formik.values.amount, '0')
   assert.equal(formik.values.amountPresetError, 'Not enough ETH for network fees')
+})
+
+for (const preserveAmount of [false, true]) {
+  for (const mode of ['max', 'half']) {
+    test(`${mode} covers the withdrawal buffer after a small fee increase (preserve=${preserveAmount})`, async () => {
+      const native = { ...token, decimals: 18 }
+      let reads = 0
+      const result = await amountPresets.calculatePresetAmount({
+        mode, preserveAmount, network: { ...network, token: native }, token: native,
+        balance: { amount: 1 }, limit: 10,
+        probeAmount: preserveAmount ? (mode === 'max' ? '0.99898' : '0.49949') : '1',
+        estimateGas: async () => ({ token: native, gas: ++reads === 1 && !preserveAmount ? 0.001 : 0.00101 }),
+      })
+      const spendable = maxHelpers.resolveMaxAllowedAmount({ walletBalance: { amount: 1 },
+        gasAmount: 0.00101, fromCurrency: native, native_currency: native,
+        limitsMaxAmount: 10, depositMethod: 'wallet' })
+      assert.ok(Number(result) <= spendable * (mode === 'half' ? 0.5 : 1))
+      assert.ok(reads <= 4)
+    })
+  }
+}
+
+test('confirmation reduces an amount covering only the raw fee instead of preserving it', async () => {
+  const result = await amountPresets.calculatePresetAmount({
+    preserveAmount: true, network, token, balance: { amount: 1 }, limit: 10,
+    probeAmount: '0.9899', estimateGas: async () => ({ token, gas: 0.01 }),
+  })
+  assert.equal(result, '0.9898')
+})
+
+test('Adjust amount starts a fresh calculation instead of restoring the cached Max', async () => {
+  await render()
+  const cachedAmount = formik.values.amount
+  state.locked = true
+  await render()
+  state.gas = 0.02
+  state.revision++
+  state.locked = false
+  await act(async () => formik.setValues({ ...formik.values, amount: '0.9796', amountPresetPending: true }))
+  await render()
+  assert.notEqual(formik.values.amount, cachedAmount)
+  assert.equal(formik.values.amount, '0.9796')
+  assert.equal(formik.values.amountPresetPending, false)
+  assert.equal(state.draft.amount, '0.9796')
+})
+
+
+test('Max replaces an old withdrawal fee snapshot with its verified estimate', async () => {
+  let currentFee
+  function FeeProbe() {
+    const { data } = useSWR('/gases/source/ETHEREUM_MAINNET/ETH/0.9898', null)
+    currentFee = data
+    return null
+  }
+  config.fallback = { '/gases/source/ETHEREUM_MAINNET/ETH/0.9898': { gas: 0.02, token } }
+  await act(async () => root.render(createElement(SWRConfig, { value: config },
+    createElement(SwapDataStateContext.Provider, { value: { amountPresetLocked: false, amountPresetRevision: 0 } },
+      createElement(SwapDataUpdateContext.Provider, { value: updates },
+        createElement(Formik, { initialValues, onSubmit() {} }, createElement(React.Fragment, null, createElement(Probe), createElement(FeeProbe))))))))
+  assert.equal(formik.values.amount, '0.9898')
+  assert.equal(currentFee.gas, 0.01)
+  assert.equal(state.draft.amount, '0.9898')
 })

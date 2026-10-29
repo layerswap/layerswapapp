@@ -1,6 +1,7 @@
 import { useContext, useEffect, useRef } from 'react'
 import { useFormikContext } from 'formik'
-import useSWR from 'swr'
+import useSWR, { useSWRConfig } from 'swr'
+import { amountGasKey } from '@/lib/gases/amountGasKey'
 import type { SwapFormValues } from './SwapFormValues'
 import type { GasWithToken } from '@layerswap/widget-types'
 import { SwapDataStateContext, SwapDataUpdateContext } from '@/context/swap'
@@ -26,6 +27,7 @@ export default function AmountPresetController() {
 
 function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
     const { values, setValues } = useFormikContext<SwapFormValues>()
+    const { mutate } = useSWRConfig()
     const swap = useContext(SwapDataStateContext)
     const updates = useContext(SwapDataUpdateContext)
     const account = useSelectedAccount('from', values.from?.name)
@@ -70,6 +72,13 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
     { refreshInterval: 60000, keepPreviousData: false, shouldRetryOnError: error => !(error instanceof AmountPresetUnavailableError), errorRetryCount: 3 })
     const amount = calculation?.amount
     const gas = calculation?.gas
+    useEffect(() => {
+        if (frozen || !sameSource || !liveSupported || amount === undefined || !gas) return
+        // Withdrawal must validate this amount against the estimate that produced
+        // it, rather than a stale estimate cached during an earlier Max attempt.
+        // Transaction-specific estimates keep their separate cache entries.
+        void mutate(amountGasKey(account?.address, values.from?.name, values.fromAsset?.symbol, Number(amount)), gas, { revalidate: false })
+    }, [frozen, sameSource, liveSupported, amount, gas, mutate, account?.address, values.from?.name, values.fromAsset?.symbol])
     const feeToken = gas?.token ?? values.from?.token
     const feeExhaustsBalance = !!gas && balance?.amount != null && balance.amount > 0
         && (!feeToken || feeToken.symbol === values.fromAsset?.symbol)

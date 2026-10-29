@@ -15,7 +15,7 @@ const previous = Object.getOwnPropertyDescriptors(globalThis)
 for (const [key, value] of Object.entries({ window: dom.window, document: dom.window.document, localStorage: dom.window.localStorage, IS_REACT_ACT_ENVIRONMENT: true }))
   Object.defineProperty(globalThis, key, { configurable: true, writable: true, value })
 const { createRoot } = await import('react-dom/client')
-const { default: useSWR, SWRConfig } = await import('swr')
+const { default: useSWR, SWRConfig, useSWRConfig } = await import('swr')
 
 const token = { symbol: 'ETH', decimals: 18, precision: 8, price_in_usd: 2400 }
 const source = { name: 'BASE_MAINNET', token, tokens: [token] }
@@ -36,7 +36,8 @@ const { generateSwapInitialValuesFromSwap } = loadSource('lib/generateSwapInitia
   './address/Address': {}, './extendedRoutes/registry': {},
 })
 const { default: Controller } = loadSource('components/Pages/Swap/Form/AmountPresetController.tsx', {
-  react: React, formik: require('formik'), swr: { default: useSWR }, '@/context/swap': context,
+  react: React, formik: require('formik'), swr: { default: useSWR, useSWRConfig }, '@/context/swap': context,
+  '@/lib/gases/amountGasKey': loadSource('lib/gases/amountGasKey.ts'),
   '@/context/swapAccounts': { useSelectedAccount: () => state.account },
   '@/hooks/useWallet': { default: () => ({ wallets: [state.account] }) },
   '@/hooks/useFee': { transformFormValuesToQuoteArgs: values => values, useQuoteData: () => ({ maxAllowedAmount: 1, minAllowedAmount: state.minimum }) },
@@ -165,7 +166,11 @@ function Probe() {
     quote: { source_token: { ...token, price_in_usd: state.price } } })
   return createElement(React.Fragment, null, createElement(Controller), data.swapBasicData ? createElement(React.Fragment, null,
     createElement(Summary), state.renderQuoteDetails && createElement('section', { 'data-testid': 'quote-details' },
-      createElement(SwapQuoteDetails, { swapBasicData: data.swapBasicData, quote: data.quote, quoteError: data.quoteError, quoteIsLoading: data.quoteIsLoading })), createElement(Withdraw, { type: 'widget' })) : null)
+      createElement(SwapQuoteDetails, { swapBasicData: data.swapBasicData, quote: data.quote, quoteError: data.quoteError, quoteIsLoading: data.quoteIsLoading })), createElement(Withdraw, { type: 'widget', onAdjustAmount: state.enableAutoAdjust ? changed => {
+        const next = { ...formik.values, ...changed }
+        void formik.setValues(next, true)
+        updates.setSubmitedFormValues(next)
+      } : undefined })) : null)
 }
 // Record committed DOM, including the first render before passive effects sync
 // Formik and the draft. Reading only after act() would miss a one-frame warning.
@@ -192,7 +197,7 @@ const decreaseBalance = () => {
 beforeEach(() => {
   container = document.createElement('div'); document.body.append(container); root = createRoot(container)
   Object.assign(state, { account: { id: 'wallet', address: 'source' }, formKey: 0, minimum: 0.00001, price: 2400,
-    renderQuoteDetails: false, events: [], commits: [], walletMounts: 0, walletUnmounts: 0,
+    enableAutoAdjust: false, renderQuoteDetails: false, events: [], commits: [], walletMounts: 0, walletUnmounts: 0,
     gas: { gas: 0.0000001, token }, gasRequest: undefined, gasError: undefined, balanceLoading: false,
     balances: [{ amount: 0.00182643, network: source.name, token: token.symbol, request_time: 1, isNativeCurrency: true }] })
   initialValues = { from: source, to: destination, fromAsset: token, toAsset: token, destination_address: 'destination',
@@ -481,5 +486,33 @@ for (const quoteError of [
     await act(() => root.render(createElement(SwapQuoteDetails)))
     assert.ok(container.querySelector('[aria-label="Loading quote"]'))
     assert.equal(container.textContent, '')
+  })
+}
+
+
+for (const isUsdMode of [false, true]) {
+  test(`Max automatically fixes a withdrawal gas increase in ${isUsdMode ? 'USD' : 'token'} mode without flashing a warning`, async () => {
+    state.enableAutoAdjust = true
+    usdStore.setState({ isUsdMode })
+    await render(); await openReview()
+    const before = summaryAmount()
+    const mounts = state.walletMounts, unmounts = state.walletUnmounts
+    state.commits = []
+    state.gasRequest = Promise.withResolvers()
+    state.gas = { gas: 0.00000012, token }
+    await render()
+    assert.equal(formik.values.amountMode, 'max')
+    assert.equal(data.swapBasicData.amountPresetPending, true)
+    assert.equal(container.querySelector('button').disabled, true)
+    await act(() => state.gasRequest.resolve())
+    assert.equal(data.swapBasicData.amountPresetPending, false)
+    assert.ok(Number(summaryAmount()) < Number(before))
+    assert.equal(summaryAmount(), formik.values.amount)
+    assert.ok(Number(summaryAmount()) + state.gas.gas * 1.02 <= state.balances[0].amount)
+    assert.equal(container.querySelector('button').disabled, false)
+    assert.ok(state.commits.every(text => !text.includes('Insufficient balance')), state.commits.join('\n'))
+    assert.equal(state.walletMounts, mounts)
+    assert.equal(state.walletUnmounts, unmounts)
+    assert.deepEqual(blocks(), [])
   })
 }

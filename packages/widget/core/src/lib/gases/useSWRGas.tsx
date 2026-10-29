@@ -4,6 +4,7 @@ import { Network, Token } from "@layerswap/widget-types";
 import { resolverService } from "../resolvers/resolverService"
 import { GasWithToken } from "@layerswap/widget-types";
 import useSWR from "swr"
+import { amountGasKey } from './amountGasKey'
 import { getKey, useBalanceStore } from "../../stores/balanceStore"
 import type { GasProps } from '@layerswap/widget-types'
 
@@ -32,7 +33,7 @@ const useSWRGas = (
     const hasTransaction = transaction?.recipientAddress != null && transaction.callData != null
     const canEstimate = estimationAmount !== undefined && Number.isFinite(estimationAmount)
         && (hasTransaction ? estimationAmount >= 0 : estimationAmount > 0)
-    const baseKey = `/gases/${address}/${network?.name}/${token?.symbol}/${estimationAmount}`
+    const baseKey = amountGasKey(address, network?.name, token?.symbol, estimationAmount)
     const gasKey = hasTransaction
         ? [baseKey, transaction.recipientAddress, transaction.callData, transaction.amountInBaseUnits ?? null]
         : baseKey
