@@ -1,5 +1,5 @@
 import { type Wallet } from '@layerswap/widget-types';
-import { FC, useCallback, useEffect } from "react";
+import { FC, useCallback, useEffect, useMemo } from "react";
 import { ConnectorsList } from "@layerswap/ui-kit/components";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { useDepositStep } from "../depositStepContext";
@@ -30,6 +30,11 @@ const ConnectStep: FC = () => {
     const { setOpen, setPresentation, setSelectedProvider } = useConnectModal();
     const { destination, destinationToken } = useDepositSelection();
     const { providers } = useWallet();
+    // A new connection in the login wallet's family would replace it.
+    const connectableProviders = useMemo(
+        () => providers.filter(p => !p.connectedWallets?.some(w => w.isLoginWallet)),
+        [providers],
+    );
     const selectSourceAccount = useSelectSwapAccount("from");
 
     useEffect(() => {
@@ -40,7 +45,7 @@ const ConnectStep: FC = () => {
         // `withdrawalSupportedNetworks` signal the picker uses to find a
         // compatible wallet identifies the provider here.
         const lockedProvider = presetSourceNetwork && isExtendedSourceNetwork(presetSourceNetwork)
-            ? providers.find(p => p.withdrawalSupportedNetworks?.includes(presetSourceNetwork))
+            ? connectableProviders.find(p => p.withdrawalSupportedNetworks?.includes(presetSourceNetwork))
             : undefined;
         if (lockedProvider) setSelectedProvider(lockedProvider);
         setOpen(true);
@@ -68,7 +73,7 @@ const ConnectStep: FC = () => {
     return (
         <div className="openpicker flex flex-col min-h-0 w-full h-[373px]">
             <ConnectorsList
-                providers={providers}
+                providers={connectableProviders}
                 onFinish={handleFinish}
                 enablePortal={AppSettings.ThemeData?.enablePortal}
                 brandMark={<LayerSwapLogoSmall className="w-11 h-auto" />}

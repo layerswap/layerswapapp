@@ -3,6 +3,7 @@ import { FC, ReactNode, createElement, useEffect, useMemo, createContext, useCon
 import { WalletProvidersProvider } from "@/context/walletProviders";
 import { WalletModalProvider } from "../WalletModal";
 import type { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@layerswap/wallet-core/types"
+import type { LoginWallet } from "@layerswap/widget-types"
 import { isWalletProviderDescriptor } from "@layerswap/wallet-core/types"
 
 const DynamicProviderWrapper: FC<{
@@ -44,7 +45,8 @@ const WalletsProviders: FC<{
     children: ReactNode,
     appName: string | undefined,
     walletProviders: (WalletProvider | WalletWrapper | WalletProviderDescriptor)[]
-}> = ({ children, appName, walletProviders }) => {
+    loginWallet?: LoginWallet
+}> = ({ children, appName, walletProviders, loginWallet }) => {
 
     const realProviders = useMemo(
         () => walletProviders.filter((p): p is WalletProvider | WalletWrapper => !isWalletProviderDescriptor(p)),
@@ -72,7 +74,7 @@ const WalletsProviders: FC<{
                     providers={realProviders}
                     appName={appName}
                 >
-                    <WalletProvidersProvider walletProviders={walletProviders}>
+                    <WalletProvidersProvider walletProviders={walletProviders} loginWallet={loginWallet}>
                         {children}
                     </WalletProvidersProvider>
                 </DynamicProviderWrapper>

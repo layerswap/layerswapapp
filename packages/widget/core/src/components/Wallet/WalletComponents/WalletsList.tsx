@@ -195,7 +195,7 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: item, net
                                             logo={item.icon}
                                             showDetails
                                             addressClassNames="font-normal text-sm"
-                                            onDisconnect={() => hasDisconnect(item) && item.disconnect()}
+                                            onDisconnect={canDisconnect(item) ? () => item.disconnect() : undefined}
                                             onSaveRequest={saveInDrawer ? () => setSaveAddress(item.address) : undefined}
                                         />
                                     }
@@ -227,7 +227,7 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: item, net
                     }
                 </div>
                 {
-                    !selectable && hasDisconnect(item) &&
+                    !selectable && canDisconnect(item) &&
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <button type="button" onClick={(e) => { e.stopPropagation(); item.disconnect() }} className="text-xs text-secondary-text hover:text-primary-text rounded-full p-1.5 bg-secondary-700 transition-colors duration-200">
@@ -361,7 +361,7 @@ const NestedWalletAddress: FC<NestedWalletAddressProps> = ({ selectable, address
                             network={network}
                             providerName={item.providerName}
                             addressClassNames="font-normal text-sm"
-                            onDisconnect={() => hasDisconnect(item) && item?.disconnect()}
+                            onDisconnect={canDisconnect(item) ? () => item.disconnect() : undefined}
 
                             title={item.displayName?.split("-")[0]}
                             description={item.providerName}
@@ -407,6 +407,9 @@ function hasNetworkIcon(w: AccountIdentity | Wallet): w is Wallet & { networkIco
 }
 function hasDisconnect(w: AccountIdentity | Wallet): w is Wallet & { disconnect: Function } {
     return 'disconnect' in w && typeof w.disconnect === 'function';
+}
+function canDisconnect(w: AccountIdentity | Wallet): w is Wallet & { disconnect: Function } {
+    return hasDisconnect(w) && !w.isLoginWallet;
 }
 function isLoading(w: AccountIdentity | Wallet): w is Wallet & { isLoading: boolean } {
     return 'isLoading' in w && typeof w.isLoading === 'boolean' && w.isLoading;

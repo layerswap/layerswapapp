@@ -65,11 +65,13 @@ export function useExtendedDepositOption(providerId: DepositMethodId): ExtendedD
     const token = useMemo(() => pickSourceToken(network), [network]);
     const present = !!network && !!token;
 
-    // An already-connected wallet that can sign this source's withdrawals (EVM), if any.
-    const compatibleWallet = useMemo(
-        () => (network ? wallets.find(w => w.withdrawalSupportedNetworks?.includes(network.name)) : undefined),
-        [network, wallets],
-    );
+    // An already-connected wallet that can sign this source's withdrawals (EVM),
+    // preferring the login wallet.
+    const compatibleWallet = useMemo(() => {
+        if (!network) return undefined;
+        const supports = (w: Wallet) => !!w.withdrawalSupportedNetworks?.includes(network.name);
+        return wallets.find(w => w.isLoginWallet && supports(w)) ?? wallets.find(supports);
+    }, [network, wallets]);
 
     // Reachability for the fixed destination, from the gated (scoped) route list.
     const reachValues = useMemo<SwapFormValues>(

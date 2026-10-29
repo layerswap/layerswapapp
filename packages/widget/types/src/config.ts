@@ -21,6 +21,24 @@ export type WalletProviderId =
   | 'imtblPassport';
 
 /**
+ * The wallet the integrator's user is logged in with (e.g. a Privy or email
+ * embedded wallet). The host must also share its connection with the widget
+ * (for EVM, via `wagmiConfig`) so the widget sees it as a connected wallet.
+ *
+ * A connected wallet matches when its provider id equals `providerId` and
+ * `address` is one of its addresses. A matched login wallet:
+ * - can't be disconnected from either widget;
+ * - is the wallet the deposit widget's wallet methods ("Wallet transfer",
+ *   extended sources such as Hyperliquid) use, whatever its balance;
+ * - has its wallet family excluded from new connections in the deposit
+ *   widget, so connecting another wallet never replaces it.
+ */
+export type LoginWallet = {
+  address: string;
+  providerId: WalletProviderId;
+};
+
+/**
  * Public widget configuration contract.
  *
  * This is the *integrator-facing* surface. The widget package
@@ -54,6 +72,8 @@ export type WidgetConfig<TLoading = never> = {
   initialValues?: unknown;
   /** Skeleton shown while settings load (`ReactNode` in React hosts). */
   loadingComponent?: TLoading;
+  /** The host's logged-in wallet. See {@link LoginWallet}. */
+  loginWallet?: LoginWallet;
   /** @deprecated Pass `walletConnectConfigs` directly to wallet provider factories. */
   walletConnect?: unknown;
   /** @deprecated Pass `imtblPassportConfig` to `createImmutablePassportProvider`. */

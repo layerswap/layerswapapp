@@ -2,6 +2,7 @@
 import { useCallback, useRef, useSyncExternalStore } from "react";
 import { useWalletProvidersRegistry } from "@/context/WalletProvidersRegistryProvider";
 import type { WalletConnectionProvider } from "@/types/wallet";
+import { markLoginWallet } from "@/lib/loginWallet";
 
 // Stable reference for SSR — `useSyncExternalStore` requires `getServerSnapshot`
 // to return the same value across calls, otherwise it triggers infinite renders.
@@ -21,7 +22,8 @@ export function useWalletProviderSnapshots(): WalletConnectionProvider[] {
     const cache = useRef<WalletConnectionProvider[]>([]);
 
     const getSnapshot = useCallback(() => {
-        const current = registry.getEntries().map(entry => entry.store.getState());
+        const loginWallet = registry.getLoginWallet();
+        const current = registry.getEntries().map(entry => markLoginWallet(entry.store.getState(), loginWallet));
         const previous = cache.current;
         if (previous.length === current.length && previous.every((value, index) => value === current[index])) {
             return previous;

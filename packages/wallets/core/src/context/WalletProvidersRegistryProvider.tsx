@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type FC, type PropsWithChildren, type ReactNode } from "react";
 import type { StoreApi } from "zustand/vanilla";
+import type { LoginWallet } from "@layerswap/widget-types";
 import { WalletConnectionProvider, WalletConnectionStore, WalletProviderDescriptor, isWalletProviderDescriptor, } from "@/types/wallet";
 import type { AppNetworkAdapter } from "@/types/network";
 import type { WalletProvider, WalletWrapper } from "@/types/provider";
@@ -108,12 +109,19 @@ export function WalletProvidersRegistryProvider<Network>({
     networks,
     networkAdapter,
     walletProviders,
+    loginWallet,
 }: PropsWithChildren<{
     networks: Network[]
     networkAdapter: AppNetworkAdapter<Network>
     walletProviders: ProviderEntry<Network>[]
+    /** Connected wallets matching it are published with `isLoginWallet: true`. */
+    loginWallet?: LoginWallet
 }>) {
     const walletProvidersRegistry = useMemo(() => createWalletProvidersRegistry(), [])
+    // Before the entries effect, so the first published snapshots are already marked.
+    useEffect(() => {
+        walletProvidersRegistry.setLoginWallet(loginWallet)
+    }, [walletProvidersRegistry, loginWallet?.address, loginWallet?.providerId])
     const [isInitialized, setIsInitialized] = useState(false)
     const hasConfiguredProviders = useMemo(
         () => walletProviders.some(

@@ -13,12 +13,16 @@ import { useDepositStep } from "../depositStepContext";
 import { filterRoutesByAccount } from "./filterRoutesByAccounts";
 import { seedDefaultAmount } from "../seedDefaultAmount";
 import { CircleAlert } from "lucide-react";
+import useWallet from "@/hooks/useWallet";
 
 const SourceStep: FC = () => {
     const { values, setFieldValue } = useFormikContext<SwapFormValues>();
     const { push } = useDepositStep();
     const { defaultAmountUsd } = useDepositSettings();
     const sourceAccount = useLatestSourceAccount();
+    const { wallets } = useWallet();
+    const isLoginSource = !!sourceAccount && wallets.some(w =>
+        w.isLoginWallet && w.providerName === sourceAccount.providerName && w.id === sourceAccount.id);
 
     const { allRoutes, selectedRoute, selectedToken } = useFormRoutes(
         { direction: "from", values },
@@ -77,7 +81,7 @@ const SourceStep: FC = () => {
                         selectedToken={selectedToken?.symbol}
                         onSelect={handleSelect}
                         onlyWithBalance
-                        emptyState={<NoBalancesEmptyState />}
+                        emptyState={<NoBalancesEmptyState isLoginWallet={isLoginSource} />}
                     />
                 </div>
             </div>
@@ -85,17 +89,22 @@ const SourceStep: FC = () => {
     );
 };
 
-const NoBalancesEmptyState: FC = () => (
-    <div className="flex flex-col items-center justify-center text-center h-full min-h-[260px] px-6 gap-4">
-        <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-secondary-500 text-primary-text">
-            <CircleAlert className="h-7 w-7 text-primary-text" />
+const NoBalancesEmptyState: FC<{ isLoginWallet: boolean }> = ({ isLoginWallet }) => {
+    const hint = isLoginWallet
+        ? "Top it up via Deposit address, or use More wallets."
+        : "Please connect a different wallet.";
+    return (
+        <div className="flex flex-col items-center justify-center text-center h-full min-h-[260px] px-6 gap-4">
+            <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-secondary-500 text-primary-text">
+                <CircleAlert className="h-7 w-7 text-primary-text" />
+            </div>
+            <p className="text-sm text-secondary-text leading-5">
+                <span>There are no tokens available in your wallet.</span>
+                <br />
+                <span>{hint}</span>
+            </p>
         </div>
-        <p className="text-sm text-secondary-text leading-5">
-            There are no tokens available in your wallet.
-            <br />
-            Please connect a different wallet.
-        </p>
-    </div>
-);
+    );
+};
 
 export default SourceStep;
