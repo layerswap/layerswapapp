@@ -355,7 +355,6 @@ test('exact gas loading preserves the pending wallet request and its execution l
             },
         ),
         '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
-        formik: { useFormikContext: () => ({ values: {}, setValues: noop }) },
         '../Form/SecondaryComponents/validationError/AdjustAmountButton': {
             AdjustAmountButton: () =>
                 React.createElement('div', null, 'Adjust amount'),

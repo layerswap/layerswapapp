@@ -24,7 +24,6 @@ const mockUrl = `data:text/javascript,${encodeURIComponent(`
   export const useSettingsState = () => ({ networks: [state.swap.source_network] })
   export const useSelectedAccount = () => ({ address: state.walletAddress ?? 'source' })
   export const useBalance = () => ({ balances: state.balances, mutate() {}, isLoading: false })
-  export const useFormikContext = () => ({ values: {}, setValues(values) { state.formValues = values } })
   export const useOptionalCallbacks = () => ({})
   export const useCallbacks = () => ({ onSwapLifecycle: event => state.events.push(event) })
   export const useQuoteData = () => ({ minAllowedAmount: state.minAllowedAmount, maxAllowedAmount: state.maxAllowedAmount })
@@ -58,7 +57,7 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
       return { url: 'data:text/javascript,export const TransactionType = { Input: "input" }; export const BackendTransactionStatus = { Failed: "failed" };', shortCircuit: true }
     }
   if (['/TransferBlock.js', '/useHasSubmittedTransfer.js'].some(path => parent.endsWith(path)) && specifier.endsWith('/context/swap')) return { url: mockUrl, shortCircuit: true }
-  if (parent.endsWith('/Withdraw/Withdraw.js') && (['formik', 'framer-motion'].includes(specifier) || mocked.some(path => specifier.endsWith(path)))) {
+  if (parent.endsWith('/Withdraw/Withdraw.js') && (specifier === 'framer-motion' || mocked.some(path => specifier.endsWith(path)))) {
     return { url: mockUrl, shortCircuit: true }
   }
   if (parent.endsWith('/Withdraw/WalletTransferButton.js') && specifier === './Wallet') return { url: mockUrl, shortCircuit: true }
@@ -101,7 +100,14 @@ after(() => {
     else delete globalThis[key]
   }
 })
-const render = () => act(() => root.render(createElement(StrictMode, null, createElement(Withdraw, { type: 'widget' }))))
+const createWithdrawal = () => createElement(Withdraw, {
+  type: 'widget',
+  onAdjustAmount(updates) {
+    state.formValues = { ...state.formValues, ...updates }
+    state.submitted = state.formValues
+  },
+})
+const render = () => act(() => root.render(createElement(StrictMode, null, createWithdrawal())))
 const blocks = () => state.events.filter(event => event.step === 'transfer_blocked')
 const sendButton = () => [...container.querySelectorAll('button')].find(button => button.textContent === 'Send transaction')
 
@@ -379,7 +385,7 @@ test('portaled Adjust amount records Max after its guard without changing the ad
   const portal = document.createElement('div'); document.body.append(portal)
   try {
     widgetTelemetry.recordAmountInput('manual')
-    await act(() => root.render(createElement(StrictMode, null, createPortal(createElement(Withdraw, { type: 'widget' }), portal))))
+    await act(() => root.render(createElement(StrictMode, null, createPortal(createWithdrawal(), portal))))
     const button = [...portal.querySelectorAll('button')].find(button => button.textContent === 'Adjust amount')
     assert.ok(button)
     assert.equal(button.closest('[data-ls-form]'), null)
