@@ -190,9 +190,16 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
 
     // Max remains live in this screen until execution starts. Use the same
     // adjustment as the explicit action, keeping Formik and the draft in sync.
+    const currentPresetSource = amountPresetSource(
+        swapBasicData?.source_network.name,
+        swapBasicData?.source_token.symbol,
+        selectedSourceAccount?.id,
+        selectedSourceAccount?.address,
+    );
+    const maxBelongsToSelectedAccount = swapBasicData?.amountPresetSource === currentPresetSource;
     const autoAdjustMax = active && !swapId && !amountPresetLocked && !hasSubmittedTransfer
         && swapBasicData?.amountMode === 'max' && swapBasicData.use_deposit_address === false
-        && !presetIsSyncing && outOfGas && showAdjustAmount;
+        && maxBelongsToSelectedAccount && !presetIsSyncing && outOfGas && showAdjustAmount;
     const lastAutomaticAdjustment = useRef<string | undefined>(undefined);
     useEffect(() => {
         if (!autoAdjustMax) {

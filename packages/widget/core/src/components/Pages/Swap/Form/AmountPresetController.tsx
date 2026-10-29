@@ -69,16 +69,23 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
         // Keep the fee with its calculation so the message uses the same snapshot.
         return { amount, gas }
     },
-    { refreshInterval: 60000, keepPreviousData: false, shouldRetryOnError: error => !(error instanceof AmountPresetUnavailableError), errorRetryCount: 3 })
+    {
+        refreshInterval: 60000,
+        keepPreviousData: false,
+        shouldRetryOnError: error => !(error instanceof AmountPresetUnavailableError),
+        errorRetryCount: 3,
+        onSuccess: ({ amount, gas }) => {
+            if (frozen || !sameSource || !liveSupported || !gas) {
+                return
+            }
+            // Publish only a completed fresh calculation. Mounting cached preset
+            // data or releasing an execution hold must not replace a newer fee.
+            // Transaction-specific estimates keep their separate cache entries.
+            void mutate(amountGasKey(account?.address, values.from?.name, values.fromAsset?.symbol, Number(amount)), gas, { revalidate: false })
+        },
+    })
     const amount = calculation?.amount
     const gas = calculation?.gas
-    useEffect(() => {
-        if (frozen || !sameSource || !liveSupported || amount === undefined || !gas) return
-        // Withdrawal must validate this amount against the estimate that produced
-        // it, rather than a stale estimate cached during an earlier Max attempt.
-        // Transaction-specific estimates keep their separate cache entries.
-        void mutate(amountGasKey(account?.address, values.from?.name, values.fromAsset?.symbol, Number(amount)), gas, { revalidate: false })
-    }, [frozen, sameSource, liveSupported, amount, gas, mutate, account?.address, values.from?.name, values.fromAsset?.symbol])
     const feeToken = gas?.token ?? values.from?.token
     const feeExhaustsBalance = !!gas && balance?.amount != null && balance.amount > 0
         && (!feeToken || feeToken.symbol === values.fromAsset?.symbol)

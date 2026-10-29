@@ -463,6 +463,7 @@ test('a definitively failed hash restores the actual funding block', async () =>
 
 test('live Max automatically reduces the draft when the withdrawal fee increases', async () => {
   state.swap.amountMode = 'max'
+  state.swap.amountPresetSource = JSON.stringify([network.name, token.symbol, null, 'source'])
   state.swap.amountPresetBalance = 1
   await render()
   assert.equal(state.freshAttempts, 1, 'StrictMode must start only one adjustment')

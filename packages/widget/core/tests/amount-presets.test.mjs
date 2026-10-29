@@ -899,3 +899,40 @@ test('Max replaces an old withdrawal fee snapshot with its verified estimate', a
   assert.equal(currentFee.gas, 0.01)
   assert.equal(state.draft.amount, '0.9898')
 })
+
+
+for (const resume of ['reselect Max', 'release execution']) {
+  test(`${resume} retains a newer gas snapshot while the fresh preset request is pending`, async () => {
+    await render()
+    const key = '/gases/source/ETHEREUM_MAINNET/ETH/0.9898'
+    if (resume === 'reselect Max') {
+      await act(() => formik.setFieldValue('amountMode', 'manual'))
+    } else {
+      state.locked = true
+      await render()
+    }
+    await act(async () => { await mutate(key, { gas: 0.02, token }, { revalidate: false }) })
+    state.deferred = Promise.withResolvers()
+    const previousProbeCount = state.probes.length
+    if (resume === 'reselect Max') {
+      await act(() => formik.setFieldValue('amountMode', 'max'))
+    } else {
+      state.locked = false
+      await render()
+    }
+    // SWR schedules revalidation of cached data after the mounting commit.
+    await act(async () => {
+      for (let i = 0; i < 40 && state.probes.length === previousProbeCount; i++) {
+        await new Promise(resolve => setTimeout(resolve, 5))
+      }
+    })
+    try {
+      assert.ok(state.probes.length > previousProbeCount, 'a fresh calculation must be in flight')
+      assert.equal((await mutate(key)).gas, 0.02, 'cached preset data must not replace a newer fee')
+    } finally {
+      await act(async () => { state.deferred.resolve({ gas: 0.02, token }); await state.deferred.promise })
+    }
+    assert.equal(formik.values.amount, '0.9796')
+    assert.equal((await mutate('/gases/source/ETHEREUM_MAINNET/ETH/0.9796')).gas, 0.02)
+  })
+}

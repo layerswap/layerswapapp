@@ -516,3 +516,17 @@ for (const isUsdMode of [false, true]) {
     assert.deepEqual(blocks(), [])
   })
 }
+
+
+test('automatic gas adjustment cannot bind Max to a newly selected funding account', async () => {
+  state.enableAutoAdjust = true
+  await render(); await openReview()
+  const previousRevision = data.amountPresetRevision
+  state.account = { id: 'wallet', address: 'different-source' }
+  state.gas = { gas: 0.00000012, token }
+  await render()
+  assert.equal(formik.values.amountMode, 'manual')
+  assert.equal(data.swapBasicData.amountMode, 'manual')
+  assert.equal(formik.values.amountPresetSource, undefined)
+  assert.equal(data.amountPresetRevision, previousRevision, 'an account change must not trigger an automatic adjustment')
+})
