@@ -1,8 +1,6 @@
 import { useContext, useEffect, useRef } from 'react'
 import { useFormikContext } from 'formik'
-import useSWR, { useSWRConfig } from 'swr'
-import { amountGasKey } from '@/lib/gases/amountGasKey'
-import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect'
+import useSWR from 'swr'
 import type { SwapFormValues } from './SwapFormValues'
 import type { GasWithToken } from '@layerswap/widget-types'
 import { SwapDataStateContext, SwapDataUpdateContext } from '@/context/swap'
@@ -27,17 +25,7 @@ export default function AmountPresetController() {
 }
 
 function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
-    const controllerMounted = useRef(false)
-    useClientLayoutEffect(() => {
-        controllerMounted.current = true
-        return () => {
-            // SWR can deliver success after unmount. Stop cache writes in the
-            // unmounting commit, before an old request can replace a newer fee.
-            controllerMounted.current = false
-        }
-    }, [])
     const { values, setValues } = useFormikContext<SwapFormValues>()
-    const { mutate } = useSWRConfig()
     const swap = useContext(SwapDataStateContext)
     const updates = useContext(SwapDataUpdateContext)
     const account = useSelectedAccount('from', values.from?.name)
@@ -79,21 +67,7 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
         // Keep the fee with its calculation so the message uses the same snapshot.
         return { amount, gas }
     },
-    {
-        refreshInterval: 60000,
-        keepPreviousData: false,
-        shouldRetryOnError: error => !(error instanceof AmountPresetUnavailableError),
-        errorRetryCount: 3,
-        onSuccess: ({ amount, gas }) => {
-            if (!controllerMounted.current || frozen || !sameSource || !liveSupported || !gas) {
-                return
-            }
-            // Publish only a completed fresh calculation. Mounting cached preset
-            // data or releasing an execution hold must not replace a newer fee.
-            // Transaction-specific estimates keep their separate cache entries.
-            void mutate(amountGasKey(account?.address, values.from?.name, values.fromAsset?.symbol, Number(amount)), gas, { revalidate: false })
-        },
-    })
+    { refreshInterval: 60000, keepPreviousData: false, shouldRetryOnError: error => !(error instanceof AmountPresetUnavailableError), errorRetryCount: 3 })
     const amount = calculation?.amount
     const gas = calculation?.gas
     const feeToken = gas?.token ?? values.from?.token
@@ -116,7 +90,7 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
         if (frozen) return
         if (!sameSource || !liveSupported) {
             const amountMode = !walletFlow || (sameSource && !liveSupported) ? 'fixed' as const : 'manual' as const
-            const next = { ...values, amountMode, amountPresetSource: undefined, amountPresetError: undefined, amountPresetPending: false, amountPresetBalance: undefined }
+            const next = { ...values, amountMode, amountPresetSource: undefined, amountPresetError: undefined, amountPresetPending: false, amountPresetBalance: undefined, amountPresetGas: undefined }
             if (updates?.syncAmountPresetDraft(next) === false) return
             void setValues(next, true)
             return
@@ -127,10 +101,10 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
             ? swap?.swapBasicData?.requested_amount : undefined
         previousRevision.current = revision
         const unavailableAmount = error instanceof AmountPresetUnavailableError ? error.amount : undefined
-        const next = { ...values, amount: unavailableAmount ?? amount ?? preparedAmount ?? values.amount, amountPresetError: message, amountPresetPending: pending, amountPresetBalance: balance?.amount }
+        const next = { ...values, amount: unavailableAmount ?? amount ?? preparedAmount ?? values.amount, amountPresetError: message, amountPresetPending: pending, amountPresetBalance: balance?.amount, amountPresetGas: gas }
         if (updates?.syncAmountPresetDraft(next) === false) return
-        if (next.amount !== values.amount || message !== values.amountPresetError || pending !== values.amountPresetPending || !Object.is(next.amountPresetBalance, values.amountPresetBalance))
+        if (next.amount !== values.amount || message !== values.amountPresetError || pending !== values.amountPresetPending || !Object.is(next.amountPresetBalance, values.amountPresetBalance) || next.amountPresetGas !== values.amountPresetGas)
             void setValues(next, true)
-    }, [amount, error, message, pending, balance?.amount, sameSource, liveSupported, walletFlow, frozen, values, setValues, updates, revision, swap?.swapId, swap?.swapBasicData])
+    }, [amount, gas, error, message, pending, balance?.amount, sameSource, liveSupported, walletFlow, frozen, values, setValues, updates, revision, swap?.swapId, swap?.swapBasicData])
     return null
 }

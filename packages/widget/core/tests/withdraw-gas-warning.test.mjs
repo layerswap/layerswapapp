@@ -461,24 +461,18 @@ test('a definitively failed hash restores the actual funding block', async () =>
 })
 
 
-test('live Max automatically reduces the draft when the withdrawal fee increases', async () => {
+test('withdrawal consumes the live Max fee without another estimate or adjustment', async () => {
   state.swap.amountMode = 'max'
   state.swap.amountPresetSource = JSON.stringify([network.name, token.symbol, null, 'source'])
   state.swap.amountPresetBalance = 1
+  state.swap.requested_amount = '0.898'
+  state.swap.amountPresetGas = { gas: 0.1, token }
+  state.gasData = { gas: 0.2, token }
   await render()
-  assert.equal(state.freshAttempts, 1, 'StrictMode must start only one adjustment')
-  assert.equal(state.submitted.amountMode, 'max')
-  assert.equal(state.submitted.amount, '0.898')
+  assert.equal(state.freshAttempts, 0)
+  assert.equal(state.submitted, undefined)
   assert.equal(container.textContent.includes('Insufficient balance for gas'), false)
-  state.swap = { ...state.swap, requested_amount: state.submitted.amount }
-  await render()
-  assert.equal(state.freshAttempts, 1)
-  assert.equal(container.textContent.includes('Insufficient balance for gas'), false)
-
-  state.gasData = { token, gas: 0.12 }
-  await render()
-  assert.equal(state.freshAttempts, 2, 'another fee increase must refresh Max again')
-  assert.equal(state.submitted.amount, '0.8776')
+  assert.ok(state.gasRequests.every(args => args[5]?.enabled === false), 'live Max must own its fee requests')
 })
 
 for (const frozen of ['manual', 'wallet execution', 'created swap', 'submitted']) {

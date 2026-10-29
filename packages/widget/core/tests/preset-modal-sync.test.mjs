@@ -36,9 +36,7 @@ const { generateSwapInitialValuesFromSwap } = loadSource('lib/generateSwapInitia
   './address/Address': {}, './extendedRoutes/registry': {},
 })
 const { default: Controller } = loadSource('components/Pages/Swap/Form/AmountPresetController.tsx', {
-  '@/hooks/useClientLayoutEffect': loadSource('hooks/useClientLayoutEffect.ts', { react: React }),
-  react: React, formik: require('formik'), swr: { default: useSWR, useSWRConfig }, '@/context/swap': context,
-  '@/lib/gases/amountGasKey': loadSource('lib/gases/amountGasKey.ts'),
+  react: React, formik: require('formik'), swr: { default: useSWR }, '@/context/swap': context,
   '@/context/swapAccounts': { useSelectedAccount: () => state.account },
   '@/hooks/useWallet': { default: () => ({ wallets: [state.account] }) },
   '@/hooks/useFee': { transformFormValuesToQuoteArgs: values => values, useQuoteData: () => ({ maxAllowedAmount: 1, minAllowedAmount: state.minimum }) },
@@ -157,8 +155,9 @@ const { default: Withdraw } = loadSource('components/Pages/Swap/Withdraw/Withdra
   '@/hooks/useTransferBlocked': loadSource('hooks/useTransferBlocked.ts', callbackImports),
   '@/hooks/useLifecycleObservation': loadSource('hooks/useLifecycleObservation.ts', callbackImports),
 })
-let root, container, formik, data, updates, initialValues, config
+let root, container, formik, data, updates, initialValues, config, mutate
 function Probe() {
+  mutate = useSWRConfig().mutate
   formik = useFormikContext()
   data = context.useSwapDataState()
   updates = context.useSwapDataUpdate()
@@ -501,15 +500,17 @@ for (const isUsdMode of [false, true]) {
     state.commits = []
     state.gasRequest = Promise.withResolvers()
     state.gas = { gas: 0.00000012, token }
-    await render()
+    let refresh
+    await act(() => { refresh = mutate(key => Array.isArray(key) && key[0] === 'amount-preset') })
     assert.equal(formik.values.amountMode, 'max')
-    assert.equal(data.swapBasicData.amountPresetPending, true)
-    assert.equal(container.querySelector('button').disabled, true)
-    await act(() => state.gasRequest.resolve())
+    assert.equal(summaryAmount(), before, 'keep the previous matched amount/fee pair while refreshing')
+    assert.equal(data.swapBasicData.amountPresetGas.gas, 0.0000001)
+    await act(async () => { state.gasRequest.resolve(); await refresh })
     assert.equal(data.swapBasicData.amountPresetPending, false)
     assert.ok(Number(summaryAmount()) < Number(before))
     assert.equal(summaryAmount(), formik.values.amount)
     assert.ok(Number(summaryAmount()) + state.gas.gas * 1.02 <= state.balances[0].amount)
+    assert.equal(data.swapBasicData.amountPresetGas.gas, state.gas.gas)
     assert.equal(container.querySelector('button').disabled, false)
     assert.ok(state.commits.every(text => !text.includes('Insufficient balance')), state.commits.join('\n'))
     assert.equal(state.walletMounts, mounts)

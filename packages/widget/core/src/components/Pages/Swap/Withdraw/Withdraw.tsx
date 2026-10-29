@@ -14,7 +14,7 @@ import { amountPresetSource, isAmountPreset } from '@/lib/amountPresets';
 import { truncateToDecimals } from '@/components/utils/RoundDecimals';
 import { NetworkRoute, NetworkType } from '@layerswap/widget-types';
 import type { JSX } from 'react';
-import { FC, useCallback, useEffect, useMemo, useRef } from 'react';
+import { FC, useCallback, useMemo } from 'react';
 import { AdjustAmountButton } from '../Form/SecondaryComponents/validationError/AdjustAmountButton';
 import { RefreshBalanceButton } from '../Form/SecondaryComponents/validationError/RefreshBalanceButton';
 import type { SwapFormValues } from '../Form/SwapFormValues';
@@ -79,12 +79,20 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
         amountInBaseUnits: transferAction.amount_in_base_units,
     } : undefined;
     const gasEstimationAmount = gasTransaction ? transferAction?.amount : swapBasicData?.requested_amount;
-    const { gasData } = useSWRGas(
+    const currentPresetSource = amountPresetSource(
+        swapBasicData?.source_network.name, swapBasicData?.source_token.symbol,
+        selectedSourceAccount?.id, selectedSourceAccount?.address,
+    );
+    const livePreset = !swapId && !amountPresetLocked && isAmountPreset(swapBasicData?.amountMode)
+        && swapBasicData?.amountPresetSource === currentPresetSource;
+    const { gasData: estimatedGas } = useSWRGas(
         active ? selectedSourceAccount?.address : undefined,
         source_network,
         swapBasicData?.source_token,
-        gasEstimationAmount, undefined, { enabled: active, transaction: gasTransaction },
+        gasEstimationAmount, undefined, { enabled: active && !livePreset, transaction: gasTransaction },
     );
+
+    const gasData = livePreset ? swapBasicData?.amountPresetGas : estimatedGas;
 
     const lifecycleContext = useMemo(
         () => swapBasicData ? lifecycleContextFromSwap(swapBasicData, swapDetails) : undefined,
@@ -186,33 +194,8 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
         minAllowedAmount,
         maxAllowedAmount,
         transaction: gasTransaction,
+        gasEstimate: { gasData },
     });
-
-    // Max remains live in this screen until execution starts. Use the same
-    // adjustment as the explicit action, keeping Formik and the draft in sync.
-    const currentPresetSource = amountPresetSource(
-        swapBasicData?.source_network.name,
-        swapBasicData?.source_token.symbol,
-        selectedSourceAccount?.id,
-        selectedSourceAccount?.address,
-    );
-    const maxBelongsToSelectedAccount = swapBasicData?.amountPresetSource === currentPresetSource;
-    const autoAdjustMax = active && !swapId && !amountPresetLocked && !hasSubmittedTransfer
-        && swapBasicData?.amountMode === 'max' && swapBasicData.use_deposit_address === false
-        && maxBelongsToSelectedAccount && !presetIsSyncing && outOfGas && showAdjustAmount;
-    const lastAutomaticAdjustment = useRef<string | undefined>(undefined);
-    useEffect(() => {
-        if (!autoAdjustMax) {
-            lastAutomaticAdjustment.current = undefined;
-            return;
-        }
-        const adjustmentKey = JSON.stringify([swapBasicData?.amountPresetSource, swapBasicData?.requested_amount, adjustedAmount]);
-        if (lastAutomaticAdjustment.current === adjustmentKey) return;
-        // The ref also prevents StrictMode's repeated effect setup from starting
-        // two fresh attempts before the form publishes the new amount.
-        lastAutomaticAdjustment.current = adjustmentKey;
-        handleEditAmount();
-    }, [autoAdjustMax, swapBasicData?.amountPresetSource, swapBasicData?.requested_amount, adjustedAmount, handleEditAmount]);
 
     if (
         swapBasicData?.use_deposit_address === false &&
@@ -250,7 +233,7 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
                 />
             </TransferBlock>
         );
-    } else if (!hasSubmittedTransfer && swapBasicData?.use_deposit_address === false && outOfGas && !presetIsSyncing && !autoAdjustMax) {
+    } else if (!hasSubmittedTransfer && swapBasicData?.use_deposit_address === false && outOfGas && !presetIsSyncing) {
         // A changing gas warning must preserve the active wallet execution.
         actionKey = 'transfer';
         warning = <GasWarningView adjustButton={showAdjustAmount && <AdjustAmountButton compact onEditAmount={handleEditAmount} isLoading={quoteIsLoading} />} />;

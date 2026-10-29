@@ -23,9 +23,7 @@ const { default: FormTelemetry } = loadSource('components/Pages/Swap/Form/FormTe
 const SwapDataStateContext = createContext(null)
 const SwapDataUpdateContext = createContext(null)
 const { default: Controller } = loadSource('components/Pages/Swap/Form/AmountPresetController.tsx', {
-  '@/hooks/useClientLayoutEffect': loadSource('hooks/useClientLayoutEffect.ts', { react: React }),
-  react: React, formik: require('formik'), swr: { default: useSWR, useSWRConfig },
-  '@/lib/gases/amountGasKey': loadSource('lib/gases/amountGasKey.ts'),
+  react: React, formik: require('formik'), swr: { default: useSWR },
   '@/context/swap': { SwapDataStateContext, SwapDataUpdateContext },
   '@/context/swapAccounts': { useSelectedAccount: () => state.account },
   '@/hooks/useWallet': { default: () => ({ wallets: state.wallets }) },
@@ -884,7 +882,7 @@ test('Adjust amount starts a fresh calculation instead of restoring the cached M
 })
 
 
-test('Max replaces an old withdrawal fee snapshot with its verified estimate', async () => {
+test('Max keeps its verified fee with the draft without writing to the manual fee cache', async () => {
   let currentFee
   function FeeProbe() {
     const { data } = useSWR('/gases/source/ETHEREUM_MAINNET/ETH/0.9898', null)
@@ -897,7 +895,9 @@ test('Max replaces an old withdrawal fee snapshot with its verified estimate', a
       createElement(SwapDataUpdateContext.Provider, { value: updates },
         createElement(Formik, { initialValues, onSubmit() {} }, createElement(React.Fragment, null, createElement(Probe), createElement(FeeProbe))))))))
   assert.equal(formik.values.amount, '0.9898')
-  assert.equal(currentFee.gas, 0.01)
+  assert.equal(currentFee.gas, 0.02)
+  assert.equal(formik.values.amountPresetGas.gas, 0.01)
+  assert.equal(state.draft.amountPresetGas.gas, 0.01)
   assert.equal(state.draft.amount, '0.9898')
 })
 
@@ -934,7 +934,8 @@ for (const resume of ['reselect Max', 'release execution']) {
       await act(async () => { state.deferred.resolve({ gas: 0.02, token }); await state.deferred.promise })
     }
     assert.equal(formik.values.amount, '0.9796')
-    assert.equal((await mutate('/gases/source/ETHEREUM_MAINNET/ETH/0.9796')).gas, 0.02)
+    assert.equal(formik.values.amountPresetGas.gas, 0.02)
+    assert.equal(state.draft.amountPresetGas.gas, 0.02)
   })
 }
 
@@ -959,6 +960,7 @@ for (const exit of ['manual mode', 'widget unmount']) {
     if (exit === 'manual mode') {
       assert.equal(formik.values.amountMode, 'manual')
       assert.equal(formik.values.amount, '0.9898')
+      assert.equal(formik.values.amountPresetGas, undefined, 'a departed calculation cannot update the manual draft')
     }
   })
 }

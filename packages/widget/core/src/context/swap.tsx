@@ -201,7 +201,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
 
     const setSubmitedFormValues = useCallback((values: NonNullable<SwapFormValues>) => {
         if (isAmountPreset(values.amountMode) && !isWalletAmountFlow(values)) {
-            values = { ...values, amountMode: 'fixed', amountPresetSource: undefined, amountPresetPending: false, amountPresetError: undefined, amountPresetBalance: undefined }
+            values = { ...values, amountMode: 'fixed', amountPresetSource: undefined, amountPresetPending: false, amountPresetError: undefined, amountPresetBalance: undefined, amountPresetGas: undefined }
         }
         if (!values.from || !values.to || !values.fromAsset || !values.toAsset || !values.destination_address)
             throw new Error("Form data is missing")
@@ -216,6 +216,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             amountPresetError: values.amountPresetError,
             amountPresetPending: values.amountPresetPending,
             amountPresetBalance: values.amountPresetBalance,
+            amountPresetGas: values.amountPresetGas,
             source_network: values.from,
             destination_network: values.to,
             source_token: values.fromAsset,
@@ -240,6 +241,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
                 amountMode: values.amountMode, amountPresetSource: values.amountPresetSource,
                 amountPresetError: values.amountPresetError, amountPresetPending: values.amountPresetPending,
                 amountPresetBalance: values.amountPresetBalance,
+                amountPresetGas: values.amountPresetGas,
             }
             if (Object.entries(patch).every(([key, value]) => Object.is(current[key], value))) return current
             return { ...current, ...patch }
