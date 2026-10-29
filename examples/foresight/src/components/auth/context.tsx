@@ -1,5 +1,6 @@
 'use client';
 import { createContext, useContext } from 'react';
+import type { Config } from 'wagmi';
 
 export type WalletSession = {
   address: `0x${string}` | null;
@@ -7,6 +8,8 @@ export type WalletSession = {
   authenticated: boolean;
   method: 'wallet' | 'privy' | null;
   ready: boolean;
+  connectionError: string | null;
+  wagmiConfig?: Config;
   reownConfigured: boolean;
   privyConfigured: boolean;
   connectWallet: () => Promise<void>;

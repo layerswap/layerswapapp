@@ -1,0 +1,48 @@
+import type { Connection, GetAccountReturnType } from '@wagmi/core';
+
+export function areWalletAddressesEqual(
+  first: string | null | undefined,
+  second: string | null | undefined,
+): boolean {
+  return Boolean(first && second && first.toLowerCase() === second.toLowerCase());
+}
+
+export function selectPrivySessionWallet<
+  Wallet extends { address: string; walletClientType: string },
+>(
+  wallets: readonly Wallet[],
+  authenticatedAddress: string | null | undefined,
+): Wallet | undefined {
+  // Connected external wallets can be unlinked and reordered by connection
+  // time. Only the authenticated wallet may supply an external recipient.
+  return (
+    wallets.find(wallet => wallet.walletClientType === 'privy') ??
+    wallets.find(wallet => areWalletAddressesEqual(wallet.address, authenticatedAddress))
+  );
+}
+
+export function getReownAddress(
+  account: Pick<GetAccountReturnType, 'address' | 'isConnected' | 'connector'>,
+  connections: readonly Connection[],
+): `0x${string}` | null {
+  // Ownership is independent of branding: a Privy session may bridge an
+  // external wallet and deliberately retain its external connector ID.
+  if (account.isConnected && account.connector?.type !== 'privy-session') {
+    return account.address ?? null;
+  }
+  return (
+    connections.find(
+      connection => connection.connector.type !== 'privy-session',
+    )?.accounts[0] ?? null
+  );
+}
+
+export function hasPrivyConnection(
+  address: string | null,
+  connections: readonly Connection[],
+): boolean {
+  return connections.some(connection =>
+    connection.connector.type === 'privy-session' &&
+    connection.accounts.some(account => areWalletAddressesEqual(account, address)),
+  );
+}
