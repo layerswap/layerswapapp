@@ -1,4 +1,4 @@
-import type { AdjustWithdrawalAmount } from '../Form/SwapFormValues';
+import type { SwapFormValues } from '../Form/SwapFormValues';
 import { WalletTransferView } from './Presentation/Page2Sections';
 import type { ReactNode } from 'react';
 import type { SwapBasicData } from '@/lib/apiClients/layerSwapApiClient';
@@ -32,7 +32,7 @@ type Props = {
     partner?: Partner;
     onWalletWithdrawalSuccess?: () => void;
     onCancelWithdrawal?: () => void;
-    onAdjustAmount?: AdjustWithdrawalAmount;
+    onAdjustAmount?: (updates: SwapFormValues) => void;
     children: (model: Model) => ReactNode;
 };
 

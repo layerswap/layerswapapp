@@ -1,3 +1,4 @@
+import { useSwapDataUpdate } from '@/context/swap';
 import { useFormikContext } from 'formik';
 import type { SwapFormValues } from '../../Swap/Form/SwapFormValues';
 import { FC, Suspense, lazy } from "react";
@@ -25,6 +26,7 @@ const ProcessingStep: FC<Props> = ({ partner }) => {
     // Step back to wallet-amount on cancel so the user can adjust the amount
     // and retry without re-picking the method.
     const { back } = useDepositStep();
+    const { setSubmitedFormValues } = useSwapDataUpdate();
     const { values, setValues } = useFormikContext<SwapFormValues>();
 
     // Keep the header's close button hidden until the swap reaches a terminal
@@ -42,7 +44,7 @@ const ProcessingStep: FC<Props> = ({ partner }) => {
                     onAdjustAmount={updates => {
                         const nextValues = { ...values, ...updates };
                         void setValues(nextValues, true);
-                        return nextValues;
+                        setSubmitedFormValues(nextValues);
                     }}
                 />
             </Suspense>

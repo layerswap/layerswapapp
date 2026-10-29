@@ -1,4 +1,4 @@
-import type { AdjustWithdrawalAmount } from '../Form/SwapFormValues';
+import type { SwapFormValues } from '../Form/SwapFormValues';
 import { Page2Presenter } from './Presentation/Page2Presenter';
 import SwapSummary from './Summary';
 import { SwapQuoteDetails } from './SwapQuoteDetails';
@@ -25,7 +25,7 @@ type Props = {
     type: 'widget' | 'contained';
     onWalletWithdrawalSuccess?: () => void;
     onCancelWithdrawal?: () => void;
-    onAdjustAmount?: AdjustWithdrawalAmount;
+    onAdjustAmount?: (updates: SwapFormValues) => void;
     partner?: Partner;
 };
 

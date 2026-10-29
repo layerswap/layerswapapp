@@ -1518,7 +1518,8 @@ for (const failure of ['rejected', 'failed']) {
         });
         function Screen() {
             harness.state = harness.context.useSwapDataState();
-            return harness.state.swapBasicData ? React.createElement(Withdraw, { type: 'contained', onAdjustAmount: updates => { formAmount = updates.amount; return updates; } }) : null;
+            const formUpdate = harness.context.useSwapDataUpdate();
+            return harness.state.swapBasicData ? React.createElement(Withdraw, { type: 'contained', onAdjustAmount: updates => { formAmount = updates.amount; formUpdate.setSubmitedFormValues(updates); } }) : null;
         }
         const root = createRoot(container);
         useGaslessPreferenceStore.getState().resetGaslessPreference();

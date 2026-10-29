@@ -79,7 +79,7 @@ test('in-form withdrawals keep amount adjustment and guard stale callbacks after
     let updated;
     const html = renderToString(React.createElement(Withdraw, {
         type: 'contained',
-        onAdjustAmount: updates => { updated = { amount: '2', ...updates }; return updated; },
+        onAdjustAmount: updates => { updated = { amount: '2', ...updates }; },
     }));
     assert.match(html, /Adjust amount/);
     adjust();

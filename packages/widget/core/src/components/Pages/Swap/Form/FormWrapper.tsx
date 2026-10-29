@@ -273,7 +273,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                                         onAdjustAmount={updates => {
                                             const nextValues = { ...values, ...updates };
                                             void setValues(nextValues, true);
-                                            return nextValues;
+                                            setSubmitedFormValues(nextValues);
                                         }}
                                         onWalletWithdrawalSuccess={() => {
                                             setWalletWihdrawDone(true)

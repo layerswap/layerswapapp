@@ -17,7 +17,7 @@ import type { JSX } from 'react';
 import { FC, useCallback, useMemo } from 'react';
 import { AdjustAmountButton } from '../Form/SecondaryComponents/validationError/AdjustAmountButton';
 import { RefreshBalanceButton } from '../Form/SecondaryComponents/validationError/RefreshBalanceButton';
-import type { AdjustWithdrawalAmount, SwapFormValues } from '../Form/SwapFormValues';
+import type { SwapFormValues } from '../Form/SwapFormValues';
 import {
     BalanceWarningView,
     GasWarningView,
@@ -39,10 +39,10 @@ const AWAITING_WALLET_ACTION: ObservedLifecycleEvent = {
     action: 'send_from_wallet',
 }
 
-export function useWithdrawBalance(active = true, adjustFormAmount?: AdjustWithdrawalAmount) {
+export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: SwapFormValues) => void) {
     const { swapBasicData, swapDetails, swapId, amountPresetLocked, depositActionsResponse, refuel, quoteIsLoading } =
         useSwapDataState();
-    const { setSubmitedFormValues, startFreshSwapAttempt, canAdjustAmount } = useSwapDataUpdate();
+    const { startFreshSwapAttempt, canAdjustAmount } = useSwapDataUpdate();
     const checkingSubmission = useSwapTransactionStore(state => {
         if (!swapId) {
             return false;
@@ -159,14 +159,12 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: AdjustWithd
                 : 'wallet',
         };
         startFreshSwapAttempt();
-        const nextValues = adjustFormAmount(updates);
-        setSubmitedFormValues(nextValues);
+        adjustFormAmount(updates);
     }, [
         adjustedAmount,
         swapBasicData,
         refuel,
         adjustFormAmount, canAdjustAmount, selectedSourceAccount,
-        setSubmitedFormValues,
         startFreshSwapAttempt,
     ]);
 
@@ -247,7 +245,7 @@ const Withdraw: FC<{
     type: 'widget' | 'contained';
     onWalletWithdrawalSuccess?: () => void;
     onCancelWithdrawal?: () => void;
-    onAdjustAmount?: AdjustWithdrawalAmount;
+    onAdjustAmount?: (updates: SwapFormValues) => void;
 }> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal, onAdjustAmount }) => {
     const { swapBasicData, swapDetails, refuel } = useSwapDataState();
     const { warning, actionKey, blocked } = useWithdrawBalance(true, onAdjustAmount);
