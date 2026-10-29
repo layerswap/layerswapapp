@@ -2,6 +2,7 @@ import { useContext, useEffect, useRef } from 'react'
 import { useFormikContext } from 'formik'
 import useSWR, { useSWRConfig } from 'swr'
 import { amountGasKey } from '@/lib/gases/amountGasKey'
+import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect'
 import type { SwapFormValues } from './SwapFormValues'
 import type { GasWithToken } from '@layerswap/widget-types'
 import { SwapDataStateContext, SwapDataUpdateContext } from '@/context/swap'
@@ -26,6 +27,15 @@ export default function AmountPresetController() {
 }
 
 function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
+    const controllerMounted = useRef(false)
+    useClientLayoutEffect(() => {
+        controllerMounted.current = true
+        return () => {
+            // SWR can deliver success after unmount. Stop cache writes in the
+            // unmounting commit, before an old request can replace a newer fee.
+            controllerMounted.current = false
+        }
+    }, [])
     const { values, setValues } = useFormikContext<SwapFormValues>()
     const { mutate } = useSWRConfig()
     const swap = useContext(SwapDataStateContext)
@@ -75,7 +85,7 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
         shouldRetryOnError: error => !(error instanceof AmountPresetUnavailableError),
         errorRetryCount: 3,
         onSuccess: ({ amount, gas }) => {
-            if (frozen || !sameSource || !liveSupported || !gas) {
+            if (!controllerMounted.current || frozen || !sameSource || !liveSupported || !gas) {
                 return
             }
             // Publish only a completed fresh calculation. Mounting cached preset

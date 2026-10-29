@@ -36,6 +36,7 @@ const { generateSwapInitialValuesFromSwap } = loadSource('lib/generateSwapInitia
   './address/Address': {}, './extendedRoutes/registry': {},
 })
 const { default: Controller } = loadSource('components/Pages/Swap/Form/AmountPresetController.tsx', {
+  '@/hooks/useClientLayoutEffect': loadSource('hooks/useClientLayoutEffect.ts', { react: React }),
   react: React, formik: require('formik'), swr: { default: useSWR, useSWRConfig }, '@/context/swap': context,
   '@/lib/gases/amountGasKey': loadSource('lib/gases/amountGasKey.ts'),
   '@/context/swapAccounts': { useSelectedAccount: () => state.account },

@@ -23,6 +23,7 @@ const { default: FormTelemetry } = loadSource('components/Pages/Swap/Form/FormTe
 const SwapDataStateContext = createContext(null)
 const SwapDataUpdateContext = createContext(null)
 const { default: Controller } = loadSource('components/Pages/Swap/Form/AmountPresetController.tsx', {
+  '@/hooks/useClientLayoutEffect': loadSource('hooks/useClientLayoutEffect.ts', { react: React }),
   react: React, formik: require('formik'), swr: { default: useSWR, useSWRConfig },
   '@/lib/gases/amountGasKey': loadSource('lib/gases/amountGasKey.ts'),
   '@/context/swap': { SwapDataStateContext, SwapDataUpdateContext },
@@ -934,5 +935,30 @@ for (const resume of ['reselect Max', 'release execution']) {
     }
     assert.equal(formik.values.amount, '0.9796')
     assert.equal((await mutate('/gases/source/ETHEREUM_MAINNET/ETH/0.9796')).gas, 0.02)
+  })
+}
+
+for (const exit of ['manual mode', 'widget unmount']) {
+  test(`late Max completion after ${exit} cannot replace a newer gas estimate`, async () => {
+    initialValues.amount = '0.9898'
+    state.deferred = Promise.withResolvers()
+    await render()
+    assert.ok(state.probes.length > 0, 'the preset request must be in flight')
+    if (exit === 'manual mode') {
+      await act(() => formik.setFieldValue('amountMode', 'manual'))
+    } else {
+      await act(() => root.render(createElement(StrictMode, null, createElement(SWRConfig, { value: config }))))
+    }
+    const key = '/gases/source/ETHEREUM_MAINNET/ETH/0.9898'
+    await act(async () => { await mutate(key, { gas: 0.02, token }, { revalidate: false }) })
+    await act(async () => {
+      state.deferred.resolve({ gas: 0.01, token })
+      await state.deferred.promise
+    })
+    assert.equal((await mutate(key)).gas, 0.02, 'a departed preset cannot publish over the newer estimate')
+    if (exit === 'manual mode') {
+      assert.equal(formik.values.amountMode, 'manual')
+      assert.equal(formik.values.amount, '0.9898')
+    }
   })
 }
