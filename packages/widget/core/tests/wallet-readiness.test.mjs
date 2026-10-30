@@ -279,3 +279,45 @@ test('returning from a swap to a draft rearms the mounted block', async () => {
   await renderBoundary()
   assert.deepEqual(events.map(event => event.swapId), ['swap-readiness', undefined])
 })
+
+test('A to draft to B records the same block for all three committed scopes', async () => {
+  await renderBoundary()
+  state.swapState = { swapBasicData }
+  await renderBoundary()
+  state.swapState = { swapBasicData, swapDetails: { id: 'swap-b' } }
+  await renderBoundary()
+  await renderBoundary()
+  assert.deepEqual(events.map(event => event.swapId), ['swap-readiness', undefined, 'swap-b'])
+})
+
+const { useLifecycleObservation } = await import('../dist/esm/hooks/useLifecycleObservation.js')
+function PhaseObservation() {
+  useLifecycleObservation({ step: 'awaiting_wallet_action', stage: 'wallet_action', outcome: 'pending', path: 'ReviewRegression' },
+    { swapId: state.swapState.swapDetails?.id })
+  return null
+}
+const renderPhase = () => act(() => root.render(createElement(StrictMode, null,
+  createElement(CallbackProvider, { callbacks: { onSwapLifecycle: event => events.push(event) } }, createElement(PhaseObservation)),
+)))
+
+test('shared phase observations re-arm for B without replaying the phase while clearing A', async () => {
+  await renderPhase()
+  state.swapState = { swapBasicData }
+  await renderPhase()
+  state.swapState = { swapBasicData, swapDetails: { id: 'swap-b' } }
+  await renderPhase()
+  await renderPhase()
+  assert.deepEqual(events.map(event => event.swapId), ['swap-readiness', 'swap-b'])
+})
+
+test('shared phase observations preserve initial draft enrichment and re-arm for a direct replacement', async () => {
+  state.swapState = { swapBasicData }
+  await renderPhase()
+  state.swapState = { swapBasicData, swapDetails: { id: 'first-swap' } }
+  await renderPhase()
+  assert.equal(events.length, 1)
+  state.swapState = { swapBasicData, swapDetails: { id: 'second-swap' } }
+  await renderPhase()
+  await renderPhase()
+  assert.deepEqual(events.map(event => event.swapId), [undefined, 'second-swap'])
+})
