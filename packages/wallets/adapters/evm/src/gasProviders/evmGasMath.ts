@@ -31,7 +31,7 @@ type EVMFeeData = {
     maxPriorityFeePerGas?: bigint
 }
 
-/** Quotes must have every fee field required to prepare an explicit transaction. */
+/** Use the same required fee fields for gas estimates and sending. */
 const resolveExplicitTransactionFees = ({ policy, gasPrice, maxFeePerGas, maxPriorityFeePerGas }: EVMFeeData) => {
     if (policy.transactionGasMode === 'explicit-legacy') {
         return gasPrice === undefined ? undefined : { gasPrice }

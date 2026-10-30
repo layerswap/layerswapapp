@@ -1,6 +1,5 @@
 import { ErrorHandler, type Network } from '@layerswap/widget-types'
 import { parseGwei, type PublicClient } from 'viem'
-import NetworkSettings from '../NetworkSettings'
 import { resolveEVMGasPolicy } from './evmGasPolicies'
 
 const resolveFeeEstimate = async <T>(type: 'GasPriceError' | 'FeesPerGasError' | 'MaxPriorityFeePerGasError', estimate: () => Promise<T>): Promise<T | undefined> => {
@@ -15,10 +14,12 @@ const resolveFeeEstimate = async <T>(type: 'GasPriceError' | 'FeesPerGasError' |
 
 /** Shared RPC fallbacks and priority-fee floors for fee quotes and signed transactions. */
 export const resolveEVMFeeData = async (publicClient: PublicClient, network: Network) => {
-    if (resolveEVMGasPolicy(Number(network.chain_id)).transactionGasMode === 'explicit-legacy') {
+    const policy = resolveEVMGasPolicy(Number(network.chain_id))
+    if (policy.transactionGasMode === 'explicit-legacy') {
         // Do not mix a legacy transaction's price with an unrelated EIP-1559 cap.
-        const gasPrice = await resolveFeeEstimate('GasPriceError', () => publicClient.getGasPrice())
-        return { gasPrice, maxFeePerGas: undefined, maxPriorityFeePerGas: undefined }
+        // viem applies the policy's baseFeeMultiplier to this legacy price too.
+        const fees = await resolveFeeEstimate('GasPriceError', () => publicClient.estimateFeesPerGas({ type: 'legacy', chain: publicClient.chain }))
+        return { gasPrice: fees?.gasPrice, maxFeePerGas: undefined, maxPriorityFeePerGas: undefined }
     }
 
     const [gasPrice, feesPerGas] = await Promise.all([
@@ -31,9 +32,9 @@ export const resolveEVMFeeData = async (publicClient: PublicClient, network: Net
         maxPriorityFeePerGas = await resolveFeeEstimate('MaxPriorityFeePerGasError', () => publicClient.estimateMaxPriorityFeePerGas())
     }
     let maxFeePerGas = feesPerGas?.maxFeePerGas
-    const minPriorityFeeGwei = NetworkSettings.KnownSettings[network.name]?.MinPriorityFeePerGasInGwei
+    const minPriorityFeeGwei = policy.minPriorityFeePerGasGwei
     if (minPriorityFeeGwei && maxPriorityFeePerGas !== undefined && maxFeePerGas !== undefined) {
-        const minPriorityFee = parseGwei(minPriorityFeeGwei.toString())
+        const minPriorityFee = parseGwei(minPriorityFeeGwei)
         if (maxPriorityFeePerGas < minPriorityFee) {
             maxFeePerGas += minPriorityFee - maxPriorityFeePerGas
             maxPriorityFeePerGas = minPriorityFee

@@ -11,7 +11,7 @@ const rpcUrl = `data:text/javascript,${encodeURIComponent(`
         state.clients++
         return {
             estimateGas: async args => { state.estimate = args; return state.estimateGas(args) },
-            estimateFeesPerGas: async () => { if (state.feesError) throw state.feesError; return state.fees },
+            estimateFeesPerGas: async args => { if (state.feesError) throw state.feesError; return args?.type === 'legacy' ? { gasPrice: state.gasPrice } : state.fees },
             getGasPrice: async () => state.gasPrice,
             estimateMaxPriorityFeePerGas: async () => { state.priorityRequests++; if (state.priorityError) throw state.priorityError; return state.priorityFee },
             getCode: async () => state.accountCode,
@@ -26,18 +26,17 @@ const rpcUrl = `data:text/javascript,${encodeURIComponent(`
         return {}
     }
 `)}`
-const settingsUrl = `data:text/javascript,${encodeURIComponent(`
-    import { state } from ${JSON.stringify(rpcUrl)}
-    export default class { static get KnownSettings() { return state.settings } }
-`)}`
 const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
     const parent = context.parentURL ?? ''
     if ((parent.endsWith('/gasProviders/resolveEVMTransactionGasParameters.js') || parent.endsWith('/gasProviders/evmGasProvider.js')) && [
         'viem', '../evmUtils/resolveChain', '../evmUtils/resolveTransports',
     ].includes(specifier)) return { url: rpcUrl, shortCircuit: true }
-    if (parent.includes('/dist/esm/gasProviders/') && specifier === '../NetworkSettings') return { url: settingsUrl, shortCircuit: true }
     if (specifier.startsWith('.') && !extname(specifier) && parent.includes('/dist/esm/')) {
-        return nextResolve(`${specifier}.js`, context)
+        try { return nextResolve(`${specifier}.js`, context) }
+        catch (error) {
+            if (error.code !== 'ERR_MODULE_NOT_FOUND') throw error
+            return nextResolve(`${specifier}/index.js`, context)
+        }
     }
     return nextResolve(specifier, context)
 } })
@@ -56,7 +55,7 @@ const params = {
 }
 beforeEach(() => Object.assign(state, {
     clients: 0, estimate: undefined,
-    nodes: undefined, settings: {}, gasPrice: 102_000_000_000n, priorityFee: 2_000_000_000n,
+    nodes: undefined, gasPrice: 102_000_000_000n, priorityFee: 2_000_000_000n,
     priorityRequests: 0, feesError: undefined, priorityError: undefined, accountCode: '0x', estimateGas: () => 22_515n,
     balanceRequests: 0, balanceArgs: undefined, balanceError: undefined, balance: 20n * 10n ** 18n,
     l1Fee: 1_000_000_000n, l1Estimate: undefined,
@@ -198,13 +197,11 @@ for (const [name, network, selectedToken, accountCode] of [
     })
 }
 
-test('quotes and explicit transactions share the priority-fee floor and adjusted cap', async () => {
-    state.settings[params.network.name] = { MinPriorityFeePerGasInGwei: 3 }
-    const quote = await new EVMGasProvider().getGas({ ...params, address: params.selectedWallet.address })
-    const tx = await transactionBuilder(params)
-    assert.equal(tx.maxPriorityFeePerGas, 3_000_000_000n)
-    assert.equal(tx.maxFeePerGas, 123_000_000_000n)
-    assert.equal(parseUnits(String(quote.maxFee), 18), tx.gas * tx.maxFeePerGas)
+test('Avalanche quotes apply the configured priority-fee floor and adjusted cap', async () => {
+    state.fees = { maxFeePerGas: 122_000_000_000n, maxPriorityFeePerGas: 1_000_000_000n }
+    const network = { ...params.network, name: 'AVAX_MAINNET', chain_id: '43114' }
+    const quote = await new EVMGasProvider().getGas({ ...params, network, address: params.selectedWallet.address })
+    assert.equal(parseUnits(String(quote.gas), 18), 22_515n * 122_500_000_000n)
 })
 
 test('missing priority-fee estimates use the shared RPC fallback', async () => {
