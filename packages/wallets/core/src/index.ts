@@ -37,7 +37,7 @@ export { useWalletProviderSnapshots } from "@/hooks/useWalletProviderSnapshots";
 export { usePersistedState } from "@/hooks/usePersistedState";
 export { checkStorageIsAvailable } from "@/lib/storageAvailable";
 export type { storageType } from "@/lib/storageAvailable";
-export { WalletProvidersRegistryProvider, DescriptorHydrationBoundary, useHasConfiguredWalletProviders, useWalletProvidersRegistry, useWalletProvidersReady } from "@/context/WalletProvidersRegistryProvider";
+export { WalletProvidersRegistryProvider, DescriptorHydrationBoundary, useHasConfiguredWalletProviders, useLoginWallet, useWalletProvidersRegistry, useWalletProvidersReady } from "@/context/WalletProvidersRegistryProvider";
 export { walletKey } from "@/lib/walletKey";
 export { walletRequestStore } from '@/lib/walletConnect/walletRequestStore';
 export type { WalletConnectWallet } from "@/types/WalletConnectWallet";

@@ -9,6 +9,7 @@ import useWallet from "@/hooks/useWallet";
 import { isExtendedSourceNetwork } from "@/lib/extendedRoutes/registry";
 import AppSettings from "@/lib/AppSettings";
 import LayerSwapLogoSmall from "@/components/Icons/layerSwapLogoSmall";
+import { useLoginWallet } from "@layerswap/wallet-core";
 
 /**
  * Inline presentation of the wallet-connect UI, rendered as a deposit step so
@@ -30,10 +31,11 @@ const ConnectStep: FC = () => {
     const { setOpen, setPresentation, setSelectedProvider } = useConnectModal();
     const { destination, destinationToken } = useDepositSelection();
     const { providers } = useWallet();
+    const loginWallet = useLoginWallet();
     // A new connection in the login wallet's family would replace it.
     const connectableProviders = useMemo(
-        () => providers.filter(p => !p.connectedWallets?.some(w => w.isLoginWallet)),
-        [providers],
+        () => loginWallet ? providers.filter(p => p.id !== loginWallet.providerId) : providers,
+        [providers, loginWallet],
     );
     const selectSourceAccount = useSelectSwapAccount("from");
 
