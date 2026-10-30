@@ -290,9 +290,9 @@ test('tiny fee increases on every RPC read do not turn a valid balance into an e
     balance: { amount: balance }, limit: 10, probeAmount: '0.05399123503545234',
     estimateGas: async () => { reads++; latestFee += 0.000000000001; return { token: native, gas: latestFee } },
   })
-  assert.equal(reads, 2)
+  assert.equal(reads, 3)
   assert.ok(Number(result) > 0)
-  assert.ok(Number(result) + latestFee <= balance, 'The newest fee is covered')
+  assert.ok(Number(result) + latestFee * 1.02 <= balance, 'The newest buffered fee is covered')
 })
 
 test('large fee increases still reduce the amount before returning an affordable result', async () => {
@@ -836,3 +836,131 @@ test('a maximum fee exhausting the balance uses the network fee message', async 
   assert.equal(formik.values.amount, '0')
   assert.equal(formik.values.amountPresetError, 'Not enough ETH for network fees')
 })
+
+for (const preserveAmount of [false, true]) {
+  for (const mode of ['max', 'half']) {
+    test(`${mode} covers the withdrawal buffer after a small fee increase (preserve=${preserveAmount})`, async () => {
+      const native = { ...token, decimals: 18 }
+      let reads = 0
+      const result = await amountPresets.calculatePresetAmount({
+        mode, preserveAmount, network: { ...network, token: native }, token: native,
+        balance: { amount: 1 }, limit: 10,
+        probeAmount: preserveAmount ? (mode === 'max' ? '0.99898' : '0.49949') : '1',
+        estimateGas: async () => ({ token: native, gas: ++reads === 1 && !preserveAmount ? 0.001 : 0.00101 }),
+      })
+      const spendable = maxHelpers.resolveMaxAllowedAmount({ walletBalance: { amount: 1 },
+        gasAmount: 0.00101, fromCurrency: native, native_currency: native,
+        limitsMaxAmount: 10, depositMethod: 'wallet' })
+      assert.ok(Number(result) <= spendable * (mode === 'half' ? 0.5 : 1))
+      assert.ok(reads <= 4)
+    })
+  }
+}
+
+test('confirmation reduces an amount covering only the raw fee instead of preserving it', async () => {
+  const result = await amountPresets.calculatePresetAmount({
+    preserveAmount: true, network, token, balance: { amount: 1 }, limit: 10,
+    probeAmount: '0.9899', estimateGas: async () => ({ token, gas: 0.01 }),
+  })
+  assert.equal(result, '0.9898')
+})
+
+test('Adjust amount starts a fresh calculation instead of restoring the cached Max', async () => {
+  await render()
+  const cachedAmount = formik.values.amount
+  state.locked = true
+  await render()
+  state.gas = 0.02
+  state.revision++
+  state.locked = false
+  await act(async () => formik.setValues({ ...formik.values, amount: '0.9796', amountPresetPending: true }))
+  await render()
+  assert.notEqual(formik.values.amount, cachedAmount)
+  assert.equal(formik.values.amount, '0.9796')
+  assert.equal(formik.values.amountPresetPending, false)
+  assert.equal(state.draft.amount, '0.9796')
+})
+
+
+test('Max keeps its verified fee with the draft without writing to the manual fee cache', async () => {
+  let currentFee
+  function FeeProbe() {
+    const { data } = useSWR('/gases/source/ETHEREUM_MAINNET/ETH/0.9898', null)
+    currentFee = data
+    return null
+  }
+  config.fallback = { '/gases/source/ETHEREUM_MAINNET/ETH/0.9898': { gas: 0.02, token } }
+  await act(async () => root.render(createElement(SWRConfig, { value: config },
+    createElement(SwapDataStateContext.Provider, { value: { amountPresetLocked: false, amountPresetRevision: 0 } },
+      createElement(SwapDataUpdateContext.Provider, { value: updates },
+        createElement(Formik, { initialValues, onSubmit() {} }, createElement(React.Fragment, null, createElement(Probe), createElement(FeeProbe))))))))
+  assert.equal(formik.values.amount, '0.9898')
+  assert.equal(currentFee.gas, 0.02)
+  assert.equal(formik.values.amountPresetGas.gas, 0.01)
+  assert.equal(state.draft.amountPresetGas.gas, 0.01)
+  assert.equal(state.draft.amount, '0.9898')
+})
+
+
+for (const resume of ['reselect Max', 'release execution']) {
+  test(`${resume} retains a newer gas snapshot while the fresh preset request is pending`, async () => {
+    await render()
+    const key = '/gases/source/ETHEREUM_MAINNET/ETH/0.9898'
+    if (resume === 'reselect Max') {
+      await act(() => formik.setFieldValue('amountMode', 'manual'))
+    } else {
+      state.locked = true
+      await render()
+    }
+    await act(async () => { await mutate(key, { gas: 0.02, token }, { revalidate: false }) })
+    state.deferred = Promise.withResolvers()
+    const previousProbeCount = state.probes.length
+    if (resume === 'reselect Max') {
+      await act(() => formik.setFieldValue('amountMode', 'max'))
+    } else {
+      state.locked = false
+      await render()
+    }
+    // SWR schedules revalidation of cached data after the mounting commit.
+    await act(async () => {
+      for (let i = 0; i < 40 && state.probes.length === previousProbeCount; i++) {
+        await new Promise(resolve => setTimeout(resolve, 5))
+      }
+    })
+    try {
+      assert.ok(state.probes.length > previousProbeCount, 'a fresh calculation must be in flight')
+      assert.equal((await mutate(key)).gas, 0.02, 'cached preset data must not replace a newer fee')
+    } finally {
+      await act(async () => { state.deferred.resolve({ gas: 0.02, token }); await state.deferred.promise })
+    }
+    assert.equal(formik.values.amount, '0.9796')
+    assert.equal(formik.values.amountPresetGas.gas, 0.02)
+    assert.equal(state.draft.amountPresetGas.gas, 0.02)
+  })
+}
+
+for (const exit of ['manual mode', 'widget unmount']) {
+  test(`late Max completion after ${exit} cannot replace a newer gas estimate`, async () => {
+    initialValues.amount = '0.9898'
+    state.deferred = Promise.withResolvers()
+    await render()
+    assert.ok(state.probes.length > 0, 'the preset request must be in flight')
+    if (exit === 'manual mode') {
+      await act(() => formik.setFieldValue('amountMode', 'manual'))
+    } else {
+      await act(() => root.render(createElement(StrictMode, null, createElement(SWRConfig, { value: config }))))
+    }
+    const key = '/gases/source/ETHEREUM_MAINNET/ETH/0.9898'
+    await act(async () => { await mutate(key, { gas: 0.02, token }, { revalidate: false }) })
+    await act(async () => {
+      state.deferred.resolve({ gas: 0.01, token })
+      await state.deferred.promise
+    })
+    assert.equal((await mutate(key)).gas, 0.02, 'a departed preset cannot publish over the newer estimate')
+    if (exit === 'manual mode') {
+      assert.equal(formik.values.amountMode, 'manual')
+      assert.equal(formik.values.amount, '0.9898')
+      assert.equal(formik.values.amountPresetGas, undefined, 'a departed calculation cannot update the manual draft')
+    }
+  })
+}

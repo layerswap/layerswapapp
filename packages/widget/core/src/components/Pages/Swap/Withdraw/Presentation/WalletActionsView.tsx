@@ -1,3 +1,4 @@
+import { TransferBlock } from '../TransferBlock';
 import SubmitButton, {
     type SubmitButtonProps,
 } from '@/components/Buttons/submitButton';
@@ -154,6 +155,7 @@ export type SendTransactionViewProps = SubmitButtonProps & {
     showCriticalMarketPriceImpactButtons?: boolean;
     priceImpactValues?: ReturnType<typeof resolvePriceImpactValues>;
     gaslessUnavailable?: boolean;
+    gaslessErrorMessage?: string;
     gaslessFailureStage?: 'create' | 'deposit' | null;
     canSwitchToStandard?: boolean;
     handleClick?: () => void;
@@ -191,6 +193,7 @@ export function getSendTransactionPresentation({
     showCriticalMarketPriceImpactButtons,
     priceImpactValues,
     gaslessUnavailable,
+    gaslessErrorMessage,
     gaslessFailureStage,
     canSwitchToStandard = true,
     handleClick,
@@ -201,6 +204,7 @@ export function getSendTransactionPresentation({
     ...props
 }: SendTransactionViewProps) {
     const observingSubmission = pendingSubmission && !loading;
+    const needsGaslessRecovery = gaslessUnavailable && !submissionAccepted && !pendingSubmission;
     const submissionMessage = observingSubmission && submissionTimedOut ? <WalletMessage
         status="pending"
         header="Transaction not confirmed"
@@ -211,7 +215,7 @@ export function getSendTransactionPresentation({
         submissionAccepted: submissionAccepted || observingSubmission,
         submissionTimedOut, walletExecutionStarted,
         error: pendingSubmission ? false : error,
-        swapError: pendingSubmission ? false : swapError, gaslessUnavailable,
+        swapError: pendingSubmission ? false : swapError, gaslessUnavailable: needsGaslessRecovery,
         errorMessage: submissionMessage ?? errorMessage, actionStateText,
         showSwapProgress, readOnly,
     };
@@ -267,7 +271,7 @@ export function getSendTransactionPresentation({
 
     if (showCriticalMarketPriceImpactButtons) {
         return { walletProgress, controls: (
-                    <>
+                    <TransferBlock reasonCode="critical_price_impact" path="SendTransactionButton">
                         {message}
                         {quote && priceImpactValues && (
                             <ErrorDisplay
@@ -301,9 +305,26 @@ export function getSendTransactionPresentation({
                         >
                             Cancel & try another route
                         </ButtonWrapper>
-                    </>
+                    </TransferBlock>
                 ) };
     }
+    // A quote error disables the actual send action. Loading and completed
+    // workflows are progress states, not funding or readiness blocks.
+    const quoteBlocksTransfer = !!quoteError && !pendingSubmission && !workflowCompleted && !submissionAccepted;
+    const sendButton = (
+        <ButtonWrapper
+            icon={icon}
+            {...props}
+            isSubmitting={props.isSubmitting || loading || (quoteIsLoading && !pendingSubmission)}
+            onClick={handleClick}
+            isDisabled={props.isDisabled || (quoteIsLoading && !pendingSubmission)
+                || quoteBlocksTransfer || (!pendingSubmission && workflowCompleted)}
+        >
+            {error || swapError || networkSwitch?.isError || workflowFailed
+                ? 'Try again'
+                : workflowCompleted ? 'Completed' : primaryActionText}
+        </ButtonWrapper>
+    );
     return { walletProgress, controls: (
                 <>
                     {message}
@@ -320,64 +341,52 @@ export function getSendTransactionPresentation({
                             message={`The “receive at least” amount is affected by high price impact. You will receive at least ${quote.min_receive_amount} ${quote.destination_token.asset} ($ ${priceImpactValues.minReceiveAmountUSD})`}
                         />
                     )}
-                    {gaslessUnavailable ? (
-                        <div className="flex flex-col gap-2">
-                            {gaslessFailureStage === 'deposit' && (
-                                <ButtonWrapper
-                                    icon={icon}
-                                    {...props}
-                                    isSubmitting={
-                                        props.isSubmitting ||
-                                        loading ||
-                                        quoteIsLoading
-                                    }
-                                    onClick={retryGasless}
-                                    isDisabled={quoteIsLoading || !!quoteError}
-                                >
-                                    Try again
-                                </ButtonWrapper>
-                            )}
-                            {canSwitchToStandard && (
-                                <ButtonWrapper
-                                    icon={icon}
-                                    {...props}
-                                    buttonStyle={
-                                        gaslessFailureStage === 'deposit'
-                                            ? 'secondary'
-                                            : 'filled'
-                                    }
-                                    isSubmitting={
-                                        props.isSubmitting ||
-                                        loading ||
-                                        quoteIsLoading
-                                    }
-                                    onClick={switchToStandard}
-                                    isDisabled={quoteIsLoading || !!quoteError}
-                                >
-                                    Switch to standard transfer
-                                </ButtonWrapper>
-                            )}
-                        </div>
+                    {needsGaslessRecovery ? (
+                        <TransferBlock reasonCode="gasless_unavailable" path="TransferTokenButton" reason={gaslessErrorMessage}>
+                            <div className="flex flex-col gap-2">
+                                {gaslessFailureStage === 'deposit' && (
+                                    <ButtonWrapper
+                                        icon={icon}
+                                        {...props}
+                                        isSubmitting={
+                                            props.isSubmitting ||
+                                            loading ||
+                                            quoteIsLoading
+                                        }
+                                        onClick={retryGasless}
+                                        isDisabled={quoteIsLoading || !!quoteError}
+                                    >
+                                        Try again
+                                    </ButtonWrapper>
+                                )}
+                                {canSwitchToStandard && (
+                                    <ButtonWrapper
+                                        icon={icon}
+                                        {...props}
+                                        buttonStyle={
+                                            gaslessFailureStage === 'deposit'
+                                                ? 'secondary'
+                                                : 'filled'
+                                        }
+                                        isSubmitting={
+                                            props.isSubmitting ||
+                                            loading ||
+                                            quoteIsLoading
+                                        }
+                                        onClick={switchToStandard}
+                                        isDisabled={quoteIsLoading || !!quoteError}
+                                    >
+                                        Switch to standard transfer
+                                    </ButtonWrapper>
+                                )}
+                            </div>
+                        </TransferBlock>
+                    ) : quoteBlocksTransfer ? (
+                        <TransferBlock reasonCode="quote_unavailable" path="SendTransactionButton">
+                            {sendButton}
+                        </TransferBlock>
                     ) : (
-                        <ButtonWrapper
-                            icon={icon}
-                            {...props}
-                            isSubmitting={
-                                props.isSubmitting || loading || (quoteIsLoading && !pendingSubmission)
-                            }
-                            onClick={handleClick}
-                            isDisabled={
-                                props.isDisabled ||
-                                (quoteIsLoading && !pendingSubmission) ||
-                                (!pendingSubmission && (!!quoteError || workflowCompleted))
-                            }
-                        >
-                            {error || swapError || networkSwitch?.isError || workflowFailed
-                                ? 'Try again'
-                                : workflowCompleted
-                                  ? 'Completed'
-                                  : primaryActionText}
-                        </ButtonWrapper>
+                        sendButton
                     )}
                 </>
             ) };
