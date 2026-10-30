@@ -68,6 +68,7 @@ function loadSource(path, imports = {}) {
         if (name === '@/lib/resolvers/resolverService') return {};
         if (name === '@/hooks/useClientLayoutEffect') return { useClientLayoutEffect: React.useLayoutEffect };
         if (name === '@/lib/amountPresets') return loadSource('lib/amountPresets.ts', {
+            '@/lib/gases/resolveGasBalanceBudget': loadSource('lib/gases/resolveGasBalanceBudget.ts'),
             '@/components/Input/Amount/helpers': loadSource('components/Input/Amount/helpers.ts', {
                 '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
                 '@/lib/gases/resolveGasBalanceBudget': loadSource('lib/gases/resolveGasBalanceBudget.ts'),
@@ -83,6 +84,8 @@ function loadSource(path, imports = {}) {
                 './isUserRejection': imports['./isUserRejection'],
             });
         }
+        if (name.endsWith('/TransferBlock')) return { TransferBlock: ({ children }) => React.createElement(React.Fragment, null, children) };
+        if (name === '@/hooks/useHasSubmittedTransfer') return { useHasSubmittedTransfer: () => false };
         throw new Error(`Unexpected dependency: ${name}`);
     }, module, module.exports);
     return module.exports;
@@ -1395,6 +1398,7 @@ for (const gaslessEnabled of [true, false]) {
 for (const failure of ['rejected', 'failed']) {
     test(`adjusting the amount after a ${failure} transfer replaces the swap and wallet payload`, async () => {
         const nativeToken = { symbol: 'ETH', asset: 'ETH', decimals: 18, precision: 6 };
+        const formRoute = { ...network, token: nativeToken, tokens: [nativeToken] };
         const makeResponse = (id, amount) => ({ data: {
             swap: {
                 id, status: 'user_transfer_pending', requested_amount: Number(amount),
@@ -1452,7 +1456,7 @@ for (const failure of ['rejected', 'failed']) {
         const controllerImports = {
             ...walletHooks,
             '@/context/swap': harness.context,
-            '@/context/settings': { useInitialSettings: () => ({}), useSettingsState: () => ({ networks: [network] }) },
+            '@/context/settings': { useInitialSettings: () => ({}), useSettingsState: () => ({ networks: [formRoute], sourceRoutes: [formRoute], destinationRoutes: [formRoute] }) },
             '@/lib/swapLifecycle': lifecycle,
             '@/hooks/useTransferBlocked': { useTransferBlocked: noop },
             '@/lib/balances/useBalance': { useBalance: () => ({ balances: [{ network: network.name, token: 'ETH', amount: 1, isNativeCurrency: true }] }) },
@@ -1500,7 +1504,6 @@ for (const failure of ['rejected', 'failed']) {
             '@/hooks/useFee': { transformSwapDataToQuoteArgs: noop, useQuoteData: () => ({ minAllowedAmount: 0.001, maxAllowedAmount: 10 }) },
             '@/lib/gases/useOutOfGas': { default: () => ({ outOfGas: true }) },
             '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput: noop } },
-            formik: { useFormikContext: () => ({ values: {}, setValues: values => { formAmount = values.amount; } }) },
             '../Form/SecondaryComponents/validationError/AdjustAmountButton': {
                 AdjustAmountButton: ({ onEditAmount }) => React.createElement('button', { onClick: onEditAmount }, 'Adjust amount'),
             },
@@ -1519,7 +1522,8 @@ for (const failure of ['rejected', 'failed']) {
         });
         function Screen() {
             harness.state = harness.context.useSwapDataState();
-            return harness.state.swapBasicData ? React.createElement(Withdraw, { type: 'contained' }) : null;
+            const formUpdate = harness.context.useSwapDataUpdate();
+            return harness.state.swapBasicData ? React.createElement(Withdraw, { type: 'contained', onAdjustAmount: updates => { formAmount = updates.amount; formUpdate.setSubmitedFormValues(updates); } }) : null;
         }
         const root = createRoot(container);
         useGaslessPreferenceStore.getState().resetGaslessPreference();

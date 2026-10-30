@@ -1,6 +1,7 @@
 import type { GasWithToken, NetworkRoute, Token, TokenBalance } from '@layerswap/widget-types'
 import { resolveMaxAllowedAmount } from '@/components/Input/Amount/helpers'
 import { ceilToDecimals, truncateToDecimals } from '@/components/utils/RoundDecimals'
+import { resolveGasBalanceBudget } from '@/lib/gases/resolveGasBalanceBudget'
 import KnownInternalNames from '@layerswap/utils/known-ids'
 
 export type AmountPreset = 'min' | 'half' | 'max'
@@ -97,9 +98,8 @@ export async function calculatePresetAmount({ network, token, balance, limit, mi
         const target = Number(resolvePresetAmount(mode, payable, minimum ?? 0, token.decimals))
         const feeToken = gas?.token ?? network.token
         const paysFeeInSource = !feeToken || feeToken.symbol === token.symbol
-        const requiredFee = paysFeeInSource ? (gas!.maxFee ?? gas!.gas) + (gas!.reserve ?? 0) : 0
-        const affordableLimit = Math.max(0, Math.min(balance.amount - requiredFee, limit))
-        const withinPreset = candidate <= affordableLimit * (mode === 'half' ? 0.5 : 1)
+        const requiredFee = paysFeeInSource ? resolveGasBalanceBudget(gas) : 0
+        const withinPreset = candidate <= payable * (mode === 'half' ? 0.5 : 1)
             && (mode !== 'min' || candidate >= Number(minAmount))
         if (preserveAmount && candidate === probe && withinPreset) return amountText(candidate, token.decimals)
         if (mode === 'min' && target > payable)
@@ -111,7 +111,18 @@ export async function calculatePresetAmount({ network, token, balance, limit, mi
         // reads verify it instead of requiring exactly identical fee estimates.
         if (target === candidate || (mode !== 'min' && withinPreset && attempt > 0))
             return amountText(candidate, token.decimals)
-        candidate = target
+        // Small fee increases can otherwise consume every retry: the previous
+        // target sits exactly at the buffered limit. Leave another fee margin
+        // when that happens, then verify the reduced amount on the next read.
+        // Account reserves stay separate and are never multiplied.
+        const maximumFee = gas?.maxFee ?? gas?.gas ?? 0
+        const feeMargin = paysFeeInSource ? requiredFee - maximumFee - (gas?.reserve ?? 0) : 0
+        const presetScale = mode === 'half' ? 0.5 : 1
+        const smallFeeIncrease = attempt > 0 && mode !== 'min'
+            && candidate > target && candidate - target <= feeMargin * presetScale
+        const cushionedTarget = Number(resolvePresetAmount(mode, Math.max(0, payable - feeMargin), minimum ?? 0, token.decimals))
+        // Extra headroom must not push an otherwise valid transfer below minimum.
+        candidate = smallFeeIncrease ? Math.max(Math.min(target, Number(minAmount)), cushionedTarget) : target
     }
     throw new Error('Network fees are changing. Wait a moment and try again.')
 }

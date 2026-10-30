@@ -102,8 +102,7 @@ test('Using max can be turned off during gas estimation without changing the amo
 
   await act(() => maxButton().click())
   assert.equal(formik.values.amount, '0.9898')
-  assert.equal(state.requests.length, 2)
-  assert.equal(state.requests[1].args.amount, 0.9898)
+  assert.equal(state.requests.length, 1, 'Selecting a live preset must not start a second preview estimator')
   assert.equal(maxButton().disabled, false)
   assert.equal(maxButton().textContent, 'Max')
   assert.equal(maxButton().getAttribute('aria-pressed'), 'true')
@@ -126,7 +125,7 @@ test('Max uses the maximum fee and preserves the required native balance', async
   assert.ok(Math.abs(Number(formik.values.amount) - 9.9796) < 1e-12)
   assert.equal(maxButton().disabled, false, 'The selected Max preset can be turned off during gas estimation')
 
-  await settle(state.requests[1], 0.01, { maxFee: 0.02, reserve: 10 })
+  assert.equal(state.requests.length, 1)
   await act(() => maxButton().click())
   assert.ok(Math.abs(Number(formik.values.amount) - 9.9796) < 1e-12)
 })
@@ -240,7 +239,6 @@ test('selecting a new preset replaces the active selection', async () => {
   await render()
   await settle(state.requests[0], 0.01)
   await act(() => maxButton().click())
-  await settle(state.requests[1], 0.01)
   const half = container.querySelector('[data-attr="half-amount"]')
   await act(() => half.click())
   assert.equal(formik.values.amountMode, 'half')
@@ -261,9 +259,8 @@ test('50% stays available through repeated Max amount and balance refreshes', as
   assert.equal(half.disabled, false, 'Selecting Max must not disable 50% during the next fee request')
 
   for (const [balance, amount] of [[1, '0.9796'], [2, '1.9796']]) {
-    await settle(state.requests.at(-1), 0.02)
     state.balances = [{ ...state.balances[0], amount: balance }]
-    await act(() => formik.setFieldValue('amount', amount))
+    await act(() => formik.setValues({ ...formik.values, amount, amountPresetGas: { gas: 0.02, token }, amountPresetPending: false }))
     assert.equal(half.disabled, false)
     assert.equal(half.getAttribute('aria-pressed'), 'false')
     assert.equal(maxButton().getAttribute('aria-pressed'), 'true')
@@ -284,9 +281,11 @@ test('a settled missing or failed fee disables unselected presets after the load
   await act(() => maxButton().click())
   const half = container.querySelector('[data-attr="half-amount"]')
   assert.equal(half.disabled, false)
-  await settle(state.requests[1], undefined)
-  assert.equal(half.disabled, true, 'A completed request without an estimate is not a background refresh')
+  await act(() => formik.setValues({ ...formik.values, amountPresetPending: false, amountPresetError: 'Network fee unavailable', amountPresetGas: undefined }))
+  assert.equal(half.disabled, true, 'A completed preset without an estimate is not a background refresh')
   assert.equal(maxButton().disabled, false, 'The selected preset can still be turned off')
+  await act(() => maxButton().click())
+  await settle(state.requests[1], undefined)
   await act(() => formik.setFieldValue('amount', '0.8'))
   assert.equal(half.disabled, true, 'The missing estimate must clear the previous preview')
   await settle(state.requests[2], 0.02)

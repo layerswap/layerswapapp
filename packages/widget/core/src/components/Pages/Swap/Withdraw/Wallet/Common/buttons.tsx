@@ -3,7 +3,6 @@ import { useCallbacks } from '@/context/callbackProvider';
 import { lifecycleContextFromSwap, lifecycleErrorDetails } from '@/lib/swapLifecycle';
 import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect';
 import { depositActionsKey, useDepositActionPolling } from '@/hooks/useDepositActionPolling';
-import { useTransferBlocked } from '@/hooks/useTransferBlocked';
 import { hasSwapExecutionProgress, hasUnacknowledgedWalletAction } from '@/helpers/swapProgress';
 import { gaslessAuthorizationKey, isGaslessCapableRoute, isGaslessDepositWorkflow } from '@/helpers/gasless';
 import { isDepositWorkflowComplete } from '@/helpers/depositActions';
@@ -158,6 +157,7 @@ export function useSendTransactionController({
 }: SendFromWalletButtonProps, active = true) {
     const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, flow, refuel: refuelData, swapError, setSwapError, walletExecutionStarted, gaslessAuthorization, inputTransactionStatus } = useSwapDataState()
     const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
+    const gaslessErrorMessage = useGaslessPreferenceStore(s => s.gaslessErrorMessage)
     const gaslessFailureStage = useGaslessPreferenceStore(s => s.gaslessFailureStage)
     const gaslessEnabled = useGaslessPreferenceStore(s => s.gaslessEnabled)
     const switchToStandardTransfer = useGaslessPreferenceStore(s => s.switchToStandardTransfer)
@@ -297,9 +297,6 @@ export function useSendTransactionController({
 
     const priceImpactValues = useMemo(() => displayedQuote ? resolvePriceImpactValues(displayedQuote, refuel ? displayedRefuel : undefined) : undefined, [displayedQuote, refuel, displayedRefuel]);
     const criticalMarketPriceImpact = useMemo(() => priceImpactValues?.criticalMarketPriceImpact, [priceImpactValues]);
-
-    useTransferBlocked(active && activeCriticalConfirmation ? 'critical_price_impact' : undefined,
-        lifecycleContextFromSwap(swapBasicData, swapDetails), 'SendTransactionButton')
 
     const hasRecordedWalletAction = () => hasUnacknowledgedWalletAction({
         transaction: swapId ? useSwapTransactionStore.getState().swapTransactions[swapId] : undefined,
@@ -503,7 +500,9 @@ export function useSendTransactionController({
                             onLifecycle: onSwapLifecycle,
                             onSwitchStart: () => {
                                 const chainId = (currentAction.network ?? swapBasicData.source_network).chain_id
-                                if (chainId) expectedSourceChainSwitch.current = { signal, chainId }
+                                if (chainId != null && chainId !== '') {
+                                    expectedSourceChainSwitch.current = { signal, chainId }
+                                }
                                 switchPrompt = setTimeout(() => {
                                     if (signal.aborted) return
                                     setActionStateText("Switching network")
@@ -753,6 +752,7 @@ export function useSendTransactionController({
             showCriticalMarketPriceImpactButtons: !!activeCriticalConfirmation,
             priceImpactValues: priceImpactValues,
             gaslessUnavailable: gaslessUnavailable,
+            gaslessErrorMessage: gaslessErrorMessage ?? undefined,
             gaslessFailureStage: gaslessFailureStage,
             canSwitchToStandard: !hasProgress && !hasRecordedWalletAction(),
             handleClick: handleClick,

@@ -250,6 +250,9 @@ function createWorkflow({
     })
     const ErrorDisplay = () => null
     const walletViews = loadSource('../src/components/Pages/Swap/Withdraw/Presentation/WalletActionsView.tsx', {
+        '../TransferBlock': { TransferBlock: props => mounted
+            ? createElement(blockBoundary.TransferBlock, props)
+            : createElement(Fragment, null, props.children) },
         '@/components/Buttons/submitButton': { default: SubmitButton },
         '@/components/Icons/FailIcon': { default: noop },
         '@/components/Icons/InfoIcon': { default: noop },
@@ -333,7 +336,7 @@ function createWorkflow({
         react: mounted ? React : { useState, useRef: initial => useState({ current: initial })[0], useMemo: fn => fn(), useCallback: fn => fn, useEffect: noop },
         '@layerswap/ui-kit/components': { WalletIcon: noop },
         '@/components/Buttons/submitButton': { default: noop },
-        '@/hooks/useWallet': { default: () => ({ wallets: [wallet] }) },
+        '@/hooks/useWallet': { default: () => ({ wallets: state.disconnected ? [] : [wallet] }) },
         '@/hooks/useWithdrawalProvider': { useWithdrawalProvider: () => undefined },
         '@/context/swap': {
             useSwapDataState: () => renderResolvedScreen ? { ...state, ...swapContext.useSwapDataState() }
@@ -429,6 +432,25 @@ function createWorkflow({
     buttonImports['../../useWithdrawalExecution'] = withdrawalExecution
     buttonImports['../../reportWithdrawalError'] = loadSource('../src/components/Pages/Swap/Withdraw/reportWithdrawalError.ts', buttonImports)
     const { SendTransactionButton, ButtonWrapper, useSendTransactionController, useConnectWalletController } = loadSource(`${walletPath}buttons.tsx`, buttonImports)
+    buttonImports['@/hooks/useHasSubmittedTransfer'] = loadSource('../src/hooks/useHasSubmittedTransfer.ts', {
+        '@/context/swap': buttonImports['@/context/swap'],
+        '@/helpers/swapProgress': swapProgress,
+        '@/stores/swapTransactionStore': stores,
+    })
+    const blockBoundary = loadSource('../src/components/Pages/Swap/Withdraw/TransferBlock.tsx', {
+        '@/context/callbackProvider': { useOptionalCallbacks: () => state.observeBlocks === false ? undefined : {} },
+        '@/context/swap': buttonImports['@/context/swap'],
+        '@/lib/swapLifecycle': lifecycle,
+        '@/hooks/useTransferBlocked': loadSource('../src/hooks/useTransferBlocked.ts', {
+            react: React,
+            '@/hooks/useClientLayoutEffect': { useClientLayoutEffect: React.useLayoutEffect },
+            '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: event => {
+                calls.lifecycle.push(event); calls.blocked.push(event.reasonCode)
+            } }) },
+        }),
+    })
+    buttonImports['../TransferBlock'] = blockBoundary
+    buttonImports['./TransferBlock'] = blockBoundary
     let WalletWithdrawal
     let Page2Controller
     if (walletController) {
@@ -572,7 +594,7 @@ function createWorkflow({
         }
     }
     return {
-        state, calls, render, wallet, network, preferences, stores, execution, walletViews,
+        state, calls, render, wallet, network, preferences, stores, execution, walletViews, blockBoundary,
         Component: () => page2Host
             ? createElement(Page2Controller, { swapBasicData: props().swapData, type: 'contained' }, model => model.footer)
             : realPolling
@@ -2533,4 +2555,138 @@ for (const condition of ['unhealthy RPC', 'spent balance', 'disconnected wallet'
             }
         }
     })
+}
+
+// Assert the rendered affordance and its event together, including models that
+// a parent computes but discards. The real boundary owns the lifecycle effect.
+for (const scenario of [
+    { name: 'quote failure preview without an observer', observeBlocks: false, props: { quoteError: true }, text: /Swap now/, disabled: true },
+    { name: 'quote failure', props: { quoteError: true }, reason: 'quote_unavailable', text: /Swap now/, disabled: true },
+    { name: 'gasless fallback', props: { gaslessUnavailable: true }, reason: 'gasless_unavailable', text: /Switch to standard transfer/ },
+    { name: 'critical confirmation', props: { showCriticalMarketPriceImpactButtons: true }, reason: 'critical_price_impact', text: /Continue anyway/ },
+    { name: 'retryable swap error', props: { swapError: true }, text: /Try again/, disabled: false },
+    { name: 'preparation', props: { quoteIsLoading: true }, text: /Preparing/, disabled: true },
+    { name: 'submission with stale gasless failure', props: { pendingSubmission: true, gaslessUnavailable: true }, text: /^$/ },
+]) {
+    test(`rendered ${scenario.name} controls and block tracing agree`, async t => {
+        const dom = new JSDOM('<div id="root"></div>')
+        const previous = Object.getOwnPropertyDescriptors(globalThis)
+        Object.assign(globalThis, { window: dom.window, document: dom.window.document, IS_REACT_ACT_ENVIRONMENT: true })
+        const root = createRoot(document.getElementById('root'))
+        t.after(async () => {
+            await act(() => root.unmount())
+            dom.window.close()
+            for (const key of ['window', 'document', 'IS_REACT_ACT_ENVIRONMENT']) {
+                if (previous[key]) Object.defineProperty(globalThis, key, previous[key])
+                else delete globalThis[key]
+            }
+        })
+        const flow = createWorkflow({ mounted: true })
+        flow.state.observeBlocks = scenario.observeBlocks
+        let visible = false
+        const props = { flow: { kind: 'wallet-transfer', walletProgress: 'none', resolution: 'ready' }, ...scenario.props }
+        function Parent() {
+            const presentation = flow.walletViews.getSendTransactionPresentation(props)
+            return visible ? presentation.controls : createElement('button', null, 'Parent override')
+        }
+        await act(() => root.render(createElement(React.StrictMode, null, createElement(Parent))))
+        assert.deepEqual(flow.calls.blocked, [], 'discarded control models never report a block')
+        visible = true
+        await act(() => root.render(createElement(React.StrictMode, null, createElement(Parent))))
+        assert.match(document.getElementById('root').textContent, scenario.text)
+        if (scenario.disabled !== undefined) assert.equal(document.querySelector('button').disabled, scenario.disabled)
+        assert.deepEqual(flow.calls.blocked, scenario.reason ? [scenario.reason] : [])
+        await act(() => root.render(createElement(React.StrictMode, null, createElement(Parent))))
+        assert.deepEqual(flow.calls.blocked, scenario.reason ? [scenario.reason] : [], 'rerenders and StrictMode do not repeat a visible block')
+    })
+}
+
+for (const scenario of [
+    { name: 'wrong provider account', isConnected: true, accountMismatch: true, reason: 'wallet_account_mismatch', text: /Wrong account/ },
+    { name: 'normal provider connection', isConnected: false, accountMismatch: true, text: /Connect wallet/ },
+    { name: 'submitted provider transfer after account change', isConnected: true, accountMismatch: true, submissionAccepted: true, loading: true, text: /Withdrawing/ },
+    { name: 'submitted provider transfer after disconnect', isConnected: false, accountMismatch: true, submissionAccepted: true, loading: true, progress: { title: 'Provider progress' }, text: /Provider progress/ },
+]) {
+    test(`${scenario.name} traces only a rendered transfer interruption`, async t => {
+        const dom = new JSDOM('<div id="root"></div>')
+        const previous = Object.getOwnPropertyDescriptors(globalThis)
+        Object.assign(globalThis, { window: dom.window, document: dom.window.document, IS_REACT_ACT_ENVIRONMENT: true })
+        const root = createRoot(document.getElementById('root'))
+        t.after(async () => {
+            await act(() => root.unmount())
+            dom.window.close()
+            for (const key of ['window', 'document', 'IS_REACT_ACT_ENVIRONMENT']) {
+                if (previous[key]) Object.defineProperty(globalThis, key, previous[key])
+                else delete globalThis[key]
+            }
+        })
+        const flow = createWorkflow({ mounted: true })
+        const { SpecializedWithdrawalView } = loadSource('../src/components/Pages/Swap/Withdraw/Presentation/SpecializedWithdrawalView.tsx', {
+            '../TransferBlock': flow.blockBoundary,
+            '@layerswap/ui-kit/components': { WalletIcon: () => null },
+            'lucide-react': { Loader2: () => null },
+            '../messages/Message': { default: ({ header }) => createElement('p', null, header) },
+            '../messages/TransactionMessages': { ActionMessages: { WalletMismatchMessage: () => createElement('p', null, 'Wrong account') } },
+            './WalletActionsView': flow.walletViews,
+        })
+        await act(() => root.render(createElement(SpecializedWithdrawalView, {
+            ...scenario, provider: 'Provider', network: flow.network,
+            connectButton: createElement('button', null, 'Connect wallet'),
+        })))
+        assert.match(document.getElementById('root').textContent, scenario.text)
+        if (scenario.submissionAccepted) {
+            assert.equal(document.querySelector('button').disabled, true)
+            assert.doesNotMatch(document.getElementById('root').textContent, /Transaction submitted|Connect wallet|Wrong account/)
+        }
+        assert.deepEqual(flow.calls.blocked, scenario.reason ? [scenario.reason] : [])
+    })
+}
+
+for (const signatureState of ['completed sign-only action', 'saved signature before action history']) {
+    for (const readiness of ['disconnected wallet', 'unhealthy RPC']) {
+        test(`${signatureState} preserves ${readiness} recovery before a funding submission`, async t => {
+            const dom = new JSDOM('<div id="root"></div>')
+            const previous = Object.getOwnPropertyDescriptors(globalThis)
+            Object.assign(globalThis, { window: dom.window, document: dom.window.document, IS_REACT_ACT_ENVIRONMENT: true })
+            const root = createRoot(document.getElementById('root'))
+            t.after(async () => {
+                await act(() => root.unmount())
+                dom.window.close()
+                for (const key of ['window', 'document', 'IS_REACT_ACT_ENVIRONMENT']) {
+                    if (previous[key]) Object.defineProperty(globalThis, key, previous[key])
+                    else delete globalThis[key]
+                }
+            })
+            // Keep the real Page 2 balance controller, wallet controller and send
+            // presenter: a mocked send model would hide the Preparing… regression.
+            const flow = createWorkflow({ mounted: true, walletController: true, page2Host: true, realBalance: true })
+            flow.state.swapBasicData = { ...atomicFixtures.swap,
+                source_network: { ...flow.network, type: 'evm' }, destination_network: flow.network }
+            flow.state.resolveCurrentFlow = true
+            flow.state.apiActions = signatureState === 'completed sign-only action'
+                ? [{ type: 'sign', step: 'sign', status: 'completed' }] : undefined
+            flow.state.depositActionsResponse = flow.state.apiActions
+            if (signatureState === 'saved signature before action history') {
+                flow.stores.useDepositSignatureStore.getState().setDepositSignature(swapId, Date.now() / 1000 + 600)
+            }
+            flow.state.disconnected = readiness === 'disconnected wallet'
+            flow.state.rpcUnhealthy = readiness === 'unhealthy RPC'
+            flow.state.balances = [{ network: flow.network.name, token: atomicFixtures.token.symbol, amount: 0 }]
+            flow.state.outOfGas = true
+
+            await act(() => root.render(createElement(flow.Component)))
+            assert.equal(flow.view.pendingSubmission, false)
+            assert.equal(flow.view.submissionAccepted, false)
+            assert.match(document.getElementById('root').textContent,
+                readiness === 'disconnected wallet' ? /Send from wallet/ : /RPC unhealthy/)
+            if (readiness === 'disconnected wallet') assert.equal(document.querySelector('button').disabled, false)
+            else assert.equal(flow.calls.rpcEnabled, true)
+            // Authorization uncertainty still protects funding/amount handling;
+            // narrowing readiness must not bring back spent-balance warnings.
+            assert.doesNotMatch(document.body.textContent, /Insufficient balance|Insufficient gas/)
+            assert.deepEqual(flow.calls.transfer, [])
+            assert.deepEqual(flow.calls.batches, [])
+            assert.deepEqual(flow.stores.useSwapTransactionStore.getState().swapTransactions, {})
+        })
+    }
 }

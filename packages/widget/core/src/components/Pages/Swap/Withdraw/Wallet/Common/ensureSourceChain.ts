@@ -40,7 +40,10 @@ const SWITCH_CHAIN_TIMEOUT_MS = 60_000
  * loose comparison.
  */
 export const needsChainSwitch = (wallet: Pick<Wallet, 'chainId'>, network: Pick<Network, 'chain_id'>): boolean =>
-    !!wallet.chainId && !!network.chain_id && wallet.chainId != network.chain_id
+    // Fuel testnet uses numeric 0, which is a valid reported chain.
+    wallet.chainId != null && wallet.chainId !== ''
+    && network.chain_id != null && network.chain_id !== ''
+    && wallet.chainId != network.chain_id
 
 type ErrorWithShortMessage = { shortMessage?: string; cause?: unknown }
 
@@ -99,7 +102,12 @@ export async function ensureSourceChain(options: EnsureSourceChainOptions): Prom
     const { wallet, network, switchChain, ensureChain, signal, context, path, onLifecycle, onSwitchStart, timeoutMs = SWITCH_CHAIN_TIMEOUT_MS } = options
     signal?.throwIfAborted()
     const chainId = network.chain_id
-    if (!chainId || (!ensureChain && !needsChainSwitch(wallet, network))) return
+    if (chainId == null || chainId === '') {
+        return
+    }
+    if (!ensureChain && !needsChainSwitch(wallet, network)) {
+        return
+    }
 
     const event = {
         ...context,

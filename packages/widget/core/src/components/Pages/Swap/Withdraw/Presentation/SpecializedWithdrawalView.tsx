@@ -1,3 +1,4 @@
+import { TransferBlock } from '../TransferBlock';
 import { WalletIcon } from '@layerswap/ui-kit/components';
 import type { Network } from '@layerswap/widget-types';
 import { Loader2 } from 'lucide-react';
@@ -13,6 +14,7 @@ export type SpecializedWithdrawalViewProps = {
     accountMismatch: boolean;
     sourceAddress?: string;
     loading?: boolean;
+    submissionAccepted?: boolean;
     progress?: { title: string; description?: string } | null;
     error?: { header: string; details: string } | null;
     rejected?: boolean;
@@ -27,13 +29,15 @@ export function SpecializedWithdrawalView({
     accountMismatch,
     sourceAddress,
     loading,
+    submissionAccepted,
     progress,
     error,
     rejected,
     connectButton,
     handleWithdraw,
 }: SpecializedWithdrawalViewProps) {
-    if (!isConnected) {
+    // Once submitted, retain the existing progress UI across wallet changes.
+    if (!submissionAccepted && !isConnected) {
         return (
             <div className="flex w-full flex-col gap-2">
                 <WalletMessage
@@ -46,12 +50,14 @@ export function SpecializedWithdrawalView({
         );
     }
 
-    if (accountMismatch) {
+    if (!submissionAccepted && accountMismatch) {
         return (
-            <ActionMessages.WalletMismatchMessage
-                address={sourceAddress || ''}
-                network={network}
-            />
+            <TransferBlock reasonCode="wallet_account_mismatch" path="ProviderWalletWithdrawal">
+                <ActionMessages.WalletMismatchMessage
+                    address={sourceAddress || ''}
+                    network={network}
+                />
+            </TransferBlock>
         );
     }
 
