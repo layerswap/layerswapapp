@@ -1,6 +1,7 @@
 //@ts-ignore
 import { UTXOWalletProvider } from "@bigmi/client/dist/esm/connectors/types";
 import { transactionBuilder } from "./transactionBuilder";
+import { dustThreshold, validateOutputs } from "./transactionBuilder/outputPolicy";
 import { Psbt } from "bitcoinjs-lib";
 import { Connector } from "@bigmi/client";
 import { JsonRpcClient } from "@layerswap/utils";
@@ -43,6 +44,7 @@ export const sendTransaction = async ({ amount, callData, depositAddress, isTest
         rpcClient
     });
 
+    validateOutputs(psbt.txOutputs);
     const psbtHex = psbt.toHex();
 
     // Taproot addresses (bc1p/tb1p) require SIGHASH_DEFAULT (0), others use SIGHASH_ALL (1)
@@ -68,10 +70,27 @@ export const sendTransaction = async ({ amount, callData, depositAddress, isTest
     })
 
     const tx = signedPsbt.extractTransaction()
+    validateOutputs(tx.outs);
     const txHex = tx.toHex();
 
-    const txHash = await rpcClient.call<string[], string>('sendrawtransaction', [txHex]);
-
-    return txHash;
+    try {
+        return await rpcClient.call<string[], string>('sendrawtransaction', [txHex]);
+    } catch (cause) {
+        // Include amounts and scripts, but never the signed transaction or witness data.
+        const outputs = tx.outs.map((output, index) => ({
+            index,
+            role: index === 0 ? 'deposit' : index === 1 ? 'memo' : 'change',
+            sats: output.value.toString(),
+            script: Buffer.from(output.script).toString('hex'),
+            dustThreshold: dustThreshold(output.script).toString(),
+        }));
+        const inputTotal = signedPsbt.data.inputs.reduce((sum, input) => sum + (input.witnessUtxo?.value ?? 0n), 0n);
+        const outputTotal = tx.outs.reduce((sum, output) => sum + output.value, 0n);
+        const fee = inputTotal - outputTotal;
+        const message = cause instanceof Error ? cause.message : String(cause);
+        throw new Error(`${message}; Bitcoin transaction diagnostics: ${JSON.stringify({
+            outputs, inputSats: inputTotal.toString(), feeSats: fee.toString(), vsize: tx.virtualSize(),
+        })}`, { cause });
+    }
 
 }

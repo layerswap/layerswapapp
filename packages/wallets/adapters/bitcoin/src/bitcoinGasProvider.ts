@@ -1,4 +1,4 @@
-import { buildPsbt } from "./transferProvider/transactionBuilder/buildPsbt";
+import { estimateBitcoinFee } from "./transferProvider/transactionBuilder/buildPsbt";
 import { JsonRpcClient, KnownInternalNames, formatUnits } from "@layerswap/utils";
 import { ErrorHandler } from "@layerswap/widget-types";
 import { Network } from "@layerswap/widget-types";
@@ -15,14 +15,14 @@ export class BitcoinGasProvider implements GasProvider {
         if (!amount) throw new Error("No amount provided")
 
         const version = KnownInternalNames.Networks.BitcoinMainnet.includes(network.name) ? 'mainnet' : 'testnet';
-        const bitcoinAddress = recipientAddress || version == 'testnet' ? 'tb1q5dc7f552h57tfepls66tgkta8wwjpha3ktw45s': 'bc1plxa9q77gz9r33g8pd4c2ygzezchjffuedtzdrkclyceseyw8v80qasmquf'
+        const bitcoinAddress = recipientAddress || (version == 'testnet' ? 'tb1q5dc7f552h57tfepls66tgkta8wwjpha3ktw45s': 'bc1plxa9q77gz9r33g8pd4c2ygzezchjffuedtzdrkclyceseyw8v80qasmquf')
         const rpcClient = new JsonRpcClient(network.node_url);
 
         const amountInSatoshi = Math.floor(amount * 1e8);
         const hexMemo = Number('69420').toString(16);
 
         try {
-            const { fee } = await buildPsbt({
+            const fee = await estimateBitcoinFee({
                 userAddress: address,
                 depositAddress: bitcoinAddress,
                 version: version,
