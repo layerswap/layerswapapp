@@ -4,12 +4,10 @@ import useWallet from '@/hooks/useWallet';
 import AddressWithIcon from '@/components/Input/Address/AddressPicker/AddressWithIcon';
 import { AddressGroup } from '@/components/Input/Address/AddressPicker';
 import { truncateDecimals } from '@/components/utils/RoundDecimals';
-import VaulDrawer from '@/components/Modal/vaulModal';
-import { SelectAccountProps } from "@layerswap/wallet-core/types"
 import { useSettingsState } from '@/context/settings';
-import WalletsList from '@/components/Wallet/WalletComponents/WalletsList';
+import { WalletTransferPicker } from './WalletTransferPicker';
 import { SwapBasicData } from '@/lib/apiClients/layerSwapApiClient';
-import { useSelectedAccount, useSelectSwapAccount } from '@/context/swapAccounts';
+import { useSelectedAccount } from '@/context/swapAccounts';
 import { useBalance } from '@/lib/balances/useBalance';
 
 type Props = {
@@ -22,19 +20,7 @@ const WalletTransferContent: FC<Props> = ({ openModal, setOpenModal, swapData })
 
     const { source_token, source_network: swap_source_network } = swapData
     const source_network = swap_source_network && networks.find(n => n.name === swap_source_network?.name)
-    const { provider } = useWallet(source_network, 'withdrawal')
     const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
-    const availableWallets = provider?.connectedWallets?.filter(c => !c.isNotAvailable) || []
-    const selectSourceAccount = useSelectSwapAccount("from");
-
-    const changeWallet = async (props: SelectAccountProps) => {
-        selectSourceAccount({
-            id: props.walletId,
-            address: props.address,
-            providerName: props.providerName
-        })
-        setOpenModal(false)
-    }
 
     const { balances } = useBalance(selectedSourceAccount?.address, source_network)
     const { wallets } = useWallet(source_network, 'withdrawal')
@@ -74,29 +60,7 @@ const WalletTransferContent: FC<Props> = ({ openModal, setOpenModal, swapData })
                 </div>
             }
         </div>
-        {
-            source_network &&
-            source_token &&
-            provider &&
-            availableWallets &&
-            <VaulDrawer
-                show={openModal}
-                setShow={setOpenModal}
-                header={`Send from`}
-                modalId="connectedWallets"
-            >
-                <VaulDrawer.Snap id='item-1'>
-                    <WalletsList
-                        network={source_network}
-                        token={source_token}
-                        onSelect={changeWallet}
-                        selectable
-                        wallets={availableWallets}
-                        provider={provider}
-                    />
-                </VaulDrawer.Snap>
-            </VaulDrawer>
-        }
+        <WalletTransferPicker swapData={swapData} openModal={openModal} setOpenModal={setOpenModal} />
     </>
 }
 
