@@ -68,6 +68,7 @@ function loadSource(path, imports = {}) {
         if (name === '@/lib/resolvers/resolverService') return {};
         if (name === '@/hooks/useClientLayoutEffect') return { useClientLayoutEffect: React.useLayoutEffect };
         if (name === '@/lib/amountPresets') return loadSource('lib/amountPresets.ts', {
+            '@/lib/gases/resolveGasBalanceBudget': loadSource('lib/gases/resolveGasBalanceBudget.ts'),
             '@/components/Input/Amount/helpers': loadSource('components/Input/Amount/helpers.ts', {
                 '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
                 '@/lib/gases/resolveGasBalanceBudget': loadSource('lib/gases/resolveGasBalanceBudget.ts'),
@@ -1397,6 +1398,7 @@ for (const gaslessEnabled of [true, false]) {
 for (const failure of ['rejected', 'failed']) {
     test(`adjusting the amount after a ${failure} transfer replaces the swap and wallet payload`, async () => {
         const nativeToken = { symbol: 'ETH', asset: 'ETH', decimals: 18, precision: 6 };
+        const formRoute = { ...network, token: nativeToken, tokens: [nativeToken] };
         const makeResponse = (id, amount) => ({ data: {
             swap: {
                 id, status: 'user_transfer_pending', requested_amount: Number(amount),
@@ -1454,7 +1456,7 @@ for (const failure of ['rejected', 'failed']) {
         const controllerImports = {
             ...walletHooks,
             '@/context/swap': harness.context,
-            '@/context/settings': { useInitialSettings: () => ({}), useSettingsState: () => ({ networks: [network] }) },
+            '@/context/settings': { useInitialSettings: () => ({}), useSettingsState: () => ({ networks: [formRoute], sourceRoutes: [formRoute], destinationRoutes: [formRoute] }) },
             '@/lib/swapLifecycle': lifecycle,
             '@/hooks/useTransferBlocked': { useTransferBlocked: noop },
             '@/lib/balances/useBalance': { useBalance: () => ({ balances: [{ network: network.name, token: 'ETH', amount: 1, isNativeCurrency: true }] }) },

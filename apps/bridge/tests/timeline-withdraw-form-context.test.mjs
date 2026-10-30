@@ -10,7 +10,7 @@ const require = createRequire(import.meta.url);
 const core = new URL('../../../packages/widget/core/', import.meta.url);
 const noop = () => {};
 const token = { symbol: 'ETH', decimals: 6 };
-const network = { name: 'BASE_MAINNET', type: 'evm', token };
+const network = { name: 'BASE_MAINNET', type: 'evm', token, tokens: [token] };
 const swap = {
     source_network: network, source_token: token,
     destination_network: network, destination_token: token,
@@ -23,7 +23,7 @@ const imports = {
     '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput: noop } },
     '@/components/utils/RoundDecimals': { truncateDecimals: String, truncateToDecimals: String },
     '@/components/Widget/Index': { Widget: { Footer: ({ children }) => children } },
-    '@/context/settings': { useSettingsState: () => ({ networks: [network] }) },
+    '@/context/settings': { useSettingsState: () => ({ networks: [network], sourceRoutes: [network], destinationRoutes: [network] }) },
     '@/context/swap': {
         useSwapDataState: () => ({ swapBasicData: swap }),
         useSwapDataUpdate: () => ({ canAdjustAmount: () => canAdjust, startFreshSwapAttempt: () => edits++, setSubmitedFormValues: noop }),

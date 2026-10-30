@@ -203,7 +203,7 @@ test('exact gas loading preserves the pending wallet request and its execution l
         '@/lib/resolvers/resolverService': {},
         '@/components/utils/resolveSwapFlow': loadSource('components/utils/resolveSwapFlow.ts', { '../../helpers/depositActions.js': helpers }),
         '@/lib/atomicBatchExecution': { executeAtomicBatch: () => assert.fail('standard transfer cannot submit an atomic batch') },
-        '@/lib/amountPresets': { AmountPresetChangedError: class extends Error {}, isAmountPreset: () => false },
+        '@/lib/amountPresets': { AmountPresetChangedError: class extends Error {}, isAmountPreset: () => false, amountPresetSource: (...values) => JSON.stringify(values) },
         '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput: noop } },
         '@layerswap/wallet-core': loadSource('../../../wallets/core/src/lib/walletConnect/walletRequestStore.ts'),
         '../../Presentation/WalletRequestRecovery': loadSource(base + 'Presentation/WalletRequestRecovery.tsx', {
