@@ -11,11 +11,11 @@ const rpcUrl = `data:text/javascript,${encodeURIComponent(`
         state.clients++
         return {
             estimateGas: async args => { state.estimate = args; return state.estimateGas(args) },
-            estimateFeesPerGas: async () => state.fees,
+            estimateFeesPerGas: async args => { if (state.feesError) throw state.feesError; return args?.type === 'legacy' ? { gasPrice: state.gasPrice } : state.fees },
             getGasPrice: async () => state.gasPrice,
-            estimateMaxPriorityFeePerGas: async () => { state.priorityRequests++; return state.priorityFee },
+            estimateMaxPriorityFeePerGas: async () => { state.priorityRequests++; if (state.priorityError) throw state.priorityError; return state.priorityFee },
             getCode: async () => state.accountCode,
-            getBalance: async () => { state.balanceRequests++; return state.balance },
+            getBalance: async args => { state.balanceArgs = args; state.balanceRequests++; if (state.balanceError) throw state.balanceError; return state.balance },
             extend: () => ({ estimateL1Fee: async args => { state.l1Estimate = args; return state.l1Fee } }),
         }
     }
@@ -26,25 +26,25 @@ const rpcUrl = `data:text/javascript,${encodeURIComponent(`
         return {}
     }
 `)}`
-const settingsUrl = `data:text/javascript,${encodeURIComponent(`
-    import { state } from ${JSON.stringify(rpcUrl)}
-    export default class { static get KnownSettings() { return state.settings } }
-`)}`
 const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
     const parent = context.parentURL ?? ''
     if ((parent.endsWith('/gasProviders/resolveEVMTransactionGasParameters.js') || parent.endsWith('/gasProviders/evmGasProvider.js')) && [
         'viem', '../evmUtils/resolveChain', '../evmUtils/resolveTransports',
     ].includes(specifier)) return { url: rpcUrl, shortCircuit: true }
-    if (parent.includes('/dist/esm/gasProviders/') && specifier === '../NetworkSettings') return { url: settingsUrl, shortCircuit: true }
     if (specifier.startsWith('.') && !extname(specifier) && parent.includes('/dist/esm/')) {
-        return nextResolve(`${specifier}.js`, context)
+        try { return nextResolve(`${specifier}.js`, context) }
+        catch (error) {
+            if (error.code !== 'ERR_MODULE_NOT_FOUND') throw error
+            return nextResolve(`${specifier}/index.js`, context)
+        }
     }
     return nextResolve(specifier, context)
 } })
 const { state } = await import(rpcUrl)
 const { transactionBuilder } = await import('../dist/esm/transferProvider/transactionBuilder.js')
 const { EVMGasProvider } = await import('../dist/esm/gasProviders/evmGasProvider.js')
-const { parseUnits, parseTransaction } = await import('viem')
+const { toTransferError } = await import('../dist/esm/transferProvider/toTransferError.js')
+const { createWalletClient, custom, InsufficientFundsError, parseUnits, parseTransaction } = await import('viem')
 const token = { symbol: 'MON', decimals: 18 }
 const params = {
     amount: 1,
@@ -55,9 +55,9 @@ const params = {
 }
 beforeEach(() => Object.assign(state, {
     clients: 0, estimate: undefined,
-    nodes: undefined, settings: {}, gasPrice: 102_000_000_000n, priorityFee: 2_000_000_000n,
-    priorityRequests: 0, accountCode: '0x', estimateGas: () => 22_515n,
-    balanceRequests: 0, balance: 20n * 10n ** 18n,
+    nodes: undefined, gasPrice: 102_000_000_000n, priorityFee: 2_000_000_000n,
+    priorityRequests: 0, feesError: undefined, priorityError: undefined, accountCode: '0x', estimateGas: () => 22_515n,
+    balanceRequests: 0, balanceArgs: undefined, balanceError: undefined, balance: 20n * 10n ** 18n,
     l1Fee: 1_000_000_000n, l1Estimate: undefined,
     fees: { maxFeePerGas: 122_000_000_000n, maxPriorityFeePerGas: 2_000_000_000n },
 }))
@@ -82,7 +82,7 @@ test('Monad token transfers retain calldata without attaching native value', asy
 })
 
 test('other EVM chains continue to let the wallet set gas parameters', async () => {
-    const tx = await transactionBuilder({ ...params, network: { ...params.network, chain_id: '1' } })
+    const tx = await transactionBuilder({ ...params, network: { ...params.network, chain_id: '10' } })
     assert.equal(state.clients, 0)
     assert.equal(tx.gas, undefined)
     assert.equal(tx.maxFeePerGas, undefined)
@@ -197,13 +197,11 @@ for (const [name, network, selectedToken, accountCode] of [
     })
 }
 
-test('quotes and explicit transactions share the priority-fee floor and adjusted cap', async () => {
-    state.settings[params.network.name] = { MinPriorityFeePerGasInGwei: 3 }
-    const quote = await new EVMGasProvider().getGas({ ...params, address: params.selectedWallet.address })
-    const tx = await transactionBuilder(params)
-    assert.equal(tx.maxPriorityFeePerGas, 3_000_000_000n)
-    assert.equal(tx.maxFeePerGas, 123_000_000_000n)
-    assert.equal(parseUnits(String(quote.maxFee), 18), tx.gas * tx.maxFeePerGas)
+test('Avalanche quotes apply the configured priority-fee floor and adjusted cap', async () => {
+    state.fees = { maxFeePerGas: 122_000_000_000n, maxPriorityFeePerGas: 1_000_000_000n }
+    const network = { ...params.network, name: 'AVAX_MAINNET', chain_id: '43114' }
+    const quote = await new EVMGasProvider().getGas({ ...params, network, address: params.selectedWallet.address })
+    assert.equal(parseUnits(String(quote.gas), 18), 22_515n * 122_500_000_000n)
 })
 
 test('missing priority-fee estimates use the shared RPC fallback', async () => {
@@ -236,4 +234,162 @@ test('Optimism L1 fees serialize the same deposit payload as the execution estim
     assert.equal(serialized.value, 10n ** 18n)
     assert.deepEqual(state.nodes, [action.network.node_url])
     assert.equal(parseUnits(String(quote.gas), 18), 22_515n * state.fees.maxFeePerGas + state.l1Fee)
+})
+
+const bscAction = {
+    ...params,
+    network: { ...params.network, name: 'BSC_MAINNET', chain_id: '56', token: { symbol: 'BNB', decimals: 18 } },
+    token: { symbol: 'BNB', decimals: 18 },
+    callData: `0x${'12'.repeat(32)}`,
+}
+
+const quoteAction = action => new EVMGasProvider().getGas({
+    address: action.selectedWallet.address, network: action.network,
+    token: action.token, amount: action.amount, amountInBaseUnits: action.amountInBaseUnits,
+    recipientAddress: action.depositAddress, callData: action.callData,
+})
+
+test('Ethereum does not quote gasPrice when its EIP-1559 cap RPC fails', async () => {
+    state.feesError = new Error('fee estimate unavailable')
+    const action = { ...bscAction, network: { ...bscAction.network, chain_id: '1' } }
+    assert.equal(await quoteAction(action), undefined)
+    await assert.rejects(transactionBuilder(action), /EIP-1559 fee data is unavailable for chain 1/)
+})
+
+test('Ethereum does not quote an executable fee when priority data and its fallback fail', async () => {
+    state.fees = { maxFeePerGas: 200_000_000n }
+    state.priorityError = new Error('priority fee unavailable')
+    const action = { ...bscAction, network: { ...bscAction.network, chain_id: '1' } }
+    assert.equal(await quoteAction(action), undefined)
+    await assert.rejects(transactionBuilder(action), /EIP-1559 fee data is unavailable for chain 1/)
+})
+
+test('Ethereum quotes and submits a valid zero priority fee without requesting a fallback', async () => {
+    state.fees.maxPriorityFeePerGas = 0n
+    const action = { ...bscAction, network: { ...bscAction.network, chain_id: '1' } }
+    const quote = await quoteAction(action)
+    const tx = await transactionBuilder(action)
+    assert.equal(parseUnits(String(quote.maxFee), 18), tx.gas * tx.maxFeePerGas)
+    assert.equal(tx.maxPriorityFeePerGas, 0n)
+    assert.equal(state.priorityRequests, 0)
+})
+
+test('BSC Max reserves and submits the same legacy price and buffered limit', async () => {
+    state.balance = 534_967_843_846_153n
+    state.gasPrice = 50_000_000n
+    state.estimateGas = () => 22_615n
+    // An unrelated 1559 cap must not affect a legacy quote or transaction.
+    state.fees = { maxFeePerGas: 3_000_000_000n, maxPriorityFeePerGas: 1_000_000_000n }
+    const quote = await quoteAction({ ...bscAction, amount: '0.000533814478846153' })
+    const fee = parseUnits(String(quote.maxFee), 18)
+    const bufferedFee = (fee * 102n + 99n) / 100n
+    const action = { ...bscAction, amount: '0', amountInBaseUnits: String(state.balance - bufferedFee) }
+    const tx = await transactionBuilder(action)
+    assert.equal(tx.gas, 27_138n)
+    assert.equal(tx.gasPrice, 50_000_000n)
+    assert.equal(tx.maxFeePerGas, undefined)
+    assert.equal(tx.maxPriorityFeePerGas, undefined)
+    assert.equal(fee, tx.gas * tx.gasPrice)
+    assert.ok(tx.value + fee <= state.balance)
+    assert.deepEqual(state.balanceArgs, { address: tx.account, blockTag: 'pending' })
+    assert.equal(state.priorityRequests, 0)
+})
+
+test('Ethereum Max budgets the explicit EIP-1559 cap rather than wallet defaults', async () => {
+    state.balance = 330_390_000_000_000n
+    state.estimateGas = () => 22_615n
+    state.gasPrice = 100_000_000n
+    state.fees = { maxFeePerGas: 355_992_205n, maxPriorityFeePerGas: 238_915_805n }
+    const action = { ...bscAction, network: { ...bscAction.network, name: 'ETHEREUM_MAINNET', chain_id: '1' }, amount: '0' }
+    const quote = await quoteAction(action)
+    const fee = parseUnits(String(quote.maxFee), 18)
+    const tx = await transactionBuilder({ ...action, amountInBaseUnits: String(state.balance - (fee * 102n + 99n) / 100n) })
+    assert.equal(tx.gas, 27_138n)
+    assert.equal(tx.maxFeePerGas, 355_992_205n)
+    assert.equal(tx.maxPriorityFeePerGas, 238_915_805n)
+    assert.equal(tx.gasPrice, undefined)
+    assert.equal(fee, tx.gas * tx.maxFeePerGas)
+    assert.ok(tx.value + fee <= state.balance)
+})
+
+for (const amount of ['0.000533814478846153', '0.00017042', '0.00015004', '0.00014413']) {
+    test(`BSC blocks an unaffordable native amount before signing: ${amount}`, async () => {
+        state.balance = amount === '0.000533814478846153' ? 534_967_843_846_153n : 201_580_604_423_077n
+        state.gasPrice = 3_000_000_000n
+        state.estimateGas = () => 22_615n
+        await assert.rejects(transactionBuilder({ ...bscAction, amount }), error => {
+            const mapped = toTransferError(error)
+            assert.equal(mapped.name, 'InsufficientFunds')
+            assert.equal(mapped.cause, error)
+            return true
+        })
+    })
+}
+
+test('a fee increase after the quote blocks the fixed deposit amount instead of reducing it', async () => {
+    state.balance = 534_967_843_846_153n
+    state.gasPrice = 50_000_000n
+    state.estimateGas = () => 22_615n
+    const quote = await quoteAction({ ...bscAction, amount: '0' })
+    const fee = parseUnits(String(quote.maxFee), 18)
+    const amountInBaseUnits = String(state.balance - (fee * 102n + 99n) / 100n)
+    state.gasPrice = 3_000_000_000n
+    await assert.rejects(transactionBuilder({ ...bscAction, amount: '0', amountInBaseUnits }), InsufficientFundsError)
+    assert.equal(state.estimate.value, BigInt(amountInBaseUnits))
+})
+
+test('token transfers also require enough native balance for the explicit gas budget', async () => {
+    state.balance = 1n
+    await assert.rejects(transactionBuilder({
+        ...bscAction, token: { ...bscAction.token, contract: `0x${'56'.repeat(20)}` },
+    }), InsufficientFundsError)
+    assert.equal(state.estimate.value, 0n)
+})
+
+test('BSC refuses to silently return to wallet fees when its price is unavailable', async () => {
+    state.gasPrice = undefined
+    await assert.rejects(transactionBuilder(bscAction), /Legacy gas price is unavailable for chain 56/)
+    assert.equal(await quoteAction(bscAction), undefined)
+})
+
+test('balance RPC failure aborts preparation rather than assuming sufficient funds', async () => {
+    state.balanceError = new Error('balance RPC unavailable')
+    await assert.rejects(transactionBuilder(bscAction), error => error === state.balanceError)
+})
+
+for (const chainId of ['56', '1']) {
+    test(`chain ${chainId} passes its quoted gas parameters through to eth_sendTransaction`, async () => {
+        const action = { ...bscAction, network: { ...bscAction.network, chain_id: chainId } }
+        const tx = await transactionBuilder(action)
+        let sent
+        const wallet = createWalletClient({ transport: custom({
+            request: async ({ method, params }) => {
+                if (method === 'eth_chainId') return `0x${Number(chainId).toString(16)}`
+                assert.equal(method, 'eth_sendTransaction')
+                sent = params[0]
+                return `0x${'ab'.repeat(32)}`
+            },
+        }) })
+        await wallet.sendTransaction({ ...tx, chain: null })
+        assert.equal(BigInt(sent.gas), tx.gas)
+        assert.equal(BigInt(sent.value), tx.value)
+        if (chainId === '56') {
+            assert.equal(BigInt(sent.gasPrice), tx.gasPrice)
+            assert.equal(sent.maxFeePerGas, undefined)
+        } else {
+            assert.equal(BigInt(sent.maxFeePerGas), tx.maxFeePerGas)
+            assert.equal(BigInt(sent.maxPriorityFeePerGas), tx.maxPriorityFeePerGas)
+            assert.equal(sent.gasPrice, undefined)
+        }
+    })
+}
+
+test('the pending balance must cover the full fee cap, down to the last wei', async () => {
+    state.estimateGas = () => 22_615n
+    const value = 100_000n
+    state.balance = value + 27_138n * state.gasPrice
+    const action = { ...bscAction, amountInBaseUnits: String(value) }
+    assert.equal((await transactionBuilder(action)).value, value)
+    state.balance -= 1n
+    await assert.rejects(transactionBuilder(action), InsufficientFundsError)
 })
