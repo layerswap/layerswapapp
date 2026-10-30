@@ -92,7 +92,7 @@ test('other EVM chains continue to let the wallet set gas parameters', async () 
 
 test('Monad does not fall back to wallet gas parameters when EIP-1559 fees are unavailable', async () => {
     state.fees = {}
-    await assert.rejects(transactionBuilder(params), /EIP-1559 fee data is unavailable/)
+    await assert.rejects(transactionBuilder(params), /EIP-1559 fee data is unavailable for chain 143/)
 })
 
 test('gas quotes and submissions fall back to node_url when nodes is empty', async () => {
@@ -253,7 +253,7 @@ test('Ethereum does not quote gasPrice when its EIP-1559 cap RPC fails', async (
     state.feesError = new Error('fee estimate unavailable')
     const action = { ...bscAction, network: { ...bscAction.network, chain_id: '1' } }
     assert.equal(await quoteAction(action), undefined)
-    await assert.rejects(transactionBuilder(action), /EIP-1559 fee data is unavailable/)
+    await assert.rejects(transactionBuilder(action), /EIP-1559 fee data is unavailable for chain 1/)
 })
 
 test('Ethereum does not quote an executable fee when priority data and its fallback fail', async () => {
@@ -261,7 +261,7 @@ test('Ethereum does not quote an executable fee when priority data and its fallb
     state.priorityError = new Error('priority fee unavailable')
     const action = { ...bscAction, network: { ...bscAction.network, chain_id: '1' } }
     assert.equal(await quoteAction(action), undefined)
-    await assert.rejects(transactionBuilder(action), /EIP-1559 fee data is unavailable/)
+    await assert.rejects(transactionBuilder(action), /EIP-1559 fee data is unavailable for chain 1/)
 })
 
 test('Ethereum quotes and submits a valid zero priority fee without requesting a fallback', async () => {
@@ -348,7 +348,7 @@ test('token transfers also require enough native balance for the explicit gas bu
 
 test('BSC refuses to silently return to wallet fees when its price is unavailable', async () => {
     state.gasPrice = undefined
-    await assert.rejects(transactionBuilder(bscAction), /Legacy gas price is unavailable/)
+    await assert.rejects(transactionBuilder(bscAction), /Legacy gas price is unavailable for chain 56/)
     assert.equal(await quoteAction(bscAction), undefined)
 })
 

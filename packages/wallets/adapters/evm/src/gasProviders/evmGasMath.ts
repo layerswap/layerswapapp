@@ -81,10 +81,12 @@ export const calculateGasFeeAmounts = ({
 
 type BuildTransactionGasParametersArgs = EVMFeeData & {
     estimatedGas: bigint
+    chainId?: number
 }
 
 export const buildTransactionGasParameters = ({
     policy,
+    chainId,
     estimatedGas,
     gasPrice,
     maxFeePerGas,
@@ -99,7 +101,8 @@ export const buildTransactionGasParameters = ({
         const message = policy.transactionGasMode === 'explicit-legacy'
             ? 'Legacy gas price is unavailable'
             : 'EIP-1559 fee data is unavailable'
-        throw new Error(message)
+        const chainContext = chainId === undefined ? '' : ` for chain ${chainId}`
+        throw new Error(`${message}${chainContext}`)
     }
 
     return {

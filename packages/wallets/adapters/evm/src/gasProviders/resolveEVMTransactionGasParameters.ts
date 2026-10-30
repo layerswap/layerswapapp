@@ -37,6 +37,7 @@ export const resolveEVMTransactionGasParameters = async ({
 
     const gasParameters = buildTransactionGasParameters({
         policy,
+        chainId,
         estimatedGas,
         ...feesPerGas,
     })
@@ -51,7 +52,7 @@ export const resolveEVMTransactionGasParameters = async ({
     const balance = await publicClient.getBalance({ address: account, blockTag: 'pending' })
     const feePerGas = gasParameters.gasPrice ?? gasParameters.maxFeePerGas
     if (feePerGas === undefined) {
-        throw new Error('Transaction fee is unavailable')
+        throw new Error(`Transaction fee is unavailable for chain ${chainId}`)
     }
     const requiredBalance = (value ?? 0n) + gasParameters.gas * feePerGas
     if (balance < requiredBalance) {

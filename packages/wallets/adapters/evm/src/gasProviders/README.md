@@ -18,6 +18,7 @@ select gas behavior. Every entry includes its chain name for maintenance.
 - `reserveMaximumFee`: expose the maximum fee separately for Max budgeting.
 - `checkBalanceBeforeSend`: check pending native balance against transfer value
   plus the prepared maximum fee before requesting a wallet transaction.
+  A failed balance read aborts preparation rather than assuming sufficient funds.
 - `accountBalanceReserve`: chain-specific balance that must remain in the account.
 
 `NetworkSettings.ts` retains ordering and fee-unit conversion overrides. Those are
