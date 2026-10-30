@@ -57,6 +57,7 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
     const { balances, mutate, isLoading } = useBalance(
         active ? selectedSourceAccount?.address : undefined,
         source_network,
+        { refreshInterval: 20000, dedupeInterval: 20000 },
     );
     const walletBalance =
         source_network &&
