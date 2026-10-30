@@ -18,8 +18,9 @@ const { createRoot } = await import('react-dom/client')
 const { default: useSWR, SWRConfig, useSWRConfig } = await import('swr')
 
 const token = { symbol: 'ETH', decimals: 18, precision: 8, price_in_usd: 2400 }
-const source = { name: 'BASE_MAINNET', token, tokens: [token] }
-const destination = { name: 'ARBITRUM_MAINNET', token, tokens: [token] }
+const usdc = { symbol: 'USDC', decimals: 6, precision: 6, contract: '0xconfigured-usdc', price_in_usd: 1 }
+const source = { name: 'BASE_MAINNET', token, tokens: [token, usdc] }
+const destination = { name: 'ARBITRUM_MAINNET', token, tokens: [token, usdc] }
 const settings = { sourceRoutes: [source], destinationRoutes: [destination] }
 const state = {}
 const { BalanceResolver } = loadSource('lib/balances/balanceResolver.ts', {
@@ -30,7 +31,10 @@ const { BalanceResolver } = loadSource('lib/balances/balanceResolver.ts', {
 })
 const context = createSwapContext({
   Client: class {}, getSwapId: () => undefined, getAccount: () => state.account,
-  overrides: { '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts') },
+  overrides: {
+    '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
+    '@/hooks/useSwapPolling': { useSwapPolling: id => ({ data: id ? state.backendResponse : undefined, mutate() {} }) },
+  },
 })
 const { generateSwapInitialValuesFromSwap } = loadSource('lib/generateSwapInitialValues.ts', {
   './address/Address': {}, './extendedRoutes/registry': {},
@@ -39,9 +43,9 @@ const { default: Controller } = loadSource('components/Pages/Swap/Form/AmountPre
   react: React, formik: require('formik'), swr: { default: useSWR }, '@/context/swap': context,
   '@/context/swapAccounts': { useSelectedAccount: () => state.account },
   '@/hooks/useWallet': { default: () => ({ wallets: [state.account] }) },
-  '@/hooks/useFee': { transformFormValuesToQuoteArgs: values => values, useQuoteData: () => ({ maxAllowedAmount: 1, minAllowedAmount: state.minimum }) },
+  '@/hooks/useFee': { transformFormValuesToQuoteArgs: values => values, useQuoteData: () => ({ maxAllowedAmount: state.maximum, minAllowedAmount: state.minimum }) },
   '@/hooks/useFormValidation': formValidation,
-  '@/lib/balances/useBalance': { useBalance: () => ({ balances: state.balances, isLoading: state.balanceLoading }) },
+  '@/lib/balances/useBalance': { useBalance: (_address, network) => ({ balances: state.rejectIncompleteNetworks && !network?.tokens ? [] : state.balances, isLoading: state.balanceLoading }) },
   '@/lib/amountPresets': amountPresets,
   '@/lib/amountMessages': amountMessages,
   '@/stores/usdModeStore': { useUsdModeStore: selector => usdStore(selector) },
@@ -140,13 +144,13 @@ const { default: Withdraw } = loadSource('components/Pages/Swap/Withdraw/Withdra
   '@/lib/amountPresets': amountPresets,
   '@/stores/swapTransactionStore': { useSwapTransactionStore: selector => selector({ swapTransactions: {}, pendingSubmissions: {} }) },
   '@/components/Widget/Index': { Widget: { Footer: passthrough } },
-  '@/context/settings': { useSettingsState: () => ({ networks: [source, destination] }) },
+  '@/context/settings': { useSettingsState: () => ({ networks: [source, destination], ...settings }) },
   '@/context/swapAccounts': { useSelectedAccount: () => state.account },
   '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
-  '@/hooks/useFee': { transformSwapDataToQuoteArgs: values => values, useQuoteData: () => ({ maxAllowedAmount: 1, minAllowedAmount: state.minimum }) },
+  '@/hooks/useFee': { transformSwapDataToQuoteArgs: values => values, useQuoteData: () => ({ maxAllowedAmount: state.maximum, minAllowedAmount: state.minimum }) },
   '@/lib/balances/useBalance': { useBalance: () => ({ balances: state.balances }) },
   '@/lib/gases/useSWRGas': gasHook, '@/lib/gases/useOutOfGas': { default: useOutOfGas },
-  '../Form/SecondaryComponents/validationError/AdjustAmountButton': { AdjustAmountButton: () => createElement('button', null, 'Adjust amount') },
+  '../Form/SecondaryComponents/validationError/AdjustAmountButton': { AdjustAmountButton: ({ onEditAmount }) => createElement('button', { onClick: onEditAmount }, 'Adjust amount') },
   '../Form/SecondaryComponents/validationError/RefreshBalanceButton': { RefreshBalanceButton: () => createElement('button', null, 'Refresh') },
   './Presentation/BalanceWarningView': warningViews,
   './WalletTransferButton': { default: WalletTransferButton },
@@ -196,10 +200,12 @@ const decreaseBalance = () => {
 }
 beforeEach(() => {
   container = document.createElement('div'); document.body.append(container); root = createRoot(container)
-  Object.assign(state, { account: { id: 'wallet', address: 'source' }, formKey: 0, minimum: 0.00001, price: 2400,
+  Object.assign(state, { account: { id: 'wallet', address: 'source' }, formKey: 0, maximum: 1, minimum: 0.00001, price: 2400,
+    rejectIncompleteNetworks: false,
     enableAutoAdjust: false, renderQuoteDetails: false, events: [], commits: [], walletMounts: 0, walletUnmounts: 0,
     gas: { gas: 0.0000001, token }, gasRequest: undefined, gasError: undefined, balanceLoading: false,
     balances: [{ amount: 0.00182643, network: source.name, token: token.symbol, request_time: 1, isNativeCurrency: true }] })
+  state.backendResponse = { data: { swap: { id: 'created', source_network: { name: source.name }, source_token: {}, destination_network: { name: source.name }, destination_token: {}, requested_amount: 1, transactions: [], use_deposit_address: false } } }
   initialValues = { from: source, to: destination, fromAsset: token, toAsset: token, destination_address: 'destination',
     depositMethod: 'wallet', amount: '0.00182505', amountMode: 'max',
     amountPresetSource: amountPresets.amountPresetSource(source.name, token.symbol, 'wallet', 'source') }
@@ -531,4 +537,44 @@ test('automatic gas adjustment cannot bind Max to a newly selected funding accou
   assert.equal(data.swapBasicData.amountMode, 'manual')
   assert.equal(formik.values.amountPresetSource, undefined)
   assert.equal(data.amountPresetRevision, previousRevision, 'an account change must not trigger an automatic adjustment')
+})
+
+
+test('Adjust after wallet rejection and a USDC balance decrease restores configured route metadata', async () => {
+  state.enableAutoAdjust = true
+  state.maximum = 10
+  state.rejectIncompleteNetworks = true
+  initialValues.fromAsset = usdc
+  initialValues.toAsset = usdc
+  initialValues.amount = '2.913482'
+  initialValues.amountPresetSource = amountPresets.amountPresetSource(source.name, usdc.symbol, 'wallet', 'source')
+  state.balances = [{ amount: 2.913482, network: source.name, token: usdc.symbol, request_time: 1 }]
+  await render(); await openReview()
+  // A created swap's API networks have no token catalogue. Rejection leaves no
+  // receipt, so Adjust is allowed once the external withdrawal lowers balance.
+  state.backendResponse = { data: { swap: {
+    id: 'rejected', source_network: { name: source.name, token },
+    destination_network: { name: destination.name, token },
+    source_token: { symbol: usdc.symbol, decimals: 6 }, destination_token: { symbol: usdc.symbol, decimals: 6 },
+    requested_amount: 2.913482, destination_address: 'destination', transactions: [], use_deposit_address: false,
+  } } }
+  await act(() => updates.setSwapId('rejected'))
+  assert.equal(data.amountPresetLocked, true)
+  assert.equal(updates.canAdjustAmount(), true)
+  state.balances = [{ ...state.balances[0], amount: 2.413482, request_time: 2 }]
+  await render()
+  const adjust = [...container.querySelectorAll('button')].find(button => button.textContent === 'Adjust amount')
+  assert.ok(adjust)
+  await act(() => adjust.click())
+  assert.equal(formik.values.from, source)
+  assert.equal(formik.values.to, destination)
+  assert.equal(formik.values.fromAsset, usdc)
+  assert.equal(formik.values.toAsset, usdc)
+  assert.equal(formik.values.amount, '2.413482')
+  assert.equal(data.swapBasicData.requested_amount, '2.413482')
+  assert.equal(data.swapId, undefined)
+  assert.equal(formik.values.amountPresetError, undefined)
+  assert.equal(formik.values.amountPresetPending, false)
+  assert.doesNotMatch(container.textContent, /Balance unavailable|Something went wrong/)
+  assert.equal(container.querySelector('button').disabled, false)
 })
