@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { TransferBlockedReasonCode } from '@layerswap/widget-types';
+import type { SwapLifecycleStage, TransferBlockedReasonCode } from '@layerswap/widget-types';
 import { useOptionalCallbacks } from '@/context/callbackProvider';
 import { useSwapDataState } from '@/context/swap';
 import { useTransferBlocked } from '@/hooks/useTransferBlocked';
@@ -8,6 +8,7 @@ import { lifecycleContextFromSwap, type SwapLifecycleContext } from '@/lib/swapL
 type TransferBlockProps = {
     reasonCode: TransferBlockedReasonCode;
     reason?: string;
+    stage?: SwapLifecycleStage;
     path: string;
     context?: SwapLifecycleContext;
     children: ReactNode;
@@ -24,11 +25,11 @@ export function TransferBlock(props: TransferBlockProps) {
     return <ObservedTransferBlock {...props} />;
 }
 
-function ObservedTransferBlock({ reasonCode, reason, path, context, children }: TransferBlockProps) {
+function ObservedTransferBlock({ reasonCode, reason, path, context, stage, children }: TransferBlockProps) {
     const { swapBasicData, swapDetails } = useSwapDataState();
     useTransferBlocked(reasonCode, {
         ...(swapBasicData ? lifecycleContextFromSwap(swapBasicData, swapDetails) : undefined),
         ...context,
-    }, path, reason);
+    }, path, reason, stage);
     return <>{children}</>;
 }
