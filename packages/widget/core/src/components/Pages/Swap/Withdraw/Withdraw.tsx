@@ -12,7 +12,7 @@ import useSWRGas from '@/lib/gases/useSWRGas';
 import { resolveMaxAllowedAmount } from '@/components/Input/Amount/helpers';
 import { amountPresetSource, isAmountPreset } from '@/lib/amountPresets';
 import { truncateToDecimals } from '@/components/utils/RoundDecimals';
-import { NetworkRoute, NetworkType } from '@layerswap/widget-types';
+import { NetworkType } from '@layerswap/widget-types';
 import type { JSX } from 'react';
 import { FC, useCallback, useMemo } from 'react';
 import { AdjustAmountButton } from '../Form/SecondaryComponents/validationError/AdjustAmountButton';
@@ -45,7 +45,7 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
     const { startFreshSwapAttempt, canAdjustAmount } = useSwapDataUpdate();
     const hasSubmittedTransfer = useHasSubmittedTransfer();
 
-    const { networks } = useSettingsState();
+    const { networks, sourceRoutes, destinationRoutes } = useSettingsState();
     const source_network =
         swapBasicData?.source_network &&
         networks.find((n) => n.name === swapBasicData?.source_network?.name);
@@ -57,6 +57,7 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
     const { balances, mutate, isLoading } = useBalance(
         active ? selectedSourceAccount?.address : undefined,
         source_network,
+        { refreshInterval: 20000, dedupeInterval: 20000 },
     );
     const walletBalance =
         source_network &&
@@ -79,12 +80,20 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
         amountInBaseUnits: transferAction.amount_in_base_units,
     } : undefined;
     const gasEstimationAmount = gasTransaction ? transferAction?.amount : swapBasicData?.requested_amount;
-    const { gasData } = useSWRGas(
+    const currentPresetSource = amountPresetSource(
+        swapBasicData?.source_network.name, swapBasicData?.source_token.symbol,
+        selectedSourceAccount?.id, selectedSourceAccount?.address,
+    );
+    const livePreset = !swapId && !amountPresetLocked && isAmountPreset(swapBasicData?.amountMode)
+        && swapBasicData?.amountPresetSource === currentPresetSource;
+    const { gasData: estimatedGas } = useSWRGas(
         active ? selectedSourceAccount?.address : undefined,
         source_network,
         swapBasicData?.source_token,
-        gasEstimationAmount, undefined, { enabled: active, transaction: gasTransaction },
+        gasEstimationAmount, undefined, { enabled: active && !livePreset, transaction: gasTransaction },
     );
+
+    const gasData = livePreset ? swapBasicData?.amountPresetGas : estimatedGas;
 
     const lifecycleContext = useMemo(
         () => swapBasicData ? lifecycleContextFromSwap(swapBasicData, swapDetails) : undefined,
@@ -125,11 +134,19 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
         return amount > 0 && amount >= minAllowedAmount && amount < Number(swapBasicData.requested_amount)
             ? newAmount : undefined;
     })();
-    const showAdjustAmount = !!adjustFormAmount && adjustedAmount !== undefined && canAdjustAmount();
+    // API swap networks are display metadata, not complete form routes. Restart
+    // with configured routes so balance readers retain token lists and RPC data.
+    const formSource = sourceRoutes?.find(route => route.name === swapBasicData?.source_network.name);
+    const formDestination = destinationRoutes?.find(route => route.name === swapBasicData?.destination_network.name);
+    const formSourceToken = formSource?.tokens.find(token => token.symbol === swapBasicData?.source_token.symbol);
+    const formDestinationToken = formDestination?.tokens.find(token => token.symbol === swapBasicData?.destination_token.symbol);
+    const showAdjustAmount = !!adjustFormAmount && adjustedAmount !== undefined && canAdjustAmount()
+        && !!formSourceToken && !!formDestinationToken;
 
     const handleEditAmount = useCallback(() => {
         // Execution can start between rendering the action and clicking it.
-        if (!adjustFormAmount || !canAdjustAmount() || adjustedAmount === undefined || !swapBasicData) {
+        if (!adjustFormAmount || !canAdjustAmount() || adjustedAmount === undefined || !swapBasicData
+            || !formSource || !formDestination || !formSourceToken || !formDestinationToken) {
             return;
         }
         widgetTelemetry.recordAmountInput('max');
@@ -139,10 +156,10 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
         const updates: SwapFormValues = {
             ...maxFields,
             amount: adjustedAmount,
-            from: swapBasicData.source_network as NetworkRoute,
-            to: swapBasicData.destination_network as NetworkRoute,
-            fromAsset: swapBasicData.source_token,
-            toAsset: swapBasicData.destination_token,
+            from: formSource,
+            to: formDestination,
+            fromAsset: formSourceToken,
+            toAsset: formDestinationToken,
             destination_address: swapBasicData.destination_address,
             refuel: !!refuel,
             depositMethod: swapBasicData.use_deposit_address
@@ -156,7 +173,7 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
         swapBasicData,
         refuel,
         adjustFormAmount, canAdjustAmount, selectedSourceAccount,
-        startFreshSwapAttempt,
+        startFreshSwapAttempt, formSource, formDestination, formSourceToken, formDestinationToken,
     ]);
 
     let warning: JSX.Element | null = null;
@@ -186,6 +203,7 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
         minAllowedAmount,
         maxAllowedAmount,
         transaction: gasTransaction,
+        gasEstimate: { gasData },
     });
 
     if (

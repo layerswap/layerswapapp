@@ -19,9 +19,9 @@ for (const [key, value] of Object.entries(globals)) {
 const mockUrl = `data:text/javascript,${encodeURIComponent(`
   import { createElement } from ${JSON.stringify(import.meta.resolve('react'))}
   export const state = {}
-  export const useSwapDataState = () => ({ swapBasicData: state.swap, swapId: state.swapId, swapDetails: state.swapDetails, inputTransactionStatus: state.inputTransactionStatus, depositActionsResponse: state.actions, quoteIsLoading: state.quoteLoading })
+  export const useSwapDataState = () => ({ swapBasicData: state.swap, amountPresetLocked: state.locked, swapId: state.swapId, swapDetails: state.swapDetails, inputTransactionStatus: state.inputTransactionStatus, depositActionsResponse: state.actions, quoteIsLoading: state.quoteLoading })
   export const useSwapDataUpdate = () => ({ setSubmitedFormValues(values) { state.submitted = values }, startFreshSwapAttempt() { state.freshAttempts++ }, canAdjustAmount: () => !state.locked })
-  export const useSettingsState = () => ({ networks: [state.swap.source_network] })
+  export const useSettingsState = () => ({ networks: [state.swap.source_network], sourceRoutes: [{ ...state.swap.source_network, tokens: [state.swap.source_token] }], destinationRoutes: [{ ...state.swap.destination_network, tokens: [state.swap.destination_token] }] })
   export const useSelectedAccount = () => ({ address: state.walletAddress ?? 'source' })
   export const useBalance = () => ({ balances: state.balances, mutate() {}, isLoading: false })
   export const useOptionalCallbacks = () => ({})
@@ -458,4 +458,45 @@ test('a definitively failed hash restores the actual funding block', async () =>
   assert.equal(sendButton(), undefined)
   assert.match(container.textContent, /Refresh balance/)
   assert.deepEqual(blocks().map(event => event.reasonCode), ['insufficient_balance'])
+})
+
+
+test('withdrawal consumes the live Max fee without another estimate or adjustment', async () => {
+  state.swap.amountMode = 'max'
+  state.swap.amountPresetSource = JSON.stringify([network.name, token.symbol, null, 'source'])
+  state.swap.amountPresetBalance = 1
+  state.swap.requested_amount = '0.898'
+  state.swap.amountPresetGas = { gas: 0.1, token }
+  state.gasData = { gas: 0.2, token }
+  await render()
+  assert.equal(state.freshAttempts, 0)
+  assert.equal(state.submitted, undefined)
+  assert.equal(container.textContent.includes('Insufficient balance for gas'), false)
+  assert.ok(state.gasRequests.every(args => args[5]?.enabled === false), 'live Max must own its fee requests')
+})
+
+for (const frozen of ['manual', 'wallet execution', 'created swap', 'submitted']) {
+  test(`${frozen} never changes its amount automatically after a fee increase`, async () => {
+    state.swap.amountMode = frozen === 'manual' ? 'manual' : 'max'
+    state.swap.amountPresetBalance = 1
+    if (frozen === 'wallet execution') state.locked = true
+    if (frozen === 'created swap') state.swapId = 'existing'
+    if (frozen === 'submitted') {
+      state.swapId = 'submitted'
+      useSwapTransactionStore.setState({ swapTransactions: { submitted: { hash: '0xtest' } } })
+    }
+    await render()
+    assert.equal(state.freshAttempts, 0)
+    assert.equal(state.submitted, undefined)
+    assert.equal(state.swap.requested_amount, '0.95')
+  })
+}
+
+test('Max retains a real gas warning when no valid reduced amount meets the minimum', async () => {
+  state.swap.amountMode = 'max'
+  state.swap.amountPresetBalance = 1
+  state.minAllowedAmount = 0.94
+  await render()
+  assert.equal(state.freshAttempts, 0)
+  assert.equal(container.textContent.includes('Insufficient balance for gas'), true)
 })

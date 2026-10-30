@@ -7,6 +7,7 @@ import { useUsdModeStore } from "@/stores/usdModeStore";
 import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
 import useOutOfGas from "@/lib/gases/useOutOfGas";
+import { amountPresetSource, isAmountPreset, isWalletAmountFlow } from '@/lib/amountPresets';
 import BalanceWarningTooltip from "@/components/Pages/Swap/Form/SecondaryComponents/ReserveGasNote";
 import { QuoteTokenPrices } from "@/hooks/useFee";
 
@@ -40,6 +41,8 @@ const Balance = ({ values, direction, minAllowedAmount, maxAllowedAmount, quoteT
     }, [isUsdMode, tokenPriceInUsd, balanceAmount, truncatedBalance])
 
     const isFromDirection = direction === 'from'
+    const livePreset = isFromDirection && isWalletAmountFlow(values) && isAmountPreset(values.amountMode)
+        && values.amountPresetSource === amountPresetSource(from?.name, fromCurrency?.symbol, selectedSourceAccount?.id, selectedSourceAccount?.address)
 
     const { outOfGas } = useOutOfGas({
         address: isFromDirection ? selectedSourceAccount?.address : undefined,
@@ -48,7 +51,8 @@ const Balance = ({ values, direction, minAllowedAmount, maxAllowedAmount, quoteT
         amount: isFromDirection ? values.amount : undefined,
         balances: isFromDirection ? balances : undefined,
         minAllowedAmount,
-        maxAllowedAmount
+        maxAllowedAmount,
+        gasEstimate: livePreset ? { gasData: values.amountPresetGas } : undefined,
     })
 
     const insufficientBalance = balanceAmount >= 0 && balanceAmount < Number(values.amount) && values.depositMethod === 'wallet' && isFromDirection

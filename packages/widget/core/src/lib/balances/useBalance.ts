@@ -19,39 +19,35 @@ export function useBalance(
         refreshInterval = 60000,
         refreshWhenHidden = false,
         refreshWhenOffline = false,
-        dedupeInterval = 60000,
+        dedupeInterval = refreshInterval,
     } = opts ?? {}
 
     const entry = useBalanceStore((s) => s.balances[key])
     const fetchBalance = useBalanceStore((s) => s.fetchBalance)
 
-    const tick = (interval: number = refreshInterval) => {
-        if (!address || !network) return
-        if (!refreshWhenHidden && document.hidden) return
-        if (!refreshWhenOffline && navigator.onLine === false) return
-        // Errors are exposed through the store; a background refresh must not
-        // leave an unhandled rejection while the user reviews the form.
-        void fetchBalance(address, network, { dedupeInterval: interval }).catch(() => undefined)
-    }
-
     useEffect(() => {
-        tick()
-    }, [address, network, entry?.status, fetchBalance])
-
-    useEffect(() => {
-        if (refreshInterval <= 0) return
         if (!address || !network) return
-        tick(refreshInterval)
-        const id = window.setInterval(tick, refreshInterval)
-        return () => window.clearInterval(id)
-    }, [
-        address,
-        network,
-        fetchBalance,
-        refreshInterval,
-        refreshWhenHidden,
-        refreshWhenOffline,
-    ])
+        let stopped = false
+        let timer: number | undefined
+        const poll = async () => {
+            const visible = refreshWhenHidden || !document.hidden
+            const online = refreshWhenOffline || navigator.onLine !== false
+            if (visible && online) {
+                // The store shares in-flight requests and exposes errors to the UI.
+                await fetchBalance(address, network, { dedupeInterval }).catch(() => undefined)
+            }
+            // Start the next wait after the request settles. Fixed interval ticks
+            // otherwise hit the completion-based cache too early and skip a poll.
+            if (!stopped && refreshInterval > 0) {
+                timer = window.setTimeout(poll, refreshInterval)
+            }
+        }
+        void poll()
+        return () => {
+            stopped = true
+            window.clearTimeout(timer)
+        }
+    }, [address, network, fetchBalance, refreshInterval, dedupeInterval, refreshWhenHidden, refreshWhenOffline])
 
     const mutate = () => {
         if (!address || !network) return Promise.resolve(undefined)
