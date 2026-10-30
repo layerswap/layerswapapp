@@ -14,6 +14,7 @@ import { filterRoutesByAccount } from "./filterRoutesByAccounts";
 import { seedDefaultAmount } from "../seedDefaultAmount";
 import { CircleAlert } from "lucide-react";
 import useWallet from "@/hooks/useWallet";
+import { Address } from "@/lib/address/Address";
 
 const SourceStep: FC = () => {
     const { values, setFieldValue } = useFormikContext<SwapFormValues>();
@@ -22,7 +23,8 @@ const SourceStep: FC = () => {
     const sourceAccount = useLatestSourceAccount();
     const { wallets } = useWallet();
     const isLoginSource = !!sourceAccount && wallets.some(w =>
-        w.isLoginWallet && w.providerName === sourceAccount.providerName && w.id === sourceAccount.id);
+        w.isLoginWallet && w.providerName === sourceAccount.providerName
+        && w.addresses.some(a => Address.equals(a, sourceAccount.address, null, w.providerName)));
 
     const { allRoutes, selectedRoute, selectedToken } = useFormRoutes(
         { direction: "from", values },

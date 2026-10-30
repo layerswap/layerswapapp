@@ -22,16 +22,17 @@ export type WalletProviderId =
 
 /**
  * The wallet the integrator's user is logged in with (e.g. a Privy or email
- * embedded wallet). The host must also share its connection with the widget
- * (for EVM, via `wagmiConfig`) so the widget sees it as a connected wallet.
+ * embedded wallet). The widget must see it as connected (e.g. through the
+ * host's shared `wagmiConfig`).
  *
  * A connected wallet matches when its provider id equals `providerId` and
- * `address` is one of its addresses. A matched login wallet:
- * - can't be disconnected from either widget;
- * - is the wallet the deposit widget's wallet methods ("Wallet transfer",
- *   extended sources such as Hyperliquid) use, whatever its balance;
- * - has its wallet family excluded from new connections in the deposit
- *   widget, so connecting another wallet never replaces it.
+ * `address` is one of its addresses. The matched wallet can't be
+ * disconnected from either widget, and the deposit widget's wallet methods
+ * ("Wallet transfer", extended sources such as Hyperliquid) use it whatever
+ * its balance; they stay hidden until it's detected.
+ *
+ * The deposit widget never offers new connections in the `providerId` family,
+ * so connecting another wallet can't replace the login wallet.
  */
 export type LoginWallet = {
   address: string;
