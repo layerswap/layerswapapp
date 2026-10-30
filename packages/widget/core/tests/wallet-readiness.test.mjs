@@ -254,3 +254,28 @@ test('changing a mounted boundary reason reports the new visible block once', as
     ['gasless_unavailable', 'Paymaster unavailable'],
   ])
 })
+
+test('the same mounted block is recorded independently for a replacement swap', async () => {
+  await renderBoundary()
+  state.swapState = { ...state.swapState, swapDetails: { id: 'second-swap' } }
+  await renderBoundary()
+  await renderBoundary()
+  assert.deepEqual(events.map(event => event.swapId), ['swap-readiness', 'second-swap'])
+})
+
+test('a draft receiving its first swap ID does not repeat the block', async () => {
+  state.swapState = { swapBasicData }
+  await renderBoundary()
+  state.swapState = { swapBasicData, swapDetails: { id: 'created-swap' } }
+  await renderBoundary()
+  state.swapState = { ...state.swapState, swapDetails: { id: 'created-swap', source_address: 'late-address' } }
+  await renderBoundary()
+  assert.equal(events.length, 1)
+})
+
+test('returning from a swap to a draft rearms the mounted block', async () => {
+  await renderBoundary()
+  state.swapState = { swapBasicData }
+  await renderBoundary()
+  assert.deepEqual(events.map(event => event.swapId), ['swap-readiness', undefined])
+})

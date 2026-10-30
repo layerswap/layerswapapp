@@ -1,3 +1,6 @@
+import { TransferBlock } from './TransferBlock';
+import SubmitButton from '@/components/Buttons/submitButton';
+import WalletMessage from './messages/Message';
 import { ManualSourceSelectorView } from './Presentation/ManualSourceSelectorView';
 import { DepositQRCodeView } from './Presentation/DepositQRCodeView';
 import { ManualDepositButtonView } from './Presentation/ManualDepositButtonView';
@@ -62,8 +65,9 @@ export function useManualWithdrawController({
     isQuoteLoading,
 }: Props, active = true) {
     const { wallets } = useWallet();
-    const { createSwap, setSwapId } = useSwapDataUpdate();
-    const { swapDetails } = useSwapDataState();
+    const { createSwap, setSwapId, mutateDepositActions } = useSwapDataUpdate();
+    const { swapDetails, depositActionsError } = useSwapDataState();
+    const [retryingAddress, setRetryingAddress] = useState(false);
     const { onSwapLifecycle } = useCallbacks();
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [selectedFrom, setSelectedFrom] = useState<{
@@ -133,7 +137,7 @@ export function useManualWithdrawController({
     )
 
     // A source address arriving later enriches the report but never repeats it.
-    useLifecycleObservation(active && swapDetails?.id ? AWAITING_USER_DEPOSIT : undefined, lifecycleContext)
+    useLifecycleObservation(active && swapDetails?.id && depositAddress && !loading ? AWAITING_USER_DEPOSIT : undefined, lifecycleContext)
 
     const handleCopy = () => {
         if (depositAddress) {
@@ -220,6 +224,39 @@ export function useManualWithdrawController({
         isLoading: exchangeSourceNetworksLoading,
     } = useExchangeNetworks(active ? exchangeNetworkParams : {});
 
+    // Undefined actions without an error are still loading. A settled empty or
+    // incompatible response cannot produce instructions and needs recovery.
+    const addressUnavailable = !!swapDetails?.id && !depositAddress && !loading
+        && (depositActions !== undefined || !!depositActionsError);
+    const retryAddress = async () => {
+        if (retryingAddress) {
+            return;
+        }
+        setRetryingAddress(true);
+        try {
+            await mutateDepositActions();
+        } catch {
+            // The shared action state owns the error and keeps recovery visible.
+        } finally {
+            setRetryingAddress(false);
+        }
+    };
+    if (addressUnavailable) {
+        return {
+            controls: null,
+            footer: <TransferBlock reasonCode="deposit_actions_unavailable" path="ManualWithdraw"
+                reason={depositActionsError || 'The deposit actions do not contain a usable deposit address'}>
+                <div className="flex flex-col gap-2 w-full">
+                    <WalletMessage status="error" header="Deposit address unavailable"
+                        details="We couldn’t generate your deposit address. Try again to reload it." />
+                    <SubmitButton type="button" onClick={retryAddress} isSubmitting={retryingAddress}>
+                        Try again
+                    </SubmitButton>
+                </div>
+            </TransferBlock>,
+        };
+    }
+
     return { controls: (
             <ManualInstructionsView
                 swapBasicData={swapBasicData}
@@ -282,7 +319,7 @@ export function useManualWithdrawController({
                     />
                 }
             />
-        ), footer: <ManualDepositButtonView copied={copied && copiedAddress === depositAddress} onCopy={handleCopy} /> };
+        ), footer: <ManualDepositButtonView loading={!depositAddress || loading} copied={copied && copiedAddress === depositAddress} onCopy={handleCopy} /> };
 }
 const ManualWithdraw: FC<Props> = props => {
     const model = useManualWithdrawController(props);
