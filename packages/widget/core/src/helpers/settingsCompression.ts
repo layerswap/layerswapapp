@@ -96,7 +96,7 @@ function compactRoute(route: NetworkRoute): CompactRoute {
 }
 
 export function compactSettings(settings: LayerSwapSettings | null | undefined): MaybeCompressedSettings | null {
-    if (!settings) {
+    if (!settings?.networks?.length) {
         return null;
     }
 
@@ -238,6 +238,13 @@ export function inflateSettings(settings: MaybeCompressedSettings | null | undef
             decodedSettingsCache.set(settings.payload, null);
             return null;
         }
+    }
+
+    // Empty settings are unavailable, even when the response itself succeeded.
+    // Preserve the null contract used by the bridge's maintenance pages before
+    // wallet providers attempt to initialize with an empty chain list.
+    if (!settings.networks?.length) {
+        return null;
     }
 
     if (!isCompressedSettings(settings)) {
