@@ -21,6 +21,20 @@ const invalidVanillaLoading: VanillaWidgetProps = {
   },
 };
 
+const loginWalletProps: VanillaWidgetProps = {
+  config: { loginWallet: { address: '0x0000000000000000000000000000000000000000', providerId: 'evm' } },
+};
+
+const invalidLoginWalletProvider: VanillaWidgetProps = {
+  config: {
+    loginWallet: {
+      address: '0x0000000000000000000000000000000000000000',
+      // @ts-expect-error Unknown wallet provider id.
+      providerId: 'privy',
+    },
+  },
+};
+
 declare const wagmiConfig: WagmiConfig;
 const reactProps: RemoteWidgetProps = {
   wagmiConfig,

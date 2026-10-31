@@ -1,6 +1,7 @@
 "use client";
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type FC, type PropsWithChildren, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, type FC, type PropsWithChildren, type ReactNode } from "react";
 import type { StoreApi } from "zustand/vanilla";
+import type { LoginWallet } from "@layerswap/widget-types";
 import { WalletConnectionProvider, WalletConnectionStore, WalletProviderDescriptor, isWalletProviderDescriptor, } from "@/types/wallet";
 import type { AppNetworkAdapter } from "@/types/network";
 import type { WalletProvider, WalletWrapper } from "@/types/provider";
@@ -28,6 +29,12 @@ export function useWalletProvidersReady(): boolean {
 
 export function useHasConfiguredWalletProviders(): boolean {
     return useContext(HasConfiguredWalletProvidersContext)
+}
+
+/** The host's configured login wallet, whether or not it is connected yet. */
+export function useLoginWallet(): LoginWallet | undefined {
+    const registry = useWalletProvidersRegistry()
+    return useSyncExternalStore(registry.subscribe, registry.getLoginWallet, registry.getLoginWallet)
 }
 
 export function DescriptorHydrationBoundary<Network>({
@@ -108,12 +115,22 @@ export function WalletProvidersRegistryProvider<Network>({
     networks,
     networkAdapter,
     walletProviders,
+    loginWallet,
 }: PropsWithChildren<{
     networks: Network[]
     networkAdapter: AppNetworkAdapter<Network>
     walletProviders: ProviderEntry<Network>[]
+    /** Connected wallets matching it are published with `isLoginWallet: true`. */
+    loginWallet?: LoginWallet
 }>) {
-    const walletProvidersRegistry = useMemo(() => createWalletProvidersRegistry(), [])
+    const walletProvidersRegistry = useMemo(() => {
+        const registry = createWalletProvidersRegistry()
+        registry.setLoginWallet(loginWallet)
+        return registry
+    }, [])
+    useEffect(() => {
+        walletProvidersRegistry.setLoginWallet(loginWallet)
+    }, [walletProvidersRegistry, loginWallet?.address, loginWallet?.providerId])
     const [isInitialized, setIsInitialized] = useState(false)
     const hasConfiguredProviders = useMemo(
         () => walletProviders.some(

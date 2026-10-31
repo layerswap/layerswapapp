@@ -124,10 +124,13 @@ export function useConnectors({
                     .filter(c => searchValue ? c.name.toLowerCase().includes(searchValue.toLowerCase()) : true)
                     .map(c => ({ ...c, providerName: p.name }))) as InternalConnector[]
 
+        // Search results can outlive a provider-scope change; never resurface
+        // connectors of providers outside the featured set.
+        const featuredNames = new Set(featuredProviders.map(p => p.name))
         const [featured, additional, search] = resolveNames([
             collect(p => p.availableConnectors),
             collect(p => p.additionalConnectors),
-            searchResults ?? [],
+            (searchResults ?? []).filter(c => featuredNames.has(c.providerName)),
         ])
         return {
             featuredConnectors: featured,

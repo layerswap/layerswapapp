@@ -187,7 +187,7 @@ function App() {
         <details className="market-rules"><summary>Market rules <ChevronDown size={15}/></summary><p>{trade.market.description}</p></details>
       </>:null}
     </Dialog>
-    {depositAvailable&&session.address?<DepositWidget key={session.address} address={session.address} request={depositRequest?.address===session.address?depositRequest:null} onComplete={depositComplete} onStatus={notify}/>:null}
+    {depositAvailable&&session.address?<DepositWidget key={session.address} address={session.address} request={depositRequest?.address===session.address?depositRequest:null} loginAddress={session.method==='privy'?session.address:null} onComplete={depositComplete} onStatus={notify}/>:null}
     {toast?<div className="toast" role="status"><Check size={17}/><span>{toast}</span><button aria-label="Dismiss notification" onClick={()=>setToast('')}><X size={15}/></button></div>:null}
   </>;
 }

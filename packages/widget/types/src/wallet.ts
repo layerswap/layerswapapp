@@ -62,6 +62,8 @@ export type Wallet = {
   disconnect?: () => Promise<void> | undefined | void;
   connect?: () => Promise<Wallet | undefined>;
   isNotAvailable?: boolean;
+  /** Matches the host's `WidgetConfig.loginWallet`; it can't be disconnected from the widget. */
+  isLoginWallet?: boolean;
   withdrawalSupportedNetworks?: string[];
   asSourceSupportedNetworks?: string[];
   autofillSupportedNetworks?: string[];

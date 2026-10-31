@@ -12,12 +12,14 @@ import DestinationTokenPicker from "../DestinationTokenPicker";
 import { ImageWithFallback, WalletIcon } from "@layerswap/ui-kit/components";
 import { ResolveConnectorIcon } from "@/components/Icons/ConnectorIcons";
 import { useExtendedDepositOption } from "./useExtendedDepositOption";
+import { useLoginWallet } from "@layerswap/wallet-core";
 
 import { MethodCard, MethodPickerView } from "./MethodPickerView";
 
 const MethodPicker: FC = () => {
     const { push, setPresetSourceNetwork } = useDepositStep();
-    const { wallets } = useWallet();
+    const { wallets, providers } = useWallet();
+    const loginWalletConfig = useLoginWallet();
     const { destination, destinationToken } = useDepositSelection();
     const selectSourceAccount = useSelectSwapAccount("from");
     const { methods } = useDepositSettings();
@@ -25,8 +27,15 @@ const MethodPicker: FC = () => {
     const polymarket = useExtendedDepositOption("polymarket");
 
     const canShow = (m: DepositMethodId) => methods.includes(m);
-    const primaryWallet = wallets[0];
+    // With a login wallet, wallet transfer is bound to it whatever its balance,
+    // and hidden until it's detected rather than falling back to connect.
+    const loginWallet = wallets.find(w => w.isLoginWallet);
+    const primaryWallet = loginWalletConfig ? loginWallet : wallets[0];
     const hasWallet = !!primaryWallet;
+    const showWalletCard = canShow("wallet") && (!loginWalletConfig || hasWallet);
+    const showMoreWallets = canShow("wallet") && (loginWalletConfig
+        ? providers.some(p => !p.hideFromList && p.id !== loginWalletConfig.providerId)
+        : hasWallet);
     const destinationReady = !!destination && !!destinationToken;
     // Extended-source shortcuts (e.g. Hyperliquid, Polymarket). Each card renders
     // whenever its source is configured; its enabled/loading state (not its
@@ -96,7 +105,7 @@ const MethodPicker: FC = () => {
 
     return (
         <MethodPickerView destinationPicker={<DestinationTokenPicker />}>
-            {canShow("wallet") && (
+            {showWalletCard && (
                 <MethodCard
                     icon={walletCardIcon}
                     title="Wallet transfer"
@@ -153,11 +162,11 @@ const MethodPicker: FC = () => {
                     />
                 );
             })}
-            {canShow("wallet") && hasWallet && (
+            {showMoreWallets && (
                 <MethodCard
                     icon={<WalletIcon className="h-6 w-6 text-primary-text" strokeWidth={2} />}
                     title="More wallets"
-                    subtitle="Use MetaMask, Phantom and more"
+                    subtitle={loginWalletConfig ? "Use wallets from other ecosystems" : "Use MetaMask, Phantom and more"}
                     onClick={handleMoreWalletsClick}
                     disabled={!destinationReady}
                     disabledReason="Pick a destination first"

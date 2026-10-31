@@ -49,6 +49,8 @@ The receiving address **always comes from the connected session**. It is never a
 
 The CDN loader intentionally receives no `wagmiConfig`. Reown manages the app's wallet login, while Layerswap creates its own EVM config and manages the funding wallet connection inside the widget. The app passes the signed-in Reown or Privy address as `destinationAddress`; host wallet connection changes are not synchronized with the widget's funding connection.
 
+For a Privy login, the app also passes `config.loginWallet = { address, providerId: 'evm' }`. When the widget detects that wallet as connected, it can't be disconnected from the widget, Wallet transfer and the Polymarket/Hyperliquid shortcuts use it regardless of balance, and More wallets offers only other ecosystems so connecting a funding wallet never replaces it. Widget releases without `loginWallet` support ignore the field.
+
 `walletDefaults.walletConnect` supplies the project credentials and app metadata for the widget's own wallet connectors. The demo leaves `walletProvidersConfig` unset so available funding wallets are not restricted to EVM and Solana; providers that require additional credentials still need those configured. See [Wallets](https://docs.layerswap.io/widget/wallets).
 
 Every Deposit entry point opens Layerswap's own dialog directly through the SDK's `mode="button"` trigger. There is no app-specific deposit picker or confirmation step. The Polymarket banner limits the widget to the Polymarket method; other Deposit buttons let Layerswap show the available methods. If the receiving wallet is not connected, login is required first and Layerswap opens automatically after connection. Missing widget credentials produce a status message instead of a simulated funding dialog.
