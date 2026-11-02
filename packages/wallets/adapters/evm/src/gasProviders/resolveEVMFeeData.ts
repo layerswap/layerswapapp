@@ -1,11 +1,17 @@
 import { ErrorHandler, type Network } from '@layerswap/widget-types'
 import { parseGwei, type PublicClient } from 'viem'
 import { resolveEVMGasPolicy } from './evmGasPolicies'
+import { isRpcRateLimitError } from '../evmUtils/isRpcRateLimitError'
 
 const resolveFeeEstimate = async <T>(type: 'GasPriceError' | 'FeesPerGasError' | 'MaxPriorityFeePerGasError', estimate: () => Promise<T>): Promise<T | undefined> => {
     try {
         return await estimate()
     } catch (cause) {
+        // Missing RPC methods can use the fee fallbacks below. Exhausted quotas
+        // cannot: extra priority-fee/block requests only prolong the outage.
+        if (isRpcRateLimitError(cause)) {
+            throw cause
+        }
         const error = new Error(String(cause))
         error.cause = cause
         ErrorHandler({ type, message: error.message, name: error.name, stack: error.stack, cause })
@@ -42,4 +48,22 @@ export const resolveEVMFeeData = async (publicClient: PublicClient, network: Net
     }
 
     return { gasPrice, maxFeePerGas, maxPriorityFeePerGas }
+}
+
+const pendingFeeQuotes = new Map<string, ReturnType<typeof resolveEVMFeeData>>()
+
+/** Share in-flight chain fees across amount/token quotes, without caching submission fees. */
+export const resolveEVMFeeQuote = (publicClient: PublicClient, network: Network) => {
+    const nodes = network.nodes?.length > 0 ? network.nodes : [network.node_url]
+    const key = JSON.stringify([Number(network.chain_id), nodes])
+    const pending = pendingFeeQuotes.get(key)
+    if (pending) {
+        return pending
+    }
+
+    const quote = resolveEVMFeeData(publicClient, network).finally(() => {
+        pendingFeeQuotes.delete(key)
+    })
+    pendingFeeQuotes.set(key, quote)
+    return quote
 }
