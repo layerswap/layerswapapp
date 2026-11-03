@@ -462,3 +462,35 @@ test('Base generic native quotes preserve the candidate value including sub-micr
     assert.ok(quote.maxFee > 0)
     assert.equal(state.l1Estimate.value, 100_000_000_000n)
 })
+
+test('Base rejects the historical near-full-balance manual send without reducing its value', async () => {
+    // Historical amount/balance from ca467ecc. The RPC fee components below are
+    // controlled fixtures, not a reconstruction of its unlogged signed fees.
+    state.balance = 14_347_924_455_625_190n
+    state.estimateGas = () => 21_512n
+    state.fees = { maxFeePerGas: 10_000_000n, maxPriorityFeePerGas: 1_000_000n }
+    state.l1Fee = 1_000_000_000n
+    state.operatorFee = 0n
+    const action = { ...baseAction, amount: 0.01434792 }
+    await assert.rejects(transactionBuilder(action), InsufficientFundsError)
+    assert.equal(state.estimate.value, 14_347_920_000_000_000n)
+    assert.equal(state.balance - state.estimate.value, 4_455_625_190n)
+    assert.deepEqual(state.balanceArgs, { address: action.selectedWallet.address, blockTag: 'pending' })
+})
+
+for (const amount of [0.0001476, 0.00011]) {
+    test(`Base preserves an RPC timeout for reduced manual amount ${amount}`, async () => {
+        // A controlled fresh balance makes this affordable. The real timeout
+        // journeys did not record balances, so they cannot establish a shortage.
+        state.balance = 10n ** 18n
+        state.estimateGas = () => 21_512n
+        state.fees = { maxFeePerGas: 10_000_000n, maxPriorityFeePerGas: 1_000_000n }
+        state.l1Fee = 1_000_000_000n
+        const action = { ...baseAction, amount }
+        const tx = await transactionBuilder(action)
+        assert.ok(tx.value + tx.gas * tx.maxFeePerGas + state.l1Fee < state.balance)
+        const timeout = Object.assign(new Error('Transport request timed out'), { name: 'TimeoutError' })
+        state.estimateGas = () => { throw timeout }
+        await assert.rejects(transactionBuilder(action), error => error === timeout)
+    })
+}
