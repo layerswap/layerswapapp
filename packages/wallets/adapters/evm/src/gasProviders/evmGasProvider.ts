@@ -1,8 +1,9 @@
 import { NetworkType } from '@layerswap/widget-types';
 import { Network, Token } from "@layerswap/widget-types";
 import { GasProvider, GasProps } from "@layerswap/widget-types";
-import { PublicClient, createPublicClient, encodeFunctionData, formatUnits, erc20Abi, parseUnits } from "viem";
-import { resolveOpStackAdditionalFees } from './resolveOpStackAdditionalFees'
+import { PublicClient, createPublicClient, encodeFunctionData, formatUnits, erc20Abi } from "viem";
+import { resolveOpStackL1Fee, resolveOpStackOperatorFee } from './resolveOpStackAdditionalFees'
+import { parseNativeAmount } from '../evmUtils/parseNativeAmount'
 import resolveChain from "../evmUtils/resolveChain";
 import NetworkSettings from "../NetworkSettings";
 import { ErrorHandler } from "@layerswap/widget-types";
@@ -43,15 +44,10 @@ export class EVMGasProvider implements GasProvider {
                 transport: resolveFallbackTransport(network.nodes?.length > 0 ? network.nodes : [network.node_url]),
             })
 
-            const getGas = (chainId === 8453 || network?.metadata?.evm_oracle_contract) ? getOptimismGas : getEthereumGas
+            const policy = resolveEVMGasPolicy(chainId)
+            const getGas = (policy.opStack || network.metadata?.evm_oracle_contract) ? getOptimismGas : getEthereumGas
 
-            let nativeValue = 0n
-            if (!token.contract && amountInBaseUnits != null) {
-                nativeValue = BigInt(amountInBaseUnits)
-            } else if (!token.contract && amount != null) {
-                // toFixed keeps small amounts out of scientific notation.
-                nativeValue = parseUnits(Number(amount).toFixed(token.decimals), token.decimals)
-            }
+            const nativeValue = token.contract ? 0n : parseNativeAmount(amount ?? 0, token.decimals, amountInBaseUnits)
 
             const gasProvider = new getGas(
                 {
@@ -252,13 +248,6 @@ class getEthereumGas extends getEVMGas {
 export default class getOptimismGas extends getEVMGas {
     resolveGas = async () => {
         const policy = resolveEVMGasPolicy(this.chainId)
-        const [feeData, estimatedGas] = await Promise.all([
-            this.resolveFeeData(),
-            this.estimateGasLimit(),
-        ])
-        const feeAmounts = calculateGasFeeAmounts({ policy, estimatedGas, ...feeData })
-        if (!feeAmounts) return undefined
-
         const transaction = this.transaction ?? {
             account: this.account,
             to: this.contract_address || this.destination,
@@ -269,12 +258,20 @@ export default class getOptimismGas extends getEVMGas {
                 args: [this.destination, 1000n],
             }) : '0x'),
         }
-        const additionalFees = await resolveOpStackAdditionalFees({
+        const [feeData, estimatedGas, l1Fee] = await Promise.all([
+            this.resolveFeeData(),
+            this.estimateGasLimit(),
+            resolveOpStackL1Fee({ publicClient: this.publicClient, network: this.from, transaction }),
+        ])
+        const feeAmounts = calculateGasFeeAmounts({ policy, estimatedGas, ...feeData })
+        if (!feeAmounts) return undefined
+
+        const operatorFee = await resolveOpStackOperatorFee({
             publicClient: this.publicClient,
             network: this.from,
-            transaction,
             gasLimit: feeAmounts.gasLimit,
         })
+        const additionalFees = l1Fee + operatorFee
         const gas = Number(formatUnits(feeAmounts.estimatedFee + additionalFees, this.nativeToken.decimals))
         const maxFee = Number(formatUnits(feeAmounts.maximumFee + additionalFees, this.nativeToken.decimals))
         return { gas, ...(policy.reserveMaximumFee ? { maxFee } : {}) }

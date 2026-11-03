@@ -7,10 +7,10 @@ import { extname } from 'node:path'
 const rpcUrl = `data:text/javascript,${encodeURIComponent(`
     export * from ${JSON.stringify(import.meta.resolve('viem'))}
     export const state = {}
-    export const createPublicClient = () => {
+    export const createPublicClient = ({ chain }) => {
         state.clients++
         return {
-            chain: { id: 8453 },
+            chain,
             readContract: async args => { state.operatorEstimate = args; if (state.operatorError) throw state.operatorError; return state.operatorFee },
             estimateGas: async args => { state.estimate = args; return state.estimateGas(args) },
             estimateFeesPerGas: async args => { if (state.feesError) throw state.feesError; return args?.type === 'legacy' ? { gasPrice: state.gasPrice } : state.fees },
@@ -18,9 +18,9 @@ const rpcUrl = `data:text/javascript,${encodeURIComponent(`
             estimateMaxPriorityFeePerGas: async () => { state.priorityRequests++; if (state.priorityError) throw state.priorityError; return state.priorityFee },
             getCode: async () => state.accountCode,
             getBalance: async args => { state.balanceArgs = args; state.balanceRequests++; if (state.balanceError) throw state.balanceError; return state.balance },
-            extend: () => ({ estimateL1Fee: async args => { state.l1Estimate = args; if (state.l1Error) throw state.l1Error; return state.l1Fee } }),
         }
     }
+    export const estimateL1Fee = async (client, args) => { state.l1Estimate = args; if (state.l1Error) throw state.l1Error; return state.l1Fee }
     export default network => ({ id: Number(network.chain_id) })
     export const resolveFallbackTransport = nodes => {
         state.nodes = nodes
@@ -30,6 +30,9 @@ const rpcUrl = `data:text/javascript,${encodeURIComponent(`
 `)}`
 const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
     const parent = context.parentURL ?? ''
+    if (parent.endsWith('/gasProviders/resolveOpStackAdditionalFees.js') && specifier === 'viem/op-stack') {
+        return { url: rpcUrl, shortCircuit: true }
+    }
     if ((parent.endsWith('/gasProviders/resolveEVMTransactionGasParameters.js') || parent.endsWith('/gasProviders/evmGasProvider.js')) && [
         'viem', '../evmUtils/resolveChain', '../evmUtils/resolveTransports',
     ].includes(specifier)) return { url: rpcUrl, shortCircuit: true }
@@ -494,3 +497,37 @@ for (const amount of [0.0001476, 0.00011]) {
         await assert.rejects(transactionBuilder(action), error => error === timeout)
     })
 }
+
+
+test('Base Sepolia quotes and validates the same complete fee budget without oracle metadata', async () => {
+    const action = { ...baseAction, network: { ...baseAction.network, name: 'BASE_SEPOLIA', chain_id: '84532' } }
+    const quote = await quoteAction(action)
+    const tx = await transactionBuilder(action)
+    assert.equal(tx.chainId, 84532)
+    assert.equal(state.l1Estimate.chain.id, 84532)
+    assert.equal(state.l1Estimate.gasPriceOracleAddress.toLowerCase(), '0x420000000000000000000000000000000000000f')
+    assert.equal(parseUnits(quote.maxFee.toFixed(18), 18), tx.gas * tx.maxFeePerGas + state.l1Fee)
+    state.balance = tx.value + tx.gas * tx.maxFeePerGas + state.l1Fee - 1n
+    await assert.rejects(transactionBuilder(action), InsufficientFundsError)
+})
+
+test('L1 estimation starts while execution estimation is still pending', async () => {
+    const pending = Promise.withResolvers()
+    state.estimateGas = () => pending.promise
+    const quote = quoteAction(baseAction)
+    // Allow the parallel async fee calls to start without resolving gas units.
+    await new Promise(resolve => setImmediate(resolve))
+    assert.equal(state.l1Estimate.data, baseAction.callData)
+    assert.equal(state.operatorEstimate, undefined)
+    pending.resolve(21_512n)
+    assert.ok(await quote)
+})
+
+test('small native amounts use identical base units for exact quotes and submission', async () => {
+    const action = { ...baseAction, amount: 1e-7 }
+    const quote = await quoteAction(action)
+    assert.ok(quote)
+    const tx = await transactionBuilder(action)
+    assert.equal(tx.value, 100_000_000_000n)
+    assert.equal(state.l1Estimate.value, tx.value)
+})

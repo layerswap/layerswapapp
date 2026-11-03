@@ -1,5 +1,5 @@
 import type { TransferProps } from '@layerswap/widget-types'
-import { parseUnits } from 'viem'
+import { parseNativeAmount } from '../evmUtils/parseNativeAmount'
 
 /** The same transaction payload is used when quoting gas and requesting a wallet transfer. */
 export const resolveEVMTransactionRequest = ({
@@ -15,9 +15,7 @@ export const resolveEVMTransactionRequest = ({
 }) => ({
     chainId: Number(network.chain_id),
     to: depositAddress as `0x${string}`,
-    value: token.contract ? 0n : amountInBaseUnits != null
-        ? BigInt(amountInBaseUnits)
-        : parseUnits(amount.toString(), token.decimals),
+    value: token.contract ? 0n : parseNativeAmount(amount, token.decimals, amountInBaseUnits),
     data: (callData || '0x') as `0x${string}`,
     account,
 })

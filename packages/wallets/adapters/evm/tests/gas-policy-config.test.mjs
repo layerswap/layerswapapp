@@ -89,3 +89,12 @@ for (const [chainId, priority, cap] of [[10, 100000n, 100150n], [43114, 15000000
         assert.equal(fees.maxFeePerGas, cap)
     })
 }
+
+
+test('Base sandbox shares mainnet execution and rollup policies', () => {
+    const mainnet = resolveEVMGasPolicy(8453)
+    assert.equal(resolveEVMGasPolicy(84532), mainnet)
+    assert.equal(mainnet.transactionGasMode, 'explicit-eip1559')
+    assert.equal(mainnet.opStack.operatorFee, true)
+    assert.equal(mainnet.opStack.gasPriceOracle.toLowerCase(), '0x420000000000000000000000000000000000000f')
+})
