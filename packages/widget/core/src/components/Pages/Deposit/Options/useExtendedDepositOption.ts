@@ -10,7 +10,7 @@ import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { useDepositSelection } from "../depositSelectionContext";
 import { DepositMethodId } from "../depositMethods";
 import { pickSourceToken, useMergedSourceRoutes } from "./useSourceRoute";
-import { useLoginWallet } from "@layerswap/wallet-core";
+import { useLoginWallet, withLoginAddress } from "@layerswap/wallet-core";
 
 type ExtendedDepositOption = {
     /** The provider is configured as a source at all — resolved synchronously, so
@@ -68,16 +68,18 @@ export function useExtendedDepositOption(providerId: DepositMethodId): ExtendedD
     );
     const token = useMemo(() => pickSourceToken(network), [network]);
 
-    // An already-connected wallet that can sign this source's withdrawals (EVM),
-    // preferring the login wallet.
+    const signedByLoginFamily = !!loginWallet && !!network && providers.some(p =>
+        p.id === loginWallet.providerId && p.withdrawalSupportedNetworks?.includes(network.name));
+
+    // An already-connected wallet that can sign this source's withdrawals (EVM).
+    // When the login wallet's family signs it, only the login wallet qualifies.
     const compatibleWallet = useMemo(() => {
         if (!network) return undefined;
         const supports = (w: Wallet) => !!w.withdrawalSupportedNetworks?.includes(network.name);
-        return wallets.find(w => w.isLoginWallet && supports(w)) ?? wallets.find(supports);
-    }, [network, wallets]);
-
-    const signedByLoginFamily = !!loginWallet && !!network && providers.some(p =>
-        p.id === loginWallet.providerId && p.withdrawalSupportedNetworks?.includes(network.name));
+        const login = wallets.find(w => w.isLoginWallet && supports(w));
+        if (login && loginWallet) return withLoginAddress(login, loginWallet);
+        return signedByLoginFamily ? undefined : wallets.find(supports);
+    }, [network, wallets, loginWallet, signedByLoginFamily]);
     const present = !!network && !!token && !(signedByLoginFamily && !compatibleWallet);
 
     // Reachability for the fixed destination, from the gated (scoped) route list.

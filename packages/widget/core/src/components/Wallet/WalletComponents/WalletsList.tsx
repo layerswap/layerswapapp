@@ -26,11 +26,12 @@ type Props = {
     provider?: WalletConnectionProvider | undefined;
     onSelect?: (props: SelectAccountProps) => void;
     selectedDepositMethod?: "wallet" | "deposit_address";
+    hideConnect?: boolean;
 }
 
 const WalletsList: FC<Props> = (props) => {
 
-    const { wallets, token, network, provider, selectable, onSelect, selectedDepositMethod } = props
+    const { wallets, token, network, provider, selectable, onSelect, selectedDepositMethod, hideConnect } = props
 
     const { connect } = useConnectModal()
 
@@ -50,14 +51,17 @@ const WalletsList: FC<Props> = (props) => {
 
     return (
         <div className="space-y-3">
-            <button type='button' onClick={connectWallet} className="w-full flex justify-center p-2 bg-secondary-500 rounded-md hover:bg-secondary-400">
-                <div className="flex items-center text-secondary-text gap-1 px-3 py-1">
-                    <Plus className="h-4 w-4" />
-                    <span className="text-sm">
-                        Connect new wallet
-                    </span>
-                </div>
-            </button>
+            {
+                !hideConnect &&
+                <button type='button' onClick={connectWallet} className="w-full flex justify-center p-2 bg-secondary-500 rounded-md hover:bg-secondary-400">
+                    <div className="flex items-center text-secondary-text gap-1 px-3 py-1">
+                        <Plus className="h-4 w-4" />
+                        <span className="text-sm">
+                            Connect new wallet
+                        </span>
+                    </div>
+                </button>
+            }
             {
                 wallets.length > 0 &&
                 <div className="flex flex-col justify-start space-y-3">

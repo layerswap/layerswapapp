@@ -22,7 +22,7 @@ function loadLoginWallet() {
     }, module, module.exports)
     return module.exports
 }
-const { isLoginWalletMatch, markLoginWallet } = loadLoginWallet()
+const { isLoginWalletMatch, markLoginWallet, withLoginAddress } = loadLoginWallet()
 
 const LOGIN = { address: '0xAbC0000000000000000000000000000000000001', providerId: 'evm' }
 const OTHER = '0x0000000000000000000000000000000000000002'
@@ -67,6 +67,18 @@ test('markLoginWallet flags only the matching wallets and caches the copy', () =
     const remarked = markLoginWallet(s, { ...LOGIN, address: OTHER })
     assert.equal(remarked.connectedWallets[0].isLoginWallet, true)
     assert.equal(remarked.activeWallet.isLoginWallet, undefined)
+})
+
+test('withLoginAddress selects the configured account, including a secondary one', () => {
+    const primary = wallet(LOGIN.address)
+    assert.equal(withLoginAddress(primary, LOGIN), primary)
+
+    const secondaryAddress = LOGIN.address.toLowerCase()
+    const multi = wallet(OTHER, { addresses: [OTHER, secondaryAddress] })
+    const resolved = withLoginAddress(multi, LOGIN)
+    assert.equal(resolved.address, secondaryAddress)
+    assert.deepEqual(resolved.addresses, multi.addresses)
+    assert.equal(multi.address, OTHER)
 })
 
 test('registry notifies only when the login wallet changes', () => {

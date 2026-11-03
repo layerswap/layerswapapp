@@ -8,6 +8,14 @@ export function isLoginWalletMatch(wallet: Pick<Wallet, "address" | "addresses" 
         .some(address => Address.equals(address, loginWallet.address, null, wallet.providerName))
 }
 
+// The login wallet with `address` set to the configured account, which may be
+// one of its secondary `addresses`.
+export function withLoginAddress(wallet: Wallet, loginWallet: LoginWallet): Wallet {
+    const address = [wallet.address, ...(wallet.addresses ?? [])]
+        .find(candidate => Address.equals(candidate, loginWallet.address, null, wallet.providerName))
+    return address && address !== wallet.address ? { ...wallet, address } : wallet
+}
+
 const markedSnapshotCache = new WeakMap<WalletConnectionProvider, { key: string, value: WalletConnectionProvider }>()
 
 // Returns the same snapshot when nothing matches, and a cached copy otherwise so

@@ -12,7 +12,7 @@ import DestinationTokenPicker from "../DestinationTokenPicker";
 import { ImageWithFallback, WalletIcon } from "@layerswap/ui-kit/components";
 import { ResolveConnectorIcon } from "@/components/Icons/ConnectorIcons";
 import { useExtendedDepositOption } from "./useExtendedDepositOption";
-import { useLoginWallet } from "@layerswap/wallet-core";
+import { useLoginWallet, withLoginAddress } from "@layerswap/wallet-core";
 
 import { MethodCard, MethodPickerView } from "./MethodPickerView";
 
@@ -30,7 +30,7 @@ const MethodPicker: FC = () => {
     // With a login wallet, wallet transfer is bound to it whatever its balance,
     // and hidden until it's detected rather than falling back to connect.
     const loginWallet = wallets.find(w => w.isLoginWallet);
-    const primaryWallet = loginWalletConfig ? loginWallet : wallets[0];
+    const primaryWallet = loginWalletConfig ? loginWallet && withLoginAddress(loginWallet, loginWalletConfig) : wallets[0];
     const hasWallet = !!primaryWallet;
     const showWalletCard = canShow("wallet") && (!loginWalletConfig || hasWallet);
     const showMoreWallets = canShow("wallet") && (loginWalletConfig
