@@ -149,6 +149,7 @@ test('exact gas loading preserves the pending wallet request and its execution l
     });
     const budget = loadSource('lib/gases/resolveGasBalanceBudget.ts');
     const { default: useOutOfGas } = loadSource('lib/gases/useOutOfGas.ts', {
+        '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
         './useSWRGas': { default: realGasHook },
         './resolveGasBalanceBudget': budget,
     });
