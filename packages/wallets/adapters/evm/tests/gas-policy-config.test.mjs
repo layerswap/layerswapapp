@@ -38,7 +38,7 @@ for (const [chainId, multiplier] of migrated) {
     test(`chain ${chainId} preserves its price multiplier independently of network name`, () => {
         assert.equal(resolveEVMGasPolicy(chainId).baseFeeMultiplier, multiplier)
         assert.equal(resolveChain(network(chainId)).fees.baseFeeMultiplier(), multiplier)
-        if (chainId !== 1 && chainId !== 56) {
+        if (chainId !== 1 && chainId !== 56 && chainId !== 8453) {
             assert.equal(resolveEVMGasPolicy(chainId).transactionGasMode, 'wallet')
         }
     })

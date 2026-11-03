@@ -114,7 +114,14 @@ const EVM_GAS_POLICIES_BY_CHAIN_ID = new Map<number, EVMGasPolicy>([
     [48900, createEVMGasPolicy({ baseFeeMultiplier: 1.5 })], // Zircuit
     [2741, createEVMGasPolicy({ baseFeeMultiplier: 1.9 })], // Abstract
     [59144, createEVMGasPolicy({ baseFeeMultiplier: 1.7 })], // Linea
-    [8453, createEVMGasPolicy({ baseFeeMultiplier: 1.7 })], // Base
+    // Base quotes and submits the same buffered execution limit and fee cap.
+    [8453, createEVMGasPolicy({
+        baseFeeMultiplier: 1.7,
+        gasLimitMarginBps: 12_000n,
+        reserveMaximumFee: true,
+        transactionGasMode: 'explicit-eip1559',
+        checkBalanceBeforeSend: true,
+    })],
     [169, createEVMGasPolicy({ baseFeeMultiplier: 1.7 })], // Manta Pacific
     [570, createEVMGasPolicy({ baseFeeMultiplier: 1.7 })], // Rollux
     [204, createEVMGasPolicy({ baseFeeMultiplier: 1.7 })], // opBNB
