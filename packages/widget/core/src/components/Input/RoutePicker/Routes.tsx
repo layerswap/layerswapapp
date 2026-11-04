@@ -90,12 +90,12 @@ type NetworkRouteItemProps = {
     item: NetworkRoute;
     selected: boolean;
     direction: SwapDirection;
-    hideTokenImages?: boolean;
+    isOpen?: boolean;
     hideBalances?: boolean;
 }
 
 export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
-    const { item, direction, hideTokenImages, hideBalances } = props
+    const { item, direction, isOpen, hideBalances } = props
     const swapAccounts = useSwapAccounts(direction)
 
     const selectedAccount = swapAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(item.name));
@@ -120,7 +120,7 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                     </span>
 
                     {hasLoadedBalances ? (
-                        <div className={`${showTokenLogos ? "flex flex-col space-y-0.5" : ""} ${hideTokenImages ? "hidden" : ""}`}>
+                        <div className={`${showTokenLogos ? "flex flex-col space-y-0.5" : ""} ${isOpen ? "hidden" : ""}`}>
                             <span className="text-secondary-text text-sm leading-4 font-medium">
                                 {formatUsd(totalInUSD)}
                             </span>
@@ -150,7 +150,7 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                     ) : <></>}
 
                     <ChevronDown
-                        className="w-3.5! h-3.5! absolute right-2 top-1/2 -translate-y-1/2 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
+                        className={`w-3.5! h-3.5! absolute right-2 top-1/2 -translate-y-1/2 text-secondary-text transition-opacity duration-200 group-hover/item:opacity-100 ${isOpen ? "opacity-100" : "opacity-0"}`}
                         aria-hidden="true"
                     />
                 </>
@@ -170,12 +170,12 @@ type SelectedCurrencyDisplayProps = {
 export const GroupedTokenHeader = ({
     item,
     direction,
-    hideTokenImages,
+    isOpen,
     hideBalances
 }: {
     item: GroupedTokenElement;
     direction: SwapDirection;
-    hideTokenImages?: boolean;
+    isOpen?: boolean;
     hideBalances?: boolean;
 }) => {
     const swapAccounts = useSwapAccounts(direction)
@@ -239,7 +239,7 @@ export const GroupedTokenHeader = ({
                         <span className="truncate">{mainToken.asset}</span>
                     </span>
                     {hasLoadedBalances ? (
-                        <div className={`${showNetworkIcons ? "flex flex-col space-y-0.5" : ""} ${hideTokenImages ? "invisible" : "visible"}`}>
+                        <div className={`${showNetworkIcons ? "flex flex-col space-y-0.5" : ""} ${isOpen ? "invisible" : "visible"}`}>
                             <span className="text-secondary-text text-sm leading-4 font-medium">
                                 {formatUsd(tokenBalances.sum)}
                             </span>
@@ -269,7 +269,7 @@ export const GroupedTokenHeader = ({
                     ) : <></>}
 
                     <ChevronDown
-                        className="w-3.5! h-3.5! absolute right-2 top-1/2 -translate-y-1/2 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
+                        className={`w-3.5! h-3.5! absolute right-2 top-1/2 -translate-y-1/2 text-secondary-text transition-opacity duration-200 group-hover/item:opacity-100 ${isOpen ? "opacity-100" : "opacity-0"}`}
                         aria-hidden="true"
                     />
                 </>
