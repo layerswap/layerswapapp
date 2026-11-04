@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSettingsState } from "@/context/settings";
 import { UpdateSwapInterface, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import React from "react";
@@ -35,7 +35,14 @@ import SlowRouteNote from "./SecondaryComponents/SlowRouteNote";
 import { lifecycleContextFromForm, lifecycleContextFromSwap, resolveFlowClosedEvent } from "@/lib/swapLifecycle";
 import { useResolvedSwapStatus } from "@/hooks/useResolvedSwapStatus";
 import SwapForm, { type SwapFormMode } from './SwapForm';
+import { useFeatureFlag } from "@/context/settings";
+import { useSwapAccounts } from "@/context/swapAccounts";
+import { ConsolidationHostProvider } from "@/context/consolidationHost";
+import { useConsolidationStore } from "@/stores/consolidationStore";
+import { buildRecordFromForm, isRecordFinished } from "@/helpers/consolidation";
+import ConsolidationSheetHeader from "../Consolidation/SheetHeader";
 const SwapDetails = lazy(() => import("../Withdraw/SwapDetails"))
+const ConsolidationExecution = lazy(() => import("../Consolidation/ConsolidationExecution"))
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -81,6 +88,31 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
     const { setSwapError } = useSwapDataState()
 
     const { setConfirmed, isConfirmed, checkContractStatus } = useContractAddressStore();
+
+    const consolidationEnabled = useFeatureFlag('multiSourceConsolidation');
+    const sourceAccounts = useSwapAccounts("from");
+    const [consolidationId, setConsolidationId] = useState<string>();
+    const openConsolidation = useCallback((recordId: string) => {
+        setConsolidationId(recordId)
+        onSwapModalStateChange(true)
+    }, [onSwapModalStateChange])
+    const closeConsolidation = useCallback((resetForm: () => void) => {
+        const store = useConsolidationStore.getState()
+        const record = consolidationId ? store.records[consolidationId] : undefined
+        // Nothing sent yet: back to editing. Otherwise the record owns the sources and unsent ones stay resumable.
+        if (record && !record.legs.some(leg => leg.state === 'submitted')) store.removeRecord(record.id)
+        else if (record) {
+            if (isRecordFinished(record)) store.finish(record.id)
+            resetForm()
+        }
+        store.gc(Date.now())
+        setConsolidationId(undefined)
+        onSwapModalStateChange(false)
+        useGaslessPreferenceStore.getState().resetGaslessPreference()
+    }, [consolidationId, onSwapModalStateChange])
+    useEffect(() => {
+        useConsolidationStore.getState().gc(Date.now())
+    }, [])
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         // form_submitted is emitted by SwapForm before this runs.
@@ -178,6 +210,18 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
             }
         }
 
+        if (consolidationEnabled && values.extraSources?.length) {
+            const sourceAddress = sourceAccounts.find(account => account.provider.withdrawalSupportedNetworks?.some(n => n === values.from?.name))?.address
+            const record = sourceAddress && buildRecordFromForm(values, sourceAddress, `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`, Date.now())
+            if (!record) {
+                setSwapError && setSwapError('Could not prepare the transfers')
+                return
+            }
+            useConsolidationStore.getState().createRecord(record)
+            openConsolidation(record.id)
+            return
+        }
+
         try {
             await handleCreateSwap({
                 setSwapId,
@@ -198,7 +242,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
         catch (error) {
             setSwapError && setSwapError(error?.message || 'Could not create swap')
         }
-    }, [createSwap, initialSettings, partner, swapBasicData, getProvider, settings, type, setSwapError, onSwapLifecycle])
+    }, [createSwap, initialSettings, partner, swapBasicData, getProvider, settings, type, setSwapError, onSwapLifecycle, consolidationEnabled, sourceAccounts, openConsolidation])
 
     // Formik has no `enableReinitialize`, so this is read once at mount — memoize
     // to keep post-mount re-renders (wallet events, balance revalidation) from
@@ -288,9 +332,35 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                             ) : null
                         }
                     </VaulDrawer >
-                    <FormQuoteReportProvider value={reportFormQuote}>
-                        {children}
-                    </FormQuoteReportProvider>
+                    {
+                        consolidationEnabled &&
+                        <VaulDrawer
+                            mode="fitHeight"
+                            show={!!consolidationId}
+                            setShow={(open) => {
+                                if (!open) closeConsolidation(() => resetConsolidatedForm(setFieldValue))
+                            }}
+                            header={consolidationId ? <ConsolidationSheetHeader recordId={consolidationId} /> : null}
+                            modalId="showConsolidation"
+                            className="expandContainerHeight">
+                            {
+                                consolidationId ? (
+                                    <Suspense fallback={<SwapDetailsSceleton />}>
+                                        <ConsolidationExecution
+                                            recordId={consolidationId}
+                                            partner={partner}
+                                            onClose={() => closeConsolidation(() => resetConsolidatedForm(setFieldValue))}
+                                        />
+                                    </Suspense>
+                                ) : null
+                            }
+                        </VaulDrawer>
+                    }
+                    <ConsolidationHostProvider value={consolidationEnabled ? { open: openConsolidation, openId: consolidationId } : null}>
+                        <FormQuoteReportProvider value={reportFormQuote}>
+                            {children}
+                        </FormQuoteReportProvider>
+                    </ConsolidationHostProvider>
                     < ContractAddressValidationCache
                         source_network={values.from}
                         destination_network={values.to}
@@ -305,6 +375,14 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
             }
         </SwapForm>
     </>
+}
+
+const resetConsolidatedForm = (setFieldValue: (field: string, value: unknown) => unknown) => {
+    setFieldValue('extraSources', undefined)
+    setFieldValue('amountMode', 'manual')
+    setFieldValue('amountPresetPending', false)
+    setFieldValue('amountPresetError', undefined)
+    setFieldValue('amount', 0)
 }
 
 type SubmitProps = {

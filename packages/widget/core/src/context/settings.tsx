@@ -72,3 +72,8 @@ function mapLegacySettings(params: InitialSettings): InitialSettings {
     ...(params.lockAsset ? { [params.to ? "lockToAsset" : "lockFromAsset"]: params.lockAsset } : {}),
   }
 }
+
+/** Product feature flags share the resolved `extendedRouteFlags` map; absent means off. */
+export function useFeatureFlag(key: string): boolean {
+  return useSettingsState().extendedRouteFlags?.[key] ?? false
+}
