@@ -14,11 +14,7 @@
     "jsx": "react-jsx",
     "incremental": true,
     "plugins": [{ "name": "next" }],
-    "paths": {
-      "@/*": ["./src/*"],
-      "@layerswap/widget/deposit": ["../../packages/widget/core/dist/types/exports/deposit.d.ts"],
-      "@layerswap/wallets": ["../../packages/wallets/all/dist/types/index.d.ts"]
-    }
+    "paths": { "@/*": ["./src/*"] }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", ".next/dev/types/**/*.ts"],
   "exclude": ["node_modules"]
