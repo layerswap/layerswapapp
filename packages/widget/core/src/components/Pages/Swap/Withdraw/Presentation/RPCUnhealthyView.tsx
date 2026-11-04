@@ -16,7 +16,7 @@ export function RPCUnhealthyView({
     handleAddRpc,
 }: MessageContentProps & { handleAddRpc?: () => void }) {
     return (
-        <div className="w-full space-y-3 h-fit text-primary-text">
+        <div className="flex w-full flex-col gap-2 h-fit text-primary-text">
             <MessageContent
                 RPCUrl={RPCUrl}
                 isCopied={isCopied}

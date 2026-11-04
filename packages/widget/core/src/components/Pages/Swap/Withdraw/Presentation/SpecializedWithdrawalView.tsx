@@ -1,3 +1,4 @@
+import { TransferBlock } from '../TransferBlock';
 import { WalletIcon } from '@layerswap/ui-kit/components';
 import type { Network } from '@layerswap/widget-types';
 import { Loader2 } from 'lucide-react';
@@ -6,12 +7,14 @@ import WalletMessage from '../messages/Message';
 import { ActionMessages } from '../messages/TransactionMessages';
 import { ButtonWrapper } from './WalletActionsView';
 export type SpecializedWithdrawalViewProps = {
-    provider: 'Hyperliquid' | 'Polymarket';
+    provider: string;
+    preparationLabel?: string;
     network: Network;
     isConnected: boolean;
     accountMismatch: boolean;
     sourceAddress?: string;
     loading?: boolean;
+    submissionAccepted?: boolean;
     progress?: { title: string; description?: string } | null;
     error?: { header: string; details: string } | null;
     rejected?: boolean;
@@ -20,20 +23,23 @@ export type SpecializedWithdrawalViewProps = {
 };
 export function SpecializedWithdrawalView({
     provider,
+    preparationLabel = 'Preparing withdrawal',
     network,
     isConnected,
     accountMismatch,
     sourceAddress,
     loading,
+    submissionAccepted,
     progress,
     error,
     rejected,
     connectButton,
     handleWithdraw,
 }: SpecializedWithdrawalViewProps) {
-    if (!isConnected) {
+    // Once submitted, retain the existing progress UI across wallet changes.
+    if (!submissionAccepted && !isConnected) {
         return (
-            <div className="w-full space-y-3">
+            <div className="flex w-full flex-col gap-2">
                 <WalletMessage
                     status="pending"
                     header={`Connect your ${provider} wallet`}
@@ -44,17 +50,19 @@ export function SpecializedWithdrawalView({
         );
     }
 
-    if (accountMismatch) {
+    if (!submissionAccepted && accountMismatch) {
         return (
-            <ActionMessages.WalletMismatchMessage
-                address={sourceAddress || ''}
-                network={network}
-            />
+            <TransferBlock reasonCode="wallet_account_mismatch" path="ProviderWalletWithdrawal">
+                <ActionMessages.WalletMismatchMessage
+                    address={sourceAddress || ''}
+                    network={network}
+                />
+            </TransferBlock>
         );
     }
 
     return (
-        <div className="w-full space-y-3 text-primary-text">
+        <div className="flex w-full flex-col gap-2 text-primary-text">
             {error && (
                 <WalletMessage
                     status="error"
@@ -63,7 +71,7 @@ export function SpecializedWithdrawalView({
                 />
             )}
             {rejected && <ActionMessages.TransactionRejectedMessage />}
-            {/* Provider-surfaced prerequisite step (e.g. moving funds between HL Spot/Perps). */}
+            {/* Provider-surfaced prerequisite, such as account setup or balance preparation. */}
             {progress && (
                 <WalletMessage
                     status="pending"
@@ -88,9 +96,7 @@ export function SpecializedWithdrawalView({
                     icon={<Loader2 className="h-6 w-6 animate-spin" />}
                 >
                     {progress
-                        ? provider === 'Hyperliquid'
-                            ? 'Preparing balance'
-                            : 'Setting up your account'
+                        ? preparationLabel
                         : 'Withdrawing'}
                 </ButtonWrapper>
             )}

@@ -44,7 +44,6 @@ export function DepositPreview({
         ? resolveSwapPhase({
               swapDetails: transfer.details,
               refuel: transfer.refuel,
-              storedWalletTransaction: transfer.storedWalletTransaction,
               isDepositFlow: true,
           })
         : undefined;

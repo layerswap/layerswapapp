@@ -4,15 +4,16 @@ import { ErrorHandler } from '@/lib/ErrorHandler';
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore';
 import { ActionMessageType, Network } from '@layerswap/widget-types';
 import { FC, useEffect } from 'react';
-import { ActionMessageView } from '../../Presentation/ActionMessageView';
+import { getActionMessage, ActionMessageView } from '../../Presentation/ActionMessageView';
 
-export const ActionMessage: FC<{
+function useActionMessageProps({ error, isSignatureError, isLoading, selectedSourceAddress, sourceNetwork, active = true }: {
+    active?: boolean;
     error: Error | undefined;
     isLoading: boolean;
     isSignatureError?: boolean;
     selectedSourceAddress: string;
     sourceNetwork: Network;
-}> = ({ error, isSignatureError, isLoading, selectedSourceAddress, sourceNetwork }) => {
+}) {
     const gaslessUnavailable = useGaslessPreferenceStore(
         (s) => s.gaslessUnavailable,
     );
@@ -23,7 +24,7 @@ export const ActionMessage: FC<{
 
     useEffect(() => {
         if (
-            error && !isUserRejection(error) &&
+            active && error && !isUserRejection(error) &&
             (error?.name === ActionMessageType.UnexpectedErrorMessage ||
                 !Object.values(ActionMessageType).includes(
                     error.name as ActionMessageType,
@@ -37,18 +38,15 @@ export const ActionMessage: FC<{
                 cause: error.cause,
             });
         }
-    }, [error]);
+    }, [error, active]);
 
-    return (
-        <ActionMessageView
-            error={error}
-            isSignatureError={isSignatureError}
-            isLoading={isLoading}
-            selectedSourceAddress={selectedSourceAddress}
-            sourceNetwork={sourceNetwork}
-            gaslessUnavailable={gaslessUnavailable}
-            gaslessErrorMessage={gaslessErrorMessage ?? undefined}
-            swapError={!!swapError}
-        />
-    );
-};
+    return {
+        error, isSignatureError, isLoading, selectedSourceAddress, sourceNetwork,
+        gaslessUnavailable, gaslessErrorMessage: gaslessErrorMessage ?? undefined,
+        swapError: !!swapError,
+    };
+}
+export function useActionMessage(props: Parameters<typeof useActionMessageProps>[0]) {
+    return getActionMessage(useActionMessageProps(props));
+}
+export const ActionMessage: FC<Parameters<typeof useActionMessageProps>[0]> = props => <ActionMessageView {...useActionMessageProps(props)} />;

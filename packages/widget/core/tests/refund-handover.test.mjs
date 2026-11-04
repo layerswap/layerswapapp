@@ -43,6 +43,7 @@ const { default: SwapForm } = loadSource('components/Pages/Swap/Form/SwapForm.ts
     '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: noop }) },
     '@/lib/swapLifecycle': { lifecycleContextFromForm: () => ({}) },
     './FormTelemetry': { default: empty }, './AmountPresetController': { default: empty },
+    './AtomicBatchDiscovery': { default: empty },
     '@/helpers/refundAddress': refundAddress,
 })
 

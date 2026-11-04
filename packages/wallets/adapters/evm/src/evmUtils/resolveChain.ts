@@ -1,4 +1,4 @@
-import NetworkSettings from "../NetworkSettings";
+import { resolveEVMGasPolicy } from "../gasProviders/evmGasPolicies";
 import { ErrorHandler, type Network } from "@layerswap/widget-types";
 import type { AppNetworkAdapter } from "@layerswap/wallet-core"
 import { defineChain } from "viem"
@@ -63,7 +63,7 @@ function resolveChainDefinition(input: ChainDefinitionInput) {
         },
     })
 
-    const baseFeeMultiplier = NetworkSettings.KnownSettings[input.settingsId]?.BaseFeeMultiplier ?? 1.2
+    const baseFeeMultiplier = resolveEVMGasPolicy(input.id).baseFeeMultiplier
     if (baseFeeMultiplier) {
         chain.fees = {
             ...chain.fees,

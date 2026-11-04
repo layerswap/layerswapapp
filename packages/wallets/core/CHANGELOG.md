@@ -1,5 +1,18 @@
 # @layerswap/wallet-core
 
+## 2.6.0
+
+### Patch Changes
+
+- Add atomic approve-and-swap support for compatible EVM wallets, including WalletConnect. Discover wallet capabilities, submit approval and swap calls together, and track accepted or uncertain submissions without duplicate wallet requests.
+
+  Add shared atomic batch types and prevent read-only WalletConnect capability and status requests from opening the wallet on mobile.
+
+- Updated dependencies
+- Updated dependencies
+  - @layerswap/widget-types@2.6.0
+  - @layerswap/utils@2.6.0
+
 ## 2.5.1
 
 ### Minor Changes

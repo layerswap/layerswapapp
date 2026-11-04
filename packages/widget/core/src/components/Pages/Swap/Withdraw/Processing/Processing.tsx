@@ -1,4 +1,6 @@
 'use client';
+import { useActionMessage } from '../Wallet/Common/actionMessage';
+import type { WalletProgressData } from '../Presentation/walletProgress';
 import CountdownTimer from '@/components/Common/CountDownTimer';
 import { useCallbacks } from '@/context/callbackProvider';
 import { useDepositSettings } from '@/context/depositSettings';
@@ -14,7 +16,6 @@ import {
 } from '@/lib/apiClients/layerSwapApiClient';
 import { ErrorHandler } from '@/lib/ErrorHandler';
 import {
-    useGaslessAuthorizationStore,
     useSwapTransactionStore,
 } from '@/stores/swapTransactionStore';
 import { type Refuel } from '@layerswap/widget-types';
@@ -22,6 +23,7 @@ import { FC, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useIntercom } from 'react-use-intercom';
 import Failed from '../Failed';
 import { ProcessingView } from '../Presentation/ProcessingView';
+import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore';
 import { useSwapDataState } from '@/context/swap';
 import { lifecycleContextFromSwap, PHASE_LIFECYCLE_EVENTS } from '@/lib/swapLifecycle';
 import { useLifecycleObservation } from '@/hooks/useLifecycleObservation';
@@ -35,33 +37,28 @@ type Props = {
     inputFailureMessage?: string;
 };
 
-const Processing: FC<Props> = ({
+export function useProcessingController({
     swapBasicData,
     swapDetails,
     quote,
     refuel,
     inputFailureMessage,
-}) => {
+}: Props, directWalletProgress?: WalletProgressData) {
     const { boot, show, update } = useIntercom();
     const { onSwapLifecycle } = useCallbacks();
-    const { depositActionsResponse, flow } = useSwapDataState();
+    const { depositActionsResponse, flow, gaslessAuthorization, walletActionFeedback, walletExecutionStarted, swapError } = useSwapDataState();
+    const gaslessUnavailable = useGaslessPreferenceStore(state => state.gaslessUnavailable);
     const { isDepositFlow } = useDepositSettings();
-    const setSwapTransaction = useSwapTransactionStore(
-        (state) => state.setSwapTransaction,
-    );
     const storedWalletTransaction = useSwapTransactionStore((state) =>
         swapDetails?.id ? state.swapTransactions[swapDetails.id] : undefined,
     );
     const stepTransactions = useSwapTransactionStore((state) =>
         swapDetails?.id ? state.stepTransactions[swapDetails.id] : undefined,
     );
-    // Gasless deposit broadcast tx (from the /authorize poll) — surfaces the hash + confirmations
-    // before the swap's own input transaction appears.
-    const gaslessAuthTx = useGaslessAuthorizationStore((state) =>
-        swapDetails?.id
-            ? state.authorizations[swapDetails.id]?.transaction
-            : undefined,
-    );
+    const walletFeedback = walletActionFeedback?.swapId === swapDetails.id
+        ? walletActionFeedback
+        : undefined;
+    const gaslessAuthTx = gaslessAuthorization?.transaction;
 
     const { source_network, source_token, destination_network, destination_token } = swapBasicData;
 
@@ -149,28 +146,6 @@ const Processing: FC<Props> = ({
     ]);
 
     useEffect(() => {
-        if (!swapDetails?.id) return;
-        if (!storedWalletTransaction?.hash) return;
-        // An authorization can expire while its transaction is still settling. Only
-        // transaction evidence may overwrite the status of an already broadcast hash.
-        if (resolved.gaslessFailureStatus && !swapInputTransaction) return;
-        if (storedWalletTransaction.status !== swapInputTxStatus) {
-            setSwapTransaction(
-                swapDetails.id,
-                swapInputTxStatus,
-                storedWalletTransaction.hash,
-            );
-        }
-    }, [
-        swapInputTxStatus,
-        storedWalletTransaction,
-        swapDetails?.id,
-        setSwapTransaction,
-        resolved.gaslessFailureStatus,
-        swapInputTransaction,
-    ]);
-
-    useEffect(() => {
         if (swapInputTxStatus === TransactionStatus.Failed && transactionHash) {
             const err = new Error('Transaction failed');
             const error = new Error(
@@ -250,40 +225,36 @@ const Processing: FC<Props> = ({
         maxConfirmations: swapOutputTransaction.max_confirmations,
     } : undefined, lifecycleContext)
 
-    useLifecycleObservation({
+    useLifecycleObservation(!resolved.showWithdrawScreen ? {
         ...PHASE_LIFECYCLE_EVENTS[phase],
         path: 'Processing',
         status: swapDetails.status,
         phase,
         reasonCode: swapDetails.fail_reason || failureReason,
-    }, lifecycleContext)
+    } : undefined, lifecycleContext)
 
-    return (
-        <ProcessingView
-            flow={flow}
-            swapBasicData={swapBasicData}
-            swapDetails={swapDetails}
-            depositActions={depositActionsResponse}
-            stepTransactions={stepTransactions}
-            quote={quote}
-            refuel={refuel}
-            resolved={resolved}
-            transactionHash={transactionHash}
-            inputConfirmations={inputConfirmations}
-            inputMaxConfirmations={inputMaxConfirmations}
-            inputFailureMessage={inputFailureMessage}
-            isDepositFlow={isDepositFlow}
-            failedPanel={<Failed />}
-            onGetHelp={startIntercom}
-            elapsedTime={
-                quote?.avg_completion_time ? (
-                    <CountdownTimer
-                        initialTime={quote.avg_completion_time}
-                        swapDetails={swapDetails}
-                    />
-                ) : null
-            }
-        />
-    );
-};
+    const legacyErrorMessage = useActionMessage({
+        error: directWalletProgress ? undefined : walletFeedback?.error,
+        isSignatureError: walletFeedback?.isSignatureError, isLoading: false,
+        selectedSourceAddress: swapDetails.source_address || '', sourceNetwork: source_network,
+        active: !directWalletProgress,
+    });
+    return {
+        flow,
+        walletProgress: directWalletProgress ?? {
+            quote, depositActions: depositActionsResponse, stepTransactions,
+            loading: walletFeedback?.loading, walletExecutionStarted,
+            actionStateText: walletFeedback?.actionStateText, error: walletFeedback?.failed,
+            swapError: !!swapError, gaslessUnavailable,
+            submissionAccepted: !!storedWalletTransaction?.hash,
+            showSwapProgress: walletFeedback?.showSwapProgress, errorMessage: legacyErrorMessage,
+        },
+        swapBasicData, swapDetails, depositActions: depositActionsResponse,
+        stepTransactions, quote, refuel, resolved, transactionHash,
+        inputConfirmations, inputMaxConfirmations, inputFailureMessage, isDepositFlow,
+        failedPanel: <Failed />, onGetHelp: startIntercom,
+        elapsedTime: quote?.avg_completion_time ? <CountdownTimer initialTime={quote.avg_completion_time} swapDetails={swapDetails} /> : null,
+    };
+}
+const Processing: FC<Props> = props => <ProcessingView {...useProcessingController(props)} />;
 export default Processing;

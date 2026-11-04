@@ -13,17 +13,10 @@ export function DepositAddressTransition({
 }) {
     return (
         <WalletExecutionTransition
+            gap={12}
             overview={summary}
-            controls={
-                instructions && (
-                    <div className="flex flex-col gap-3">{instructions}</div>
-                )
-            }
-            workflow={
-                processing && (
-                    <div className="flex flex-col gap-3">{processing}</div>
-                )
-            }
+            controls={instructions}
+            workflow={processing}
         />
     );
 }

@@ -16,6 +16,7 @@ type SentRequest = {
     topic: string
     id: number
     chainId: string
+    request?: { method: string }
 }
 
 // Keep wallet-core independent of a particular WalletConnect SDK version.
@@ -82,8 +83,15 @@ export function subscribeWalletRequests(client: SignClient, namespace: string): 
         }).catch(error => console.warn('Could not persist WalletConnect redirect settings', error))
     }
     const onConnect = ({ session }: { session: Session }) => configureSession(session)
-    const onRequest = ({ topic, id, chainId }: SentRequest) => {
+    const onRequest = ({ topic, id, chainId, request }: SentRequest) => {
         if (!isMobile() || chainId.split(':')[0] !== namespace) return
+        // Capability discovery and receipt polling must not background the browser.
+        if (
+            request?.method === 'wallet_getCapabilities'
+            || request?.method === 'wallet_getCallsStatus'
+        ) {
+            return
+        }
         try {
             const session = client.session.get(topic)
             // Link-mode sessions carry their request in the SDK's own app link.

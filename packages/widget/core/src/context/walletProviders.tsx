@@ -42,7 +42,7 @@ const ConnectModalHost: React.FC<{ settings: ReturnType<typeof useSettingsState>
     const isMobilePlatform = isMobile();
     const walletProvidersRegistry = useWalletProvidersRegistry();
     const { providers } = useWallet()
-    const { goBack, onFinish, open, setOpen, presentation, selectedConnector, selectedMultiChainConnector, dismissible, topContent, fullHeight, hideHeader } = useConnectModal()
+    const { goBack, onFinish, open, setOpen, presentation, selectedConnector, selectedMultiChainConnector, placement, dismissible, topContent, fullHeight, hideHeader } = useConnectModal()
     const { loadAll } = useWalletDescriptorLoader()
 
     // `AvailableSourceNetworkTypes` is read by `helpers/routes.ts` to decide
@@ -84,6 +84,7 @@ const ConnectModalHost: React.FC<{ settings: ReturnType<typeof useSettingsState>
             setShow={setOpen}
             onClose={onFinish}
             modalId={"connectNewWallet"}
+            placement={placement}
             dismissible={dismissible}
             nonModal
             header={

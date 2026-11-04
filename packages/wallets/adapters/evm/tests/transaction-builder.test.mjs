@@ -14,8 +14,6 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
     if (parent.endsWith('/gasProviders/resolveEVMTransactionGasParameters.js') && ['viem', '../evmUtils/resolveChain', '../evmUtils/resolveTransports'].includes(specifier)) {
         return { url: rpcUrl, shortCircuit: true }
     }
-    if (parent.endsWith('/gasProviders/resolveEVMFeeData.js') && specifier === '../NetworkSettings')
-        return { url: 'data:text/javascript,export default class { static KnownSettings = {} }', shortCircuit: true }
     if (specifier.startsWith('.') && !extname(specifier) && parent.includes('/dist/esm/'))
         return nextResolve(`${specifier}.js`, context)
     return nextResolve(specifier, context)

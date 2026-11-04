@@ -10,6 +10,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Drawer } from './vaul';
 import AppSettings from '@/lib/AppSettings';
 
+export type DrawerPlacement = 'default' | 'widget-body';
+
 export type VaulDrawerProps = {
     children: ReactNode;
     show: boolean;
@@ -21,11 +23,13 @@ export type VaulDrawerProps = {
     onAnimationEnd?: (open: boolean) => void;
     className?: string;
     mode?: 'snapPoints' | 'fitHeight';
+    /** Keep the drawer below the widget header on mobile when using widget-body. */
+    placement?: DrawerPlacement;
     dismissible?: boolean;
     nonModal?: boolean;
 }
 
-const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd, className, modalId, mode = 'snapPoints', dismissible = true, nonModal }) => {
+const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd, className, modalId, mode = 'snapPoints', placement = 'default', dismissible = true, nonModal }) => {
     const { isMobileWithPortal: isMobile, isMobile: isMobileWithoutPortal } = useWindowDimensions();
     let [headerRef, { height }] = useMeasure();
     const { setHeaderHeight } = useSnapPoints()
@@ -148,7 +152,10 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
 
     if (!loaded) return null;
 
-    const container = (isMobile && AppSettings.ThemeData?.enablePortal) ? undefined : document.getElementById('widget');
+    const widgetBody = isMobileWithoutPortal && placement === 'widget-body'
+        ? document.getElementById('widget_body')
+        : null;
+    const container = widgetBody ?? ((isMobile && AppSettings.ThemeData?.enablePortal) ? undefined : document.getElementById('widget'));
 
     return (
         <Drawer.Root
@@ -191,7 +198,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                 )}
                 <Drawer.Content asChild>
                 <DrawerSurfaceView
-                    fitHeight={isFitHeightMode} fullHeight={snap === 1} portal={AppSettings.ThemeData?.enablePortal === true} className={className}
+                    fitHeight={isFitHeightMode} fullHeight={snap === 1} portal={AppSettings.ThemeData?.enablePortal === true && !widgetBody} className={className}
                     data-testid="content" data-fit-height={isFitHeightMode ? 'true' : undefined}
                     style={parked ? { transform: 'translate3d(0, 100%, 0)', animation: 'none', transition: 'none' } : undefined}
                 >

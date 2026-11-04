@@ -3,12 +3,12 @@ import type { Connector } from 'wagmi'
 import type { CreateConnectorFn, Config } from '@wagmi/core'
 import { getAccount } from '@wagmi/core'
 import { sleep } from "@layerswap/utils"
-import { chainsToNetworkTypes, createRegistryConnector, DisplayUriSource, type WalletConnectWalletBase } from "@layerswap/wallet-core"
+import { chainsToNetworkTypes, createRegistryConnector, DisplayUriSource, FEATURED_WALLETS_IDS, type WalletConnectWalletBase } from "@layerswap/wallet-core"
 import { getKnownConnectorIconBase64 } from "@layerswap/wallet-core"
 import { evmConnectorNameResolver } from '../evmUtils'
 import KnownEVMConnectorIds from '../evmUtils/knownConnectorIds'
 import { explicitInjectedProviderDetected } from '../connectors/explicitInjectedProviderDetected'
-import { featuredWalletsIds, HIDDEN_WALLETCONNECT_ID, name as PROVIDER_NAME } from '../constants'
+import { HIDDEN_WALLETCONNECT_ID, name as PROVIDER_NAME } from '../constants'
 
 const resolveEVMConnectorOrder = (id: string) =>
     KnownEVMConnectorIds.findIndex(known => known.toLowerCase() === id?.toLowerCase())
@@ -43,8 +43,8 @@ export const supportsRegistryConnects = (allConnectors: readonly Connector[]): b
     allConnectors.some(c => c.id === HIDDEN_WALLETCONNECT_ID)
 
 export const isFeaturedRegistryWallet = (wallet: WalletConnectWalletBase): boolean => (
-    featuredWalletsIds.includes(wallet.id.toLowerCase())
-    || featuredWalletsIds.some(featuredId => wallet.name.toLowerCase().includes(featuredId))
+    FEATURED_WALLETS_IDS.includes(wallet.id.toLowerCase())
+    || FEATURED_WALLETS_IDS.some(featuredId => wallet.name.toLowerCase().includes(featuredId))
 )
 
 export const splitRegistryConnectors = (

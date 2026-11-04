@@ -15,7 +15,7 @@ import { ceilUsd, floorUsd } from "@/components/utils/formatUsdAmount";
 import { truncateToDecimals, isScientific } from "@/components/utils/RoundDecimals";
 import { useHydratedReducedMotion } from "@/hooks/useHydratedReducedMotion";
 
-import { amountPresetSource, isWalletAmountFlow, resolvePresetAmount, supportsLiveAmountPreset, type AmountPreset } from '@/lib/amountPresets';
+import { amountPresetSource, isAmountPreset, isWalletAmountFlow, resolvePresetAmount, supportsLiveAmountPreset, type AmountPreset } from '@/lib/amountPresets';
 
 type MinMaxProps = {
     fromCurrency: NetworkRouteToken,
@@ -54,7 +54,12 @@ const MinMax = (props: MinMaxProps) => {
     const maxEstimationAmount = enteredAmount > 0
         ? Math.min(enteredAmount, balanceAmount != null && Number.isFinite(balanceAmount) && balanceAmount >= 0 ? balanceAmount : enteredAmount)
         : undefined
-    const { gasData, gasError, isGasLoading } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency, maxEstimationAmount, wallet)
+    const hasLivePreset = live && isAmountPreset(selectedPreset)
+        && values.amountPresetSource === amountPresetSource(from?.name, fromCurrency?.symbol, selectedSourceAccount?.id, selectedSourceAccount?.address)
+    const { gasData: previewEstimate, gasError: previewError, isGasLoading: previewLoading } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency, maxEstimationAmount, wallet, { enabled: !hasLivePreset })
+    const gasData = hasLivePreset ? values.amountPresetGas : previewEstimate
+    const gasError = hasLivePreset ? undefined : previewError
+    const isGasLoading = hasLivePreset ? !!values.amountPresetPending : previewLoading
 
     // Amount changes start a new fee request. Keep the preset previews available
     // during that request; selecting one still sets pending and runs the live
@@ -116,7 +121,7 @@ const MinMax = (props: MinMaxProps) => {
         }
         void setValues({ ...values, amount: sanitizedValue, amountMode: live ? mode : 'fixed',
             amountPresetSource: live ? amountPresetSource(from.name, fromCurrency.symbol, selectedSourceAccount?.id, selectedSourceAccount?.address) : undefined,
-            amountPresetPending: live, amountPresetError: undefined, amountPresetBalance: undefined }, true)
+            amountPresetPending: live, amountPresetError: undefined, amountPresetBalance: undefined, amountPresetGas: undefined }, true)
         onActionHover(undefined)
     }
 

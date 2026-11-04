@@ -7,6 +7,7 @@ import type { SwapFormValues } from './SwapFormValues'
 import FormTelemetry from './FormTelemetry'
 import AmountPresetController from './AmountPresetController'
 import { refundAddressValidation } from '@/helpers/refundAddress'
+import AtomicBatchDiscovery from './AtomicBatchDiscovery'
 
 /**
  * 'deposit-address' is the Swap page tab; deposit-widget-* is the standalone
@@ -57,6 +58,7 @@ export default function SwapForm({ mode, submitPath, submitAction = 'submit', on
                 <div data-ls-form={mode} className="contents">
                     <FormTelemetry mode={mode} />
                     <AmountPresetController />
+                    <AtomicBatchDiscovery />
                     {typeof children === 'function' ? children(props) : children}
                 </div>
             )}

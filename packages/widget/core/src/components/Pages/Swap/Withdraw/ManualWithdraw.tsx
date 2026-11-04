@@ -26,7 +26,7 @@ import {
     Token,
     type Refuel,
 } from '@layerswap/widget-types';
-import { FC, useMemo, useState } from 'react';
+import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import QuoteDetails from '../Form/FeeDetails';
 import { SwapFormValues } from '../Form/SwapFormValues';
 import { ManualInstructionsView } from './Presentation/ManualInstructionsView';
@@ -53,7 +53,7 @@ interface Props {
     isQuoteLoading?: boolean;
 }
 
-const ManualWithdraw: FC<Props> = ({
+export function useManualWithdrawController({
     swapBasicData,
     depositActions,
     refuel,
@@ -61,7 +61,7 @@ const ManualWithdraw: FC<Props> = ({
     type,
     quote,
     isQuoteLoading,
-}) => {
+}: Props, active = true) {
     const { wallets } = useWallet();
     const { createSwap, setSwapId } = useSwapDataUpdate();
     const { swapDetails } = useSwapDataState();
@@ -80,6 +80,17 @@ const ManualWithdraw: FC<Props> = ({
 
     const [showQR, setShowQR] = useState(false);
     const [copied, copy] = useCopyClipboard();
+    const [copiedAddress, setCopiedAddress] = useState<string>();
+    const wasActive = useRef(active);
+    useEffect(() => {
+        const becameEligible = active && !wasActive.current;
+        wasActive.current = active;
+        if (!becameEligible || loading) return;
+        setShowQR(false);
+        setIsPopoverOpen(false);
+        setCopiedAddress(undefined);
+        setSelectedFrom({ network: swapBasicData.source_network, token: swapBasicData.source_token });
+    }, [active]);
     const initialSettings = useInitialSettings();
     const depositAddress = resolveDepositAddress(
         swapBasicData?.source_network,
@@ -123,10 +134,11 @@ const ManualWithdraw: FC<Props> = ({
     )
 
     // A source address arriving later enriches the report but never repeats it.
-    useLifecycleObservation(swapDetails?.id ? AWAITING_USER_DEPOSIT : undefined, lifecycleContext)
+    useLifecycleObservation(active && swapDetails?.id ? AWAITING_USER_DEPOSIT : undefined, lifecycleContext)
 
     const handleCopy = () => {
         if (depositAddress) {
+            setCopiedAddress(depositAddress);
             copy(depositAddress);
             onSwapLifecycle({
                 step: 'deposit_address_copied',
@@ -211,10 +223,9 @@ const ManualWithdraw: FC<Props> = ({
     const {
         networks: withdrawalNetworks,
         isLoading: exchangeSourceNetworksLoading,
-    } = useExchangeNetworks(exchangeNetworkParams);
+    } = useExchangeNetworks(active ? exchangeNetworkParams : {});
 
-    return (
-        <>
+    return { controls: (
             <ManualInstructionsView
                 swapBasicData={swapBasicData}
                 quote={quote}
@@ -279,10 +290,10 @@ const ManualWithdraw: FC<Props> = ({
                     </>
                 }
             />
-            <Widget.Footer sticky={type === 'widget'}>
-                <ManualDepositButtonView copied={copied} onCopy={handleCopy} />
-            </Widget.Footer>
-        </>
-    );
+        ), footer: <ManualDepositButtonView copied={copied && copiedAddress === depositAddress} onCopy={handleCopy} /> };
+}
+const ManualWithdraw: FC<Props> = props => {
+    const model = useManualWithdrawController(props);
+    return <>{model.controls}<Widget.Footer sticky={props.type === 'widget'}>{model.footer}</Widget.Footer></>;
 };
 export default ManualWithdraw;

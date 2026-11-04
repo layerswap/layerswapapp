@@ -31,6 +31,7 @@ const { createEVMProvider } = load('../src/extendedRoutes.ts', {
     './additionalProviders/polymarket/createPolymarketTransferProvider': {},
     './additionalProviders/polymarket/constants': { POLYMARKET_CONFIG: {} },
     './additionalProviders/polymarket/polymarketExtendedRouteProvider': {},
+    './additionalProviders/polymarket/withdrawal': {},
     './service/getEvmConfig': {},
     './additionalProviders/hyperliquid/hyperliquidGasProvider': gasModule,
 })

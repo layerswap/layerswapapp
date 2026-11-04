@@ -26,6 +26,7 @@ const { FuelConnectionService } = await import('../dist/esm/service/FuelConnecti
 const { attachFuelSync, registerFuelWalletSynchronizer } = await import('../dist/esm/service/syncFuel.js')
 const { setFuelInstance } = await import('../dist/esm/service/getFuel.js')
 const { createFuelTransfer } = await import('../dist/esm/transferProvider/createFuelTransfer.js')
+const { resolveFuelChainId } = await import('../dist/esm/service/resolveFuelChainId.js')
 
 const addressA = `0x${'11'.repeat(32)}`
 const addressB = `0x${'ab'.repeat(32)}`
@@ -292,7 +293,7 @@ function transferFixture(t, accounts = [addressA, addressB]) {
     const params = {
         sourceAddress: addressB,
         selectedWallet: wallet('Fuel Wallet', addressA),
-        network: { name: 'FUEL_MAINNET', node_url: 'https://mock.fuel.example' },
+        network: { name: 'FUEL_MAINNET', chain_id: '9889', node_url: 'https://mock.fuel.example' },
         callData: JSON.stringify({ script: {}, quantities: [] }),
         swapId: 'fuel-swap',
     }
@@ -350,4 +351,123 @@ test('an authorization error from the wallet keeps its cause and is reported as 
         assert.equal(error.message, original.message)
         return true
     })
+})
+
+test('Fuel chain resolution retains numeric 0 without querying the RPC', async t => {
+    t.mock.method(globalThis, 'fetch', () => assert.fail('a reported chain ID must not trigger RPC discovery'))
+    assert.equal(resolveFuelChainId({ chainId: 0 }), 0)
+})
+
+for (const hasCachedWallet of [false, true]) {
+    test(`unknown legacy networks cannot block wallet restoration (cached wallet: ${hasCachedWallet})`, async t => {
+        const legacy = connector('Legacy Fuel Wallet')
+        legacy.currentNetwork = async () => ({ url: 'https://stalled-legacy.fuel.example' })
+        const healthy = connector('Fuelet', [addressC])
+        useFuelStore.getState()._setConnectors([legacy, healthy])
+        if (hasCachedWallet) {
+            useFuelStore.getState().connectWallet({ ...wallet(legacy.name, addressA), chainId: 9889 })
+        }
+
+        const fetch = t.mock.method(globalThis, 'fetch', () => assert.fail('restoration must not query the node'))
+        const healthyNetwork = t.mock.method(healthy, 'currentNetwork', healthy.currentNetwork)
+        t.mock.method(console, 'error', () => {})
+
+        await new FuelConnectionService().syncConnectedWallets()
+
+        assert.equal(fetch.mock.callCount(), 0)
+        assert.equal(healthyNetwork.mock.callCount(), 1)
+        const wallets = useFuelStore.getState().connectedWallets
+        assert.deepEqual(wallets.map(w => w.id), [legacy.name, healthy.name])
+        assert.equal(wallets[0].chainId, undefined, 'unknown metadata must not retain a stale mainnet guess')
+    })
+}
+
+test('legacy network metadata follows configured RPC URLs, including updates with unchanged network IDs', async t => {
+    const fuelWallet = connector()
+    t.mock.method(fuelWallet, 'currentNetwork', async () => ({ url: 'https://custom.fuel.example/' }))
+    t.mock.method(globalThis, 'fetch', () => assert.fail('metadata resolution must not query the node'))
+    const adapter = {
+        getId: network => network.name,
+        getChainId: network => network.chainId,
+        getRpcUrls: network => network.rpcUrls,
+        getIcon: () => undefined,
+        isFuelNetwork: () => true,
+    }
+    const service = new FuelConnectionService()
+    service.setNetworks([{ name: 'custom', chainId: 0, rpcUrls: ['https://custom.fuel.example'] }], adapter)
+    assert.equal((await service.resolveFuelWallet(fuelWallet, addressA, [addressA])).chainId, 0)
+
+    service.setNetworks([{ name: 'custom', chainId: 0, rpcUrls: ['https://new.fuel.example'] }], adapter)
+    assert.equal((await service.resolveFuelWallet(fuelWallet, addressA, [addressA])).chainId, undefined)
+})
+
+test('the connection provider checks live readiness even when the published wallet chain is stale', async () => {
+    const fuelWallet = connector()
+    let chainId = 0
+    let switches = 0
+    let starts = 0
+    fuelWallet.currentNetwork = async () => ({ chainId })
+    fuelWallet.selectNetwork = async target => { switches++; chainId = target.chainId; return true }
+    useFuelStore.getState()._setConnectors([fuelWallet])
+    const provider = new FuelConnectionService().buildProvider()
+    await provider.ensureChain({ ...wallet('Fuel Wallet', addressA), chainId: 9889 }, '9889', {
+        onSwitchStart: () => { starts++ },
+    })
+    assert.equal(switches, 1)
+    assert.equal(starts, 1)
+    assert.equal(chainId, 9889)
+})
+
+test('a connector on testnet cannot prepare a mainnet transaction despite a stale wallet snapshot', async t => {
+    const fixture = transferFixture(t)
+    t.mock.method(fixture.fuelWallet, 'currentNetwork', async () => ({ chainId: 0 }))
+    await assert.rejects(fixture.transfer.executeTransfer(fixture.params), /Switch your Fuel wallet to FUEL_MAINNET/)
+    assert.deepEqual(fixture.owners, [])
+    assert.equal(fixture.simulate.mock.callCount(), 0)
+    assert.equal(fixture.send.mock.callCount(), 0)
+})
+
+test('a network change during preparation blocks submission', async t => {
+    const fixture = transferFixture(t)
+    t.mock.method(Provider.prototype, 'simulate', async () => {
+        fixture.fuelWallet.currentNetwork = async () => ({ chainId: 0 })
+    })
+    await assert.rejects(fixture.transfer.executeTransfer(fixture.params), /Switch your Fuel wallet/)
+    assert.deepEqual(fixture.owners, [addressB])
+    assert.equal(fixture.send.mock.callCount(), 0)
+})
+
+for (const chainId of [0, 9889]) {
+    test(`a confirmed chain switch to ${chainId} succeeds`, async t => {
+        const fuelWallet = connector()
+        fuelWallet.selectNetwork = async () => true
+        t.mock.method(fuelWallet, 'currentNetwork', async () => ({ chainId }))
+        useFuelStore.getState()._setConnectors([fuelWallet])
+        await new FuelConnectionService().switchChain(wallet('Fuel Wallet', addressA), String(chainId))
+    })
+}
+
+test('a successful selectNetwork response cannot hide a wallet still on the wrong chain', async t => {
+    const fuelWallet = connector()
+    fuelWallet.selectNetwork = async () => true
+    t.mock.method(fuelWallet, 'currentNetwork', async () => ({ chainId: 0 }))
+    t.mock.method(console, 'error', () => {})
+    useFuelStore.getState()._setConnectors([fuelWallet])
+    await assert.rejects(new FuelConnectionService().switchChain(wallet('Fuel Wallet', addressA), '9889'), /still on chain 0/)
+})
+
+test('the observed funding rejection has an insufficient-funds UI label and preserves the RPC cause', async t => {
+    const fixture = transferFixture(t)
+    const original = Object.assign(new Error(
+        'Insufficient funds.\nAsset ID: ETH.\nThe Fuel Node is using fuel-core version 0.48.3; SDK supports 0.43.1.'
+    ), { code: 'not-enough-funds' })
+    t.mock.method(ScriptTransactionRequest.prototype, 'estimateAndFund', async () => { throw original })
+    await assert.rejects(fixture.transfer.executeTransfer(fixture.params), error => {
+        assert.equal(error.name, 'InsufficientFunds')
+        assert.equal(normalizeWalletErrorCode(error), 'insufficient_funds')
+        assert.equal(error.cause, original)
+        return true
+    })
+    assert.equal(fixture.simulate.mock.callCount(), 0)
+    assert.equal(fixture.send.mock.callCount(), 0)
 })

@@ -66,10 +66,10 @@ test('a failed real balance-store refresh can be retried instead of reusing its 
   assert.equal(attempts, 2)
 })
 
-test('the confirmation check keeps the reviewed amount when a small fee increase fits the reserve', async () => {
+test('the confirmation check lowers the reviewed amount when a small fee increase consumes its buffer', async () => {
   const { preparePresetAmount, calls } = setup({ gas: 0.10001 })
-  assert.equal(await preparePresetAmount({ ...values, amount: '0.898' }, 'source', {}, [], false), '0.898')
-  assert.equal(calls.filter(([name]) => name === 'gas').length, 1)
+  assert.equal(await preparePresetAmount({ ...values, amount: '0.898' }, 'source', {}, [], false), '0.897989')
+  assert.equal(calls.filter(([name]) => name === 'gas').length, 2)
 })
 
 test('the confirmation check lowers an amount when the fresh fee exceeds the reserve', async () => {
@@ -139,4 +139,10 @@ test('live Max and confirmation reserve the maximum fee plus the native account 
   const refreshed = setup({ balance: 20, gas: 0.01, maxFee: 0.04, reserve: 10,
     limits: { min_amount: 0.001, max_amount: 30 } })
   assert.equal(await refreshed.preparePresetAmount({ ...values, amountMode: 'max', amount }, 'source', {}, [], false), '9.9592')
+})
+
+test('confirmation preserves a reviewed amount that covers the buffered fee', async () => {
+  const { preparePresetAmount, calls } = setup({ gas: 0.10001 })
+  assert.equal(await preparePresetAmount({ ...values, amount: '0.897' }, 'source', {}, [], false), '0.897')
+  assert.equal(calls.filter(([name]) => name === 'gas').length, 1)
 })

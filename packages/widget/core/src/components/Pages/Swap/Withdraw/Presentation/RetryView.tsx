@@ -10,7 +10,7 @@ export function RetryView({
     onSwitchToStandard?: () => void;
 }) {
     return (
-        <div className="space-y-2">
+        <div className="flex flex-col gap-2">
             <SubmitButton
                 isDisabled={false}
                 isSubmitting={false}

@@ -1,11 +1,8 @@
 import { SwapStatus } from '@layerswap/widget-types';
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useGaslessAuthorizationStore } from '@/stores/swapTransactionStore'
-import { DepositAction, GaslessAuthorizationStatus, SwapDetails, TransactionType } from '@/lib/apiClients/layerSwapApiClient'
+import { DepositAction, GaslessAuthorizationResult, GaslessAuthorizationStatus, SwapDetails, TransactionType } from '@/lib/apiClients/layerSwapApiClient'
 import { isGaslessAuthorizationForWorkflow, isGaslessDepositWorkflow } from '@/helpers/gasless'
-
-// Grace for client clock skew before the fallback timer declares expiry.
-const EXPIRY_GRACE_SECONDS = 30
 
 type UseGaslessAuthorizationResult = {
     failed: boolean
@@ -15,63 +12,31 @@ type UseGaslessAuthorizationResult = {
 
 const FAILURE_STATUSES: ReadonlySet<GaslessAuthorizationStatus> = new Set(['expired', 'insufficient', 'rejected'])
 
-// Poll status is authoritative; the valid_before timer is a fallback until a status arrives.
+// Only the fetched authorization can fail a swap. Signature deadlines are receipts.
 // Takes the swap as a parameter (no context read) so SwapDataProvider can own the single instance.
-export function useGaslessAuthorization(swapDetails: SwapDetails | undefined, depositActions?: DepositAction[]): UseGaslessAuthorizationResult {
+export function useGaslessAuthorization(
+    swapDetails: SwapDetails | undefined,
+    depositActions?: DepositAction[],
+    fetchedAuthorization?: GaslessAuthorizationResult,
+): UseGaslessAuthorizationResult {
     const swapId = swapDetails?.id
 
     const storedAuthorization = useGaslessAuthorizationStore(
         state => swapId ? state.authorizations[swapId] : undefined,
     )
-    const authorization = isGaslessAuthorizationForWorkflow(storedAuthorization, depositActions) ? storedAuthorization : undefined
-    const status = authorization?.status
-
     const hasInputTransaction = !!swapDetails?.transactions?.some(t => t.type === TransactionType.Input)
-
-    const polledFailure: GaslessAuthorizationStatus | undefined =
-        status && FAILURE_STATUSES.has(status) ? status : undefined
-
-    const pendingPublish = !!authorization
-        && status === undefined
+    const awaitingDeposit = isGaslessAuthorizationForWorkflow(storedAuthorization, depositActions)
         && !hasInputTransaction
         && swapDetails?.status === SwapStatus.UserTransferPending
-
-    const validBefore = authorization?.validBefore
-    const [expiredDeadline, setExpiredDeadline] = useState<{
-        swapId: string;
-        validBefore: number;
-    } | undefined>(undefined)
-    useEffect(() => {
-        if (!swapId || !pendingPublish || validBefore == null) {
-            setExpiredDeadline(undefined)
-            return
-        }
-        const deadlineMs = (validBefore + EXPIRY_GRACE_SECONDS) * 1000
-        const msLeft = deadlineMs - Date.now()
-        if (msLeft <= 0) {
-            setExpiredDeadline({ swapId, validBefore })
-            return
-        }
-        setExpiredDeadline(undefined)
-        const timer = setTimeout(() => setExpiredDeadline({ swapId, validBefore }), msLeft)
-        return () => clearTimeout(timer)
-    }, [swapId, pendingPublish, validBefore])
+    const status = awaitingDeposit ? fetchedAuthorization?.status : undefined
+    const failureStatus = status && FAILURE_STATUSES.has(status) ? status : undefined
 
     const stalePrerequisite = isGaslessDepositWorkflow(depositActions) === false
-        && !storedAuthorization?.transaction?.transaction_hash
     useEffect(() => {
         if (swapId && storedAuthorization && (hasInputTransaction || stalePrerequisite)) {
             useGaslessAuthorizationStore.getState().removeGaslessAuthorization(swapId)
         }
     }, [swapId, storedAuthorization, hasInputTransaction, stalePrerequisite])
-
-    // Ignore an obsolete expiry during render, before the effect resets it after a
-    // swap change, retry, or authoritative poll result.
-    const expiredByTimer = pendingPublish
-        && expiredDeadline !== undefined
-        && expiredDeadline.swapId === swapId
-        && expiredDeadline.validBefore === validBefore
-    const failureStatus = polledFailure ?? (expiredByTimer ? 'expired' : undefined)
 
     return {
         failed: !!failureStatus,

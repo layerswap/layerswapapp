@@ -21,7 +21,7 @@ export const timelineGroups = [
         widget: 'swap',
         label: 'Token swaps',
         description:
-            'Swap tokens on the same network, with approval, signing and publication.',
+            'Swap tokens on the same network through an atomic wallet batch or approval, signing and publication.',
     },
     {
         id: 'gasless',

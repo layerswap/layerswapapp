@@ -34,7 +34,7 @@ export const FORM_VALIDATION_ERROR_CODES = {
 }
 
 
-export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isUsdMode, sourceAddress, sameAccountNetwork, quoteError, noExchangeWithdrawalRoute }: Params): { code?: string; message: string } {
+export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isUsdMode, sourceAddress, sameAccountNetwork, quoteError, noExchangeWithdrawalRoute }: Params): { message: string; code?: string } {
     let amount = values.amount ? Number(values.amount) : undefined;
 
     // Deposit address flow without exchange: no amount or exchange required

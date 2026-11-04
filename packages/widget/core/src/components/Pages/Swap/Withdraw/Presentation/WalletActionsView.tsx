@@ -1,3 +1,4 @@
+import { TransferBlock } from '../TransferBlock';
 import SubmitButton, {
     type SubmitButtonProps,
 } from '@/components/Buttons/submitButton';
@@ -10,10 +11,10 @@ import type {
 import {
     getActionableDepositAction,
     getDepositActionLabel,
-    getCurrentDepositActionIndex,
     isDepositWorkflowComplete,
 } from '@/helpers/depositActions';
-import { DepositWorkflowView } from './DepositWorkflowView';
+import { ProgressPanelView } from './ProgressPanelView';
+import { getWalletProgress, getWalletWorkflowState } from './walletProgress';
 import { WalletExecutionTransition } from './WalletExecutionTransition';
 import { resolvePriceImpactValues } from '@/lib/fees';
 import { WalletIcon } from '@layerswap/ui-kit/components';
@@ -22,12 +23,12 @@ import { type FC, type ReactNode } from 'react';
 import { ICON_CLASSES_WARNING } from '../../Form/SecondaryComponents/validationError/constants';
 import ErrorDismissButton from '../../Form/SecondaryComponents/validationError/ErrorDismissButton';
 import { ErrorDisplay } from '../../Form/SecondaryComponents/validationError/ErrorDisplay';
-import WalletMessage, { WalletMessageDetails } from '../messages/Message';
+import WalletMessage from '../messages/Message';
 import { walletDisconnectedMessage } from '../messages/walletErrorMessage';
 import { NetworkSwitchError, networkSwitchFailureReason } from '../Wallet/Common/ensureSourceChain';
 import type { ActionData } from '../Wallet/Common/sharedTypes';
 import type { SwapStepTransactions } from '@/stores/swapTransactionStore';
-import { resolveSwapFlow, type ResolvedSwapFlow } from '@/components/utils/resolveSwapFlow';
+import type { ResolvedSwapFlow } from '@/components/utils/resolveSwapFlow';
 export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = ({ data, network }) => {
     if (data.isPending) {
         return <WalletMessage
@@ -73,7 +74,7 @@ export const ButtonWrapper: FC<SubmitButtonProps> = ({ ...props }) => {
             buttonStyle="filled"
             size="medium"
             type="button"
-            className="text-base my-1"
+            className="text-base"
             {...props}
         >
             {props.children}
@@ -126,18 +127,25 @@ export function ConnectWalletView({
     );
 }
 export type SendTransactionViewProps = SubmitButtonProps & {
+    showProgress?: boolean;
     flow?: ResolvedSwapFlow;
     errorMessage?: ReactNode;
     quote?: SwapQuote;
     quoteIsLoading?: boolean;
     quoteError?: boolean;
     loading?: boolean;
+    pendingSubmission?: boolean;
+    submissionTimedOut?: boolean;
+    walletExecutionStarted?: boolean;
+    /** A wallet receipt keeps confirmation visible without advancing the API swap phase. */
+    submissionAccepted?: boolean;
     networkSwitch?: ActionData;
     walletRequestRecovery?: ReactNode;
     sourceNetworkName?: string;
     actionStateText?: string;
     actionButtonText?: string;
     depositActions?: DepositAction[];
+    showSwapProgress?: boolean;
     stepTransactions?: SwapStepTransactions;
     readOnly?: boolean;
     error?: boolean;
@@ -147,6 +155,7 @@ export type SendTransactionViewProps = SubmitButtonProps & {
     showCriticalMarketPriceImpactButtons?: boolean;
     priceImpactValues?: ReturnType<typeof resolvePriceImpactValues>;
     gaslessUnavailable?: boolean;
+    gaslessErrorMessage?: string;
     gaslessFailureStage?: 'create' | 'deposit' | null;
     canSwitchToStandard?: boolean;
     handleClick?: () => void;
@@ -155,7 +164,8 @@ export type SendTransactionViewProps = SubmitButtonProps & {
     switchToStandard?: () => void;
     onCancelWithdrawal?: () => void;
 };
-export function SendTransactionView({
+export function getSendTransactionPresentation({
+    showProgress: _showProgress,
     flow,
     icon = <WalletIcon className="stroke-2 w-6 h-6" />,
     errorMessage,
@@ -163,12 +173,17 @@ export function SendTransactionView({
     quoteIsLoading,
     quoteError,
     loading,
+    pendingSubmission,
+    submissionTimedOut,
+    submissionAccepted,
+    walletExecutionStarted,
     networkSwitch,
     walletRequestRecovery,
     sourceNetworkName,
     actionStateText,
     actionButtonText,
     depositActions,
+    showSwapProgress,
     stepTransactions,
     readOnly,
     error,
@@ -178,6 +193,7 @@ export function SendTransactionView({
     showCriticalMarketPriceImpactButtons,
     priceImpactValues,
     gaslessUnavailable,
+    gaslessErrorMessage,
     gaslessFailureStage,
     canSwitchToStandard = true,
     handleClick,
@@ -187,51 +203,56 @@ export function SendTransactionView({
     onCancelWithdrawal,
     ...props
 }: SendTransactionViewProps) {
-    const isMultiStepWorkflow = (flow ?? resolveSwapFlow({ depositActions, stepTransactions, quote })).walletProgress === 'workflow';
+    const observingSubmission = pendingSubmission && !loading;
+    const needsGaslessRecovery = gaslessUnavailable && !submissionAccepted && !pendingSubmission;
+    const submissionMessage = observingSubmission && submissionTimedOut ? <WalletMessage
+        status="pending"
+        header="Transaction not confirmed"
+        details="We haven’t detected your transaction yet. Tracking continues automatically. This does not mean the transaction failed."
+    /> : undefined;
+    const walletProgress = {
+        flow, quote, depositActions, stepTransactions, loading,
+        submissionAccepted: submissionAccepted || observingSubmission,
+        submissionTimedOut, walletExecutionStarted,
+        error: pendingSubmission ? false : error,
+        swapError: pendingSubmission ? false : swapError, gaslessUnavailable: needsGaslessRecovery,
+        errorMessage: submissionMessage ?? errorMessage, actionStateText,
+        showSwapProgress, readOnly,
+    };
+    const { hasError, workflowFailed, confirmingSubmission, showStepError } =
+        getWalletWorkflowState(walletProgress);
     const workflowCompleted = isDepositWorkflowComplete(depositActions ?? []);
-    const workflowFailed = depositActions?.some(action => action.status === 'failed');
     const actionableAction = getActionableDepositAction(depositActions);
-    const primaryActionText = actionableAction
+    const draft = !swapId && flow?.resolution === 'pending';
+    const primaryActionText = draft ? actionButtonText || 'Confirm swap'
+        : flow?.resolution === 'unsupported' ? 'Refresh swap'
+        : props.isDisabled && actionButtonText ? actionButtonText : flow?.actionButtonText ?? (actionableAction
         ? getDepositActionLabel(actionableAction)
-        : actionButtonText || 'Swap now';
-    const hasError = error || swapError || gaslessUnavailable;
-    const showStepError = isMultiStepWorkflow && !loading &&
-        getCurrentDepositActionIndex(depositActions?.filter(action => !!action.step) ?? [], true) !== -1;
-    const errorDescription = showStepError && hasError && errorMessage ? (
-        <WalletMessageDetails>{errorMessage}</WalletMessageDetails>
-    ) : undefined;
-    const workflowProgress = isMultiStepWorkflow ? (
-        <DepositWorkflowView
-            actions={depositActions}
-            stepTransactions={stepTransactions}
-            readOnly={readOnly}
-            loading={loading}
-            error={hasError}
-            errorDescription={errorDescription}
-            actionStateText={actionStateText}
-            destinationToken={quote?.destination_token}
-            receiveAmount={quote?.receive_amount}
-        />
-    ) : undefined;
+        : actionButtonText || 'Swap now');
+    // The shared processing slot can render the card, but these controls must
+    // still follow the same progress visibility when showProgress is false.
+    const progress = getWalletProgress(walletProgress);
+
     const networkSwitchMessage = networkSwitch && (networkSwitch.isPending || networkSwitch.isError)
         ? <ChangeNetworkMessage data={networkSwitch} network={sourceNetworkName ?? ''} />
         : undefined;
-    const message = networkSwitchMessage ?? (
+    const message = submissionMessage && !showStepError ? submissionMessage : networkSwitchMessage ?? (
         !loading && !showStepError && errorMessage && hasError ? (
             <div
                 data-wallet-action-message
-                className={workflowProgress ? 'pt-2' : undefined}
             >
                 {errorMessage}
             </div>
         ) : undefined);
-    if (quoteIsLoading || loading)
-        return (
-            <WalletExecutionTransition
-                workflow={workflowProgress}
-                controls={
-                    isMultiStepWorkflow && loading ? (
-                        <>{message}{walletRequestRecovery}</>
+    const resolvingFlow = !!swapId && flow?.resolution === 'pending' && !actionableAction && !pendingSubmission
+        && !hasError && !networkSwitch?.isError;
+    if (observingSubmission) {
+        return { walletProgress, controls: submissionMessage ?? null };
+    }
+    if ((quoteIsLoading && !pendingSubmission) || loading || resolvingFlow || (confirmingSubmission && !pendingSubmission))
+        return { walletProgress, controls: (
+                    progress && (loading || confirmingSubmission) ? (
+                        message || walletRequestRecovery ? <div className="flex flex-col gap-2">{message}{walletRequestRecovery}</div> : null
                     ) : (
                         <>
                             {message}
@@ -246,16 +267,11 @@ export function SendTransactionView({
                             {walletRequestRecovery}
                         </>
                     )
-                }
-            />
-        );
+                ) };
 
     if (showCriticalMarketPriceImpactButtons) {
-        return (
-            <WalletExecutionTransition
-                workflow={workflowProgress}
-                controls={
-                    <>
+        return { walletProgress, controls: (
+                    <TransferBlock reasonCode="critical_price_impact" path="SendTransactionButton">
                         {message}
                         {quote && priceImpactValues && (
                             <ErrorDisplay
@@ -289,15 +305,27 @@ export function SendTransactionView({
                         >
                             Cancel & try another route
                         </ButtonWrapper>
-                    </>
-                }
-            />
-        );
+                    </TransferBlock>
+                ) };
     }
-    return (
-        <WalletExecutionTransition
-            workflow={workflowProgress}
-            controls={
+    // A quote error disables the actual send action. Loading and completed
+    // workflows are progress states, not funding or readiness blocks.
+    const quoteBlocksTransfer = !!quoteError && !pendingSubmission && !workflowCompleted && !submissionAccepted;
+    const sendButton = (
+        <ButtonWrapper
+            icon={icon}
+            {...props}
+            isSubmitting={props.isSubmitting || loading || (quoteIsLoading && !pendingSubmission)}
+            onClick={handleClick}
+            isDisabled={props.isDisabled || (quoteIsLoading && !pendingSubmission)
+                || quoteBlocksTransfer || (!pendingSubmission && workflowCompleted)}
+        >
+            {error || swapError || networkSwitch?.isError || workflowFailed
+                ? 'Try again'
+                : workflowCompleted ? 'Completed' : primaryActionText}
+        </ButtonWrapper>
+    );
+    return { walletProgress, controls: (
                 <>
                     {message}
                     {!!(
@@ -313,67 +341,63 @@ export function SendTransactionView({
                             message={`The “receive at least” amount is affected by high price impact. You will receive at least ${quote.min_receive_amount} ${quote.destination_token.asset} ($ ${priceImpactValues.minReceiveAmountUSD})`}
                         />
                     )}
-                    {gaslessUnavailable ? (
-                        <div className="space-y-2">
-                            {gaslessFailureStage === 'deposit' && (
-                                <ButtonWrapper
-                                    icon={icon}
-                                    {...props}
-                                    isSubmitting={
-                                        props.isSubmitting ||
-                                        loading ||
-                                        quoteIsLoading
-                                    }
-                                    onClick={retryGasless}
-                                    isDisabled={quoteIsLoading || !!quoteError}
-                                >
-                                    Try again
-                                </ButtonWrapper>
-                            )}
-                            {canSwitchToStandard && (
-                                <ButtonWrapper
-                                    icon={icon}
-                                    {...props}
-                                    buttonStyle={
-                                        gaslessFailureStage === 'deposit'
-                                            ? 'secondary'
-                                            : 'filled'
-                                    }
-                                    isSubmitting={
-                                        props.isSubmitting ||
-                                        loading ||
-                                        quoteIsLoading
-                                    }
-                                    onClick={switchToStandard}
-                                    isDisabled={quoteIsLoading || !!quoteError}
-                                >
-                                    Switch to standard transfer
-                                </ButtonWrapper>
-                            )}
-                        </div>
+                    {needsGaslessRecovery ? (
+                        <TransferBlock reasonCode="gasless_unavailable" path="TransferTokenButton" reason={gaslessErrorMessage}>
+                            <div className="flex flex-col gap-2">
+                                {gaslessFailureStage === 'deposit' && (
+                                    <ButtonWrapper
+                                        icon={icon}
+                                        {...props}
+                                        isSubmitting={
+                                            props.isSubmitting ||
+                                            loading ||
+                                            quoteIsLoading
+                                        }
+                                        onClick={retryGasless}
+                                        isDisabled={quoteIsLoading || !!quoteError}
+                                    >
+                                        Try again
+                                    </ButtonWrapper>
+                                )}
+                                {canSwitchToStandard && (
+                                    <ButtonWrapper
+                                        icon={icon}
+                                        {...props}
+                                        buttonStyle={
+                                            gaslessFailureStage === 'deposit'
+                                                ? 'secondary'
+                                                : 'filled'
+                                        }
+                                        isSubmitting={
+                                            props.isSubmitting ||
+                                            loading ||
+                                            quoteIsLoading
+                                        }
+                                        onClick={switchToStandard}
+                                        isDisabled={quoteIsLoading || !!quoteError}
+                                    >
+                                        Switch to standard transfer
+                                    </ButtonWrapper>
+                                )}
+                            </div>
+                        </TransferBlock>
+                    ) : quoteBlocksTransfer ? (
+                        <TransferBlock reasonCode="quote_unavailable" path="SendTransactionButton">
+                            {sendButton}
+                        </TransferBlock>
                     ) : (
-                        <ButtonWrapper
-                            icon={icon}
-                            {...props}
-                            isSubmitting={
-                                props.isSubmitting || loading || quoteIsLoading
-                            }
-                            onClick={handleClick}
-                            isDisabled={
-                                quoteIsLoading ||
-                                !!quoteError ||
-                                workflowCompleted
-                            }
-                        >
-                            {error || swapError || networkSwitch?.isError || workflowFailed
-                                ? 'Try again'
-                                : workflowCompleted
-                                  ? 'Completed'
-                                  : primaryActionText}
-                        </ButtonWrapper>
+                        sendButton
                     )}
                 </>
-            }
-        />
-    );
+            ) };
+}
+
+/** Compatibility adapter; Page 2 consumes the nullable model directly. */
+export function SendTransactionView(props: SendTransactionViewProps) {
+    const { controls, walletProgress } = getSendTransactionPresentation(props);
+    const progress = props.showProgress === false ? null : getWalletProgress(walletProgress);
+    return <WalletExecutionTransition
+        workflow={progress ? <ProgressPanelView data={progress} /> : null}
+        controls={controls}
+    />;
 }

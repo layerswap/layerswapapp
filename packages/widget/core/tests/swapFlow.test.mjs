@@ -32,9 +32,10 @@ test('ordinary wallet transfers are self-paid', () => {
     assert.equal(isGaslessDepositWorkflow([{ type: 'manual_transfer' }]), false)
 })
 
-test('explicit signing standards distinguish gasless Permit2 from self-paid authorization', () => {
+test('the complete plan and semantic standards distinguish gasless authorization from self-paid signing', () => {
     assert.equal(isGaslessDepositWorkflow([{ step: 'sign', signing_standard: 'permit2' }]), true)
-    assert.equal(isGaslessDepositWorkflow([{ step: 'sign', signing_standard: 'eip3009' }]), undefined)
+    assert.equal(isGaslessDepositWorkflow([{ step: 'sign', signing_standard: 'eip3009' }]), true)
+    assert.equal(isGaslessDepositWorkflow([{ step: 'sign', signing_standard: 'eip3009' }, { step: 'publish' }]), false)
     for (const signing_standard of ['permit2_witness', 'eip2612']) {
         assert.equal(isGaslessDepositWorkflow([{ step: 'sign', signing_standard }]), false)
     }

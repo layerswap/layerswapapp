@@ -8,6 +8,14 @@ export class TransferResolver {
         this.providers = providers || []
     }
 
+    getAtomicBatchProvider(network: TransferProps['network']) {
+        return this.providers.find(p => p.supportsNetwork(network))?.atomicBatch
+    }
+
+    getWithdrawalProvider(network: TransferProps['network']) {
+        return this.providers.find(p => p.supportsNetwork(network))?.withdrawal
+    }
+
     async executeTransfer(params: TransferProps, wallet?: Wallet, onProgress?: (info: TransferProgress | undefined) => void): Promise<string | undefined> {
         const provider = this.providers.find(p => p.supportsNetwork(params.network))
         if (!provider) {

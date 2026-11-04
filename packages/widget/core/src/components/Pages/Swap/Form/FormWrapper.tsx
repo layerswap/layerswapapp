@@ -228,6 +228,9 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                 })
             }
             if (walletWihdrawDone) {
+                // Keep the active swap's fee presentation stable through submission.
+                // The next form attempt gets the default after this modal closes.
+                useGaslessPreferenceStore.getState().resetGaslessPreference()
                 mutateBalances()
                 setWalletWihdrawDone(false)
             }
@@ -243,7 +246,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
             validateOnMount={true}
             onSubmit={handleSubmit}
         >
-            {({ setFieldValue, values }) => (
+            {({ setFieldValue, setValues, values }) => (
                 <>
                     <VaulDrawer
                         show={showConnectNetworkModal}
@@ -268,15 +271,24 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                         {
                             swapModalOpen ? (
                                 <Suspense fallback={<SwapDetailsSceleton />}>
-                                    <SwapDetails type="contained" onWalletWithdrawalSuccess={() => {
-                                        setWalletWihdrawDone(true)
-                                        useGaslessPreferenceStore.getState().resetGaslessPreference()
-                                        setFieldValue('amountMode', 'manual')
-                                        setFieldValue('amountPresetPending', false)
-                                        setFieldValue('amountPresetError', undefined)
-                                        setFieldValue('amount', 0)
-                                        mutateBalances()
-                                    }} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />
+                                    <SwapDetails
+                                        type="contained"
+                                        partner={partner}
+                                        onCancelWithdrawal={() => handleShowSwapModal(false)}
+                                        onAdjustAmount={updates => {
+                                            const nextValues = { ...values, ...updates };
+                                            void setValues(nextValues, true);
+                                            setSubmitedFormValues(nextValues);
+                                        }}
+                                        onWalletWithdrawalSuccess={() => {
+                                            setWalletWihdrawDone(true)
+                                            setFieldValue('amountMode', 'manual')
+                                            setFieldValue('amountPresetPending', false)
+                                            setFieldValue('amountPresetError', undefined)
+                                            setFieldValue('amount', 0)
+                                            mutateBalances()
+                                        }}
+                                    />
                                 </Suspense>
                             ) : null
                         }

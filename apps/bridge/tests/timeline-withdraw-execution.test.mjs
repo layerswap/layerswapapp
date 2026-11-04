@@ -30,6 +30,8 @@ function loadSource(path, imports = {}) {
             if (name === 'react' || name === 'react/jsx-runtime')
                 return req(name);
             if (name in imports) return imports[name];
+            if (name.endsWith('/TransferBlock')) return { TransferBlock: ({ children }) => React.createElement(React.Fragment, null, children) };
+            if (name === '@/hooks/useHasSubmittedTransfer') return { useHasSubmittedTransfer: () => false };
             throw new Error(`Unexpected dependency: ${name} at ${path}`);
         },
         module,
@@ -153,6 +155,7 @@ test('exact gas loading preserves the pending wallet request and its execution l
     const swapHooks = {
         useSwapDataState: () => state,
         useSwapDataUpdate: () => ({
+            reportWalletActionFeedback: () => noop,
             async createSwap() {
                 return {
                     swap: {
@@ -183,17 +186,29 @@ test('exact gas loading preserves the pending wallet request and its execution l
         useSwapTransactionStore: (s) =>
             s({
                 swapTransactions: {},
+                pendingSubmissions: {},
                 stepTransactions: {},
                 setSwapTransaction: noop,
             }),
         useGaslessAuthorizationStore: (s) => s({ authorizations: {} }),
         useDepositSignatureStore: (s) => s({ signatures: {} }),
     };
+    for (const useStore of Object.values(stores)) {
+        useStore.getState = () => useStore(state => state);
+    }
+    const gaslessState = { gaslessEnabled: false, gaslessUnavailable: false };
+    const useGaslessPreferenceStore = Object.assign(selector => selector(gaslessState), { getState: () => gaslessState });
     const imports = {
-        '@/lib/amountPresets': { AmountPresetChangedError: class extends Error {}, isAmountPreset: () => false },
+        '@/stores/swapTransactionStore': stores,
+        '@/lib/resolvers/resolverService': {},
+        '@/components/utils/resolveSwapFlow': loadSource('components/utils/resolveSwapFlow.ts', { '../../helpers/depositActions.js': helpers }),
+        '@/lib/atomicBatchExecution': { executeAtomicBatch: () => assert.fail('standard transfer cannot submit an atomic batch') },
+        '@/lib/amountPresets': { AmountPresetChangedError: class extends Error {}, isAmountPreset: () => false, amountPresetSource: (...values) => JSON.stringify(values) },
         '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput: noop } },
         '@layerswap/wallet-core': loadSource('../../../wallets/core/src/lib/walletConnect/walletRequestStore.ts'),
-        '../../Presentation/WalletRequestRecovery': { WalletRequestRecovery: () => null },
+        '../../Presentation/WalletRequestRecovery': loadSource(base + 'Presentation/WalletRequestRecovery.tsx', {
+            '@layerswap/wallet-core': loadSource('../../../wallets/core/src/lib/walletConnect/walletRequestStore.ts'),
+        }),
         '@/context/swap': swapHooks,
         '@/context/settings': {
             useSettingsState: () => ({ networks: [network] }),
@@ -222,6 +237,15 @@ test('exact gas loading preserves the pending wallet request and its execution l
         base + 'Wallet/Common/buttons.tsx',
         {
             ...imports,
+            '../../useWithdrawalExecution': loadSource(base + 'useWithdrawalExecution.ts', {
+                '@/hooks/useClientLayoutEffect': {
+                    useClientLayoutEffect: React.useLayoutEffect,
+                },
+            }),
+            '../../withdrawalHelpers': loadSource(base + 'withdrawalHelpers.ts'),
+            '../../reportWithdrawalError': loadSource(base + 'reportWithdrawalError.ts', {
+                '@/lib/ErrorHandler': { ErrorHandler: noop },
+            }),
             '@/context/callbackProvider': {
                 useCallbacks: () => ({ onSwapLifecycle: noop }),
             },
@@ -235,7 +259,7 @@ test('exact gas loading preserves the pending wallet request and its execution l
                     refresh: async () => [action],
                 }),
             },
-            '@/helpers/swapProgress': { hasSwapExecutionProgress: () => false },
+            '@/helpers/swapProgress': { hasSwapExecutionProgress: () => false, hasUnacknowledgedWalletAction: () => false },
             '@/helpers/gasless': {
                 isGaslessCapableRoute: () => false,
                 isGaslessDepositWorkflow: () => false,
@@ -257,8 +281,7 @@ test('exact gas loading preserves the pending wallet request and its execution l
             '@/lib/ErrorHandler': { ErrorHandler: noop },
             '@/lib/fees': { resolvePriceImpactValues: noop },
             '@/stores/gaslessPreferenceStore': {
-                useGaslessPreferenceStore: (s) =>
-                    s({ gaslessEnabled: false, gaslessUnavailable: false }),
+                useGaslessPreferenceStore,
             },
             '@/stores/swapTransactionStore': stores,
             '@layerswap/utils': { sleep: noop },
@@ -332,7 +355,6 @@ test('exact gas loading preserves the pending wallet request and its execution l
             },
         ),
         '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
-        formik: { useFormikContext: () => ({ values: {}, setValues: noop }) },
         '../Form/SecondaryComponents/validationError/AdjustAmountButton': {
             AdjustAmountButton: () =>
                 React.createElement('div', null, 'Adjust amount'),

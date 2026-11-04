@@ -11,13 +11,13 @@ import { rpcHealthForNetwork, suggestRpcForNetwork } from '@/lib/rpcHealth/scope
  *
  * @param network - The network to check RPC health for
  */
-export function useRpcHealth(network: Network): RpcHealthCheckResult | null {
+export function useRpcHealth(network: Network, enabled = true): RpcHealthCheckResult | null {
     const resolver = resolverService.getRpcHealthCheckResolver()
     const provider = resolver?.getProviderForNetwork(network)
 
     const store: RpcHealthCheckStore | null = useMemo(
-        () => provider?.createStore() ?? null,
-        [provider],
+        () => enabled ? provider?.createStore() ?? null : null,
+        [provider, enabled],
     )
 
     const snapshot = useSyncExternalStore(
