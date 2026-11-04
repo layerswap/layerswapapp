@@ -1,6 +1,8 @@
 'use client';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { LayerswapDepositWidget } from '@layerswap/widget-react';
+import { useEffect, useMemo, useRef } from 'react';
+import { Deposit } from '@layerswap/widget/deposit';
+import { getDefaultProviders } from '@layerswap/wallets';
+import '@layerswap/widget/index.css';
 import { foresightLayerswapColorOverrides, foresightLayerswapTheme } from '@/lib/layerswap-theme';
 import { getAppOrigin } from '@/lib/app-origin';
 
@@ -11,14 +13,11 @@ const apiKey = process.env.NEXT_PUBLIC_LAYERSWAP_API_KEY || '';
 const baseConfig = {apiKey,version:'mainnet' as const,theme:foresightLayerswapTheme};
 const appUrl = getAppOrigin();
 const walletDefaults = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID ? {walletConnect:{projectId:process.env.NEXT_PUBLIC_REOWN_PROJECT_ID,name:'Foresight',description:'Fund your Foresight wallet',url:appUrl,icons:[`${appUrl}/icon.svg`]}} : undefined;
+const walletProviders = getDefaultProviders(walletDefaults ?? {});
 
 export default function DepositWidget({address,request,loginAddress,onComplete,onStatus}:{address:`0x${string}`;request:DepositRequest|null;loginAddress?:`0x${string}`|null;onComplete:()=>void;onStatus:(message:string)=>void}) {
   const host = useRef<HTMLDivElement>(null);
   const openedRequest = useRef<number|null>(null);
-  const latestRequest = useRef(request);
-  latestRequest.current=request;
-  const loadFailed = useRef(false);
-  const [retryKey,setRetryKey] = useState(0);
   // The Privy embedded wallet: Layerswap binds wallet methods to it and never disconnects or replaces it.
   const config = useMemo(()=>loginAddress?{...baseConfig,loginWallet:{address:loginAddress,providerId:'evm' as const}}:baseConfig,[loginAddress]);
   const methods = useMemo(()=>request?.method?[request.method]:undefined,[request?.method]);
@@ -26,18 +25,9 @@ export default function DepositWidget({address,request,loginAddress,onComplete,o
     onSwapComplete:onComplete,
     onError:()=>onStatus('The deposit could not be completed. Check the Layerswap modal for details.'),
   }),[onStatus,onComplete]);
-  const handleLoadError = useCallback(()=>{
-    loadFailed.current=true;
-    if(latestRequest.current && openedRequest.current!==latestRequest.current.id){
-      onStatus('Layerswap could not load. Check your connection and widget API key, then click Deposit to retry.');
-    }
-  },[onStatus]);
 
   useEffect(()=>{
     if(!request || openedRequest.current===request.id)return;
-    // Keep the verified remote and its providers alive between deposits.
-    // A fresh mount is needed only to recover from a failed CDN load.
-    if(loadFailed.current){loadFailed.current=false;setRetryKey(key=>key+1);}
     // Forward app Deposit buttons to the SDK's documented dialog trigger.
     // A click during background loading waits for the same in-flight mount.
     let timeout:ReturnType<typeof setTimeout>;
@@ -65,10 +55,8 @@ export default function DepositWidget({address,request,loginAddress,onComplete,o
 
   return <div ref={host}>
     <style>{foresightLayerswapColorOverrides}</style>
-    <LayerswapDepositWidget key={retryKey} config={config} destination={destination} destinationAddress={address}
+    <Deposit config={config} walletProviders={walletProviders} destination={destination} destinationAddress={address}
       mode="button" buttonLabel="Deposit" buttonClassName="layerswap-deposit-trigger"
-      methods={methods} walletDefaults={walletDefaults}
-      showDestinationAddress title="Add funds" callbacks={callbacks} fallback={null}
-      onError={handleLoadError}/>
+      methods={methods} showDestinationAddress title="Add funds" callbacks={callbacks}/>
   </div>;
 }
