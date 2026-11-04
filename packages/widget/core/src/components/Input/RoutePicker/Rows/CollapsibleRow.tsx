@@ -117,7 +117,7 @@ export const CollapsibleRow = ({
               <CollapsableHeader
                 item={item}
                 direction={direction}
-                hideTokenImages={isOpen}
+                isOpen={isOpen}
                 hideBalances={hideBalances}
               />
             </AccordionTrigger>
