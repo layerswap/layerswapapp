@@ -35,7 +35,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return;
         }
 
-        if (settings?.networks?.length) {
+        // Optional exchanges can fall back to empty data after cancellation.
+        // An expired probe must not trigger a reload into an unbounded SSR fetch.
+        if (!controller.signal.aborted && settings?.networks?.length) {
             return res.status(204).end();
         }
     } catch {

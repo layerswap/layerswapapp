@@ -196,7 +196,10 @@ function cancellationHarness(mode = 'hang') {
             return
         }
         config.signal?.addEventListener('abort', abort)
-        if (mode === 'healthy' || (mode === 'partial-failure' && config.url.endsWith('/networks'))) {
+        const isRequiredRequest = !config.url.endsWith('/source_exchanges')
+        const shouldResolve = mode === 'healthy' || (mode === 'hanging-exchanges' && isRequiredRequest)
+        const shouldFail = mode === 'partial-failure' && config.url.endsWith('/networks')
+        if (shouldResolve || shouldFail) {
             request.pending = false
             config.signal?.removeEventListener('abort', abort)
             if (mode === 'partial-failure') {
@@ -300,4 +303,28 @@ test('healthy readiness cleans up its deadline and disconnect listener', async (
     assert.ok(h.requests.every(request => !request.pending && !request.aborted))
     assert.equal(h.timers.size, 0)
     assert.equal(res.listenerCount('close'), 0)
+})
+
+test('readiness stays unavailable when only the optional exchanges request exceeds the deadline', async () => {
+    const h = cancellationHarness('hanging-exchanges')
+    const { res, done } = h.start()
+    // Let the required requests fully settle before expiring the exchange request.
+    await new Promise(resolve => setImmediate(resolve))
+    assert.equal(h.requests.length, 4)
+    const pendingRequests = h.requests.filter(request => request.pending)
+    assert.equal(pendingRequests.length, 1)
+    assert.ok(pendingRequests[0].config.url.endsWith('/source_exchanges'))
+
+    h.expire()
+    await done
+
+    assert.equal(res.statusCode, 503)
+    assert.equal(res.headers['Cache-Control'], 'private, no-store')
+    assert.equal(res.headers['Retry-After'], '15')
+    assert.equal(res.ended, true)
+    assert.equal(h.requests.filter(request => request.aborted).length, 1)
+    assert.ok(h.requests.every(request => !request.pending))
+    assert.equal(h.timers.size, 0)
+    assert.equal(res.listenerCount('close'), 0)
+    assert.equal(h.errors.length, 0)
 })
