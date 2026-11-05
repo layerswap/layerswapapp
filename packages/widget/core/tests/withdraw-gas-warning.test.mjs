@@ -500,3 +500,45 @@ test('Max retains a real gas warning when no valid reduced amount meets the mini
   assert.equal(state.freshAttempts, 0)
   assert.equal(container.textContent.includes('Insufficient balance for gas'), true)
 })
+
+for (const symbol of ['BNB', 'ETH']) {
+  test(`token sends warn about missing ${symbol} independently of token amount or route limits`, async () => {
+    const native = { ...token, symbol }
+    state.swap.source_network = { ...network, token: native }
+    state.swap.source_token = { symbol: 'USDT', decimals: 18, contract: '0xtoken' }
+    state.gasData = { gas: 0.00001, maxFee: 0.00006, token: native }
+    state.balances = [
+      { network: network.name, token: 'USDT', amount: 100, isNativeCurrency: false },
+      { network: network.name, token: symbol, amount: 0, isNativeCurrency: true },
+    ]
+    state.minAllowedAmount = undefined
+    state.maxAllowedAmount = undefined
+    for (const amount of ['3', '1', '0.2']) {
+      state.swap.requested_amount = amount
+      await render()
+      assert.ok(container.textContent.includes(`Required maximum gas fee: 0.00006 ${symbol}`))
+      assert.ok(container.textContent.includes(`Available native balance: 0 ${symbol}`))
+      assert.match(container.textContent, /reducing the token amount will not fund gas/)
+      assert.match(container.textContent, /Refresh balance/)
+      assert.equal(!!adjustButton(), false)
+      assert.equal(sendButton().disabled, false)
+    }
+    state.balances[1].amount = 0.00006
+    await render()
+    assert.doesNotMatch(container.textContent, /Insufficient balance for gas/)
+  })
+}
+
+test('a token gas warning ignores another network balance and missing native data', async () => {
+  state.swap.source_token = { symbol: 'USDT', decimals: 18, contract: '0xtoken' }
+  state.balances = [
+    { network: network.name, token: 'USDT', amount: 100, isNativeCurrency: false },
+    { network: 'OTHER_NETWORK', token: 'ETH', amount: 0, isNativeCurrency: true },
+  ]
+  await render()
+  assert.doesNotMatch(container.textContent, /Insufficient balance for gas/)
+  state.balances[1].network = network.name
+  state.gasData = undefined
+  await render()
+  assert.doesNotMatch(container.textContent, /Insufficient balance for gas/)
+})
