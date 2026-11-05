@@ -4,14 +4,16 @@ import LayerswapLogo from "../Icons/layerSwapLogo";
 import TwitterLogo from "../Icons/TwitterLogo";
 import { SubmitButton } from "@layerswap/widget/internal";
 import ThemeWrapper from "../AppWrapper";
+import { useMaintenanceRecovery } from "../../hooks/useMaintenanceRecovery";
 
 function Comp() {
     const { boot, update } = useIntercom()
+    const { checking, retry } = useMaintenanceRecovery()
 
     useEffect(() => {
         boot()
         update()
-    })
+    }, [boot, update])
 
     const twitterLogo = <TwitterLogo className="text-primary-buttonTextColor h-5 w-5" />
     return (
@@ -25,19 +27,23 @@ function Comp() {
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-500 opacity-75" />
                             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary-500" />
                         </span>
-                        <span className="text-sm font-medium text-secondary-text">{"Maintenance in progress"}</span>
+                        <span className="text-sm font-medium text-secondary-text">{"Temporarily unavailable"}</span>
                     </div>
 
                     <h1 className="text-3xl font-bold text-primary-text tracking-tight">
                         {"We'll be back soon!"}
                     </h1>
                     <p className="text-secondary-text text-base leading-relaxed">
-                        {"We're upgrading our systems and infrastructure to give you the best experience yet."}
+                        {"We're having trouble connecting. This page will recover automatically when the service is available."}
                     </p>
                 </div>
 
-                <div className="w-full max-w-xs">
+                <div className="w-full max-w-xs space-y-3">
+                    <SubmitButton onClick={retry} isSubmitting={checking}>
+                        {"Try again"}
+                    </SubmitButton>
                     <SubmitButton
+                        buttonStyle="secondary"
                         onClick={() => window.open('https://twitter.com/layerswap', '_blank')}
                         icon={twitterLogo}
                         isDisabled={false}
