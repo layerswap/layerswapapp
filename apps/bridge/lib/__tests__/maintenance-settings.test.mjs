@@ -3,32 +3,34 @@ import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import test from 'node:test'
 import vm from 'node:vm'
+import { EventEmitter } from 'node:events'
 import ts from 'typescript'
 
 const require = createRequire(import.meta.url)
 const sourceRoot = new URL('../../', import.meta.url)
 const widgetRequire = createRequire(new URL('../../packages/widget/core/package.json', sourceRoot))
 
-function load(path, imports, env = {}) {
+function load(path, imports, env = {}, globals = {}) {
     const compiled = ts.transpileModule(readFileSync(new URL(path, sourceRoot), 'utf8'), {
         compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
     }).outputText
     const exports = {}
     vm.runInNewContext(compiled, {
-        exports, Buffer, URLSearchParams, console: { error() {} }, process: { env },
+        exports, Buffer, URLSearchParams, AbortController, setTimeout, clearTimeout,
+        console: { error() {} }, process: { env }, ...globals,
         require: name => name in imports ? imports[name] : require(name),
     })
     return exports
 }
 
 function response() {
-    return {
+    return Object.assign(new EventEmitter(), {
         statusCode: 200,
         headers: {},
         setHeader(name, value) { this.headers[name] = value },
         status(code) { this.statusCode = code; return this },
         end() { this.ended = true },
-    }
+    })
 }
 
 function harness() {
@@ -173,4 +175,129 @@ test('swap details remain uncached and recover from networks without requiring r
         assert.equal(res.headers['Cache-Control'], 'private, no-store')
         assert.equal((await h.probe({ scope: 'networks' })).statusCode, 503)
     }
+})
+
+function cancellationHarness(mode = 'hang') {
+    const axios = widgetRequire('axios')
+    const timers = new Map()
+    const requests = []
+    const errors = []
+    const adapter = config => new Promise((resolve, reject) => {
+        const request = { config, pending: true, aborted: false }
+        requests.push(request)
+        const abort = () => {
+            request.pending = false
+            request.aborted = true
+            config.signal.removeEventListener('abort', abort)
+            reject(new axios.CanceledError())
+        }
+        if (config.signal?.aborted) {
+            abort()
+            return
+        }
+        config.signal?.addEventListener('abort', abort)
+        if (mode === 'healthy' || (mode === 'partial-failure' && config.url.endsWith('/networks'))) {
+            request.pending = false
+            config.signal?.removeEventListener('abort', abort)
+            if (mode === 'partial-failure') {
+                reject(new Error('networks failed'))
+            } else {
+                resolve({ config, status: 200, headers: {}, data: { data: [{ name: 'ETHEREUM_MAINNET', tokens: [] }] } })
+            }
+        }
+    })
+    const { default: ApiClient } = load('../../packages/widget/core/src/lib/apiClients/layerSwapApiClient.ts', {
+        '../AppSettings': { default: { LayerswapApiUri: 'https://backend.invalid', LayerswapApiKeys: { mainnet: 'mainnet' } } },
+        '../axiosInterceptor': { InitializeAuthInstance: () => axios.create(), InitializeUnauthInstance: () => axios.create({ adapter }) },
+        'uuid': { v4: () => 'test-id' },
+        '../Errors/AuthRefreshFailedError': { AuthRefreshFailedError: class extends Error {} },
+        '@layerswap/widget-types': { EmptyApiResponse: class {} },
+        '@/lib/ErrorHandler': { ErrorHandler: error => errors.push(error) },
+        '../widgetTelemetry': { startApiOperation: () => () => {} },
+        '../atomicBatchActions': {},
+    })
+    const { getSettings } = load('../../packages/widget/core/src/helpers/getSettings/getSettings.ts', {
+        '../../lib/apiClients/layerSwapApiClient': { default: ApiClient },
+        '../../lib/extendedRoutes/remoteFlags': {},
+    })
+    const { default: health } = load('pages/api/settings-health.ts', {
+        '@layerswap/widget': { getSettings },
+        '@layerswap/widget/internal': { LayerswapApiClient: ApiClient, AppSettings: { LayerswapApiUri: 'https://backend.invalid' } },
+    }, { NEXT_PUBLIC_API_KEY: 'mainnet' }, {
+        setTimeout: (fn, delay) => { timers.set(fn, delay); return fn },
+        clearTimeout: fn => timers.delete(fn),
+    })
+    return {
+        requests, errors, timers,
+        start(query = {}) {
+            const res = response()
+            const done = health({ method: 'GET', query }, res)
+            return { res, done }
+        },
+        expire() {
+            const [[callback, delay]] = timers
+            assert.equal(delay, 8_000, 'server deadline precedes the ten-second browser timeout')
+            callback()
+        },
+    }
+}
+
+for (const scope of ['all', 'networks']) {
+    test(`${scope} readiness aborts real Axios requests at its deadline before the next probe`, async () => {
+        const h = cancellationHarness()
+        const query = scope === 'networks' ? { scope } : {}
+        const requestCount = scope === 'networks' ? 1 : 4
+        for (let attempt = 1; attempt <= 2; attempt++) {
+            const { res, done } = h.start(query)
+            await Promise.resolve()
+            assert.equal(h.requests.filter(request => request.pending).length, requestCount)
+            h.expire()
+            await done
+            assert.equal(res.statusCode, 503)
+            assert.equal(res.headers['Cache-Control'], 'private, no-store')
+            assert.equal(res.headers['Retry-After'], '15')
+            assert.equal(h.requests.length, attempt * requestCount)
+            assert.ok(h.requests.every(request => request.aborted && !request.pending))
+            assert.equal(h.timers.size, 0)
+            assert.equal(res.listenerCount('close'), 0)
+        }
+        assert.equal(h.errors.length, 0, 'expected cancellations are not reported as backend errors')
+    })
+
+    test(`${scope} readiness cancels upstream work on disconnect without writing a response`, async () => {
+        const h = cancellationHarness()
+        const { res, done } = h.start(scope === 'networks' ? { scope } : {})
+        await Promise.resolve()
+        res.destroyed = true
+        res.emit('close')
+        await done
+        assert.ok(h.requests.length > 0)
+        assert.ok(h.requests.every(request => request.aborted && !request.pending))
+        assert.equal(res.ended, undefined)
+        assert.equal(h.timers.size, 0)
+        assert.equal(res.listenerCount('close'), 0)
+    })
+}
+
+test('an early settings failure cancels the sibling requests instead of leaving them without a deadline', async () => {
+    const h = cancellationHarness('partial-failure')
+    const { res, done } = h.start()
+    await done
+    assert.equal(res.statusCode, 503)
+    assert.equal(h.requests.length, 4)
+    assert.equal(h.requests.filter(request => request.aborted).length, 3)
+    assert.ok(h.requests.every(request => !request.pending))
+    assert.equal(h.timers.size, 0)
+    assert.equal(res.listenerCount('close'), 0)
+})
+
+test('healthy readiness cleans up its deadline and disconnect listener', async () => {
+    const h = cancellationHarness('healthy')
+    const { res, done } = h.start()
+    await done
+    assert.equal(res.statusCode, 204)
+    assert.equal(h.requests.length, 4)
+    assert.ok(h.requests.every(request => !request.pending && !request.aborted))
+    assert.equal(h.timers.size, 0)
+    assert.equal(res.listenerCount('close'), 0)
 })
