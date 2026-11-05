@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useIntercom } from "react-use-intercom";
 import LayerswapLogo from "../Icons/layerSwapLogo";
 import TwitterLogo from "../Icons/TwitterLogo";
@@ -8,7 +8,8 @@ import { useMaintenanceRecovery } from "../../hooks/useMaintenanceRecovery";
 
 function Comp() {
     const { boot, update } = useIntercom()
-    const { checking, retry } = useMaintenanceRecovery()
+    useMaintenanceRecovery()
+    const [refreshing, setRefreshing] = useState(false)
 
     useEffect(() => {
         boot()
@@ -39,8 +40,14 @@ function Comp() {
                 </div>
 
                 <div className="w-full max-w-xs space-y-3">
-                    <SubmitButton onClick={retry} isSubmitting={checking}>
-                        {"Try again"}
+                    <SubmitButton
+                        onClick={() => {
+                            setRefreshing(true)
+                            window.location.reload()
+                        }}
+                        isSubmitting={refreshing}
+                    >
+                        {"Refresh"}
                     </SubmitButton>
                     <SubmitButton
                         buttonStyle="secondary"
