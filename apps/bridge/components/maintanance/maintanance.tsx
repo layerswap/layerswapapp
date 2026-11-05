@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useIntercom } from "react-use-intercom";
 import LayerswapLogo from "../Icons/layerSwapLogo";
 import TwitterLogo from "../Icons/TwitterLogo";
@@ -9,7 +9,6 @@ import { useMaintenanceRecovery } from "../../hooks/useMaintenanceRecovery";
 function Comp() {
     const { boot, update } = useIntercom()
     useMaintenanceRecovery()
-    const [refreshing, setRefreshing] = useState(false)
 
     useEffect(() => {
         boot()
@@ -39,18 +38,8 @@ function Comp() {
                     </p>
                 </div>
 
-                <div className="w-full max-w-xs space-y-3">
+                <div className="w-full max-w-xs">
                     <SubmitButton
-                        onClick={() => {
-                            setRefreshing(true)
-                            window.location.reload()
-                        }}
-                        isSubmitting={refreshing}
-                    >
-                        {"Refresh"}
-                    </SubmitButton>
-                    <SubmitButton
-                        buttonStyle="secondary"
                         onClick={() => window.open('https://twitter.com/layerswap', '_blank')}
                         icon={twitterLogo}
                         isDisabled={false}
