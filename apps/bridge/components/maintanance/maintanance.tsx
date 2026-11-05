@@ -27,14 +27,14 @@ function Comp() {
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-500 opacity-75" />
                             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary-500" />
                         </span>
-                        <span className="text-sm font-medium text-secondary-text">{"Temporarily unavailable"}</span>
+                        <span className="text-sm font-medium text-secondary-text">{"Maintenance in progress"}</span>
                     </div>
 
                     <h1 className="text-3xl font-bold text-primary-text tracking-tight">
                         {"We'll be back soon!"}
                     </h1>
                     <p className="text-secondary-text text-base leading-relaxed">
-                        {"We're having trouble connecting. This page will recover automatically when the service is available."}
+                        {"We're upgrading our systems and infrastructure to give you the best experience yet."}
                     </p>
                 </div>
 
