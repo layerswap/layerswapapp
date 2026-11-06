@@ -1,4 +1,5 @@
-import { estimateBitcoinFee } from "./transferProvider/transactionBuilder/buildPsbt";
+import { bitcoinMemo } from "./transferProvider/bitcoinMemo.js";
+import { estimateBitcoinFees } from "./transferProvider/transactionBuilder/buildPsbt.js";
 import { JsonRpcClient, KnownInternalNames, formatUnits } from "@layerswap/utils";
 import { ErrorHandler } from "@layerswap/widget-types";
 import { Network } from "@layerswap/widget-types";
@@ -9,7 +10,7 @@ export class BitcoinGasProvider implements GasProvider {
         return KnownInternalNames.Networks.BitcoinMainnet.includes(network.name) || KnownInternalNames.Networks.BitcoinTestnet.includes(network.name)
     }
 
-    async getGas({ address, network, recipientAddress, amount }: GasProps): Promise<GasWithToken | undefined> {
+    async getGas({ address, network, recipientAddress, amount, callData }: GasProps): Promise<GasWithToken | undefined> {
         if (!network?.token) throw new Error("No native token provided")
         if (!address) throw new Error("No address provided")
         if (!amount) throw new Error("No amount provided")
@@ -19,10 +20,12 @@ export class BitcoinGasProvider implements GasProvider {
         const rpcClient = new JsonRpcClient(network.node_url);
 
         const amountInSatoshi = Math.floor(amount * 1e8);
-        const hexMemo = Number('69420').toString(16);
 
         try {
-            const fee = await estimateBitcoinFee({
+            // Before creation the sequence is unknown. Once supplied, use exactly
+            // the same memo conversion as the transaction sender.
+            const hexMemo = bitcoinMemo(callData ?? '69420');
+            const { fee, requiredFee } = await estimateBitcoinFees({
                 userAddress: address,
                 depositAddress: bitcoinAddress,
                 version: version,
@@ -32,7 +35,7 @@ export class BitcoinGasProvider implements GasProvider {
             })
             const formattedGas = Number(formatUnits(BigInt(fee), network.token.decimals))
             if (formattedGas) {
-                return { gas: formattedGas, token: network.token }
+                return { gas: formattedGas, requiredFee: Number(formatUnits(requiredFee, network.token.decimals)), token: network.token }
             }
 
         } catch (e) {

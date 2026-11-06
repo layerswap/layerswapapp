@@ -38,8 +38,12 @@ export async function buildPsbt(params: TransactionBuilderParams) {
 
 /** Fee probes may use the full balance before Max has deducted the fee. */
 export async function estimateBitcoinFee(params: TransactionBuilderParams): Promise<bigint> {
-  const { fee } = await constructPsbt(params, true)
-  return fee
+  return (await estimateBitcoinFees(params)).fee
+}
+
+export async function estimateBitcoinFees(params: TransactionBuilderParams): Promise<{ fee: bigint; requiredFee: bigint }> {
+  const { fee, requiredFee } = await constructPsbt(params, true)
+  return { fee, requiredFee }
 }
 
 async function constructPsbt({
@@ -87,11 +91,13 @@ async function constructPsbt({
     // An uneconomical remainder is paid as fee; never reduce the deposit output.
     const fee = total - psbt.txOutputs.reduce((sum, output) => sum + output.value, 0n)
     validateOutputs(psbt.txOutputs)
-    return { psbt, utxos, fee }
+    const requiredFee = estimateFee(psbt, rate)
+    return { psbt, utxos, fee, requiredFee }
   }
   if (estimateOnly && psbt.inputCount > 0) {
     psbt.addOutput({ script: changeScript, value: 0n })
-    return { psbt, utxos, fee: estimateFee(psbt, rate) }
+    const requiredFee = estimateFee(psbt, rate)
+    return { psbt, utxos, fee: requiredFee, requiredFee }
   }
   throw new Error('Insufficient funds for Bitcoin amount and network fee')
 }

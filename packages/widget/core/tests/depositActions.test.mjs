@@ -383,7 +383,8 @@ function createWorkflow({
         '@/components/Icons/InfoIcon': { default: noop },
         '@/components/Pages/Swap/Form/SecondaryComponents/validationError/constants': {},
         '@/lib/balances/useBalance': { useBalance: address => { calls.balanceAddress = address; return {}; } },
-        '@/lib/gases/useSWRGas': { default: () => ({}) },
+        '@/lib/gases/resolveTransferGas': loadSource('../src/lib/gases/resolveTransferGas.ts', { '@/helpers/depositActions': depositActions }),
+        '@/lib/gases/useSWRGas': { default: () => ({ gasData: state.gasData }) },
         '@/context/depositSettings': { useDepositSettings: () => state.depositSettings ?? {} },
         './depositExecution': execution,
         './ensureSourceChain': sourceChain,
@@ -408,7 +409,7 @@ function createWorkflow({
             await state.onWalletPrompt?.('approve_and_swap')
             if (state.batchError) throw state.batchError
         } },
-        '@/lib/resolvers/resolverService': { resolverService: { getTransferResolver: () => ({ getAtomicBatchProvider: () => ({
+        '@/lib/resolvers/resolverService': { resolverService: { getGasResolver: () => ({ getGas: async args => { state.gasArgs = args; return state.exactGas } }), getTransferResolver: () => ({ getAtomicBatchProvider: () => ({
             getStatus: async (...args) => { calls.batchStatus.push(args); return state.onBatchStatus ? state.onBatchStatus() : state.batchStatusResponse },
         }) }) } },
         '@/helpers/gasless': gasless,
@@ -416,6 +417,7 @@ function createWorkflow({
         swr: realPolling ? require('swr') : {
             useSWRConfig: () => ({ mutate: async (key, result) => {
                 const data = await result
+                if (Array.isArray(key) && data?.gas != null) state.gasData = data
                 cache.set(key, data)
                 if (state.resolveCurrentFlow && data?.data?.swap) {
                     state.swapDetails = data.data.swap
@@ -2690,3 +2692,36 @@ for (const signatureState of ['completed sign-only action', 'saved signature bef
         })
     }
 }
+
+test('an exact amount-dependent fee update pauses before the wallet and resumes after review', async () => {
+    const flow = createWorkflow()
+    const token = { symbol: 'NATIVE', decimals: 8 }
+    flow.state.sourceToken = token
+    flow.state.gasData = { token, gas: 338 / 1e8, requiredFee: 338 / 1e8 }
+    flow.state.exactGas = { token, gas: 637 / 1e8, requiredFee: 282 / 1e8 }
+    flow.state.apiActions = [{ type: 'transfer', step: 'deposit', status: 'action_required',
+        amount: 9363 / 1e8, to_address: 'recipient', call_data: '22911311;' }]
+    flow.state.depositActionsResponse = flow.state.apiActions
+    await flow.render().viewProps.handleClick()
+    assert.equal(flow.render().viewProps.feeUpdated, true)
+    assert.equal(!!flow.state.swapError, false)
+    assert.equal(flow.render().button.props.children, 'Continue')
+    assert.equal(flow.calls.transfer.length, 0)
+    assert.equal(flow.state.gasArgs.recipientAddress, 'recipient')
+    assert.equal(flow.state.gasArgs.callData, '22911311;')
+    assert.equal(flow.state.gasArgs.amount, 9363 / 1e8)
+    assert.equal(flow.state.gasData.gas, 637 / 1e8)
+    await flow.render().viewProps.handleClick()
+    assert.equal(flow.calls.transfer.length, 1)
+})
+
+test('a failed exact fee refresh does not open the wallet', async () => {
+    const flow = createWorkflow()
+    flow.state.sourceToken = { symbol: 'NATIVE', decimals: 8 }
+    flow.state.gasData = { token: flow.state.sourceToken, gas: 0.01, requiredFee: 0.01 }
+    flow.state.apiActions = [{ type: 'transfer', step: 'deposit', status: 'action_required', amount: 1, to_address: 'recipient' }]
+    flow.state.depositActionsResponse = flow.state.apiActions
+    await flow.render().viewProps.handleClick()
+    assert.equal(flow.calls.transfer.length, 0)
+    assert.match(flow.state.swapError, /Could not refresh the network fee/)
+})

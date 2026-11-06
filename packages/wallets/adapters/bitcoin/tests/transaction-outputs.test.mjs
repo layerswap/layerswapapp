@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
+import { readFileSync } from 'node:fs'
+import ts from 'typescript'
 import axios from 'axios'
 import { address, networks, Transaction, Psbt } from 'bitcoinjs-lib'
 import { buildPsbt, estimateBitcoinFee } from '../dist/esm/transferProvider/transactionBuilder/buildPsbt.js'
@@ -101,4 +103,63 @@ test('fee estimate covers finalized SegWit and Taproot sizes including the real 
       assert.equal(estimateFee(psbt, 1.1), BigInt(Math.ceil(signed.virtualSize() * 1.1)))
     }
   }
+})
+
+test('required fee excludes absorbed change and matches the final output shape', async () => {
+  await withUtxo(10000, async () => {
+    for (const [amount, change, fee, required] of [
+      [9361, 295n, 344n, 344n], [9362, 294n, 344n, 344n],
+      [9363, undefined, 637n, 282n], [9712, undefined, 288n, 282n],
+    ]) {
+      const result = await buildPsbt({ ...params, amount, memo: '15d994f;', feeRate: 2 })
+      assert.equal(result.psbt.txOutputs[0].value, BigInt(amount))
+      assert.equal(result.psbt.txOutputs[2]?.value, change)
+      assert.equal(result.fee, fee)
+      assert.equal(result.requiredFee, required)
+    }
+  })
+})
+
+test('the gas provider prices the sender memo, including dust absorbed into the total fee', async () => {
+  // The package barrel has extensionless bundler imports. Load the provider
+  // source with its real leaf dependencies so this remains a Node-only test.
+  const deps = {
+    './transferProvider/bitcoinMemo.js': await import('../dist/esm/transferProvider/bitcoinMemo.js'),
+    './transferProvider/transactionBuilder/buildPsbt.js': await import('../dist/esm/transferProvider/transactionBuilder/buildPsbt.js'),
+    '@layerswap/utils': {
+      JsonRpcClient: class { call() { assert.fail('Fee estimation must not use the transaction RPC') } },
+      ...(await import(new URL('formatUnits.js', import.meta.resolve('@layerswap/utils')))),
+      KnownInternalNames: (await import('@layerswap/utils/known-ids')).default,
+    },
+    '@layerswap/widget-types': await import('@layerswap/widget-types'),
+  }
+  const source = readFileSync(new URL('../src/bitcoinGasProvider.ts', import.meta.url), 'utf8')
+  const { outputText } = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } })
+  const module = { exports: {} }
+  new Function('require', 'module', 'exports', outputText)(name => {
+    assert.ok(name in deps, name)
+    return deps[name]
+  }, module, module.exports)
+  const { BitcoinGasProvider } = module.exports
+  const { bitcoinMemo } = await import('../dist/esm/transferProvider/bitcoinMemo.js')
+  assert.equal(bitcoinMemo('22911311;'), '15d994f;')
+  assert.equal(bitcoinMemo('22911311;preserved;tail'), '15d994f;preserved;tail')
+  const token = { symbol: 'BTC', decimals: 8 }
+  await withUtxo(10000, async () => {
+    const original = axios.get
+    axios.get = async url => url.endsWith('/fees/recommended')
+      ? { data: { economyFee: 2, minimumFee: 1 } } : original(url)
+    try {
+      const provider = new BitcoinGasProvider()
+      const args = { address: userAddress, recipientAddress: depositAddress, token,
+        network: { name: 'BITCOIN_MAINNET', token, node_url: 'https://example.invalid' }, amount: 9363 / 1e8 }
+      const provisional = await provider.getGas(args)
+      const exact = await provider.getGas({ ...args, callData: '22911311;', amountInBaseUnits: '0' })
+      assert.equal(Math.round(provisional.gas * 1e8), 338)
+      assert.equal(Math.round(exact.gas * 1e8), 637)
+      assert.equal(Math.round(exact.requiredFee * 1e8), 282)
+      const transaction = await buildPsbt({ ...params, amount: 9363, memo: bitcoinMemo('22911311;'), feeRate: 2 })
+      assert.equal(Math.round(exact.gas * 1e8), Number(transaction.fee))
+    } finally { axios.get = original }
+  })
 })

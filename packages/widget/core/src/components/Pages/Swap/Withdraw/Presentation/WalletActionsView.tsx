@@ -150,6 +150,7 @@ export type SendTransactionViewProps = SubmitButtonProps & {
     readOnly?: boolean;
     error?: boolean;
     swapError?: boolean;
+    feeUpdated?: boolean;
     swapId?: string;
     criticalMarketPriceImpact?: boolean;
     showCriticalMarketPriceImpactButtons?: boolean;
@@ -188,6 +189,7 @@ export function getSendTransactionPresentation({
     readOnly,
     error,
     swapError,
+    feeUpdated,
     swapId,
     criticalMarketPriceImpact,
     showCriticalMarketPriceImpactButtons,
@@ -322,11 +324,18 @@ export function getSendTransactionPresentation({
         >
             {error || swapError || networkSwitch?.isError || workflowFailed
                 ? 'Try again'
-                : workflowCompleted ? 'Completed' : primaryActionText}
+                : workflowCompleted ? 'Completed' : feeUpdated ? 'Continue' : primaryActionText}
         </ButtonWrapper>
     );
     return { walletProgress, controls: (
                 <>
+                    {feeUpdated && (
+                        <ErrorDisplay
+                            icon={<InfoIcon className={ICON_CLASSES_WARNING} />}
+                            title="Network fee updated"
+                            message="Review the updated network fee before continuing to your wallet."
+                        />
+                    )}
                     {message}
                     {!!(
                         !swapId &&
