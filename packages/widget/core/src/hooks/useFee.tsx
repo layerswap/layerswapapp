@@ -18,6 +18,7 @@ import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore'
 import { isGaslessCapableRoute } from '@/helpers/gasless'
 import { Address } from '@/lib/address/Address';
 import { wantsFrontendSwap } from '@/helpers/swapFlow';
+import { manualRefundAddress, refundAddressValidation } from '@/helpers/refundAddress';
 
 const apiClient = new LayerswapApiClient()
 
@@ -67,6 +68,8 @@ type Props = {
     refuel: boolean | undefined
     depositMethod: "wallet" | "deposit_address" | undefined
     destinationAddress?: string
+    refundAddress?: string
+    refundAddressInvalid?: boolean
 }
 type Options = {
     skipLimits?: boolean
@@ -74,7 +77,7 @@ type Options = {
 }
 
 export function useQuoteData(formValues: Props | undefined, options: Options = { skipLimits: false, refreshInterval: 20000 }): UseQuoteData {
-    const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod, destinationAddress } = formValues || {}
+    const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod, destinationAddress, refundAddress, refundAddressInvalid } = formValues || {}
     const { skipLimits, refreshInterval } = options
 
     const [debouncedAmount, setDebouncedAmount] = useState(amount)
@@ -167,7 +170,7 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
     // Bridge mode fetches the backend quote for the truncated real amount (A - fee).
     const effectiveAmount = isBridge ? extendedPlan.realAmount : debouncedAmount
 
-    const quoteURL = (hasQuoteParams && !isDebouncing && (!isBridge || (effectiveAmount && isPositiveDecimal(effectiveAmount))))
+    const quoteURL = (hasQuoteParams && !refundAddressInvalid && !isDebouncing && (!isBridge || (effectiveAmount && isPositiveDecimal(effectiveAmount))))
         ? buildQuoteUrl({
             sourceNetwork: effectiveFrom!,
             sourceToken: effectiveFromToken!,
@@ -181,6 +184,7 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
             useGasless,
             destinationAddress,
             sourceAddress,
+            refundAddress,
         })
         : null
 
@@ -222,13 +226,14 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
     const { data: quote, mutate: mutateFee, error: quoteError, isLoading: swrIsLoading } = useSWR<ApiResponse<Quote>>(quoteURL, quoteFetchWrapper, {
         refreshInterval: (refreshInterval || refreshInterval == 0) ? refreshInterval : 42000,
         dedupingInterval: 5000,
-        keepPreviousData: true,
+        // A quote for a different refund recipient must never enable submission.
+        keepPreviousData: depositMethod !== 'deposit_address',
     })
 
     const quoteData = quote?.data
     const hasValidAmount = !!debouncedAmount && isPositiveDecimal(String(debouncedAmount))
     const isTransitioning = swrIsLoading || isDebouncing || amount !== debouncedAmount
-    const resolvedQuote = (quoteError || !hasQuoteParams || !hasValidAmount) ? undefined : quoteData
+    const resolvedQuote = (quoteError || refundAddressInvalid || !hasQuoteParams || !hasValidAmount) ? undefined : quoteData
     if (!isTransitioning) lastSettledQuoteRef.current = resolvedQuote
     const suppressStale = isTransitioning && lastSettledQuoteRef.current === undefined
 
@@ -265,7 +270,7 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
         } : undefined,
         isQuoteLoading: isQuoteLoading || isTransitioning,
         isDebouncing: isDebouncing || amount !== debouncedAmount,
-        quoteError,
+        quoteError: isDebouncing || amount !== debouncedAmount ? undefined : quoteError,
         limitsError,
         mutateFee,
         mutateLimits,
@@ -287,6 +292,8 @@ export function transformFormValuesToQuoteArgs(values: SwapFormValues): Props | 
         toCurrency: values.toAsset?.symbol,
         refuel: values.refuel,
         destinationAddress: validDestinationAddress(values.destination_address, values.to),
+        refundAddress: manualRefundAddress(values),
+        refundAddressInvalid: !!values.refund_address && !!refundAddressValidation(values),
     }
 }
 
@@ -300,6 +307,7 @@ export function transformSwapDataToQuoteArgs(swapData: SwapBasicData | undefined
         to: swapData?.destination_network.name,
         toCurrency: swapData?.destination_token.symbol,
         destinationAddress: validDestinationAddress(swapData?.destination_address, swapData?.destination_network),
+        refundAddress: swapData?.use_deposit_address ? swapData.refund_address : undefined,
     }
 }
 
@@ -316,6 +324,7 @@ export type QuoteUrlArgs = {
     useGasless?: boolean
     destinationAddress?: string
     sourceAddress?: string
+    refundAddress?: string
 }
 
 export function buildQuoteUrl(args: QuoteUrlArgs): string {
@@ -331,6 +340,7 @@ export function buildQuoteUrl(args: QuoteUrlArgs): string {
         useGasless = false,
         destinationAddress,
         sourceAddress,
+        refundAddress,
     } = args
 
     const params = new URLSearchParams({
@@ -355,6 +365,10 @@ export function buildQuoteUrl(args: QuoteUrlArgs): string {
 
     if (sourceAddress) {
         params.append('source_address', sourceAddress)
+    }
+
+    if (refundAddress) {
+        params.append('refund_address', refundAddress)
     }
 
     return `/quote?${params.toString()}`

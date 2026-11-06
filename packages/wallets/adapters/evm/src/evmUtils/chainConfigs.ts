@@ -6,7 +6,7 @@ import { resolveAdapterChain } from "./resolveChain";
 const chainsToFilter = [70700, 70701]
 
 export type EvmChainsConfig = {
-    chains: [Chain, ...Chain[]]
+    chains: Chain[]
     transports: Record<number, ReturnType<typeof fallback> | ReturnType<typeof http>>
 }
 
@@ -31,7 +31,7 @@ export function getEvmChainsConfig<Network>(networks: Network[], networkAdapter:
     })
 
     return {
-        chains: settingsChains as [Chain, ...Chain[]],
+        chains: settingsChains,
         transports,
     }
 }

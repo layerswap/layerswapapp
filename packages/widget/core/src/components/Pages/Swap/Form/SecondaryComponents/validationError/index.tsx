@@ -15,7 +15,7 @@ const ValidationError: React.FC<{ showSwapErrors?: boolean }> = ({ showSwapError
 
     useEffect(() => {
         if (swapError) setSwapError?.(null);
-    }, [showSwapErrors, values.from?.name, values.to?.name, values.fromAsset?.symbol, values.toAsset?.symbol, values.amount, values.fromExchange?.name, values.destination_address]);
+    }, [showSwapErrors, values.from?.name, values.to?.name, values.fromAsset?.symbol, values.toAsset?.symbol, values.amount, values.fromExchange?.name, values.destination_address, values.refund_address]);
 
     if (routeValidation.message) {
         return (

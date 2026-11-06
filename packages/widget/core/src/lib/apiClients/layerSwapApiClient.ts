@@ -14,6 +14,7 @@ import { startApiOperation } from '../widgetTelemetry';
 import { resolveAtomicDepositActions } from '../atomicBatchActions';
 
 const IGNORED_API_ERROR_CODES = [
+    'REFUND_ADDRESS_MISSING',
     'ROUTE_NOT_FOUND_ERROR',
     'PRICE_IMPACT_TOO_HIGH',
     'GREATER_THAN_MAX_ERROR',
@@ -235,6 +236,7 @@ export type SwapResponse = {
 }
 
 export type SwapBasicData = {
+    refund_address?: string
     /** Present only when the backend persisted a frontend settlement leg. */
     quote_revision?: number;
     /** Local amount intent; never serialized as an API parameter. */
@@ -272,6 +274,7 @@ export type SwapDetails = {
 }
 
 export type SwapItem = {
+    refund_address?: string,
     quote_revision?: number;
     id: string,
     created_date: string,

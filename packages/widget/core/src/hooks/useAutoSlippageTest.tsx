@@ -8,6 +8,7 @@ import { wantsFrontendSwap } from '@/helpers/swapFlow'
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore'
 import { useSelectedAccount } from '@/context/swapAccounts'
 import { isGaslessCapableRoute } from '@/helpers/gasless'
+import { manualRefundAddress } from '@/helpers/refundAddress'
 
 type AutoSlippageTestProps = {
     values: SwapFormValues
@@ -49,6 +50,7 @@ export function useAutoSlippageTest({ values, shouldTest }: AutoSlippageTestProp
             }),
             useGasless,
             destinationAddress: validatedDestinationAddress,
+            refundAddress: manualRefundAddress(values),
         })
         : null
 
