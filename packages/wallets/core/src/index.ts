@@ -39,6 +39,7 @@ export { checkStorageIsAvailable } from "@/lib/storageAvailable";
 export type { storageType } from "@/lib/storageAvailable";
 export { WalletProvidersRegistryProvider, DescriptorHydrationBoundary, useHasConfiguredWalletProviders, useWalletProvidersRegistry, useWalletProvidersReady } from "@/context/WalletProvidersRegistryProvider";
 export { walletKey } from "@/lib/walletKey";
+export { retryChunkLoad } from "@/lib/retryChunkLoad";
 export { walletRequestStore } from '@/lib/walletConnect/walletRequestStore';
 export type { WalletConnectWallet } from "@/types/WalletConnectWallet";
 export { DEFAULT_WALLETCONNECT_PROJECT_ID, UNMERGEABLE_WALLETS, NAME_OVERRIDES, SLUGS_TO_FILTER, FEATURED_WALLETS_IDS } from "@/constants";

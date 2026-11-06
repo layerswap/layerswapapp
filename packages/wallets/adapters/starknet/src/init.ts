@@ -1,6 +1,6 @@
 import { Connector, ConnectorNotConnectedError, UserNotConnectedError } from '@starknet-react/core'
 import { RpcMessage, RequestFnCall, RpcTypeToMessageMap } from '@starknet-io/types-js'
-import { getKnownConnectorIconBase64 } from '@layerswap/wallet-core'
+import { getKnownConnectorIconBase64, retryChunkLoad } from '@layerswap/wallet-core'
 import { starknetConnectorManager } from './service/starknetConnectorManager'
 
 let _initialized = false
@@ -53,11 +53,11 @@ export function initStarknetProvider(): void {
 
     _loadPromise = (async () => {
         // @ts-ignore
-        const injectedModule = await import('starknetkit/injected')
+        const injectedModule = await retryChunkLoad(() => import('starknetkit/injected'))
         // @ts-ignore
-        const webWalletModule = await import('starknetkit/webwallet')
+        const webWalletModule = await retryChunkLoad(() => import('starknetkit/webwallet'))
         // @ts-ignore
-        const controllerModule = await import('starknetkit/controller')
+        const controllerModule = await retryChunkLoad(() => import('starknetkit/controller'))
 
         const InjectedConnector = (injectedModule as any).InjectedConnector
         const WebWalletConnector = (webWalletModule as any).WebWalletConnector
@@ -81,7 +81,7 @@ export function initStarknetProvider(): void {
         }
 
         if ((isAndroid || isIOS) && !defaultConnectors.some(c => c.id === 'braavos')) {
-            const starknet = (await import('@starknet-io/get-starknet-core')).default
+            const starknet = (await retryChunkLoad(() => import('@starknet-io/get-starknet-core'))).default
             const injectedWallets = isAndroid ? await starknet.getAvailableWallets() : []
             if (injectedWallets.length) {
                 defaultConnectors.push(...injectedWallets.map(w => new InjectedConnector({ options: { id: w.id } })))

@@ -1,3 +1,4 @@
+import { retryChunkLoad } from '@layerswap/wallet-core'
 import { tronAdapterManager } from './service/tronAdapterManager'
 
 let _initialized = false
@@ -21,7 +22,7 @@ export function initTronProvider(): void {
             bybitModule,
             gateModule,
             trustModule,
-        ] = await Promise.all([
+        ] = await retryChunkLoad(() => Promise.all([
             import('@tronweb3/tronwallet-adapter-metamask-tron'),
             import('@tronweb3/tronwallet-adapter-tronlink'),
             import('@tronweb3/tronwallet-adapter-okxwallet'),
@@ -29,7 +30,7 @@ export function initTronProvider(): void {
             import('@tronweb3/tronwallet-adapter-bybit'),
             import('@tronweb3/tronwallet-adapter-gatewallet'),
             import('@tronweb3/tronwallet-adapter-trust')
-        ])
+        ]))
 
         const { MetaMaskAdapter } = metamaskModule
         const { TronLinkAdapter } = tronLinkModule
