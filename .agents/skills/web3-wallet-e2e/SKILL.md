@@ -7,7 +7,7 @@ description: Test Web3 application UI and real browser wallets on demand from na
 
 Requires Node.js 22+, Playwright Chromium, a trusted unpacked extension and a privately provisioned dedicated test profile; headed display may be required.
 
-Never authorize a transaction or signature, including on local chains. Do not use existing send/local transaction commands, SDK signers, RPC submission, private keys, wallet mocks or fallback signers. Connection approval is allowed only for the dedicated test account and verified app origin. Read [safety](references/safety.md) before browser work.
+Do not use existing send/local transaction commands, SDK signers, RPC submission, private keys, wallet mocks or fallback signers. Connection approval is allowed only for the dedicated test account and verified app origin. Read [safety](references/safety.md) before browser work.
 
 ## Reuse the registered wallet across chats
 
