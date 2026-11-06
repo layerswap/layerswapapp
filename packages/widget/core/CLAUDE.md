@@ -43,6 +43,11 @@ Extended source routes (Hyperliquid, Polymarket) are gated by `ExtendedRouteFlag
 - **Flag resolution has two paths that must stay in sync with `apps/bridge/flags.ts`:** the bridge SSR resolves via the Vercel Flags SDK and injects `settings.featureFlags`; every other client (CDN embeds, deposit integrations) gets them from `GET https://layerswap.io/app/api/flags` inside the widget's `getSettings()` (`lib/extendedRoutes/remoteFlags.ts`). Callers that resolve flags first-party pass `{ includeFeatureFlags: false }`.
 - **Polymarket's effective enablement is `isPolymarketEnabled`** (dashboard flag AND builder creds, plus a `POLYMARKET_ROUTES_OVERRIDE` env opt-in) — enforced identically by the flags endpoint and the relayer proxy. The proxy refuses with `{ "error": "provider_disabled" }`, which the wallet package's `relayerClient` maps to user-facing "temporarily unavailable" copy.
 - **Intended end state:** the LayerSwap API owns route availability in its settings/routes payload; when that lands, prefer API-provided flags and retire the bridge flags endpoint.
+- **Product feature flags ride the same map.** Add the flag to `extendedRouteFlags` and `resolveExtendedRouteFlags` in `apps/bridge/flags.ts` and read it with `useFeatureFlag(key)` (`context/settings.tsx`), which treats a missing key as off — so new features fail closed for embeds whose flags fetch failed. The key must never equal an extended-route provider id (`hyperliquid`, `polymarket`), or it would toggle that provider.
+
+### Swap execution views — one mounted wallet controller at a time
+
+Each `SwapDataProvider` owns one swap; several may coexist (form tabs, consolidation legs). The wallet execution controller under `SwapDetails` is not: a chain switch for one swap aborts any other controller's execution scope, and EVM allows one pending switch per provider. Multi-swap flows (`components/Pages/Swap/Consolidation`) mount the wallet controls (`Page2Controller`) only for the active leg and advance after its input is submitted.
 
 ## Commands
 

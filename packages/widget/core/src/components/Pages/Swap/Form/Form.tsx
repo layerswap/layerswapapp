@@ -8,6 +8,7 @@ import DepositAddressForm from "./DepositAddressForm";
 import FormWrapper from "./FormWrapper";
 import { Widget } from "@/components/Widget/Index";
 import { ValidationProvider } from "@/context/validationContext";
+import { ConsolidationQuotesProvider } from "@/context/consolidationQuotes";
 import { useInitialSettings } from "@/context/settings";
 import { useSettingsState } from "@/context/settings";
 import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
@@ -37,17 +38,20 @@ export default function Form() {
 
         <TabsContent value="cross-chain">
             <SwapDataProvider>
-                <FormWrapper type="cross-chain" partner={partner}>
-                    <Widget contextualMenu={
-                        <div className={clsx("block w-full", { 'sm:hidden': AppSettings.ThemeData?.enableWideVersion == true })}>
-                            <NetworkExchangeTabs />
-                        </div>
-                    }>
-                        <ValidationProvider>
-                            <NetworkForm partner={partner} />
-                        </ValidationProvider>
-                    </Widget>
-                </FormWrapper>
+                {/* Wraps FormWrapper so the consolidation review drawer reads the form's live row quotes. */}
+                <ConsolidationQuotesProvider>
+                    <FormWrapper type="cross-chain" partner={partner}>
+                        <Widget contextualMenu={
+                            <div className={clsx("block w-full", { 'sm:hidden': AppSettings.ThemeData?.enableWideVersion == true })}>
+                                <NetworkExchangeTabs />
+                            </div>
+                        }>
+                            <ValidationProvider>
+                                <NetworkForm partner={partner} />
+                            </ValidationProvider>
+                        </Widget>
+                    </FormWrapper>
+                </ConsolidationQuotesProvider>
             </SwapDataProvider>
         </TabsContent>
 

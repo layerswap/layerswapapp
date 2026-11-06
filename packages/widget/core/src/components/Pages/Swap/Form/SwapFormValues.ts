@@ -26,6 +26,15 @@ export type SwapFormValues = {
   depositMethod?: 'wallet' | 'deposit_address',
   validatingSource?: boolean;
   validatingDestination?: boolean;
+  /** Additional wallet sources consolidated into the same destination; the primary source stays in `from`/`fromAsset`/`amount`. */
+  extraSources?: ConsolidationSource[];
+}
+
+export type ConsolidationSource = {
+  id: string;
+  from: NetworkRoute;
+  fromAsset: NetworkRouteToken;
+  amount: string;
 }
 
 

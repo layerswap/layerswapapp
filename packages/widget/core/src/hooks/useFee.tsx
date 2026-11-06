@@ -185,37 +185,33 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
         : null
 
     const { cache } = useSWRConfig();
-    const isQuoteLoading = useLoadingStore((state) => state.isLoading);
+    const isQuoteLoading = useLoadingStore((state) => !!quoteURL && !!state.loading[quoteURL]);
     // Remember the last settled quote we emitted, so that while the next one loads we don't flash stale data after an empty state (e.g. a route that errored).
     const lastSettledQuoteRef = useRef<Quote | undefined>(undefined)
     //TODO: implement middleware that handles the delay logic
     const quoteFetchWrapper = useCallback(async (url: string): Promise<ApiResponse<Quote>> => {
-        const { setLoading, key, setKey } = useLoadingStore.getState()
+        const { setLoading } = useLoadingStore.getState()
         try {
-            if (key !== url) {
-                setLoading(true)
+            const previousData = cache.get(url)?.data as ApiResponse<Quote>
+            if (!previousData) {
+                setLoading(url, true)
             }
 
-            const previousData = cache.get(url)?.data as ApiResponse<Quote>
             const newData = await apiClient.fetcher(url) as ApiResponse<Quote>
             if (previousData?.data?.quote && isDiffByPercent(previousData?.data?.quote.receive_amount, newData.data?.quote.receive_amount, 2)) {
-                const { setLoading } = useLoadingStore.getState()
-                setLoading(true)
+                setLoading(url, true)
                 await sleep(3500)
             }
-
-
-            setKey(url)
-            setLoading(false)
             return newData
         }
         catch (error) {
             if (error.response?.data?.error?.code === "VALIDATION_ERROR") {
                 useSlippageStore.getState().clearSlippage()
             }
-            setLoading(false)
-            setKey(null)
             throw error
+        }
+        finally {
+            setLoading(url, false)
         }
     }, [cache])
 
@@ -439,16 +435,17 @@ export function buildLimitsUrl({
 
     return `/limits?${params.toString()}`;
 }
+// Keyed by quote URL so concurrent quotes (e.g. consolidation rows) don't toggle each other's loading state.
 type LoadingState = {
-    key: string | null;
-    setKey: (value: string | null) => void;
-    isLoading: boolean;
-    setLoading: (loading: boolean) => void;
+    loading: Record<string, true>;
+    setLoading: (url: string, loading: boolean) => void;
 };
 
 export const useLoadingStore = create<LoadingState>((set) => ({
-    key: null,
-    setKey: (value) => set({ key: value }),
-    isLoading: false,
-    setLoading: (loading) => set({ isLoading: loading }),
+    loading: {},
+    setLoading: (url, loading) => set(state => {
+        if (!!state.loading[url] === loading) return state
+        const { [url]: _removed, ...rest } = state.loading
+        return { loading: loading ? { ...rest, [url]: true } : rest }
+    }),
 }));

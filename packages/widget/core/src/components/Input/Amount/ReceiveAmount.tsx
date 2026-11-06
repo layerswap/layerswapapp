@@ -10,8 +10,9 @@ type ReceiveAmountProps = {
     destination_token: Token | undefined;
     fee: Quote | undefined;
     isFeeLoading: boolean;
+    caption?: string;
 }
-export const ReceiveAmount: FC<ReceiveAmountProps> = ({ destination_token, fee, isFeeLoading }) => {
+export const ReceiveAmount: FC<ReceiveAmountProps> = ({ destination_token, fee, isFeeLoading, caption }) => {
     const isUsdMode = useUsdModeStore(s => s.isUsdMode);
     const receive_amount = fee?.quote.receive_amount
     const receiveAmountInUsd = useMemo(() => {
@@ -101,6 +102,7 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ destination_token, fee, 
                     </> : (
                         <NumFlowWithFallback className="p-0 align-middle" value={Number(receiveAmountInUsd) || 0} prefix="$" format={{ maximumFractionDigits: receiveAmountInUsd ? 2 : 0 }} trend={0} />
                     )}
+                    {caption ? <span className="ml-1 truncate">{`· ${caption}`}</span> : null}
                 </span>
                 <span ref={priceImpactRef} className="shrink-0">
                     <PriceImpact className="h-5 text-xs sm:text-base leading-5" quote={quote} refuel={fee?.refuel} />
