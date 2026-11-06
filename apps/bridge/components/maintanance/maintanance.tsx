@@ -4,14 +4,16 @@ import LayerswapLogo from "../Icons/layerSwapLogo";
 import TwitterLogo from "../Icons/TwitterLogo";
 import { SubmitButton } from "@layerswap/widget/internal";
 import ThemeWrapper from "../AppWrapper";
+import { useMaintenanceRecovery } from "../../hooks/useMaintenanceRecovery";
 
 function Comp() {
     const { boot, update } = useIntercom()
+    useMaintenanceRecovery()
 
     useEffect(() => {
         boot()
         update()
-    })
+    }, [boot, update])
 
     const twitterLogo = <TwitterLogo className="text-primary-buttonTextColor h-5 w-5" />
     return (

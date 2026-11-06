@@ -2,6 +2,8 @@ import LayerSwapApiClient from "../../lib/apiClients/layerSwapApiClient";
 import { fetchExtendedRouteFlags } from "../../lib/extendedRoutes/remoteFlags";
 
 export type GetSettingsOptions = {
+    /** Cancel the backend settings requests when the caller's deadline expires or it disconnects. */
+    signal?: AbortSignal
     /**
      * Also resolve the extended-route kill switches from the public flags endpoint
      * (see `lib/extendedRoutes/remoteFlags.ts`). Defaults to true so callers with no
@@ -28,10 +30,10 @@ export async function getSettings(apiKey: string, options?: GetSettingsOptions) 
             { data: destinationRoutes },
             featureFlags,
         ] = await Promise.all([
-            apiClient.GetLSNetworksAsync(),
-            apiClient.GetSourceExchangesAsync().catch(() => ({ data: [] })),
-            apiClient.GetRoutesAsync('sources', true),
-            apiClient.GetRoutesAsync('destinations', true),
+            apiClient.GetLSNetworksAsync({ signal: options?.signal }),
+            apiClient.GetSourceExchangesAsync({ signal: options?.signal }).catch(() => ({ data: [] })),
+            apiClient.GetRoutesAsync('sources', true, { signal: options?.signal }),
+            apiClient.GetRoutesAsync('destinations', true, { signal: options?.signal }),
             // Resolves to undefined on any failure; the extended-route registry then
             // falls back to each provider's `enabledByDefault` (fail-closed for
             // credential-bearing routes).
@@ -51,9 +53,11 @@ export async function getSettings(apiKey: string, options?: GetSettingsOptions) 
         return settings
     }
     catch (error) {
-        // Keep the non-throwing contract (public export, also used in SSR),
-        // but never swallow silently — callers only see a falsy result.
-        console.error('[layerswap/widget] Failed to fetch settings', error)
+        // Keep the non-throwing contract (public export, also used in SSR).
+        // Caller-controlled cancellation is expected; report other failures.
+        if (!options?.signal?.aborted) {
+            console.error('[layerswap/widget] Failed to fetch settings', error)
+        }
         return null
     }
 }
