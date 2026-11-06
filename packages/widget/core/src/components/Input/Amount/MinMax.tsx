@@ -99,7 +99,7 @@ const MinMax = (props: MinMaxProps) => {
 
     // A selected preset stays available so it can be turned off while data refreshes.
     const minDisabled = selectedPreset !== 'min' && minValue === undefined;
-    const halfDisabled = selectedPreset !== 'half' && halfValue === undefined;
+    const halfDisabled = !walletFlow || !isWalletConnected || (selectedPreset !== 'half' && halfValue === undefined);
     const maxDisabled = selectedPreset !== 'max' && maxValue === undefined;
     const allPresetsDisabled = minDisabled && halfDisabled && maxDisabled;
 
@@ -164,7 +164,9 @@ const MinMax = (props: MinMaxProps) => {
                     data-attr="half-amount"
                     label="50%"
                     aria-pressed={live ? selectedPreset === 'half' : undefined}
-                    description={live ? undefined : 'Set 50% once, using your wallet balance when available or the maximum amount otherwise.'}
+                    description={!walletFlow || !isWalletConnected
+                        ? '50% is available for wallet transfers with a connected wallet.'
+                        : live ? undefined : 'Set 50% once, using your wallet balance when available or the maximum amount otherwise.'}
                     disabled={halfDisabled}
                     onMouseEnter={() => onActionHover(halfValue === undefined ? undefined : Number(halfValue))}
                     onMouseLeave={() => onActionHover(undefined)}
