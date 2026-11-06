@@ -3,7 +3,6 @@ import {
     createConfig,
     ctrl,
     leather,
-    metamask,
     okx,
     onekey,
     reconnect,
@@ -13,6 +12,7 @@ import {
     type CreateConnectorFn,
 } from '@bigmi/client'
 import { bitcoin, createClient, defineChain, http, ChainId } from '@bigmi/core'
+import { metamaskPreservingPsbt } from './metamaskConnector'
 let _config: Config | null = null
 let _configKey: string | null = null
 
@@ -67,7 +67,7 @@ export function ensureBitcoinConfig(network: BitcoinNetworkConfig | undefined): 
         bitget({ chainId: btcChainId }),
         leather({ chainId: btcChainId }),
         onekey({ chainId: btcChainId }),
-        metamask({ chainId: btcChainId }),
+        metamaskPreservingPsbt({ chainId: btcChainId }),
     ]
 
     _config = createConfig({

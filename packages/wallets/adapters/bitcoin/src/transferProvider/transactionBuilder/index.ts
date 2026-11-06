@@ -4,12 +4,7 @@ import { TransactionBuilderParams } from "./types";
 
 export const transactionBuilder = async (props: TransactionBuilderParams) => {
 
-    const { psbt, utxos, error } = await buildPsbt(props);
-
-    if (!psbt) {
-        const msg = typeof error === 'string' ? error : error instanceof Error ? error.message : String(error);
-        throw new Error(`Something went wrong: ${msg}`);
-    }
+    const { psbt, utxos } = await buildPsbt(props);
 
     const inputsToSign = Array.from(
         psbt.data.inputs

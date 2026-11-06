@@ -92,14 +92,16 @@ export async function calculatePresetAmount({ network, token, balance, limit, mi
         const payable = resolveMaxAllowedAmount({
             fromCurrency: token, native_currency: gas?.token ?? network.token,
             walletBalance: balance, limitsMaxAmount: limit,
-            gasAmount: gas?.maxFee ?? gas?.gas, gasReserve: gas?.reserve, depositMethod: 'wallet',
+            gasAmount: gas?.maxFee ?? gas?.requiredFee ?? gas?.gas, gasReserve: gas?.reserve, depositMethod: 'wallet',
         })
         if (payable == null) throw new Error('Could not estimate the network fee. Try again.')
         const target = Number(resolvePresetAmount(mode, payable, minimum ?? 0, token.decimals))
         const feeToken = gas?.token ?? network.token
         const paysFeeInSource = !feeToken || feeToken.symbol === token.symbol
         const requiredFee = paysFeeInSource ? resolveGasBalanceBudget(gas) : 0
-        const withinPreset = candidate <= payable * (mode === 'half' ? 0.5 : 1)
+        const totalNeeded = candidate + requiredFee
+        const affordable = totalNeeded <= balance.amount + Number.EPSILON * Math.max(balance.amount, totalNeeded)
+        const withinPreset = affordable && candidate <= payable * (mode === 'half' ? 0.5 : 1)
             && (mode !== 'min' || candidate >= Number(minAmount))
         if (preserveAmount && candidate === probe && withinPreset) return amountText(candidate, token.decimals)
         if (mode === 'min' && target > payable)
@@ -109,14 +111,17 @@ export async function calculatePresetAmount({ network, token, balance, limit, mi
         if (target === 0) return '0'
         // First establish the preset from the buffered spendable balance. Later
         // reads verify it instead of requiring exactly identical fee estimates.
-        if (target === candidate || (mode !== 'min' && withinPreset && attempt > 0))
+        // A separate required fee can fall when the transaction drops change.
+        // Follow that larger target once more instead of retaining absorbed dust.
+        const canIncrease = gas?.requiredFee !== undefined && target > candidate
+        if (affordable && (target === candidate || (mode !== 'min' && withinPreset && attempt > 0 && !canIncrease)))
             return amountText(candidate, token.decimals)
         // Small fee increases can otherwise consume every retry: the previous
         // target sits exactly at the buffered limit. Leave another fee margin
         // when that happens, then verify the reduced amount on the next read.
         // Account reserves stay separate and are never multiplied.
-        const maximumFee = gas?.maxFee ?? gas?.gas ?? 0
-        const feeMargin = paysFeeInSource ? requiredFee - maximumFee - (gas?.reserve ?? 0) : 0
+        const maximumFee = gas?.maxFee ?? gas?.requiredFee ?? gas?.gas ?? 0
+        const feeMargin = paysFeeInSource ? resolveGasBalanceBudget({ gas: maximumFee }) - maximumFee : 0
         const presetScale = mode === 'half' ? 0.5 : 1
         const smallFeeIncrease = attempt > 0 && mode !== 'min'
             && candidate > target && candidate - target <= feeMargin * presetScale

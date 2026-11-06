@@ -1,31 +1,31 @@
-import { JsonRpcClient } from "@layerswap/utils";
-import axios from 'axios';
-import { Psbt } from 'bitcoinjs-lib'
+import axios from 'axios'
+import type { Psbt } from 'bitcoinjs-lib'
+import { compactSizeLength, outputSize } from './outputPolicy.js'
 
-export const estimateFee = async (psbt: Psbt, rpcClient: JsonRpcClient, version: 'testnet' | 'mainnet') => {
-    const recommendedFee = await fetchRecommendedFee(version)
-    const satsPerVbyte = recommendedFee.economyFee
-
-    const fee = calculateFee(psbt.txInputs.length, psbt.txOutputs.length, satsPerVbyte);
-    return fee
+export async function fetchFeeRate(version: 'testnet' | 'mainnet'): Promise<number> {
+  const base = `https://mempool.space${version === 'testnet' ? '/testnet' : ''}`
+  const { data } = await axios.get<{ economyFee: number; minimumFee: number }>(`${base}/api/v1/fees/recommended`)
+  const rate = Math.max(data.economyFee, data.minimumFee)
+  if (!Number.isFinite(rate) || rate <= 0) throw new Error('Invalid Bitcoin fee rate')
+  return rate
 }
 
-type RecommendedFeeResponse = {
-    fastestFee: number,
-    halfHourFee: number,
-    hourFee: number,
-    economyFee: number,
-    minimumFee: number
-}
-
-async function fetchRecommendedFee(
-    version: 'mainnet' | 'testnet',
-): Promise<RecommendedFeeResponse> {
-    const base = `https://mempool.space${version === 'testnet' ? '/testnet' : ''}`
-    const { data } = await axios.get<RecommendedFeeResponse>(`${base}/api/v1/fees/recommended`)
-    return data
-}
-
-function calculateFee(numInputs: number, numOutputs: number, feePerByte: number) {
-    return (numInputs * 148 + numOutputs * 34 + 10) * feePerByte;
+/** Conservative signed size for the native SegWit inputs this builder supports. */
+export function estimateFee(psbt: Psbt, feeRate: number): bigint {
+  if (!Number.isFinite(feeRate) || feeRate <= 0) throw new Error('Invalid Bitcoin fee rate')
+  let witnessBytes = 2 // SegWit marker and flag
+  for (const input of psbt.data.inputs) {
+    const script = input.witnessUtxo?.script
+    if (script?.length === 22 && script[0] === 0 && script[1] === 20) {
+      witnessBytes += 109 // two items: maximum DER signature + compressed public key
+    } else if (script?.length === 34 && script[0] === 0x51 && script[1] === 32) {
+      witnessBytes += 67 // key-path signature, including an optional sighash byte
+    } else {
+      throw new Error('Unsupported Bitcoin input script; use a native SegWit or Taproot account')
+    }
+  }
+  const baseBytes = 8 + compactSizeLength(psbt.inputCount) + compactSizeLength(psbt.txOutputs.length)
+    + psbt.inputCount * 41 + psbt.txOutputs.reduce((sum, output) => sum + outputSize(output.script), 0)
+  const vsize = Math.ceil((baseBytes * 4 + witnessBytes) / 4)
+  return BigInt(Math.ceil(vsize * feeRate))
 }

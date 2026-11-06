@@ -33,6 +33,7 @@ import { useBalance } from '@/lib/balances/useBalance';
 import { ErrorHandler } from '@/lib/ErrorHandler';
 import { resolvePriceImpactValues } from '@/lib/fees';
 import useSWRGas from '@/lib/gases/useSWRGas';
+import { gasEstimateKey, resolveTransferGas, transferFeeChanged } from '@/lib/gases/resolveTransferGas';
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore';
 import { useDepositSignatureStore, useGaslessAuthorizationStore, useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import { walletRequestStore } from '@layerswap/wallet-core';
@@ -199,7 +200,9 @@ export function useSendTransactionController({
     const { begin: beginExecution, loading, inFlight: executionInFlight, scope: executionScope } = useWithdrawalExecution(selectionKey, acquireWalletExecution)
     const selectedWalletRef = useRef(selectedWallet)
     useClientLayoutEffect(() => { selectedWalletRef.current = selectedWallet }, [selectedWallet])
-    const { gasData } = useSWRGas(selectedSourceAccount?.address, networkWithTokens, swapBasicData.source_token, swapBasicData.requested_amount, undefined, { enabled: active })
+    const transferGas = resolveTransferGas(getActionableDepositAction(depositActionsResponse), networkWithTokens, swapBasicData.source_token, selectedSourceAccount?.address)
+    const { gasData } = useSWRGas(selectedSourceAccount?.address, networkWithTokens, swapBasicData.source_token,
+        transferGas?.amount ?? swapBasicData.requested_amount, undefined, { enabled: active, transaction: transferGas?.transaction })
     const [actionStateText, setActionStateText] = useState<string | undefined>()
     const [observationNow, setObservationNow] = useState(Date.now)
     const firstObservedAt = useMemo(() => Date.now(), [swapId])
@@ -215,6 +218,7 @@ export function useSendTransactionController({
     const [networkSwitch, setNetworkSwitch] = useState<ActionData>(NO_NETWORK_SWITCH)
     const [walletRequestPending, setWalletRequestPending] = useState(false)
     const [walletRequestSequence, setWalletRequestSequence] = useState(0)
+    const [feeReviewSwapId, setFeeReviewSwapId] = useState<string>()
     const [criticalConfirmation, setCriticalConfirmation] = useState<SwapResponse>()
     const [workflowState, setWorkflowState] = useState<{ swapId: string, actions: DepositAction[], swapData?: SwapDetails }>()
     // A saved swap keeps its backend mode when reopened. Only a preference
@@ -357,6 +361,7 @@ export function useSendTransactionController({
                 throw new Error('Wallet is not active')
             }
 
+            setFeeReviewSwapId(undefined)
             setWalletRequestPending(false)
             setActionStateText(undefined)
             setNetworkSwitch(NO_NETWORK_SWITCH)
@@ -482,6 +487,25 @@ export function useSendTransactionController({
                 }
                 if (currentAction && executedActions >= MAX_DEPOSIT_WORKFLOW_ACTIONS) {
                     throw new Error('The swap workflow has more actions than expected')
+                }
+
+                const preparedGas = resolveTransferGas(currentAction, networkWithTokens, swapBasicData.source_token, selectedSourceAccount.address)
+                if (preparedGas && networkWithTokens && gasData?.requiredFee !== undefined) {
+                    const gasArgs = { address: selectedSourceAccount.address, network: networkWithTokens,
+                        token: swapBasicData.source_token, amount: preparedGas.amount, wallet: selectedWallet, ...preparedGas.transaction }
+                    const exactGas = await resolverService.getGasResolver().getGas(gasArgs)
+                    signal.throwIfAborted()
+                    if (!exactGas && gasData?.requiredFee !== undefined) {
+                        throw new Error('Could not refresh the network fee. Try again.')
+                    }
+                    if (exactGas?.requiredFee !== undefined) {
+                        await mutateCache(gasEstimateKey(gasArgs), exactGas, { revalidate: false })
+                        signal.throwIfAborted()
+                        if (transferFeeChanged(gasData, exactGas)) {
+                            setFeeReviewSwapId(swapData.id)
+                            return
+                        }
+                    }
                 }
 
                 // Prepare and validate the swap before opening the wallet. After switching,
@@ -747,6 +771,7 @@ export function useSendTransactionController({
             stepTransactions: stepTransactions,
             error: error,
             swapError: !!swapError,
+            feeUpdated: !!swapId && feeReviewSwapId === swapId,
             swapId: swapId,
             criticalMarketPriceImpact: criticalMarketPriceImpact,
             showCriticalMarketPriceImpactButtons: !!activeCriticalConfirmation,
