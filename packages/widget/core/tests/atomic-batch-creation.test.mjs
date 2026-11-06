@@ -198,12 +198,16 @@ test('token and amount edits reuse wallet support discovered on the form', async
     } finally { await act(() => h.root.unmount()) }
 })
 
-test('returning to a wallet refreshes its cached support without using another chain response', async () => {
+test('returning to a wallet refreshes its cached support without using another chain response', async t => {
+    t.mock.timers.enable({ apis: ['setTimeout'] })
     const responses = []
     const h = await setup({ discover: true, swrDedupingInterval: 0, capability: () => new Promise(resolve => responses.push(resolve)) })
     try {
         await act(async () => { responses[0]('supported'); await flush() })
         assert.equal(h.state.flow.actionButtonText, 'Approve and swap')
+        // SWR clears the completed request on a timer even when dedupingInterval is zero.
+        // Run that cleanup before returning to this chain so revalidation starts reliably.
+        await act(async () => { t.mock.timers.tick(1) })
         await h.changeWallet({ chainId: 1 })
         await h.changeWallet({ chainId: 42161 })
         assert.equal(responses.length, 3)
