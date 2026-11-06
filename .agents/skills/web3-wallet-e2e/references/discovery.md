@@ -8,12 +8,12 @@ When broad discovery is useful, produce a summary with:
 - package manager/workspaces and actual app start command;
 - framework, routes, component/handler paths, existing E2E tools;
 - wallet/library and chain-family evidence with file+line references;
-- initiation → connection → preparation → native request → rejection UI;
+- initiation → connection → preparation → native request → requested approval/signature or rejection → app result;
 - configuration names and known dev/staging origins, including source;
 - runtime-only observations and unresolved prerequisites.
 
 Run `node scripts/discover.mjs /repo origin/main > discovery.json` to include PR changed filenames. The diff command is read-only and does not fetch. If the base is unavailable, report unknown rather than inventing change scope. Compare changed wallet/transaction paths against discovered scenarios, rank risk, and explain recommended coverage. Do not execute the plan while generating it.
 
-Before installing tools, describe what already exists and which capabilities are missing. Reuse compatible Playwright and browser setup. Never invoke an existing financial test command without reading its complete execution path: commands named local/test may actually submit transactions.
+Before installing tools, describe what already exists and which capabilities are missing. Reuse compatible Playwright and browser setup. Read an existing financial test command's execution path and match any submissions/signatures to the user's requested scope before invoking it; local/test names alone do not describe its effects.
 
 For uncommitted changes inspect both `git diff` and `git diff --cached`, including relevant untracked source. For branch changes choose the actual merge base; for a requested PR inspect its actual patch. Use a historical diff only when appropriate and disclose the range. Start/reuse a server serving the affected checkout; report missing dependencies/build/environment blockers rather than presenting production-only checks as local-change validation.

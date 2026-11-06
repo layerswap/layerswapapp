@@ -23,7 +23,7 @@ try {
   // Use the selected wallet adapter, never a generic personal-browser connector.
   const wallet=new MetaMask(session.context,session.extension);
   await withPasswordEnvironment(session.record,()=>wallet.ready()); // all recording OFF
-  // Real app navigation, public account/chain check, UI inspection and rejection only.
+  // Real app navigation, public account/chain check, UI inspection, then rejection or user-requested approval/signing through the native adapter.
 } finally {
   await session.close();
 }

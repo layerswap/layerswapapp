@@ -1,4 +1,4 @@
 interface:
   display_name: "Web3 Wallet E2E"
   short_description: "On-demand Web3 UI and real-wallet testing"
-  default_prompt: "Use $web3-wallet-e2e to discover this app's wallet flows and test native confirmation and rejection without signing or submitting."
+  default_prompt: "Use $web3-wallet-e2e to discover this app's wallet flows and test native wallet flows, approving transactions or signing when I request those actions."

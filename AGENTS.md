@@ -94,12 +94,14 @@ Project-local Codex skills are versioned in `.agents/skills/`:
 |-------|---------|
 | [web3-wallet-session](.agents/skills/web3-wallet-session/SKILL.md) | Resolve and reuse a registered test wallet across chats and worktrees. |
 | [web3-wallet-provision](.agents/skills/web3-wallet-provision/SKILL.md) | Install a verified extension and create a dedicated test wallet when requested. |
-| [web3-wallet-e2e](.agents/skills/web3-wallet-e2e/SKILL.md) | Exercise wallet UI flows through native confirmation inspection and rejection. |
+| [web3-wallet-e2e](.agents/skills/web3-wallet-e2e/SKILL.md) | Exercise native wallet UI flows, including rejection, requested transaction approvals and signatures. |
 
 Invoke them by name, for example `$web3-wallet-e2e Test MetaMask connection`.
 Read the session skill first for existing-wallet interactions. Wallet profiles,
 registry data, vaults, and keys stay outside the repository; installing the skills
-does not provision a wallet or authorize transactions. The E2E runner uses the
+does not itself provision a wallet or request transactions. Explicit user requests
+authorize matching native transaction/signature actions; the E2E runner supports
+`--authorize <scenario-id>` for those executions. The E2E runner uses the
 sibling session helper by default, with `runtimeModule` available as an override.
 
 The bundled offline tests require Node.js 22+ and no dependency installation:

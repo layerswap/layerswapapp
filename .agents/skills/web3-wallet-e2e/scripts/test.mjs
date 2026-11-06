@@ -4,9 +4,10 @@ import { createRequire } from 'node:module';
 import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import {pathToFileURL} from 'node:url';
-import { check, validateScenario, extensionIdentity, target, appSteps, assess, resultStatus } from './core.mjs';
+import { check, validateScenario, validateExecution, extensionIdentity, target, appSteps, resultStatus } from './core.mjs';
 import { MetaMask } from './metamask.mjs';
 import { report } from './report.mjs';
+import { executeRequest } from './workflow.mjs';
 
 process.umask(0o077);
 const configFile = resolve(process.argv[2]);
@@ -22,11 +23,12 @@ const git = args => {try {return execFileSync('git',args,{cwd:base,stdio:['ignor
 const result = {scenarioId:scenario.id, appUrl:scenario.url, project:config.projectRoot ?? base,
   commit:git(['rev-parse','HEAD']),branch:git(['branch','--show-current']), wallet:config.wallet,
   startedAt:new Date().toISOString(),status:'BLOCKED',expectedResult:scenario.description,
-  checks:{connection:'NOT_RUN',confirmationOpened:'NOT_RUN',walletDetails:'NOT_RUN',requestRejected:'NOT_RUN',appHandledRejection:'NOT_RUN'},
+  checks:{connection:'NOT_RUN',confirmationOpened:'NOT_RUN',walletDetails:'NOT_RUN',requestRejected:'NOT_RUN',requestApproved:'NOT_RUN',appHandledResult:'NOT_RUN'},
   intentionalAuthorizationActions:0,broadcastVerification:'unknown; no external broadcast monitor configured',consoleErrors:[]};
-let context, wallet, lock, lockPath, registeredSession, runtime, profilePath, extension, tracing = false, requested = false, rejectionAttempted = false;
+let context, wallet, lock, lockPath, registeredSession, runtime, profilePath, extension, tracing = false;
 try {
   validateScenario(scenario);
+  const authorized = validateExecution(scenario, process.argv.slice(4));
   check(config.wallet === 'metamask', 'UNSUPPORTED_WALLET');
   if(config.walletName){
     const controller = config.runtimeModule
@@ -53,7 +55,7 @@ try {
   await mkdir(profile,{recursive:true,mode:0o700});
   check((await realpath(profile)).startsWith(`${await realpath(stateRoot)}/`), 'PROFILE_SYMLINK_ESCAPE');
   await access(resolve(profile,'unresolved-request.json')).then(() => {throw new Error('UNRESOLVED_PREVIOUS_REQUEST');}, error => {if(error.code !== 'ENOENT')throw error;});
-  lockPath = resolve(profile,'reject-only.lock');
+  lockPath = resolve(profile,'reject-only.lock'); // Preserve the lock name for compatibility with older runners.
   lock = await open(lockPath,'wx',0o600);
   // Reuse a project's Playwright without changing its dependencies; otherwise use this package.
   const require = createRequire(config.playwrightPackage ? resolve(base,config.playwrightPackage) : import.meta.url);
@@ -83,44 +85,54 @@ try {
   result.checks.connection = 'PASS';
   if (scenario.kind !== 'negative') check(state.chainId === scenario.chainId,'WRONG_NETWORK');
   await appSteps(page,scenario.prepareSteps,origin);
-  if (scenario.kind === 'confirmation-rejection') {
-    check(new URL(page.url()).origin === origin,'APP_ORIGIN_CHANGED');
-    requested = true; // includes click timeout; cleanup must still check for a pending request
-    const trigger = target(page,scenario.trigger);
-    check(await trigger.count() === 1,'AMBIGUOUS_APP_CONTROL');
-    await trigger.click();
-    const request = await wallet.request('transaction');
-    result.checks.confirmationOpened = 'PASS';
-    result.walletEvidence = await wallet.inspect();
-    result.assessment = assess(result.walletEvidence,{...scenario.expected,account:scenario.expectedAccount,origin:new URL(origin).host});
-    result.checks.walletDetails = result.assessment.status;
-    result.screenshot = 'wallet-confirmation.png';
-    await request.screenshot({path:resolve(artifactDir,result.screenshot),fullPage:true});
-    rejectionAttempted = true;
-    await wallet.reject(); requested = false;
-    result.checks.requestRejected = 'PASS';
+  if (!['connection', 'negative'].includes(scenario.kind)) {
+    await executeRequest(wallet, scenario, result, {
+      authorized,
+      trigger:async () => {
+        check(new URL(page.url()).origin === origin, 'APP_ORIGIN_CHANGED');
+        const trigger = target(page, scenario.trigger);
+        check(await trigger.count() === 1, 'AMBIGUOUS_APP_CONTROL');
+        await trigger.click();
+      },
+      capture:async request => {
+        result.screenshot = 'wallet-confirmation.png';
+        await request.screenshot({path:resolve(artifactDir, result.screenshot), fullPage:true});
+      },
+      verifyContext:async () => {
+        check(new URL(page.url()).origin === origin, 'APP_ORIGIN_CHANGED');
+        const current = await wallet.publicState(page);
+        check(current.accounts.length === 1 && current.accounts[0].toLowerCase() === scenario.expectedAccount.toLowerCase(), 'CONNECTED_ACCOUNT_MISMATCH');
+        check(current.chainId === scenario.chainId, 'WRONG_NETWORK');
+      },
+    });
   } else {
     check(wallet.pending().length === 0,'UNEXPECTED_WALLET_REQUEST');
     result.checks.confirmationOpened = 'NOT_APPLICABLE';
     result.checks.walletDetails = 'NOT_APPLICABLE';
     result.checks.requestRejected = 'NOT_APPLICABLE';
+    result.checks.requestApproved = 'NOT_APPLICABLE';
   }
   await target(page,scenario.after).waitFor({state:'visible'});
-  result.checks.appHandledRejection = 'PASS';
+  result.checks.appHandledResult = 'PASS';
   await page.screenshot({path:resolve(artifactDir,'app-result.png')});
   result.status = resultStatus(Object.values(result.checks).filter(v=>v!=='NOT_APPLICABLE'));
-  result.actualResult = scenario.kind === 'confirmation-rejection' ? 'Native request inspected and rejected; expected app UI observed.' : 'Expected connection or negative-case UI observed without a transaction request.';
+  result.actualResult = result.walletAction
+    ? `Native ${result.walletAction.action} action completed; expected app UI observed. Onchain settlement is not verified by this runner.`
+    : 'Expected connection or negative-case UI observed without a transaction request.';
 } catch (error) {
   const code = /^[A-Z][A-Z0-9_]+$/.test(error.message) ? error.message : 'BROWSER_OR_IO_FAILURE';
   result.actualResult = code;
-  result.status = code.startsWith('UNSUPPORTED_') ? 'UNSUPPORTED' : 'BLOCKED';
-  if (requested && wallet && !rejectionAttempted) {
-    try {await wallet.reject();result.checks.requestRejected='PASS';}
-    catch {result.cleanup='UNRESOLVED_REQUEST_DO_NOT_RETRY';}
-  } else if (requested && rejectionAttempted) {
-    result.cleanup='UNRESOLVED_REQUEST_DO_NOT_RETRY';
-  }
+  result.status = Object.values(result.checks).includes('FAIL') ? 'FAIL' : code.startsWith('UNSUPPORTED_') ? 'UNSUPPORTED' : 'BLOCKED';
 } finally {
+  // A dapp may open a follow-up request after the first action completed. This
+  // single-request runner leaves it for a scoped continuation instead of approving it.
+  if (wallet?.pending().length) {
+    result.cleanup = 'UNRESOLVED_REQUEST_DO_NOT_RETRY';
+    if (result.status === 'PASS') {
+      result.status = 'BLOCKED';
+      result.actualResult = 'UNEXPECTED_WALLET_REQUEST';
+    }
+  }
   if (tracing) {
     try {await context.tracing.stop({path:resolve(artifactDir,'trace.zip')}); result.trace='trace.zip';}
     catch {result.trace='unavailable';}

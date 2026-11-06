@@ -1,6 +1,6 @@
-import { check, sleep } from './core.mjs';
+import { assess, check, nativeFieldNames, sleep, target } from './core.mjs';
 
-/** Reject-only adapter. No signing, confirmation, provider replacement or background access. */
+/** Native wallet controls; approvals require explicit scope and matching native evidence. */
 export class MetaMask {
   constructor(context, extension, timeout = 20000) {
     check(extension.id === 'nkbihfbeogaeaoehlefnkodbefgpgknn' && extension.version === '13.54.0', 'UNSUPPORTED_WALLET_VERSION');
@@ -35,13 +35,19 @@ export class MetaMask {
     throw new Error('UNKNOWN_WALLET_HOME');
   }
   async request(kind) {
+    check(['connection', 'transaction', 'signature'].includes(kind), 'UNSUPPORTED_REQUEST_KIND');
     const deadline = Date.now() + this.timeout;
     while (Date.now() < deadline) {
       const pages = this.pending();
       check(pages.length <= 1, 'MULTIPLE_PENDING_REQUESTS');
       if (pages.length) {
         const hash = new URL(pages[0].url()).hash;
-        check(kind === 'connection' ? /^#\/connect\//.test(hash) : /^#\/confirm-transaction\//.test(hash), 'UNSUPPORTED_REQUEST_UI');
+        const route = kind === 'connection'
+          ? /^#\/connect\//
+          : kind === 'signature'
+            ? /^#\/confirmation(?:\/[^/?]+)?(?:\?.*)?$/
+            : /^#\/(?:confirm-transaction\/[^/?]+|confirmation(?:\/[^/?]+)?)(?:\?.*)?$/;
+        check(route.test(hash), 'UNSUPPORTED_REQUEST_UI');
         return pages[0];
       }
       await sleep(100);
@@ -71,7 +77,29 @@ export class MetaMask {
       return {accounts:await provider.request({method:'eth_accounts'}), chainId:Number(BigInt(await provider.request({method:'eth_chainId'})))};
     });
   }
-  async inspect() {
+  async inspect(kind = 'transaction', nativeFields = {}) {
+    const page = await this.request(kind);
+    const requestId = new URL(page.url()).hash;
+    const evidence = kind === 'signature'
+      ? {requestId, requestType:await page.getByTestId('confirm-title-text').innerText()}
+      : await this.inspectTransaction();
+    // Signature content varies between personal_sign, SIWE, typed data and permits.
+    // These read-only selectors must come from the installed native UI, not dapp inputs.
+    for (const [key, field] of Object.entries(nativeFields)) {
+      check(nativeFieldNames.includes(key), 'INVALID_NATIVE_FIELD');
+      const node = target(page, field);
+      if (await node.count() !== 1 || !await node.isVisible()) {
+        evidence[key] = null;
+        continue;
+      }
+      evidence[key] = field.attribute
+        ? await node.getAttribute(field.attribute)
+        : await node.innerText();
+    }
+    check(new URL(page.url()).hash === requestId, 'REQUEST_CHANGED');
+    return evidence;
+  }
+  async inspectTransaction() {
     const page = await this.request('transaction');
     await page.getByTestId('confirm-footer-cancel-button').waitFor();
     check(!await page.getByRole('button',{name:'Reject all',exact:true}).isVisible(), 'MULTIPLE_PENDING_REQUESTS');
@@ -115,13 +143,41 @@ export class MetaMask {
       decoded:await text('advanced-details-transfer-params'), simulation:await text('simulation-details-layout'), warnings,
       missingDetailPolicy:'Null means inaccessible; never substitute dapp input for native wallet evidence.'};
   }
-  async reject() {
-    const page = await this.request('transaction');
+  async approve({kind = 'transaction', expected, nativeFields = {}, requestId, authorized = false, onAttempt = () => {}}) {
+    check(authorized === true, 'USER_AUTHORIZATION_REQUIRED');
+    check(expected?.account && expected?.origin, 'AUTHORIZATION_SCOPE_REQUIRED');
+    const required = kind === 'signature' ? ['requestType', 'message'] : ['network', 'requestType', 'amount', 'recipient', 'fee'];
+    check(required.every(key => typeof expected[key] === 'string' && expected[key].length > 0), 'AUTHORIZATION_SCOPE_REQUIRED');
+    // Re-read immediately before acting; a prior screenshot is not an approval check.
+    const evidence = await this.inspect(kind, nativeFields);
+    check(requestId && evidence.requestId === requestId, 'REQUEST_CHANGED');
+    const assessment = assess(evidence, expected, kind);
+    if (assessment.status !== 'PASS') {
+      const error = new Error(assessment.status === 'FAIL' ? 'REQUEST_DETAILS_MISMATCH' : 'REQUEST_DETAILS_INACCESSIBLE');
+      error.evidence = evidence;
+      error.assessment = assessment;
+      throw error;
+    }
+    await this.finish(kind, requestId, 'confirm-footer-button', /^(Confirm|Sign|Approve)$/, onAttempt);
+    return evidence;
+  }
+  async sign(options) {
+    return this.approve({...options, kind:'signature'});
+  }
+  async reject(kind = 'transaction', requestId, onAttempt = () => {}) {
+    await this.finish(kind, requestId, 'confirm-footer-cancel-button', /^(Reject|Cancel)$/, onAttempt);
+  }
+  async finish(kind, requestId, control, label, onAttempt) {
+    const page = await this.request(kind);
     check(!await page.getByRole('dialog').isVisible(), 'UNEXPECTED_MODAL');
-    const button = page.getByTestId('confirm-footer-cancel-button');
-    check(await button.count() === 1 && /^(Reject|Cancel)$/.test((await button.innerText()).trim()), 'AMBIGUOUS_REJECTION');
     const hash = new URL(page.url()).hash;
-    await button.click({timeout:10000}); // exactly once; never retry an uncertain click
+    check(!requestId || requestId === hash, 'REQUEST_CHANGED');
+    const button = page.getByTestId(control);
+    check(await button.count() === 1 && label.test((await button.innerText()).trim()), 'AMBIGUOUS_WALLET_CONTROL');
+    check(await button.isVisible() && await button.isEnabled(), 'WALLET_CONTROL_UNAVAILABLE');
+    check(new URL(page.url()).hash === hash, 'REQUEST_CHANGED');
+    onAttempt(); // Count attempted authorization even if the click later times out.
+    await button.click({timeout:10000});
     await page.waitForURL(url => url.hash !== hash).catch(async error => {
       if (!page.isClosed()) throw error;
     });

@@ -15,7 +15,7 @@ const require = createRequire(config.playwrightPackage ? resolve(base,config.pla
 const {chromium} = require('playwright');
 const state = resolve(base,'.state');
 await mkdir(state,{recursive:true,mode:0o700});
-const profile = await mkdtemp(resolve(state,'reject-smoke-'));
+const profile = await mkdtemp(resolve(state,'wallet-smoke-'));
 const output = resolve(base,'artifacts',`readiness-${Date.now()}`);
 await mkdir(output,{recursive:true,mode:0o700});
 let context;

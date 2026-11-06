@@ -16,7 +16,7 @@ mkdir -p /path/to/project/.claude/skills
 cp -R web3-wallet-e2e /path/to/project/.claude/skills/
 ```
 
-Restart/reload the agent if needed. Codex: `$web3-wallet-e2e discover this repository and test native wallet rejection`. Claude Code: `/web3-wallet-e2e discover this repository and test native wallet rejection`. agents/openai.yaml is optional Codex metadata; the portable SKILL.md and resources are sufficient for compatible Agent Skills clients. Discovery is read-only and has no npm dependencies.
+Restart/reload the agent if needed. Codex: `$web3-wallet-e2e test this app and approve the transaction I specified`. Claude Code: `/web3-wallet-e2e test this app and approve the transaction I specified`. agents/openai.yaml is optional Codex metadata; the portable SKILL.md and resources are sufficient for compatible Agent Skills clients. Discovery is read-only and has no npm dependencies.
 
 After discovery, choose an isolated tooling package. Reuse existing Playwright by setting `playwrightPackage` to an absolute/relative path to that package's package.json. The runner resolves `playwright` from there without adding dependencies to the app. Otherwise install inside this standalone skill package:
 
@@ -29,16 +29,18 @@ node --test test/*.test.mjs
 
 Use Node 22+. On Linux headed tests need a trusted display/Xvfb and Playwright system libraries. No app dependency or React code changes are necessary. Pin browser installation to the locked Playwright release; record its actual browser version in results. Version pinning here is a tested baseline, not a claim of newest release.
 
-Copy templates/wallet-config.example.json and templates/scenario.example.json into your project's test tooling directory as *.local.json, with .state/ and artifacts/ ignored. Set the scenario origin, public test account and code-evidenced selectors. Set config walletName to the registered wallet. The runner defaults to the sibling web3-wallet-session/scripts/runtime.mjs, independent of the working directory. If the session skill is installed elsewhere, set runtimeModule to its helper path (absolute or relative to the config file). Verify extension provenance during provisioning.
+Copy templates/wallet-config.example.json and the appropriate scenario template (scenario.example.json for rejection, transaction-approval.example.json or signature-approval.example.json for requested authorization) into your project's test tooling directory as *.local.json, with .state/ and artifacts/ ignored. Set the scenario origin, public test account and code-evidenced selectors. Set config walletName to the registered wallet. The runner defaults to the sibling web3-wallet-session/scripts/runtime.mjs, independent of the working directory. If the session skill is installed elsewhere, set runtimeModule to its helper path (absolute or relative to the config file). Verify extension provenance during provisioning.
 
 ```sh
 node --input-type=module -e 'import {extensionIdentity} from "/path/to/web3-wallet-e2e/scripts/core.mjs"; console.log(await extensionIdentity(process.argv[1]));' /trusted/extension
 node /path/to/web3-wallet-e2e/scripts/discover.mjs /path/to/project origin/main > discovery.json
 node /path/to/web3-wallet-e2e/scripts/test.mjs /project/tests/wallet/config.local.json /project/tests/wallet/scenario.local.json
+# Only for an action already requested by the user:
+node /path/to/web3-wallet-e2e/scripts/test.mjs /project/tests/wallet/config.local.json /project/tests/wallet/approval.local.json --authorize requested-transaction
 node /path/to/web3-wallet-e2e/scripts/report.mjs /project/tests/wallet/artifacts/RUN/result.json
 ```
 
-Use web3-wallet-provision to create and register a dedicated test wallet on the destination host. Exploratory runs should use reviewed Playwright tooling with the same safety contract, establish actual selectors/expected values, save a deterministic scenario only when requested or clearly useful to the task. Scheduled/PR execution is possible only with trusted code, a privately provisioned profile and zero retries. Do not expose profiles to untrusted fork jobs.
+Use web3-wallet-provision to create and register a dedicated test wallet on the destination host. Exploratory runs should use reviewed Playwright tooling with the same safety contract, establish actual selectors/expected values, save a deterministic scenario only when requested or clearly useful to the task. Scheduled/PR execution requires trusted code, a privately provisioned profile and zero retries. Authorization scenarios additionally require explicit user scope for that execution; a saved scenario or CI trigger is not permission to move assets or sign. Do not expose profiles to untrusted fork jobs.
 
 Official conventions checked 2026-11-04:
 - [Agent Skills specification](https://agentskills.io/specification): SKILL.md with name/description; optional scripts/references/assets and other directories.
@@ -46,7 +48,7 @@ Official conventions checked 2026-11-04:
 - [Claude Code skills](https://code.claude.com/docs/en/skills): .claude/skills and slash invocation.
 - [Playwright extensions](https://playwright.dev/docs/chrome-extensions): bundled Chromium and persistent profile.
 
-On-demand examples: `$web3-wallet-e2e Test MetaMask connection and disconnection`, `$web3-wallet-e2e Test my uncommitted changes`, or `$web3-wallet-e2e Explore this swap until native confirmation and reject`. The agent infers the approach; no PR trigger, schedule, scenario file or user-authored plan is required.
+On-demand examples: `$web3-wallet-e2e Test MetaMask connection and disconnection`, `$web3-wallet-e2e Test my uncommitted changes`, `$web3-wallet-e2e Explore this swap until native confirmation and reject`, `$web3-wallet-e2e Approve the specified test transfer`, or `$web3-wallet-e2e Sign the login message for this app`. The agent infers the approach; no PR trigger, schedule, scenario file or user-authored plan is required.
 
 When the user supplies a dedicated test-wallet unlock password and requests local persistence, store only `WALLET_TEST_PASSWORD` in an ignored owner-only (0600) `.env.wallet-test.local` outside the portable skill. Load it for the process with `node --env-file=/path/to/.env.wallet-test.local ...`. Never print the file or environment, interpolate the password into CLI arguments, copy it into scenario/report/trace, or install it with the skill. Prefer a secret manager where available.
 

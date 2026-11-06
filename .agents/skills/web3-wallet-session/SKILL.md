@@ -11,7 +11,7 @@ Use this skill first when interacting with an existing browser wallet, including
 2. Import `launchRegisteredWallet` from `scripts/runtime.mjs`. It takes a name and uses the recorded absolute profile, exact Playwright package/browser binary and managed extension version/hash. Do not supply another profile, executable, Chrome channel, debugging port or browser args. Do not use CUA/Chrome's personal browser surface for wallet interactions.
 3. The launcher acquires a profile-wide process lock and all member wallet-name leases across chats. Another owner means WALLET_BUSY_NO_PROFILE_FALLBACK: report busy and wait for that owner to finish/close, or coordinate an explicit handoff. Do not delete locks, kill other agents' browsers, attach by CDP, copy profiles, restore/import seeds, or create replacement wallets to bypass contention.
 4. Unlock using `withPasswordEnvironment(record, action)` and the registry's private credential reference, or the provisioning vault's private fill helper. No traces, screenshots, video or input/console capture during unlock. Verify actual public account and selected chain against the registry before testing; mismatch stops. Credentials never go into tool output or command arguments.
-5. Always close through the returned session's `close()` in finally; this releases the lease after browser closure. Persistent wallet data stays in the same directory for the next chat/process. If close fails, leave the lock and report uncertainty. A pending transaction must be explicitly rejected through the correct native control before handoff/closure; closing a browser alone is not rejection evidence.
+5. Always close through the returned session's `close()` in finally; this releases the lease after browser closure. Persistent wallet data stays in the same directory for the next chat/process. If close fails, leave the lock and report uncertainty. Resolve pending requests according to the user's intent: approve/sign an authorized request, or reject a rejection-test request through its native control. If the outcome is uncertain, record it for handoff; browser closure is not outcome evidence.
 
 ## Launch block and recovery
 
@@ -29,7 +29,7 @@ Only create a new wallet when the user asks for one; a new wallet normally joins
 
 Read [runtime notes](references/runtime.md) for setup, registration and shared-profile use. Resolve the default or requested wallet from the destination registry. Separate environments have separate local profiles and credentials.
 
-The session helper grants no transaction/signing authority. Preserve the user's no-submit boundary. Opening a wallet does not authorize signing, approvals, deployments or funding.
+Use the user's existing authorization for transactions, signatures, approvals, deployments or funding, and continue covered actions without asking again. Opening a wallet alone does not request these actions. The session helper manages identity and access; use the E2E skill or a reviewed native workflow to execute the requested action.
 
 ## Multiple wallets in one profile
 

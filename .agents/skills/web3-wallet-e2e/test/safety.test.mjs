@@ -12,7 +12,7 @@ const scenario = () => ({schemaVersion:1,id:'transfer-reject',kind:'confirmation
   expectedAccount:`0x${'1'.repeat(40)}`,chainId:1,connectSteps:[],prepareSteps:[],trigger:{by:'text',value:'Send'},
   expected:{requestType:'transfer',network:'Ethereum',amount:'1 ETH',recipient:`0x${'2'.repeat(40)}`},after:{by:'text',value:'Transaction rejected'}});
 
-test('scenario rejects arbitrary code, signing actions and missing expected details',()=>{
+test('app steps reject arbitrary code and wallet actions; native actions use scenario kinds',()=>{
   assert.equal(validateScenario(scenario()).id,'transfer-reject');
   for (const action of ['evaluate','sign','confirm','goto']) {
     const s=scenario();s.prepareSteps=[{action,target:{by:'css',value:'button'}}];
@@ -36,7 +36,7 @@ test('app actions stop after cross-origin navigation before any click',async()=>
 function walletHarness({label='Reject',hash='#/confirm-transaction/1',count=1,clickFails=false}={}) {
   const actions=[];
   let pending=true;
-  const button={count:async()=>count,innerText:async()=>label,click:async()=>{actions.push(label);if(clickFails)throw Error('TIMEOUT');pending=false;}};
+  const button={count:async()=>count,innerText:async()=>label,isVisible:async()=>true,isEnabled:async()=>true,click:async()=>{actions.push(label);if(clickFails)throw Error('TIMEOUT');pending=false;}};
   const page={url:()=>`chrome-extension://${extension.id}/notification.html${hash}`,
     getByRole:()=>({isVisible:async()=>false}),getByTestId:id=>{assert.equal(id,'confirm-footer-cancel-button');return button;},
     waitForURL:async()=>{},isClosed:()=>false};
@@ -45,14 +45,14 @@ function walletHarness({label='Reject',hash='#/confirm-transaction/1',count=1,cl
 }
 test('native rejection clicks only the audited cancel control once',async()=>{
   const {wallet,actions}=walletHarness();await wallet.reject();assert.deepEqual(actions,['Reject']);
-  assert.equal(wallet.confirmTransaction,undefined);assert.equal(wallet.sign,undefined);
+  assert.equal(typeof wallet.approve,'function');assert.equal(typeof wallet.sign,'function');
 });
 test('ambiguous labels and duplicate controls fail closed',async()=>{
   for(const config of [{label:'Confirm'},{label:'Reject and sign'},{count:2}]) {
-    const {wallet,actions}=walletHarness(config);await assert.rejects(wallet.reject(),/AMBIGUOUS_REJECTION/);assert.deepEqual(actions,[]);
+    const {wallet,actions}=walletHarness(config);await assert.rejects(wallet.reject(),/AMBIGUOUS_WALLET_CONTROL/);assert.deepEqual(actions,[]);
   }
 });
-test('unknown signature routes are never approved or guessed',async()=>{
+test('unrecognized signature routes require adapter calibration',async()=>{
   const {wallet,actions}=walletHarness({hash:'#/confirm-signature/1'});
   await assert.rejects(wallet.reject(),/UNSUPPORTED_REQUEST_UI/);assert.deepEqual(actions,[]);
 });
