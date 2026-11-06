@@ -1,3 +1,5 @@
+import { getDepositAddressError } from '@/lib/depositAddressError';
+import { DepositAddressErrorView } from './DepositAddressRecoveryView';
 import { SwapStatus } from '@layerswap/widget-types';
 import { FC, ReactNode, Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
 import { Form, useFormikContext } from "formik";
@@ -31,8 +33,6 @@ import { useConnectModal } from "@/components/Wallet/WalletModal";
 const Processing = lazy(() => import(/* webpackChunkName: "swap-processing" */ "../../Withdraw/Processing"))
 const SwapSummary = lazy(() => import("../../Withdraw/Summary"));
 import ValidationError from "../SecondaryComponents/validationError";
-import { ErrorDisplay } from "../SecondaryComponents/validationError/ErrorDisplay";
-import FailIcon from "@/components/Icons/FailIcon";
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 
 type Props = {
@@ -221,8 +221,8 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
     const hasOutputTx = !!(outputTx?.transaction_hash && outputTx?.amount);
     const isCompleted = !!swapId && swapMatchesValues && hasOutputTx;
     const showDepositInfo = !!swapId && swapMatchesValues && !isProcessing;
-    const depositError = swapError || swapDetailsError || depositActionsError
-        || (showDepositInfo && depositActionsResponse && !depositAddress ? 'No deposit address was returned. Please try again.' : undefined);
+    const depositError = swapError || swapDetailsError
+        || getDepositAddressError(depositAddress, showDepositInfo ? depositActionsResponse : undefined, depositActionsError);
 
     const retryDeposit = async () => {
         if (isSubmitting || isRetrying || !fieldKey || !isValid) return;
@@ -329,13 +329,7 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
                     )}
                     <ValidationError />
                     {depositError && (
-                        <div role="alert">
-                            <ErrorDisplay
-                                icon={<FailIcon width={20} height={20} />}
-                                title="Couldn't generate deposit address"
-                                message={depositError}
-                            />
-                        </div>
+                        <DepositAddressErrorView message={depositError} />
                     )}
                 </div >
             </div >

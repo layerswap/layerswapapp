@@ -18,6 +18,7 @@ function loadSource(path, imports = {}) {
     })
     const module = { exports: {} }
     new Function('require', 'module', 'exports', outputText)(name => {
+        if (name === '@/lib/lifecycleObservationScope') return loadSource('../src/lib/lifecycleObservationScope.ts')
         if (name === 'react/jsx-runtime') return require(name)
         if (name === '../components/utils/resolveSwapFlow.js' || name === '@/components/utils/resolveSwapFlow') return loadSource("../src/components/utils/resolveSwapFlow.ts");
         if (name === '../../helpers/depositActions.js') return loadSource('../src/helpers/depositActions.ts');
