@@ -1,4 +1,5 @@
 import { isMobile } from "@layerswap/utils"
+import { retryChunkLoad } from '@layerswap/wallet-core'
 import { AppSettings } from "@layerswap/utils";
 import { WalletAdapterNetwork, WalletReadyState } from '@solana/wallet-adapter-base'
 import { svmAdapterManager } from './service/svmAdapterManager'
@@ -26,7 +27,7 @@ export function initSvmProvider(opts: InitOptions = {}): void {
     if (typeof window === 'undefined') return
 
     _loadPromise = (async () => {
-        const adaptersModule = await import('@solana/wallet-adapter-wallets')
+        const adaptersModule = await retryChunkLoad(() => import('@solana/wallet-adapter-wallets'))
         const {
             NightlyWalletAdapter,
             PhantomWalletAdapter,

@@ -7,6 +7,7 @@ import type { WalletProvider, WalletWrapper } from "@/types/provider";
 import { createWalletProvidersRegistry, type WalletProvidersRegistry } from "@/lib/walletConnect/walletProvidersRegistry";
 import { createDescriptorStubStore } from "@/lib/walletConnect/descriptorStubStore";
 import { WalletDescriptorLoaderContext } from "@/lib/walletConnect/walletDescriptorLoader";
+import { retryChunkLoad } from "@/lib/retryChunkLoad";
 
 type RegistryEntry = { id: string; store: StoreApi<WalletConnectionProvider> }
 
@@ -56,7 +57,7 @@ export function DescriptorHydrationBoundary<Network>({
         if (existing) return existing
         const descriptor = walletProviders.find(p => isWalletProviderDescriptor(p) && p.id === id) as WalletProviderDescriptor<Network> | undefined
         if (!descriptor) return
-        const p = descriptor.loadProvider().then(real => {
+        const p = retryChunkLoad(() => descriptor.loadProvider()).then(real => {
             setLoadedById(prev => {
                 if (prev.has(id)) return prev
                 const next = new Map(prev)
