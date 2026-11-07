@@ -9,6 +9,11 @@ export type EVMAccountBalanceReserve = Readonly<{
     condition: EVMAccountReserveCondition
 }>
 
+export type EVMOpStackFees = Readonly<{
+    gasPriceOracle: `0x${string}`
+    operatorFee: boolean
+}>
+
 export type EVMGasPolicy = Readonly<{
     /** Price headroom used by viem's fee estimator, separate from gas units. */
     baseFeeMultiplier: number
@@ -18,7 +23,10 @@ export type EVMGasPolicy = Readonly<{
     reserveMaximumFee: boolean
     transactionGasMode: EVMTransactionGasMode
     checkBalanceBeforeSend: boolean
+    /** Only the standard EVM estimator supports account reserves; OP Stack
+     * estimators must add reserve handling before enabling this on an OP chain. */
     accountBalanceReserve?: EVMAccountBalanceReserve
+    opStack?: EVMOpStackFees
 }>
 
 const DEFAULT_EVM_GAS_POLICY: EVMGasPolicy = Object.freeze({
@@ -73,6 +81,18 @@ const MONAD_GAS_POLICY = createFullGasLimitEIP1559Policy({
     },
 })
 
+const BASE_GAS_POLICY = createEVMGasPolicy({
+    baseFeeMultiplier: 1.7,
+    gasLimitMarginBps: 12_000n,
+    reserveMaximumFee: true,
+    transactionGasMode: 'explicit-eip1559',
+    checkBalanceBeforeSend: true,
+    opStack: {
+        gasPriceOracle: '0x420000000000000000000000000000000000000F',
+        operatorFee: true,
+    },
+})
+
 // All chain-specific gas overrides belong here. Entries not overriding transaction
 // mode still let the wallet set submission fees. Unknown/new chain IDs use the
 // default policy; review their fee model before opting into explicit submission.
@@ -114,7 +134,8 @@ const EVM_GAS_POLICIES_BY_CHAIN_ID = new Map<number, EVMGasPolicy>([
     [48900, createEVMGasPolicy({ baseFeeMultiplier: 1.5 })], // Zircuit
     [2741, createEVMGasPolicy({ baseFeeMultiplier: 1.9 })], // Abstract
     [59144, createEVMGasPolicy({ baseFeeMultiplier: 1.7 })], // Linea
-    [8453, createEVMGasPolicy({ baseFeeMultiplier: 1.7 })], // Base
+    [8453, BASE_GAS_POLICY], // Base mainnet
+    [84532, BASE_GAS_POLICY], // Base Sepolia: sandbox uses the same fee model
     [169, createEVMGasPolicy({ baseFeeMultiplier: 1.7 })], // Manta Pacific
     [570, createEVMGasPolicy({ baseFeeMultiplier: 1.7 })], // Rollux
     [204, createEVMGasPolicy({ baseFeeMultiplier: 1.7 })], // opBNB

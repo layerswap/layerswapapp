@@ -5,6 +5,7 @@ import { resolveFallbackTransport } from "../evmUtils/resolveTransports";
 import { buildTransactionGasParameters } from "./evmGasMath";
 import { resolveEVMGasPolicy } from "./evmGasPolicies";
 import { resolveEVMFeeData } from "./resolveEVMFeeData";
+import { resolveOpStackAdditionalFees } from './resolveOpStackAdditionalFees';
 
 type ResolveEVMTransactionGasParametersArgs = {
     network: Network
@@ -49,12 +50,20 @@ export const resolveEVMTransactionGasParameters = async ({
     // Validate the exact payload using the fees passed to the wallet. Never
     // silently reduce a deposit amount: it belongs to an already-created swap.
     // Pending balance also accounts for transactions not yet mined.
-    const balance = await publicClient.getBalance({ address: account, blockTag: 'pending' })
     const feePerGas = gasParameters.gasPrice ?? gasParameters.maxFeePerGas
     if (feePerGas === undefined) {
         throw new Error(`Transaction fee is unavailable for chain ${chainId}`)
     }
-    const requiredBalance = (value ?? 0n) + gasParameters.gas * feePerGas
+    const [balance, additionalFees] = await Promise.all([
+        publicClient.getBalance({ address: account, blockTag: 'pending' }),
+        resolveOpStackAdditionalFees({
+            publicClient,
+            network,
+            transaction: { account, to, data, value },
+            gasLimit: gasParameters.gas,
+        }),
+    ])
+    const requiredBalance = (value ?? 0n) + gasParameters.gas * feePerGas + additionalFees
     if (balance < requiredBalance) {
         throw new InsufficientFundsError({
             cause: new BaseError(
