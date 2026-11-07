@@ -1,0 +1,4 @@
+interface:
+  display_name: "Web3 Wallet Provisioning"
+  short_description: "Install wallets and securely provision test accounts"
+  default_prompt: "Use $web3-wallet-provision to install a verified wallet extension, create a dedicated test wallet, securely save its credentials, and return its public address."

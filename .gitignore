@@ -54,8 +54,9 @@ pr-review-report.md
 pr-review-assessment.md
 .env*
 
-# Agents
-.agents
+# Agents: share project skills while keeping other local agent files private.
+.agents/*
+!.agents/skills/
 .codex
 
 # Architecture

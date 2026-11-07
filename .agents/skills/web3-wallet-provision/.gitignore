@@ -1,0 +1,6 @@
+.state/
+artifacts/
+*.local.json
+.env*
+*.credentials.enc.json
+*.key

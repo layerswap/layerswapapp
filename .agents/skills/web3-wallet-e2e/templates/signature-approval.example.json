@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "requested-signature",
+  "kind": "signature-approval",
+  "description": "Sign the user-requested message or typed data and observe the expected app result",
+  "url": "https://your-app.example/REPLACE_WITH_OBSERVED_ROUTE",
+  "expectedAccount": "0x1111111111111111111111111111111111111111",
+  "chainId": 1,
+  "connectSteps": [
+    {
+      "action": "click",
+      "target": {
+        "by": "role",
+        "value": "button",
+        "name": "REPLACE_WITH_OBSERVED_CONNECT_CONTROL"
+      }
+    }
+  ],
+  "prepareSteps": [],
+  "trigger": {
+    "by": "role",
+    "value": "button",
+    "name": "REPLACE_WITH_OBSERVED_REQUEST_CONTROL"
+  },
+  "expected": {
+    "requestType": "Signature request",
+    "message": "REPLACE_WITH_COMPLETE_NATIVE_MESSAGE_OR_TYPED_DATA"
+  },
+  "after": {
+    "by": "text",
+    "value": "REPLACE_WITH_OBSERVED_SIGNATURE_RESULT"
+  },
+  "nativeFields": {
+    "account": {
+      "by": "css",
+      "value": "REPLACE_WITH_OBSERVED_NATIVE_ACCOUNT_SELECTOR"
+    },
+    "origin": {
+      "by": "css",
+      "value": "REPLACE_WITH_OBSERVED_NATIVE_ORIGIN_SELECTOR"
+    },
+    "message": {
+      "by": "css",
+      "value": "REPLACE_WITH_OBSERVED_NATIVE_MESSAGE_SELECTOR"
+    }
+  }
+}

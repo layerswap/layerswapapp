@@ -1,0 +1,638 @@
+{
+  "checkedAt": "2026-11-04",
+  "sourceCommit": "97e50ad5d712d77cf321dc7df681e8ca8b63b81d",
+  "scope": "Code/SDK discovery seeds, not a complete catalog or proven onboarding support. Re-discover at invocation.",
+  "entries": [
+    {
+      "name": "MetaMask",
+      "aliases": [],
+      "families": [
+        "evm"
+      ],
+      "source": "packages/wallets/adapters/evm/src/EVMProvider/Connectors.ts",
+      "probe": "metaMaskConnect",
+      "kind": "browser-candidate",
+      "officialSource": "https://metamask.com/download",
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Rabby",
+      "aliases": [
+        "Rabby Wallet"
+      ],
+      "families": [
+        "evm"
+      ],
+      "source": "packages/wallets/adapters/evm/src/EVMProvider/Connectors.ts",
+      "probe": "browserInjected()",
+      "kind": "injected-discovery",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Coinbase Wallet",
+      "aliases": [
+        "Coinbase"
+      ],
+      "families": [
+        "evm"
+      ],
+      "source": "packages/wallets/adapters/evm/src/EVMProvider/Connectors.ts",
+      "probe": "coinbaseWallet",
+      "kind": "runtime-product-discovery",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Ready X",
+      "aliases": [
+        "Argent X",
+        "ArgentX",
+        "Ready Wallet"
+      ],
+      "families": [
+        "starknet"
+      ],
+      "source": "packages/wallets/adapters/starknet/src/init.ts",
+      "probe": "id: 'argentX'",
+      "kind": "browser-candidate",
+      "officialSource": "https://help.wallet.ready.co/hc/en-us/articles/28313046540829-What-is-Ready-X",
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Braavos",
+      "aliases": [],
+      "families": [
+        "starknet"
+      ],
+      "source": "packages/wallets/adapters/starknet/src/init.ts",
+      "probe": "id: 'braavos'",
+      "kind": "browser-candidate",
+      "officialSource": "https://braavos.app/download-braavos-wallet/",
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Keplr",
+      "aliases": [],
+      "families": [
+        "starknet"
+      ],
+      "source": "packages/wallets/adapters/starknet/src/init.ts",
+      "probe": "id: 'keplr'",
+      "kind": "browser-candidate",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Xverse",
+      "aliases": [],
+      "families": [
+        "starknet"
+      ],
+      "source": "packages/wallets/adapters/starknet/src/init.ts",
+      "probe": "id: 'xverse'",
+      "kind": "browser-candidate",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Fordefi",
+      "aliases": [],
+      "families": [
+        "starknet"
+      ],
+      "source": "packages/wallets/adapters/starknet/src/init.ts",
+      "probe": "id: 'fordefi'",
+      "kind": "external-organization",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "OKX Wallet",
+      "aliases": [
+        "OKX",
+        "okxwallet"
+      ],
+      "families": [
+        "starknet"
+      ],
+      "source": "packages/wallets/adapters/starknet/src/init.ts",
+      "probe": "id: 'okxwallet'",
+      "kind": "browser-candidate",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Cartridge Controller",
+      "aliases": [
+        "Controller",
+        "Cartridge"
+      ],
+      "families": [
+        "starknet"
+      ],
+      "source": "packages/wallets/adapters/starknet/src/init.ts",
+      "probe": "new ControllerConnector()",
+      "kind": "external-identity",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Starknet Web Wallet",
+      "aliases": [
+        "Web Wallet"
+      ],
+      "families": [
+        "starknet"
+      ],
+      "source": "packages/wallets/adapters/starknet/src/init.ts",
+      "probe": "new WebWalletConnector()",
+      "kind": "external-identity",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Phantom",
+      "aliases": [],
+      "families": [
+        "solana"
+      ],
+      "source": "packages/wallets/adapters/svm/src/init.ts",
+      "probe": "new LoadablePhantomAdapter()",
+      "kind": "browser-candidate",
+      "officialSource": "https://phantom.com/download",
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Nightly",
+      "aliases": [],
+      "families": [
+        "solana"
+      ],
+      "source": "packages/wallets/adapters/svm/src/init.ts",
+      "probe": "new NightlyWalletAdapter()",
+      "kind": "browser-candidate",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Solflare",
+      "aliases": [],
+      "families": [
+        "solana"
+      ],
+      "source": "packages/wallets/adapters/svm/src/init.ts",
+      "probe": "new LoadableSolflareAdapter()",
+      "kind": "browser-candidate",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Bitget Wallet",
+      "aliases": [
+        "BitKeep",
+        "Bitget"
+      ],
+      "families": [
+        "solana"
+      ],
+      "source": "packages/wallets/adapters/svm/src/init.ts",
+      "probe": "new BitgetWalletAdapter()",
+      "kind": "browser-candidate",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Trust Wallet",
+      "aliases": [
+        "Trust"
+      ],
+      "families": [
+        "solana"
+      ],
+      "source": "packages/wallets/adapters/svm/src/init.ts",
+      "probe": "new TrustWalletAdapter()",
+      "kind": "browser-candidate",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Ledger",
+      "aliases": [],
+      "families": [
+        "solana"
+      ],
+      "source": "packages/wallets/adapters/svm/src/init.ts",
+      "probe": "new LedgerWalletAdapter()",
+      "kind": "external-device",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "TronLink",
+      "aliases": [],
+      "families": [
+        "tron"
+      ],
+      "source": "packages/wallets/adapters/tron/src/init.ts",
+      "probe": "new TronLinkAdapter()",
+      "kind": "browser-candidate",
+      "officialSource": "https://www.tronlink.org/",
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "OKX Wallet",
+      "aliases": [],
+      "families": [
+        "tron"
+      ],
+      "source": "packages/wallets/adapters/tron/src/init.ts",
+      "probe": "new OkxWalletAdapter()",
+      "kind": "browser-candidate",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Bitget Wallet",
+      "aliases": [],
+      "families": [
+        "tron"
+      ],
+      "source": "packages/wallets/adapters/tron/src/init.ts",
+      "probe": "new BitKeepAdapter()",
+      "kind": "browser-candidate",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Bybit Wallet",
+      "aliases": [],
+      "families": [
+        "tron"
+      ],
+      "source": "packages/wallets/adapters/tron/src/init.ts",
+      "probe": "new BybitWalletAdapter()",
+      "kind": "browser-candidate",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Gate Wallet",
+      "aliases": [],
+      "families": [
+        "tron"
+      ],
+      "source": "packages/wallets/adapters/tron/src/init.ts",
+      "probe": "new GateWalletAdapter()",
+      "kind": "browser-candidate",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Trust Wallet",
+      "aliases": [],
+      "families": [
+        "tron"
+      ],
+      "source": "packages/wallets/adapters/tron/src/init.ts",
+      "probe": "new TrustAdapter()",
+      "kind": "browser-candidate",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Xverse",
+      "aliases": [],
+      "families": [
+        "bitcoin"
+      ],
+      "source": "packages/wallets/adapters/bitcoin/src/service/connectorsConfigs.ts",
+      "probe": "name: 'Xverse'",
+      "kind": "browser-candidate",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "UniSat",
+      "aliases": [],
+      "families": [
+        "bitcoin"
+      ],
+      "source": "packages/wallets/adapters/bitcoin/src/service/connectorsConfigs.ts",
+      "probe": "name: 'UniSat'",
+      "kind": "browser-candidate",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Ctrl",
+      "aliases": [],
+      "families": [
+        "bitcoin"
+      ],
+      "source": "packages/wallets/adapters/bitcoin/src/service/connectorsConfigs.ts",
+      "probe": "name: 'Ctrl'",
+      "kind": "browser-candidate",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "OKX Wallet",
+      "aliases": [],
+      "families": [
+        "bitcoin"
+      ],
+      "source": "packages/wallets/adapters/bitcoin/src/service/connectorsConfigs.ts",
+      "probe": "name: 'OKX Wallet'",
+      "kind": "browser-candidate",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Bitget Wallet",
+      "aliases": [],
+      "families": [
+        "bitcoin"
+      ],
+      "source": "packages/wallets/adapters/bitcoin/src/service/connectorsConfigs.ts",
+      "probe": "name: 'Bitget'",
+      "kind": "browser-candidate",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "OneKey",
+      "aliases": [],
+      "families": [
+        "bitcoin"
+      ],
+      "source": "packages/wallets/adapters/bitcoin/src/service/connectorsConfigs.ts",
+      "probe": "name: 'OneKey'",
+      "kind": "runtime-device-discovery",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Leather",
+      "aliases": [],
+      "families": [
+        "bitcoin"
+      ],
+      "source": "packages/wallets/adapters/bitcoin/src/service/connectorsConfigs.ts",
+      "probe": "name: 'Leather'",
+      "kind": "browser-candidate",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "MetaMask",
+      "aliases": [],
+      "families": [
+        "bitcoin"
+      ],
+      "source": "packages/wallets/adapters/bitcoin/src/service/connectorsConfigs.ts",
+      "probe": "name: 'MetaMask'",
+      "kind": "browser-candidate",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Trust Wallet",
+      "aliases": [],
+      "families": [
+        "bitcoin"
+      ],
+      "source": "packages/wallets/adapters/bitcoin/src/service/connectorsConfigs.ts",
+      "probe": "name: 'Trust Wallet'",
+      "kind": "browser-candidate",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Fuel Wallet",
+      "aliases": [],
+      "families": [
+        "fuel"
+      ],
+      "source": "packages/wallets/adapters/fuel/src/init.ts",
+      "probe": "new FuelWalletConnector()",
+      "kind": "browser-candidate",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Fuelet Wallet",
+      "aliases": [
+        "Fuelet"
+      ],
+      "families": [
+        "fuel"
+      ],
+      "source": "packages/wallets/adapters/fuel/src/init.ts",
+      "probe": "new FueletWalletConnector()",
+      "kind": "browser-candidate",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Bako Safe",
+      "aliases": [
+        "Bako"
+      ],
+      "families": [
+        "fuel"
+      ],
+      "source": "packages/wallets/adapters/fuel/src/init.ts",
+      "probe": "new BakoSafeConnector(",
+      "kind": "multisig-service",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Albedo",
+      "aliases": [],
+      "families": [
+        "stellar"
+      ],
+      "source": "packages/wallets/adapters/stellar/src/service/stellarKitManager.ts",
+      "probe": "kitUtilsModule.defaultModules()",
+      "kind": "sdk-runtime-discovery",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Freighter",
+      "aliases": [],
+      "families": [
+        "stellar"
+      ],
+      "source": "packages/wallets/adapters/stellar/src/service/stellarKitManager.ts",
+      "probe": "kitUtilsModule.defaultModules()",
+      "kind": "sdk-runtime-discovery",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Fordefi",
+      "aliases": [],
+      "families": [
+        "stellar"
+      ],
+      "source": "packages/wallets/adapters/stellar/src/service/stellarKitManager.ts",
+      "probe": "kitUtilsModule.defaultModules()",
+      "kind": "sdk-runtime-discovery",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Rabet",
+      "aliases": [],
+      "families": [
+        "stellar"
+      ],
+      "source": "packages/wallets/adapters/stellar/src/service/stellarKitManager.ts",
+      "probe": "kitUtilsModule.defaultModules()",
+      "kind": "sdk-runtime-discovery",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "xBull",
+      "aliases": [],
+      "families": [
+        "stellar"
+      ],
+      "source": "packages/wallets/adapters/stellar/src/service/stellarKitManager.ts",
+      "probe": "kitUtilsModule.defaultModules()",
+      "kind": "sdk-runtime-discovery",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "LOBSTR",
+      "aliases": [],
+      "families": [
+        "stellar"
+      ],
+      "source": "packages/wallets/adapters/stellar/src/service/stellarKitManager.ts",
+      "probe": "kitUtilsModule.defaultModules()",
+      "kind": "sdk-runtime-discovery",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Hana",
+      "aliases": [],
+      "families": [
+        "stellar"
+      ],
+      "source": "packages/wallets/adapters/stellar/src/service/stellarKitManager.ts",
+      "probe": "kitUtilsModule.defaultModules()",
+      "kind": "sdk-runtime-discovery",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Klever",
+      "aliases": [],
+      "families": [
+        "stellar"
+      ],
+      "source": "packages/wallets/adapters/stellar/src/service/stellarKitManager.ts",
+      "probe": "kitUtilsModule.defaultModules()",
+      "kind": "sdk-runtime-discovery",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "OneKey",
+      "aliases": [],
+      "families": [
+        "stellar"
+      ],
+      "source": "packages/wallets/adapters/stellar/src/service/stellarKitManager.ts",
+      "probe": "kitUtilsModule.defaultModules()",
+      "kind": "sdk-runtime-discovery",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Bitget Wallet",
+      "aliases": [],
+      "families": [
+        "stellar"
+      ],
+      "source": "packages/wallets/adapters/stellar/src/service/stellarKitManager.ts",
+      "probe": "kitUtilsModule.defaultModules()",
+      "kind": "sdk-runtime-discovery",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "CactusLink",
+      "aliases": [],
+      "families": [
+        "stellar"
+      ],
+      "source": "packages/wallets/adapters/stellar/src/service/stellarKitManager.ts",
+      "probe": "kitUtilsModule.defaultModules()",
+      "kind": "sdk-runtime-discovery",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "Dcent",
+      "aliases": [],
+      "families": [
+        "stellar"
+      ],
+      "source": "packages/wallets/adapters/stellar/src/service/stellarKitManager.ts",
+      "probe": "kitUtilsModule.defaultModules()",
+      "kind": "sdk-runtime-discovery",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "TON Connect catalog",
+      "aliases": [
+        "TON wallet catalog"
+      ],
+      "families": [
+        "ton"
+      ],
+      "source": "packages/wallets/adapters/ton/src/init.ts",
+      "probe": "new TonConnect(",
+      "kind": "runtime-catalog",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "WalletConnect",
+      "aliases": [
+        "Wallet Connect"
+      ],
+      "families": [
+        "evm",
+        "solana",
+        "stellar"
+      ],
+      "source": "packages/wallets/adapters/evm/src/EVMProvider/Connectors.ts",
+      "probe": "walletConnect(",
+      "kind": "transport",
+      "officialSource": null,
+      "onboarding": "not-live-validated"
+    },
+    {
+      "name": "MetaMask",
+      "aliases": [],
+      "families": [
+        "tron"
+      ],
+      "source": "packages/wallets/adapters/tron/src/init.ts",
+      "probe": "new MetaMaskAdapter()",
+      "kind": "browser-candidate",
+      "officialSource": "https://metamask.com/download",
+      "onboarding": "not-live-validated"
+    }
+  ]
+}
