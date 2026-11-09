@@ -12,15 +12,15 @@ const baseConfig = {apiKey,version:'mainnet' as const,theme:foresightLayerswapTh
 const appUrl = getAppOrigin();
 const walletDefaults = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID ? {walletConnect:{projectId:process.env.NEXT_PUBLIC_REOWN_PROJECT_ID,name:'Foresight',description:'Fund your Foresight wallet',url:appUrl,icons:[`${appUrl}/icon.svg`]}} : undefined;
 
-export default function DepositWidget({address,request,loginAddress,onComplete,onStatus}:{address:`0x${string}`;request:DepositRequest|null;loginAddress?:`0x${string}`|null;onComplete:()=>void;onStatus:(message:string)=>void}) {
+export default function DepositWidget({address,request,onComplete,onStatus}:{address:`0x${string}`;request:DepositRequest|null;onComplete:()=>void;onStatus:(message:string)=>void}) {
   const host = useRef<HTMLDivElement>(null);
   const openedRequest = useRef<number|null>(null);
   const latestRequest = useRef(request);
   latestRequest.current=request;
   const loadFailed = useRef(false);
   const [retryKey,setRetryKey] = useState(0);
-  // The Privy embedded wallet: Layerswap binds wallet methods to it and never disconnects or replaces it.
-  const config = useMemo(()=>loginAddress?{...baseConfig,loginWallet:{address:loginAddress,providerId:'evm' as const}}:baseConfig,[loginAddress]);
+  // The signed-in wallet: Layerswap binds wallet methods to it and never disconnects or replaces it.
+  const config = useMemo(()=>({...baseConfig,loginWallet:{address,providerId:'evm' as const}}),[address]);
   const methods = useMemo(()=>request?.method?[request.method]:undefined,[request?.method]);
   const callbacks = useMemo(()=>({
     onSwapComplete:onComplete,
