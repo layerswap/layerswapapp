@@ -1,3 +1,4 @@
+import { TransferFeeReviewRequired, type GasWithToken } from '@layerswap/widget-types';
 import { AmountPresetChangedError } from '@/lib/amountPresets';
 import { useCallbacks } from '@/context/callbackProvider';
 import { lifecycleContextFromSwap, lifecycleErrorDetails } from '@/lib/swapLifecycle';
@@ -218,7 +219,7 @@ export function useSendTransactionController({
     const [networkSwitch, setNetworkSwitch] = useState<ActionData>(NO_NETWORK_SWITCH)
     const [walletRequestPending, setWalletRequestPending] = useState(false)
     const [walletRequestSequence, setWalletRequestSequence] = useState(0)
-    const [feeReviewSwapId, setFeeReviewSwapId] = useState<string>()
+    const [feeReview, setFeeReview] = useState<{ swapId: string; selectionKey: string; fee: GasWithToken }>()
     const [criticalConfirmation, setCriticalConfirmation] = useState<SwapResponse>()
     const [workflowState, setWorkflowState] = useState<{ swapId: string, actions: DepositAction[], swapData?: SwapDetails }>()
     // A saved swap keeps its backend mode when reopened. Only a preference
@@ -361,7 +362,6 @@ export function useSendTransactionController({
                 throw new Error('Wallet is not active')
             }
 
-            setFeeReviewSwapId(undefined)
             setWalletRequestPending(false)
             setActionStateText(undefined)
             setNetworkSwitch(NO_NETWORK_SWITCH)
@@ -489,27 +489,6 @@ export function useSendTransactionController({
                     throw new Error('The swap workflow has more actions than expected')
                 }
 
-                const preparedGas = resolveTransferGas(currentAction, networkWithTokens, swapBasicData.source_token, selectedSourceAccount.address)
-                if (preparedGas && networkWithTokens && gasData?.requiredFee !== undefined) {
-                    const gasArgs = { address: selectedSourceAccount.address, network: networkWithTokens,
-                        token: swapBasicData.source_token, amount: preparedGas.amount, wallet: selectedWallet, ...preparedGas.transaction }
-                    const exactGas = await resolverService.getGasResolver().getGas(gasArgs)
-                    signal.throwIfAborted()
-                    if (!exactGas && gasData?.requiredFee !== undefined) {
-                        throw new Error('Could not refresh the network fee. Try again.')
-                    }
-                    if (exactGas?.requiredFee !== undefined) {
-                        await mutateCache(gasEstimateKey(gasArgs), exactGas, { revalidate: false })
-                        signal.throwIfAborted()
-                        if (transferFeeChanged(gasData, exactGas)) {
-                            setFeeReviewSwapId(swapData.id)
-                            return
-                        }
-                    }
-                }
-
-                // Prepare and validate the swap before opening the wallet. After switching,
-                // the next operation is the prepared signing/transaction request.
                 if (currentAction) {
                     let switchPrompt: ReturnType<typeof setTimeout> | undefined
                     try {
@@ -602,7 +581,29 @@ export function useSendTransactionController({
                     if (!onSign) throw new Error('This wallet cannot sign the requested authorization')
                     authorizedValidBefore = await executeGaslessAuthorization(executionContext, action => requestWallet(() => onSign(action)), currentAction)
                 } else if (currentAction && isTransferAction(currentAction)) {
-                    const hash = await executeWalletTransfer(executionContext, transfer => requestWallet(() => onClick(transfer)), currentAction)
+                    const hash = await executeWalletTransfer(executionContext, transfer => requestWallet(() => onClick({
+                        ...transfer,
+                        reviewFee: async fee => {
+                            signal.throwIfAborted()
+                            const reviewed = feeReview?.swapId === swapData.id && feeReview.selectionKey === selectionKey
+                                ? feeReview.fee : gasData
+                            if (!transferFeeChanged(reviewed, fee)) {
+                                setFeeReview(undefined)
+                                return
+                            }
+
+                            const key = gasEstimateKey({
+                                address: selectedSourceAccount.address, network: transfer.network,
+                                token: transfer.token, amount: transfer.amount,
+                                recipientAddress: transfer.depositAddress, callData: transfer.callData,
+                                amountInBaseUnits: transfer.amountInBaseUnits,
+                            })
+                            await mutateCache(key, fee, { revalidate: false })
+                            signal.throwIfAborted()
+                            setFeeReview({ swapId: swapData.id, selectionKey, fee })
+                            throw new TransferFeeReviewRequired()
+                        },
+                    })), currentAction)
                     if (currentAction.step === 'approve_permit2') {
                         approvalTransaction = { hash, network: (currentAction.network ?? swapBasicData.source_network).name }
                     }
@@ -630,6 +631,7 @@ export function useSendTransactionController({
         }
         catch (e) {
             if (signal.aborted) return
+            if (e instanceof TransferFeeReviewRequired) return
             if (e instanceof AmountPresetChangedError) {
                 setSwapError?.(e.message)
                 return
@@ -771,7 +773,8 @@ export function useSendTransactionController({
             stepTransactions: stepTransactions,
             error: error,
             swapError: !!swapError,
-            feeUpdated: !!swapId && feeReviewSwapId === swapId,
+            feeUpdated: !!swapId && feeReview && feeReview.swapId === swapId && feeReview.selectionKey === selectionKey,
+            feeToReview: feeReview && feeReview.swapId === swapId && feeReview.selectionKey === selectionKey ? feeReview.fee : undefined,
             swapId: swapId,
             criticalMarketPriceImpact: criticalMarketPriceImpact,
             showCriticalMarketPriceImpactButtons: !!activeCriticalConfirmation,

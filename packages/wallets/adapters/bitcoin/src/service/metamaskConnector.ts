@@ -1,6 +1,6 @@
 import { metamask } from '@bigmi/client'
 import { ChainId, type SignPsbtParameters } from '@bigmi/core'
-import type { MultichainApiClient } from '@metamask/multichain-api-client'
+import type { MultichainApiClient, Transport } from '@metamask/multichain-api-client'
 import { Psbt } from 'bitcoinjs-lib'
 
 const bitcoinScopes = {
@@ -15,12 +15,30 @@ export function metamaskPreservingPsbt(
     parameters: Parameters<typeof metamask>[0] = {},
 ): ReturnType<typeof metamask> {
     const baseFactory = metamask(parameters)
-    let clientPromise: Promise<MultichainApiClient> | undefined
 
     return ((config) => {
         const connector = baseFactory(config)
+        let clientPromise: Promise<{
+            client: MultichainApiClient
+            transport: Transport
+            TransportError: typeof import('@metamask/multichain-api-client').TransportError
+        }> | undefined
+
+        async function clearClient(current: typeof clientPromise) {
+            if (!current || clientPromise !== current) return
+            clientPromise = undefined
+            const connection = await current.catch(() => undefined)
+            await connection?.transport.disconnect().catch(() => {})
+        }
         return {
             ...connector,
+            async disconnect() {
+                try {
+                    await connector.disconnect.call(this)
+                } finally {
+                    await clearClient(clientPromise)
+                }
+            },
             async getProvider() {
                 const wallet = await connector.getInternalProvider()
                 if (!wallet) {
@@ -40,16 +58,30 @@ export function metamaskPreservingPsbt(
 
                         // Wallet Standard hardcodes fill:true. The public Multichain API
                         // exposes sign-only operation without rebuilding our transaction.
-                        clientPromise ??= import('@metamask/multichain-api-client').then(
-                            ({ getMultichainClient, getDefaultTransport }) =>
-                                getMultichainClient({ transport: getDefaultTransport() })
+                        const current = clientPromise ??= import('@metamask/multichain-api-client').then(
+                            ({ getMultichainClient, getDefaultTransport, TransportError }) => {
+                                const transport = getDefaultTransport()
+                                return { client: getMultichainClient({ transport }), transport, TransportError }
+                            }
                         )
-                        return signMetaMaskPsbt(
-                            await clientPromise,
-                            parameters.chainId,
-                            wallet.accounts.map(account => account.address),
-                            request.params as SignPsbtParameters,
-                        )
+                        const connection = await current.catch(async error => {
+                            await clearClient(current)
+                            throw error
+                        })
+                        try {
+                            return await signMetaMaskPsbt(
+                                connection.client,
+                                parameters.chainId,
+                                wallet.accounts.map(account => account.address),
+                                request.params as SignPsbtParameters,
+                            )
+                        } catch (error) {
+                            // Retry only on a new user action, never replay a signing request.
+                            if (error instanceof connection.TransportError || !connection.transport.isConnected()) {
+                                await clearClient(current)
+                            }
+                            throw error
+                        }
                     },
                 }
             },

@@ -1,10 +1,10 @@
 import { address, networks } from 'bitcoinjs-lib';
-import { buildPsbt } from "./buildPsbt";
+import { buildPsbt } from "./buildPsbt.js";
 import { TransactionBuilderParams } from "./types";
 
 export const transactionBuilder = async (props: TransactionBuilderParams) => {
 
-    const { psbt, utxos } = await buildPsbt(props);
+    const { psbt, utxos, fee, requiredFee } = await buildPsbt(props);
 
     const inputsToSign = Array.from(
         psbt.data.inputs
@@ -36,7 +36,9 @@ export const transactionBuilder = async (props: TransactionBuilderParams) => {
     return {
         psbt,
         inputsToSign,
-        utxos
+        utxos,
+        fee,
+        requiredFee,
     }
 
 }

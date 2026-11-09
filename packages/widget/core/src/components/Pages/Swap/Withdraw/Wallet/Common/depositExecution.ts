@@ -1,4 +1,4 @@
-import { type SwapLifecycleEvent, type Wallet, ActionMessageType } from '@layerswap/widget-types';
+import { type SwapLifecycleEvent, type Wallet, ActionMessageType, TransferFeeReviewRequired } from '@layerswap/widget-types';
 import LayerSwapApiClient, {
     DepositAction,
     SignDepositAction,
@@ -73,7 +73,13 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
             // Keep one timing operation across the Stellar refresh and both wallet requests.
             onSettled: finishTelemetry,
             reportsSubmission: action.step !== 'approve_permit2',
-            shouldReportError: error => !(retriesExpiry && isExpiredTransaction(error)),
+            shouldReportError: error => {
+                if (error instanceof TransferFeeReviewRequired) {
+                    finishTelemetry('cancelled')
+                    return false
+                }
+                return !(retriesExpiry && isExpiredTransaction(error))
+            },
         }, () => onClick(props))
     }
 

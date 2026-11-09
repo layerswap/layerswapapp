@@ -1,4 +1,4 @@
-import { NetworkType } from '@layerswap/widget-types';
+import { NetworkType, TransferFeeReviewRequired } from '@layerswap/widget-types';
 import { Network } from "@layerswap/widget-types";
 import { TransferProvider, TransferProps } from "@layerswap/widget-types";
 import { getAccount } from '@bigmi/client'
@@ -14,7 +14,7 @@ export function createBitcoinTransfer(): TransferProvider {
         },
 
         async executeTransfer(params: TransferProps): Promise<string> {
-            const { amount, callData, depositAddress, network } = params
+            const { amount, callData, depositAddress, network, reviewFee } = params
 
             if (!depositAddress) {
                 throw new Error("Deposit address not provided")
@@ -31,9 +31,15 @@ export function createBitcoinTransfer(): TransferProvider {
             const isTestnet = network?.name === KnownInternalNames.Networks.BitcoinTestnet
             const publicClient = config.getClient()
 
+            const feeToken = network.token
+            if (reviewFee && !feeToken) throw new Error('Missing Bitcoin fee token')
+
             try {
                 const txHash = await sendTransaction({
                     amount,
+                    reviewFee: reviewFee && feeToken ? (fee, requiredFee) => reviewFee({
+                        token: feeToken, gas: Number(fee) / 1e8, requiredFee: Number(requiredFee) / 1e8,
+                    }) : undefined,
                     depositAddress,
                     userAddress: params.selectedWallet.address,
                     isTestnet,
@@ -45,6 +51,7 @@ export function createBitcoinTransfer(): TransferProvider {
 
                 return txHash
             } catch (error) {
+                if (error instanceof TransferFeeReviewRequired) throw error
                 throw toTransferError(error)
             }
         }

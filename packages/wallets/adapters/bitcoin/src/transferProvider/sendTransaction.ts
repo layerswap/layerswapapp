@@ -1,8 +1,8 @@
 //@ts-ignore
 import { UTXOWalletProvider } from "@bigmi/client/dist/esm/connectors/types";
-import { transactionBuilder } from "./transactionBuilder";
-import { dustThreshold, validateOutputs } from "./transactionBuilder/outputPolicy";
-import { bitcoinMemo } from "./bitcoinMemo";
+import { transactionBuilder } from "./transactionBuilder/index.js";
+import { dustThreshold, validateOutputs } from "./transactionBuilder/outputPolicy.js";
+import { bitcoinMemo } from "./bitcoinMemo.js";
 import { Psbt } from "bitcoinjs-lib";
 import { Connector } from "@bigmi/client";
 import { JsonRpcClient } from "@layerswap/utils";
@@ -10,6 +10,7 @@ import { BtcRpcRequestFn, Chain, Client, Transport } from "@bigmi/core";
 
 type sendTransactionParams = {
     amount: number;
+    reviewFee?: (fee: bigint, requiredFee: bigint) => Promise<void>;
     depositAddress: string;
     userAddress: string;
     isTestnet: boolean;
@@ -19,7 +20,7 @@ type sendTransactionParams = {
     publicClient: Client<Transport<string, Record<string, any>, BtcRpcRequestFn>, Chain>;
 };
 
-export const sendTransaction = async ({ amount, callData, depositAddress, isTestnet, publicClient, rpcClient, userAddress, connector }: sendTransactionParams) => {
+export const sendTransaction = async ({ amount, reviewFee, callData, depositAddress, isTestnet, publicClient, rpcClient, userAddress, connector }: sendTransactionParams) => {
 
     const provider = (await connector?.getProvider()) as UTXOWalletProvider;
 
@@ -30,7 +31,7 @@ export const sendTransaction = async ({ amount, callData, depositAddress, isTest
     const amountInSatoshi = Math.floor(amount * 1e8);
     const hexMemo = bitcoinMemo(callData);
 
-    const { psbt, inputsToSign } = await transactionBuilder({
+    const { psbt, inputsToSign, fee, requiredFee } = await transactionBuilder({
         amount: amountInSatoshi,
         depositAddress,
         userAddress,
@@ -45,6 +46,8 @@ export const sendTransaction = async ({ amount, callData, depositAddress, isTest
 
     // Taproot addresses (bc1p/tb1p) require SIGHASH_DEFAULT (0), others use SIGHASH_ALL (1)
     const isTaproot = userAddress.startsWith('bc1p') || userAddress.startsWith('tb1p')
+
+    await reviewFee?.(fee, requiredFee);
 
     const signature = await provider.request({
         method: 'signPsbt',

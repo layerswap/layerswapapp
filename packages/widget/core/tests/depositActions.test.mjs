@@ -28,7 +28,7 @@ function loadSource(path, imports = {}) {
     return module.exports
 }
 
-const walletTypes = loadSource('../../types/src/actionMessage.ts')
+const walletTypes = { ...loadSource('../../types/src/actionMessage.ts'), ...loadSource('../../types/src/resolvers/transfer.ts') }
 const walletErrors = loadSource('../../../wallets/core/src/lib/walletErrors.ts', { '@layerswap/widget-types': walletTypes })
 const rejection = loadSource(`${walletPath}isUserRejection.ts`, { '@layerswap/wallet-core/errors': walletErrors })
 const gasless = loadSource('../src/helpers/gasless.ts')
@@ -292,6 +292,7 @@ function createWorkflow({
         }
     }
     const buttonImports = {
+        '@layerswap/widget-types': walletTypes,
         '@/lib/amountPresets': amountPresets,
         '@/helpers/depositActions': depositActions,
         '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: event => calls.lifecycle.push(event) }) },
@@ -409,7 +410,7 @@ function createWorkflow({
             await state.onWalletPrompt?.('approve_and_swap')
             if (state.batchError) throw state.batchError
         } },
-        '@/lib/resolvers/resolverService': { resolverService: { getGasResolver: () => ({ getGas: async args => { state.gasArgs = args; return state.exactGas } }), getTransferResolver: () => ({ getAtomicBatchProvider: () => ({
+        '@/lib/resolvers/resolverService': { resolverService: { getTransferResolver: () => ({ getAtomicBatchProvider: () => ({
             getStatus: async (...args) => { calls.batchStatus.push(args); return state.onBatchStatus ? state.onBatchStatus() : state.batchStatusResponse },
         }) }) } },
         '@/helpers/gasless': gasless,
@@ -577,7 +578,8 @@ function createWorkflow({
                 state.completedStep = 'sign'
                 return 'fresh-signature'
             },
-            onClick: async props => {
+            onClick: async ({ reviewFee, ...props }) => {
+                if (state.prepareFee) await state.prepareFee(reviewFee, props)
                 calls.transfer.push(props)
                 const step = depositActions.getActionableDepositAction(state.apiActions).step
                 await state.onWalletPrompt?.(step)
@@ -2693,12 +2695,18 @@ for (const signatureState of ['completed sign-only action', 'saved signature bef
     }
 }
 
-test('an exact amount-dependent fee update pauses before the wallet and resumes after review', async () => {
+test('a changed prepared fee pauses before the wallet and resumes after review', async () => {
     const flow = createWorkflow()
     const token = { symbol: 'NATIVE', decimals: 8 }
     flow.state.sourceToken = token
     flow.state.gasData = { token, gas: 338 / 1e8, requiredFee: 338 / 1e8 }
-    flow.state.exactGas = { token, gas: 637 / 1e8, requiredFee: 282 / 1e8 }
+    let fee = 637
+    flow.state.prepareFee = async (review, props) => {
+        assert.equal(props.depositAddress, 'recipient')
+        assert.equal(props.callData, '22911311;')
+        assert.equal(props.amount, 9363 / 1e8)
+        await review({ token, gas: fee / 1e8, requiredFee: 282 / 1e8 })
+    }
     flow.state.apiActions = [{ type: 'transfer', step: 'deposit', status: 'action_required',
         amount: 9363 / 1e8, to_address: 'recipient', call_data: '22911311;' }]
     flow.state.depositActionsResponse = flow.state.apiActions
@@ -2707,21 +2715,27 @@ test('an exact amount-dependent fee update pauses before the wallet and resumes 
     assert.equal(!!flow.state.swapError, false)
     assert.equal(flow.render().button.props.children, 'Continue')
     assert.equal(flow.calls.transfer.length, 0)
-    assert.equal(flow.state.gasArgs.recipientAddress, 'recipient')
-    assert.equal(flow.state.gasArgs.callData, '22911311;')
-    assert.equal(flow.state.gasArgs.amount, 9363 / 1e8)
     assert.equal(flow.state.gasData.gas, 637 / 1e8)
+
+    // A new build can change fees again after the first review.
+    fee = 700
+    await flow.render().viewProps.handleClick()
+    assert.equal(flow.calls.transfer.length, 0)
+    assert.equal(flow.render().viewProps.feeToReview.gas, 700 / 1e8)
     await flow.render().viewProps.handleClick()
     assert.equal(flow.calls.transfer.length, 1)
 })
 
-test('a failed exact fee refresh does not open the wallet', async () => {
+test('a prepared transfer with no previous fee requires first review', async () => {
     const flow = createWorkflow()
-    flow.state.sourceToken = { symbol: 'NATIVE', decimals: 8 }
-    flow.state.gasData = { token: flow.state.sourceToken, gas: 0.01, requiredFee: 0.01 }
+    const token = { symbol: 'NATIVE', decimals: 8 }
+    flow.state.sourceToken = token
+    flow.state.prepareFee = review => review({ token, gas: 172 / 1e8, requiredFee: 172 / 1e8 })
     flow.state.apiActions = [{ type: 'transfer', step: 'deposit', status: 'action_required', amount: 1, to_address: 'recipient' }]
     flow.state.depositActionsResponse = flow.state.apiActions
     await flow.render().viewProps.handleClick()
     assert.equal(flow.calls.transfer.length, 0)
-    assert.match(flow.state.swapError, /Could not refresh the network fee/)
+    assert.equal(flow.render().viewProps.feeUpdated, true)
+    await flow.render().viewProps.handleClick()
+    assert.equal(flow.calls.transfer.length, 1)
 })

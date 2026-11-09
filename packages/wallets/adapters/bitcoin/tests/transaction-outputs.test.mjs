@@ -163,3 +163,47 @@ test('the gas provider prices the sender memo, including dust absorbed into the 
     } finally { axios.get = original }
   })
 })
+
+test('the reviewed fee belongs to the exact PSBT passed to the signer', async () => {
+  const { sendTransaction } = await import('../dist/esm/transferProvider/sendTransaction.js')
+  const reviewRequired = new Error('fee review required')
+  const cancelled = new Error('wallet rejected')
+  let reviewedFee
+  let feeReads = 0
+  let signingRequests = 0
+  const connector = {
+    getProvider: async () => ({
+      request: async ({ params }) => {
+        signingRequests++
+        const psbt = Psbt.fromHex(params.psbt)
+        const inputTotal = psbt.data.inputs.reduce((sum, input) => sum + input.witnessUtxo.value, 0n)
+        const outputTotal = psbt.txOutputs.reduce((sum, output) => sum + output.value, 0n)
+        assert.equal(inputTotal - outputTotal, reviewedFee)
+        throw cancelled
+      },
+    }),
+  }
+  await withUtxo(10000, async () => {
+    const original = axios.get
+    axios.get = async url => {
+      if (!url.endsWith('/fees/recommended')) return original(url)
+      return { data: { economyFee: ++feeReads, minimumFee: 1 } }
+    }
+    try {
+      const transfer = { amount: 0.00008, userAddress, depositAddress, callData: '22911311;', connector }
+      await assert.rejects(sendTransaction({
+        ...transfer,
+        reviewFee: async () => { throw reviewRequired },
+      }), error => error === reviewRequired)
+      assert.equal(signingRequests, 0)
+      await assert.rejects(sendTransaction({
+        ...transfer,
+        reviewFee: async fee => { reviewedFee = fee },
+      }), error => error === cancelled)
+      assert.equal(signingRequests, 1)
+      assert.equal(feeReads, 2)
+    } finally {
+      axios.get = original
+    }
+  })
+})

@@ -1,3 +1,4 @@
+import type { GasWithToken } from '@layerswap/widget-types';
 import { TransferBlock } from '../TransferBlock';
 import SubmitButton, {
     type SubmitButtonProps,
@@ -151,6 +152,7 @@ export type SendTransactionViewProps = SubmitButtonProps & {
     error?: boolean;
     swapError?: boolean;
     feeUpdated?: boolean;
+    feeToReview?: GasWithToken;
     swapId?: string;
     criticalMarketPriceImpact?: boolean;
     showCriticalMarketPriceImpactButtons?: boolean;
@@ -190,6 +192,7 @@ export function getSendTransactionPresentation({
     error,
     swapError,
     feeUpdated,
+    feeToReview,
     swapId,
     criticalMarketPriceImpact,
     showCriticalMarketPriceImpactButtons,
@@ -333,7 +336,9 @@ export function getSendTransactionPresentation({
                         <ErrorDisplay
                             icon={<InfoIcon className={ICON_CLASSES_WARNING} />}
                             title="Network fee updated"
-                            message="Review the updated network fee before continuing to your wallet."
+                            message={feeToReview
+                                ? `Review the network fee of ${feeToReview.gas.toFixed(feeToReview.token.decimals)} ${feeToReview.token.symbol} before continuing to your wallet.`
+                                : "Review the updated network fee before continuing to your wallet."}
                         />
                     )}
                     {message}

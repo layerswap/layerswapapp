@@ -81,3 +81,66 @@ test('signature metadata is permitted and wallet rejection is propagated without
     await assert.rejects(signMetaMaskPsbt(f.client, 'bitcoin:mainnet', [address], f.params), error => error === rejection)
     assert.equal(calls, 1)
 })
+
+test('a disconnected MetaMask transport is replaced on the next explicit request', async () => {
+    const { readFileSync } = await import('node:fs')
+    const { default: ts } = await import('typescript')
+    const core = await import('@bigmi/core')
+    const f = fixture()
+    class TransportError extends Error {}
+    const transports = []
+    const source = readFileSync(new URL('../src/service/metamaskConnector.ts', import.meta.url), 'utf8')
+    const { outputText } = ts.transpileModule(source, {
+        compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+    })
+    const deps = {
+        '@bigmi/client': { metamask: () => () => ({
+            getInternalProvider: async () => ({ accounts: [{ address }] }),
+            getProvider: async () => ({}),
+            disconnect: async () => {},
+        }) },
+        '@bigmi/core': core,
+        'bitcoinjs-lib': { Psbt },
+        '@metamask/multichain-api-client': {
+            TransportError,
+            getDefaultTransport: () => {
+                const transport = {
+                    connected: true,
+                    isConnected() { return this.connected },
+                    async disconnect() { this.connected = false },
+                }
+                transports.push(transport)
+                return transport
+            },
+            getMultichainClient: ({ transport }) => ({
+                ...f.client,
+                invokeMethod: async request => {
+                    if (!transport.isConnected()) throw new TransportError('Chrome port not connected')
+                    return f.client.invokeMethod(request)
+                },
+            }),
+        },
+    }
+    const module = { exports: {} }
+    new Function('require', 'module', 'exports', outputText)(name => {
+        assert.ok(name in deps, name)
+        return deps[name]
+    }, module, module.exports)
+
+    const connector = module.exports.metamaskPreservingPsbt({ chainId: 'bitcoin:mainnet' })({})
+    const request = { method: 'signPsbt', params: f.params }
+    const provider = await connector.getProvider()
+    await provider.request(request)
+    transports[0].connected = false
+    await assert.rejects(provider.request(request), TransportError)
+    assert.equal(transports.length, 1, 'do not replay a signing request after failure')
+
+    await provider.request(request)
+    assert.equal(transports.length, 2)
+    await connector.disconnect()
+    assert.equal(transports[1].connected, false)
+
+    await (await connector.getProvider()).request(request)
+    assert.equal(transports.length, 3)
+    assert.equal(f.requests.length, 3)
+})
