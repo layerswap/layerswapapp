@@ -40,6 +40,7 @@ h1,h2,h3,h4,p{margin:0}
 .connect-button{display:inline-flex;justify-content:center;align-items:center;gap:8px;background:var(--purple);color:#fff;border-radius:7px;padding:11px 16px;font-size:12px;font-weight:600;min-height:39px}
 .connect-button:hover,.primary-wide:hover,.feature-cta:hover{background:var(--purple-dark)}
 .account-button{background:#f1edfc;color:var(--purple-dark)}
+.account-button:hover{background:#e6dff9}
 .account-dot{height:7px;width:7px;border-radius:50%;background:#6ca27c}
 .category-bar{border-bottom:1px solid var(--border)}
 .category-inner{height:56px;display:flex;align-items:center;justify-content:space-between;gap:20px}
