@@ -11,6 +11,8 @@ type WalletOperationOptions = {
     allowEmptyHash?: boolean
     /** Approval transactions do not submit the swap input transfer. */
     reportsSubmission?: boolean
+    /** Prepared transfers report the prompt when signing begins. */
+    deferPrompt?: boolean
     /** A recoverable error (such as the first expired Stellar transaction) has no terminal event. */
     shouldReportError?: (error: unknown) => boolean
     /** Preserve flows that stop reporting outcomes after their UI unmounts. */
@@ -19,17 +21,23 @@ type WalletOperationOptions = {
 
 /** Reports only the wallet request; preparation and success hand-off belong to the caller. */
 export async function executeWalletOperation(
-    { context, onLifecycle, onSettled, allowEmptyHash = false, reportsSubmission = true, shouldReportError, isActive }: WalletOperationOptions,
-    execute: () => Promise<string | undefined>,
+    { context, onLifecycle, onSettled, allowEmptyHash = false, reportsSubmission = true, shouldReportError, isActive, deferPrompt = false }: WalletOperationOptions,
+    execute: (markPrompt: () => void) => Promise<string | undefined>,
 ): Promise<string> {
     const active = () => isActive?.() ?? true
 
-    onLifecycle({
-        ...context,
-        step: 'wallet_prompt_opened',
-        stage: 'wallet_action',
-        outcome: 'pending',
-    })
+    let prompted = false
+    const markPrompt = () => {
+        if (prompted) return
+        prompted = true
+        onLifecycle({
+            ...context,
+            step: 'wallet_prompt_opened',
+            stage: 'wallet_action',
+            outcome: 'pending',
+        })
+    }
+    if (!deferPrompt) markPrompt()
 
     const reportFailure = (error: unknown, reasonCode?: SwapLifecycleEvent['reasonCode']) => {
         const rejected = !reasonCode && isUserRejection(error)
@@ -48,7 +56,7 @@ export async function executeWalletOperation(
 
     let hash: string | undefined
     try {
-        hash = await execute()
+        hash = await execute(markPrompt)
     } catch (error) {
         if (active() && shouldReportError?.(error) !== false) reportFailure(error)
         throw error

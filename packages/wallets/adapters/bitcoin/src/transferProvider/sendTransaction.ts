@@ -1,6 +1,9 @@
 //@ts-ignore
 import { UTXOWalletProvider } from "@bigmi/client/dist/esm/connectors/types";
-import { transactionBuilder } from "./transactionBuilder";
+import { bitcoinAmountInSatoshis } from "../bitcoinAmount.js";
+import { transactionBuilder } from "./transactionBuilder/index.js";
+import { dustThreshold, validateOutputs } from "./transactionBuilder/outputPolicy.js";
+import { bitcoinMemo } from "./bitcoinMemo.js";
 import { Psbt } from "bitcoinjs-lib";
 import { Connector } from "@bigmi/client";
 import { JsonRpcClient } from "@layerswap/utils";
@@ -8,6 +11,9 @@ import { BtcRpcRequestFn, Chain, Client, Transport } from "@bigmi/core";
 
 type sendTransactionParams = {
     amount: number;
+    amountInBaseUnits?: string;
+    reviewFee?: (fee: bigint, requiredFee: bigint) => Promise<void>;
+    onWalletPrompt?: () => void;
     depositAddress: string;
     userAddress: string;
     isTestnet: boolean;
@@ -17,7 +23,7 @@ type sendTransactionParams = {
     publicClient: Client<Transport<string, Record<string, any>, BtcRpcRequestFn>, Chain>;
 };
 
-export const sendTransaction = async ({ amount, callData, depositAddress, isTestnet, publicClient, rpcClient, userAddress, connector }: sendTransactionParams) => {
+export const sendTransaction = async ({ amount, amountInBaseUnits, reviewFee, onWalletPrompt, callData, depositAddress, isTestnet, publicClient, rpcClient, userAddress, connector }: sendTransactionParams) => {
 
     const provider = (await connector?.getProvider()) as UTXOWalletProvider;
 
@@ -25,15 +31,10 @@ export const sendTransaction = async ({ amount, callData, depositAddress, isTest
         throw new Error('Provider not found');
     }
 
-    const amountInSatoshi = Math.floor(amount * 1e8);
-    const raw = String(callData);
-    const semi = raw.indexOf(";");
-    const seq = semi === -1 ? raw : raw.slice(0, semi);
-    const tail = semi === -1 ? "" : raw.slice(semi);
+    const amountInSatoshi = bitcoinAmountInSatoshis(amount, amountInBaseUnits);
+    const hexMemo = bitcoinMemo(callData);
 
-    const hexMemo = BigInt(seq).toString(16) + tail;
-
-    const { psbt, inputsToSign } = await transactionBuilder({
+    const { psbt, inputsToSign, fee, requiredFee } = await transactionBuilder({
         amount: amountInSatoshi,
         depositAddress,
         userAddress,
@@ -43,11 +44,15 @@ export const sendTransaction = async ({ amount, callData, depositAddress, isTest
         rpcClient
     });
 
+    validateOutputs(psbt.txOutputs);
     const psbtHex = psbt.toHex();
 
     // Taproot addresses (bc1p/tb1p) require SIGHASH_DEFAULT (0), others use SIGHASH_ALL (1)
     const isTaproot = userAddress.startsWith('bc1p') || userAddress.startsWith('tb1p')
 
+    await reviewFee?.(fee, requiredFee);
+
+    onWalletPrompt?.();
     const signature = await provider.request({
         method: 'signPsbt',
         params: {
@@ -68,10 +73,27 @@ export const sendTransaction = async ({ amount, callData, depositAddress, isTest
     })
 
     const tx = signedPsbt.extractTransaction()
+    validateOutputs(tx.outs);
     const txHex = tx.toHex();
 
-    const txHash = await rpcClient.call<string[], string>('sendrawtransaction', [txHex]);
-
-    return txHash;
+    try {
+        return await rpcClient.call<string[], string>('sendrawtransaction', [txHex]);
+    } catch (cause) {
+        // Include amounts and scripts, but never the signed transaction or witness data.
+        const outputs = tx.outs.map((output, index) => ({
+            index,
+            role: index === 0 ? 'deposit' : index === 1 ? 'memo' : 'change',
+            sats: output.value.toString(),
+            script: Buffer.from(output.script).toString('hex'),
+            dustThreshold: dustThreshold(output.script).toString(),
+        }));
+        const inputTotal = signedPsbt.data.inputs.reduce((sum, input) => sum + (input.witnessUtxo?.value ?? 0n), 0n);
+        const outputTotal = tx.outs.reduce((sum, output) => sum + output.value, 0n);
+        const fee = inputTotal - outputTotal;
+        const message = cause instanceof Error ? cause.message : String(cause);
+        throw new Error(`${message}; Bitcoin transaction diagnostics: ${JSON.stringify({
+            outputs, inputSats: inputTotal.toString(), feeSats: fee.toString(), vsize: tx.virtualSize(),
+        })}`, { cause });
+    }
 
 }

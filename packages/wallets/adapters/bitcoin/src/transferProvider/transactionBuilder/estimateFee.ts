@@ -1,31 +1,39 @@
-import { JsonRpcClient } from "@layerswap/utils";
-import axios from 'axios';
-import { Psbt } from 'bitcoinjs-lib'
+import axios from 'axios'
+import { opcodes, Transaction, type Psbt } from 'bitcoinjs-lib'
 
-export const estimateFee = async (psbt: Psbt, rpcClient: JsonRpcClient, version: 'testnet' | 'mainnet') => {
-    const recommendedFee = await fetchRecommendedFee(version)
-    const satsPerVbyte = recommendedFee.economyFee
+// Reserve room for the largest signatures and the compressed SegWit public key.
+const segwitWitness = [new Uint8Array(73), new Uint8Array(33)]
+const taprootWitness = [new Uint8Array(65)] // Key-path signature with optional sighash byte.
 
-    const fee = calculateFee(psbt.txInputs.length, psbt.txOutputs.length, satsPerVbyte);
-    return fee
+export async function fetchFeeRate(version: 'testnet' | 'mainnet'): Promise<number> {
+  const base = `https://mempool.space${version === 'testnet' ? '/testnet' : ''}`
+  const { data } = await axios.get<{ economyFee: number; minimumFee: number }>(`${base}/api/v1/fees/recommended`)
+  const rate = Math.max(data.economyFee, data.minimumFee)
+  if (!Number.isFinite(rate) || rate <= 0) throw new Error('Invalid Bitcoin fee rate')
+  return rate
 }
 
-type RecommendedFeeResponse = {
-    fastestFee: number,
-    halfHourFee: number,
-    hourFee: number,
-    economyFee: number,
-    minimumFee: number
-}
+export function estimateFee(psbt: Psbt, feeRate: number): bigint {
+  if (!Number.isFinite(feeRate) || feeRate <= 0) throw new Error('Invalid Bitcoin fee rate')
 
-async function fetchRecommendedFee(
-    version: 'mainnet' | 'testnet',
-): Promise<RecommendedFeeResponse> {
-    const base = `https://mempool.space${version === 'testnet' ? '/testnet' : ''}`
-    const { data } = await axios.get<RecommendedFeeResponse>(`${base}/api/v1/fees/recommended`)
-    return data
-}
+  // Model the signed size without modifying the PSBT sent to the wallet.
+  const sizedTransaction = new Transaction()
+  psbt.txInputs.forEach(({ hash, index, sequence }, inputIndex) => {
+    const script = psbt.data.inputs[inputIndex].witnessUtxo?.script
+    sizedTransaction.addInput(hash, index, sequence)
 
-function calculateFee(numInputs: number, numOutputs: number, feePerByte: number) {
-    return (numInputs * 148 + numOutputs * 34 + 10) * feePerByte;
+    if (script?.length === 22 && script[0] === opcodes.OP_0 && script[1] === 20) {
+      sizedTransaction.setWitness(inputIndex, segwitWitness)
+    } else if (script?.length === 34 && script[0] === opcodes.OP_1 && script[1] === 32) {
+      sizedTransaction.setWitness(inputIndex, taprootWitness)
+    } else {
+      throw new Error('Unsupported Bitcoin input script; use a native SegWit or Taproot account')
+    }
+  })
+
+  for (const { script, value } of psbt.txOutputs) {
+    sizedTransaction.addOutput(script, value)
+  }
+
+  return BigInt(Math.ceil(sizedTransaction.virtualSize() * feeRate))
 }

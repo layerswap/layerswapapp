@@ -28,7 +28,7 @@ function loadSource(path, imports = {}) {
     return module.exports
 }
 
-const walletTypes = loadSource('../../types/src/actionMessage.ts')
+const walletTypes = { ...loadSource('../../types/src/actionMessage.ts'), ...loadSource('../../types/src/network.ts'), ...loadSource('../../types/src/resolvers/transfer.ts') }
 const walletErrors = loadSource('../../../wallets/core/src/lib/walletErrors.ts', { '@layerswap/widget-types': walletTypes })
 const rejection = loadSource(`${walletPath}isUserRejection.ts`, { '@layerswap/wallet-core/errors': walletErrors })
 const gasless = loadSource('../src/helpers/gasless.ts')
@@ -72,6 +72,7 @@ function createWorkflow({
     walletController = false,
     page2Host = false,
     realBalance = false,
+    networkType,
 } = {}) {
     let view
     const calls = { executionHolds: 0, batchStatus: [], statusChecks: [], statusSignals: [], blocked: [], refresh: [], confirmations: [], sign: [], authorize: [], transfer: [], batches: [], executionStarts: [], quoteLoading: [], storedTransactions: [], authorizations: [], signatures: [], errors: [], lifecycle: [], success: 0 }
@@ -128,7 +129,7 @@ function createWorkflow({
         }),
     }
     const preferenceStore = { useGaslessPreferenceStore: store(preferences) }
-    const network = { name: 'BASE_MAINNET', transaction_explorer_template: 'https://base.example.invalid/tx/{0}' }
+    const network = { name: 'BASE_MAINNET', transaction_explorer_template: 'https://base.example.invalid/tx/{0}', ...(networkType ? { type: networkType } : {}) }
     const wallet = { id: 'wallet', address: sourceAddress, addresses: [sourceAddress], isActive: true, asSourceSupportedNetworks: [network.name], withdrawalSupportedNetworks: [network.name] }
     const cache = new Map([[cacheKey, { data: state.depositActionsResponse }]])
     let pollingKey
@@ -292,6 +293,7 @@ function createWorkflow({
         }
     }
     const buttonImports = {
+        '@layerswap/widget-types': walletTypes,
         '@/lib/amountPresets': amountPresets,
         '@/helpers/depositActions': depositActions,
         '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: event => calls.lifecycle.push(event) }) },
@@ -383,7 +385,8 @@ function createWorkflow({
         '@/components/Icons/InfoIcon': { default: noop },
         '@/components/Pages/Swap/Form/SecondaryComponents/validationError/constants': {},
         '@/lib/balances/useBalance': { useBalance: address => { calls.balanceAddress = address; return {}; } },
-        '@/lib/gases/useSWRGas': { default: () => ({}) },
+        '@/lib/gases/resolveTransferGas': loadSource('../src/lib/gases/resolveTransferGas.ts', { '@/helpers/depositActions': depositActions }),
+        '@/lib/gases/useSWRGas': { default: () => ({ gasData: state.gasData }) },
         '@/context/depositSettings': { useDepositSettings: () => state.depositSettings ?? {} },
         './depositExecution': execution,
         './ensureSourceChain': sourceChain,
@@ -416,6 +419,7 @@ function createWorkflow({
         swr: realPolling ? require('swr') : {
             useSWRConfig: () => ({ mutate: async (key, result) => {
                 const data = await result
+                if (Array.isArray(key) && data?.gas != null) state.gasData = data
                 cache.set(key, data)
                 if (state.resolveCurrentFlow && data?.data?.swap) {
                     state.swapDetails = data.data.swap
@@ -575,7 +579,9 @@ function createWorkflow({
                 state.completedStep = 'sign'
                 return 'fresh-signature'
             },
-            onClick: async props => {
+            onClick: async ({ reviewFee, onWalletPrompt, ...props }) => {
+                if (state.prepareFee) await state.prepareFee(reviewFee, props)
+                onWalletPrompt?.()
                 calls.transfer.push(props)
                 const step = depositActions.getActionableDepositAction(state.apiActions).step
                 await state.onWalletPrompt?.(step)
@@ -2690,3 +2696,53 @@ for (const signatureState of ['completed sign-only action', 'saved signature bef
         })
     }
 }
+
+test('a changed prepared fee pauses before the wallet and resumes after review', async () => {
+    const flow = createWorkflow({ networkType: walletTypes.NetworkType.Bitcoin })
+    const token = { symbol: 'NATIVE', decimals: 8 }
+    flow.state.sourceToken = token
+    flow.state.gasData = { token, gas: 338 / 1e8, requiredFee: 338 / 1e8 }
+    let fee = 637
+    flow.state.prepareFee = async (review, props) => {
+        assert.equal(props.depositAddress, 'recipient')
+        assert.equal(props.callData, '22911311;')
+        assert.equal(props.amount, 9363 / 1e8)
+        await review({ token, gas: fee / 1e8, requiredFee: 282 / 1e8 })
+    }
+    flow.state.apiActions = [{ type: 'transfer', step: 'deposit', status: 'action_required',
+        amount: 9363 / 1e8, to_address: 'recipient', call_data: '22911311;' }]
+    flow.state.depositActionsResponse = flow.state.apiActions
+    await flow.render().viewProps.handleClick()
+    assert.equal(flow.render().viewProps.feeUpdated, true)
+    assert.equal(!!flow.state.swapError, false)
+    assert.equal(flow.render().button.props.children, 'Continue')
+    assert.equal(flow.calls.transfer.length, 0)
+    assert.equal(flow.calls.lifecycle.filter(event => event.step === 'wallet_prompt_opened').length, 0)
+    assert.equal(flow.state.gasData.gas, 637 / 1e8)
+
+    // A new build can change fees again after the first review.
+    fee = 700
+    await flow.render().viewProps.handleClick()
+    assert.equal(flow.calls.transfer.length, 0)
+    assert.equal(flow.calls.lifecycle.filter(event => event.step === 'wallet_prompt_opened').length, 0)
+    assert.equal(flow.render().viewProps.feeToReview.gas, 700 / 1e8)
+    await flow.render().viewProps.handleClick()
+    assert.equal(flow.calls.transfer.length, 1)
+    assert.equal(flow.calls.lifecycle.filter(event => event.step === 'wallet_prompt_opened').length, 1)
+})
+
+test('a prepared transfer with no previous fee requires first review', async () => {
+    const flow = createWorkflow({ networkType: walletTypes.NetworkType.Bitcoin })
+    const token = { symbol: 'NATIVE', decimals: 8 }
+    flow.state.sourceToken = token
+    flow.state.prepareFee = review => review({ token, gas: 172 / 1e8, requiredFee: 172 / 1e8 })
+    flow.state.apiActions = [{ type: 'transfer', step: 'deposit', status: 'action_required', amount: 1, to_address: 'recipient' }]
+    flow.state.depositActionsResponse = flow.state.apiActions
+    await flow.render().viewProps.handleClick()
+    assert.equal(flow.calls.transfer.length, 0)
+    assert.equal(flow.calls.lifecycle.filter(event => event.step === 'wallet_prompt_opened').length, 0)
+    assert.equal(flow.render().viewProps.feeUpdated, true)
+    await flow.render().viewProps.handleClick()
+    assert.equal(flow.calls.transfer.length, 1)
+    assert.equal(flow.calls.lifecycle.filter(event => event.step === 'wallet_prompt_opened').length, 1)
+})

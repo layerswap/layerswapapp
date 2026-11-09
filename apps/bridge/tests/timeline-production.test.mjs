@@ -47,6 +47,8 @@ function loadSource(path, imports = {}) {
             if (name === '@/stores/swapTransactionStore') return { getAtomicBatch: noop, ...imports[name] };
             return imports[name];
         }
+        if (name === './resolveTransferGas' || name === '@/lib/gases/resolveTransferGas') return transferGas;
+        if (name === '@layerswap/widget-types' && path.endsWith('/Wallet/Common/buttons.tsx')) return transferTypes;
         if (path === `${withdraw}SwapDetails.tsx`) {
             if (name === './Page2Controller') return { Page2Controller: ({ children }) => children({ controls: imports['@/hooks/useResolvedSwapStatus'].useResolvedSwapStatus().showWithdrawScreen ? React.createElement(imports['./Withdraw'].default) : null }) };
             if (name === './Processing/Processing') return { useProcessingController: props => props };
@@ -113,6 +115,11 @@ const addressModule = loadSource('../../../utils/src/address/Address.ts', {
         addressFormat: ({ address, network }) => network?.type === 'evm' ? address.toLowerCase() : address,
     },
 });
+const transferTypes = loadSource('../../types/src/resolvers/transfer.ts');
+const transferGas = loadSource('lib/gases/resolveTransferGas.ts', {
+    '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
+});
+
 const { useGaslessPreferenceStore } = loadSource('stores/gaslessPreferenceStore.ts', { zustand: coreRequire('zustand') });
 const motion = {
     '../Processing/StepsComponent': { StepsPanelProvider: childrenOnly },
@@ -383,6 +390,8 @@ test('live recipient visibility preserves disconnected destinations and respects
         './SummaryRow': { SummaryRow },
     });
     const quoteDetails = loadSource(`${withdraw}SwapQuoteDetails.tsx`, {
+        '@/context/swap': { useSwapDataState: () => context },
+        '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
         '../Form/FeeDetails/SwapQuote': quoteComponent,
         './Presentation/QuoteAvailabilityView': { QuoteAvailabilityView: childrenOnly },
     });
@@ -1438,7 +1447,11 @@ for (const failure of ['rejected', 'failed']) {
         const execution = loadSource(`${withdraw}Wallet/Common/depositExecution.ts`, {
             '@/lib/address/explorerUrl': loadSource('lib/address/explorerUrl.ts'),
             '@/helpers/gasless': gasless,
-            '@layerswap/widget-types': { ActionMessageType: { TransactionExpired: 'TransactionExpired' } },
+            '@layerswap/widget-types': {
+                ...transferTypes,
+                ...loadSource('../../types/src/network.ts'),
+                ActionMessageType: { TransactionExpired: 'TransactionExpired' },
+            },
             '@/lib/apiClients/layerSwapApiClient': harness.api,
             '@/stores/swapTransactionStore': stores,
             '@/stores/gaslessPreferenceStore': { useGaslessPreferenceStore },

@@ -30,6 +30,8 @@ function loadSource(path, imports = {}) {
             if (name === 'react' || name === 'react/jsx-runtime')
                 return req(name);
             if (name in imports) return imports[name];
+            if (name === './resolveTransferGas' || name === '@/lib/gases/resolveTransferGas') return transferGas;
+            if (name === '@layerswap/widget-types' && path.endsWith('/Wallet/Common/buttons.tsx')) return transferTypes;
             if (name.endsWith('/TransferBlock')) return { TransferBlock: ({ children }) => React.createElement(React.Fragment, null, children) };
             if (name === '@/hooks/useHasSubmittedTransfer') return { useHasSubmittedTransfer: () => false };
             throw new Error(`Unexpected dependency: ${name} at ${path}`);
@@ -39,6 +41,11 @@ function loadSource(path, imports = {}) {
     );
     return module.exports;
 }
+
+const transferTypes = loadSource('../../types/src/resolvers/transfer.ts');
+const transferGas = loadSource('lib/gases/resolveTransferGas.ts', {
+    '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
+});
 
 test('exact gas loading preserves the pending wallet request and its execution lock', async () => {
     const dom = new JSDOM('<div id="root"></div>', {

@@ -15,7 +15,7 @@ import { useConnectWalletController, useSendTransactionController } from "./Comm
 import { GaslessSigner } from "./Common/depositExecution";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
 import { useBalance } from "@/lib/balances/useBalance";
-import { TransferProps } from "@layerswap/widget-types";
+import { TransferFeeReviewRequired, TransferProps } from "@layerswap/widget-types";
 import { useActionMessage } from "./Common/actionMessage";
 import { ActionMessages } from "../messages/TransactionMessages";
 import { useTransfer } from "@/hooks/useTransfer";
@@ -298,7 +298,7 @@ export function useTransferTokenController({
 
             }
         } catch (e) {
-            if (!signal?.aborted) {
+            if (!signal?.aborted && !(e instanceof TransferFeeReviewRequired)) {
                 setIsSignatureError(false);
                 setError(e);
             }
