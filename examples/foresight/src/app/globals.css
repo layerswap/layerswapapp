@@ -264,6 +264,8 @@ h1,h2,h3,h4,p{margin:0}
 .widget-loading{height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#a390b6;font-size:12px}
 .spinner{animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+.deposit-loading{display:flex;flex-direction:column;align-items:center;gap:14px;padding:24px 0 4px;color:#7655e8}
+.deposit-loading .dialog-subtitle{margin-bottom:0}
 .how-step{display:flex;gap:16px;margin:23px 0;align-items:flex-start}
 .how-step>span{height:42px;width:42px;flex-shrink:0;background:#f4eefb;color:#aa8bcb;display:grid;place-items:center;border-radius:10px}
 .how-step h3{font-size:13px;font-weight:600;margin-top:2px;margin-bottom:5px}

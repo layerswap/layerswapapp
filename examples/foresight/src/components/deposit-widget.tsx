@@ -3,6 +3,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LayerswapDepositWidget } from '@layerswap/widget-react';
 import { foresightLayerswapColorOverrides, foresightLayerswapTheme } from '@/lib/layerswap-theme';
 import { getAppOrigin } from '@/lib/app-origin';
+import { Loader2 } from 'lucide-react';
+import Dialog from './dialog';
 
 export type DepositMethod = 'polymarket'|'wallet'|'deposit_address'|'hyperliquid';
 export type DepositRequest = {id:number;method:DepositMethod|null;address:`0x${string}`};
@@ -15,6 +17,8 @@ const walletDefaults = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID ? {walletConnect
 export default function DepositWidget({address,request,onComplete,onStatus}:{address:`0x${string}`;request:DepositRequest|null;onComplete:()=>void;onStatus:(message:string)=>void}) {
   const host = useRef<HTMLDivElement>(null);
   const openedRequest = useRef<number|null>(null);
+  const [loading,setLoading] = useState(false);
+  const cancelOpen = useRef<()=>void>(()=>{});
   const latestRequest = useRef(request);
   latestRequest.current=request;
   const loadFailed = useRef(false);
@@ -41,7 +45,7 @@ export default function DepositWidget({address,request,onComplete,onStatus}:{add
     // Forward app Deposit buttons to the SDK's documented dialog trigger.
     // A click during background loading waits for the same in-flight mount.
     let timeout:ReturnType<typeof setTimeout>;
-    const loadingNotice=setTimeout(()=>onStatus('Loading Layerswap…'),300);
+    const loadingNotice=setTimeout(()=>setLoading(true),300);
     const open=()=>{
       const trigger=host.current?.querySelector<HTMLButtonElement>('.layerswap-deposit-trigger');
       if(!trigger||trigger.disabled||openedRequest.current===request.id)return;
@@ -49,22 +53,33 @@ export default function DepositWidget({address,request,onComplete,onStatus}:{add
       observer.disconnect();
       clearTimeout(timeout);
       clearTimeout(loadingNotice);
-      onStatus('');
+      setLoading(false);
       trigger.click();
     };
     const observer=new MutationObserver(open);
     if(host.current)observer.observe(host.current,{childList:true,subtree:true,attributes:true,attributeFilter:['disabled']});
+    cancelOpen.current=()=>{
+      openedRequest.current=request.id;
+      observer.disconnect();
+      clearTimeout(timeout);
+      clearTimeout(loadingNotice);
+      setLoading(false);
+    };
     timeout=setTimeout(()=>{
       observer.disconnect();
       clearTimeout(loadingNotice);
+      setLoading(false);
       onStatus('Layerswap could not open. Check your connection and widget API key, then click Deposit to retry.');
     },20000);
     open();
-    return()=>{observer.disconnect();clearTimeout(timeout);clearTimeout(loadingNotice);};
+    return()=>{observer.disconnect();clearTimeout(timeout);clearTimeout(loadingNotice);setLoading(false);};
   },[request,onStatus]);
 
   return <div ref={host}>
     <style>{foresightLayerswapColorOverrides}</style>
+    <Dialog open={loading} onClose={()=>cancelOpen.current()} title="Add funds">
+      <div className="deposit-loading" role="status"><Loader2 size={28} className="spinner"/><p className="dialog-subtitle">Loading Layerswap…</p></div>
+    </Dialog>
     <LayerswapDepositWidget key={retryKey} config={config} destination={destination} destinationAddress={address}
       mode="button" buttonLabel="Deposit" buttonClassName="layerswap-deposit-trigger"
       methods={methods} walletDefaults={walletDefaults}
