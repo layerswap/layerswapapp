@@ -11,6 +11,7 @@ import { BtcRpcRequestFn, Chain, Client, Transport } from "@bigmi/core";
 type sendTransactionParams = {
     amount: number;
     reviewFee?: (fee: bigint, requiredFee: bigint) => Promise<void>;
+    onWalletPrompt?: () => void;
     depositAddress: string;
     userAddress: string;
     isTestnet: boolean;
@@ -20,7 +21,7 @@ type sendTransactionParams = {
     publicClient: Client<Transport<string, Record<string, any>, BtcRpcRequestFn>, Chain>;
 };
 
-export const sendTransaction = async ({ amount, reviewFee, callData, depositAddress, isTestnet, publicClient, rpcClient, userAddress, connector }: sendTransactionParams) => {
+export const sendTransaction = async ({ amount, reviewFee, onWalletPrompt, callData, depositAddress, isTestnet, publicClient, rpcClient, userAddress, connector }: sendTransactionParams) => {
 
     const provider = (await connector?.getProvider()) as UTXOWalletProvider;
 
@@ -49,6 +50,7 @@ export const sendTransaction = async ({ amount, reviewFee, callData, depositAddr
 
     await reviewFee?.(fee, requiredFee);
 
+    onWalletPrompt?.();
     const signature = await provider.request({
         method: 'signPsbt',
         params: {

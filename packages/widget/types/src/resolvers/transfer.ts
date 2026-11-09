@@ -13,6 +13,8 @@ export type TransferProps = {
     amountInBaseUnits?: string
     /** Called before opening the wallet with the fee of the transaction about to be signed. */
     reviewFee?: (fee: GasWithToken) => Promise<void>
+    /** Called immediately before a prepared transfer requests wallet signing. */
+    onWalletPrompt?: () => void
     encodedArgs?: string[] | null
     depositAddress?: string
     amount: number

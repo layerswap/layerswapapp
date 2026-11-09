@@ -1,4 +1,4 @@
-import { type SwapLifecycleEvent, type Wallet, ActionMessageType, TransferFeeReviewRequired } from '@layerswap/widget-types';
+import { type SwapLifecycleEvent, type Wallet, ActionMessageType, NetworkType, TransferFeeReviewRequired } from '@layerswap/widget-types';
 import LayerSwapApiClient, {
     DepositAction,
     SignDepositAction,
@@ -51,15 +51,17 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
     const transferProps = resolveTransactionData(swapData, action, swapBasicData, selectedWallet)
     const lifecycleContext = lifecycleContextFromSwap(swapBasicData, swapData)
     const confirmationText = action.step === 'approve_permit2' ? "Approve in your wallet" : "Confirm in your wallet"
-    setActionStateText(confirmationText)
+    const usesPreparedSigning = transferProps.network.type === NetworkType.Bitcoin
+    setActionStateText(usesPreparedSigning ? 'Preparing transaction…' : confirmationText)
 
     let hash: string
-    const finishTelemetry = widgetTelemetry.beginOperation('wallet_transfer', {
+    const beginTelemetry = () => widgetTelemetry.beginOperation('wallet_transfer', {
         swap_id: swapData.id, provider: selectedWallet.providerName, timing_kind: 'user_wait_included',
     })
+    let finishTelemetry = usesPreparedSigning ? undefined : beginTelemetry()
     const requestWallet = (props: TransferProps, { retriesExpiry }: { retriesExpiry: boolean }) => {
         if (signal?.aborted) {
-            finishTelemetry('cancelled')
+            finishTelemetry?.('cancelled')
             signal.throwIfAborted()
         }
         return executeWalletOperation({
@@ -71,16 +73,22 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
             },
             onLifecycle,
             // Keep one timing operation across the Stellar refresh and both wallet requests.
-            onSettled: finishTelemetry,
+            onSettled: (outcome, attributes) => finishTelemetry?.(outcome, attributes),
+            deferPrompt: usesPreparedSigning,
             reportsSubmission: action.step !== 'approve_permit2',
             shouldReportError: error => {
-                if (error instanceof TransferFeeReviewRequired) {
-                    finishTelemetry('cancelled')
-                    return false
-                }
+                if (error instanceof TransferFeeReviewRequired) return false
                 return !(retriesExpiry && isExpiredTransaction(error))
             },
-        }, () => onClick(props))
+        }, markPrompt => onClick(usesPreparedSigning ? {
+            ...props,
+            onWalletPrompt: () => {
+                signal?.throwIfAborted()
+                finishTelemetry ??= beginTelemetry()
+                setActionStateText(confirmationText)
+                markPrompt()
+            },
+        } : props))
     }
 
     try {
@@ -88,7 +96,7 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
     } catch (error) {
         if (!isExpiredTransaction(error)) throw error
         if (signal?.aborted) {
-            finishTelemetry('cancelled')
+            finishTelemetry?.('cancelled')
             signal.throwIfAborted()
         }
 
@@ -107,7 +115,7 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
             }
             refreshedProps = resolveTransactionData(swapData, refreshedAction, swapBasicData, selectedWallet)
         } catch (refreshError) {
-            finishTelemetry('failed', {
+            finishTelemetry?.('failed', {
                 reason_code: 'deposit_action_refresh_failed',
                 occurrence_id: lifecycleErrorDetails(refreshError).occurrenceId,
             })

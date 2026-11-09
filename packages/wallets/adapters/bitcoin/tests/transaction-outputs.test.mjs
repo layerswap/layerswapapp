@@ -171,10 +171,12 @@ test('the reviewed fee belongs to the exact PSBT passed to the signer', async ()
   let reviewedFee
   let feeReads = 0
   let signingRequests = 0
+  let walletPrompts = 0
   const connector = {
     getProvider: async () => ({
       request: async ({ params }) => {
         signingRequests++
+        assert.equal(walletPrompts, signingRequests)
         const psbt = Psbt.fromHex(params.psbt)
         const inputTotal = psbt.data.inputs.reduce((sum, input) => sum + input.witnessUtxo.value, 0n)
         const outputTotal = psbt.txOutputs.reduce((sum, output) => sum + output.value, 0n)
@@ -190,18 +192,73 @@ test('the reviewed fee belongs to the exact PSBT passed to the signer', async ()
       return { data: { economyFee: ++feeReads, minimumFee: 1 } }
     }
     try {
-      const transfer = { amount: 0.00008, userAddress, depositAddress, callData: '22911311;', connector }
+      const transfer = {
+        amount: 0.00008, userAddress, depositAddress, callData: '22911311;', connector,
+        onWalletPrompt: () => { walletPrompts++ },
+      }
       await assert.rejects(sendTransaction({
         ...transfer,
         reviewFee: async () => { throw reviewRequired },
       }), error => error === reviewRequired)
       assert.equal(signingRequests, 0)
+      assert.equal(walletPrompts, 0)
       await assert.rejects(sendTransaction({
         ...transfer,
         reviewFee: async fee => { reviewedFee = fee },
       }), error => error === cancelled)
       assert.equal(signingRequests, 1)
       assert.equal(feeReads, 2)
+    } finally {
+      axios.get = original
+    }
+  })
+})
+
+test('Bitcoin fee review uses the transfer token when the action network omits its token', async () => {
+  const widgetTypes = await import('@layerswap/widget-types')
+  const { sendTransaction } = await import('../dist/esm/transferProvider/sendTransaction.js')
+  const source = readFileSync(new URL('../src/transferProvider/createBitcoinTransfer.ts', import.meta.url), 'utf8')
+  const { outputText } = ts.transpileModule(source, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  })
+  const reviewRequired = new widgetTypes.TransferFeeReviewRequired()
+  let walletPrompts = 0
+  const connector = { getProvider: async () => ({ request: async () => assert.fail('unexpected signing request') }) }
+  const deps = {
+    '@layerswap/widget-types': widgetTypes,
+    '@bigmi/client': { getAccount: () => ({ connector }) },
+    '@layerswap/utils': {
+      JsonRpcClient: class {},
+      KnownInternalNames: (await import('@layerswap/utils/known-ids')).default,
+    },
+    './sendTransaction': { sendTransaction },
+    './toTransferError': { toTransferError: error => error },
+    '../service/getBitcoinConfig': { getBitcoinConfig: () => ({ getClient: () => undefined }) },
+  }
+  const module = { exports: {} }
+  new Function('require', 'module', 'exports', outputText)(name => {
+    assert.ok(name in deps, name)
+    return deps[name]
+  }, module, module.exports)
+  const token = { symbol: 'BTC', decimals: 8 }
+  const provider = module.exports.createBitcoinTransfer()
+  await withUtxo(10000, async () => {
+    const original = axios.get
+    axios.get = async url => url.endsWith('/fees/recommended')
+      ? { data: { economyFee: 1, minimumFee: 1 } } : original(url)
+    try {
+      await assert.rejects(provider.executeTransfer({
+        network: { name: 'BITCOIN_MAINNET', type: widgetTypes.NetworkType.Bitcoin },
+        selectedWallet: { address: userAddress },
+        token, amount: 0.00008, depositAddress, callData: '22911311;',
+        onWalletPrompt: () => { walletPrompts++ },
+        reviewFee: async fee => {
+          assert.equal(fee.token, token)
+          assert.equal(Math.round(fee.gas * 1e8), 172)
+          throw reviewRequired
+        },
+      }), error => error === reviewRequired)
+      assert.equal(walletPrompts, 0)
     } finally {
       axios.get = original
     }
