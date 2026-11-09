@@ -1,3 +1,6 @@
+import { TransferBlock } from './TransferBlock';
+import { DepositAddressRecoveryView } from '../Form/DepositAddressForm/DepositAddressRecoveryView';
+import { getDepositAddressError } from '@/lib/depositAddressError';
 import { ManualSourceSelectorView } from './Presentation/ManualSourceSelectorView';
 import { DepositQRCodeView } from './Presentation/DepositQRCodeView';
 import { ManualDepositButtonView } from './Presentation/ManualDepositButtonView';
@@ -62,8 +65,9 @@ export function useManualWithdrawController({
     isQuoteLoading,
 }: Props, active = true) {
     const { wallets } = useWallet();
-    const { createSwap, setSwapId } = useSwapDataUpdate();
-    const { swapDetails } = useSwapDataState();
+    const { createSwap, setSwapId, mutateDepositActions } = useSwapDataUpdate();
+    const { swapDetails, depositActionsError, depositActionsValidating } = useSwapDataState();
+    const retryingAddress = useRef(false);
     const { onSwapLifecycle } = useCallbacks();
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [selectedFrom, setSelectedFrom] = useState<{
@@ -133,7 +137,7 @@ export function useManualWithdrawController({
     )
 
     // A source address arriving later enriches the report but never repeats it.
-    useLifecycleObservation(active && swapDetails?.id ? AWAITING_USER_DEPOSIT : undefined, lifecycleContext)
+    useLifecycleObservation(active && swapDetails?.id && depositAddress ? AWAITING_USER_DEPOSIT : undefined, lifecycleContext)
 
     const handleCopy = () => {
         if (depositAddress) {
@@ -220,6 +224,33 @@ export function useManualWithdrawController({
         isLoading: exchangeSourceNetworksLoading,
     } = useExchangeNetworks(active ? exchangeNetworkParams : {});
 
+    const addressError = getDepositAddressError(depositAddress, depositActions, depositActionsError);
+    const recoveryError = swapDetails?.id && !loading ? addressError : undefined;
+    const retryAddress = async () => {
+        // The ref closes the gap before SWR publishes isValidating, including
+        // multiple invocations of the same event handler in one commit.
+        if (retryingAddress.current || depositActionsValidating) {
+            return;
+        }
+        retryingAddress.current = true;
+        try {
+            // Bound mutate revalidates this swap; fetch errors stay in SWR state.
+            await mutateDepositActions();
+        } finally {
+            retryingAddress.current = false;
+        }
+    };
+    const footer = recoveryError ? (
+        <TransferBlock reasonCode="deposit_actions_unavailable" path="ManualWithdraw"
+            stage="input_transfer" reason={recoveryError}>
+            <DepositAddressRecoveryView message={recoveryError}
+                isRetrying={!!depositActionsValidating} onRetry={retryAddress} />
+        </TransferBlock>
+    ) : (
+        <ManualDepositButtonView loading={!depositAddress || loading}
+            copied={copied && copiedAddress === depositAddress} onCopy={handleCopy} />
+    );
+
     return { controls: (
             <ManualInstructionsView
                 swapBasicData={swapBasicData}
@@ -282,7 +313,7 @@ export function useManualWithdrawController({
                     />
                 }
             />
-        ), footer: <ManualDepositButtonView copied={copied && copiedAddress === depositAddress} onCopy={handleCopy} /> };
+        ), footer };
 }
 const ManualWithdraw: FC<Props> = props => {
     const model = useManualWithdrawController(props);
