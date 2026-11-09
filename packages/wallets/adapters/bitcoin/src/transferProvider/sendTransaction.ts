@@ -1,5 +1,6 @@
 //@ts-ignore
 import { UTXOWalletProvider } from "@bigmi/client/dist/esm/connectors/types";
+import { bitcoinAmountInSatoshis } from "../bitcoinAmount.js";
 import { transactionBuilder } from "./transactionBuilder/index.js";
 import { dustThreshold, validateOutputs } from "./transactionBuilder/outputPolicy.js";
 import { bitcoinMemo } from "./bitcoinMemo.js";
@@ -10,6 +11,7 @@ import { BtcRpcRequestFn, Chain, Client, Transport } from "@bigmi/core";
 
 type sendTransactionParams = {
     amount: number;
+    amountInBaseUnits?: string;
     reviewFee?: (fee: bigint, requiredFee: bigint) => Promise<void>;
     onWalletPrompt?: () => void;
     depositAddress: string;
@@ -21,7 +23,7 @@ type sendTransactionParams = {
     publicClient: Client<Transport<string, Record<string, any>, BtcRpcRequestFn>, Chain>;
 };
 
-export const sendTransaction = async ({ amount, reviewFee, onWalletPrompt, callData, depositAddress, isTestnet, publicClient, rpcClient, userAddress, connector }: sendTransactionParams) => {
+export const sendTransaction = async ({ amount, amountInBaseUnits, reviewFee, onWalletPrompt, callData, depositAddress, isTestnet, publicClient, rpcClient, userAddress, connector }: sendTransactionParams) => {
 
     const provider = (await connector?.getProvider()) as UTXOWalletProvider;
 
@@ -29,7 +31,7 @@ export const sendTransaction = async ({ amount, reviewFee, onWalletPrompt, callD
         throw new Error('Provider not found');
     }
 
-    const amountInSatoshi = Math.floor(amount * 1e8);
+    const amountInSatoshi = bitcoinAmountInSatoshis(amount, amountInBaseUnits);
     const hexMemo = bitcoinMemo(callData);
 
     const { psbt, inputsToSign, fee, requiredFee } = await transactionBuilder({

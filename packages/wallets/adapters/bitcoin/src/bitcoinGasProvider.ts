@@ -1,3 +1,4 @@
+import { bitcoinAmountInSatoshis } from "./bitcoinAmount.js";
 import { bitcoinMemo } from "./transferProvider/bitcoinMemo.js";
 import { estimateBitcoinFees } from "./transferProvider/transactionBuilder/buildPsbt.js";
 import { JsonRpcClient, KnownInternalNames, formatUnits } from "@layerswap/utils";
@@ -10,18 +11,16 @@ export class BitcoinGasProvider implements GasProvider {
         return KnownInternalNames.Networks.BitcoinMainnet.includes(network.name) || KnownInternalNames.Networks.BitcoinTestnet.includes(network.name)
     }
 
-    async getGas({ address, network, recipientAddress, amount, callData }: GasProps): Promise<GasWithToken | undefined> {
+    async getGas({ address, network, recipientAddress, amount, amountInBaseUnits, callData }: GasProps): Promise<GasWithToken | undefined> {
         if (!network?.token) throw new Error("No native token provided")
         if (!address) throw new Error("No address provided")
-        if (!amount) throw new Error("No amount provided")
 
         const version = KnownInternalNames.Networks.BitcoinMainnet.includes(network.name) ? 'mainnet' : 'testnet';
         const bitcoinAddress = recipientAddress || (version == 'testnet' ? 'tb1q5dc7f552h57tfepls66tgkta8wwjpha3ktw45s': 'bc1plxa9q77gz9r33g8pd4c2ygzezchjffuedtzdrkclyceseyw8v80qasmquf')
         const rpcClient = new JsonRpcClient(network.node_url);
 
-        const amountInSatoshi = Math.floor(amount * 1e8);
-
         try {
+            const amountInSatoshi = bitcoinAmountInSatoshis(amount, amountInBaseUnits);
             // Before creation the sequence is unknown. Once supplied, use exactly
             // the same memo conversion as the transaction sender.
             const hexMemo = bitcoinMemo(callData ?? '69420');

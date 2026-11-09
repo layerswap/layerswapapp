@@ -14,7 +14,7 @@ export function createBitcoinTransfer(): TransferProvider {
         },
 
         async executeTransfer(params: TransferProps): Promise<string> {
-            const { amount, callData, depositAddress, network, reviewFee, onWalletPrompt } = params
+            const { amount, amountInBaseUnits, callData, depositAddress, network, reviewFee, onWalletPrompt } = params
 
             if (!depositAddress) {
                 throw new Error("Deposit address not provided")
@@ -36,6 +36,7 @@ export function createBitcoinTransfer(): TransferProvider {
             try {
                 const txHash = await sendTransaction({
                     amount,
+                    amountInBaseUnits,
                     onWalletPrompt,
                     reviewFee: reviewFee ? (fee, requiredFee) => reviewFee({
                         token: feeToken, gas: Number(fee) / 1e8, requiredFee: Number(requiredFee) / 1e8,

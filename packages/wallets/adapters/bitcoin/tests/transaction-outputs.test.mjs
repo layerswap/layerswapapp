@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs'
 import ts from 'typescript'
 import axios from 'axios'
 import { address, networks, Transaction, Psbt } from 'bitcoinjs-lib'
+import { bitcoinAmountInSatoshis } from '../dist/esm/bitcoinAmount.js'
 import { buildPsbt, estimateBitcoinFee } from '../dist/esm/transferProvider/transactionBuilder/buildPsbt.js'
 import { dustThreshold, validateOutputs } from '../dist/esm/transferProvider/transactionBuilder/outputPolicy.js'
 import { estimateFee } from '../dist/esm/transferProvider/transactionBuilder/estimateFee.js'
@@ -35,6 +36,18 @@ function requiredFee(amount, change) {
   if (change) psbt.addOutput({ script: witness, value: 0n })
   return Number(estimateFee(psbt, 1))
 }
+
+test('Bitcoin amounts use exact API satoshis or truncate the decimal BTC amount', () => {
+  assert.equal(bitcoinAmountInSatoshis(0.00008005), 8005)
+  assert.equal(bitcoinAmountInSatoshis(0.000080059), 8005)
+  assert.equal(bitcoinAmountInSatoshis(8.5e-8), 8)
+  assert.equal(bitcoinAmountInSatoshis(0.00008004, '8005'), 8005)
+  assert.equal(bitcoinAmountInSatoshis(0.00008005, '0'), 8005)
+  assert.throws(() => bitcoinAmountInSatoshis(0, '0'), /positive finite/)
+  for (const invalid of ['-1', '8005.1', '8e3', '9007199254740992']) {
+    assert.throws(() => bitcoinAmountInSatoshis(0.00008005, invalid), /positive integer/)
+  }
+})
 
 test('dust thresholds follow script types and exempt OP_RETURN', () => {
   for (const [hex, threshold] of [
@@ -124,6 +137,7 @@ test('the gas provider prices the sender memo, including dust absorbed into the 
   // The package barrel has extensionless bundler imports. Load the provider
   // source with its real leaf dependencies so this remains a Node-only test.
   const deps = {
+    './bitcoinAmount.js': { bitcoinAmountInSatoshis },
     './transferProvider/bitcoinMemo.js': await import('../dist/esm/transferProvider/bitcoinMemo.js'),
     './transferProvider/transactionBuilder/buildPsbt.js': await import('../dist/esm/transferProvider/transactionBuilder/buildPsbt.js'),
     '@layerswap/utils': {
@@ -154,7 +168,7 @@ test('the gas provider prices the sender memo, including dust absorbed into the 
       const args = { address: userAddress, recipientAddress: depositAddress, token,
         network: { name: 'BITCOIN_MAINNET', token, node_url: 'https://example.invalid' }, amount: 9363 / 1e8 }
       const provisional = await provider.getGas(args)
-      const exact = await provider.getGas({ ...args, callData: '22911311;', amountInBaseUnits: '0' })
+      const exact = await provider.getGas({ ...args, amount: 9362 / 1e8, callData: '22911311;', amountInBaseUnits: '9363' })
       assert.equal(Math.round(provisional.gas * 1e8), 338)
       assert.equal(Math.round(exact.gas * 1e8), 637)
       assert.equal(Math.round(exact.requiredFee * 1e8), 282)
@@ -178,6 +192,7 @@ test('the reviewed fee belongs to the exact PSBT passed to the signer', async ()
         signingRequests++
         assert.equal(walletPrompts, signingRequests)
         const psbt = Psbt.fromHex(params.psbt)
+        assert.equal(psbt.txOutputs[0].value, 8005n)
         const inputTotal = psbt.data.inputs.reduce((sum, input) => sum + input.witnessUtxo.value, 0n)
         const outputTotal = psbt.txOutputs.reduce((sum, output) => sum + output.value, 0n)
         assert.equal(inputTotal - outputTotal, reviewedFee)
@@ -193,7 +208,7 @@ test('the reviewed fee belongs to the exact PSBT passed to the signer', async ()
     }
     try {
       const transfer = {
-        amount: 0.00008, userAddress, depositAddress, callData: '22911311;', connector,
+        amount: 0.00008005, userAddress, depositAddress, callData: '22911311;', connector,
         onWalletPrompt: () => { walletPrompts++ },
       }
       await assert.rejects(sendTransaction({
@@ -250,11 +265,11 @@ test('Bitcoin fee review uses the transfer token when the action network omits i
       await assert.rejects(provider.executeTransfer({
         network: { name: 'BITCOIN_MAINNET', type: widgetTypes.NetworkType.Bitcoin },
         selectedWallet: { address: userAddress },
-        token, amount: 0.00008, depositAddress, callData: '22911311;',
+        token, amount: 0.00009534, amountInBaseUnits: '9535', depositAddress, callData: '22911311;',
         onWalletPrompt: () => { walletPrompts++ },
         reviewFee: async fee => {
           assert.equal(fee.token, token)
-          assert.equal(Math.round(fee.gas * 1e8), 172)
+          assert.equal(Math.round(fee.gas * 1e8), 465)
           throw reviewRequired
         },
       }), error => error === reviewRequired)
