@@ -85,13 +85,14 @@ async function constructPsbt({
     withChange.addOutput({ script: changeScript, value: 0n })
     const feeWithChange = estimateFee(withChange, rate)
     const change = total - BigInt(amount) - feeWithChange
-    if (change >= dustThreshold(changeScript) && change > 0n) {
+    const includeChange = change >= dustThreshold(changeScript) && change > 0n
+    if (includeChange) {
       psbt.addOutput({ script: changeScript, value: change })
     }
     // An uneconomical remainder is paid as fee; never reduce the deposit output.
     const fee = total - psbt.txOutputs.reduce((sum, output) => sum + output.value, 0n)
     validateOutputs(psbt.txOutputs)
-    const requiredFee = estimateFee(psbt, rate)
+    const requiredFee = includeChange ? feeWithChange : feeWithoutChange
     return { psbt, utxos, fee, requiredFee }
   }
   if (estimateOnly && psbt.inputCount > 0) {

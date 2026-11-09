@@ -4,7 +4,7 @@ function compactSizeLength(value: number): number {
   return value < 253 ? 1 : value <= 0xffff ? 3 : value <= 0xffffffff ? 5 : 9
 }
 
-export function outputSize(script: Uint8Array): number {
+function outputSize(script: Uint8Array): number {
   return 8 + compactSizeLength(script.length) + script.length
 }
 
@@ -28,5 +28,3 @@ export function validateOutputs(outputs: ReadonlyArray<{ script: Uint8Array; val
     }
   })
 }
-
-export { compactSizeLength }

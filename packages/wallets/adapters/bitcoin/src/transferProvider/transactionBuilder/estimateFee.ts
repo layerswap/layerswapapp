@@ -1,6 +1,9 @@
 import axios from 'axios'
-import type { Psbt } from 'bitcoinjs-lib'
-import { compactSizeLength, outputSize } from './outputPolicy.js'
+import { opcodes, Transaction, type Psbt } from 'bitcoinjs-lib'
+
+// Reserve room for the largest signatures and the compressed SegWit public key.
+const segwitWitness = [new Uint8Array(73), new Uint8Array(33)]
+const taprootWitness = [new Uint8Array(65)] // Key-path signature with optional sighash byte.
 
 export async function fetchFeeRate(version: 'testnet' | 'mainnet'): Promise<number> {
   const base = `https://mempool.space${version === 'testnet' ? '/testnet' : ''}`
@@ -10,22 +13,27 @@ export async function fetchFeeRate(version: 'testnet' | 'mainnet'): Promise<numb
   return rate
 }
 
-/** Conservative signed size for the native SegWit inputs this builder supports. */
 export function estimateFee(psbt: Psbt, feeRate: number): bigint {
   if (!Number.isFinite(feeRate) || feeRate <= 0) throw new Error('Invalid Bitcoin fee rate')
-  let witnessBytes = 2 // SegWit marker and flag
-  for (const input of psbt.data.inputs) {
-    const script = input.witnessUtxo?.script
-    if (script?.length === 22 && script[0] === 0 && script[1] === 20) {
-      witnessBytes += 109 // two items: maximum DER signature + compressed public key
-    } else if (script?.length === 34 && script[0] === 0x51 && script[1] === 32) {
-      witnessBytes += 67 // key-path signature, including an optional sighash byte
+
+  // Model the signed size without modifying the PSBT sent to the wallet.
+  const sizedTransaction = new Transaction()
+  psbt.txInputs.forEach(({ hash, index, sequence }, inputIndex) => {
+    const script = psbt.data.inputs[inputIndex].witnessUtxo?.script
+    sizedTransaction.addInput(hash, index, sequence)
+
+    if (script?.length === 22 && script[0] === opcodes.OP_0 && script[1] === 20) {
+      sizedTransaction.setWitness(inputIndex, segwitWitness)
+    } else if (script?.length === 34 && script[0] === opcodes.OP_1 && script[1] === 32) {
+      sizedTransaction.setWitness(inputIndex, taprootWitness)
     } else {
       throw new Error('Unsupported Bitcoin input script; use a native SegWit or Taproot account')
     }
+  })
+
+  for (const { script, value } of psbt.txOutputs) {
+    sizedTransaction.addOutput(script, value)
   }
-  const baseBytes = 8 + compactSizeLength(psbt.inputCount) + compactSizeLength(psbt.txOutputs.length)
-    + psbt.inputCount * 41 + psbt.txOutputs.reduce((sum, output) => sum + outputSize(output.script), 0)
-  const vsize = Math.ceil((baseBytes * 4 + witnessBytes) / 4)
-  return BigInt(Math.ceil(vsize * feeRate))
+
+  return BigInt(Math.ceil(sizedTransaction.virtualSize() * feeRate))
 }
