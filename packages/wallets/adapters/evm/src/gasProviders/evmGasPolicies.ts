@@ -104,14 +104,14 @@ const EVM_GAS_POLICIES_BY_CHAIN_ID = new Map<number, EVMGasPolicy>([
         gasLimitMarginBps: 12_000n,
         reserveMaximumFee: true,
         transactionGasMode: 'explicit-eip1559',
-        })],
+    })],
     // BNB Smart Chain mainnet: retain 1.2x price headroom for legacy fees.
     [56, createEVMGasPolicy({
         baseFeeMultiplier: 1.2,
         gasLimitMarginBps: 12_000n,
         reserveMaximumFee: true,
         transactionGasMode: 'explicit-legacy',
-        })],
+    })],
     // Monad charges the complete signed gas limit and applies a 10 MON reserve
     // to EIP-7702-delegated accounts.
     [143, MONAD_GAS_POLICY], // Monad mainnet

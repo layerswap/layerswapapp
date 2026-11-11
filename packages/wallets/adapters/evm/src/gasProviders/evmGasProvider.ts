@@ -45,9 +45,13 @@ export class EVMGasProvider implements GasProvider {
             })
 
             const policy = resolveEVMGasPolicy(chainId)
-            const getGas = (policy.opStack || network.metadata?.evm_oracle_contract) ? getOptimismGas : getEthereumGas
+            const usesOpStackFees = !!(policy.opStack || network.metadata?.evm_oracle_contract)
+            const getGas = usesOpStackFees ? getOptimismGas : getEthereumGas
 
-            const nativeValue = token.contract ? 0n : parseNativeAmount(amount ?? 0, token.decimals, amountInBaseUnits)
+            // Only the OP Stack L1 data fee depends on the exact value; other quotes never read it.
+            const nativeValue = usesOpStackFees && !token.contract
+                ? parseNativeAmount(amount ?? 0, token.decimals, amountInBaseUnits)
+                : 0n
 
             const gasProvider = new getGas(
                 {
