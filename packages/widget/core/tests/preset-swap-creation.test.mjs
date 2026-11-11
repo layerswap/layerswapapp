@@ -202,7 +202,9 @@ test('created swaps reject live draft syncing until an explicit fresh attempt', 
   assert.equal(data.amountPresetLocked, true)
   assert.equal(updates.syncAmountPresetDraft({ ...values, amount: '0.4' }), false)
   assert.equal(data.swapBasicData.requested_amount, '1')
+  const previousRevision = data.amountPresetRevision
   await act(() => updates.startFreshSwapAttempt())
+  assert.equal(data.amountPresetRevision, previousRevision + 1, 'fresh attempts must invalidate cached preset calculations')
   assert.equal(data.amountPresetLocked, false)
   assert.equal(data.swapId, undefined)
 })

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test, { after } from 'node:test'
 import React, { act, createElement } from 'react'
+import { renderToString } from 'react-dom/server'
 import { createStore } from 'zustand/vanilla'
 import { JSDOM } from 'jsdom'
 import { loadSource } from './helpers/source.mjs'
@@ -33,9 +34,18 @@ function createRegistry() {
         '@/lib/walletConnect/walletDescriptorLoader': { WalletDescriptorLoaderContext: React.createContext(null) },
     })
     const { TransferResolver } = loadSource('lib/transfers/transferResolver.ts')
+    const { GaslessResolver } = loadSource('lib/gasless/gaslessResolver.ts')
+    let gaslessResolver
     let transferResolver
     const resolverService = {
-        setProviders: (_balances, _gas, _nfts, transfers) => { transferResolver = new TransferResolver(transfers) },
+        setProviders: (_balances, _gas, _nfts, transfers, _contracts, _rpc, gasless) => {
+            transferResolver = new TransferResolver(transfers)
+            gaslessResolver = new GaslessResolver(gasless)
+        },
+        getGaslessResolver: () => {
+            assert.ok(gaslessResolver, 'gasless discovery must wait for resolver registration')
+            return gaslessResolver
+        },
         getTransferResolver: () => {
             assert.ok(transferResolver, 'discovery waits for existing provider registration')
             return transferResolver
@@ -52,9 +62,21 @@ function createRegistry() {
         '@layerswap/wallet-core': walletContext,
         '@/lib/resolvers/resolverService': { resolverService },
     })
+    const { useGasless } = loadSource('hooks/useGasless.ts', {
+        react: React,
+        '@layerswap/wallet-core': walletContext,
+        '@/lib/resolvers/resolverService': { resolverService },
+    })
+    const wrap = (walletProviders, children) => createElement(
+        walletContext.WalletProvidersRegistryProvider,
+        { walletProviders, networks: [], networkAdapter: {} },
+        createElement(context.ResolverProviders, { walletProviders }, children),
+    )
     const root = createRoot(document.createElement('div'))
     return {
         useWithdrawalProvider,
+        useGasless,
+        renderServer: (walletProviders, children) => renderToString(wrap(walletProviders, children)),
         render: (walletProviders, children) => act(() => root.render(
             createElement(walletContext.WalletProvidersRegistryProvider, { walletProviders, networks: [], networkAdapter: {} },
                 createElement(context.ResolverProviders, { walletProviders }, children)),
@@ -112,6 +134,60 @@ test('withdrawal discovery follows transfer execution precedence and handles abs
     try {
         await registry.render([adapter], createElement(Probe))
         assert.equal(await registry.transferResolver.executeTransfer({ network: { name: 'NETWORK' } }), 'first-provider')
+    } finally {
+        await registry.unmount()
+    }
+})
+
+test('direct-link gasless discovery is safe during SSR and becomes available after provider registration', async () => {
+    const registry = createRegistry()
+    const network = { name: 'GASLESS_NETWORK' }
+    const gasless = { supportsNetwork: candidate => candidate.name === network.name, signGaslessDeposit: async () => 'signature' }
+    const adapter = {
+        id: 'gasless', createConnection: () => ({ store: createStore(() => ({})) }),
+        gaslessProvider: () => gasless,
+    }
+    const providers = [adapter]
+    const support = []
+    let sign
+    function Probe() {
+        const { isGaslessSupported, signGaslessDeposit } = registry.useGasless()
+        sign = signGaslessDeposit
+        const supported = isGaslessSupported(network)
+        support.push(supported)
+        return createElement('span', null, String(supported))
+    }
+    try {
+        assert.match(registry.renderServer(providers, createElement(Probe)), /false/)
+        await registry.render(providers, createElement(Probe))
+        assert.equal(support[1], false, 'first client render must not read the resolver')
+        assert.equal(support.at(-1), true, 'support updates once registration finishes')
+        assert.equal(await sign({ network }), 'signature')
+    } finally {
+        await registry.unmount()
+    }
+})
+
+test('gasless discovery updates when a descriptor hydrates and when its adapter changes', async () => {
+    const registry = createRegistry()
+    const network = { name: 'GASLESS_NETWORK' }
+    const support = []
+    function Probe() {
+        support.push(registry.useGasless().isGaslessSupported(network))
+        return null
+    }
+    const probe = createElement(Probe)
+    const adapter = {
+        id: 'gasless', createConnection: () => ({ store: createStore(() => ({})) }),
+        gaslessProvider: () => ({ supportsNetwork: () => true }),
+    }
+    try {
+        await registry.render([{ id: 'gasless', loadProvider() {} }], probe)
+        assert.equal(support.at(-1), false)
+        await registry.render([adapter], probe)
+        assert.equal(support.at(-1), true)
+        await registry.render([{ ...adapter, gaslessProvider: () => ({ supportsNetwork: () => false }) }], probe)
+        assert.equal(support.at(-1), false)
     } finally {
         await registry.unmount()
     }

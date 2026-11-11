@@ -90,7 +90,7 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
         if (frozen) return
         if (!sameSource || !liveSupported) {
             const amountMode = !walletFlow || (sameSource && !liveSupported) ? 'fixed' as const : 'manual' as const
-            const next = { ...values, amountMode, amountPresetSource: undefined, amountPresetError: undefined, amountPresetPending: false, amountPresetBalance: undefined }
+            const next = { ...values, amountMode, amountPresetSource: undefined, amountPresetError: undefined, amountPresetPending: false, amountPresetBalance: undefined, amountPresetGas: undefined }
             if (updates?.syncAmountPresetDraft(next) === false) return
             void setValues(next, true)
             return
@@ -101,10 +101,10 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
             ? swap?.swapBasicData?.requested_amount : undefined
         previousRevision.current = revision
         const unavailableAmount = error instanceof AmountPresetUnavailableError ? error.amount : undefined
-        const next = { ...values, amount: unavailableAmount ?? amount ?? preparedAmount ?? values.amount, amountPresetError: message, amountPresetPending: pending, amountPresetBalance: balance?.amount }
+        const next = { ...values, amount: unavailableAmount ?? amount ?? preparedAmount ?? values.amount, amountPresetError: message, amountPresetPending: pending, amountPresetBalance: balance?.amount, amountPresetGas: gas }
         if (updates?.syncAmountPresetDraft(next) === false) return
-        if (next.amount !== values.amount || message !== values.amountPresetError || pending !== values.amountPresetPending || !Object.is(next.amountPresetBalance, values.amountPresetBalance))
+        if (next.amount !== values.amount || message !== values.amountPresetError || pending !== values.amountPresetPending || !Object.is(next.amountPresetBalance, values.amountPresetBalance) || next.amountPresetGas !== values.amountPresetGas)
             void setValues(next, true)
-    }, [amount, error, message, pending, balance?.amount, sameSource, liveSupported, walletFlow, frozen, values, setValues, updates, revision, swap?.swapId, swap?.swapBasicData])
+    }, [amount, gas, error, message, pending, balance?.amount, sameSource, liveSupported, walletFlow, frozen, values, setValues, updates, revision, swap?.swapId, swap?.swapBasicData])
     return null
 }

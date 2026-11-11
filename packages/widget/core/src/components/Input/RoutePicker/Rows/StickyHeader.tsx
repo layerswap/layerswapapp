@@ -68,7 +68,7 @@ export function StickyHeader({
                 <CollapsableHeader
                     item={item}
                     direction={direction}
-                    hideTokenImages={open}
+                    isOpen={open}
                     hideBalances={hideBalances}
                 />
             </div>

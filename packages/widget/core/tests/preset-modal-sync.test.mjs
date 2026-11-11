@@ -15,11 +15,12 @@ const previous = Object.getOwnPropertyDescriptors(globalThis)
 for (const [key, value] of Object.entries({ window: dom.window, document: dom.window.document, localStorage: dom.window.localStorage, IS_REACT_ACT_ENVIRONMENT: true }))
   Object.defineProperty(globalThis, key, { configurable: true, writable: true, value })
 const { createRoot } = await import('react-dom/client')
-const { default: useSWR, SWRConfig } = await import('swr')
+const { default: useSWR, SWRConfig, useSWRConfig } = await import('swr')
 
 const token = { symbol: 'ETH', decimals: 18, precision: 8, price_in_usd: 2400 }
-const source = { name: 'BASE_MAINNET', token, tokens: [token] }
-const destination = { name: 'ARBITRUM_MAINNET', token, tokens: [token] }
+const usdc = { symbol: 'USDC', decimals: 6, precision: 6, contract: '0xconfigured-usdc', price_in_usd: 1 }
+const source = { name: 'BASE_MAINNET', token, tokens: [token, usdc] }
+const destination = { name: 'ARBITRUM_MAINNET', token, tokens: [token, usdc] }
 const settings = { sourceRoutes: [source], destinationRoutes: [destination] }
 const state = {}
 const { BalanceResolver } = loadSource('lib/balances/balanceResolver.ts', {
@@ -30,7 +31,10 @@ const { BalanceResolver } = loadSource('lib/balances/balanceResolver.ts', {
 })
 const context = createSwapContext({
   Client: class {}, getSwapId: () => undefined, getAccount: () => state.account,
-  overrides: { '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts') },
+  overrides: {
+    '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
+    '@/hooks/useSwapPolling': { useSwapPolling: id => ({ data: id ? state.backendResponse : undefined, mutate() {} }) },
+  },
 })
 const { generateSwapInitialValuesFromSwap } = loadSource('lib/generateSwapInitialValues.ts', {
   './address/Address': {}, './extendedRoutes/registry': {},
@@ -39,9 +43,9 @@ const { default: Controller } = loadSource('components/Pages/Swap/Form/AmountPre
   react: React, formik: require('formik'), swr: { default: useSWR }, '@/context/swap': context,
   '@/context/swapAccounts': { useSelectedAccount: () => state.account },
   '@/hooks/useWallet': { default: () => ({ wallets: [state.account] }) },
-  '@/hooks/useFee': { transformFormValuesToQuoteArgs: values => values, useQuoteData: () => ({ maxAllowedAmount: 1, minAllowedAmount: state.minimum }) },
+  '@/hooks/useFee': { transformFormValuesToQuoteArgs: values => values, useQuoteData: () => ({ maxAllowedAmount: state.maximum, minAllowedAmount: state.minimum }) },
   '@/hooks/useFormValidation': formValidation,
-  '@/lib/balances/useBalance': { useBalance: () => ({ balances: state.balances, isLoading: state.balanceLoading }) },
+  '@/lib/balances/useBalance': { useBalance: (_address, network) => ({ balances: state.rejectIncompleteNetworks && !network?.tokens ? [] : state.balances, isLoading: state.balanceLoading }) },
   '@/lib/amountPresets': amountPresets,
   '@/lib/amountMessages': amountMessages,
   '@/stores/usdModeStore': { useUsdModeStore: selector => usdStore(selector) },
@@ -91,6 +95,7 @@ const { default: SubmitButton } = loadSource('components/Buttons/submitButton.ts
 })
 const noop = () => null
 const { SendTransactionView } = loadSource('components/Pages/Swap/Withdraw/Presentation/WalletActionsView.tsx', {
+  '../TransferBlock': { TransferBlock: ({ children }) => children },
   '@/components/utils/resolveSwapFlow': { resolveSwapFlow },
   '@/components/Buttons/submitButton': { default: SubmitButton },
   '@/components/Icons/FailIcon': { default: noop }, '@/components/Icons/InfoIcon': { default: noop },
@@ -125,6 +130,12 @@ const { default: WalletTransferButton } = loadSource('components/Pages/Swap/With
   } },
 })
 const { default: Withdraw } = loadSource('components/Pages/Swap/Withdraw/Withdraw.tsx', {
+  './TransferBlock': loadSource('components/Pages/Swap/Withdraw/TransferBlock.tsx', {
+    '@/context/callbackProvider': { useOptionalCallbacks: () => ({}) },
+    '@/context/swap': context, '@/lib/swapLifecycle': { lifecycleContextFromSwap: swap => ({ amount: swap.requested_amount }) },
+    '@/hooks/useTransferBlocked': loadSource('hooks/useTransferBlocked.ts', callbackImports),
+  }),
+  '@/hooks/useHasSubmittedTransfer': { useHasSubmittedTransfer: () => false },
   '@layerswap/widget-types': require('@layerswap/widget-types'),
   '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
   '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput() {} } },
@@ -133,13 +144,13 @@ const { default: Withdraw } = loadSource('components/Pages/Swap/Withdraw/Withdra
   '@/lib/amountPresets': amountPresets,
   '@/stores/swapTransactionStore': { useSwapTransactionStore: selector => selector({ swapTransactions: {}, pendingSubmissions: {} }) },
   '@/components/Widget/Index': { Widget: { Footer: passthrough } },
-  '@/context/settings': { useSettingsState: () => ({ networks: [source, destination] }) },
+  '@/context/settings': { useSettingsState: () => ({ networks: [source, destination], ...settings }) },
   '@/context/swapAccounts': { useSelectedAccount: () => state.account },
   '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
-  '@/hooks/useFee': { transformSwapDataToQuoteArgs: values => values, useQuoteData: () => ({ maxAllowedAmount: 1, minAllowedAmount: state.minimum }) },
+  '@/hooks/useFee': { transformSwapDataToQuoteArgs: values => values, useQuoteData: () => ({ maxAllowedAmount: state.maximum, minAllowedAmount: state.minimum }) },
   '@/lib/balances/useBalance': { useBalance: () => ({ balances: state.balances }) },
   '@/lib/gases/useSWRGas': gasHook, '@/lib/gases/useOutOfGas': { default: useOutOfGas },
-  '../Form/SecondaryComponents/validationError/AdjustAmountButton': { AdjustAmountButton: () => createElement('button', null, 'Adjust amount') },
+  '../Form/SecondaryComponents/validationError/AdjustAmountButton': { AdjustAmountButton: ({ onEditAmount }) => createElement('button', { onClick: onEditAmount }, 'Adjust amount') },
   '../Form/SecondaryComponents/validationError/RefreshBalanceButton': { RefreshBalanceButton: () => createElement('button', null, 'Refresh') },
   './Presentation/BalanceWarningView': warningViews,
   './WalletTransferButton': { default: WalletTransferButton },
@@ -148,8 +159,9 @@ const { default: Withdraw } = loadSource('components/Pages/Swap/Withdraw/Withdra
   '@/hooks/useTransferBlocked': loadSource('hooks/useTransferBlocked.ts', callbackImports),
   '@/hooks/useLifecycleObservation': loadSource('hooks/useLifecycleObservation.ts', callbackImports),
 })
-let root, container, formik, data, updates, initialValues, config
+let root, container, formik, data, updates, initialValues, config, mutate
 function Probe() {
+  mutate = useSWRConfig().mutate
   formik = useFormikContext()
   data = context.useSwapDataState()
   updates = context.useSwapDataUpdate()
@@ -158,7 +170,11 @@ function Probe() {
     quote: { source_token: { ...token, price_in_usd: state.price } } })
   return createElement(React.Fragment, null, createElement(Controller), data.swapBasicData ? createElement(React.Fragment, null,
     createElement(Summary), state.renderQuoteDetails && createElement('section', { 'data-testid': 'quote-details' },
-      createElement(SwapQuoteDetails, { swapBasicData: data.swapBasicData, quote: data.quote, quoteError: data.quoteError, quoteIsLoading: data.quoteIsLoading })), createElement(Withdraw, { type: 'widget' })) : null)
+      createElement(SwapQuoteDetails, { swapBasicData: data.swapBasicData, quote: data.quote, quoteError: data.quoteError, quoteIsLoading: data.quoteIsLoading })), createElement(Withdraw, { type: 'widget', onAdjustAmount: state.enableAutoAdjust ? changed => {
+        const next = { ...formik.values, ...changed }
+        void formik.setValues(next, true)
+        updates.setSubmitedFormValues(next)
+      } : undefined })) : null)
 }
 // Record committed DOM, including the first render before passive effects sync
 // Formik and the draft. Reading only after act() would miss a one-frame warning.
@@ -184,10 +200,12 @@ const decreaseBalance = () => {
 }
 beforeEach(() => {
   container = document.createElement('div'); document.body.append(container); root = createRoot(container)
-  Object.assign(state, { account: { id: 'wallet', address: 'source' }, formKey: 0, minimum: 0.00001, price: 2400,
-    renderQuoteDetails: false, events: [], commits: [], walletMounts: 0, walletUnmounts: 0,
+  Object.assign(state, { account: { id: 'wallet', address: 'source' }, formKey: 0, maximum: 1, minimum: 0.00001, price: 2400,
+    rejectIncompleteNetworks: false,
+    enableAutoAdjust: false, renderQuoteDetails: false, events: [], commits: [], walletMounts: 0, walletUnmounts: 0,
     gas: { gas: 0.0000001, token }, gasRequest: undefined, gasError: undefined, balanceLoading: false,
     balances: [{ amount: 0.00182643, network: source.name, token: token.symbol, request_time: 1, isNativeCurrency: true }] })
+  state.backendResponse = { data: { swap: { id: 'created', source_network: { name: source.name }, source_token: {}, destination_network: { name: source.name }, destination_token: {}, requested_amount: 1, transactions: [], use_deposit_address: false } } }
   initialValues = { from: source, to: destination, fromAsset: token, toAsset: token, destination_address: 'destination',
     depositMethod: 'wallet', amount: '0.00182505', amountMode: 'max',
     amountPresetSource: amountPresets.amountPresetSource(source.name, token.symbol, 'wallet', 'source') }
@@ -476,3 +494,87 @@ for (const quoteError of [
     assert.equal(container.textContent, '')
   })
 }
+
+
+for (const isUsdMode of [false, true]) {
+  test(`Max automatically fixes a withdrawal gas increase in ${isUsdMode ? 'USD' : 'token'} mode without flashing a warning`, async () => {
+    state.enableAutoAdjust = true
+    usdStore.setState({ isUsdMode })
+    await render(); await openReview()
+    const before = summaryAmount()
+    const mounts = state.walletMounts, unmounts = state.walletUnmounts
+    state.commits = []
+    state.gasRequest = Promise.withResolvers()
+    state.gas = { gas: 0.00000012, token }
+    let refresh
+    await act(() => { refresh = mutate(key => Array.isArray(key) && key[0] === 'amount-preset') })
+    assert.equal(formik.values.amountMode, 'max')
+    assert.equal(summaryAmount(), before, 'keep the previous matched amount/fee pair while refreshing')
+    assert.equal(data.swapBasicData.amountPresetGas.gas, 0.0000001)
+    await act(async () => { state.gasRequest.resolve(); await refresh })
+    assert.equal(data.swapBasicData.amountPresetPending, false)
+    assert.ok(Number(summaryAmount()) < Number(before))
+    assert.equal(summaryAmount(), formik.values.amount)
+    assert.ok(Number(summaryAmount()) + state.gas.gas * 1.02 <= state.balances[0].amount)
+    assert.equal(data.swapBasicData.amountPresetGas.gas, state.gas.gas)
+    assert.equal(container.querySelector('button').disabled, false)
+    assert.ok(state.commits.every(text => !text.includes('Insufficient balance')), state.commits.join('\n'))
+    assert.equal(state.walletMounts, mounts)
+    assert.equal(state.walletUnmounts, unmounts)
+    assert.deepEqual(blocks(), [])
+  })
+}
+
+
+test('automatic gas adjustment cannot bind Max to a newly selected funding account', async () => {
+  state.enableAutoAdjust = true
+  await render(); await openReview()
+  const previousRevision = data.amountPresetRevision
+  state.account = { id: 'wallet', address: 'different-source' }
+  state.gas = { gas: 0.00000012, token }
+  await render()
+  assert.equal(formik.values.amountMode, 'manual')
+  assert.equal(data.swapBasicData.amountMode, 'manual')
+  assert.equal(formik.values.amountPresetSource, undefined)
+  assert.equal(data.amountPresetRevision, previousRevision, 'an account change must not trigger an automatic adjustment')
+})
+
+
+test('Adjust after wallet rejection and a USDC balance decrease restores configured route metadata', async () => {
+  state.enableAutoAdjust = true
+  state.maximum = 10
+  state.rejectIncompleteNetworks = true
+  initialValues.fromAsset = usdc
+  initialValues.toAsset = usdc
+  initialValues.amount = '2.913482'
+  initialValues.amountPresetSource = amountPresets.amountPresetSource(source.name, usdc.symbol, 'wallet', 'source')
+  state.balances = [{ amount: 2.913482, network: source.name, token: usdc.symbol, request_time: 1 }]
+  await render(); await openReview()
+  // A created swap's API networks have no token catalogue. Rejection leaves no
+  // receipt, so Adjust is allowed once the external withdrawal lowers balance.
+  state.backendResponse = { data: { swap: {
+    id: 'rejected', source_network: { name: source.name, token },
+    destination_network: { name: destination.name, token },
+    source_token: { symbol: usdc.symbol, decimals: 6 }, destination_token: { symbol: usdc.symbol, decimals: 6 },
+    requested_amount: 2.913482, destination_address: 'destination', transactions: [], use_deposit_address: false,
+  } } }
+  await act(() => updates.setSwapId('rejected'))
+  assert.equal(data.amountPresetLocked, true)
+  assert.equal(updates.canAdjustAmount(), true)
+  state.balances = [{ ...state.balances[0], amount: 2.413482, request_time: 2 }]
+  await render()
+  const adjust = [...container.querySelectorAll('button')].find(button => button.textContent === 'Adjust amount')
+  assert.ok(adjust)
+  await act(() => adjust.click())
+  assert.equal(formik.values.from, source)
+  assert.equal(formik.values.to, destination)
+  assert.equal(formik.values.fromAsset, usdc)
+  assert.equal(formik.values.toAsset, usdc)
+  assert.equal(formik.values.amount, '2.413482')
+  assert.equal(data.swapBasicData.requested_amount, '2.413482')
+  assert.equal(data.swapId, undefined)
+  assert.equal(formik.values.amountPresetError, undefined)
+  assert.equal(formik.values.amountPresetPending, false)
+  assert.doesNotMatch(container.textContent, /Balance unavailable|Something went wrong/)
+  assert.equal(container.querySelector('button').disabled, false)
+})

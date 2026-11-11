@@ -30,6 +30,8 @@ function loadSource(path, imports = {}) {
             if (name === 'react' || name === 'react/jsx-runtime')
                 return req(name);
             if (name in imports) return imports[name];
+            if (name.endsWith('/TransferBlock')) return { TransferBlock: ({ children }) => React.createElement(React.Fragment, null, children) };
+            if (name === '@/hooks/useHasSubmittedTransfer') return { useHasSubmittedTransfer: () => false };
             throw new Error(`Unexpected dependency: ${name} at ${path}`);
         },
         module,
@@ -203,7 +205,7 @@ test('exact gas loading preserves the pending wallet request and its execution l
         '@/hooks/useAtomicBatch': {
             useAtomicBatch: () => () => assert.fail('standard transfer cannot submit an atomic batch'),
         },
-        '@/lib/amountPresets': { AmountPresetChangedError: class extends Error {}, isAmountPreset: () => false },
+        '@/lib/amountPresets': { AmountPresetChangedError: class extends Error {}, isAmountPreset: () => false, amountPresetSource: (...values) => JSON.stringify(values) },
         '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput: noop } },
         '@layerswap/wallet-core': loadSource('../../../wallets/core/src/lib/walletConnect/walletRequestStore.ts'),
         '../../Presentation/WalletRequestRecovery': loadSource(base + 'Presentation/WalletRequestRecovery.tsx', {
@@ -355,7 +357,6 @@ test('exact gas loading preserves the pending wallet request and its execution l
             },
         ),
         '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
-        formik: { useFormikContext: () => ({ values: {}, setValues: noop }) },
         '../Form/SecondaryComponents/validationError/AdjustAmountButton': {
             AdjustAmountButton: () =>
                 React.createElement('div', null, 'Adjust amount'),

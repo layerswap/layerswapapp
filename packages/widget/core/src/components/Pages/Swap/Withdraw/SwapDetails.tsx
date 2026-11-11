@@ -1,3 +1,4 @@
+import type { SwapFormValues } from '../Form/SwapFormValues';
 import { Page2Presenter } from './Presentation/Page2Presenter';
 import SwapSummary from './Summary';
 import { SwapQuoteDetails } from './SwapQuoteDetails';
@@ -26,6 +27,7 @@ type Props = {
     type: 'widget' | 'contained';
     onWalletWithdrawalSuccess?: () => void;
     onCancelWithdrawal?: () => void;
+    onAdjustAmount?: (updates: SwapFormValues) => void;
     partner?: Partner;
 };
 
@@ -34,6 +36,7 @@ const SwapDetails: FC<Props> = ({
     onWalletWithdrawalSuccess,
     partner,
     onCancelWithdrawal,
+    onAdjustAmount,
 }) => {
     const {
         swapBasicData,
@@ -115,6 +118,7 @@ const SwapDetails: FC<Props> = ({
                     partner={partner}
                     onWalletWithdrawalSuccess={onWalletWithdrawalSuccess}
                     onCancelWithdrawal={onCancelWithdrawal}
+                    onAdjustAmount={onAdjustAmount}
                 >
                     {(model) => (
                         <Page2Body

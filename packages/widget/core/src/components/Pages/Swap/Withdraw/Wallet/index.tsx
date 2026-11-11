@@ -4,7 +4,6 @@ import { ProgressPanelView } from '../Presentation/ProgressPanelView';
 import { getWalletProgress } from '../Presentation/walletProgress';
 import { useWalletWithdrawalState } from '@/context/withdrawalContext';
 import { ConnectWalletView, getSendTransactionPresentation } from '../Presentation/WalletActionsView';
-import type { TransferBlockedReasonCode } from '@layerswap/widget-types';
 import { FC, Suspense, useCallback, useEffect, useMemo, useState, useRef, type ReactNode } from "react";
 import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { WithdrawalProvider } from "@/context/withdrawalContext";
@@ -27,9 +26,9 @@ import { useWithdrawalProvider } from '@/hooks/useWithdrawalProvider';
 import { ProviderWalletWithdrawal } from '../WithdrawalProviders/ProviderWalletWithdrawal';
 import { useCallbacks } from "@/context/callbackProvider";
 import { lifecycleContextFromSwap, lifecycleErrorDetails } from "@/lib/swapLifecycle";
-import { useTransferBlocked } from "@/hooks/useTransferBlocked";
+import { TransferBlock } from '../TransferBlock';
+import { useHasSubmittedWalletTransaction } from '@/hooks/useHasSubmittedTransfer';
 import { isProviderHydrated } from "@layerswap/wallet-core";
-import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 import { isUserRejection } from "./Common/isUserRejection";
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import { useWithdrawalScope } from '../useWithdrawalExecution';
@@ -108,7 +107,6 @@ export function useWalletWithdrawalController({
         && selectedSourceAccount.address.toLowerCase() !== destination_address.toLowerCase()
     )
 
-    const providerWithdrawal = useWithdrawalProvider(source_network)
     const hasMultiStepHandler = !!provider?.multiStepHandlers?.some(handler => handler.supportedNetworks.includes(source_network?.name))
     // The account can restore before its provider publishes the connected wallet.
     // useWallet's network provider may belong to another account, so check the
@@ -116,28 +114,29 @@ export function useWalletWithdrawalController({
     const selectedProvider = selectedSourceAccount?.provider
     const selectedProviderReady = isProviderHydrated(selectedProvider)
         && selectedProvider.pendingSessionRestore !== true
-    // A connected account whose wallet cannot withdraw on this network only
-    // sees the connect button again; report that as a blocked transfer step.
-    const blockedReason: TransferBlockedReasonCode | undefined = providerWithdrawal || hasMultiStepHandler ? undefined
-        : sameAccountMismatch ? 'same_account_required'
-        : selectedProviderReady && !wallet ? 'wallet_unsupported_for_network'
-        : undefined
-    useTransferBlocked(active ? blockedReason : undefined, lifecycleContext, 'WalletWithdrawal',
-        blockedReason === 'same_account_required' ? 'The selected source and destination accounts must match for this route'
-        : blockedReason === 'wallet_unsupported_for_network' ? `${selectedSourceAccount?.providerName ?? 'The selected wallet'} cannot send from ${source_network?.name}`
-        : undefined)
-
     const connection = useConnectWalletController();
     const transfer = useTransferTokenController({ swapData: swapBasicData, refuel, chainId: Number(networkChainId), savedTransactionHash }, active && !!wallet && !sameAccountMismatch && !hasMultiStepHandler);
     const send = useSendTransactionController(transfer.sendProps, active && !!wallet && !sameAccountMismatch && !hasMultiStepHandler);
     const presentation = getSendTransactionPresentation(send);
     let controls: ReactNode = presentation.controls;
-    const observingSubmission = send.pendingSubmission || send.submissionAccepted;
+    const hasSubmittedTransfer = useHasSubmittedWalletTransaction();
+    const observingSubmission = send.pendingSubmission || send.submissionAccepted || hasSubmittedTransfer;
     if (!observingSubmission && transfer.rpcMessage) controls = transfer.rpcMessage;
-    if (!observingSubmission && !wallet) controls = <ConnectWalletView {...connection} />;
+    if (!observingSubmission && !wallet) {
+        const connect = <ConnectWalletView {...connection} />;
+        controls = selectedSourceAccount && selectedProviderReady ? (
+            <TransferBlock reasonCode="wallet_unsupported_for_network" path="WalletWithdrawal"
+                reason={`${selectedSourceAccount.providerName ?? 'The selected wallet'} cannot send from ${source_network.name}`}>
+                {connect}
+            </TransferBlock>
+        ) : connect;
+    }
     if (!observingSubmission && sameAccountMismatch) {
         const network = source_network.name.toLowerCase() === sameAccountNetwork?.toLowerCase() ? source_network : destination_network;
-        controls = <ActionMessages.DifferentAccountsNotAllowedError network={network.display_name} />;
+        controls = <TransferBlock reasonCode="same_account_required" path="WalletWithdrawal"
+            reason="The selected source and destination accounts must match for this route">
+            <ActionMessages.DifferentAccountsNotAllowedError network={network.display_name} />
+        </TransferBlock>;
     }
     // Custom multi-step handlers retain their existing completion/error contract.
     if (!observingSubmission && provider?.multiStepHandlers) {
@@ -225,18 +224,7 @@ export function useTransferTokenController({
         setError(undefined);
         setIsSignatureError(false);
     }, [active]);
-    const { swapDetails, swapError, swapId } = useSwapDataState()
-    const checkingSubmission = useSwapTransactionStore(state => {
-        const currentSwapId = swapId ?? swapDetails?.id
-        if (!currentSwapId) return false
-        const transaction = state.swapTransactions[currentSwapId]
-        return !!state.pendingSubmissions[currentSwapId]
-            || (transaction?.kind === 'atomic-batch'
-                && !!transaction.providerSubmissionAccepted
-                && !transaction.hash)
-    })
-    const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
-    const gaslessErrorMessage = useGaslessPreferenceStore(s => s.gaslessErrorMessage)
+    const hasSubmittedTransfer = useHasSubmittedWalletTransaction();
 
     const selectedSourceAccount = useSelectedAccount("from", swapData.source_network.name);
 
@@ -249,34 +237,8 @@ export function useTransferTokenController({
     const { executeTransfer } = useTransfer()
     const { signGaslessDeposit, isGaslessSupported } = useGasless()
     // Backend observation must continue when the wallet's RPC is unavailable.
-    const rpcHealth = useRpcHealth(swapData.source_network, active && !checkingSubmission)
-    const rpcUnhealthy = !checkingSubmission && rpcHealth?.health.status === 'unhealthy'
-    const lifecycleContext = useMemo(
-        () => lifecycleContextFromSwap(swapData, swapDetails),
-        [
-            swapData.destination_address,
-            swapData.destination_network.name,
-            swapData.destination_token.symbol,
-            swapData.requested_amount,
-            swapData.source_network.name,
-            swapData.source_token.symbol,
-            swapData.use_deposit_address,
-            swapDetails?.id,
-            swapDetails?.source_address,
-        ],
-    )
-
-    // Every state that replaces the send button with a message, in display priority. A swap or
-    // deposit-actions error keeps the send button rendered, so it is not a block.
-    const blockedReason: TransferBlockedReasonCode | undefined =
-        rpcUnhealthy ? 'rpc_unhealthy'
-        : gaslessUnavailable ? 'gasless_unavailable'
-        : undefined
-    useTransferBlocked(active ? blockedReason : undefined, lifecycleContext, 'TransferTokenButton',
-        blockedReason === 'rpc_unhealthy' ? (rpcHealth?.health.status === 'unhealthy' ? rpcHealth.health.reason : undefined)
-        : blockedReason === 'gasless_unavailable' ? gaslessErrorMessage ?? undefined
-        : undefined)
-
+    const rpcHealth = useRpcHealth(swapData.source_network, active && !hasSubmittedTransfer)
+    const rpcUnhealthy = !hasSubmittedTransfer && rpcHealth?.health.status === 'unhealthy'
     const selectionKey = withdrawalSelectionKey(swapData.source_network.name, selectedSourceAccount, wallet);
     const selectionScope = useWithdrawalScope(selectionKey);
     useClientLayoutEffect(() => {
@@ -378,12 +340,17 @@ export function useTransferTokenController({
         selectedSourceAddress: selectedSourceAccount?.address || '', sourceNetwork: swapData.source_network, active,
     });
     return {
-        rpcMessage: rpcUnhealthy ? <RPCUnhealthyMessage
-            network={swapData.source_network}
-            suggestRpcForCurrentChain={rpcHealth.suggestRpcForCurrentChain}
-            isSuggestingRpc={rpcHealth.isSuggestingRpc}
-            checkManually={rpcHealth.checkManually}
-        /> : null,
+        rpcMessage: rpcUnhealthy ? (
+            <TransferBlock reasonCode="rpc_unhealthy" path="TransferTokenButton"
+                reason={rpcHealth.health.status === 'unhealthy' ? rpcHealth.health.reason : undefined}>
+                <RPCUnhealthyMessage
+                    network={swapData.source_network}
+                    suggestRpcForCurrentChain={rpcHealth.suggestRpcForCurrentChain}
+                    isSuggestingRpc={rpcHealth.isSuggestingRpc}
+                    checkManually={rpcHealth.checkManually}
+                />
+            </TransferBlock>
+        ) : null,
         sendProps: {
             errorMessage,
             onClick: clickHandler,
