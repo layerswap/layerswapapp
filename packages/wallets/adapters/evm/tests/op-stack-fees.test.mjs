@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { createPublicClient, custom, decodeFunctionData, encodeAbiParameters, parseAbi, parseTransaction } from 'viem'
 import { base, baseSepolia } from 'viem/chains'
-import { resolveOpStackAdditionalFees } from '../dist/esm/gasProviders/resolveOpStackAdditionalFees.js'
+import { resolveOpStackL1Fee, resolveOpStackOperatorFee } from '../dist/esm/gasProviders/resolveOpStackAdditionalFees.js'
 
 const abi = parseAbi([
     'function getL1Fee(bytes transaction) view returns (uint256)',
@@ -37,11 +37,13 @@ for (const chain of [base, baseSepolia]) {
                     return encodeAbiParameters([{ type: 'uint256' }], [654_321n])
                 },
             }) })
-            const total = await resolveOpStackAdditionalFees({
-                publicClient, network: { chain_id: String(chain.id) },
-                transaction: { account, to, value, data }, gasLimit: 27_138n,
-            })
-            assert.equal(total, 777_777n)
+            const context = { publicClient, network: { chain_id: String(chain.id) } }
+            const [l1Fee, operatorFee] = await Promise.all([
+                resolveOpStackL1Fee({ ...context, transaction: { account, to, value, data } }),
+                resolveOpStackOperatorFee({ ...context, gasLimit: 27_138n }),
+            ])
+            assert.equal(l1Fee, 123_456n)
+            assert.equal(operatorFee, 654_321n)
             assert.deepEqual(seen.map(call => call.functionName).sort(), ['getL1Fee', 'getOperatorFee'])
         })
     }
@@ -52,7 +54,7 @@ test('non-OP chains do not request rollup fees', async () => {
     const publicClient = createPublicClient({ chain: base, transport: custom({
         request: async () => assert.fail('Unexpected oracle RPC'),
     }) })
-    assert.equal(await resolveOpStackAdditionalFees({
-        publicClient, network: { chain_id: '1' }, transaction: { account, to }, gasLimit: 21_000n,
-    }), 0n)
+    const context = { publicClient, network: { chain_id: '1' } }
+    assert.equal(await resolveOpStackL1Fee({ ...context, transaction: { account, to } }), 0n)
+    assert.equal(await resolveOpStackOperatorFee({ ...context, gasLimit: 21_000n }), 0n)
 })

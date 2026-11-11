@@ -40,15 +40,3 @@ export async function resolveOpStackOperatorFee({ publicClient, network, gasLimi
         args: [gasLimit],
     })
 }
-
-/** Fees outside gasLimit * maxFeePerGas, budgeted into quotes; the wallet shows them at submission. */
-export async function resolveOpStackAdditionalFees(args: OpStackFeeContext & {
-    transaction: OpStackTransaction
-    gasLimit: bigint
-}): Promise<bigint> {
-    const [l1Fee, operatorFee] = await Promise.all([
-        resolveOpStackL1Fee(args),
-        resolveOpStackOperatorFee(args),
-    ])
-    return l1Fee + operatorFee
-}
