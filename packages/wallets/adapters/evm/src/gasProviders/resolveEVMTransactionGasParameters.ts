@@ -1,11 +1,10 @@
 import { Network } from "@layerswap/widget-types";
-import { BaseError, createPublicClient, InsufficientFundsError } from "viem";
+import { createPublicClient } from "viem";
 import resolveChain from "../evmUtils/resolveChain";
 import { resolveFallbackTransport } from "../evmUtils/resolveTransports";
 import { buildTransactionGasParameters } from "./evmGasMath";
 import { resolveEVMGasPolicy } from "./evmGasPolicies";
 import { resolveEVMFeeData } from "./resolveEVMFeeData";
-import { resolveOpStackAdditionalFees } from './resolveOpStackAdditionalFees';
 
 type ResolveEVMTransactionGasParametersArgs = {
     network: Network
@@ -15,6 +14,13 @@ type ResolveEVMTransactionGasParametersArgs = {
     value?: bigint
 }
 
+/**
+ * Prepare the explicit gas parameters a chain policy asks for. Whether the
+ * account can fund them is the wallet's decision, never asserted here: smart
+ * accounts and paymasters pay fees in tokens or have them sponsored, so the
+ * native balance says nothing about affordability. L1 data and operator fees
+ * are likewise charged by the chain and shown by the wallet, not pre-checked.
+ */
 export const resolveEVMTransactionGasParameters = async ({
     network,
     account,
@@ -36,41 +42,10 @@ export const resolveEVMTransactionGasParameters = async ({
         resolveEVMFeeData(publicClient, network),
     ])
 
-    const gasParameters = buildTransactionGasParameters({
+    return buildTransactionGasParameters({
         policy,
         chainId,
         estimatedGas,
         ...feesPerGas,
     })
-
-    if (!gasParameters || !policy.checkBalanceBeforeSend) {
-        return gasParameters
-    }
-
-    // Validate the exact payload using the fees passed to the wallet. Never
-    // silently reduce a deposit amount: it belongs to an already-created swap.
-    // Pending balance also accounts for transactions not yet mined.
-    const feePerGas = gasParameters.gasPrice ?? gasParameters.maxFeePerGas
-    if (feePerGas === undefined) {
-        throw new Error(`Transaction fee is unavailable for chain ${chainId}`)
-    }
-    const [balance, additionalFees] = await Promise.all([
-        publicClient.getBalance({ address: account, blockTag: 'pending' }),
-        resolveOpStackAdditionalFees({
-            publicClient,
-            network,
-            transaction: { account, to, data, value },
-            gasLimit: gasParameters.gas,
-        }),
-    ])
-    const requiredBalance = (value ?? 0n) + gasParameters.gas * feePerGas + additionalFees
-    if (balance < requiredBalance) {
-        throw new InsufficientFundsError({
-            cause: new BaseError(
-                'Balance does not cover the transfer and its current maximum gas fee. Recalculate the amount before sending.',
-            ),
-        })
-    }
-
-    return gasParameters
 }

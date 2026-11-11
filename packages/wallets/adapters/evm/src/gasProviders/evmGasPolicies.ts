@@ -22,7 +22,6 @@ export type EVMGasPolicy = Readonly<{
     feeQuoteMode: EVMFeeQuoteMode
     reserveMaximumFee: boolean
     transactionGasMode: EVMTransactionGasMode
-    checkBalanceBeforeSend: boolean
     /** Only the standard EVM estimator supports account reserves; OP Stack
      * estimators must add reserve handling before enabling this on an OP chain. */
     accountBalanceReserve?: EVMAccountBalanceReserve
@@ -35,7 +34,6 @@ const DEFAULT_EVM_GAS_POLICY: EVMGasPolicy = Object.freeze({
     feeQuoteMode: 'maximum',
     reserveMaximumFee: false,
     transactionGasMode: 'wallet',
-    checkBalanceBeforeSend: false,
 })
 
 export const createEVMGasPolicy = (
@@ -86,7 +84,6 @@ const BASE_GAS_POLICY = createEVMGasPolicy({
     gasLimitMarginBps: 12_000n,
     reserveMaximumFee: true,
     transactionGasMode: 'explicit-eip1559',
-    checkBalanceBeforeSend: true,
     opStack: {
         gasPriceOracle: '0x420000000000000000000000000000000000000F',
         operatorFee: true,
@@ -107,16 +104,14 @@ const EVM_GAS_POLICIES_BY_CHAIN_ID = new Map<number, EVMGasPolicy>([
         gasLimitMarginBps: 12_000n,
         reserveMaximumFee: true,
         transactionGasMode: 'explicit-eip1559',
-        checkBalanceBeforeSend: true,
-    })],
+        })],
     // BNB Smart Chain mainnet: retain 1.2x price headroom for legacy fees.
     [56, createEVMGasPolicy({
         baseFeeMultiplier: 1.2,
         gasLimitMarginBps: 12_000n,
         reserveMaximumFee: true,
         transactionGasMode: 'explicit-legacy',
-        checkBalanceBeforeSend: true,
-    })],
+        })],
     // Monad charges the complete signed gas limit and applies a 10 MON reserve
     // to EIP-7702-delegated accounts.
     [143, MONAD_GAS_POLICY], // Monad mainnet

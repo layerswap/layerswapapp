@@ -41,7 +41,7 @@ export async function resolveOpStackOperatorFee({ publicClient, network, gasLimi
     })
 }
 
-/** Fees outside gasLimit * maxFeePerGas, shared by quoting and submission. */
+/** Fees outside gasLimit * maxFeePerGas, budgeted into quotes; the wallet shows them at submission. */
 export async function resolveOpStackAdditionalFees(args: OpStackFeeContext & {
     transaction: OpStackTransaction
     gasLimit: bigint

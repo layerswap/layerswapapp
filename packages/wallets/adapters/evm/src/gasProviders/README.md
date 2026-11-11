@@ -16,9 +16,11 @@ select gas behavior. Every entry includes its chain name for maintenance.
 - `transactionGasMode`: wallet-controlled, explicit legacy, or explicit EIP-1559.
   Explicit modes require complete fee data for both quotes and submission.
 - `reserveMaximumFee`: expose the maximum fee separately for Max budgeting.
-- `checkBalanceBeforeSend`: check pending native balance against transfer value
-  plus the prepared maximum fee before requesting a wallet transaction.
-  A failed balance read aborts preparation rather than assuming sufficient funds.
+- Fee funding is never asserted before the wallet request. A policy must not
+  compare the native balance against value plus fee: smart accounts and
+  paymasters pay fees in tokens or have them sponsored, so such a check rejects
+  transfers the wallet would have completed. The widget shows an advisory gas
+  warning instead, and the wallet reports a real shortfall.
 - `accountBalanceReserve`: chain-specific balance that must remain in the account.
 
 `NetworkSettings.ts` retains ordering and fee-unit conversion overrides. Those are
