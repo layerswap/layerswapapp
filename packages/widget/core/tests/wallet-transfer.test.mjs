@@ -113,8 +113,8 @@ for (const [callData, expectedData] of [[null, '0x'], [undefined, '0x'], ['', '0
   test(`EVM normalizes deposit calldata ${JSON.stringify(callData)} at the adapter boundary`, async () => {
     const { transactionBuilder } = loadAdapterSource('../../../wallets/adapters/evm/src/transferProvider/transactionBuilder.ts', {
       './resolveEVMTransactionRequest': loadAdapterSource('../../../wallets/adapters/evm/src/transferProvider/resolveEVMTransactionRequest.ts', {
-      '../evmUtils/parseNativeAmount': loadAdapterSource('../../../wallets/adapters/evm/src/evmUtils/parseNativeAmount.ts', {}),
-    }),
+        '../evmUtils/parseNativeAmount': loadAdapterSource('../../../wallets/adapters/evm/src/evmUtils/parseNativeAmount.ts', {}),
+      }),
       '../gasProviders/resolveEVMTransactionGasParameters': { resolveEVMTransactionGasParameters: async () => undefined },
     })
     const ctx = calldataContext(callData, { name: 'ETHEREUM_MAINNET', type: 'evm', chain_id: '1' })

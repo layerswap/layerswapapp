@@ -26,10 +26,12 @@ select gas behavior. Every entry includes its chain name for maintenance.
   used when network metadata omits `evm_oracle_contract`; `operatorFee` asks the
   oracle's `getOperatorFee(gasLimit)` in addition to the L1 data fee. Both fees
   are budgeted into Max quotes only; the wallet shows them at submission. The L1
-  estimator receives the original calldata, recipient and value, so viem
-  serializes the transaction once. It needs viem 2.31 or later, where
-  `estimateL1Fee` serializes locally instead of preparing the request against
-  the account.
+  estimator receives the quoted payload (the exact transaction when the caller
+  supplies one, otherwise the generic placeholder) rather than an already
+  serialized transaction, so viem serializes it once. An oracle RPC failure
+  aborts the quote; a chain with neither metadata nor policy oracle gets no L1
+  fee. It needs viem 2.31 or later, where `estimateL1Fee` serializes locally
+  instead of preparing the request against the account.
 
 `NetworkSettings.ts` retains ordering and fee-unit conversion overrides. Those are
 not transaction fee policies.
