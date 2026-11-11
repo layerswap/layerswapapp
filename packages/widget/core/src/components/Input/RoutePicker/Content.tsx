@@ -109,7 +109,7 @@ const Items: FC<ContentProps & { isScrolling: boolean; setIsScrolling: (isScroll
     })
 
     useEffect(() => {
-        virtualizer.measure();
+        if (isSingleNetwork) virtualizer.measure();
     }, [openValues])
 
     const items = virtualizer.getVirtualItems()
