@@ -1,4 +1,4 @@
-import { NetworkType, type GaslessStandard, type Refuel } from './network';
+import type { NetworkType, GaslessStandard, Refuel } from './network';
 
 export class Network {
     name: string;
