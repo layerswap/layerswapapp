@@ -106,6 +106,9 @@ function loadDepositActionPolling(api, stores, swapContext) {
 const withdraw = 'components/Pages/Swap/Withdraw/';
 const fees = 'components/Pages/Swap/Form/FeeDetails/';
 const gasless = loadSource('helpers/gasless.ts');
+const { browserOnlyMiddleware } = loadSource('../../../utils/src/common.ts', {
+    './formatUnits.js': { formatUnits: () => '' },
+});
 const { resolveSwapFlow } = loadSource('components/utils/resolveSwapFlow.ts');
 const addressModule = loadSource('../../../utils/src/address/Address.ts', {
     './validator': { isValidAddress: () => false },
@@ -678,6 +681,7 @@ function createSwapHistoryHarness(fetcher, { onCreate, selectedAccount } = {}) {
     const stores = loadSource('stores/swapTransactionStore.tsx', {
         zustand: coreRequire('zustand'),
         'zustand/middleware': coreRequire('zustand/middleware'),
+        '@layerswap/utils/common': { browserOnlyMiddleware },
     });
     stores.useSwapTransactionStore.setState({ swapTransactions: {}, stepTransactions: {}, pendingSubmissions: {} });
     stores.useGaslessAuthorizationStore.setState({ authorizations: {} });
@@ -1569,6 +1573,7 @@ function createRetryHarness({
     const stores = loadSource('stores/swapTransactionStore.tsx', {
         zustand: coreRequire('zustand'),
         'zustand/middleware': coreRequire('zustand/middleware'),
+        '@layerswap/utils/common': { browserOnlyMiddleware },
     });
     stores.useSwapTransactionStore.setState({ swapTransactions: transaction ? { S: transaction } : {}, pendingSubmissions: {} });
     stores.useGaslessAuthorizationStore.setState({ authorizations: authorization ? { S: authorization } : {} });

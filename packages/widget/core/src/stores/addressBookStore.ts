@@ -2,6 +2,7 @@ import { NetworkType } from '@layerswap/widget-types';
 import { useCallback } from 'react'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
+import { browserOnlyMiddleware } from '@layerswap/utils/common'
 import { Address } from '@/lib/address/Address'
 import { addressFormat } from '@layerswap/utils'
 import { AddressSelectionMode, classifyAddress } from '@layerswap/utils'
@@ -70,7 +71,7 @@ const migrateLegacyScope = (address: string, networkTypes: NetworkType[] | undef
     return { networkTypes: networkTypes?.length ? networkTypes : undefined, networks }
 }
 
-export const useAddressBookStore = create<AddressBookState>()(persist<AddressBookState, [], [], { savedAddresses: SavedAddress[] }>(
+export const useAddressBookStore = create<AddressBookState>()(browserOnlyMiddleware(persist)<AddressBookState, [], [], { savedAddresses: SavedAddress[] }>(
     (set) => ({
         savedAddresses: [],
         addAddress: (entry) => set(state => {
@@ -108,7 +109,7 @@ export const useAddressBookStore = create<AddressBookState>()(persist<AddressBoo
     }),
     {
         name: 'address-book',
-        storage: createJSONStorage(() => localStorage),
+        storage: createJSONStorage(() => window.localStorage),
         partialize: (state) => ({
             savedAddresses: state.savedAddresses.map(e => ({ address: e.address, name: e.name, networkTypes: e.networkTypes, networks: e.networks })),
         }),
