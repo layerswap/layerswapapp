@@ -2,12 +2,17 @@ import assert from 'node:assert/strict'
 import test, { after, beforeEach } from 'node:test'
 
 const previousStorage = Object.getOwnPropertyDescriptor(globalThis, 'localStorage')
+const previousWindow = Object.getOwnPropertyDescriptor(globalThis, 'window')
 const storage = new Map()
 Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
     getItem: key => storage.get(key) ?? null,
     setItem: (key, value) => storage.set(key, value),
     removeItem: key => storage.delete(key),
 } })
+Object.defineProperty(globalThis, 'window', {
+    configurable: true,
+    value: { localStorage: globalThis.localStorage },
+})
 const { useSwapTransactionStore: store, useGaslessAuthorizationStore: gasless } = await import('../dist/esm/stores/swapTransactionStore.js')
 beforeEach(() => {
     storage.clear()
@@ -15,6 +20,8 @@ beforeEach(() => {
     gasless.setState(gasless.getInitialState(), true)
 })
 after(() => {
+    if (previousWindow) Object.defineProperty(globalThis, 'window', previousWindow)
+    else delete globalThis.window
     if (previousStorage) Object.defineProperty(globalThis, 'localStorage', previousStorage)
     else delete globalThis.localStorage
 })
