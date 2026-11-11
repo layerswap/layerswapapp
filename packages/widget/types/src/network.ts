@@ -47,6 +47,7 @@ type RefuelNetwork = {
   metadata?: {
     evm_oracle_contract?: `0x${string}` | null;
     evm_multicall_contract?: string | null;
+    evm_balance_viewer_contract?: string | null;
     listing_date: string;
     zks_paymaster_contract?: `0x${string}` | null;
     watchdog_contract?: string | null;
