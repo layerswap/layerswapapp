@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { browserOnlyMiddleware } from '@layerswap/utils/common'
 import { Network } from '@layerswap/widget-types';
 import { resolverService } from '@/lib/resolvers/resolverService';
 
@@ -51,7 +52,7 @@ const isContractAddress = async (address: string, network: Network): Promise<boo
 }
 
 export const useContractAddressStore = create<ContractAddressState>()(
-    persist(
+    browserOnlyMiddleware(persist)(
         (set, get) => ({
             contractStatuses: [],
             confirmedAddresses: [],
@@ -257,7 +258,7 @@ export const useContractAddressStore = create<ContractAddressState>()(
         }),
         {
             name: 'contractAddress',
-            storage: createJSONStorage(() => localStorage),
+            storage: createJSONStorage(() => window.localStorage),
             partialize: (state) => ({
                 contractStatuses: state.contractStatuses,
                 confirmedAddresses: state.confirmedAddresses,

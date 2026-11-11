@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { browserOnlyMiddleware } from '@layerswap/utils/common'
 import type { DepositActionStep } from '../lib/apiClients/layerSwapApiClient';
 
 export type SwapExecutionKind = 'wallet-transfer' | 'frontend-swap' | 'atomic-batch' | 'gasless-deposit';
@@ -59,7 +60,7 @@ type DepositSignatureStore = {
 };
 
 // A prerequisite (or an as-yet unclassified signature) must never start gasless expiry.
-export const useDepositSignatureStore = create(persist<DepositSignatureStore>(
+export const useDepositSignatureStore = create(browserOnlyMiddleware(persist)<DepositSignatureStore>(
     set => ({
         signatures: {},
         setDepositSignature: (id, validBefore) => set(state => ({
@@ -71,7 +72,7 @@ export const useDepositSignatureStore = create(persist<DepositSignatureStore>(
             return { signatures };
         }),
     }),
-    { name: 'depositSignatures', storage: createJSONStorage(() => localStorage) },
+    { name: 'depositSignatures', storage: createJSONStorage(() => window.localStorage) },
 ));
 
 type GaslessAuthorizationStore = {
@@ -164,7 +165,7 @@ function gaslessAuthorizationReceipts(persisted: unknown): PersistedGaslessAutho
 }
 
 export const useSwapTransactionStore = create<SwapTransactionStore>()(
-    persist<SwapTransactionStore, [], [], PersistedTransactionReceipts>(
+    browserOnlyMiddleware(persist)<SwapTransactionStore, [], [], PersistedTransactionReceipts>(
         set => ({
             swapTransactions: {},
             stepTransactions: {},
@@ -251,7 +252,7 @@ export const useSwapTransactionStore = create<SwapTransactionStore>()(
         {
             name: 'swapTransactions',
             version: 1,
-            storage: createJSONStorage(() => localStorage),
+            storage: createJSONStorage(() => window.localStorage),
             partialize: transactionReceipts,
             migrate: transactionReceipts,
             merge: (persisted, current) => ({ ...current, ...transactionReceipts(persisted) }),
@@ -260,7 +261,7 @@ export const useSwapTransactionStore = create<SwapTransactionStore>()(
 );
 
 export const useGaslessAuthorizationStore = create<GaslessAuthorizationStore>()(
-    persist<GaslessAuthorizationStore, [], [], PersistedGaslessAuthorizations>(
+    browserOnlyMiddleware(persist)<GaslessAuthorizationStore, [], [], PersistedGaslessAuthorizations>(
         (set) => ({
             authorizations: {},
             setGaslessAuthorization: (Id, validBefore) => {
@@ -280,7 +281,7 @@ export const useGaslessAuthorizationStore = create<GaslessAuthorizationStore>()(
         }),
         {
             name: 'gaslessAuthorizations',
-            storage: createJSONStorage(() => localStorage),
+            storage: createJSONStorage(() => window.localStorage),
             partialize: gaslessAuthorizationReceipts,
             merge: (persisted, current) => ({ ...current, ...gaslessAuthorizationReceipts(persisted) }),
         }
@@ -288,7 +289,7 @@ export const useGaslessAuthorizationStore = create<GaslessAuthorizationStore>()(
 )
 
 export const useSwapDepositHintClicked = create(
-    persist<SwapDepositHintClickedStore>(
+    browserOnlyMiddleware(persist)<SwapDepositHintClickedStore>(
         (set, get) => ({
             swapTransactions: {},
             setSwapDepositHintClicked: (Id) => {
@@ -303,7 +304,7 @@ export const useSwapDepositHintClicked = create(
         }),
         {
             name: 'swapDepositHintClicked',
-            storage: createJSONStorage(() => sessionStorage),
+            storage: createJSONStorage(() => window.sessionStorage),
         }
     ),
 )

@@ -2,6 +2,17 @@ import { formatUnits } from './formatUnits.js'
 
 export type StorageType = 'localStorage' | 'sessionStorage'
 
+/** Skip browser persistence while creating stores during server rendering.
+ * Zustand 4 evaluates its default localStorage callback before applying the
+ * supplied storage option, so changing that option alone cannot avoid Node's
+ * global localStorage.
+ */
+export function browserOnlyMiddleware<T extends (...args: any[]) => any>(middleware: T): T {
+    if (typeof window !== 'undefined') return middleware
+
+    return ((initializer: Parameters<T>[0]) => initializer) as T
+}
+
 export function bytesToHex(value: Uint8Array): string {
     return Array.from(value, byte => byte.toString(16).padStart(2, '0')).join('')
 }
