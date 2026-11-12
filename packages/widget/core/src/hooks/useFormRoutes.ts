@@ -641,7 +641,7 @@ export type GroupRoutesProps = {
     skipBalanceGate?: boolean;
     /** When true, do not include the suggestions section at all */
     hideSuggestions?: boolean;
-    /** Network selected on the other side; pinned to the top when it has same-network swap routes */
+    /** Source network to prioritize in the destination picker when same-network swaps are available. */
     oppositeNetwork?: string;
 }
 
@@ -658,15 +658,18 @@ export function groupRoutes(
         ? []
         : getSuggestedRoutes(routes, balances, recents, direction, balancesLoaded, suggestionsLimit, skipBalanceGate, swapRecency)
 
+    // Source balances must keep their order; same-network pinning is only for destinations.
+    const pinnedNetwork = direction === 'to' ? oppositeNetwork : undefined
+
     // Apply custom sorting ONLY to "All Networks/All Tokens" section
     if (groupBy === "token") {
         const groupedTokens = resolveTokenRoutes(routes, balances, direction, recents, sortingOption)
-            .map(group => ({ ...group, items: moveToFront(group.items, i => isSameNetworkSwap(i.route.route.name, [i.route.token], oppositeNetwork)) }))
+            .map(group => ({ ...group, items: moveToFront(group.items, i => isSameNetworkSwap(i.route.route.name, [i.route.token], pinnedNetwork)) }))
         return mergeGroups(suggestedRoutes, groupedTokens)
     }
     const groupedNetworks = moveToFront(
         resolveNetworkRoutes(routes, balances, direction, recents, sortingOption),
-        n => isSameNetworkSwap(n.route.name, n.route.tokens, oppositeNetwork)
+        n => isSameNetworkSwap(n.route.name, n.route.tokens, pinnedNetwork)
     )
     return mergeGroups(suggestedRoutes, groupedNetworks)
 }
@@ -836,7 +839,8 @@ function getSuggestedRoutes(routes: NetworkRoute[], balances: Record<string, Net
             return Array(effectiveLimit).fill({ type: "sceleton_token" });
     }
 
-    const tokenElements = extractTokenElementsAsSuggested(routes).filter(t => t.route.token.status === "active")
+    // Let users pick the assets they hold even when the current destination has no route.
+    const tokenElements = extractTokenElementsAsSuggested(routes).filter(t => direction === 'from' || t.route.token.status === 'active')
     const sorted = tokenElements.sort(sortSuggestedTokenElements(direction, balances, routesHistory, swapRecency))
     return sorted.slice(0, effectiveLimit)
 }

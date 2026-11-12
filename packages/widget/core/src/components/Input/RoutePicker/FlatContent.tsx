@@ -54,6 +54,8 @@ export const FlatContent: FC<Props> = ({
     const { shouldFocus } = useSelectorState();
 
     const items = useMemo(() => {
+        // Deposit SourceStep advances directly to amount entry for the selected
+        // destination, so this list only offers usable routes.
         const flattened = extractTokenElementsAsSuggested(routes).filter(
             e => e.route.token.status === "active"
         );

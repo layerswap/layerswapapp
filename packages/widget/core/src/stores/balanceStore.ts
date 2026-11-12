@@ -155,6 +155,8 @@ export const useBalanceStore = create<BalanceStore>()(
       const sortedpairs = pairs.sort((a, b) => Number(a.network.source_rank) - Number(b.network.source_rank))
       sortedpairs.forEach(({ address, network }) => {
         get().fetchBalance(address, network, { dedupeInterval: 120_000, ignoreCache: false, retryCount: 0 })
+          // fetchBalance records failures in the store; one network must not block sorting.
+          .catch(() => undefined)
       })
 
       set({ sortingDataIsLoading: true })
@@ -167,39 +169,35 @@ export const useBalanceStore = create<BalanceStore>()(
         const state = get()
         // Only publish if not already published and still loading
         if (!state.partialPublished && state.sortingDataIsLoading) {
-          const partial: Record<string, string> = {}
-          const balances = state.balances
-          Object.entries(state.initiatedBalances || {}).forEach(([networkName, key]) => {
-            if (balances[key]?.data) {
-              partial[networkName] = key
-            }
-          })
-          set({ balanceKeysForSorting: partial })
-          set({ partialPublished: true })
+          // The selector skips missing data and picks up late balances as they arrive.
+          set({ balanceKeysForSorting: state.initiatedBalances, partialPublished: true })
         }
       }, 1500)
 
       set({ sortingTimerId: timerId })
 
-      //Subscribe for completion detection
+      const finalizeSortingBalances = (balances: Record<string, BalanceEntry>) => {
+        const keys = Object.values(get().initiatedBalances || {})
+        const done = keys.every(key => balances[key]?.data || balances[key]?.status === 'error')
+
+        if (done) {
+          get().cleanupSortingBalances()
+          set({
+            sortingDataIsLoading: false,
+            balanceKeysForSorting: get().initiatedBalances,
+            partialPublished: false,
+          })
+        }
+      }
+
       const unsubscribe = api.subscribe(
         state => state.balances,
-        balances => {
-          const keysArray = Object.entries(get().initiatedBalances || {})
-          const done = keysArray.every(([_, key]) => balances[key]?.data)
-
-          if (done) {
-            // All complete - cleanup and finalize
-            get().cleanupSortingBalances()
-            set({ sortingDataIsLoading: false })
-            set({ balanceKeysForSorting: get().initiatedBalances })
-            set({ partialPublished: false }) // Reset for next time
-          }
-        },
-        { fireImmediately: true }
+        finalizeSortingBalances
       )
 
       set({ sortingUnsubscribe: unsubscribe })
+      // Register cleanup before checking cached results, which may complete immediately.
+      finalizeSortingBalances(get().balances)
     }
   }))
 )
