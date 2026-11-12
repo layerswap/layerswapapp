@@ -6,6 +6,7 @@ import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { mergeExtendedSourceRoutes } from "./extendedRoutes/registry";
 
 export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: InitialSettings, type: 'cross-chain' | 'exchange' | 'deposit-address', connectedAutofillNetworks?: Set<string>): SwapFormValues {
+    queryParams = withDefaultSwapPair(settings, queryParams, type)
     const { destination_address, amount, fromAsset, toAsset, from, to, lockFromAsset, lockToAsset, depositMethod, fromExchange } = queryParams
     const { sourceExchanges, sourceRoutes: backendSourceRoutes, destinationRoutes, networks, extendedRouteFlags } = settings || {}
 
@@ -101,6 +102,25 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
     }
 
     return result
+}
+
+/** Defaults are only for an unconfigured swap, never a partial partner route. */
+function withDefaultSwapPair(settings: LayerSwapAppSettings, query: InitialSettings, type: string): InitialSettings {
+    const hasConfiguredRoute = query.from || query.to || query.fromAsset || query.toAsset || query.fromExchange
+    const hasRouteRestrictions = query.lockFrom || query.lockTo || query.lockFromAsset || query.lockToAsset || query.hideFrom || query.hideTo
+    if (type !== 'cross-chain' || hasConfiguredRoute || hasRouteRestrictions) {
+        return query
+    }
+
+    const source = settings.sourceRoutes.find(route => route.name === 'BITCOIN_MAINNET')
+    const destination = settings.destinationRoutes.find(route => route.name === 'ETHEREUM_MAINNET')
+    const sourceToken = source?.tokens.find(token => token.symbol === 'BTC' && token.status === 'active')
+    const destinationToken = destination?.tokens.find(token => token.symbol === 'ETH' && token.status === 'active')
+    if (!source || !destination || !sourceToken || !destinationToken) {
+        return query
+    }
+
+    return { ...query, from: source.name, fromAsset: sourceToken.symbol, to: destination.name, toAsset: destinationToken.symbol }
 }
 
 

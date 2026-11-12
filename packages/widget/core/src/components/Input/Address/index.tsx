@@ -4,15 +4,17 @@ import { Partner } from "@/Models/Partner"
 import AddressPicker, { AddressTriggerProps } from "./AddressPicker"
 
 type AddressProps = {
+    triggerAsChild?: boolean;
     children: (props: AddressTriggerProps) => JSX.Element;
     partner: Partner | undefined
 }
 
-const Address = ({ partner, children }: AddressProps) => {
+const Address = ({ partner, children, triggerAsChild }: AddressProps) => {
     const [showAddressModal, setShowAddressModal] = useState(false);
 
     return (
         <AddressPicker
+            triggerAsChild={triggerAsChild}
             showAddressModal={showAddressModal}
             setShowAddressModal={setShowAddressModal}
             close={() => setShowAddressModal(false)}
