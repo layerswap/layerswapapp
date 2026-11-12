@@ -1,6 +1,6 @@
 import type { BatchTransferDepositAction, DepositAction, NextActionResponse, TransferDepositAction } from './apiClients/layerSwapApiClient'
 
-const isAtomicApproval = (action: DepositAction) => action.step === 'approve'
+const isDirectApproval = (action: DepositAction) => action.step === 'approve'
 
 /** One call is already atomic and can return a transaction hash directly. */
 function resolvePublication(action: BatchTransferDepositAction): BatchTransferDepositAction | TransferDepositAction {
@@ -17,12 +17,12 @@ function resolvePublication(action: BatchTransferDepositAction): BatchTransferDe
         amount_in_base_units: BigInt(call.value).toString() }
 }
 
-/** Flat approval/publication items are one atomic operation, never individual transfers. */
+/** Combine only a complete, simultaneously actionable approval/publication plan. */
 export function combineAtomicDepositActions(actions: DepositAction[]): BatchTransferDepositAction {
     const publish = actions[actions.length - 1]
     if (!publish || publish.step !== 'publish' || actions.some((action, index) =>
         action.type !== 'transfer' || action.status !== 'action_required'
-        || (index < actions.length - 1 && !isAtomicApproval(action))
+        || (index < actions.length - 1 && !isDirectApproval(action))
         || action.order !== index
         || action.network?.type !== 'evm'
         || action.network.name !== publish.network?.name
@@ -44,14 +44,22 @@ export async function resolveAtomicDepositActions(actions: DepositAction[], getN
     if (actions.length === 1 && actions[0].type === 'send_calls') {
         return [resolvePublication(actions[0])]
     }
-    if (actions.some(isAtomicApproval)) {
+    if (actions.some(isDirectApproval)) {
         // In-flight and terminal placeholders remain status-only; they cannot open the wallet.
         if (!actions.some(action => action.status === 'action_required')) return actions
-        const completedApprovals = actions.filter(isAtomicApproval)
-        const publication = actions.filter(action => !isAtomicApproval(action))
+        const completedApprovals = actions.filter(isDirectApproval)
+        const publication = actions.filter(action => !isDirectApproval(action))
         if (completedApprovals.every(action => action.status === 'completed') && publication.length === 1) {
             return resolveAtomicDepositActions(publication, getNextAction)
         }
+        const actionable = actions.filter(action => action.status === 'action_required')
+        const sequentialApproval = actionable.length === 1
+            && actionable[0].type === 'transfer' && isDirectApproval(actionable[0])
+            && actions.every(action => (isDirectApproval(action) || action.step === 'publish')
+                && ['action_required', 'pending', 'waiting', 'completed'].includes(action.status ?? ''))
+        // Direct approval is a prerequisite: publication has no executable call yet.
+        // Never split an all-actionable atomic plan into individual transactions.
+        if (sequentialApproval) return actions
         return [combineAtomicDepositActions(actions)]
     }
     // A single publication can be either a signed legacy transaction or an allowance-funded

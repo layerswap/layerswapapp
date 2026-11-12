@@ -52,10 +52,12 @@ test('legacy transaction outcomes are stripped and empty execution placeholders 
 test('approvals persist independently without submitting the swap or clearing unknown submissions', async () => {
     await store.getState().markSubmissionPending('swap-1')
     await store.getState().setStepTransaction('swap-1', 'approve_permit2', 'approval-1', 'https://explorer.test/tx/approval-1')
-    await store.getState().setStepTransaction('swap-1', 'approve_token', 'approval-2', 'https://explorer.test/tx/approval-2')
+    await store.getState().setStepTransaction('swap-1', 'approve', 'approval-2', 'https://explorer.test/tx/approval-2')
     await store.getState().setStepTransaction('swap-2', 'approve_permit2', 'approval-3', 'https://other.test/tx/approval-3')
+    store.getState().confirmStepTransaction('swap-1', 'approve', 'approval-2')
     const saved = store.getState().stepTransactions
-    assert.deepEqual(Object.keys(saved['swap-1']), ['approve_permit2', 'approve_token'])
+    assert.equal(saved['swap-1'].approve.confirmed, true)
+    assert.deepEqual(Object.keys(saved['swap-1']), ['approve_permit2', 'approve'])
     assert.deepEqual(store.getState().swapTransactions, {}, 'approval-only swaps have no execution record')
     assert.deepEqual(store.getState().pendingSubmissions, { 'swap-1': true })
 
@@ -64,6 +66,9 @@ test('approvals persist independently without submitting the swap or clearing un
     storage.set('swapTransactions', persisted)
     await store.persist.rehydrate()
     assert.deepEqual(store.getState().stepTransactions, saved)
+    store.getState().setStepTransaction('swap-1', 'approve', 'new-approval', 'https://explorer.test/new-approval')
+    store.getState().confirmStepTransaction('swap-1', 'approve', 'approval-2')
+    assert.equal(store.getState().stepTransactions['swap-1'].approve.confirmed, undefined, 'old confirmation cannot confirm a new approval')
     assert.deepEqual(store.getState().swapTransactions, {})
     assert.deepEqual(store.getState().pendingSubmissions, { 'swap-1': true })
 })

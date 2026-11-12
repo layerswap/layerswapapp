@@ -6,14 +6,17 @@ import {
     getDepositActionDescription,
     getDepositActionLabel,
     getCurrentDepositActionIndex,
+    hasAtomicApprovalPlan,
+    isApprovalAction,
 } from '@/helpers/depositActions';
 import { ProgressStatus, type StatusStep } from '../Processing/types';
 import { ProgressPanelView, type ProgressPanelData } from './ProgressPanelView';
-import type { SwapStepTransactions } from '@/stores/swapTransactionStore';
+import type { SwapExecutionKind, SwapStepTransactions } from '@/stores/swapTransactionStore';
 
 export type DepositWorkflowData = {
     actions?: DepositAction[];
     stepTransactions?: SwapStepTransactions;
+    executionKind?: SwapExecutionKind;
     loading?: boolean;
     error?: boolean;
     errorDescription?: StatusStep['description'];
@@ -45,6 +48,7 @@ export function DepositWorkflowView(props: DepositWorkflowData) {
 export function getDepositWorkflowProgress({
     actions,
     stepTransactions,
+    executionKind,
     loading,
     error,
     errorDescription,
@@ -56,26 +60,24 @@ export function getDepositWorkflowProgress({
     completed,
     readOnly,
 }: DepositWorkflowData): ProgressPanelData | null {
-    // Terminal responses expose flat approval/publication placeholders again.
-    // They still describe the same single atomic wallet operation.
+    // Approval placeholders alone cannot distinguish sequential and atomic execution.
     const hasAtomicApproval =
         !!actions?.some((action) => action.step === 'approve') &&
-        !!actions?.some((action) => action.step === 'publish');
+        !!actions?.some((action) => action.step === 'publish') &&
+        (executionKind === 'atomic-batch' || hasAtomicApprovalPlan(actions ?? []));
     const workflowActions =
         actions?.filter(
             (action) =>
                 !!action.step &&
                 (!hasAtomicApproval || action.step !== 'approve'),
         ) ?? [];
-    if (
-        (processing || completed) &&
-        stepTransactions?.approve_permit2 &&
-        !workflowActions.some((action) => action.step === 'approve_permit2')
-    ) {
-        workflowActions.unshift({
-            step: 'approve_permit2',
-            status: 'completed',
-        });
+    for (const step of ['approve', 'approve_permit2']) {
+        const publicationReady = step === 'approve'
+            && workflowActions.some(action => action.step === 'publish' && action.status === 'action_required');
+        if ((processing || completed || publicationReady) && stepTransactions?.[step]
+            && !hasAtomicApproval && !workflowActions.some(action => action.step === step)) {
+            workflowActions.unshift({ step, status: 'completed' });
+        }
     }
     const hasDeliveryStep =
         !!destinationToken &&
@@ -98,7 +100,7 @@ export function getDepositWorkflowProgress({
         id: `action:${action.step}`,
         name:
             hasAtomicApproval && action.step === 'publish'
-                ? getDepositActionLabel({ step: 'approve' })
+                ? 'Approve and swap'
                 : getDepositActionLabel(action),
         status:
             action.status === 'completed'
@@ -123,7 +125,8 @@ export function getDepositWorkflowProgress({
                     getDepositActionDescription(action)
                   : undefined,
         explorerUrl:
-            action.step === 'approve_permit2'
+            isApprovalAction(action) && (action.step !== 'approve'
+                || action.status === 'completed' || action.status === 'pending')
                 ? stepTransactions?.[action.step]?.explorerUrl
                 : undefined,
         readOnly,
