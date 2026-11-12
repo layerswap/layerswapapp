@@ -377,14 +377,15 @@ export function getProcessingProgress({
             index: 4,
         },
     ];
-    const approval = stepTransactions?.approve_permit2;
+    const approvalStep = stepTransactions?.approve ? 'approve' : 'approve_permit2';
+    const approval = stepTransactions?.[approvalStep];
     if (approval) {
         const approvalAction = depositActions?.find(
-            (action) => action.step === 'approve_permit2',
+            (action) => action.step === approvalStep,
         );
         allSteps.unshift({
-            id: 'action:approve_permit2',
-            name: getDepositActionLabel({ step: 'approve_permit2' }),
+            id: `action:${approvalStep}`,
+            name: getDepositActionLabel({ step: approvalStep }),
             status:
                 approvalAction?.status === 'failed'
                     ? ProgressStatus.Failed
@@ -433,6 +434,7 @@ export function getProcessingProgress({
         });
     } else if (showUnifiedProgress) {
         progress = getDepositWorkflowProgress({
+            executionKind: flow.kind === 'atomic-batch' ? 'atomic-batch' : undefined,
             actions: depositActions,
             stepTransactions,
             readOnly,

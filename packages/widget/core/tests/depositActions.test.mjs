@@ -124,6 +124,13 @@ function createWorkflow({
                 const transactions = this.stepTransactions[id] ??= {}
                 transactions[step] = { hash, explorerUrl, timestamp: Date.now() }
             },
+            confirmStepTransaction(id, step, hash) {
+                const receipt = this.stepTransactions[id]?.[step]
+                if (receipt?.hash === hash) receipt.confirmed = true
+            },
+            removeStepTransaction(id, step, hash) {
+                if (this.stepTransactions[id]?.[step]?.hash === hash) delete this.stepTransactions[id][step]
+            },
             removeSwapTransaction(id) { delete this.swapTransactions[id] },
         }),
     }
@@ -143,6 +150,7 @@ function createWorkflow({
         },
         GetTransactionStatus: async (network, hash) => {
             calls.confirmations.push({ network, hash })
+            if (state.receiptError) throw state.receiptError
             return { data: { status: state.receipts?.get(hash) ?? 'Pending' } }
         },
         GetDepositActionsAsync: async (...args) => {
@@ -322,6 +330,9 @@ function createWorkflow({
                         signal.throwIfAborted()
                         if (approvalTransaction) calls.confirmations.push(approvalTransaction)
                         const nextActions = await state.onTransition?.(previousAction.step)
+                        if (previousAction.step === 'approve' && approvalTransaction) {
+                            stores.useSwapTransactionStore.getState().confirmStepTransaction(id, 'approve', approvalTransaction.hash)
+                        }
                         const completedIndex = state.apiActions.findIndex(action => action.step === previousAction.step)
                         state.apiActions = nextActions ?? state.apiActions.map((action, index) => ({
                             ...action, status: index <= completedIndex ? 'completed' : index === completedIndex + 1 ? 'action_required' : 'waiting',
@@ -580,7 +591,7 @@ function createWorkflow({
                 const step = depositActions.getActionableDepositAction(state.apiActions).step
                 await state.onWalletPrompt?.(step)
                 state.completedStep = step
-                return step === 'approve_permit2' ? state.approvalHash ?? '0xapproval' : '0xtransaction'
+                return step === 'approve' || step === 'approve_permit2' ? state.approvalHash ?? '0xapproval' : '0xtransaction'
             },
         })
     const render = () => {
@@ -1184,6 +1195,69 @@ test('raw atomic approval items cannot reach the ordinary transfer callback', as
         () => assert.fail('cannot open an ordinary transfer prompt'), atomicFixtures.deposit_actions.zero_allowance[0]), /Atomic approvals/)
 })
 
+test('a fresh sequential reset keeps approvals separate and retries publication without approving again', async () => {
+    const flow = createWorkflow()
+    const [reset, approval, publication] = atomicFixtures.deposit_actions.allowance_reset
+    flow.state.sourceToken = { ...atomicFixtures.token, supports_gasless_deposit: true, gasless_standard: 'permit2' }
+    flow.state.apiActions = await atomicActions.resolveAtomicDepositActions(
+        [reset, { step: 'publish', status: 'pending' }], () => assert.fail('no batch lookup'))
+    flow.state.swapId = undefined
+    flow.state.swapDetails = undefined
+    flow.state.createSwap = async () => ({ swap: { id: swapId, metadata: {} }, deposit_actions: flow.state.apiActions })
+    const prompts = []
+    let confirmations = 0
+    let catchups = 0
+    flow.state.onCatchup = () => { catchups++ }
+    flow.state.onWalletPrompt = step => {
+        prompts.push(step)
+        if (step === 'approve') {
+            flow.state.approvalHash = prompts.length === 1 ? '0xreset' : '0xapproval'
+            const current = flow.render().steps.find(step => step.status === 'current')
+            assert.equal(current.name, 'Approve token')
+            assert.equal(current.explorerUrl, undefined, 'the reset receipt cannot label the next approval')
+        } else if (prompts.length === 3) {
+            throw { code: 4001 }
+        }
+    }
+    flow.state.onTransition = async step => {
+        assert.equal(step, 'approve')
+        assert.equal(catchups, 0)
+        assert.equal(flow.calls.success, 0)
+        assert.deepEqual(flow.calls.storedTransactions, [])
+        assert.deepEqual(flow.calls.lifecycle.filter(event => event.step === 'transaction_submitted'), [])
+        const next = ++confirmations === 1
+            ? [{ step: 'approve', status: 'completed' }, approval, { step: 'publish', status: 'pending' }]
+            : [{ step: 'approve', status: 'completed' }, publication]
+        return atomicActions.resolveAtomicDepositActions(next, async () => ({
+            step: 'publish', status: 'action_required', action: publication,
+        }))
+    }
+    await flow.render().button.props.onClick()
+    const receipt = flow.stores.useSwapTransactionStore.getState().stepTransactions[swapId].approve
+    assert.equal(receipt.confirmed, true)
+    assert.equal(flow.calls.success, 0, 'rejected publication has not submitted the swap')
+    await flow.render().button.props.onClick()
+    assert.deepEqual(prompts, ['approve', 'approve', 'publish', 'publish'])
+    assert.deepEqual(flow.calls.transfer.map(props => props.callData),
+        [reset.call_data, approval.call_data, publication.call_data, publication.call_data])
+    assert.deepEqual(flow.calls.confirmations.map(receipt => receipt.hash), ['0xreset', '0xapproval'])
+    assert.equal(flow.stores.useSwapTransactionStore.getState().stepTransactions[swapId].approve, receipt)
+    assert.deepEqual(flow.calls.storedTransactions, [[swapId, '0xtransaction']])
+    assert.equal(flow.calls.success, 1)
+    assert.equal(catchups, 1)
+    assert.deepEqual(flow.calls.sign, [])
+    assert.deepEqual(flow.calls.authorize, [])
+    assert.deepEqual(flow.calls.batches, [])
+    assert.deepEqual(flow.calls.errors, [])
+})
+
+test('base units alone cannot silently turn a non-approval transfer into amount zero', async () => {
+    const flow = createWorkflow()
+    const action = { type: 'transfer', step: 'deposit', amount_in_base_units: '123456', to_address: '0xrecipient' }
+    await assert.rejects(flow.execution.executeWalletTransfer({ depositActions: [action] },
+        () => assert.fail('a provider must not receive an invented amount'), action), /missing an amount/)
+})
+
 test('one click runs approval, signing and publication without intermediate action buttons', async () => {
     const flow = createWorkflow()
     flow.state.apiActions = [
@@ -1333,15 +1407,17 @@ test('a rejected signature retains the approval receipt through retry without re
     assert.equal(flow.state.swapId, swapId)
 })
 
-test('rejecting an approval stores no transaction receipt', async () => {
-    const flow = createWorkflow()
-    flow.state.apiActions = [{ type: 'transfer', step: 'approve_permit2', status: 'action_required', amount: '0', to_address: '0x456' }]
-    flow.state.onWalletPrompt = () => { throw { code: 4001 } }
-    await flow.render().button.props.onClick()
-    assert.deepEqual(flow.stores.useSwapTransactionStore.getState().stepTransactions, {})
-    assert.deepEqual(flow.calls.storedTransactions, [])
-    assert.equal(flow.calls.success, 0)
-})
+for (const step of ['approve_permit2', 'approve']) {
+    test(`rejecting ${step} stores no transaction receipt`, async () => {
+        const flow = createWorkflow()
+        flow.state.apiActions = [{ type: 'transfer', step, status: 'action_required', amount: '0', to_address: '0x456' }]
+        flow.state.onWalletPrompt = () => { throw { code: 4001 } }
+        await flow.render().button.props.onClick()
+        assert.deepEqual(flow.stores.useSwapTransactionStore.getState().stepTransactions, {})
+        assert.deepEqual(flow.calls.storedTransactions, [])
+        assert.equal(flow.calls.success, 0)
+    })
+}
 
 for (const completes of [false, true]) {
     test(`repeated workflow transitions ${completes ? 'can complete at' : 'stop at'} the safety bound`, async () => {
@@ -2378,6 +2454,41 @@ async function mountWalletLockWorkflow(t) {
     await render()
     return { flow, render, start, requests, executions }
 }
+
+test('a cancelled direct approval times out, then the next click can approve again', async t => {
+    t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 10000 })
+    const { flow, start, requests, executions } = await mountWalletLockWorkflow(t)
+    flow.state.apiActions = [{ type: 'transfer', step: 'approve', status: 'action_required', amount: 0, to_address: '0x456' },
+        { step: 'publish', status: 'pending' }]
+    flow.state.receiptError = Object.assign(new Error('Cancelled hash not indexed'), { response: { status: 404 } })
+    const store = flow.stores.useSwapTransactionStore.getState()
+    store.setStepTransaction(swapId, 'approve', '0xcancelled', 'https://explorer.test/cancelled')
+    await start()
+    await act(async () => { t.mock.timers.tick(139999) })
+    assert.equal(requests.length, 0)
+    assert.equal(store.stepTransactions[swapId].approve.hash, '0xcancelled')
+    await act(async () => { t.mock.timers.tick(1); await executions[0] })
+    assert.equal(store.stepTransactions[swapId].approve, undefined)
+    assert.match(flow.state.swapError, /try approving again/)
+    assert.equal(requests.length, 0, 'timeout does not automatically resubmit')
+    await start()
+    assert.equal(requests.length, 1, 'the next click offers another approval')
+    assert.deepEqual(flow.calls.storedTransactions, [])
+    await act(async () => { requests[0].reject({ code: 4001 }); await executions[1] })
+})
+
+test('retry preserves a mined approval receipt when the backend already exposes only publication', async t => {
+    const { flow, start, requests, executions } = await mountWalletLockWorkflow(t)
+    flow.state.receipts = new Map([['0xmined', 'Completed']])
+    const store = flow.stores.useSwapTransactionStore.getState()
+    store.setStepTransaction(swapId, 'approve', '0xmined', 'https://explorer.test/mined')
+    await start()
+    assert.equal(store.stepTransactions[swapId].approve.confirmed, true)
+    assert.equal(store.stepTransactions[swapId].approve.explorerUrl, 'https://explorer.test/mined')
+    assert.equal(requests.length, 1, 'only publication opens the wallet')
+    await act(async () => { requests[0].resolve(); await executions[0] })
+    assert.deepEqual(flow.calls.storedTransactions, [[swapId, '0xtransaction']])
+})
 
 for (const outcome of ['rejected', 'submitted']) {
     test(`ordinary wallet adjustment stays locked across footer unmount/remount until ${outcome}`, async t => {
