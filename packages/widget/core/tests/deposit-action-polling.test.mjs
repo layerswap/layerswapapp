@@ -54,6 +54,7 @@ const swapContext = createSwapContext({
 })
 globalThis.__depositSwapContext = swapContext
 const { useDepositActionPolling, depositActionsKey } = await import('../dist/esm/hooks/useDepositActionPolling.js')
+const { useSwapTransactionStore } = await import('../dist/esm/stores/swapTransactionStore.js')
 
 const sign = { type: 'sign', step: 'sign', status: 'action_required', typed_data: { message: { nonce: 'initial' } } }
 const publish = { type: 'transfer', step: 'publish', status: 'waiting' }
@@ -90,6 +91,7 @@ const wait = (signal, extra = {}) => {
 }
 
 beforeEach(() => {
+    useSwapTransactionStore.setState(useSwapTransactionStore.getInitialState(), true)
     for (const id of Object.keys(swapTransactions)) delete swapTransactions[id]
     container = document.createElement('div')
     document.body.append(container)
@@ -177,56 +179,60 @@ test('legacy signing waits for a different action type and resolves when transfe
     }
 })
 
-test('a mined partial approval resumes with identical calldata and waits for each submitted transaction', async t => {
-    t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 10000 })
-    const workflow = action => [action, { ...sign, status: 'pending' }, { ...publish, status: 'pending' }]
-    response = { data: workflow(approval) }
-    await render()
-    const scope = new AbortController()
-    let transition
-    const approvalTransaction = { network: 'BASE_MAINNET', hash: '0xpartial' }
-    let pending = wait(scope.signal, { previousAction: approval, approvalTransaction }).then(value => { transition = value })
-    try {
-        // A repeated poll or a fee refresh is not another approval request.
-        response = { data: workflow({ ...approval, gas_limit: '60000', fee: { amount: 0.000001 } }) }
-        for (let i = 0; i < 2; i++) await act(async () => { t.mock.timers.tick(2000) })
-        assert.equal(transition, undefined)
+for (const step of ['approve_permit2', 'approve']) {
+    test(`a mined partial ${step} resumes with identical calldata and waits for each submitted transaction`, async t => {
+        t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 10000 })
+        const currentApproval = { ...approval, step }
+        const nextSteps = step === 'approve' ? [{ ...publish, status: 'action_required' }] : [sign, publish]
+        const workflow = action => [action, ...nextSteps.map(action => ({ ...action, status: 'pending' }))]
+        response = { data: workflow(currentApproval) }
+        await render()
+        const scope = new AbortController()
+        let transition
+        const approvalTransaction = { network: 'BASE_MAINNET', hash: '0xpartial' }
+        let pending = wait(scope.signal, { previousAction: currentApproval, approvalTransaction }).then(value => { transition = value })
+        try {
+            // A repeated poll or a fee refresh is not another approval request.
+            response = { data: workflow({ ...currentApproval, gas_limit: '60000', fee: { amount: 0.000001 } }) }
+            for (let i = 0; i < 2; i++) await act(async () => { t.mock.timers.tick(2000) })
+            assert.equal(transition, undefined)
 
-        // The wallet approved 3 USDT. The backend still asks for the same total
-        // 5.841963 USDT allowance, not a delta of 2.841963 USDT.
-        receipts.set('0xpartial', 'Completed')
-        response = { data: workflow({ ...approval }) }
-        const beforeConfirmation = requests.length
-        await act(async () => { t.mock.timers.tick(2000) })
-        assert.deepEqual(transition, { actions: response.data }, 'receipt confirmation resumes an unchanged approval payload')
-        const confirmationRequests = requests.slice(beforeConfirmation)
-        const receiptIndex = confirmationRequests.findIndex(key => Array.isArray(key))
-        assert.ok(confirmationRequests.slice(receiptIndex + 1).includes(depositActionsKey('s1', 'source')), 'actions are revalidated after confirmation')
-        await pending
-        assert.equal(container.textContent, 'approve_permit2', 'the remaining approval is still the current step')
+            // The wallet approved 3 USDT. The backend still asks for the same total
+            // 5.841963 USDT allowance, not a delta of 2.841963 USDT.
+            receipts.set('0xpartial', 'Completed')
+            response = { data: workflow({ ...currentApproval }) }
+            const beforeConfirmation = requests.length
+            await act(async () => { t.mock.timers.tick(2000) })
+            assert.deepEqual(transition, { actions: response.data }, 'receipt confirmation resumes an unchanged approval payload')
+            const confirmationRequests = requests.slice(beforeConfirmation)
+            const receiptIndex = confirmationRequests.findIndex(key => Array.isArray(key))
+            assert.ok(confirmationRequests.slice(receiptIndex + 1).includes(depositActionsKey('s1', 'source')), 'actions are revalidated after confirmation')
+            await pending
+            assert.equal(container.textContent, step, 'the remaining approval is still the current step')
 
-        transition = undefined
-        pending = wait(scope.signal, { previousAction: approval, approvalTransaction: { ...approvalTransaction, hash: '0xremaining' } }).then(value => { transition = value })
-        response = { data: workflow({ ...approval, gas_limit: '65000' }) }
-        for (let i = 0; i < 2; i++) await act(async () => { t.mock.timers.tick(2000) })
-        assert.equal(transition, undefined, 'the first receipt cannot confirm the second transaction')
+            transition = undefined
+            pending = wait(scope.signal, { previousAction: currentApproval, approvalTransaction: { ...approvalTransaction, hash: '0xremaining' } }).then(value => { transition = value })
+            response = { data: workflow({ ...currentApproval, gas_limit: '65000' }) }
+            for (let i = 0; i < 2; i++) await act(async () => { t.mock.timers.tick(2000) })
+            assert.equal(transition, undefined, 'the first receipt cannot confirm the second transaction')
 
-        receipts.set('0xremaining', 'Completed')
-        // Keep the polling snapshot stale until receipt confirmation. Only the
-        // request made after that receipt sees the completed approval.
-        onReceipt = receipt => {
-            if (receipt.data.status === 'Completed') response = { data: [{ step: 'approve_permit2', status: 'completed' }, sign, publish] }
+            receipts.set('0xremaining', 'Completed')
+            // Keep the polling snapshot stale until receipt confirmation. Only the
+            // request made after that receipt sees the completed approval.
+            onReceipt = receipt => {
+                if (receipt.data.status === 'Completed') response = { data: [{ step, status: 'completed' }, ...nextSteps] }
+            }
+            await act(async () => { t.mock.timers.tick(2000) })
+            assert.deepEqual(transition, { actions: response.data })
+            await pending
+            assert.equal(container.textContent, nextSteps[0].step)
+            assert.ok(requests.every(key => Array.isArray(key) || key === depositActionsKey('s1', 'source')))
+        } finally {
+            act(() => scope.abort())
+            await pending.catch(() => {})
         }
-        await act(async () => { t.mock.timers.tick(2000) })
-        assert.deepEqual(transition, { actions: response.data })
-        await pending
-        assert.equal(container.textContent, 'sign')
-        assert.ok(requests.every(key => Array.isArray(key) || key === depositActionsKey('s1', 'source')))
-    } finally {
-        act(() => scope.abort())
-        await pending.catch(() => {})
-    }
-})
+    })
+}
 
 test('changed approval calldata does not trigger a second transaction while the first is pending', async t => {
     t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 10000 })
@@ -242,18 +248,124 @@ test('changed approval calldata does not trigger a second transaction while the 
     await act(async () => { scope.abort(); await cancelled })
 })
 
-test('a failed approval receipt ends the wait without retrying the transaction', async () => {
-    response = { data: [approval] }
-    receipts.set('0xfailed', 'Failed')
-    await render()
-    let rejected
-    await act(async () => {
-        rejected = assert.rejects(wait(new AbortController().signal, {
-            previousAction: approval, approvalTransaction: { network: 'BASE_MAINNET', hash: '0xfailed' },
-        }), /token approval transaction failed/)
+for (const minedDuringRefresh of [false, true]) {
+    test(`approval readiness ignores stale actions and ${minedDuringRefresh ? 'preserves a receipt mined during refresh' : 'recovers a replaced hash returning 404'}`, async t => {
+        t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 10000 })
+        const direct = { ...approval, step: 'approve' }
+        const unresolved = { data: [direct, { ...publish, status: 'pending' }] }
+        const ready = { data: [{ step: 'approve', status: 'completed' }, { ...publish, status: 'action_required', call_data: 'fresh' }] }
+        response = unresolved
+        receiptFailure = Object.assign(new Error('Replaced hash not indexed'), { response: { status: 404 } })
+        useSwapTransactionStore.getState().setStepTransaction('s1', 'approve', '0xreplaced', 'https://explorer.test/replaced')
+        await render()
+        const transport = globalThis.__depositTransport
+        let actionReads = 0
+        globalThis.__depositTransport = async key => {
+            const result = await transport(key)
+            if (key === depositActionsKey('s1', 'source')) return ++actionReads === 1 ? ready : unresolved
+            return result
+        }
+        const scope = new AbortController()
+        let transition
+        const pending = wait(scope.signal, { previousAction: direct,
+            approvalTransaction: { network: 'BASE_MAINNET', hash: '0xreplaced' } }).then(value => { transition = value })
+        try {
+            await act(async () => { t.mock.timers.tick(2000) })
+            assert.ok(requests.some(key => Array.isArray(key) && key[2] === '0xreplaced'))
+            assert.ok(actionReads >= 2, 'observed readiness triggers another action refresh')
+            assert.equal(transition, undefined, 'stale readiness must not resume execution')
+            assert.equal(useSwapTransactionStore.getState().stepTransactions.s1.approve.hash, '0xreplaced')
+            let finishRefresh
+            actionReads = 0
+            globalThis.__depositTransport = async key => {
+                const result = await transport(key)
+                if (key === depositActionsKey('s1', 'source') && ++actionReads === 2 && minedDuringRefresh) {
+                    return new Promise(resolve => { finishRefresh = () => resolve(result) })
+                }
+                return result
+            }
+            response = ready
+            const before = requests.filter(key => key === depositActionsKey('s1', 'source')).length
+            await act(async () => { t.mock.timers.tick(2000) })
+            if (minedDuringRefresh) {
+                assert.equal(typeof finishRefresh, 'function')
+                receiptFailure = undefined
+                receipts.set('0xreplaced', 'Completed')
+                for (let i = 0; i < 4 && !useSwapTransactionStore.getState().stepTransactions.s1.approve.confirmed; i++) {
+                    await act(async () => { t.mock.timers.tick(5000) })
+                }
+                assert.equal(useSwapTransactionStore.getState().stepTransactions.s1.approve.confirmed, true)
+                await act(async () => { finishRefresh() })
+            }
+            await pending
+            assert.deepEqual(transition.actions, ready.data)
+            assert.ok(requests.filter(key => key === depositActionsKey('s1', 'source')).length >= before + 2)
+            const receipt = useSwapTransactionStore.getState().stepTransactions.s1.approve
+            if (minedDuringRefresh) {
+                assert.equal(receipt.confirmed, true)
+                assert.equal(receipt.explorerUrl, 'https://explorer.test/replaced')
+            } else {
+                assert.equal(receipt, undefined, 'a replaced hash is not a confirmed receipt')
+            }
+        } finally {
+            act(() => scope.abort())
+            await pending.catch(() => {})
+        }
     })
-    await rejected
-})
+}
+
+for (const step of ['approve_permit2', 'approve']) {
+    test(`a failed ${step} receipt ends the wait without retrying the transaction`, async () => {
+        const currentApproval = { ...approval, step }
+        response = { data: [currentApproval] }
+        const otherStep = step === 'approve' ? 'approve_permit2' : 'approve'
+        const store = useSwapTransactionStore.getState()
+        store.setStepTransaction('s1', step, '0xfailed', 'https://explorer.test/failed')
+        store.setStepTransaction('s1', otherStep, '0xother', 'https://explorer.test/other')
+        receipts.set('0xfailed', 'Failed')
+        await render()
+        let rejected
+        await act(async () => {
+            rejected = assert.rejects(wait(new AbortController().signal, {
+                previousAction: currentApproval, approvalTransaction: { network: 'BASE_MAINNET', hash: '0xfailed' },
+            }), /token approval transaction failed/)
+        })
+        await rejected
+        const transactions = useSwapTransactionStore.getState().stepTransactions.s1
+        if (step === 'approve') {
+            assert.equal(transactions.approve, undefined, 'failed direct approval is released for retry')
+        }
+        assert.equal(transactions[otherStep].hash, '0xother')
+    })
+}
+
+for (const [scenario, step, httpStatus, refreshFails, released] of [
+    ['cancelled approval', 'approve', 404, false, true],
+    ['pending approval', 'approve', undefined, false, false],
+    ['receipt service outage', 'approve', 503, false, false],
+    ['failed action refresh', 'approve', 404, true, false],
+    ['Permit2 approval', 'approve_permit2', 404, false, false],
+]) {
+    test(`${scenario}: timeout ${released ? 'releases' : 'retains'} its receipt for the next attempt`, async t => {
+        t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 10000 })
+        const currentApproval = { ...approval, step }
+        response = { data: [currentApproval, { ...publish, status: 'pending' }] }
+        if (httpStatus) receiptFailure = Object.assign(new Error('Receipt unavailable'), { response: { status: httpStatus } })
+        const store = useSwapTransactionStore.getState()
+        store.setStepTransaction('s1', step, '0xmissing', 'https://explorer.test/missing')
+        await render()
+        const pending = wait(new AbortController().signal, { previousAction: currentApproval,
+            approvalTransaction: { network: 'BASE_MAINNET', hash: '0xmissing' } })
+        const rejected = assert.rejects(pending, released ? /try approving again/ : refreshFails ? /Refresh failed/ : /still confirming/)
+        await act(async () => { t.mock.timers.tick(139999) })
+        assert.equal(useSwapTransactionStore.getState().stepTransactions.s1[step].hash, '0xmissing', 'never release before the full timeout')
+        if (refreshFails) failure = new Error('Refresh failed')
+        await act(async () => { t.mock.timers.tick(1); await rejected })
+        assert.equal(useSwapTransactionStore.getState().stepTransactions.s1[step]?.hash, released ? undefined : '0xmissing')
+        assert.equal(useSwapTransactionStore.getState().swapTransactions.s1?.hash, undefined, 'timeout recovery does not submit the swap')
+        if (released) assert.equal(requests.at(-1), depositActionsKey('s1', 'source'), 'recovery refreshes actions before allowing retry')
+    })
+}
 
 test('approval receipt lookup retries an unindexed transaction before resuming', async t => {
     t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 10000 })

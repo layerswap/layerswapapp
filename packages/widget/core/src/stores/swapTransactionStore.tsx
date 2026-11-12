@@ -19,7 +19,7 @@ export type SwapTransaction = {
     atomicBatchFailure?: 'reverted' | 'not_submitted';
 };
 
-export type SwapStepTransaction = { hash: string; timestamp: number; explorerUrl: string };
+export type SwapStepTransaction = { hash: string; timestamp: number; explorerUrl: string; confirmed?: true };
 export type SwapStepTransactions = Partial<Record<DepositActionStep, SwapStepTransaction>>;
 
 type SwapTransactionStore = {
@@ -28,6 +28,8 @@ type SwapTransactionStore = {
     // Prerequisite receipts never prove a submitted swap.
     stepTransactions: Record<string, SwapStepTransactions>;
     setStepTransaction: (id: string, step: DepositActionStep, hash: string, explorerUrl: string) => void;
+    confirmStepTransaction: (id: string, step: DepositActionStep, hash: string) => void;
+    removeStepTransaction: (id: string, step: DepositActionStep, hash: string) => void;
     // Provider withdrawals and atomic batches with unknown outcomes must be reconciled before retrying.
     pendingSubmissions: Record<string, true>;
     markSubmissionPending: (id: string) => void;
@@ -140,7 +142,10 @@ function transactionReceipts(value: unknown): PersistedTransactionReceipts {
         for (const [step, value] of Object.entries(savedRecords(steps)) as [DepositActionStep, unknown][]) {
             const receipt = transactionReceipt(value);
             const explorerUrl = savedRecords(value).explorerUrl;
-            if (receipt && typeof explorerUrl === 'string') receipts[step] = { ...receipt, explorerUrl };
+            if (receipt && typeof explorerUrl === 'string') receipts[step] = {
+                ...receipt, explorerUrl,
+                ...(savedRecords(value).confirmed === true ? { confirmed: true } : {}),
+            };
         }
         if (Object.keys(receipts).length) stepTransactions[id] = receipts;
     }
@@ -180,6 +185,8 @@ export const useSwapTransactionStore = create<SwapTransactionStore>()(
                             [step]: {
                                 hash,
                                 explorerUrl,
+                                ...(state.stepTransactions[id]?.[step]?.hash === hash
+                                    && state.stepTransactions[id][step]?.confirmed ? { confirmed: true as const } : {}),
                                 timestamp: state.stepTransactions[id]?.[step]?.hash === hash
                                     ? state.stepTransactions[id][step]!.timestamp : Date.now(),
                             },
@@ -187,6 +194,19 @@ export const useSwapTransactionStore = create<SwapTransactionStore>()(
                     },
                 }));
             },
+            confirmStepTransaction: (id, step, hash) => set(state => {
+                const receipt = state.stepTransactions[id]?.[step];
+                if (receipt?.hash !== hash || receipt.confirmed) return state;
+                return { stepTransactions: { ...state.stepTransactions, [id]: {
+                    ...state.stepTransactions[id], [step]: { ...receipt, confirmed: true },
+                } } };
+            }),
+            removeStepTransaction: (id, step, hash) => set(state => {
+                const steps = state.stepTransactions[id];
+                if (steps?.[step]?.hash !== hash) return state;
+                const { [step]: removed, ...remaining } = steps;
+                return { stepTransactions: { ...state.stepTransactions, [id]: remaining } };
+            }),
             markSubmissionPending: id => set(state => ({
                 pendingSubmissions: { ...state.pendingSubmissions, [id]: true },
             })),

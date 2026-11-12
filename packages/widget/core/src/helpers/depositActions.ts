@@ -19,6 +19,14 @@ export const isBatchTransferAction = (action: DepositAction): action is BatchTra
 export const isTransferAction = (action: DepositAction): action is TransferDepositAction =>
     action.type === 'transfer' || action.type === 'manual_transfer'
 
+export const isApprovalAction = (action: DepositAction): action is DepositAction & { step: 'approve' | 'approve_permit2' } =>
+    action.step === 'approve' || action.step === 'approve_permit2'
+
+/** Both calls being actionable together identifies a flat atomic plan. */
+export const hasAtomicApprovalPlan = (actions: DepositAction[]): boolean =>
+    actions.some(action => action.step === 'approve' && action.status === 'action_required')
+    && actions.some(action => action.step === 'publish' && action.status === 'action_required')
+
 export const getCurrentDepositActionIndex = (actions: DepositAction[], includeWaiting = false): number => {
     const current = actions.findIndex(action =>
         action.status === 'action_required' || action.status === 'pending' || action.status === 'failed'
@@ -28,8 +36,8 @@ export const getCurrentDepositActionIndex = (actions: DepositAction[], includeWa
 
 export const getActionableDepositAction = (actions: DepositAction[] | undefined): SignDepositAction | TransferDepositAction | BatchTransferDepositAction | undefined => {
     if (!actions?.length) return undefined
-    // The allowance rail's flat items must first be grouped at the API boundary.
-    if (actions.some(action => action.step === 'approve')) return undefined
+    // Complete atomic plans must first be grouped at the API boundary.
+    if (hasAtomicApprovalPlan(actions)) return undefined
 
     const current = actions.find(action =>
         action.status === 'action_required' && (isSignAction(action) || isTransferAction(action) || isBatchTransferAction(action))
@@ -42,8 +50,16 @@ export const getActionableDepositAction = (actions: DepositAction[] | undefined)
     return legacy && (isSignAction(legacy) || isTransferAction(legacy)) ? legacy : undefined
 }
 
+/** A fresh ordinary publication proves the backend no longer needs an approval. */
+export const isDirectApprovalSatisfied = (actions: DepositAction[] | undefined): boolean => {
+    if (!actions?.length || actions.some(action => action.status === 'failed'
+        || (isApprovalAction(action) && action.status !== 'completed'))) return false
+    const current = getActionableDepositAction(actions)
+    return current?.type === 'transfer' && current.step === 'publish' && current.status === 'action_required'
+}
+
 const DEPOSIT_ACTION_LABELS: Record<string, string> = {
-    approve: 'Approve and swap',
+    approve: 'Approve token',
     approve_permit2: 'Approve token',
     sign: 'Sign to swap',
     publish: 'Confirm swap',
@@ -58,6 +74,7 @@ export const getDepositActionDescription = (action: DepositAction): string | und
     if (isBatchTransferAction(action)) return (action.calls?.length ?? 0) > 1
         ? 'Approve the token and swap in one atomic batch' : 'Submit the swap transaction'
     switch (action.step) {
+        case 'approve':
         case 'approve_permit2':
             return action.token?.symbol
                 ? `Allow ${action.token.symbol} for this swap`
@@ -74,7 +91,7 @@ export const getDepositActionDescription = (action: DepositAction): string | und
 }
 
 export const requiresDepositActionRefresh = (action: DepositAction): boolean =>
-    action.step === 'approve_permit2'
+    isApprovalAction(action)
     || action.step === 'sign' || isSignAction(action)
 
 // Completed prerequisites do not prove that the deposit was submitted. A later

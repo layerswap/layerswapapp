@@ -2,15 +2,20 @@ import { useCallback, useRef, useState } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
 import type { ApiResponse } from '@layerswap/widget-types'
 import LayerSwapApiClient, { type DepositAction, type GaslessAuthorizationResult } from '@/lib/apiClients/layerSwapApiClient'
-import { getActionableDepositAction, isDepositWorkflowComplete } from '@/helpers/depositActions'
+import { getActionableDepositAction, isApprovalAction, isDepositWorkflowComplete, isDirectApprovalSatisfied } from '@/helpers/depositActions'
 import { isGaslessAuthorizationSubmitted, isGaslessDepositWorkflow } from '@/helpers/gasless'
-import { useDepositSignatureStore, useGaslessAuthorizationStore } from '@/stores/swapTransactionStore'
+import { useDepositSignatureStore, useGaslessAuthorizationStore, useSwapTransactionStore } from '@/stores/swapTransactionStore'
 import { useSwapDataState, useSwapDataUpdate, type ApprovalTransaction } from '@/context/swap'
 import { recordSwapExecution } from '@/lib/swapExecution'
 import { useClientLayoutEffect } from './useClientLayoutEffect'
 
 const client = new LayerSwapApiClient()
 const TRANSITION_TIMEOUT_MS = 140_000
+class DepositActionTimeoutError extends Error {
+    constructor() {
+        super('The transaction is still confirming. Please wait a moment and try again.')
+    }
+}
 export const depositActionsKey = (swapId: string, sourceAddress: string) =>
     `/swaps/${swapId}/deposit_actions?source_address=${sourceAddress}`
 
@@ -50,12 +55,13 @@ export function useDepositActionPolling(swapId: string | undefined, sourceAddres
     const approvalHash = activeApproval?.hash
     const approvalNetwork = activeApproval?.network
     const approvalStatus = activeApproval?.status
+    const approvalNotFound = activeApproval?.notFound
     const snapshot = useRef<DepositPollingSnapshot>({ key: null })
     const listeners = useRef(new Set<() => void>())
     useClientLayoutEffect(() => {
-        snapshot.current = { key, data, error, authorizationKey, authorization, authorizationError, approvalHash, approvalNetwork, approvalStatus }
+        snapshot.current = { key, data, error, authorizationKey, authorization, authorizationError, approvalHash, approvalNetwork, approvalStatus, approvalNotFound }
         listeners.current.forEach(notify => notify())
-    }, [key, data, error, authorizationKey, authorization, authorizationError, approvalHash, approvalNetwork, approvalStatus])
+    }, [key, data, error, authorizationKey, authorization, authorizationError, approvalHash, approvalNetwork, approvalStatus, approvalNotFound])
 
     const refresh = useCallback(async (activeSwapId: string, address: string) => {
         // Revalidate through the registered SWR subscription, never a parallel API loop.
@@ -105,7 +111,7 @@ export function useDepositActionPolling(swapId: string | undefined, sourceAddres
                 try {
                     const transition = checkTransition(snapshot.current)
                     if (transition instanceof Promise) {
-                        void transition.then(complete, fail)
+                        void transition.then(value => { if (value) complete(value) }, fail)
                     } else if (transition) {
                         complete(transition)
                     }
@@ -113,7 +119,7 @@ export function useDepositActionPolling(swapId: string | undefined, sourceAddres
                     fail(error)
                 }
             }
-            const timeout = setTimeout(() => fail(new Error('The transaction is still confirming. Please wait a moment and try again.')), TRANSITION_TIMEOUT_MS)
+            const timeout = setTimeout(() => fail(new DepositActionTimeoutError()), TRANSITION_TIMEOUT_MS)
             signal.addEventListener('abort', abort, { once: true })
             listeners.current.add(check)
             check()
@@ -125,16 +131,45 @@ export function useDepositActionPolling(swapId: string | undefined, sourceAddres
         signal.throwIfAborted()
         const expectedKey = depositActionsKey(activeSwapId, address)
 
-        const stopApprovalPolling = previousAction.step === 'approve_permit2' && approvalTransaction
+        const stopApprovalPolling = isApprovalAction(previousAction) && approvalTransaction
             ? watchApprovalTransaction({ ...approvalTransaction, swapId: activeSwapId, sourceAddress: address })
             : undefined
         if (previousAction.step === 'sign' || previousAction.type === 'sign') {
             setAuthorizationWaitKey(expectedKey)
         }
 
-        const checkTransition = createTransitionCheck(options, () => refresh(activeSwapId, address))
-        return observeTransition(expectedKey, signal, checkTransition).finally(() => stopApprovalPolling?.())
-    }, [observeTransition, refresh, watchApprovalTransaction])
+        const checkTransition = createTransitionCheck(options, () => refresh(activeSwapId, address), async () => {
+            if (!approvalTransaction) return
+            // Revalidate the provider's existing receipt subscription before
+            // discarding a hash whose approval the backend has already observed.
+            const receipt = await mutate<ApiResponse<{ status: string }>>([approvalTransaction.network, approvalTransaction.hash])
+            return receipt?.data?.status?.toLowerCase()
+        })
+        const canRetryMissingApproval = () => {
+            const latest = snapshot.current
+            const saved = useSwapTransactionStore.getState().stepTransactions[activeSwapId]?.approve
+            return !signal.aborted && latest.key === expectedKey && previousAction.step === 'approve'
+                && !!approvalTransaction && latest.approvalHash === approvalTransaction.hash
+                && latest.approvalNetwork === approvalTransaction.network && latest.approvalNotFound
+                && latest.approvalStatus !== 'completed' && latest.approvalStatus !== 'failed'
+                && saved?.hash === approvalTransaction.hash && !saved.confirmed
+        }
+        return observeTransition(expectedKey, signal, checkTransition).catch(async error => {
+            if (error instanceof DepositActionTimeoutError && approvalTransaction && canRetryMissingApproval()) {
+                // Wallet cancellation can replace the hash without setting allowance.
+                // After a full wait, permit a user-initiated retry only if a fresh plan
+                // still requires approval and the original hash is still missing.
+                const actions = await refresh(activeSwapId, address)
+                const next = getActionableDepositAction(actions)
+                if (canRetryMissingApproval() && next?.step === 'approve' && next.status === 'action_required'
+                    && !actions.some(action => action.status === 'failed')) {
+                    useSwapTransactionStore.getState().removeStepTransaction(activeSwapId, 'approve', approvalTransaction.hash)
+                    throw new Error('The approval could not be found. Please try approving again.')
+                }
+            }
+            throw error
+        }).finally(() => stopApprovalPolling?.())
+    }, [observeTransition, refresh, watchApprovalTransaction, mutate])
 
     return { data: data?.data, refresh, waitForTransition }
 }
@@ -142,17 +177,25 @@ export function useDepositActionPolling(swapId: string | undefined, sourceAddres
 function createTransitionCheck(
     { swapId, previousAction, approvalTransaction }: WaitForTransitionOptions,
     refreshActions: () => Promise<DepositAction[]>,
+    refreshApprovalStatus: () => Promise<string | undefined>,
 ): TransitionCheck {
-    const submittedApproval = previousAction.step === 'approve_permit2' ? approvalTransaction : undefined
+    const submittedApproval = isApprovalAction(previousAction) ? approvalTransaction : undefined
     let refreshingApproval = false
 
     return latest => {
-        if (submittedApproval && latest.approvalHash === submittedApproval.hash
-            && latest.approvalNetwork === submittedApproval.network) {
+        const matchingApproval = submittedApproval && latest.approvalHash === submittedApproval.hash
+            && latest.approvalNetwork === submittedApproval.network
+        if (matchingApproval) {
             if (latest.approvalStatus === 'failed') {
+                if (previousAction.step === 'approve') {
+                    useSwapTransactionStore.getState().removeStepTransaction(swapId, 'approve', submittedApproval.hash)
+                }
                 throw new Error('The token approval transaction failed. Please try again.')
             }
             if (latest.approvalStatus === 'completed') {
+                if (previousAction.step === 'approve') {
+                    useSwapTransactionStore.getState().confirmStepTransaction(swapId, 'approve', submittedApproval.hash)
+                }
                 if (refreshingApproval) return
                 refreshingApproval = true
                 // A wallet edit can leave the allowance too low even for identical
@@ -161,6 +204,26 @@ function createTransitionCheck(
             }
         }
 
+        if (submittedApproval && previousAction.step === 'approve') {
+            // A sped-up approval can satisfy the allowance under a different hash.
+            // Confirm backend readiness with a fresh read, not the stale receipt or a timeout.
+            if (!matchingApproval || refreshingApproval || latest.error || latest.data?.error
+                || !isDirectApprovalSatisfied(latest.data?.data)) return
+            refreshingApproval = true
+            return refreshActions().then(async actions => {
+                if (!isDirectApprovalSatisfied(actions)) return
+                const status = await refreshApprovalStatus()
+                // Receipt polling may have confirmed this hash during the refresh.
+                // Only discard an unresolved hash, never its confirmed explorer link.
+                const store = useSwapTransactionStore.getState()
+                if (status === 'completed') {
+                    store.confirmStepTransaction(swapId, 'approve', submittedApproval.hash)
+                } else if (!store.stepTransactions[swapId]?.approve?.confirmed) {
+                    store.removeStepTransaction(swapId, 'approve', submittedApproval.hash)
+                }
+                return { actions }
+            }).finally(() => { refreshingApproval = false })
+        }
         return getDepositActionTransition(latest, swapId, previousAction)
     }
 }
@@ -259,7 +322,8 @@ type DepositPollingSnapshot = {
     approvalHash?: string
     approvalNetwork?: string
     approvalStatus?: string
+    approvalNotFound?: boolean
 }
 
 type TransitionCheck = (snapshot: DepositPollingSnapshot) =>
-    DepositActionTransition | Promise<DepositActionTransition> | undefined
+    DepositActionTransition | Promise<DepositActionTransition | undefined> | undefined

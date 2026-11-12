@@ -78,14 +78,14 @@ for (const name of ['zero_allowance', 'allowance_reset', 'sufficient_allowance']
             assert.deepEqual(names(), [label, 'Receive 2.660824 USDT'])
 
             await act(() => root.render(createElement(DepositWorkflowView, {
-                ...props, actions: placeholders('pending'), processing,
+                ...props, actions: placeholders('pending'), processing, executionKind: 'atomic-batch',
             })))
             assert.deepEqual(names(), [label, 'Receive 2.660824 USDT'])
             assert.ok(rows()[0].querySelector('.animate-spin'))
             assert.match(rows()[0].textContent, /Confirming transaction/)
 
             await act(() => root.render(createElement(DepositWorkflowView, {
-                ...props, actions: placeholders('completed'), completed,
+                ...props, actions: placeholders('completed'), completed, executionKind: 'atomic-batch',
             })))
             assert.deepEqual(names(), [label, 'Received 2.660824 USDT'])
             assert.equal(container.querySelectorAll('[aria-label="Progress"] .lucide-check').length, 2)
@@ -97,12 +97,13 @@ for (const name of ['zero_allowance', 'allowance_reset', 'sufficient_allowance']
     })
 }
 
-test('a completed atomic swap opened without prior action history still has two steps', async () => {
+test('a recorded atomic swap keeps two steps when reopened with status-only history', async () => {
     const root = createRoot(container)
     try {
         await act(() => root.render(createElement(DepositWorkflowView, {
             ...props,
             actions: [{ step: 'approve', status: 'completed' }, { step: 'publish', status: 'completed' }],
+            executionKind: 'atomic-batch',
             completed,
         })))
         assert.deepEqual(names(), ['Approve and swap', 'Received 2.660824 USDT'])
