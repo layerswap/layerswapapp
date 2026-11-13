@@ -29,6 +29,9 @@ import { AddressGroup } from "@/components/Input/Address/AddressPicker";
 import { ImageWithFallback } from "@layerswap/ui-kit/components";
 import { ExchangeReceiveAmount } from "@/components/Input/Amount/ExchangeReceiveAmount";
 import AddressIcon from "@/components/Common/AddressIcon";
+import { useSwapPrerequisites } from '@/hooks/useSwapPrerequisites';
+import { prerequisitesFromForm } from '@/lib/prerequisites/context';
+import { PrerequisitePanel } from '@/components/SwapPrerequisites/PrerequisitePanel';
 
 type Props = {
     partner?: Partner;
@@ -54,6 +57,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
     const { isQuoteLoading: quoteLoading, quote, quoteTokenPrices, minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval });
     const isQuoteLoading = quoteLoading || (isAmountPreset(values.amountMode) && !!values.amountPresetPending);
     useReportFormQuote(quote?.quote);
+    const prerequisites = useSwapPrerequisites(prerequisitesFromForm(values, quote?.quote.receive_amount));
     const { formValidation } = useValidationContext();
 
     const isValid = !formValidation.message;
@@ -108,6 +112,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                         </div>
                                     }
                                 }</Address>
+                                <PrerequisitePanel state={prerequisites} />
                             </div>
                             <div className="bg-secondary-500 rounded-2xl p-3 group space-y-2" onClick={setShowQuickActions} ref={parentRef}>
                                 <div className="flex justify-between items-center">
@@ -155,6 +160,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                 <Widget.Footer showPoweredBy>
                     <FormButton
                         shouldConnectWallet={false}
+                        prerequisiteLabel={prerequisites.blockingMessage}
                         values={values}
                         disabled={!isValid || isSubmitting || !quote || isQuoteLoading}
                         error={error}

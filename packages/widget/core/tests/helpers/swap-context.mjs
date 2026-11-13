@@ -4,7 +4,8 @@ import { createRequire } from 'node:module'
 import React from 'react'
 import ts from 'typescript'
 import { formatTokenAmount } from '../../dist/esm/components/utils/formatTokenAmount.js'
-import { amountPresets, swapProgress } from './source.mjs'
+import { resolveExecutionPrerequisites } from '../../../../wallets/core/dist/esm/lib/swapPrerequisites.js'
+import { loadSource, amountPresets, swapProgress } from './source.mjs'
 
 const require = createRequire(import.meta.url)
 const noop = () => {}
@@ -22,6 +23,9 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
     }
     const resolved = {}
     const imports = {
+        '@layerswap/wallet-core': { resolveExecutionPrerequisites },
+        '@/hooks/useSwapPrerequisites': { useCheckSwapPrerequisites: () => async () => {} },
+        '@/lib/prerequisites/context': loadSource('lib/prerequisites/context.ts', { '../address/Address': { Address: { isValid: () => true } } }),
         '@/components/utils/formatTokenAmount': { formatTokenAmount },
         '@/lib/amountPresets': amountPresets,
         '@/lib/preparePresetAmount': { preparePresetAmount: () => { throw new Error('Unexpected preset preparation') } },

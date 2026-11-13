@@ -46,6 +46,7 @@ export function createParadexProvider<Network = NetworkWithTokens>(
         createConnection,
         gasProvider: finalGasProviders,
         transferProvider: finalTransferProviders,
+        swapPrerequisiteProvider: config.swapPrerequisiteProviders,
         // balanceProvider: finalBalanceProviders,
     }
 }

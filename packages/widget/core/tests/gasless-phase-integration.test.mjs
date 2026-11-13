@@ -30,6 +30,9 @@ const apiModule = 'data:text/javascript,' + encodeURIComponent(`
     }
 `)
 const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
+    if (specifier === '@layerswap/wallet-core' && context.parentURL?.endsWith('/depositExecution.js')) return {
+        url: new URL('../../../wallets/core/dist/esm/lib/swapPrerequisites.js', import.meta.url).href, shortCircuit: true,
+    }
     if (specifier.endsWith('/lib/apiClients/layerSwapApiClient')) return { url: apiModule, shortCircuit: true }
     if (specifier.endsWith('/context/swap')) return {
         url: 'data:text/javascript,' + encodeURIComponent(`

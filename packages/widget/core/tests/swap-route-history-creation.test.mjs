@@ -40,7 +40,10 @@ const context = createSwapContext({
         } },
     },
 })
-const created = { swap: { id: 'created', source_network: { name: 'BACKEND_SOURCE' }, source_token: { symbol: 'BACKEND_TOKEN' } } }
+const created = {
+    swap: { id: 'created', source_network: { name: 'BACKEND_SOURCE' }, source_token: { symbol: 'BACKEND_TOKEN' } },
+    quote: { receive_amount: 1 },
+}
 const values = {
     from: { name: 'DISPLAYED_SOURCE' }, fromAsset: { symbol: 'SRC' },
     to: { name: 'DESTINATION' }, toAsset: { symbol: 'DST' },
@@ -78,6 +81,7 @@ test('history is recorded only after creation, using displayed routes rather tha
     assert.deepEqual(state.history, [])
     response.resolve({ data: created })
     assert.equal(await pending, created)
+    assert.deepEqual(state.errors, [])
     assert.deepEqual(state.history, [{ swap: created, overrides: {
         sourceRoute: { network: 'DISPLAYED_SOURCE', token: 'SRC' },
         destinationRoute: { network: 'DESTINATION', token: 'DST' },
@@ -109,5 +113,6 @@ test('a failed recent-route update does not skip persistent history or reject a 
     state.updateRecent = () => { throw new Error('Storage unavailable') }
     assert.equal(await updates.createSwap(values, {}), created)
     assert.equal(state.history.length, 1)
+    assert.equal(state.errors.length, 1)
     assert.equal(state.errors[0].operation, 'recentRoutes.updateRecentNetworks')
 })

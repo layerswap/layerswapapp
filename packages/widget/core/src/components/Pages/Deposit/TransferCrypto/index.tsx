@@ -15,6 +15,8 @@ import { useDepositPrefetch } from "../depositPrefetchContext";
 import { useReportCloseLock } from "../depositStepContext";
 import { useResolvedSwapStatus } from "@/hooks/useResolvedSwapStatus";
 import { SwapResponse, TransactionType } from "@/lib/apiClients/layerSwapApiClient";
+import { useCheckSwapPrerequisites } from '@/hooks/useSwapPrerequisites';
+import { prerequisitesFromForm } from '@/lib/prerequisites/context';
 
 type Props = {
     partner?: Partner;
@@ -80,6 +82,7 @@ const DepositDestinationRow: FC = () => {
 };
 
 const DepositAddressFlow: FC<Props & { initialSwapData?: SwapResponse }> = ({ partner, showDestinationPicker, initialSwapData }) => {
+    const checkPrerequisites = useCheckSwapPrerequisites();
     const initialSettings = useInitialSettings();
     const { destinationAddress } = useDepositSelection();
     const { prefetchedSource, claimPrefetchedSwap, markSwapUsed } = useDepositPrefetch();
@@ -103,6 +106,7 @@ const DepositAddressFlow: FC<Props & { initialSwapData?: SwapResponse }> = ({ pa
             if (setSwapError) setSwapError("");
             setSubmitedFormValues(values);
             try {
+                await checkPrerequisites(prerequisitesFromForm(values));
                 // A prefetched (possibly still in-flight) swap for these exact
                 // values takes priority; on its failure fall back to a regular
                 // creation so the user still gets a swap and a real error path.
@@ -123,7 +127,7 @@ const DepositAddressFlow: FC<Props & { initialSwapData?: SwapResponse }> = ({ pa
                 if (setSwapError) setSwapError(message);
             }
         },
-        [createSwap, setSwapId, setSubmitedFormValues, setSwapError, initialSettings, partner, claimPrefetchedSwap, markSwapUsed],
+        [createSwap, setSwapId, setSubmitedFormValues, setSwapError, initialSettings, partner, claimPrefetchedSwap, markSwapUsed, checkPrerequisites],
     );
 
     return (

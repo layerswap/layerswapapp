@@ -27,6 +27,9 @@ import RefuelModal from "./FeeDetails/RefuelModal";
 import { SwapFormValues } from "./SwapFormValues";
 import { useCallbacks } from "@/context/callbackProvider";
 import { Slippage } from "./FeeDetails/Slippage";
+import { useSwapPrerequisites } from '@/hooks/useSwapPrerequisites';
+import { prerequisitesFromForm } from '@/lib/prerequisites/context';
+import { PrerequisitePanel } from '@/components/SwapPrerequisites/PrerequisitePanel';
 
 type Props = {
     partner?: Partner;
@@ -56,6 +59,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isQuoteLoading: quoteLoading, quote, quoteTokenPrices } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval });
     const isQuoteLoading = quoteLoading || (isAmountPreset(values.amountMode) && !!values.amountPresetPending);
     useReportFormQuote(quote?.quote);
+    const prerequisites = useSwapPrerequisites(prerequisitesFromForm(values, quote?.quote.receive_amount));
 
     const toAsset = values.toAsset;
     const fromAsset = values.fromAsset;
@@ -106,11 +110,13 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 />
                             }
                             {
-                                !(initialSettings?.hideTo && values?.to) && <DestinationPicker
+                                initialSettings?.hideTo && values?.to ? <PrerequisitePanel state={prerequisites} /> : <DestinationPicker
                                     isFeeLoading={isQuoteLoading}
                                     fee={quote}
                                     partner={partner}
-                                />
+                                >
+                                    <PrerequisitePanel state={prerequisites} inline />
+                                </DestinationPicker>
                             }
                         </div>
                         <div>
@@ -140,6 +146,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                 <Widget.Footer showPoweredBy>
                     <FormButton
                         shouldConnectWallet={shouldConnectWallet}
+                        prerequisiteLabel={prerequisites.blockingMessage}
                         values={values}
                         disabled={!isValid || isSubmitting || !quote || isQuoteLoading}
                         error={error}
@@ -222,21 +229,23 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<
     }, [values, sourceRoutes, destinationRoutes, selectedSourceAccount])
 
     return (
-        <button
-            type="button"
-            aria-label="Reverse the source and destination"
-            data-ls-action="reverse_direction"
-            onClick={() => { cycle(); valuesSwapper(); }}
-            className="navigation-focus-border-primary-md hover:text-primary-text text-secondary-text absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 rounded-lg duration-200 transition">
-            <motion.div
-                animate={animate}
-                transition={{ duration: 0.3 }}
-                style={{ pointerEvents: 'none' }}
-                tabIndex={-1}
-            >
-                <ArrowUpDown className="w-7 h-auto p-1 bg-secondary-300 hover:bg-secondary-200 rounded-lg" />
-            </motion.div>
-        </button>
+        <div className="relative -my-1 h-0 w-full z-10">
+            <button
+                type="button"
+                aria-label="Reverse the source and destination"
+                data-ls-action="reverse_direction"
+                onClick={() => { cycle(); valuesSwapper(); }}
+                className="navigation-focus-border-primary-md hover:text-primary-text text-secondary-text absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 rounded-lg duration-200 transition">
+                <motion.div
+                    animate={animate}
+                    transition={{ duration: 0.3 }}
+                    style={{ pointerEvents: 'none' }}
+                    tabIndex={-1}
+                >
+                    <ArrowUpDown className="w-7 h-auto p-1 bg-secondary-300 hover:bg-secondary-200 rounded-lg" />
+                </motion.div>
+            </button>
+        </div>
     )
 }
 

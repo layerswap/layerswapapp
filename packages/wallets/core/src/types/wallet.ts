@@ -1,6 +1,6 @@
 import type { NetworkType, NetworkWithTokens } from '@layerswap/widget-types';
 import type { StoreApi } from 'zustand/vanilla';
-import type { TransferProps } from '@layerswap/widget-types';
+import type { TransferProps, SwapPrerequisiteProvider } from '@layerswap/widget-types';
 import type { WalletProvider, WalletWrapper } from './provider';
 import type { AppNetworkAdapter } from './network';
 
@@ -46,6 +46,7 @@ export type WalletProviderCapabilities = {
 
 export type WalletProviderDescriptor<Network = NetworkWithTokens> = {
     id: string,
+    swapPrerequisiteProvider?: SwapPrerequisiteProvider | SwapPrerequisiteProvider[],
     name?: string,
     capabilities?: WalletProviderCapabilities,
     providerIcon?: string,

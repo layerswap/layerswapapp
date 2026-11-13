@@ -17,6 +17,7 @@ function loadSource(path, imports = {}) {
         if (name === '../components/utils/resolveSwapFlow.js') return loadSource("../src/components/utils/resolveSwapFlow.ts");
         if (name === '../../helpers/depositActions.js') return loadSource('../src/helpers/depositActions.ts');
         if (name in imports) return imports[name]
+        if (name === '@layerswap/wallet-core') return loadSource('../../../wallets/core/src/lib/swapPrerequisites.ts')
         throw new Error(`Unexpected dependency: ${name}`)
     }, module, module.exports)
     return module.exports
