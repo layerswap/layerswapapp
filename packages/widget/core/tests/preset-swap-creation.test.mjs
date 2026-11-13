@@ -62,6 +62,35 @@ function Probe() {
   return createElement('button', { disabled: !updates.canAdjustAmount() }, 'Adjust amount')
 }
 const render = key => act(() => root.render(createElement(context.SwapDataProvider, { key }, createElement(Probe))))
+
+test('manual creation and review retain the entered refund recipient independently of connected accounts', async () => {
+  const refund = '0x1234567890123456789012345678901234567890'
+  const submitted = { ...values, from: { ...network, type: 'evm' }, amountMode: 'manual', depositMethod: 'deposit_address',
+    refund_address: refund, refundAddressNetwork: network.name, refundAddressRequired: true }
+  await act(async () => {
+    updates.setSubmitedFormValues(submitted)
+    await updates.createSwap(submitted, {})
+  })
+  assert.equal(state.created[0].refund_address, refund)
+  assert.equal(state.created[0].use_deposit_address, true)
+  assert.equal(data.swapBasicData.refund_address, refund)
+})
+
+test('legacy manual creation omits refunds even with a connected source wallet', async () => {
+  await act(() => updates.createSwap({ ...values, amountMode: 'manual', depositMethod: 'deposit_address' }, {}))
+  assert.equal(state.created[0].refund_address, undefined)
+})
+
+test('manual creation rejects invalid and stale source-network refund addresses before sending a request', async () => {
+  for (const fields of [
+    { refund_address: 'bad', refundAddressNetwork: network.name },
+    { refund_address: '0x1234567890123456789012345678901234567890', refundAddressNetwork: 'OTHER_MAINNET' },
+    { refundAddressRequired: true },
+  ]) {
+    await assert.rejects(updates.createSwap({ ...values, amountMode: 'manual', depositMethod: 'deposit_address', ...fields }, {}), /refund address/)
+  }
+  assert.equal(state.created.length, 0)
+})
 beforeEach(async () => {
   transactionStore.setState({ swapTransactions: {}, pendingSubmissions: {} })
   container = document.createElement('div'); document.body.append(container); root = createRoot(container)

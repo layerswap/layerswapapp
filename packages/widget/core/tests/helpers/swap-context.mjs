@@ -4,7 +4,7 @@ import { createRequire } from 'node:module'
 import React from 'react'
 import ts from 'typescript'
 import { formatTokenAmount } from '../../dist/esm/components/utils/formatTokenAmount.js'
-import { amountPresets, swapProgress } from './source.mjs'
+import { amountPresets, swapProgress, refundAddress } from './source.mjs'
 
 const require = createRequire(import.meta.url)
 const noop = () => {}
@@ -26,6 +26,7 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
         '@/lib/amountPresets': amountPresets,
         '@/lib/preparePresetAmount': { preparePresetAmount: () => { throw new Error('Unexpected preset preparation') } },
         '@/helpers/swapProgress': swapProgress,
+        '@/helpers/refundAddress': refundAddress,
         '@/helpers/depository': { shouldUseDepository: () => false },
         react: React,
         'react/jsx-runtime': require('react/jsx-runtime'),

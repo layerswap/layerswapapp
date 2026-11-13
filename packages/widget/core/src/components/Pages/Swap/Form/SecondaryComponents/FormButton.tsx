@@ -5,6 +5,8 @@ import { useSwapDataState } from "@/context/swap";
 import Address from "@/components/Input/Address";
 import { SwapFormValues } from "../SwapFormValues";
 import { Partner } from "@/Models/Partner";
+import RefundAddressPicker from '@/components/Input/Address/RefundAddressPicker';
+import { useValidationContext } from '@/context/validationContext';
 
 type Props = {
     shouldConnectWallet: boolean,
@@ -26,10 +28,16 @@ const FormButton = ({
     partner,
 }: Props) => {
     const initialSettings = useInitialSettings();
+    const { formValidation, showRefundAddress } = useValidationContext();
     const actionDisplayName = error || initialSettings?.actionButtonText || "Next";
     const preSubmitDisabled = isSubmitting || isQuoteLoading;
 
     const button = (() => {
+        if (showRefundAddress && (formValidation.code === 'REFUND_ADDRESS_MISSING' || formValidation.code === 'INVALID_REFUND_ADDRESS')) {
+            return <RefundAddressPicker>
+                {open => <SubmitButton type="button" onClick={open} isDisabled={preSubmitDisabled}>Choose refund address</SubmitButton>}
+            </RefundAddressPicker>;
+        }
         if (shouldConnectWallet && (!error || !values.to || !values.amount)) {
             return <FormSourceWalletButton isDisabled={preSubmitDisabled} />;
         }

@@ -27,6 +27,7 @@ import RefuelModal from "./FeeDetails/RefuelModal";
 import { SwapFormValues } from "./SwapFormValues";
 import { useCallbacks } from "@/context/callbackProvider";
 import { Slippage } from "./FeeDetails/Slippage";
+import RefundAddressField from './RefundAddressField';
 
 type Props = {
     partner?: Partner;
@@ -128,12 +129,13 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                     </div>
                                 ) : null
                             }
-                            <ValidationError />
+                            <ValidationError showSwapErrors />
                             {
                                 !autoSlippageWouldWork ? (
                                     <QuoteDetails swapValues={values} quote={quote?.quote} reward={quote?.reward} isQuoteLoading={isQuoteLoading} triggerClassnames="mt-2" />
                                 ) : null
                             }
+                            <RefundAddressField />
                         </div>
                     </div>
                 </Widget.Content>

@@ -71,7 +71,7 @@ export function ManualInstructionsView({
     return (
         <>
             <Content>
-                <div className="flex flex-col flex-1 h-full min-h-0 w-full space-y-3">
+                <div className="flex flex-col flex-1 h-full min-h-0 w-full space-y-2">
                     {loading ? (
                         <>
                             <SkeletonStep number={1} />
