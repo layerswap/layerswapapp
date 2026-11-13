@@ -4,8 +4,10 @@ import type { JSX } from 'react';
 import { AddressItem } from ".";
 import { Partner } from "@/Models/Partner";
 import { Network } from "@layerswap/widget-types";
+import { Slot } from '@radix-ui/react-slot';
 
 type AddressButtonProps = {
+    asChild?: boolean;
     openAddressModal: () => void;
     destination_address?: string;
     addressItem?: AddressItem;
@@ -15,10 +17,11 @@ type AddressButtonProps = {
     children: JSX.Element | JSX.Element[];
 }
 
-const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, children, destination }) => {
-    return <button type="button" aria-label="Select destination address" className="navigation-focus-ring-child w-full outline-hidden" onClick={openAddressModal} tabIndex={destination ? 0 : -1}>
+const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, children, destination, asChild }) => {
+    const Trigger = asChild ? Slot : 'button';
+    return <Trigger type="button" aria-label="Select destination address" className="navigation-focus-ring-child w-full outline-hidden" onClick={openAddressModal} tabIndex={destination ? 0 : -1}>
         {children}
-    </button>
+    </Trigger>
 }
 
 export default AddressButton

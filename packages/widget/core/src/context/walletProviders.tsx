@@ -42,7 +42,7 @@ const ConnectModalHost: React.FC<{ settings: ReturnType<typeof useSettingsState>
     const isMobilePlatform = isMobile();
     const walletProvidersRegistry = useWalletProvidersRegistry();
     const { providers } = useWallet()
-    const { goBack, onFinish, open, setOpen, presentation, selectedConnector, selectedMultiChainConnector, placement, dismissible, topContent, fullHeight, hideHeader } = useConnectModal()
+    const { goBack, onFinish, open, setOpen, presentation, selectedConnector, selectedMultiChainConnector, placement, dismissible, topContent, fullHeight, hideHeader, title, bottomContent } = useConnectModal()
     const { loadAll } = useWalletDescriptorLoader()
 
     // `AvailableSourceNetworkTypes` is read by `helpers/routes.ts` to decide
@@ -65,6 +65,10 @@ const ConnectModalHost: React.FC<{ settings: ReturnType<typeof useSettingsState>
         recompute()
         return walletProvidersRegistry.subscribe(recompute)
     }, [settings, networks, isMobilePlatform, walletProvidersRegistry])
+
+    const modalTitle = selectedMultiChainConnector && !selectedConnector
+        ? 'Select ecosystem'
+        : selectedConnector ? 'Connect wallet' : title ?? 'Connect wallet';
 
     // Phase-1 trigger: hydrate every pending descriptor the first time the
     // connect modal opens, and warm the page-1 WalletConnect registry fetch
@@ -99,7 +103,7 @@ const ConnectModalHost: React.FC<{ settings: ReturnType<typeof useSettingsState>
                             </div>
                             : null
                     }
-                    {hideHeader ? undefined : <p>{(selectedMultiChainConnector && !selectedConnector) ? "Select ecosystem" : "Connect wallet"}</p>}
+                    {hideHeader ? undefined : <p>{modalTitle}</p>}
                 </div>
             }>
             <VaulDrawer.Snap openFullHeight id='item-1' className={clsx("h-full max-h-[83svh] sm:max-h-full", fullHeight && "openpicker")}>
@@ -116,6 +120,7 @@ const ConnectModalHost: React.FC<{ settings: ReturnType<typeof useSettingsState>
                                 />
                             </Suspense>
                         </div>
+                        {!selectedConnector && !selectedMultiChainConnector ? bottomContent : null}
                     </div>
                 ) : null}
             </VaulDrawer.Snap>
