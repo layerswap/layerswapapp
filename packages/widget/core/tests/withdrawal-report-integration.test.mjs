@@ -37,6 +37,8 @@ const fixtureUrl = moduleUrl(`
   })
   export const useInitialSettings = () => ({})
   export const useSettingsState = () => ({ networks: [] })
+  export const useFeatureFlag = () => false
+  export const useSwapAccounts = () => []
   export const useBalance = () => ({ balances: [], mutate() { state.balanceRefreshes++ } })
   export const useConnectModal = () => ({})
   export const resolvePriceImpactValues = () => ({})

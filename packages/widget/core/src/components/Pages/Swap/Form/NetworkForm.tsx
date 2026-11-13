@@ -27,6 +27,17 @@ import RefuelModal from "./FeeDetails/RefuelModal";
 import { SwapFormValues } from "./SwapFormValues";
 import { useCallbacks } from "@/context/callbackProvider";
 import { Slippage } from "./FeeDetails/Slippage";
+import { NetworkType } from "@layerswap/widget-types";
+import { useWalletProvidersReady } from "@layerswap/wallet-core";
+import { useFeatureFlag } from "@/context/settings";
+import { useConsolidationQuotes } from "@/context/consolidationQuotes";
+import { isConsolidationEligibleForm } from "@/helpers/consolidation";
+import { Quote } from "@/lib/apiClients/layerSwapApiClient";
+import MultiSourceCard from "../Consolidation/MultiSourceCard";
+import { AddTokenButton } from "../Consolidation/parts";
+import TokenPicker, { TokenPickerMode } from "../Consolidation/TokenPicker";
+import ConsolidationQuoteDetails from "../Consolidation/ConsolidationQuoteDetails";
+import ResumeCard, { useResumableConsolidation } from "../Consolidation/ResumeCard";
 
 type Props = {
     partner?: Partner;
@@ -72,11 +83,47 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     }, [values, onFormChange]);
     const shouldShowSlippage = autoSlippageWouldWork && !isTestingAutoSlippage;
 
+    const consolidationEnabled = useFeatureFlag('multiSourceConsolidation');
+    const walletProvidersReady = useWalletProvidersReady();
+    const extraSources = values.extraSources;
+    const isMultiSource = consolidationEnabled && !!extraSources?.length;
+    const showConsolidation = consolidationEnabled && walletProvidersReady
+        && (isMultiSource || isConsolidationEligibleForm(values, selectedSourceAccount?.address));
+    // An unfinished send must be continued or discarded before lining up a new one.
+    const resumable = useResumableConsolidation(selectedSourceAccount?.address);
+    const canAddSource = showConsolidation && !resumable;
+    const [pickerMode, setPickerMode] = useState<TokenPickerMode>();
+    const consolidation = useConsolidationQuotes();
+    const sourceCount = (extraSources?.length ?? 0) + 1;
+    const validCount = consolidation.validRows.length;
+    const receiveCaption = isMultiSource ? (validCount === sourceCount ? `from ${sourceCount} tokens` : `from ${validCount} of ${sourceCount} tokens`) : undefined;
+    const displayQuote = useMemo<Quote | undefined>(() => isMultiSource && quote ? {
+        quote: {
+            ...quote.quote,
+            receive_amount: Number(consolidation.totals.receive),
+            min_receive_amount: Number(consolidation.totals.minReceive),
+            total_fee_in_usd: consolidation.totals.feesUsd,
+            // A combined total has no single source price to measure impact against.
+            requested_amount: undefined,
+            source_token: undefined,
+        },
+    } : undefined, [isMultiSource, quote, consolidation.totals]);
+
     useEffect(() => {
-        if (!source || !toAsset || !toAsset.refuel) {
+        if (!extraSources?.length) return;
+        const unsupported = !consolidationEnabled || depositMethod !== 'wallet' || source?.type !== NetworkType.EVM
+            || !!values.fromExchange || (walletProvidersReady && !selectedSourceAccount);
+        const remaining = unsupported ? [] : extraSources.filter(s => !(s.from.name === source?.name && s.fromAsset.symbol === fromAsset?.symbol));
+        if (remaining.length !== extraSources.length) {
+            setFieldValue('extraSources', remaining.length ? remaining : undefined, true);
+        }
+    }, [extraSources, consolidationEnabled, depositMethod, source?.name, source?.type, fromAsset?.symbol, values.fromExchange, walletProvidersReady, selectedSourceAccount]);
+
+    useEffect(() => {
+        if (!source || !toAsset || !toAsset.refuel || isMultiSource) {
             setFieldValue('refuel', false, true);
         }
-    }, [toAsset, destination, source, fromAsset]);
+    }, [toAsset, destination, source, fromAsset, isMultiSource]);
 
     const shouldConnectWallet = (source && source?.deposit_methods?.includes('wallet') && depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!source && !wallets.length && depositMethod !== 'deposit_address');
 
@@ -86,19 +133,23 @@ const NetworkForm: FC<Props> = ({ partner }) => {
             <Form className="h-full grow flex flex-col flex-1 justify-between w-full gap-2">
                 <Widget.Content>
                     <div className="w-full flex flex-col justify-between flex-1">
+                        <ResumeCard sourceAddress={selectedSourceAccount?.address} />
                         <div className='flex-col relative flex justify-between gap-2 w-full leading-4'>
                             {
-                                !(initialSettings?.hideFrom && values?.from) && <SourcePicker
-                                    minAllowedAmount={minAllowedAmount}
-                                    maxAllowedAmount={maxAllowedAmount}
-                                    minAllowedAmountInUsd={minAllowedAmountInUsd}
-                                    maxAllowedAmountInUsd={maxAllowedAmountInUsd}
-                                    fee={quote}
-                                    quoteTokenPrices={quoteTokenPrices}
-                                />
+                                !(initialSettings?.hideFrom && values?.from) && (isMultiSource
+                                    ? <MultiSourceCard onPick={setPickerMode} canAdd={canAddSource} />
+                                    : <SourcePicker
+                                        minAllowedAmount={minAllowedAmount}
+                                        maxAllowedAmount={maxAllowedAmount}
+                                        minAllowedAmountInUsd={minAllowedAmountInUsd}
+                                        maxAllowedAmountInUsd={maxAllowedAmountInUsd}
+                                        fee={quote}
+                                        quoteTokenPrices={quoteTokenPrices}
+                                        headerAction={canAddSource ? <AddTokenButton onClick={() => setPickerMode({ kind: "add" })} /> : null}
+                                    />)
                             }
                             {
-                                !initialSettings?.hideFrom && !initialSettings?.hideTo &&
+                                !initialSettings?.hideFrom && !initialSettings?.hideTo && !isMultiSource &&
                                 <ValueSwapperButton
                                     values={values}
                                     setValues={setValues}
@@ -107,15 +158,17 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                             }
                             {
                                 !(initialSettings?.hideTo && values?.to) && <DestinationPicker
-                                    isFeeLoading={isQuoteLoading}
+                                    isFeeLoading={isQuoteLoading || consolidation.isLoading}
                                     fee={quote}
+                                    displayQuote={displayQuote}
+                                    receiveCaption={receiveCaption}
                                     partner={partner}
                                 />
                             }
                         </div>
                         <div>
                             {
-                                values.toAsset?.refuel && !initialSettings.hideRefuel &&
+                                values.toAsset?.refuel && !initialSettings.hideRefuel && !isMultiSource &&
                                 <RefuelToggle
                                     quote={quote}
                                     onButtonClick={() => setOpenRefuelModal(true)}
@@ -130,7 +183,9 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                             }
                             <ValidationError />
                             {
-                                !autoSlippageWouldWork ? (
+                                isMultiSource ? (
+                                    <ConsolidationQuoteDetails summary={consolidation} />
+                                ) : !autoSlippageWouldWork ? (
                                     <QuoteDetails swapValues={values} quote={quote?.quote} reward={quote?.reward} isQuoteLoading={isQuoteLoading} triggerClassnames="mt-2" />
                                 ) : null
                             }
@@ -141,13 +196,15 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                     <FormButton
                         shouldConnectWallet={shouldConnectWallet}
                         values={values}
-                        disabled={!isValid || isSubmitting || !quote || isQuoteLoading}
+                        disabled={!isValid || isSubmitting || !quote || isQuoteLoading || (isMultiSource && !consolidation.ready)}
                         error={error}
                         isSubmitting={isSubmitting}
                         isQuoteLoading={isQuoteLoading}
                         partner={partner}
+                        actionText={isMultiSource ? (consolidation.isLoading ? "Getting quotes" : `Review ${validCount} transfers`) : undefined}
                     />
                 </Widget.Footer >
+                {showConsolidation && <TokenPicker mode={pickerMode} onClose={() => setPickerMode(undefined)} />}
                 <RefuelModal
                     openModal={openRefuelModal}
                     setOpenModal={setOpenRefuelModal}

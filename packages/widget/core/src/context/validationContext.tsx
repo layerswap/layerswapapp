@@ -3,7 +3,7 @@ import { widgetTelemetry } from '@/lib/widgetTelemetry';
 import { useFormikContext } from 'formik';
 import { useInitialSettings } from './settings';
 import { transformFormValuesToQuoteArgs, useQuoteData } from '@/hooks/useFee';
-import { resolveFormValidation } from '@/hooks/useFormValidation';
+import { FORM_VALIDATION_ERROR_CODES, resolveFormValidation } from '@/hooks/useFormValidation';
 import { useRouteValidation } from '@/hooks/useRouteValidation';
 import { useSwapDataState } from './swap';
 import { useSelectedAccount } from './swapAccounts';
@@ -13,6 +13,7 @@ import { useAutoSlippageTest } from '@/hooks/useAutoSlippageTest';
 import { useUsdModeStore } from '@/stores/usdModeStore';
 import { isDepositAddressFlow } from '@/helpers/swapFlow';
 import useExchangeNetworks from '@/hooks/useExchangeNetworks';
+import { useConsolidationQuotes } from './consolidationQuotes';
 
 export interface ValidationDetails {
     title?: string;
@@ -67,7 +68,7 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
 
     const isUsdMode = useUsdModeStore(s => s.isUsdMode);
 
-    const formValidation = resolveFormValidation({
+    const primaryValidation = resolveFormValidation({
         values,
         maxAllowedAmount,
         minAllowedAmount,
@@ -79,6 +80,13 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
         quoteError: routeError,
         noExchangeWithdrawalRoute
     })
+    const consolidation = useConsolidationQuotes();
+    // With several tokens, amount problems come from the per-token checks so the message names the token.
+    const primaryAmountIssue = primaryValidation.message === 'Enter an amount' || primaryValidation.code === FORM_VALIDATION_ERROR_CODES.MIN_AMOUNT_ERROR
+        || primaryValidation.code === FORM_VALIDATION_ERROR_CODES.MAX_AMOUNT_ERROR || primaryValidation.code === FORM_VALIDATION_ERROR_CODES.INVALID_AMOUNT;
+    const formValidation = useMemo(() => consolidation.active && (!primaryValidation.message || primaryAmountIssue)
+        ? { message: consolidation.firstError ?? (primaryAmountIssue ? '' : primaryValidation.message) }
+        : primaryValidation, [primaryValidation.message, primaryValidation.code, primaryAmountIssue, consolidation.active, consolidation.firstError]);
 
     const validationCode = formValidation.code
     useEffect(() => {

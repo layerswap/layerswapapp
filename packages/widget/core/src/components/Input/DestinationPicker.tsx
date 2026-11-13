@@ -14,6 +14,9 @@ type Props = {
     partner?: Partner
     fee: ReturnType<typeof useQuoteData>['quote'],
     isFeeLoading: boolean
+    /** Replaces the receive amount, e.g. with the combined consolidation total. */
+    displayQuote?: ReturnType<typeof useQuoteData>['quote'],
+    receiveCaption?: string,
 }
 
 const DestinationPicker = (props: Props) => {
@@ -42,8 +45,9 @@ const DestinationPicker = (props: Props) => {
                 <div className="min-w-0 overflow-hidden">
                     <ReceiveAmount
                         destination_token={toCurrency}
-                        fee={quote}
-                        isFeeLoading={isQuoteLoading}
+                        fee={props.displayQuote ?? quote}
+                        isFeeLoading={props.displayQuote ? props.isFeeLoading : isQuoteLoading}
+                        caption={props.receiveCaption}
                     />
                 </div>
                 <div className="justify-self-end self-start">

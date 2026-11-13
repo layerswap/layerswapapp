@@ -14,6 +14,7 @@ type Props = {
     isSubmitting: boolean,
     isQuoteLoading?: boolean,
     partner: Partner | undefined,
+    actionText?: string,
 }
 
 const FormButton = ({
@@ -24,9 +25,10 @@ const FormButton = ({
     isSubmitting,
     isQuoteLoading,
     partner,
+    actionText,
 }: Props) => {
     const initialSettings = useInitialSettings();
-    const actionDisplayName = error || initialSettings?.actionButtonText || "Next";
+    const actionDisplayName = error || initialSettings?.actionButtonText || actionText || "Next";
     const preSubmitDisabled = isSubmitting || isQuoteLoading;
 
     const button = (() => {

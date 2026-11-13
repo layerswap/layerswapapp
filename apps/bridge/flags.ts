@@ -28,9 +28,20 @@ export const polymarketRoutesFlag = flag<boolean>({
     adapter: vercelAdapter(),
 })
 
+// Product feature flags ride the same `ExtendedRouteFlags` map; keys must not collide
+// with an extended-route provider id (`hyperliquid`, `polymarket`).
+export const multiSourceConsolidationFlag = flag<boolean>({
+    key: 'multi-source-consolidation',
+    description: 'Let a wallet consolidate several source balances into one destination',
+    // Fail closed: an unfinished multi-step flow must not appear when the flag service is unreachable.
+    defaultValue: true,
+    adapter: vercelAdapter(),
+})
+
 export const extendedRouteFlags = {
     hyperliquid: hyperliquidRoutesFlag,
     polymarket: polymarketRoutesFlag,
+    multiSourceConsolidation: multiSourceConsolidationFlag,
 }
 
 // Polymarket routes go through a builder-key-authed relayer proxy; without those server
@@ -54,9 +65,10 @@ export async function isPolymarketEnabled(req: GetServerSidePropsContext['req'])
 // Resolve every extended-route flag for a request — call from getServerSideProps with
 // `context.req`.
 export async function resolveExtendedRouteFlags(req: GetServerSidePropsContext['req']): Promise<ExtendedRouteFlags> {
-    const [hyperliquid, polymarket] = await Promise.all([
+    const [hyperliquid, polymarket, multiSourceConsolidation] = await Promise.all([
         hyperliquidRoutesFlag(req),
         isPolymarketEnabled(req),
+        multiSourceConsolidationFlag(req),
     ])
-    return { hyperliquid, polymarket }
+    return { hyperliquid, polymarket, multiSourceConsolidation }
 }
