@@ -146,3 +146,10 @@ test('confirmation preserves a reviewed amount that covers the buffered fee', as
   assert.equal(await preparePresetAmount({ ...values, amount: '0.897' }, 'source', {}, [], false), '0.897')
   assert.equal(calls.filter(([name]) => name === 'gas').length, 1)
 })
+
+test('the confirmation check never budgets less than the deposit fee floor it is given', async () => {
+  const { preparePresetAmount, calls } = setup({ gas: 0.1 })
+  const amount = await preparePresetAmount({ ...values, amount: '0.898' }, 'source', {}, [], false, undefined, { gas: 0.2, token })
+  assert.equal(amount, '0.796')
+  assert.deepEqual(calls.filter(([name]) => name === 'gas').map(([, args]) => args.amount), [0.898, 0.796])
+})

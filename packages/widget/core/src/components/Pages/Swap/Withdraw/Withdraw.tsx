@@ -10,11 +10,11 @@ import { useBalance } from '@/lib/balances/useBalance';
 import useOutOfGas from '@/lib/gases/useOutOfGas';
 import useSWRGas from '@/lib/gases/useSWRGas';
 import { resolveMaxAllowedAmount } from '@/components/Input/Amount/helpers';
-import { amountPresetSource, isAmountPreset } from '@/lib/amountPresets';
+import { amountPresetGasFloorScope, amountPresetSource, isAmountPreset } from '@/lib/amountPresets';
 import { truncateToDecimals } from '@/components/utils/RoundDecimals';
 import { NetworkType } from '@layerswap/widget-types';
 import type { JSX } from 'react';
-import { FC, useCallback, useMemo } from 'react';
+import { FC, useCallback, useEffect, useMemo } from 'react';
 import { AdjustAmountButton } from '../Form/SecondaryComponents/validationError/AdjustAmountButton';
 import { RefreshBalanceButton } from '../Form/SecondaryComponents/validationError/RefreshBalanceButton';
 import type { SwapFormValues } from '../Form/SwapFormValues';
@@ -42,7 +42,7 @@ const AWAITING_WALLET_ACTION: ObservedLifecycleEvent = {
 export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: SwapFormValues) => void) {
     const { swapBasicData, swapDetails, swapId, amountPresetLocked, depositActionsResponse, refuel, quoteIsLoading } =
         useSwapDataState();
-    const { startFreshSwapAttempt, canAdjustAmount } = useSwapDataUpdate();
+    const { startFreshSwapAttempt, canAdjustAmount, recordDepositGasFloor } = useSwapDataUpdate();
     const hasSubmittedTransfer = useHasSubmittedTransfer();
 
     const { networks, sourceRoutes, destinationRoutes } = useSettingsState();
@@ -74,11 +74,11 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
         && (!action.token || action.token.symbol === swapBasicData?.source_token.symbol)
         && (!action.from_address || action.from_address.toLowerCase() === selectedSourceAccount?.address?.toLowerCase())
         ? action : undefined;
-    const gasTransaction = transferAction?.to_address && transferAction.amount != null ? {
+    const gasTransaction = useMemo(() => transferAction?.to_address && transferAction.amount != null ? {
         recipientAddress: transferAction.to_address,
         callData: transferAction.call_data ?? '',
         amountInBaseUnits: transferAction.amount_in_base_units,
-    } : undefined;
+    } : undefined, [transferAction?.to_address, transferAction?.amount, transferAction?.call_data, transferAction?.amount_in_base_units]);
     const gasEstimationAmount = gasTransaction ? transferAction?.amount : swapBasicData?.requested_amount;
     const currentPresetSource = amountPresetSource(
         swapBasicData?.source_network.name, swapBasicData?.source_token.symbol,
@@ -94,6 +94,17 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
     );
 
     const gasData = livePreset ? swapBasicData?.amountPresetGas : estimatedGas;
+
+    // The form's Max can only price a plain transfer until a swap exists. Keep what
+    // the real deposit transaction costs so Adjust amount and later retries never
+    // budget less than it for this route and funding account.
+    useEffect(() => {
+        if (!active || !gasTransaction || !estimatedGas || !swapBasicData) return;
+        recordDepositGasFloor({
+            scope: amountPresetGasFloorScope(currentPresetSource, swapBasicData.destination_network.name, swapBasicData.destination_token.symbol),
+            gas: estimatedGas,
+        });
+    }, [active, gasTransaction, estimatedGas, currentPresetSource, swapBasicData?.destination_network.name, swapBasicData?.destination_token.symbol, recordDepositGasFloor]);
 
     const lifecycleContext = useMemo(
         () => swapBasicData ? lifecycleContextFromSwap(swapBasicData, swapDetails) : undefined,

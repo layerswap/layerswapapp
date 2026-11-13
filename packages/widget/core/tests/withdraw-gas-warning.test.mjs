@@ -20,7 +20,7 @@ const mockUrl = `data:text/javascript,${encodeURIComponent(`
   import { createElement } from ${JSON.stringify(import.meta.resolve('react'))}
   export const state = {}
   export const useSwapDataState = () => ({ swapBasicData: state.swap, amountPresetLocked: state.locked, swapId: state.swapId, swapDetails: state.swapDetails, inputTransactionStatus: state.inputTransactionStatus, depositActionsResponse: state.actions, quoteIsLoading: state.quoteLoading })
-  export const useSwapDataUpdate = () => ({ setSubmitedFormValues(values) { state.submitted = values }, startFreshSwapAttempt() { state.freshAttempts++ }, canAdjustAmount: () => !state.locked })
+  export const useSwapDataUpdate = () => ({ setSubmitedFormValues(values) { state.submitted = values }, startFreshSwapAttempt() { state.freshAttempts++ }, canAdjustAmount: () => !state.locked, recordDepositGasFloor(floor) { state.recorded.push(floor) } })
   export const useSettingsState = () => ({ networks: [state.swap.source_network], sourceRoutes: [{ ...state.swap.source_network, tokens: [state.swap.source_token] }], destinationRoutes: [{ ...state.swap.destination_network, tokens: [state.swap.destination_token] }] })
   export const useSelectedAccount = () => ({ address: state.walletAddress ?? 'source' })
   export const useBalance = () => ({ balances: state.balances, mutate() {}, isLoading: false })
@@ -81,7 +81,7 @@ beforeEach(() => {
   useSwapTransactionStore.setState({ swapTransactions: {}, pendingSubmissions: {} })
   Object.assign(state, {
     swapId: undefined, swapDetails: undefined, inputTransactionStatus: undefined,
-    actions: undefined, gasRequests: [], events: [], walletAddress: undefined, locked: false, freshAttempts: 0, submitted: undefined, formValues: undefined, quoteLoading: false,
+    actions: undefined, gasRequests: [], events: [], recorded: [], walletAddress: undefined, locked: false, freshAttempts: 0, submitted: undefined, formValues: undefined, quoteLoading: false,
     swap: { source_network: network, source_token: token, destination_network: { name: 'BASE_MAINNET' }, destination_token: token, requested_amount: '0.95', use_deposit_address: false },
     balances: [{ network: network.name, token: token.symbol, amount: 1, isNativeCurrency: true }],
     gasData: { gas: 0.1, token },
@@ -276,6 +276,23 @@ test('Adjust amount explicitly starts a fresh draft with Max enabled', async () 
   assert.equal(state.submitted.amountMode, 'max')
   assert.equal(state.submitted.amount, '0.898')
   assert.equal(state.formValues.amount, state.submitted.amount)
+})
+test('the real deposit fee is recorded in the swap context as a floor scoped to the route and funding account', async () => {
+  const { amountPresetGasFloorScope, amountPresetSource } = await import('../dist/esm/lib/amountPresets.js')
+  state.actions = [{ type: 'transfer', to_address: 'recipient', amount: 0.95, amount_in_base_units: '950000000000000001', call_data: '0x1234', network, token }]
+  await render()
+  await render()
+  assert.ok(state.recorded.length > 0, 'the transaction-based estimate must be recorded')
+  for (const floor of state.recorded) assert.deepEqual(floor, {
+    scope: amountPresetGasFloorScope(amountPresetSource(network.name, token.symbol, undefined, 'source'), 'BASE_MAINNET', token.symbol),
+    gas: { gas: 0.1, token },
+  })
+})
+test('an estimate without a deposit action records no fee floor', async () => {
+  await render()
+  await act(() => adjustButton().click())
+  assert.equal(state.submitted.amount, '0.898')
+  assert.deepEqual(state.recorded, [])
 })
 test('Adjust amount cannot abandon an executing swap', async () => {
   state.locked = true

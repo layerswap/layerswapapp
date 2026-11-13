@@ -29,6 +29,28 @@ export function amountPresetSource(network?: string, token?: string, accountId?:
     return JSON.stringify([network, token, accountId, address])
 }
 
+/** Fee observed for a swap attempt's real deposit transaction, kept by the swap
+ * context. Before a swap exists the preset can only price a plain transfer, so
+ * every later Max for the same route and funding account budgets at least this. */
+export type AmountPresetGasFloor = { scope: string; gas: GasWithToken }
+
+export function amountPresetGasFloorScope(presetSource: string | undefined, destinationNetwork: string | undefined, destinationToken: string | undefined): string {
+    return JSON.stringify([presetSource, destinationNetwork, destinationToken])
+}
+
+export function resolveAmountPresetGasFloor(floor: AmountPresetGasFloor | undefined, scope: string): GasWithToken | undefined {
+    return floor?.scope === scope ? floor.gas : undefined
+}
+
+/** The fresh estimate still owns failures and the fee token. The floor only raises
+ * the fee, and whichever side knows a larger account reserve keeps it. */
+export function withGasFloor(gas: GasWithToken | undefined, floor: GasWithToken | undefined): GasWithToken | undefined {
+    if (!gas || !floor || gas.token?.symbol !== floor.token?.symbol) return gas
+    const fee = (floor.maxFee ?? floor.gas) > (gas.maxFee ?? gas.gas) ? floor : gas
+    const reserve = Math.max(gas.reserve ?? 0, floor.reserve ?? 0)
+    return { gas: fee.gas, ...(fee.maxFee !== undefined ? { maxFee: fee.maxFee } : {}), token: gas.token, ...(reserve > 0 ? { reserve } : {}) }
+}
+
 export class AmountPresetChangedError extends Error {
     constructor() {
         super('Your balance, network fee, or route limits changed. Review the updated amount and quote, then continue.')

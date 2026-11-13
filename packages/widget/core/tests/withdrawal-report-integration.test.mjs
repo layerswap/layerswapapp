@@ -23,6 +23,7 @@ const fixtureUrl = moduleUrl(`
     setSwapId(id) { state.swap.swapId = id }, setQuoteLoading() {}, markWalletExecutionStarted() {},
     reportWalletActionFeedback() { return () => {} }, setWalletActionExecuting() {}, setSwapModalOpen(open) { state.swap.swapModalOpen = open },
     acquireWalletExecution() { return () => {} },
+    recordDepositGasFloor() {}, clearDepositGasFloor() {},
     startFreshSwapAttempt() {
       state.freshAttempts++
       state.swap = { ...state.swap, swapId: undefined, swapDetails: undefined, depositActionsResponse: undefined }

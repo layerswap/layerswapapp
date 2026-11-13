@@ -1,4 +1,4 @@
-import type { ApiResponse, NetworkRoute, Wallet } from '@layerswap/widget-types'
+import type { ApiResponse, GasWithToken, NetworkRoute, Wallet } from '@layerswap/widget-types'
 import { usesDepository } from '@layerswap/widget-types'
 import type { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
 import { buildLimitsUrl } from '@/hooks/useFee'
@@ -7,10 +7,11 @@ import { resolveExtendedRoutePlan } from './extendedRoutes/registry'
 import { transformLimitsForExtendedRoute, type ExtendedLimits } from './extendedRoutes/transforms'
 import { useBalanceStore } from '@/stores/balanceStore'
 import { resolverService } from './resolvers/resolverService'
-import { calculatePresetAmount, isAmountPreset, isWalletAmountFlow, supportsLiveAmountPreset } from './amountPresets'
+import { calculatePresetAmount, isAmountPreset, isWalletAmountFlow, supportsLiveAmountPreset, withGasFloor } from './amountPresets'
 
-/** Fresh reads before creation. Never changes a created swap or its actions. */
-export async function preparePresetAmount(values: SwapFormValues, address: string | undefined, wallet: Wallet | undefined, sourceRoutes: NetworkRoute[], useGasless: boolean, publishLimits?: (key: string, response: ApiResponse<ExtendedLimits>) => Promise<unknown>) {
+/** Fresh reads before creation. Never changes a created swap or its actions.
+ * `gasFloor` is the fee of this route's real deposit transaction, when one was observed. */
+export async function preparePresetAmount(values: SwapFormValues, address: string | undefined, wallet: Wallet | undefined, sourceRoutes: NetworkRoute[], useGasless: boolean, publishLimits?: (key: string, response: ApiResponse<ExtendedLimits>) => Promise<unknown>, gasFloor?: GasWithToken) {
     if (!isWalletAmountFlow(values)) return values.amount ?? ''
     const { from, fromAsset, to, toAsset } = values
     if (!from || !fromAsset || !to || !toAsset) throw new Error('Select a route to use an amount preset.')
@@ -48,7 +49,7 @@ export async function preparePresetAmount(values: SwapFormValues, address: strin
         network: from, token: fromAsset, probeAmount: values.amount, preserveAmount: true,
         balance: balanceData?.balances?.find(b => b.network === from.name && b.token === fromAsset.symbol),
         limit: limits?.max_amount,
-        estimateGas: async amount => resolverService.getGasResolver().getGas({ address: address!, network: from, token: fromAsset, amount, wallet }),
+        estimateGas: async amount => withGasFloor(await resolverService.getGasResolver().getGas({ address: address!, network: from, token: fromAsset, amount, wallet }), gasFloor),
     })
     if (Number(amount) <= 0 || (limits && Number(amount) < limits.min_amount))
         throw new Error('Your available balance is below the minimum swap amount.')
