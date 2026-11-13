@@ -18,6 +18,7 @@ export type {
   WidgetOperationOutcome,
   WalletDefaults,
   WalletProviderId,
+  LoginWallet,
   DepositWidgetProps,
   DepositConfig,
   DepositMethodId,

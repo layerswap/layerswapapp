@@ -20,9 +20,10 @@ import { useNamedAddress } from "@/stores/addressBookStore";
 
 type SourceWalletPickerProps = {
     hideManualTransfer?: boolean;
+    hideConnectForProviderId?: string;
 }
 
-const SourceWalletPicker: FC<SourceWalletPickerProps> = ({ hideManualTransfer }) => {
+const SourceWalletPicker: FC<SourceWalletPickerProps> = ({ hideManualTransfer, hideConnectForProviderId }) => {
     const [openModal, setOpenModal] = useState<boolean>(false)
 
     const {
@@ -120,6 +121,7 @@ const SourceWalletPicker: FC<SourceWalletPickerProps> = ({ hideManualTransfer })
                         network={values.from}
                         selectedDepositMethod={values.depositMethod}
                         selectable
+                        hideConnect={!!hideConnectForProviderId && provider?.id === hideConnectForProviderId}
                     />
                 </div>
                 {

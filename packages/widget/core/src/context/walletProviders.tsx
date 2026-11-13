@@ -14,6 +14,7 @@ import { filterSourceNetworks } from "@/helpers/filterSourceNetworks";
 import useWallet from "@/hooks/useWallet";
 import LayerSwapLogoSmall from "@/components/Icons/layerSwapLogoSmall";
 import type { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@layerswap/wallet-core/types"
+import type { LoginWallet } from "@layerswap/widget-types"
 
 export { useWalletProvidersReady } from "@layerswap/wallet-core"
 
@@ -26,11 +27,11 @@ const ConnectorsListFallback: React.FC = () => (
 );
 
 type ProviderEntry = WalletProvider | WalletWrapper | WalletProviderDescriptor
-export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walletProviders: ProviderEntry[] }> = ({ children, walletProviders }) => {
+export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walletProviders: ProviderEntry[], loginWallet?: LoginWallet }> = ({ children, walletProviders, loginWallet }) => {
     const settings = useSettingsState();
     const { networks } = settings;
     return (
-        <WalletProvidersRegistryProvider networks={networks} networkAdapter={walletNetworkAdapter} walletProviders={walletProviders}>
+        <WalletProvidersRegistryProvider networks={networks} networkAdapter={walletNetworkAdapter} walletProviders={walletProviders} loginWallet={loginWallet}>
             {children}
             <ConnectModalHost settings={settings} />
         </WalletProvidersRegistryProvider>

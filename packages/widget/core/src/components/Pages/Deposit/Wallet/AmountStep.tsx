@@ -10,10 +10,12 @@ import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import QuoteDetails from "@/components/Pages/Swap/Form/FeeDetails";
 import { useDepositStep } from "../depositStepContext";
 import QuoteSummary from "../_shared/QuoteSummary";
+import { useLoginWallet } from "@layerswap/wallet-core";
 
 const AmountStep: FC = () => {
     const { values, setFieldValue, submitForm } = useFormikContext<SwapFormValues>();
     const { back } = useDepositStep();
+    const loginWallet = useLoginWallet();
 
     const from = values?.from;
     const fromAsset = values?.fromAsset;
@@ -81,6 +83,7 @@ const AmountStep: FC = () => {
                     fee={fee}
                     quoteTokenPrices={quoteTokenPrices}
                     hideManualTransfer
+                    hideConnectForProviderId={loginWallet?.providerId}
                     onRoutePickerTriggerClick={back}
                 />
 

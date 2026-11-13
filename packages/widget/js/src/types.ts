@@ -7,6 +7,7 @@ export type {
   WidgetCallbacks,
   WalletDefaults,
   WalletProviderId,
+  LoginWallet,
   DepositWidgetProps,
   DepositConfig,
   DepositMethodId,
