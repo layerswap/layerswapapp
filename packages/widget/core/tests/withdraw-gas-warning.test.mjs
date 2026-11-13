@@ -277,6 +277,23 @@ test('Adjust amount explicitly starts a fresh draft with Max enabled', async () 
   assert.equal(state.submitted.amount, '0.898')
   assert.equal(state.formValues.amount, state.submitted.amount)
 })
+test('Adjust amount hands the real deposit fee back as a scoped floor for the live Max', async () => {
+  const { amountPresetGasFloorScope, amountPresetSource } = await import('../dist/esm/lib/amountPresets.js')
+  state.actions = [{ type: 'transfer', to_address: 'recipient', amount: 0.95, amount_in_base_units: '950000000000000001', call_data: '0x1234', network, token }]
+  await render()
+  await act(() => adjustButton().click())
+  assert.equal(state.submitted.amount, '0.898')
+  assert.deepEqual(state.submitted.amountPresetGasFloor, {
+    scope: amountPresetGasFloorScope(amountPresetSource(network.name, token.symbol, undefined, 'source'), 'BASE_MAINNET', token.symbol),
+    gas: { gas: 0.1, token },
+  })
+})
+test('Adjust amount without a deposit action carries no fee floor', async () => {
+  await render()
+  await act(() => adjustButton().click())
+  assert.equal(state.submitted.amount, '0.898')
+  assert.equal('amountPresetGasFloor' in state.submitted, false)
+})
 test('Adjust amount cannot abandon an executing swap', async () => {
   state.locked = true
   await render()

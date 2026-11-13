@@ -10,7 +10,7 @@ import { useBalance } from '@/lib/balances/useBalance';
 import useOutOfGas from '@/lib/gases/useOutOfGas';
 import useSWRGas from '@/lib/gases/useSWRGas';
 import { resolveMaxAllowedAmount } from '@/components/Input/Amount/helpers';
-import { amountPresetSource, isAmountPreset } from '@/lib/amountPresets';
+import { amountPresetGasFloorScope, amountPresetSource, isAmountPreset } from '@/lib/amountPresets';
 import { truncateToDecimals } from '@/components/utils/RoundDecimals';
 import { NetworkType } from '@layerswap/widget-types';
 import type { JSX } from 'react';
@@ -150,11 +150,17 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
             return;
         }
         widgetTelemetry.recordAmountInput('max');
-        const maxFields = { amountMode: 'max' as const,
-            amountPresetSource: amountPresetSource(swapBasicData.source_network.name, swapBasicData.source_token.symbol, selectedSourceAccount?.id, selectedSourceAccount?.address),
-            amountPresetPending: true, amountPresetError: undefined };
+        const presetSource = amountPresetSource(swapBasicData.source_network.name, swapBasicData.source_token.symbol, selectedSourceAccount?.id, selectedSourceAccount?.address);
+        const maxFields = { amountMode: 'max' as const, amountPresetSource: presetSource, amountPresetPending: true, amountPresetError: undefined };
+        // The form's live Max can only price a plain transfer until a swap exists.
+        // Carry the fee of the real deposit action so it cannot restore the amount that just failed.
+        const depositGas = gasTransaction ? estimatedGas : undefined;
+        const gasFloor = depositGas
+            ? { amountPresetGasFloor: { scope: amountPresetGasFloorScope(presetSource, formDestination.name, formDestinationToken.symbol), gas: depositGas } }
+            : {};
         const updates: SwapFormValues = {
             ...maxFields,
+            ...gasFloor,
             amount: adjustedAmount,
             from: formSource,
             to: formDestination,
@@ -172,7 +178,7 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
         adjustedAmount,
         swapBasicData,
         refuel,
-        adjustFormAmount, canAdjustAmount, selectedSourceAccount,
+        adjustFormAmount, canAdjustAmount, selectedSourceAccount, gasTransaction, estimatedGas,
         startFreshSwapAttempt, formSource, formDestination, formSourceToken, formDestinationToken,
     ]);
 

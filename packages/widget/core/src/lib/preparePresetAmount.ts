@@ -7,7 +7,7 @@ import { resolveExtendedRoutePlan } from './extendedRoutes/registry'
 import { transformLimitsForExtendedRoute, type ExtendedLimits } from './extendedRoutes/transforms'
 import { useBalanceStore } from '@/stores/balanceStore'
 import { resolverService } from './resolvers/resolverService'
-import { calculatePresetAmount, isAmountPreset, isWalletAmountFlow, supportsLiveAmountPreset } from './amountPresets'
+import { amountPresetGasFloorScope, calculatePresetAmount, isAmountPreset, isWalletAmountFlow, resolveAmountPresetGasFloor, supportsLiveAmountPreset, withGasFloor } from './amountPresets'
 
 /** Fresh reads before creation. Never changes a created swap or its actions. */
 export async function preparePresetAmount(values: SwapFormValues, address: string | undefined, wallet: Wallet | undefined, sourceRoutes: NetworkRoute[], useGasless: boolean, publishLimits?: (key: string, response: ApiResponse<ExtendedLimits>) => Promise<unknown>) {
@@ -43,12 +43,13 @@ export async function preparePresetAmount(values: SwapFormValues, address: strin
         throw new Error('Could not refresh the route limits. Try again.')
     // The resumed live controller must use the same limits that revised the draft.
     await publishLimits?.(limitsUrl, limitsResponse)
+    const gasFloor = resolveAmountPresetGasFloor(values.amountPresetGasFloor, amountPresetGasFloorScope(values.amountPresetSource, to.name, toAsset.symbol))
     const amount = await calculatePresetAmount({
         mode, minimum: limits.min_amount,
         network: from, token: fromAsset, probeAmount: values.amount, preserveAmount: true,
         balance: balanceData?.balances?.find(b => b.network === from.name && b.token === fromAsset.symbol),
         limit: limits?.max_amount,
-        estimateGas: async amount => resolverService.getGasResolver().getGas({ address: address!, network: from, token: fromAsset, amount, wallet }),
+        estimateGas: async amount => withGasFloor(await resolverService.getGasResolver().getGas({ address: address!, network: from, token: fromAsset, amount, wallet }), gasFloor),
     })
     if (Number(amount) <= 0 || (limits && Number(amount) < limits.min_amount))
         throw new Error('Your available balance is below the minimum swap amount.')

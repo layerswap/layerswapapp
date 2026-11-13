@@ -280,6 +280,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                                             setFieldValue('amountMode', 'manual')
                                             setFieldValue('amountPresetPending', false)
                                             setFieldValue('amountPresetError', undefined)
+                                            setFieldValue('amountPresetGasFloor', undefined)
                                             setFieldValue('amount', 0)
                                             mutateBalances()
                                         }}

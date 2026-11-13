@@ -29,6 +29,25 @@ export function amountPresetSource(network?: string, token?: string, accountId?:
     return JSON.stringify([network, token, accountId, address])
 }
 
+/** Fee observed for a swap's real deposit transaction. Before a swap exists the
+ * preset can only price a plain transfer, so Adjust amount hands this back and
+ * the preset never budgets less than it for the same route and funding account. */
+export type AmountPresetGasFloor = { scope: string; gas: GasWithToken }
+
+export function amountPresetGasFloorScope(presetSource: string | undefined, destinationNetwork: string | undefined, destinationToken: string | undefined): string {
+    return JSON.stringify([presetSource, destinationNetwork, destinationToken])
+}
+
+export function resolveAmountPresetGasFloor(floor: AmountPresetGasFloor | undefined, scope: string): GasWithToken | undefined {
+    return floor?.scope === scope ? floor.gas : undefined
+}
+
+/** The fresh estimate still owns failures and the fee token; the floor only raises the budget. */
+export function withGasFloor(gas: GasWithToken | undefined, floor: GasWithToken | undefined): GasWithToken | undefined {
+    if (!gas || !floor || gas.token?.symbol !== floor.token?.symbol) return gas
+    return resolveGasBalanceBudget(floor) > resolveGasBalanceBudget(gas) ? floor : gas
+}
+
 export class AmountPresetChangedError extends Error {
     constructor() {
         super('Your balance, network fee, or route limits changed. Review the updated amount and quote, then continue.')

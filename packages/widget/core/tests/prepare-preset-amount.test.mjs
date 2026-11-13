@@ -146,3 +146,18 @@ test('confirmation preserves a reviewed amount that covers the buffered fee', as
   assert.equal(await preparePresetAmount({ ...values, amount: '0.897' }, 'source', {}, [], false), '0.897')
   assert.equal(calls.filter(([name]) => name === 'gas').length, 1)
 })
+
+test('the confirmation check honours the fee floor of the real deposit transaction within its scope', async () => {
+  const scope = amountPresets.amountPresetGasFloorScope('preset-source', 'BASE_MAINNET', 'ETH')
+  const floor = { scope, gas: { gas: 0.2, token } }
+  const { preparePresetAmount, calls } = setup({ gas: 0.1 })
+  const amount = await preparePresetAmount({ ...values, amount: '0.898', amountPresetSource: 'preset-source', amountPresetGasFloor: floor }, 'source', {}, [], false)
+  assert.equal(amount, '0.796')
+  assert.ok(calls.filter(([name]) => name === 'gas').length >= 1)
+})
+
+test('a fee floor recorded for another route or account does not lower the reviewed amount', async () => {
+  const floor = { scope: amountPresets.amountPresetGasFloorScope('preset-source', 'ARBITRUM_MAINNET', 'ETH'), gas: { gas: 0.2, token } }
+  const { preparePresetAmount } = setup({ gas: 0.1 })
+  assert.equal(await preparePresetAmount({ ...values, amount: '0.898', amountPresetSource: 'preset-source', amountPresetGasFloor: floor }, 'source', {}, [], false), '0.898')
+})
