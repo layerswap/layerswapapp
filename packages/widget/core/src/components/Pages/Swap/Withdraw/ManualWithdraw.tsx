@@ -19,6 +19,7 @@ import {
 } from '@/lib/apiClients/layerSwapApiClient';
 import { useCopyClipboard } from '@layerswap/ui-kit';
 import { CopyButton } from '@layerswap/ui-kit/components';
+import shortenString from '@/components/utils/ShortenString';
 import {
     Network,
     NetworkRoute,
@@ -249,9 +250,17 @@ export function useManualWithdrawController({
                         className="flex"
                     />
                 }
+                swapIdCopy={
+                    swapDetails?.id && (
+                        <CopyButton toCopy={swapDetails.id} iconClassName="order-2 ml-1 text-primary-text">
+                            {shortenString(swapDetails.id)}
+                        </CopyButton>
+                    )
+                }
                 qr={
                     <DepositQRCodeView
                         depositAddress={depositAddress}
+                        logo={(selectedFrom.network ?? swapBasicData.source_network)?.logo}
                         showQR={showQR}
                         setShowQR={setShowQR}
                     />
