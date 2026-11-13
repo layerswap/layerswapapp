@@ -97,7 +97,7 @@ function Probe() {
 }
 const render = () => act(async () => root.render(createElement(StrictMode, null,
   createElement(SWRConfig, { value: config },
-    createElement(SwapDataStateContext.Provider, { value: { amountPresetLocked: state.locked, amountPresetRevision: state.revision, swapBasicData: state.preparedDraft } },
+    createElement(SwapDataStateContext.Provider, { value: { amountPresetLocked: state.locked, amountPresetRevision: state.revision, swapBasicData: state.preparedDraft, depositGasFloor: state.depositGasFloor } },
       createElement(SwapDataUpdateContext.Provider, { value: updates },
         createElement(Formik, { initialValues, onSubmit() {} }, createElement(Probe))))))))
 beforeEach(() => {
@@ -105,7 +105,7 @@ beforeEach(() => {
   Object.assign(state, { account: { id: 'wallet', address: 'source' }, wallets: [{ id: 'wallet' }],
     balances: [{ amount: 1, network: network.name, token: 'ETH', request_time: 1 }], gas: 0.01, maxFee: undefined, reserve: 0,
     usdMode: false, renderTelemetry: false, exchangeInput: false, renderPresets: false, renderValidation: false, providerGas: undefined, previewGas: undefined,
-    usdPrice: 2000, limit: 10, minimum: 0.001, probes: [], locked: false, revision: 0, preparedDraft: undefined, deferred: undefined, error: undefined, balanceError: undefined, limitsError: undefined, quoteError: undefined })
+    usdPrice: 2000, limit: 10, minimum: 0.001, probes: [], locked: false, revision: 0, preparedDraft: undefined, depositGasFloor: undefined, deferred: undefined, error: undefined, balanceError: undefined, limitsError: undefined, quoteError: undefined })
   initialValues = { amountMode: 'max', amountPresetSource: amountPresets.amountPresetSource(network.name, 'ETH', 'wallet', 'source'),
     amount: '0.5', from: network, fromAsset: token, to: { name: 'BASE_MAINNET' }, toAsset: token,
     destination_address: 'dest', depositMethod: 'wallet' }
@@ -996,10 +996,11 @@ for (const exit of ['manual mode', 'widget unmount']) {
   })
 }
 
-test('a live Max never budgets less than the fee floor handed back by Adjust amount', async () => {
+test('a live Max never budgets less than the deposit fee floor the swap context recorded', async () => {
   const scope = amountPresets.amountPresetGasFloorScope(initialValues.amountPresetSource, 'BASE_MAINNET', 'ETH')
   const floor = { gas: 0.1, token }
-  initialValues = { ...initialValues, amount: '0.898', amountPresetGasFloor: { scope, gas: floor } }
+  state.depositGasFloor = { scope, gas: floor }
+  initialValues = { ...initialValues, amount: '0.898' }
   await render()
   assert.equal(formik.values.amount, '0.898', 'the 21k-transfer estimate (0.01) must not restore the larger amount')
   assert.deepEqual(formik.values.amountPresetGas, floor, 'the effective fee is the one the preset budgeted')
@@ -1014,7 +1015,7 @@ test('a live Max never budgets less than the fee floor handed back by Adjust amo
   assert.equal(formik.values.amount, '0.796')
 })
 
-test('the fee floor only raises a successful estimate in the same fee token', () => {
+test('the fee floor only raises a successful estimate in the same fee token, keeping the larger reserve', () => {
   const { withGasFloor, resolveAmountPresetGasFloor, amountPresetGasFloorScope } = amountPresets
   const floor = { gas: 0.1, token }
   assert.equal(withGasFloor(undefined, floor), undefined, 'a failed estimate stays a failure')
@@ -1022,7 +1023,8 @@ test('the fee floor only raises a successful estimate in the same fee token', ()
   assert.deepEqual(withGasFloor({ gas: 0.01, token }, floor), floor)
   assert.deepEqual(withGasFloor({ gas: 0.2, token }, floor), { gas: 0.2, token })
   assert.deepEqual(withGasFloor({ gas: 0.01, maxFee: 0.15, token }, floor), { gas: 0.01, maxFee: 0.15, token }, 'budgets compare the maximum fee')
-  assert.deepEqual(withGasFloor({ gas: 0.01, reserve: 0.1, token }, floor), { gas: 0.01, reserve: 0.1, token }, 'budgets include the account reserve')
+  assert.deepEqual(withGasFloor({ gas: 0.01, reserve: 0.1, token }, floor), { gas: 0.1, reserve: 0.1, token }, 'the live reserve survives a floor that raises the fee')
+  assert.deepEqual(withGasFloor({ gas: 0.2, token }, { gas: 0.1, reserve: 0.05, token }), { gas: 0.2, reserve: 0.05, token }, 'a reserve only the floor knows is kept')
   const other = { symbol: 'USDC', decimals: 6 }
   assert.deepEqual(withGasFloor({ gas: 0.01, token: other }, floor), { gas: 0.01, token: other }, 'a floor in another fee token is ignored')
   const scope = amountPresetGasFloorScope('source', 'BASE_MAINNET', 'ETH')

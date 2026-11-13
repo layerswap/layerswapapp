@@ -1,4 +1,4 @@
-import type { ApiResponse, NetworkRoute, Wallet } from '@layerswap/widget-types'
+import type { ApiResponse, GasWithToken, NetworkRoute, Wallet } from '@layerswap/widget-types'
 import { usesDepository } from '@layerswap/widget-types'
 import type { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
 import { buildLimitsUrl } from '@/hooks/useFee'
@@ -7,10 +7,11 @@ import { resolveExtendedRoutePlan } from './extendedRoutes/registry'
 import { transformLimitsForExtendedRoute, type ExtendedLimits } from './extendedRoutes/transforms'
 import { useBalanceStore } from '@/stores/balanceStore'
 import { resolverService } from './resolvers/resolverService'
-import { amountPresetGasFloorScope, calculatePresetAmount, isAmountPreset, isWalletAmountFlow, resolveAmountPresetGasFloor, supportsLiveAmountPreset, withGasFloor } from './amountPresets'
+import { calculatePresetAmount, isAmountPreset, isWalletAmountFlow, supportsLiveAmountPreset, withGasFloor } from './amountPresets'
 
-/** Fresh reads before creation. Never changes a created swap or its actions. */
-export async function preparePresetAmount(values: SwapFormValues, address: string | undefined, wallet: Wallet | undefined, sourceRoutes: NetworkRoute[], useGasless: boolean, publishLimits?: (key: string, response: ApiResponse<ExtendedLimits>) => Promise<unknown>) {
+/** Fresh reads before creation. Never changes a created swap or its actions.
+ * `gasFloor` is the fee of this route's real deposit transaction, when one was observed. */
+export async function preparePresetAmount(values: SwapFormValues, address: string | undefined, wallet: Wallet | undefined, sourceRoutes: NetworkRoute[], useGasless: boolean, publishLimits?: (key: string, response: ApiResponse<ExtendedLimits>) => Promise<unknown>, gasFloor?: GasWithToken) {
     if (!isWalletAmountFlow(values)) return values.amount ?? ''
     const { from, fromAsset, to, toAsset } = values
     if (!from || !fromAsset || !to || !toAsset) throw new Error('Select a route to use an amount preset.')
@@ -43,7 +44,6 @@ export async function preparePresetAmount(values: SwapFormValues, address: strin
         throw new Error('Could not refresh the route limits. Try again.')
     // The resumed live controller must use the same limits that revised the draft.
     await publishLimits?.(limitsUrl, limitsResponse)
-    const gasFloor = resolveAmountPresetGasFloor(values.amountPresetGasFloor, amountPresetGasFloorScope(values.amountPresetSource, to.name, toAsset.symbol))
     const amount = await calculatePresetAmount({
         mode, minimum: limits.min_amount,
         network: from, token: fromAsset, probeAmount: values.amount, preserveAmount: true,

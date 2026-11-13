@@ -47,7 +47,7 @@ import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect';
 import { hasSwapExecutionProgress, hasUnacknowledgedWalletAction } from '@/helpers/swapProgress';
 import { formatTokenAmount } from '@/components/utils/formatTokenAmount';
 import { preparePresetAmount } from '@/lib/preparePresetAmount';
-import { isAmountPreset, isWalletAmountFlow, amountPresetSource, AmountPresetChangedError } from '@/lib/amountPresets';
+import { isAmountPreset, isWalletAmountFlow, amountPresetSource, amountPresetGasFloorScope, resolveAmountPresetGasFloor, AmountPresetChangedError, type AmountPresetGasFloor } from '@/lib/amountPresets';
 
 export const SwapDataStateContext = createContext<SwapContextData | null>(null);
 
@@ -86,6 +86,9 @@ export type UpdateSwapInterface = {
     setSwapId: (value: string | undefined) => void
     markWalletExecutionStarted: (swapId: string) => void
     startFreshSwapAttempt: () => void
+    /** Fee of the real deposit transaction observed for a route and funding account. */
+    recordDepositGasFloor: (floor: AmountPresetGasFloor) => void
+    clearDepositGasFloor: () => void
     watchApprovalTransaction: (transaction: ApprovalTransaction) => () => void
     setSwapDataFromQuery?: (swapData: SwapResponse | undefined) => void,
     setSubmitedFormValues: (values: NonNullable<SwapFormValues>) => void,
@@ -107,6 +110,7 @@ export type SwapContextData = {
     quoteIsLoading: boolean,
     amountPresetLocked: boolean,
     amountPresetRevision: number,
+    depositGasFloor: AmountPresetGasFloor | undefined,
     quoteError: QuoteError | undefined,
     refuel: Refuel | undefined,
     swapDetails: SwapDetails | undefined,
@@ -133,6 +137,16 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const [preparingPreset, setPreparingPreset] = useState(false)
     const [presetCreated, setPresetCreated] = useState(false)
     const [amountPresetRevision, setAmountPresetRevision] = useState(0)
+    // The form's Max can only price a plain transfer until a swap exists. The
+    // withdrawal view records what the real deposit transaction costs, and every
+    // later preset for that route and funding account budgets at least that fee.
+    const [depositGasFloor, setDepositGasFloor] = useState<AmountPresetGasFloor>()
+    const latestDepositGasFloor = useRef<AmountPresetGasFloor | undefined>(undefined)
+    latestDepositGasFloor.current = depositGasFloor
+    const recordDepositGasFloor = useCallback((floor: AmountPresetGasFloor) => setDepositGasFloor(current =>
+        current && current.scope === floor.scope && current.gas.gas === floor.gas.gas && current.gas.maxFee === floor.gas.maxFee
+            && current.gas.reserve === floor.gas.reserve && current.gas.token?.symbol === floor.gas.token?.symbol ? current : floor), [])
+    const clearDepositGasFloor = useCallback(() => setDepositGasFloor(undefined), [])
     const [quoteIsLoading, setQuoteLoading] = useState<boolean>(false)
     const [withdrawType, setWithdrawType] = useState<WithdrawType>()
     const [depositAddressIsFromAccount, setDepositAddressIsFromAccount] = useState<boolean>()
@@ -715,8 +729,9 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             sourceIsSupported: !!selectedWallet?.asSourceSupportedNetworks?.includes(values.from?.name ?? ''),
             sourceAddress: selectedSourceAccount?.address,
         })
+        const gasFloor = resolveAmountPresetGasFloor(latestDepositGasFloor.current, amountPresetGasFloorScope(source, values.to?.name, values.toAsset?.symbol))
         return preparePresetAmount(values, selectedSourceAccount?.address, selectedWallet, sourceRoutes, useGasless,
-            (key, response) => mutateCache(key, response, { revalidate: false }))
+            (key, response) => mutateCache(key, response, { revalidate: false }), gasFloor)
             .then(amount => {
                 if (source !== latestPresetSource.current) throw new Error('The source account changed. Select an amount preset again.')
                 if (Number(amount) < Number(values.amount) || (values.amountMode === 'min' && Number(amount) > Number(values.amount))) {
@@ -753,11 +768,13 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         setSwapId: handleUpdateSwapid,
         markWalletExecutionStarted,
         startFreshSwapAttempt,
+        recordDepositGasFloor,
+        clearDepositGasFloor,
         watchApprovalTransaction,
         setSubmitedFormValues,
         setQuoteLoading,
         setSwapModalOpen
-    }), [createSwap, syncAmountPresetDraft, canAdjustAmount, mutate, mutateDepositActions, setWalletActionExecuting, acquireWalletExecution, handleUpdateSwapid, markWalletExecutionStarted, startFreshSwapAttempt, watchApprovalTransaction, setSubmitedFormValues, reportWalletActionFeedback]);
+    }), [createSwap, syncAmountPresetDraft, canAdjustAmount, mutate, mutateDepositActions, setWalletActionExecuting, acquireWalletExecution, handleUpdateSwapid, markWalletExecutionStarted, startFreshSwapAttempt, recordDepositGasFloor, clearDepositGasFloor, watchApprovalTransaction, setSubmitedFormValues, reportWalletActionFeedback]);
 
     const stateValue = useMemo(() => ({
         gaslessAuthorization,
@@ -773,6 +790,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         quoteIsLoading: quoteIsLoading || (!swapId && !swapBasicFormData?.amountPresetError && (!!draftQuoteLoading || !!swapBasicFormData?.amountPresetPending)),
         amountPresetLocked,
         amountPresetRevision,
+        depositGasFloor,
         quoteError,
         refuel,
         swapBasicData,
@@ -785,7 +803,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         flow,
         swapError,
         setSwapError
-    }), [gaslessAuthorization, inputTransactionStatus, withdrawType, depositAddressIsFromAccount, error, swapDetailsError, depositActionsResponse, depositActionsError, approvalTransaction, quote, quoteIsLoading, draftQuoteLoading, swapBasicFormData, amountPresetLocked, amountPresetRevision, quoteError, refuel, swapBasicData, swapDetails, swapId, walletExecutionStarted, walletActionFeedback, swapModalOpen, resolved, flow, swapError]);
+    }), [gaslessAuthorization, inputTransactionStatus, withdrawType, depositAddressIsFromAccount, error, swapDetailsError, depositActionsResponse, depositActionsError, approvalTransaction, quote, quoteIsLoading, draftQuoteLoading, swapBasicFormData, amountPresetLocked, amountPresetRevision, depositGasFloor, quoteError, refuel, swapBasicData, swapDetails, swapId, walletExecutionStarted, walletActionFeedback, swapModalOpen, resolved, flow, swapError]);
 
     return (
         <SwapDataStateContext.Provider value={stateValue}>

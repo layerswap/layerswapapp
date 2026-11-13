@@ -1,5 +1,5 @@
 import type { GasWithToken } from '@layerswap/widget-types';
-import type { AmountMode, AmountPresetGasFloor } from '@/lib/amountPresets';
+import type { AmountMode } from '@/lib/amountPresets';
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import { Exchange } from "@/Models/Exchange";
 
@@ -14,8 +14,6 @@ export type SwapFormValues = {
   amountPresetBalance?: number;
   /** Fee verified by the same calculation as the preset amount. */
   amountPresetGas?: GasWithToken;
-  /** Fee of the last real deposit transaction, handed back by Adjust amount; applied only within its scope. */
-  amountPresetGasFloor?: AmountPresetGasFloor;
   destination_address?: string;
   //TODO: refactor
   fromAsset?: NetworkRouteToken & { manuallySet?: boolean };

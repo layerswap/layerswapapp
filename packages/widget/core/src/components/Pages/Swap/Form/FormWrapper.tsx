@@ -77,7 +77,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
     const { getConfirmation } = useAsyncModal();
     const initialSettings = useInitialSettings()
     const { destination_address: destinationAddressFromQuery } = initialSettings
-    const { createSwap, setSwapId, setSubmitedFormValues, setSwapModalOpen } = useSwapDataUpdate()
+    const { createSwap, setSwapId, setSubmitedFormValues, setSwapModalOpen, clearDepositGasFloor } = useSwapDataUpdate()
     const { setSwapError } = useSwapDataState()
 
     const { setConfirmed, isConfirmed, checkContractStatus } = useContractAddressStore();
@@ -280,8 +280,8 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                                             setFieldValue('amountMode', 'manual')
                                             setFieldValue('amountPresetPending', false)
                                             setFieldValue('amountPresetError', undefined)
-                                            setFieldValue('amountPresetGasFloor', undefined)
                                             setFieldValue('amount', 0)
+                                            clearDepositGasFloor()
                                             mutateBalances()
                                         }}
                                     />

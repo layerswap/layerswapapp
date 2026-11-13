@@ -46,12 +46,13 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
     const { maxAllowedAmount, minAllowedAmount, minAllowedAmountInUsd, limitsError, quoteError } = useQuoteData(
         !frozen && sameSource && liveSupported ? transformFormValuesToQuoteArgs(values) : undefined,
     )
-    const gasFloor = resolveAmountPresetGasFloor(values.amountPresetGasFloor, amountPresetGasFloorScope(source, values.to?.name, values.toAsset?.symbol))
+    const gasFloor = resolveAmountPresetGasFloor(swap?.depositGasFloor, amountPresetGasFloorScope(source, values.to?.name, values.toAsset?.symbol))
     // The chosen preset and both limits identify the calculation. The amount is
     // intentionally excluded: applying a result must not start another request.
     const key = !frozen && sameSource && liveSupported && balance && maxAllowedAmount !== undefined && minAllowedAmount !== undefined
         ? ['amount-preset', mode, source, values.depositMethod, balance?.amount, balance?.request_time, maxAllowedAmount, minAllowedAmount,
-            values.to?.name, values.toAsset?.symbol, values.destination_address, !!values.refuel, revision, gasFloor?.maxFee ?? gasFloor?.gas ?? null]
+            values.to?.name, values.toAsset?.symbol, values.destination_address, !!values.refuel, revision,
+            gasFloor?.maxFee ?? gasFloor?.gas ?? null, gasFloor?.reserve ?? null]
         : null
     const { data: calculation, error, isValidating } = useSWR<{ amount: string; gas?: GasWithToken }>(key, async () => {
         let gas: GasWithToken | undefined

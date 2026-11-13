@@ -45,6 +45,7 @@ const context = createSwapContext({
     '@/stores/contractAddressStore': { useContractAddressStore: () => ({ checkContractStatus: async () => ({ sourceIsContract: false }) }) },
     '@/lib/preparePresetAmount': { preparePresetAmount: async (...args) => {
       state.prepares++
+      state.prepareArgs.push(args)
       return state.limits ? preparePresetAmount(...args) : state.preparation.promise
     } },
     '@/helpers/gasless': { isGaslessCapableRoute: () => false },
@@ -65,7 +66,7 @@ const render = key => act(() => root.render(createElement(context.SwapDataProvid
 beforeEach(async () => {
   transactionStore.setState({ swapTransactions: {}, pendingSubmissions: {} })
   container = document.createElement('div'); document.body.append(container); root = createRoot(container)
-  Object.assign(state, { account: { id: 'wallet', address: 'source' }, created: [], prepares: 0, preparation: Promise.withResolvers(), limits: undefined, publishedLimits: [] })
+  Object.assign(state, { account: { id: 'wallet', address: 'source' }, created: [], prepares: 0, prepareArgs: [], preparation: Promise.withResolvers(), limits: undefined, publishedLimits: [] })
   values = { from: network, to: network, fromAsset: token, toAsset: token, amount: '0.9', destination_address: 'destination',
     depositMethod: 'wallet', amountMode: 'max', amountPresetSource: amountPresets.amountPresetSource(network.name, token.symbol, 'wallet', 'source') }
   await render()
@@ -292,3 +293,22 @@ for (const [mode, fresh] of [['min', '1'], ['half', '0.4']]) {
     assert.equal(updates.syncAmountPresetDraft({ ...values, amount: '0.1' }), false)
   })
 }
+
+test('creation passes the recorded deposit fee floor to the confirmation check only within its scope', async () => {
+  const floor = { gas: 0.2, token }
+  const scope = amountPresets.amountPresetGasFloorScope(values.amountPresetSource, network.name, token.symbol)
+  await act(() => updates.recordDepositGasFloor({ scope, gas: floor }))
+  assert.deepEqual(data.depositGasFloor, { scope, gas: floor })
+  state.preparation.resolve(values.amount)
+  await act(async () => { await updates.createSwap(values, {}) })
+  assert.equal(state.prepares, 1)
+  assert.deepEqual(state.prepareArgs[0][6], floor)
+
+  const elsewhere = { ...values, to: { ...network, name: 'OTHER_MAINNET' } }
+  state.preparation = Promise.withResolvers(); state.preparation.resolve(values.amount)
+  await act(async () => { updates.setSubmitedFormValues(elsewhere); await updates.createSwap(elsewhere, {}) })
+  assert.equal(state.prepareArgs[1][6], undefined, 'a floor recorded for another destination must not apply')
+
+  await act(() => updates.clearDepositGasFloor())
+  assert.equal(data.depositGasFloor, undefined)
+})
