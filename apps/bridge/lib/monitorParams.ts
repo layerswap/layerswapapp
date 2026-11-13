@@ -69,7 +69,7 @@ export function resolveMonitorRedirect(query: QueryParams, pathname: string): st
     }
     const amount = positiveAmount(query.amt_from)
     if (amount && !query.amount) params.set('amount', amount)
-    if (!query.depositMethod) params.set('depositMethod', 'deposit_address')
+    if (source && !query.depositMethod) params.set('depositMethod', 'deposit_address')
 
     return `${pathname}?${params.toString()}`
 }

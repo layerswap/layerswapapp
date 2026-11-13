@@ -28,10 +28,17 @@ test('links without a known monitor code are left alone', () => {
 })
 
 test('an unknown code on one side is dropped and the known side is kept', () => {
+    assert.deepEqual(redirectParams({ cur_from: 'BTC', cur_to: 'YYY' }), {
+        from: 'BITCOIN_MAINNET',
+        fromAsset: 'BTC',
+        depositMethod: 'deposit_address',
+    })
+})
+
+test('manual transfer is not preselected without a resolved source', () => {
     assert.deepEqual(redirectParams({ cur_from: 'XXX', cur_to: 'ETH' }), {
         to: 'ETHEREUM_MAINNET',
         toAsset: 'ETH',
-        depositMethod: 'deposit_address',
     })
 })
 
