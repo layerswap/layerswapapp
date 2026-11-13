@@ -3,8 +3,13 @@ import { encodeSettingsForSSR, getSettings } from "@layerswap/widget";
 import { resolvePersistantQueryParams } from "./querryHelper";
 import { resolveExtendedRouteFlags } from "../flags";
 import { AppSettings, LayerswapApiClient } from "@layerswap/widget/internal";
+import { resolveMonitorRedirect } from "../lib/monitorParams";
 
 export async function getServerSideProps(context) {
+    const monitorRedirect = resolveMonitorRedirect(context.query, context.resolvedUrl.split('?')[0])
+    if (monitorRedirect) {
+        return { redirect: { destination: monitorRedirect, permanent: false } }
+    }
 
     context.res.setHeader(
         'Cache-Control',
