@@ -21,6 +21,10 @@ const { generateSwapInitialValues } = loadSource('lib/generateSwapInitialValues.
     './extendedRoutes/registry': { mergeExtendedSourceRoutes: routes => routes },
 })
 const { manualTransferAvailable } = loadSource('helpers/manualTransferAvailable.ts')
+const { reversedFunding } = loadSource('helpers/reversedFunding.ts', {
+    '@/lib/address/Address': { Address: { isValid: (address, network) => network.type === 'evm' ? address.startsWith('0x') : !address.startsWith('0x') } },
+    './manualTransferAvailable': { manualTransferAvailable },
+})
 const { default: SubmitButton } = loadSource('components/Buttons/submitButton.tsx', {
     '../Icons/spinIcon': { default: empty }, clsx: { default: (...classes) => classes.filter(value => typeof value === 'string').join(' ') },
 })
@@ -189,4 +193,18 @@ test('connecting an unrelated wallet during provider discovery does not select i
     await click(container.querySelector('button'))
     await act(() => finishConnect({ id: 'evm-wallet', address: validAddress, providerName: 'evm', withdrawalSupportedNetworks: [eth.name] }))
     assert.equal(selectedAccount, undefined)
+})
+test('reversing a manual transfer keeps the manual method when the reversed source supports it', () => {
+    const previous = { ...values, depositMethod: 'deposit_address' }
+    const reversed = { ...previous, from: eth, to: btc, destination_address: '' }
+    assert.equal(reversedFunding(previous, reversed, {}).depositMethod, 'deposit_address')
+    assert.equal(reversedFunding(previous, { ...reversed, from: { ...eth, deposit_methods: ['wallet'] } }, {}).depositMethod, undefined)
+    assert.equal(reversedFunding(previous, reversed, { sameAccountNetwork: btc.name }).depositMethod, undefined)
+    assert.equal(reversedFunding({ ...previous, depositMethod: 'wallet' }, reversed, {}).depositMethod, undefined)
+})
+test('reversing clears a recipient that is invalid for the new destination and keeps a valid one', () => {
+    const reversed = { ...values, from: eth, to: btc }
+    assert.equal(reversedFunding(values, { ...reversed, destination_address: validAddress }, {}).destination_address, undefined)
+    assert.equal(reversedFunding(values, { ...reversed, destination_address: 'bc1qrecipient' }, {}).destination_address, 'bc1qrecipient')
+    assert.equal(reversedFunding(values, { ...reversed, to: undefined, destination_address: validAddress }, {}).destination_address, validAddress)
 })
