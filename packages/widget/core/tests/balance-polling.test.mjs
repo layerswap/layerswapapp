@@ -164,3 +164,26 @@ test('manual refresh bypasses fresh cache while periodic refresh is disabled', a
   await refresh
   assert.equal(timers.size, 0)
 })
+
+test('sorting includes late balances and finishes when another network fails', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] })
+  const { useBalanceStore, selectResolvedSortingBalances } = store
+  t.after(() => useBalanceStore.getState().cleanupSortingBalances())
+  useBalanceStore.getState().initSortingBalances([
+    { address: 'source', network },
+    { address: 'source', network: { ...network, name: 'BASE' } },
+    { address: 'source', network: { ...network, name: 'FAILING' } },
+  ])
+  await act(async () => { requests[0].resolve({ balances: [] }) })
+  t.mock.timers.tick(1500)
+  assert.equal(selectResolvedSortingBalances(useBalanceStore.getState()).BASE, undefined)
+
+  const baseBalance = { balances: [{ token: 'USDC', amount: 88.57 }] }
+  await act(async () => { requests[1].resolve(baseBalance) })
+  assert.deepEqual(selectResolvedSortingBalances(useBalanceStore.getState()).BASE, baseBalance)
+  assert.equal(useBalanceStore.getState().sortingDataIsLoading, true)
+
+  await act(async () => { requests[2].reject(new Error('RPC unavailable')) })
+  assert.equal(useBalanceStore.getState().sortingDataIsLoading, false)
+  assert.equal(useBalanceStore.getState().sortingUnsubscribe, undefined)
+})
