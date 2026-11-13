@@ -227,3 +227,19 @@ test('missing or inconsistent timestamps do not produce a fabricated completion 
     assert.equal(resolved.generalStatus.subTitle, null)
   }
 })
+
+test('expired swaps carry no placeholder subtitle', () => {
+  const resolved = resolve(pendingSwap({ status: 'expired' }))
+  assert.equal(resolved.generalStatus.title, 'Transfer expired')
+  assert.equal(resolved.generalStatus.subTitle, null)
+})
+
+test('refund copy names the wallet only for swaps sent from a connected wallet', () => {
+  for (const status of ['refunded', 'pending_refund']) {
+    const fromWallet = resolve(pendingSwap({ status }), { useDepositAddress: false })
+    const manual = resolve(pendingSwap({ status }), { useDepositAddress: true })
+    assert.match(fromWallet.generalStatus.subTitle, /returned to your wallet\.$/)
+    assert.doesNotMatch(manual.generalStatus.subTitle, /wallet/)
+    assert.match(manual.generalStatus.subTitle, /returned\.$/)
+  }
+})
