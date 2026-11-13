@@ -46,7 +46,7 @@ catalogs:
       specifier: ^2.2.5
       version: 2.3.8
     viem:
-      specifier: ^2.21.16
+      specifier: ^2.31.0
       version: 2.44.1
     wagmi:
       specifier: 2.14.11
