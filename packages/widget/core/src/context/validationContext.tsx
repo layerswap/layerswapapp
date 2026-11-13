@@ -42,7 +42,7 @@ const defaultContext: ValidationContextType = {
 
 const ValidationContext = createContext<ValidationContextType>(defaultContext);
 
-export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const ValidationProvider: React.FC<{ children: ReactNode, amountRequired?: boolean }> = ({ children, amountRequired }) => {
     const { values } = useFormikContext<SwapFormValues>();
     const initialSettings = useInitialSettings();
     const { sameAccountNetwork } = initialSettings
@@ -50,8 +50,8 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
     const selectedSourceAccount = useSelectedAccount("from", values.from?.name);
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
-    // Deposit address flow doesn't use limits — resolveFormValidation skips amount checks there
-    const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, quoteError, limitsError, quote, isQuoteLoading, isDebouncing } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval, skipLimits: isDepositAddressFlow(values.depositMethod, values.fromExchange) });
+    // Deposit address flow uses limits only when the form requires an amount
+    const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, quoteError, limitsError, quote, isQuoteLoading, isDebouncing } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval, skipLimits: !amountRequired && isDepositAddressFlow(values.depositMethod, values.fromExchange) });
 
     // Fall back to the limits error only when there are no usable limits at all, so a transient revalidation failure doesn't override a working quote
     const routeError = quoteError ?? ((minAllowedAmount == undefined && maxAllowedAmount == undefined) ? limitsError : undefined);
@@ -77,7 +77,8 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
         sourceAddress: selectedSourceAccount?.address,
         sameAccountNetwork,
         quoteError: routeError,
-        noExchangeWithdrawalRoute
+        noExchangeWithdrawalRoute,
+        amountRequired,
     })
 
     const validationCode = formValidation.code

@@ -43,7 +43,7 @@ export default function Form() {
                             <NetworkExchangeTabs />
                         </div>
                     }>
-                        <ValidationProvider>
+                        <ValidationProvider amountRequired>
                             <NetworkForm partner={partner} />
                         </ValidationProvider>
                     </Widget>

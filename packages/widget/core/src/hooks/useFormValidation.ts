@@ -17,6 +17,7 @@ interface Params {
     sameAccountNetwork?: string | undefined,
     quoteError?: QuoteError,
     noExchangeWithdrawalRoute?: boolean
+    amountRequired?: boolean
 }
 
 export const FORM_VALIDATION_ERROR_CODES = {
@@ -33,7 +34,7 @@ export const FORM_VALIDATION_ERROR_CODES = {
 }
 
 
-export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isUsdMode, sourceAddress, sameAccountNetwork, quoteError, noExchangeWithdrawalRoute }: Params): { message: string; code?: string } {
+export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isUsdMode, sourceAddress, sameAccountNetwork, quoteError, noExchangeWithdrawalRoute, amountRequired }: Params): { message: string; code?: string } {
     let amount = values.amount ? Number(values.amount) : undefined;
 
     // Deposit address flow without exchange: no amount or exchange required
@@ -54,7 +55,7 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
     if (!values.toAsset) {
         return { message: 'Select destination asset' };
     }
-    if (!depositAddressFlow) {
+    if (!depositAddressFlow || amountRequired) {
         if (isAmountPreset(values.amountMode) && values.amountPresetError) return { message: values.amountPresetError };
         if (amount === undefined || amount === 0 || isNaN(Number(amount))) {
             return { message: 'Enter an amount' };
