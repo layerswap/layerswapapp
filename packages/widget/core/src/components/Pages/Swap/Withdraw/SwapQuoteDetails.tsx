@@ -36,12 +36,14 @@ export const SwapQuoteDetails: FC<Props> = ({
         requested_amount,
         source_token,
         destination_address,
+        source_exchange,
     } = swapData || {};
 
     const values: SwapValues = {
         amount: requested_amount?.toString(),
         from: source_network,
         to: destination_network,
+        fromExchange: source_exchange,
         fromAsset: source_token,
         toAsset: destination_token,
         depositMethod: use_deposit_address ? 'deposit_address' : 'wallet',
