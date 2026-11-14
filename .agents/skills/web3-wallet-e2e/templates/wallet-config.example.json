@@ -1,0 +1,7 @@
+{
+  "wallet": "metamask",
+  "walletName": "my-test-wallet",
+  "projectRoot": "/path/to/project",
+  "headless": false,
+  "timeoutMs": 20000
+}
