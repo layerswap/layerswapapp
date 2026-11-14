@@ -36,12 +36,12 @@ export function BalanceWarningView({
     );
 }
 
-export function GasWarningView({ adjustButton }: { adjustButton: ReactNode }) {
+export function GasWarningView({ adjustButton, message }: { adjustButton: ReactNode, message?: string }) {
     return (
         <ErrorDisplay
             icon={<InfoIcon className="w-5 h-5 text-secondary-text" />}
             title="Insufficient balance for gas"
-            message="You need a small balance remaining to pay for gas."
+            message={message ?? "You need a small balance remaining to pay for gas."}
             action={adjustButton}
         />
     );
