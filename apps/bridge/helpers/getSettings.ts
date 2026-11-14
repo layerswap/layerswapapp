@@ -4,12 +4,11 @@ import { resolvePersistantQueryParams } from "./querryHelper";
 import { resolveExtendedRouteFlags } from "../flags";
 import { AppSettings, LayerswapApiClient } from "@layerswap/widget/internal";
 
+import { setSettingsResponseHeaders } from "./settingsResponse";
+
 export async function getServerSideProps(context) {
 
-    context.res.setHeader(
-        'Cache-Control',
-        's-maxage=60, stale-while-revalidate'
-    );
+    context.res.setHeader('Cache-Control', 'private, no-store');
     const app = context.query?.appName || context.query?.addressSource
     const apiKey = JSON.parse(process.env.API_KEYS || "{}")?.[app] || process.env.NEXT_PUBLIC_API_KEY
     LayerswapApiClient.apiBaseEndpoint = process.env.NEXT_PUBLIC_LS_API || AppSettings.LayerswapApiUri
@@ -32,6 +31,8 @@ export async function getServerSideProps(context) {
     const compressedSettings = encodeSettingsForSSR(
         settings ? { ...settings, featureFlags } : null
     )
+
+    setSettingsResponseHeaders(context.res, !!compressedSettings)
 
     // Extract persistent query params to pass to widget as initial values
     const initialValues = resolvePersistantQueryParams(context.query) || {}
