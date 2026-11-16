@@ -30,8 +30,3 @@ test('the receive amount waits for the quote instead of showing zero', () => {
     assert.match(loading, /animate-pulse/)
     assert.match(render({ quote: { receive_amount: 2.5 } }), /<span>2\.5<\/span>/)
 })
-
-test('the swap ID row appears only with a copy control', () => {
-    assert.doesNotMatch(render(), />ID</)
-    assert.match(render({ swapIdCopy: h('button', null, 'abc…123') }), />ID<\/p><button>abc…123<\/button>/)
-})

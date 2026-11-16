@@ -21,7 +21,6 @@ export function ManualInstructionsView({
     qr,
     amountCopy,
     addressCopy,
-    swapIdCopy,
     quoteDetails,
 }: {
     swapBasicData: SwapBasicData;
@@ -34,7 +33,6 @@ export function ManualInstructionsView({
     qr?: ReactNode;
     amountCopy?: ReactNode;
     addressCopy?: ReactNode;
-    swapIdCopy?: ReactNode;
     quoteDetails?: ReactNode;
 }) {
     const destinationLogo = swapBasicData.destination_network.logo;
@@ -181,12 +179,6 @@ export function ManualInstructionsView({
                                     </RecipientAddressView>
                                 }
                             />
-                            {swapIdCopy && (
-                                <div className="flex justify-between items-center text-sm text-primary-text bg-secondary-500 p-3 rounded-xl">
-                                    <p className="text-left text-secondary-text">ID</p>
-                                    {swapIdCopy}
-                                </div>
-                            )}
                             {quoteDetails}
                         </>
                     )}
