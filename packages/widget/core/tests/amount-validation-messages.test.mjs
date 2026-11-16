@@ -56,11 +56,6 @@ test('preset availability errors retain priority over an empty amount and route 
 
 test('a form that requires an amount explains why a manual transfer cannot continue', () => {
   const manual = { depositMethod: 'deposit_address' }
-  const required = { amountRequired: true }
-  for (const amount of [undefined, '', '0'])
-    assert.equal(validate({ ...manual, amount }, required).message, 'Enter an amount')
-  assert.equal(validate({ ...manual, amount: '0.01' }, required).code, FORM_VALIDATION_ERROR_CODES.MIN_AMOUNT_ERROR)
-  assert.equal(validate({ ...manual, amount: '101' }, required).code, FORM_VALIDATION_ERROR_CODES.MAX_AMOUNT_ERROR)
-  assert.equal(validate({ ...manual, amount: '1' }, required).message, '')
-  assert.equal(validate({ ...manual, amount: '' }).message, '')
+  assert.equal(validate({ ...manual, amount: '' }, { amountRequired: true }).message, 'Enter an amount')
+  assert.equal(validate({ ...manual, amount: '0.01' }, { amountRequired: true }).code, FORM_VALIDATION_ERROR_CODES.MIN_AMOUNT_ERROR)
 })

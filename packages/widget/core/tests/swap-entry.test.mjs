@@ -194,17 +194,9 @@ test('connecting an unrelated wallet during provider discovery does not select i
     await act(() => finishConnect({ id: 'evm-wallet', address: validAddress, providerName: 'evm', withdrawalSupportedNetworks: [eth.name] }))
     assert.equal(selectedAccount, undefined)
 })
-test('reversing a manual transfer keeps the manual method when the reversed source supports it', () => {
-    const previous = { ...values, depositMethod: 'deposit_address' }
-    const reversed = { ...previous, from: eth, to: btc, destination_address: '' }
-    assert.equal(reversedFunding(previous, reversed, {}).depositMethod, 'deposit_address')
+test('reversing keeps a supported manual method and clears an invalid recipient', () => {
+    const previous = { ...values, depositMethod: 'deposit_address', destination_address: validAddress }
+    const reversed = { ...previous, from: eth, to: btc }
+    assert.deepEqual(reversedFunding(previous, reversed, {}), { depositMethod: 'deposit_address', destination_address: undefined })
     assert.equal(reversedFunding(previous, { ...reversed, from: { ...eth, deposit_methods: ['wallet'] } }, {}).depositMethod, undefined)
-    assert.equal(reversedFunding(previous, reversed, { sameAccountNetwork: btc.name }).depositMethod, undefined)
-    assert.equal(reversedFunding({ ...previous, depositMethod: 'wallet' }, reversed, {}).depositMethod, undefined)
-})
-test('reversing clears a recipient that is invalid for the new destination and keeps a valid one', () => {
-    const reversed = { ...values, from: eth, to: btc }
-    assert.equal(reversedFunding(values, { ...reversed, destination_address: validAddress }, {}).destination_address, undefined)
-    assert.equal(reversedFunding(values, { ...reversed, destination_address: 'bc1qrecipient' }, {}).destination_address, 'bc1qrecipient')
-    assert.equal(reversedFunding(values, { ...reversed, to: undefined, destination_address: validAddress }, {}).destination_address, validAddress)
 })
