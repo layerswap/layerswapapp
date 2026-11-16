@@ -23,19 +23,11 @@ const swapCreation = loadSource('lib/swapCreation.ts', {
   '@/lib/ErrorHandler': { ErrorHandler: () => {} },
   './swapLifecycle': { lifecycleErrorDetails: () => ({}) },
 })
-const { preparePresetAmount } = loadSource('lib/preparePresetAmount.ts', {
-  '@layerswap/widget-types': { usesDepository: () => false },
-  '@/hooks/useFee': { buildLimitsUrl: () => '/limits' },
-  './apiClients/layerSwapApiClient': { default: class { async fetcher() { return { data: state.limits } } } },
-  './extendedRoutes/registry': { resolveExtendedRoutePlan: () => undefined },
-  './extendedRoutes/transforms': {}, '@/stores/balanceStore': {}, './resolvers/resolverService': {},
-  './amountPresets': amountPresets,
-})
 const context = createSwapContext({
   Client: class {
     async CreateSwapAsync(params) {
       state.created.push(params)
-      return { data: { swap: { id: 'created', source_address: 'source' } } }
+      return { data: { swap: { id: 'created', source_address: 'source' }, deposit_actions: state.depositActions } }
     }
   },
   getSwapId: () => undefined, getAccount: () => state.account,
@@ -43,10 +35,18 @@ const context = createSwapContext({
   swr: { default: () => ({}), useSWRConfig: () => ({ mutate: async (key, response) => { state.publishedLimits.push({ key, response }) } }) },
   overrides: {
     '@/stores/contractAddressStore': { useContractAddressStore: () => ({ checkContractStatus: async () => ({ sourceIsContract: false }) }) },
-    '@/lib/preparePresetAmount': { preparePresetAmount: async (...args) => {
+    '@/lib/preparePresetAmount': { startPresetPreparation: async (...args) => {
       state.prepares++
       state.prepareArgs.push(args)
-      return state.limits ? preparePresetAmount(...args) : state.preparation.promise
+      // The confirmation check estimates live; the post-creation check supplies the deposit fee.
+      return { calculate: (gasFloor, estimateGas) => {
+        state.calculations.push({ gasFloor, estimateGas })
+        return estimateGas ? state.verify(gasFloor, estimateGas) : state.preparation.promise
+      } }
+    } },
+    '@/lib/depositActionGas': { estimateDepositActionGas: async (...args) => {
+      state.depositGasArgs.push(args)
+      return state.depositGas
     } },
     '@/helpers/gasless': { isGaslessCapableRoute: () => false },
     '@/lib/extendedRoutes/registry': { resolveExtendedRoutePlan: () => undefined },
@@ -66,7 +66,10 @@ const render = key => act(() => root.render(createElement(context.SwapDataProvid
 beforeEach(async () => {
   transactionStore.setState({ swapTransactions: {}, pendingSubmissions: {} })
   container = document.createElement('div'); document.body.append(container); root = createRoot(container)
-  Object.assign(state, { account: { id: 'wallet', address: 'source' }, created: [], prepares: 0, prepareArgs: [], preparation: Promise.withResolvers(), limits: undefined, publishedLimits: [] })
+  Object.assign(state, { account: { id: 'wallet', address: 'source' }, created: [], prepares: 0, prepareArgs: [], calculations: [],
+    preparation: Promise.withResolvers(), verification: Promise.withResolvers(), limits: undefined, publishedLimits: [],
+    depositActions: undefined, depositGas: undefined, depositGasArgs: [] })
+  state.verify = () => state.verification.promise
   values = { from: network, to: network, fromAsset: token, toAsset: token, amount: '0.9', destination_address: 'destination',
     depositMethod: 'wallet', amountMode: 'max', amountPresetSource: amountPresets.amountPresetSource(network.name, token.symbol, 'wallet', 'source') }
   await render()
@@ -146,7 +149,7 @@ after(() => {
   }
 })
 
-test('a changed final Max stops before creation and shows the revised draft for review', async () => {
+test('a changed final Max stops before creation and proposes the new amount without touching the draft', async () => {
   let pending, rejected
   await act(() => {
     pending = updates.createSwap(values, {})
@@ -157,9 +160,16 @@ test('a changed final Max stops before creation and shows the revised draft for 
   assert.equal(updates.canAdjustAmount(), false)
   await act(async () => { state.preparation.resolve('0.85'); await rejected })
   assert.equal(state.created.length, 0)
-  assert.equal(data.swapBasicData.requested_amount, '0.85')
-  assert.equal(data.quoteIsLoading, true, 'A new amount must wait for its quote')
+  assert.equal(data.swapBasicData.requested_amount, '0.9', 'the reviewed amount stays until the user adjusts')
+  assert.deepEqual(data.presetRevisionProposal, { amount: '0.85', message: amountPresets.AMOUNT_ADJUSTMENT_MESSAGE, floor: undefined })
+  assert.equal(data.quoteIsLoading, false)
   assert.equal(data.amountPresetLocked, false)
+  let applied
+  await act(() => { applied = updates.applyPresetRevision() })
+  assert.equal(applied, '0.85')
+  assert.equal(data.swapBasicData.requested_amount, '0.85')
+  assert.equal(data.presetRevisionProposal, undefined)
+  assert.equal(updates.applyPresetRevision(), undefined, 'nothing is left to apply')
 })
 
 test('unchanged Max creates exactly the reviewed amount and remains frozen after creation', async () => {
@@ -269,7 +279,7 @@ for (const limit of [0.5, 2]) {
 }
 
 for (const [mode, fresh] of [['min', '1'], ['half', '0.4']]) {
-  test(`${mode}: a changed final amount updates the draft and requires confirmation before creation`, async () => {
+  test(`${mode}: a changed final amount is proposed and requires adjustment before creation`, async () => {
     values.amountMode = mode
     await act(() => updates.setSubmitedFormValues(values))
     let rejected
@@ -277,9 +287,9 @@ for (const [mode, fresh] of [['min', '1'], ['half', '0.4']]) {
     assert.equal(data.amountPresetLocked, true)
     await act(async () => { state.preparation.resolve(fresh); await rejected })
     assert.equal(state.created.length, 0)
-    assert.equal(data.swapBasicData.requested_amount, fresh)
+    assert.equal(data.swapBasicData.requested_amount, values.amount)
+    assert.equal(data.presetRevisionProposal.amount, fresh)
     assert.equal(data.swapBasicData.amountMode, mode)
-    assert.equal(data.quoteIsLoading, true)
     assert.equal(data.amountPresetLocked, false)
   })
   test(`${mode}: unchanged confirmation creates exactly the reviewed amount and freezes the draft`, async () => {
@@ -302,13 +312,157 @@ test('creation passes the recorded deposit fee floor to the confirmation check o
   state.preparation.resolve(values.amount)
   await act(async () => { await updates.createSwap(values, {}) })
   assert.equal(state.prepares, 1)
-  assert.deepEqual(state.prepareArgs[0][6], floor)
+  assert.deepEqual(state.calculations[0].gasFloor, floor)
+  assert.equal(state.calculations[0].estimateGas, undefined, 'the confirmation check estimates live')
 
   const elsewhere = { ...values, to: { ...network, name: 'OTHER_MAINNET' } }
   state.preparation = Promise.withResolvers(); state.preparation.resolve(values.amount)
   await act(async () => { updates.setSubmitedFormValues(elsewhere); await updates.createSwap(elsewhere, {}) })
-  assert.equal(state.prepareArgs[1][6], undefined, 'a floor recorded for another destination must not apply')
+  assert.equal(state.calculations[1].gasFloor, undefined, 'a floor recorded for another destination must not apply')
 
   await act(() => updates.clearDepositGasFloor())
+  assert.equal(data.depositGasFloor, undefined)
+})
+
+const depositActions = [{ type: 'transfer', step: 'deposit', status: 'action_required', to_address: 'deposit', amount: 0.9, call_data: '0x9afe9145' }]
+
+test('a deposit fee that cuts Max by more than the guard proposes the amount and withholds the floor', async () => {
+  const depositGas = { gas: 0.2, maxFee: 0.25, token }
+  Object.assign(state, { depositActions, depositGas })
+  state.preparation.resolve(values.amount)
+  let failure
+  await act(() => { failure = updates.createSwap(values, {}).then(() => assert.fail('the wallet must not open'), error => error) })
+  await act(async () => { state.verification.resolve('0.65'); await failure })
+  const error = await failure
+  assert.ok(error instanceof amountPresets.AmountPresetChangedError)
+  assert.match(error.message, /network fee for this swap is higher/)
+  assert.equal(state.created.length, 1, 'the deposit transaction only exists once the swap does')
+  assert.equal(state.depositGasArgs[0][0], depositActions)
+  assert.equal(state.depositGasArgs[0][2], 'source')
+  const verification = state.calculations[1]
+  assert.equal(verification.gasFloor, undefined)
+  assert.deepEqual(await verification.estimateGas(0.9), depositGas, 'the check prices the real deposit, not another plain transfer')
+  const scope = amountPresets.amountPresetGasFloorScope(values.amountPresetSource, network.name, token.symbol)
+  assert.equal(data.depositGasFloor, undefined, 'a recorded floor would make the live preset rewrite the amount before the user accepts')
+  assert.deepEqual(data.presetRevisionProposal, { amount: '0.65', message: error.message, floor: { scope, gas: depositGas } })
+  assert.equal(data.swapBasicData.requested_amount, '0.9', 'the reviewed amount stays on screen')
+  assert.equal(data.swapBasicData.amountMode, 'max')
+  assert.equal(data.quoteIsLoading, false)
+  assert.equal(data.amountPresetLocked, false, 'the draft is open for the adjusted confirmation')
+  assert.equal(data.swapId, undefined)
+  let applied
+  await act(() => { applied = updates.applyPresetRevision() })
+  assert.equal(applied, '0.65')
+  assert.deepEqual(data.depositGasFloor, { scope, gas: depositGas }, 'accepting records the real fee for every later preset on this route')
+  assert.equal(data.swapBasicData.requested_amount, '0.65')
+  assert.equal(data.presetRevisionProposal, undefined)
+})
+
+test('a small deposit fee shortfall replaces the swap with the affordable amount in the same click', async () => {
+  const depositGas = { gas: 0.004, token }
+  Object.assign(state, { depositActions, depositGas })
+  state.preparation.resolve(values.amount)
+  state.verify = async () => '0.895'
+  let created
+  await act(async () => { created = await updates.createSwap(values, {}) })
+  assert.equal(created.swap.id, 'created')
+  assert.deepEqual(state.created.map(request => request.amount), ['0.9', '0.895'], 'the replacement carries the affordable amount')
+  assert.equal(state.calculations.length, 3, 'confirmation, the deposit fee check, and one recheck of the replacement')
+  assert.equal(state.depositGasArgs[1][1].amount, '0.895', 'the replacement is priced at its own amount')
+  assert.equal(data.swapBasicData.requested_amount, '0.895')
+  assert.equal(data.swapBasicData.amountPresetPending, undefined, 'an applied revision needs no second review')
+  assert.equal(data.presetRevisionProposal, undefined, 'the summary and the wallet show the final amount; nothing to adjust')
+  assert.deepEqual(data.depositGasFloor.gas, depositGas, 'an applied reduction records the real fee')
+  assert.equal(data.amountPresetLocked, true, 'the replacement freezes the draft like any created swap')
+})
+
+test('a tiny send applies a shortfall worth under a cent even when it exceeds one percent', async () => {
+  const priced = { ...token, price_in_usd: 1800 }
+  const tiny = { ...values, amount: '0.0001', fromAsset: priced, toAsset: priced }
+  await act(() => updates.setSubmitedFormValues(tiny))
+  Object.assign(state, { depositActions, depositGas: { gas: 0.000002, token: priced } })
+  state.preparation.resolve(tiny.amount)
+  state.verify = async () => '0.000098'
+  let created
+  await act(async () => { created = await updates.createSwap(tiny, {}) })
+  assert.equal(created.swap.id, 'created')
+  assert.deepEqual(state.created.map(request => request.amount), ['0.0001', '0.000098'])
+  assert.equal(data.presetRevisionProposal, undefined)
+})
+
+test('a replacement that still falls short is proposed instead of a third swap', async () => {
+  const depositGas = { gas: 0.004, token }
+  Object.assign(state, { depositActions, depositGas })
+  state.preparation.resolve(values.amount)
+  const verifications = ['0.895', '0.891']
+  state.verify = async () => verifications.shift()
+  let failure
+  await act(() => { failure = updates.createSwap(values, {}).then(() => assert.fail('a second shortfall must not create again'), error => error) })
+  const error = await failure
+  assert.ok(error instanceof amountPresets.AmountPresetChangedError)
+  assert.deepEqual(state.created.map(request => request.amount), ['0.9', '0.895'])
+  assert.equal(data.swapBasicData.requested_amount, '0.895', 'the applied first reduction stays; the second is only proposed')
+  assert.equal(data.presetRevisionProposal.amount, '0.891')
+  assert.equal(data.presetRevisionProposal.floor.gas, depositGas)
+  assert.equal(data.swapBasicData.amountPresetPending, undefined)
+  assert.equal(data.amountPresetLocked, false)
+})
+
+test('a small change found by the confirmation check is sent without another review', async () => {
+  state.preparation.resolve('0.897')
+  let created
+  await act(async () => { created = await updates.createSwap(values, {}) })
+  assert.equal(created.swap.id, 'created')
+  assert.deepEqual(state.created.map(request => request.amount), ['0.897'])
+  assert.equal(data.swapBasicData.requested_amount, '0.897')
+  assert.equal(data.presetRevisionProposal, undefined)
+  assert.equal(data.amountPresetLocked, true)
+})
+
+test('a fresh attempt or a new submission clears the proposal', async () => {
+  let rejected
+  await act(() => { rejected = assert.rejects(updates.createSwap(values, {}), amountPresets.AmountPresetChangedError) })
+  await act(async () => { state.preparation.resolve('0.85'); await rejected })
+  assert.ok(data.presetRevisionProposal)
+  await act(() => updates.startFreshSwapAttempt())
+  assert.equal(data.presetRevisionProposal, undefined)
+  state.preparation = Promise.withResolvers()
+  await act(() => { rejected = assert.rejects(updates.createSwap(values, {}), amountPresets.AmountPresetChangedError) })
+  await act(async () => { state.preparation.resolve('0.85'); await rejected })
+  assert.ok(data.presetRevisionProposal)
+  await act(() => updates.setSubmitedFormValues(values))
+  assert.equal(data.presetRevisionProposal, undefined)
+})
+
+test('a deposit fee that still fits creates the swap and only records the floor', async () => {
+  const depositGas = { gas: 0.05, token }
+  Object.assign(state, { depositActions, depositGas })
+  state.preparation.resolve(values.amount)
+  state.verification.resolve(values.amount)
+  let created
+  await act(async () => { created = await updates.createSwap(values, {}) })
+  assert.equal(created.swap.id, 'created')
+  assert.equal(state.calculations.length, 2)
+  assert.equal(data.depositGasFloor.gas, depositGas)
+  assert.equal(data.amountPresetLocked, true, 'creation freezes the reviewed amount as before')
+})
+
+test('min presets record the deposit fee but never revise their fixed amount', async () => {
+  values.amountMode = 'min'
+  await act(() => updates.setSubmitedFormValues(values))
+  Object.assign(state, { depositActions, depositGas: { gas: 5, token } })
+  state.preparation.resolve(values.amount)
+  await act(async () => { await updates.createSwap(values, {}) })
+  assert.equal(state.created.length, 1)
+  assert.equal(state.calculations.length, 1, 'a minimum cannot be reduced to fit a fee')
+  assert.equal(data.depositGasFloor.gas.gas, 5)
+})
+
+test('an unavailable deposit fee estimate never blocks the wallet', async () => {
+  Object.assign(state, { depositActions, depositGas: undefined })
+  state.preparation.resolve(values.amount)
+  await act(async () => { await updates.createSwap(values, {}) })
+  assert.equal(state.created.length, 1)
+  assert.equal(state.calculations.length, 1)
   assert.equal(data.depositGasFloor, undefined)
 })

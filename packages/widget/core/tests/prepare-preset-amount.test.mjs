@@ -10,7 +10,7 @@ const values = { amount: '0.95', from: network, fromAsset: token, to: { name: 'B
   toAsset: token, destination_address: 'destination', depositMethod: 'wallet', refuel: false }
 const setup = ({ balance = 1, gas = 0.1, maxFee, reserve, limits = { min_amount: 0.001, max_amount: 2 } } = {}) => {
   const calls = []
-  const { preparePresetAmount } = loadSource('lib/preparePresetAmount.ts', {
+  const { startPresetPreparation } = loadSource('lib/preparePresetAmount.ts', {
     '@layerswap/widget-types': { usesDepository: () => false },
     '@/hooks/useFee': { buildLimitsUrl: args => { calls.push(['limits', args]); return 'limits' } },
     './apiClients/layerSwapApiClient': { default: class { async fetcher() { return { data: limits } } } },
@@ -25,8 +25,24 @@ const setup = ({ balance = 1, gas = 0.1, maxFee, reserve, limits = { min_amount:
     } }) } },
     './amountPresets': amountPresets,
   })
-  return { preparePresetAmount, calls }
+  // The confirmation check reads once and calculates once.
+  const preparePresetAmount = async (values, address, wallet, sourceRoutes, useGasless, publishLimits, gasFloor) =>
+    (await startPresetPreparation(values, address, wallet, sourceRoutes, useGasless, publishLimits)).calculate(gasFloor)
+  return { preparePresetAmount, startPresetPreparation, calls }
 }
+
+test('a preparation recalculates from the same balance and limits with another fee source', async () => {
+  const { startPresetPreparation, calls } = setup({ gas: 0.1 })
+  const preparation = await startPresetPreparation({ ...values, amount: '0.898' }, 'source', {}, [], false)
+  const reads = () => calls.filter(([name]) => name === 'balance' || name === 'limits').length
+  assert.equal(reads(), 2)
+  assert.equal(await preparation.calculate(), '0.898', 'the live estimate keeps the reviewed amount')
+  const depositFee = { gas: 0.12, token }
+  assert.equal(await preparation.calculate(undefined, async () => depositFee), '0.8776', 'the deposit fee lowers it without another read')
+  assert.equal(reads(), 2)
+  assert.equal(calls.filter(([name]) => name === 'gas').length, 1, 'a supplied fee replaces the live estimate')
+  assert.equal(await preparation.calculate({ gas: 0.11, token }, async () => ({ gas: 0.05, token })), '0.8878', 'the floor still raises a smaller supplied fee')
+})
 
 test('creation preparation bypasses cached balances, refreshes matching limits and estimates the payable amount', async () => {
   const { preparePresetAmount, calls } = setup()

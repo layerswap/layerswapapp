@@ -9,10 +9,7 @@ import { transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { useBalance } from '@/lib/balances/useBalance';
 import useOutOfGas from '@/lib/gases/useOutOfGas';
 import useSWRGas from '@/lib/gases/useSWRGas';
-import { resolveMaxAllowedAmount } from '@/components/Input/Amount/helpers';
-import { amountPresetGasFloorScope, amountPresetSource, isAmountPreset } from '@/lib/amountPresets';
-import { truncateToDecimals } from '@/components/utils/RoundDecimals';
-import { NetworkType } from '@layerswap/widget-types';
+import { amountPresetGasFloorScope, amountPresetSource, isAmountPreset, resolveDepositFeeAdjustedAmount } from '@/lib/amountPresets';
 import type { JSX } from 'react';
 import { FC, useCallback, useEffect, useMemo } from 'react';
 import { AdjustAmountButton } from '../Form/SecondaryComponents/validationError/AdjustAmountButton';
@@ -28,7 +25,7 @@ import { lifecycleContextFromSwap } from '@/lib/swapLifecycle';
 import { TransferBlock } from './TransferBlock';
 import { useHasSubmittedTransfer } from '@/hooks/useHasSubmittedTransfer';
 import { type ObservedLifecycleEvent, useLifecycleObservation } from '@/hooks/useLifecycleObservation';
-import { getActionableDepositAction, isTransferAction } from '@/helpers/depositActions';
+import { resolveDepositGasTransaction } from '@/helpers/depositActions';
 
 // "Transfer screen shown": reported once while the screen is visible, before any swap exists.
 const AWAITING_WALLET_ACTION: ObservedLifecycleEvent = {
@@ -67,19 +64,14 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
                 b?.token === swapBasicData?.source_token?.symbol,
         );
     const walletBalanceAmount = walletBalance?.amount;
-    const action = getActionableDepositAction(depositActionsResponse);
-    const transferAction = action && isTransferAction(action)
-        && source_network?.type === NetworkType.EVM
-        && (!action.network || action.network.name === source_network?.name)
-        && (!action.token || action.token.symbol === swapBasicData?.source_token.symbol)
-        && (!action.from_address || action.from_address.toLowerCase() === selectedSourceAccount?.address?.toLowerCase())
-        ? action : undefined;
-    const gasTransaction = useMemo(() => transferAction?.to_address && transferAction.amount != null ? {
-        recipientAddress: transferAction.to_address,
-        callData: transferAction.call_data ?? '',
-        amountInBaseUnits: transferAction.amount_in_base_units,
-    } : undefined, [transferAction?.to_address, transferAction?.amount, transferAction?.call_data, transferAction?.amount_in_base_units]);
-    const gasEstimationAmount = gasTransaction ? transferAction?.amount : swapBasicData?.requested_amount;
+    const deposit = swapBasicData && source_network
+        ? resolveDepositGasTransaction(depositActionsResponse, { network: source_network, token: swapBasicData.source_token.symbol, address: selectedSourceAccount?.address })
+        : undefined;
+    const resolvedTransaction = deposit?.transaction;
+    // The estimate's effect and hook options compare the payload by identity.
+    const gasTransaction = useMemo(() => resolvedTransaction,
+        [resolvedTransaction?.recipientAddress, resolvedTransaction?.callData, resolvedTransaction?.amountInBaseUnits]);
+    const gasEstimationAmount = gasTransaction ? deposit?.action.amount : swapBasicData?.requested_amount;
     const currentPresetSource = amountPresetSource(
         swapBasicData?.source_network.name, swapBasicData?.source_token.symbol,
         selectedSourceAccount?.id, selectedSourceAccount?.address,
@@ -129,22 +121,15 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
     const { minAllowedAmount, maxAllowedAmount } = useQuoteData(quoteArgs, {
         skipLimits: isDepositAddressSwap(swapBasicData),
     });
-    const adjustedAmount = (() => {
-        if (!swapBasicData || walletBalanceAmount == null || !selectedSourceAccount?.address
-            || minAllowedAmount == null || !Number.isFinite(minAllowedAmount)
-            || maxAllowedAmount == null || !Number.isFinite(maxAllowedAmount)) return undefined;
-        const maxAmount = resolveMaxAllowedAmount({
-            walletBalance, gasAmount: gasData?.maxFee ?? gasData?.gas, gasReserve: gasData?.reserve,
-            fromCurrency: swapBasicData.source_token, native_currency: gasData?.token ?? source_network?.token,
-            limitsMaxAmount: maxAllowedAmount, depositMethod: 'wallet',
-        });
-        if (maxAmount == null || !Number.isFinite(maxAmount)) return undefined;
-        const newAmount = truncateToDecimals(String(maxAmount), swapBasicData.source_token.decimals);
-        const amount = Number(newAmount);
-        // Only offer a reduction that can satisfy the route after token rounding.
-        return amount > 0 && amount >= minAllowedAmount && amount < Number(swapBasicData.requested_amount)
-            ? newAmount : undefined;
-    })();
+    const adjustedAmount = swapBasicData && walletBalanceAmount != null && selectedSourceAccount?.address
+        && minAllowedAmount != null && Number.isFinite(minAllowedAmount)
+        && maxAllowedAmount != null && Number.isFinite(maxAllowedAmount)
+        ? resolveDepositFeeAdjustedAmount({
+            requestedAmount: swapBasicData.requested_amount, walletBalance, gas: gasData,
+            token: swapBasicData.source_token, nativeToken: source_network?.token,
+            limitsMaxAmount: maxAllowedAmount, minAllowedAmount,
+        })
+        : undefined;
     // API swap networks are display metadata, not complete form routes. Restart
     // with configured routes so balance readers retain token lists and RPC data.
     const formSource = sourceRoutes?.find(route => route.name === swapBasicData?.source_network.name);
