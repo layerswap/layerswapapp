@@ -90,12 +90,11 @@ export function ManualInstructionsView({
                                 value={
                                     <span className="cursor-pointer hover:underline min-h-5 block">
                                         {depositAddress ? (
-                                            <span className="flex items-center gap-1">
-                                                <span className="min-w-0 break-all">
+                                            addressCopy ?? (
+                                                <span className="break-all">
                                                     {depositAddress}
                                                 </span>
-                                                {addressCopy}
-                                            </span>
+                                            )
                                         ) : (
                                             <span className="inline-block w-28 bg-secondary-400 h-5 rounded animate-pulse"></span>
                                         )}

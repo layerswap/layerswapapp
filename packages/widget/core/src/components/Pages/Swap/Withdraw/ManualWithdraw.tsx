@@ -246,8 +246,10 @@ export function useManualWithdrawController({
                 addressCopy={
                     <CopyButton
                         toCopy={depositAddress || ''}
-                        className="flex"
-                    />
+                        iconClassName="order-2 shrink-0"
+                    >
+                        <span className="min-w-0 break-all text-left">{depositAddress}</span>
+                    </CopyButton>
                 }
                 qr={
                     <DepositQRCodeView
