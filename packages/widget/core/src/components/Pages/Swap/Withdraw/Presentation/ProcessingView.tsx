@@ -83,7 +83,7 @@ export function getProcessingProgress({
     walletProgress?: WalletProgressData;
     animateOnMount?: boolean;
 }) {
-    const { source_network, destination_network, destination_token } =
+    const { source_network, destination_network, destination_token, use_deposit_address } =
         swapBasicData;
     const { fail_reason } = swapDetails;
     const input_tx_explorer = source_network.transaction_explorer_template;
@@ -308,8 +308,9 @@ export function getProcessingProgress({
             },
             complete: {
                 name: 'Refund sent',
-                description:
-                    'The full deposit amount has been sent back to your wallet.',
+                description: use_deposit_address
+                    ? 'The full deposit amount has been sent back.'
+                    : 'The full deposit amount has been sent back to your wallet.',
             },
             failed: {
                 name: 'Refund Failed',

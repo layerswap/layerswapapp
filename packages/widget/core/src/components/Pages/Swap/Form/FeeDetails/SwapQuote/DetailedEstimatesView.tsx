@@ -39,7 +39,7 @@ export function DetailedEstimatesView({
         <div className="flex flex-col w-full px-2">
             {variant === 'extended' && gasFee}
             <Fees quote={quote} values={values} />
-            {values.depositMethod !== 'deposit_address' && (
+            {!(values.depositMethod === 'deposit_address' && values.fromExchange) && (
                 <Rate
                     fromAsset={values?.fromAsset}
                     toAsset={values?.toAsset}

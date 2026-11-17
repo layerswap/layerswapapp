@@ -227,3 +227,9 @@ test('missing or inconsistent timestamps do not produce a fabricated completion 
     assert.equal(resolved.generalStatus.subTitle, null)
   }
 })
+
+test('expired and refunded manual transfers carry no placeholder or wallet copy', () => {
+  assert.equal(resolve(pendingSwap({ status: 'expired' })).generalStatus.subTitle, null)
+  assert.match(resolve(pendingSwap({ status: 'refunded' })).generalStatus.subTitle, /to your wallet/)
+  assert.doesNotMatch(resolve(pendingSwap({ status: 'refunded' }), { useDepositAddress: true }).generalStatus.subTitle, /wallet/)
+})

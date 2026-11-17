@@ -14,6 +14,8 @@ export type { ModalWalletProvider } from "@layerswap/ui-kit/components"
 export type ConnectPresentation = "modal" | "inline"
 
 type ConnectOptions = {
+    title?: string
+    bottomContent?: ReactNode
     placement?: DrawerPlacement
     dismissible?: boolean
     topContent?: ReactNode
@@ -37,6 +39,8 @@ type ConnectModalContextType = {
     isWalletModalOpen: boolean
     presentation: ConnectPresentation
     setPresentation: (presentation: ConnectPresentation) => void
+    title: string | undefined
+    bottomContent: ReactNode
     placement: DrawerPlacement
     dismissible: boolean
     topContent: ReactNode
@@ -67,6 +71,8 @@ function WalletModalShell({ children }: { children: ReactNode }) {
         finish,
         goBack,
     } = UiKit.useConnectModal()
+    const [title, setTitle] = useState<string>();
+    const [bottomContent, setBottomContent] = useState<ReactNode>(null);
     const [open, setOpen] = useState(false)
     const [isWalletModalOpen, setIsWalletModalOpen] = useState(false)
     const [presentation, setPresentation] = useState<ConnectPresentation>("modal")
@@ -80,6 +86,8 @@ function WalletModalShell({ children }: { children: ReactNode }) {
         provider?: WalletConnectionProvider,
         options: ConnectOptions = {},
     ) => {
+        setTitle(options.title)
+        setBottomContent(options.bottomContent ?? null)
         setPresentation("modal")
         setPlacement(options.placement ?? "default")
         setDismissible(options.dismissible ?? true)
@@ -115,6 +123,8 @@ function WalletModalShell({ children }: { children: ReactNode }) {
             setSelectedProvider(undefined)
         }
         if (!open) {
+            setTitle(undefined)
+            setBottomContent(null)
             setPlacement("default")
             setDismissible(true)
             setTopContent(null)
@@ -142,6 +152,8 @@ function WalletModalShell({ children }: { children: ReactNode }) {
         isWalletModalOpen,
         presentation,
         setPresentation,
+        title,
+        bottomContent,
         placement,
         dismissible,
         topContent,
@@ -150,6 +162,8 @@ function WalletModalShell({ children }: { children: ReactNode }) {
     }), [
         cancel,
         connect,
+        title,
+        bottomContent,
         placement,
         dismissible,
         fullHeight,

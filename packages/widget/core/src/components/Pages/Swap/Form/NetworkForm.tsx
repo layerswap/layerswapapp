@@ -27,6 +27,7 @@ import RefuelModal from "./FeeDetails/RefuelModal";
 import { SwapFormValues } from "./SwapFormValues";
 import { useCallbacks } from "@/context/callbackProvider";
 import { Slippage } from "./FeeDetails/Slippage";
+import { reversedFunding } from "@/helpers/reversedFunding";
 
 type Props = {
     partner?: Partner;
@@ -168,6 +169,7 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<
         sourceRoutes,
         destinationRoutes,
     } = useSettingsState()
+    const initialSettings = useInitialSettings()
 
     const {
         to: destination,
@@ -214,12 +216,13 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<
         } else {
             newVales.destination_address = oldDestinationWalletIsNotCompatible ? undefined : values.destination_address
         }
+        Object.assign(newVales, reversedFunding(values, newVales, initialSettings))
 
         await updateFormBulk(newVales, true, setValues)
 
         swapInProgress.current = false;
 
-    }, [values, sourceRoutes, destinationRoutes, selectedSourceAccount])
+    }, [values, sourceRoutes, destinationRoutes, selectedSourceAccount, initialSettings])
 
     return (
         <button

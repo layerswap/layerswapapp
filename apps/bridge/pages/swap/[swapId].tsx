@@ -9,6 +9,7 @@ import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
 import WidgetWrapper from '../../components/WidgetWrapper';
 import MaintananceContent from '../../components/maintanance/maintanance';
 import { resolveExtendedRouteFlags } from '../../flags';
+import { resolveSwapPageRedirect } from '../../lib/swapPageRedirect';
 
 const SwapDetails = ({ settings, themeData, apiKey, swapData }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter()
@@ -68,25 +69,13 @@ export const getServerSideProps = async (ctx) => {
     }),
   ])
 
-  if (swapData?.swap.transactions.length == 0) {
-    const redirectParams = new URLSearchParams({
-      from: swapData.swap.source_network.name,
-      to: swapData.swap.destination_network.name,
-      fromAsset: swapData.swap.source_token.symbol,
-      toAsset: swapData.swap.destination_token.symbol,
-      amount: formatTokenAmount(swapData.swap.requested_amount, swapData.swap.source_token.decimals),
-    })
-    const defaultTab = ctx.query?.defaultTab
-    if (typeof defaultTab === 'string' && defaultTab) {
-      redirectParams.set('defaultTab', defaultTab)
-    }
-    return {
-      redirect: {
-        destination: `/?${redirectParams.toString()}`,
-        permanent: true,
-      }
-    }
-  }
+  const redirect = resolveSwapPageRedirect({
+    swap: swapData?.swap,
+    query: ctx.query,
+    persistentParams: resolvePersistantQueryParams(ctx.query),
+    formattedAmount: swapData ? formatTokenAmount(swapData.swap.requested_amount, swapData.swap.source_token.decimals) : '',
+  })
+  if (redirect) return { redirect }
 
   const settings = networkData ? {
     networks: networkData,

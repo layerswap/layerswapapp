@@ -7,10 +7,12 @@ import QRIcon from '@/components/Icons/QRIcon';
 import { StyledQRCode } from '@layerswap/ui-kit/components';
 export function DepositQRCodeView({
     depositAddress,
+    logo,
     showQR = false,
     setShowQR,
 }: {
     depositAddress?: string;
+    logo?: string;
     showQR?: boolean;
     setShowQR?: (open: boolean) => void;
 }) {
@@ -30,6 +32,7 @@ export function DepositQRCodeView({
                     <StyledQRCode
                         value={depositAddress || ''}
                         size={160}
+                        logo={logo}
                         ecLevel="H"
                     />
                 </div>

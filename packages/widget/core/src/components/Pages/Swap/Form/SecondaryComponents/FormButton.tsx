@@ -1,7 +1,6 @@
 import { FormSourceWalletButton } from "@/components/Input/SourceWalletPicker";
 import SubmitButton from "@/components/Buttons/submitButton";
 import { useInitialSettings } from "@/context/settings";
-import { useSwapDataState } from "@/context/swap";
 import Address from "@/components/Input/Address";
 import { SwapFormValues } from "../SwapFormValues";
 import { Partner } from "@/Models/Partner";
@@ -22,21 +21,21 @@ const FormButton = ({
     disabled,
     error,
     isSubmitting,
-    isQuoteLoading,
     partner,
 }: Props) => {
     const initialSettings = useInitialSettings();
     const actionDisplayName = error || initialSettings?.actionButtonText || "Next";
-    const preSubmitDisabled = isSubmitting || isQuoteLoading;
+    // Editing setup is independent of quote readiness and submission validation.
+    const preSubmitDisabled = isSubmitting;
 
     const button = (() => {
-        if (shouldConnectWallet && (!error || !values.to || !values.amount)) {
+        if (shouldConnectWallet) {
             return <FormSourceWalletButton isDisabled={preSubmitDisabled} />;
         }
 
-        if (values?.to && !values?.destination_address && !error) {
+        if (values?.to && !values?.destination_address) {
             return (
-                <Address partner={partner}>
+                <Address partner={partner} triggerAsChild>
                     {() => (
                         <SubmitButton type="button" className="w-full" isDisabled={preSubmitDisabled}>
                             <span className="grow text-center">Enter destination address</span>

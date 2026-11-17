@@ -497,10 +497,11 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             atomicBatchFailed: !!storedWalletTransaction?.atomicBatchFailure,
             walletActionExecuting,
             isDepositFlow,
+            useDepositAddress: use_deposit_address,
             gaslessFailureStatus,
         }),
         [swapDetails, refuel, inputTxStatusFromApi, depositCompleted, storedWalletTransaction?.kind, storedWalletTransaction?.providerSubmissionAccepted, storedWalletTransaction?.atomicBatchFailure, walletActionExecuting,
-            isDepositFlow, gaslessFailureStatus, gaslessAuthorization],
+            isDepositFlow, use_deposit_address, gaslessFailureStatus, gaslessAuthorization],
     )
 
     const flow = useMemo(() => resolveSwapFlow({

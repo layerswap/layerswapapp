@@ -4,7 +4,6 @@ import {
     type RecipientPresentation,
 } from '@/components/Common/RecipientAddressView';
 import { truncateDecimals } from '@/components/utils/RoundDecimals';
-import { Address } from '@/lib/address/Address';
 import type {
     SwapBasicData,
     SwapQuote,
@@ -91,13 +90,11 @@ export function ManualInstructionsView({
                                 value={
                                     <span className="cursor-pointer hover:underline min-h-5 block">
                                         {depositAddress ? (
-                                            <span className="flex items-center gap-1">
-                                                {new Address(
-                                                    depositAddress,
-                                                    swapBasicData?.source_network,
-                                                ).toShortString()}
-                                                {addressCopy}
-                                            </span>
+                                            addressCopy ?? (
+                                                <span className="break-all">
+                                                    {depositAddress}
+                                                </span>
+                                            )
                                         ) : (
                                             <span className="inline-block w-28 bg-secondary-400 h-5 rounded animate-pulse"></span>
                                         )}
@@ -145,13 +142,17 @@ export function ManualInstructionsView({
                                 label={
                                     <span className="flex items-center gap-1">
                                         <span>Receive</span>{' '}
-                                        <span>
-                                            {truncateDecimals(
-                                                quote?.receive_amount ?? 0,
-                                                swapBasicData?.destination_token
-                                                    ?.precision,
-                                            )}
-                                        </span>{' '}
+                                        {quote?.receive_amount != null ? (
+                                            <span>
+                                                {truncateDecimals(
+                                                    quote.receive_amount,
+                                                    swapBasicData?.destination_token
+                                                        ?.precision,
+                                                )}
+                                            </span>
+                                        ) : (
+                                            <span className="inline-block w-12 bg-secondary-400 h-5 rounded animate-pulse"></span>
+                                        )}{' '}
                                         <span>
                                             {
                                                 swapBasicData?.destination_token

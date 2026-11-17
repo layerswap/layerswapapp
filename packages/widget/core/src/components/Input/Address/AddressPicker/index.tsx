@@ -39,6 +39,7 @@ export type AddressTriggerProps = {
 }
 
 interface Input {
+    triggerAsChild?: boolean,
     children?: (props: AddressTriggerProps) => JSX.Element;
     showAddressModal: boolean;
     setShowAddressModal: (show: boolean) => void;
@@ -57,7 +58,7 @@ interface Input {
 }
 
 const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
-    ({ showAddressModal, setShowAddressModal, name, canFocus, close, partner, children, inline, disableAutoFill }, ref) {
+    ({ showAddressModal, setShowAddressModal, name, canFocus, close, partner, children, inline, disableAutoFill, triggerAsChild }, ref) {
 
     const {
         values,
@@ -269,6 +270,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     return (
         <>
             <AddressButton
+                asChild={triggerAsChild}
                 addressItem={destinationAddressItem}
                 openAddressModal={() => setShowAddressModal(true)}
                 connectedWallet={connectedWallet}

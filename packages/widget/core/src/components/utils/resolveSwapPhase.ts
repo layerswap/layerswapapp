@@ -28,6 +28,7 @@ export type ResolveSwapPhaseInput = {
     // Keep a successful wallet handoff mounted until execution handles its response.
     walletActionExecuting?: boolean;
     isDepositFlow?: boolean;
+    useDepositAddress?: boolean;
     // Terminal status of the gasless (paymaster) authorization; any value marks the input failed.
     gaslessFailureStatus?: GaslessAuthorizationStatus;
 };
@@ -119,6 +120,7 @@ export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStat
         inputReady,
         failReason: swapDetails?.fail_reason,
         isDepositFlow: input.isDepositFlow ?? false,
+        useDepositAddress: input.useDepositAddress ?? false,
     });
 
     const isTerminal = TERMINAL_PHASES.has(phase);
@@ -257,8 +259,10 @@ function resolveGeneralStatus(args: {
     inputReady: boolean;
     failReason: string | undefined;
     isDepositFlow: boolean;
+    useDepositAddress: boolean;
 }): { title: string; subTitle: string | null } {
-    const { phase, inputTx, outputTx, inputReady, failReason, isDepositFlow } = args;
+    const { phase, inputTx, outputTx, inputReady, failReason, isDepositFlow, useDepositAddress } = args;
+    const refundTarget = useDepositAddress ? '' : ' to your wallet';
     const noun = isDepositFlow ? 'Deposit' : 'Transfer';
     const lowerNoun = isDepositFlow ? 'deposit' : 'transfer';
 
@@ -270,12 +274,12 @@ function resolveGeneralStatus(args: {
         case SwapPhase.Refunded:
             return {
                 title: 'Refund complete',
-                subTitle: 'We couldn’t complete your transaction. The full amount has been returned to your wallet.',
+                subTitle: `We couldn’t complete your transaction. The full amount has been returned${refundTarget}.`,
             };
         case SwapPhase.PendingRefund:
             return {
                 title: 'Processing refund',
-                subTitle: 'Your transaction could not be processed. The full amount will be returned to your wallet.',
+                subTitle: `Your transaction could not be processed. The full amount will be returned${refundTarget}.`,
             };
         case SwapPhase.Failed:
             return {
@@ -283,7 +287,7 @@ function resolveGeneralStatus(args: {
                 subTitle: 'View instructions below',
             };
         case SwapPhase.Expired:
-            return { title: `${noun} expired`, subTitle: '...' };
+            return { title: `${noun} expired`, subTitle: null };
         default:
             return { title: `${noun} in progress`, subTitle: inputReady ? '' : null };
     }

@@ -279,8 +279,10 @@ export function Page2LoadedPreview({
                 addressCopy={
                     <CopyButtonView
                         isCopied={s.manual?.addressCopied}
-                        className="flex"
-                    />
+                        iconClassName="order-2 shrink-0"
+                    >
+                        <span className="min-w-0 break-all text-left">{s.manual?.address}</span>
+                    </CopyButtonView>
                 }
                 quoteDetails={
                     <PreviewQuote
