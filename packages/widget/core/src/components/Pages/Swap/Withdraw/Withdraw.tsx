@@ -231,6 +231,8 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
             }}>
                 <BalanceWarningView
                     amount={balanceAmount}
+                    requiredAmount={swapBasicData.requested_amount}
+                    network={swapBasicData.source_network.display_name}
                     asset={swapBasicData?.source_token?.asset}
                     refreshing={showSpinner}
                     refreshButton={
