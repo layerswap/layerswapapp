@@ -52,6 +52,9 @@ export type WalletWithdrawal = {
     id: string
     displayName: string
     preparationLabel?: string
+    /** Omit the signing wallet from backend deposit-action and status requests.
+     * The local transfer still receives its sourceAddress for signing. */
+    omitBackendSourceAddress?: boolean
     amountDecimals?: (token: Token) => number
     prepareTransfer: (action: WithdrawalAction | undefined, amount: number) =>
         Pick<TransferProps, 'amount' | 'depositAddress' | 'callData'>

@@ -11,6 +11,7 @@ const values = { amount: '0.95', from: network, fromAsset: token, to: { name: 'B
 const setup = ({ balance = 1, gas = 0.1, maxFee, reserve, limits = { min_amount: 0.001, max_amount: 2 } } = {}) => {
   const calls = []
   const { preparePresetAmount } = loadSource('lib/preparePresetAmount.ts', {
+    '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
     '@layerswap/widget-types': { usesDepository: () => false },
     '@/hooks/useFee': { buildLimitsUrl: args => { calls.push(['limits', args]); return 'limits' } },
     './apiClients/layerSwapApiClient': { default: class { async fetcher() { return { data: limits } } } },

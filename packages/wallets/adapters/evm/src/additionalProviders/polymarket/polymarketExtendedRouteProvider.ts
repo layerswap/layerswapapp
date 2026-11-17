@@ -38,7 +38,12 @@ export const polymarketProvider: ExtendedRouteProvider = {
     // unreachable) the route must stay hidden rather than break mid-flow.
     enabledByDefault: false,
     funding: 'depository',
-    requiresRefundAddress: true,
+    // The owner signs, but a funder contract deposits, so frontend execution
+    // cannot use the connected owner as the backend source address.
+    supportsFrontendSwap: false,
+    // A refund destination is not configured yet. Routes containing a token
+    // conversion remain unsupported until compatible refund handling is added.
+    requiresRefundAddress: false,
     extendedNetworkNames: Object.keys(POLYMARKET_CONFIG),
     mappings,
     resolveExtendedNetwork(networkName, allNetworks) {

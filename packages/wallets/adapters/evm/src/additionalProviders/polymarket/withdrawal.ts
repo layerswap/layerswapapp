@@ -4,6 +4,7 @@ export const polymarketWithdrawal: WalletWithdrawal = {
     id: 'polymarket',
     displayName: 'Polymarket',
     preparationLabel: 'Setting up your account',
+    omitBackendSourceAddress: true,
     amountDecimals: token => token.decimals ?? 6,
     prepareTransfer(action, amount) {
         if (!action?.to_address || !action.call_data) {
