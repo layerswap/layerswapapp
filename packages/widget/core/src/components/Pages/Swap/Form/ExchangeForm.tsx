@@ -57,7 +57,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
     const { isQuoteLoading: quoteLoading, quote, quoteTokenPrices, minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval });
     const isQuoteLoading = quoteLoading || (isAmountPreset(values.amountMode) && !!values.amountPresetPending);
     useReportFormQuote(quote?.quote);
-    const prerequisites = useSwapPrerequisites(prerequisitesFromForm(values, quote?.quote.receive_amount));
+    const prerequisites = useSwapPrerequisites(prerequisitesFromForm(values));
     const { formValidation } = useValidationContext();
 
     const isValid = !formValidation.message;

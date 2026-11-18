@@ -3,21 +3,20 @@ import type { Wallet } from '../wallet'
 import type { TransferProgress } from './transfer'
 
 export type SwapPrerequisiteContext = {
-    source?: { network: Network; token: Token; address?: string; amount?: string }
     destination: { network: Network; token: Token; address: string }
-    /** Expected output, when known. Omitted for deposits with no fixed amount. */
+    /** Expected output; omitted when the amount is not yet known. */
     receiveAmount?: string
 }
 
 /** Presentation is supplied by the provider; consumers never interpret protocol error codes. */
 export type SwapPrerequisiteResult = {
-    status: 'ready' | 'required' | 'blocked' | 'pending' | 'unavailable'
+    status: 'ready' | 'required' | 'blocked' | 'unavailable'
     title?: string
     description?: string
     action?: {
         id: string
         label: string
-        wallet: { network: Network; address: string; role: 'source' | 'destination' }
+        wallet: { network: Network; address: string }
     }
 }
 
@@ -27,7 +26,7 @@ export type SwapPrerequisiteExecution = {
     onProgress?: (progress: TransferProgress | undefined) => void
 }
 
-/** Optional account preparation, independent of the source transfer and swap creation. */
+/** Optional destination account preparation, independent of the source transfer and swap creation. */
 export interface SwapPrerequisiteProvider {
     id: string
     supports(context: SwapPrerequisiteContext): boolean

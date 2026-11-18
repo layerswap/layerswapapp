@@ -2,7 +2,7 @@ import KnownInternalNames from '@layerswap/utils/known-ids'
 import type { WalletConnectConfig } from '@layerswap/widget-types'
 import { LazySwapPrerequisiteProvider } from '@layerswap/widget-types'
 import type { WalletProviderDescriptor } from '@layerswap/wallet-core/types'
-import { stellarWalletConnectChain } from '@layerswap/wallet-stellar'
+import { stellarWalletConnectChain, supportsStellarRecipient } from '@layerswap/wallet-stellar'
 import { defineWalletDescriptor, type DescriptorNetworkOptions } from './defineWalletDescriptor'
 import { readStorageJson } from './persistedSession'
 
@@ -24,8 +24,7 @@ export function createStellarDescriptor(
         name: 'Stellar',
         swapPrerequisiteProvider: new LazySwapPrerequisiteProvider(
             'stellar-recipient',
-            context => supportedNetworks.includes(context.destination.network.name)
-                && (context.destination.token.symbol !== 'XLM' || !!context.destination.token.contract),
+            context => supportedNetworks.includes(context.destination.network.name) && supportsStellarRecipient(context),
             () => import('@layerswap/wallet-stellar').then(module => module.stellarPrerequisiteProvider),
         ),
         capabilities: walletConnect?.projectId ? {

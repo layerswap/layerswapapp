@@ -24,8 +24,6 @@ export type PreparedSwapRequest = {
     request: () => Promise<ApiResponse<SwapResponse> | undefined>
     /** True iff the request being sent carries use_gasless. */
     useGasless: boolean
-    /** Rejects a created swap that cannot be executed as quoted. Never a gasless refusal. */
-    verify?: (swap: SwapResponse) => Promise<void>
     /** Post-creation effects, in order. Built by prepare() because they depend on the same plan as the request. */
     onCreated: ReadonlyArray<SwapCreatedEffect>
 }
@@ -88,8 +86,7 @@ export function announceCreatedSwap(swap: SwapResponse, effects: ReadonlyArray<S
  *  (a) exactly one of swap_created / swap_creation_failed per call;
  *  (b) the promise rejects iff swap_creation_failed was emitted;
  *  (c) onGaslessUnavailable fires only from requestSwap;
- *  (d) post-creation effects never affect (a)/(b);
- *  (e) a verify rejection fails the attempt before any post-creation effect runs.
+ *  (d) post-creation effects never affect (a)/(b).
  */
 export async function createSwapAttempt(
     prepare: () => Promise<PreparedSwapRequest>,
@@ -102,7 +99,6 @@ export async function createSwapAttempt(
     try {
         prepared = await prepare()
         swap = await requestSwap(prepared, hooks.onGaslessUnavailable)
-        await prepared.verify?.(swap)
     } catch (error) {
         hooks.onLifecycle({ step: 'swap_creation_failed', outcome: 'failed', ...base, ...lifecycleErrorDetails(error), ...hooks.lifecycleContext })
         throw error

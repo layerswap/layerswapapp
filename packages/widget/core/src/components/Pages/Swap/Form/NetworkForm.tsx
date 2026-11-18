@@ -59,7 +59,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isQuoteLoading: quoteLoading, quote, quoteTokenPrices } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval });
     const isQuoteLoading = quoteLoading || (isAmountPreset(values.amountMode) && !!values.amountPresetPending);
     useReportFormQuote(quote?.quote);
-    const prerequisites = useSwapPrerequisites(prerequisitesFromForm(values, quote?.quote.receive_amount));
+    const prerequisites = useSwapPrerequisites(prerequisitesFromForm(values));
 
     const toAsset = values.toAsset;
     const fromAsset = values.fromAsset;

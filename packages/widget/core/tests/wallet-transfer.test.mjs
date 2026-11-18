@@ -13,12 +13,7 @@ const hooks = registerHooks({
       return { url: 'data:text/javascript,export const BackendTransactionStatus = { Pending: "pending" }', shortCircuit: true }
     }
     if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
-      try {
-        return nextResolve(`${specifier}.js`, context)
-      } catch (error) {
-        if (error.code !== 'ERR_MODULE_NOT_FOUND') throw error
-        return nextResolve(`${specifier}/index.js`, context)
-      }
+      return nextResolve(`${specifier}.js`, context)
     }
     return nextResolve(specifier, context)
   },

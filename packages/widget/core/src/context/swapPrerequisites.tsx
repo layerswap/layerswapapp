@@ -8,8 +8,7 @@ export function SwapPrerequisitesProvider({ providers, children }: {
     providers: (WalletProvider | WalletProviderDescriptor | WalletWrapper)[]
     children: ReactNode
 }) {
-    // Use configured descriptors, independently of connection hydration. Loading a wallet
-    // must not replace the resolver and unmount an account setup action already in progress.
+    // Keyed on configured descriptors so wallet hydration cannot unmount an in-progress setup.
     const resolver = useMemo(() => new SwapPrerequisiteResolver(
         providers.flatMap(provider => provider.swapPrerequisiteProvider ?? []),
     ), [providers])

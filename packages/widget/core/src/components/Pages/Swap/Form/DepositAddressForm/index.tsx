@@ -131,9 +131,9 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
         setFieldValue('toAsset', defaults.toAsset, true);
     }, [hasWallet, destination, settings, initialSettings, connectedAutofillNetworks, setFieldValue]);
 
-    // Respect an explicitly selected recipient while connecting an account for setup.
-    // A wallet connection must not replace that recipient with a different account.
-    const destinationAccount = useSelectedAccount("to", destination?.name);
+    // This flow expects a connected wallet; a manual recipient is kept only for account setup.
+    const rawDestinationAccount = useSelectedAccount("to", destination?.name);
+    const destinationAccount = rawDestinationAccount?.id === 'manually_added' && !prerequisites.supported ? undefined : rawDestinationAccount;
     useEffect(() => {
         if (lockDestinationAddress) return;
         if (!destination) return;
@@ -326,7 +326,7 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
                                         destinationToken={toCurrency}
                                         destinationAddress={destination_address}
                                         refuel={!!refuel || !!swapBasicData?.refuel}
-                                        depositAddress={prerequisites.isReady ? depositAddress : undefined}
+                                        depositAddress={depositAddress}
                                         isCreatingSwap={!showDepositInfo}
                                     />
                                 )

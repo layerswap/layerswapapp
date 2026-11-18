@@ -2,29 +2,14 @@ import type { SwapPrerequisiteContext, SwapPrerequisiteProvider, SwapPrerequisit
 
 export type ResolvedSwapPrerequisite = { provider: SwapPrerequisiteProvider; result: SwapPrerequisiteResult }
 
-export type SwapPrerequisiteSnapshot = { swapId: string; context: SwapPrerequisiteContext }
-
-/** A create response is usable immediately, before the active swap has re-rendered. */
-export function resolveExecutionPrerequisites(
-    current: SwapPrerequisiteSnapshot | undefined,
-    created: SwapPrerequisiteSnapshot | undefined,
-    swapId = created?.swapId ?? current?.swapId,
-): SwapPrerequisiteContext {
-    const snapshot = current?.swapId === swapId ? current : created?.swapId === swapId ? created : undefined
-    if (!snapshot) throw new Error('Swap details are unavailable. Return to the form before continuing.')
-    return snapshot.context
-}
-
-export class SwapPrerequisiteError extends Error {
-    constructor(public readonly prerequisites: ResolvedSwapPrerequisite[], message?: string) {
-        const blocked = prerequisites.find(entry => entry.result.status !== 'ready')
-        super(message ?? blocked?.result.description ?? blocked?.result.title ?? 'Account setup is required before continuing.')
-        this.name = 'SwapPrerequisiteError'
-    }
-}
+const CHECK_TIMEOUT_MS = 15_000
 
 export function prerequisitesReady(entries: ResolvedSwapPrerequisite[]): boolean {
     return entries.every(entry => entry.result.status === 'ready')
+}
+
+export function firstBlockingPrerequisite(entries: ResolvedSwapPrerequisite[]): SwapPrerequisiteResult | undefined {
+    return entries.find(entry => entry.result.status !== 'ready')?.result
 }
 
 export class SwapPrerequisiteResolver {
@@ -41,7 +26,7 @@ export class SwapPrerequisiteResolver {
                 const result = await Promise.race([
                     provider.check(context),
                     new Promise<never>((_, reject) => {
-                        timer = setTimeout(() => reject(new Error('Account check timed out')), 15_000)
+                        timer = setTimeout(() => reject(new Error('Account check timed out')), CHECK_TIMEOUT_MS)
                     }),
                 ])
                 return { provider, result }
@@ -58,15 +43,12 @@ export class SwapPrerequisiteResolver {
     }
 }
 
-/** Include endpoint and asset identity so configuration changes cannot reuse old readiness. */
-export function swapPrerequisiteKey(context: SwapPrerequisiteContext): string {
-    const networkKey = (network: SwapPrerequisiteContext['destination']['network']) =>
-        [network.name, network.type, network.chain_id, network.node_url, network.nodes]
-    const tokenKey = (token: SwapPrerequisiteContext['destination']['token']) =>
-        [token.symbol, token.contract, token.decimals]
-    const { source, destination, receiveAmount } = context
+/** Includes endpoint and asset identity so configuration changes cannot reuse old readiness. */
+export function swapPrerequisiteKey({ destination: { network, token, address }, receiveAmount }: SwapPrerequisiteContext): string {
     return JSON.stringify([
-        source && [networkKey(source.network), tokenKey(source.token), source.address, source.amount],
-        networkKey(destination.network), tokenKey(destination.token), destination.address, receiveAmount,
+        [network.name, network.type, network.chain_id, network.node_url, network.nodes],
+        [token.symbol, token.contract, token.decimals],
+        address,
+        receiveAmount,
     ])
 }

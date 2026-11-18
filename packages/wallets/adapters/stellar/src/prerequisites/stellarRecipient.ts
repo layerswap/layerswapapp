@@ -79,9 +79,7 @@ export function evaluateStellarRecipient(
             status: 'blocked', title: `Increase your ${label} receiving limit`,
             description: 'Lower the transfer amount or increase the trustline limit in the destination wallet.',
         }
-        return context.receiveAmount == null
-            ? { status: 'ready', title: 'Available to receive', description: `${stellarAmount(capacity)} ${label}` }
-            : { status: 'ready' }
+        return { status: 'ready' }
     }
     const counts = [account.subentry_count, account.num_sponsoring, account.num_sponsored]
     if (counts.some(count => !Number.isSafeInteger(count) || count < 0)) throw new Error('Invalid Stellar reserve data')
@@ -99,6 +97,6 @@ export function evaluateStellarRecipient(
         description: canSign
             ? `Add a one-time Stellar trustline so this account can receive ${label}.`
             : `Add the ${label} trustline in the destination account's Stellar wallet.`,
-        action: canSign ? { id: 'add-trustline', label: 'Add trustline', wallet: { network, address: baseAddress, role: 'destination' } } : undefined,
+        action: canSign ? { id: 'add-trustline', label: 'Add trustline', wallet: { network, address: baseAddress } } : undefined,
     }
 }

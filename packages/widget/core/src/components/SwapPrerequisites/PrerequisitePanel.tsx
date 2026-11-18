@@ -3,6 +3,7 @@ import { Loader2 } from 'lucide-react'
 import { swapPrerequisiteKey, type ResolvedSwapPrerequisite } from '@layerswap/wallet-core'
 import type { SwapPrerequisiteContext, TransferProgress } from '@layerswap/widget-types'
 import SubmitButton from '../Buttons/submitButton'
+import SecondaryButton from '../Buttons/secondaryButton'
 import { useConnectModal } from '../Wallet/WalletModal'
 import useWallet from '../../hooks/useWallet'
 import { Address } from '../../lib/address/Address'
@@ -14,29 +15,17 @@ import type { useSwapPrerequisites } from '../../hooks/useSwapPrerequisites'
 type State = ReturnType<typeof useSwapPrerequisites>
 
 export function PrerequisitePanel({ state, inline = false }: { state: State; inline?: boolean }) {
-    if (!state.context || !state.applicable) return null
-    // Receiving quotes invalidate readiness, but do not change the account setup action.
-    const actionIdentity = swapPrerequisiteKey({ ...state.context, receiveAmount: undefined })
-    return <PrerequisiteEntries key={actionIdentity} state={{ ...state, context: state.context }} inline={inline} />
-}
-
-function PrerequisiteEntries({ state, inline }: { state: State & { context: SwapPrerequisiteContext }; inline: boolean }) {
-    const [previousEntries, setPreviousEntries] = useState(state.entries)
-    useEffect(() => {
-        if (state.entries) setPreviousEntries(state.entries)
-    }, [state.entries])
-
-    // Keep active cards mounted while the new quote is being checked. The keyed parent
-    // resets them (and cancels pending actions) when the user changes the transfer inputs.
-    const entries = state.entries ?? previousEntries
+    const { context, applicable, entries } = state
+    if (!context || !applicable) return null
     if (!entries) return <div role="status" className={`flex items-center gap-2 text-sm text-secondary-text ${inline ? 'border-t border-secondary-300 pt-4' : 'rounded-xl bg-secondary-500 p-4'}`}>
         <Loader2 className="h-4 w-4 animate-spin" />
         <span>Checking account setup…</span>
     </div>
-    const visibleEntries = entries.filter(entry => entry.result.status !== 'ready' || entry.result.title || entry.result.description)
-    if (!visibleEntries.length) return null
+    const pending = entries.filter(entry => entry.result.status !== 'ready')
+    if (!pending.length) return null
+    const contextKey = swapPrerequisiteKey(context)
     return <div className="space-y-3">
-        {visibleEntries.map(entry => <PrerequisiteCard key={entry.provider.id} entry={entry} context={state.context} refresh={state.refresh} isChecking={state.isChecking} inline={inline} />)}
+        {pending.map(entry => <PrerequisiteCard key={`${entry.provider.id}:${contextKey}`} entry={entry} context={context} refresh={state.refresh} isChecking={state.isChecking} inline={inline} />)}
     </div>
 }
 
@@ -49,8 +38,7 @@ function PrerequisiteCard({ entry, context, refresh, isChecking, inline }: {
 }) {
     const { result, provider: prerequisite } = entry
     const { action } = result
-    const { provider, wallets } = useWallet(action?.wallet.network, action?.wallet.role === 'source' ? 'withdrawal' : 'autofill')
-    const { provider: destinationProvider } = useWallet(context.destination.network, 'autofill')
+    const { provider, wallets } = useWallet(action?.wallet.network, 'autofill')
     const matchingWallet = action && wallets.find(wallet => wallet.addresses.some(address => Address.equals(address, action.wallet.address, action.wallet.network)))
     const { connect, cancel } = useConnectModal()
     const { networks } = useSettingsState()
@@ -60,8 +48,6 @@ function PrerequisiteCard({ entry, context, refresh, isChecking, inline }: {
     const [progress, setProgress] = useState<TransferProgress>()
     const pending = useRef<AbortController | undefined>(undefined)
     const connecting = useRef(false)
-    const refreshRef = useRef(refresh)
-    useEffect(() => { refreshRef.current = refresh }, [refresh])
     useEffect(() => () => {
         pending.current?.abort()
         if (connecting.current) cancel()
@@ -76,7 +62,7 @@ function PrerequisiteCard({ entry, context, refresh, isChecking, inline }: {
         try {
             if (!matchingWallet) {
                 if (!provider) throw new Error('Connect the required account in a supported wallet, or complete setup externally and check again.')
-                if (destinationProvider) selectDestinationAccount({ id: 'manually_added', providerName: destinationProvider.name, address: context.destination.address })
+                selectDestinationAccount({ id: 'manually_added', providerName: provider.name, address: context.destination.address })
                 connecting.current = true
                 let connected
                 try {
@@ -88,19 +74,17 @@ function PrerequisiteCard({ entry, context, refresh, isChecking, inline }: {
                 if (connected && !connected.addresses.some(address => Address.equals(address, action.wallet.address, action.wallet.network))) {
                     throw new Error('Connect the wallet that owns the destination account to complete setup.')
                 }
-                return // Connecting never also initiates a signature.
+                return
             }
             if (!prerequisite.execute) throw new Error('Complete setup in your wallet, then check again.')
             await prerequisite.execute(context, action.id, {
-                wallet: { ...matchingWallet, address: action.wallet.address },
+                wallet: matchingWallet,
                 signal: controller.signal,
                 onProgress: info => { if (!controller.signal.aborted) setProgress(info) },
             })
-            // Setup can consume the same account's source balance as well as its reserve.
             const network = networks.find(network => network.name === action.wallet.network.name)
             if (network) await useBalanceStore.getState().fetchBalance(action.wallet.address, network, { ignoreCache: true }).catch(() => undefined)
-            // An approval can outlive a quote update; refresh the currently displayed quote.
-            await refreshRef.current()
+            await refresh()
         } catch (error) {
             if (!controller.signal.aborted) setError(error instanceof Error ? error.message : String(error))
         } finally {
@@ -123,9 +107,8 @@ function PrerequisiteCard({ entry, context, refresh, isChecking, inline }: {
             </SubmitButton>}
         </div>
         {error && <p role="alert" className="text-sm text-secondary-text">{error}</p>}
-        {result.status === 'unavailable' && <button type="button" disabled={busy || isChecking} onClick={() => refresh()} className="flex items-center gap-2 rounded-sm text-sm text-secondary-text underline underline-offset-4 hover:text-primary-text disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-500">
-            {isChecking && <Loader2 className="h-3 w-3 animate-spin" />}
-            <span>Check again</span>
-        </button>}
+        {result.status === 'unavailable' && <SecondaryButton size="sm" isLoading={isChecking} disabled={busy} onClick={() => refresh()}>
+            Check again
+        </SecondaryButton>}
     </section>
 }

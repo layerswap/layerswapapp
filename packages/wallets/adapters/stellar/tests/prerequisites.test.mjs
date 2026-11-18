@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { Account, Keypair, MuxedAccount, Networks, Horizon, Operation, TransactionBuilder, Asset } from '@stellar/stellar-sdk'
+import { Account, Keypair, MuxedAccount, Networks, Horizon, Operation, StrKey, TransactionBuilder, Asset } from '@stellar/stellar-sdk'
 import { evaluateStellarRecipient, stellarRecipientAddress, stellarStroops } from '../dist/esm/prerequisites/stellarRecipient.js'
 import { createStellarPrerequisiteProvider } from '../dist/esm/prerequisites/createStellarPrerequisiteProvider.js'
 import { stellarKitManager } from '../dist/esm/service/stellarKitManager.js'
@@ -38,9 +38,9 @@ test('unauthorized and full trustlines remain blocked without a create action', 
     assert.equal(evaluate(account({ balances: [native, { ...trustline, balance: '89', buying_liabilities: '1.0000001' }] })).status, 'blocked')
 })
 
-test('no-amount deposits expose finite capacity and require positive headroom', () => {
+test('without an amount, any remaining trustline headroom is ready', () => {
     const ctx = { ...context, receiveAmount: undefined }
-    assert.equal(evaluate(account({ balances: [native, trustline] }), ctx).description, '100 USDC')
+    assert.equal(evaluate(account({ balances: [native, trustline] }), ctx).status, 'ready')
     assert.equal(evaluate(account({ balances: [native, { ...trustline, balance: '100' }] }), ctx).status, 'blocked')
 })
 
@@ -75,7 +75,7 @@ test('capacity math is exact at seven decimals and rounds fractional required st
 })
 
 function mockHorizon(t, overrides = {}) {
-    const state = { hasLine: false, submissions: 0, signatures: 0, closedAt: new Date().toISOString(), ...overrides }
+    const state = { hasLine: false, submissions: 0, signatures: 0, ...overrides }
     t.mock.method(Horizon.Server.prototype, 'root', async () => ({ network_passphrase: Networks.TESTNET }))
     t.mock.method(Horizon.Server.prototype, 'loadAccount', async address => {
         if (state.loadError) throw state.loadError
@@ -84,8 +84,7 @@ function mockHorizon(t, overrides = {}) {
         return loaded
     })
     t.mock.method(Horizon.Server.prototype, 'fetchBaseFee', async () => 100)
-    t.mock.method(Horizon.Server.prototype, 'ledgers', () => ({ order() { return this }, limit() { return this }, async call() { return { records: [{ base_reserve_in_stroops: 5000000, closed_at: state.closedAt }] } } }))
-    t.mock.method(Horizon.Server.prototype, 'transactions', () => ({ transaction() { return this }, async call() { if (state.hasLine) return { successful: true }; throw { status: 404 } } }))
+    t.mock.method(Horizon.Server.prototype, 'ledgers', () => ({ order() { return this }, limit() { return this }, async call() { return { records: [{ base_reserve_in_stroops: 5000000 }] } } }))
     t.mock.method(stellarKitManager, 'revalidate', async (address, passphrase) => {
         assert.equal(address, owner.publicKey())
         assert.equal(passphrase, Networks.TESTNET)
@@ -167,17 +166,6 @@ test('user rejection is retryable without submitting', async t => {
     assert.equal(state.submissions, 1)
 })
 
-test('ambiguous submission prevents another signature until on-chain resolution', async t => {
-    const state = mockHorizon(t, { submitError: new Error('Network timeout') })
-    const provider = createStellarPrerequisiteProvider()
-    await assert.rejects(execute(provider), /confirmation is unavailable/)
-    assert.equal((await provider.check(context)).status, 'pending')
-    await assert.rejects(execute(provider))
-    assert.equal(state.signatures, 1)
-    state.hasLine = true
-    assert.equal((await createStellarPrerequisiteProvider().check(context)).status, 'ready')
-})
-
 test('external connection adapters get guidance without an incompatible signer action', async t => {
     mockHorizon(t)
     const result = await createStellarPrerequisiteProvider({ canSign: false }).check(context)
@@ -192,22 +180,6 @@ test('an issued asset without an issuer cannot bypass verification', async () =>
     await assert.rejects(provider.check(invalid), /Unsupported native Stellar asset/)
 })
 
-test('concurrent setup attempts cannot request a second signature', async t => {
-    let finishSigning
-    const signing = new Promise(resolve => { finishSigning = resolve })
-    let signatureRequested
-    const requested = new Promise(resolve => { signatureRequested = resolve })
-    const state = mockHorizon(t, { onSign: async () => { signatureRequested(); await signing } })
-    const provider = createStellarPrerequisiteProvider()
-    const first = execute(provider)
-    await requested
-    await assert.rejects(execute(createStellarPrerequisiteProvider()), /already in progress/)
-    finishSigning()
-    await first
-    assert.equal(state.signatures, 1)
-    assert.equal(state.submissions, 1)
-})
-
 test('leaving during signing prevents submission of the returned signature', async t => {
     const controller = new AbortController()
     const state = mockHorizon(t, { onSign: () => controller.abort() })
@@ -216,14 +188,24 @@ test('leaving during signing prevents submission of the returned signature', asy
     assert.equal(state.submissions, 0)
 })
 
-test('ambiguous submission can be retried only after its ledger-time expiry', async t => {
-    const state = mockHorizon(t, { submitError: new Error('Connection lost') })
+test('a wallet exposing the destination among several addresses can sign', async t => {
+    const state = mockHorizon(t)
     const provider = createStellarPrerequisiteProvider()
-    await assert.rejects(execute(provider), /confirmation is unavailable/)
-    assert.equal((await provider.check(context)).status, 'pending')
-    state.closedAt = new Date(Date.now() + 300_000).toISOString()
-    assert.equal((await provider.check(context)).status, 'required')
+    await provider.execute(context, 'add-trustline', { wallet: { address: other.publicKey(), addresses: [other.publicKey(), owner.publicKey()] }, signal: new AbortController().signal })
+    assert.equal(state.submissions, 1)
+})
+
+test('contract recipients need no trustline', async () => {
+    const contract = StrKey.encodeContract(Buffer.alloc(32, 74))
+    const result = await createStellarPrerequisiteProvider().check({ ...context, destination: { ...context.destination, address: contract } })
+    assert.equal(result.status, 'ready')
+})
+
+test('a failed submission can be retried immediately', async t => {
+    const state = mockHorizon(t, { submitError: new Error('Network timeout') })
+    const provider = createStellarPrerequisiteProvider()
+    await assert.rejects(execute(provider), /Network timeout/)
     state.submitError = undefined
     await execute(provider)
-    assert.equal(state.signatures, 2)
+    assert.equal(state.submissions, 2)
 })

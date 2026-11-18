@@ -1,10 +1,9 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { SwapPrerequisiteResolver, SwapPrerequisiteError, prerequisitesReady, swapPrerequisiteKey, resolveExecutionPrerequisites } from '../dist/esm/lib/swapPrerequisites.js'
+import { SwapPrerequisiteResolver, prerequisitesReady, firstBlockingPrerequisite, swapPrerequisiteKey } from '../dist/esm/lib/swapPrerequisites.js'
 import { LazySwapPrerequisiteProvider } from '@layerswap/widget-types'
 
 const context = {
-    source: { network: { name: 'SOURCE' }, token: { symbol: 'TOKEN' }, amount: '10' },
     destination: { network: { name: 'CUSTOM', chain_id: '1', node_url: 'https://rpc.example' }, token: { symbol: 'TOKEN', contract: 'issuer', decimals: 7 }, address: 'recipient' },
     receiveAmount: '9',
 }
@@ -16,14 +15,14 @@ test('a non-Stellar provider can gate and resolve the normal flow without networ
         supports: c => c.destination.network.name === 'CUSTOM',
         check: async () => enabled ? { status: 'ready' } : {
             status: 'required', title: 'Enable account', description: 'Approve setup.',
-            action: { id: 'enable', label: 'Enable', wallet: { network: context.destination.network, address: 'recipient', role: 'destination' } },
+            action: { id: 'enable', label: 'Enable', wallet: { network: context.destination.network, address: 'recipient' } },
         },
         execute: async () => { enabled = true },
     }
     const resolver = new SwapPrerequisiteResolver([provider])
     const blocked = await resolver.check(context)
     assert.equal(prerequisitesReady(blocked), false)
-    assert.equal(new SwapPrerequisiteError(blocked).message, 'Approve setup.')
+    assert.equal(firstBlockingPrerequisite(blocked).description, 'Approve setup.')
     await blocked[0].provider.execute(context, blocked[0].result.action.id, {})
     assert.equal(prerequisitesReady(await resolver.check(context)), true)
 })
@@ -41,8 +40,8 @@ test('unavailable verification blocks instead of marking an account unactivated'
     assert.equal(prerequisitesReady(entries), false)
 })
 
-test('all applicable prerequisites must finish, including external and pending steps', async () => {
-    for (const status of ['required', 'blocked', 'pending', 'unavailable']) {
+test('all applicable prerequisites must finish, including external steps', async () => {
+    for (const status of ['required', 'blocked', 'unavailable']) {
         const resolver = new SwapPrerequisiteResolver([
             { id: 'ready', supports: () => true, check: async () => ({ status: 'ready' }) },
             { id: 'other', supports: () => true, check: async () => ({ status }) },
@@ -76,23 +75,4 @@ test('readiness keys distinguish network, issuer, recipient, amount and endpoint
         mutate(updated)
         assert.notEqual(swapPrerequisiteKey(updated), key)
     }
-})
-
-test('execution uses the create response before React publishes the new swap', () => {
-    const old = { swapId: 'old', context }
-    const created = { swapId: 'new', context: { ...context, receiveAmount: '20' } }
-    assert.equal(resolveExecutionPrerequisites(old, created, 'new'), created.context)
-    assert.equal(resolveExecutionPrerequisites(old, created), created.context)
-})
-
-test('execution uses a refreshed quote for the same swap and supports resumed swaps', () => {
-    const created = { swapId: 'new', context }
-    const current = { swapId: 'new', context: { ...context, receiveAmount: '30' } }
-    assert.equal(resolveExecutionPrerequisites(current, created), current.context)
-    assert.equal(resolveExecutionPrerequisites(current, undefined, 'new'), current.context)
-})
-
-test('execution cannot reuse a different swap or proceed without a snapshot', () => {
-    assert.throws(() => resolveExecutionPrerequisites({ swapId: 'old', context }, undefined, 'new'), /unavailable/)
-    assert.throws(() => resolveExecutionPrerequisites(undefined, undefined), /unavailable/)
 })

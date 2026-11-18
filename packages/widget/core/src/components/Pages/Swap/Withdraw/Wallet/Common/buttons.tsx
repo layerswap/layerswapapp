@@ -7,7 +7,7 @@ import { hasSwapExecutionProgress, hasUnacknowledgedWalletAction } from '@/helpe
 import { gaslessAuthorizationKey, isGaslessCapableRoute, isGaslessDepositWorkflow } from '@/helpers/gasless';
 import { isDepositWorkflowComplete } from '@/helpers/depositActions';
 import { isBatchTransferAction } from '@/helpers/depositActions';
-import { useAtomicBatch } from '@/hooks/useAtomicBatch';
+import { executeAtomicBatch } from '@/lib/atomicBatchExecution';
 import { resolverService } from '@/lib/resolvers/resolverService';
 import { resolveSwapFlow } from '@/components/utils/resolveSwapFlow';
 import { isUserRejection } from './isUserRejection';
@@ -155,7 +155,6 @@ export function useSendTransactionController({
     refuel,
     ...props
 }: SendFromWalletButtonProps, active = true) {
-    const executeAtomicBatch = useAtomicBatch()
     const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, flow, refuel: refuelData, swapError, setSwapError, walletExecutionStarted, gaslessAuthorization, inputTransactionStatus } = useSwapDataState()
     const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
     const gaslessErrorMessage = useGaslessPreferenceStore(s => s.gaslessErrorMessage)
