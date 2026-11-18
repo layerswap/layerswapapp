@@ -69,7 +69,11 @@ export const resolveNetworkRoutesURL = (direction: SwapDirection, values: SwapFo
         destinationNetwork: to?.name,
     })
 
-    const unboundDestination = hasDepositAddress && direction === 'to'
+    // Once a source is picked, deposit-address destinations stay bound to it and
+    // keep unreachable entries listed as unavailable instead of dropping them.
+    const unboundDestination = hasDepositAddress && direction === 'to' && !from
+    const boundDepositDestination = hasDepositAddress && direction === 'to' && !!from && !isCEX
+    const includeUnreachable = !hasDepositAddress || boundDepositDestination
 
     // For source picking in the deposit-address flow we want the API to return
     // only sources that can actually route to the destination via a deposit-address
@@ -97,10 +101,10 @@ export const resolveNetworkRoutesURL = (direction: SwapDirection, values: SwapFo
         direction,
         network: networkName,
         token: tokenName,
-        includes: { unmatched: !hasDepositAddress, unavailable: !hasDepositAddress, swaps: !isCEX },
+        includes: { unmatched: includeUnreachable, unavailable: includeUnreachable, swaps: !isCEX },
         networkTypes,
         hasDepositAddress,
-        useDepositAddressSwaps: useDepositAddressSwaps || !!extendedPlan,
+        useDepositAddressSwaps: useDepositAddressSwaps || boundDepositDestination || !!extendedPlan,
         useFrontendSwap,
     })
 }

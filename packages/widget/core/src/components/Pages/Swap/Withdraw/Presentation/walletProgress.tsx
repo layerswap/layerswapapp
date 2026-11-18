@@ -90,6 +90,7 @@ export function getWalletProgress(data: WalletProgressData) {
     const progress = getDepositWorkflowProgress({
         actions: data.depositActions,
         stepTransactions: data.stepTransactions,
+        executionKind: data.flow?.kind === 'atomic-batch' ? 'atomic-batch' : undefined,
         readOnly: data.readOnly,
         loading: data.loading || confirmingSubmission,
         error: hasError,

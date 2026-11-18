@@ -36,7 +36,10 @@ export function GasFeeView({
         ? 'Turn off to send a standard transaction and pay the network fee yourself.'
         : 'Turn on to skip the network fee — gas is covered for you.';
 
-    if (!isGaslessCapable && !gasFeeInUsd) return null;
+    // A fresh estimate clears the fee; keep the row visible with its loading bar.
+    if (!isGasLoading && !isGaslessCapable && !gasFeeInUsd) {
+        return null;
+    }
 
     return (
         <RowWrapper title="Gas Fee">

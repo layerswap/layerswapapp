@@ -66,6 +66,7 @@ test('a created swap never uses draft predictions to replace its actual actions'
 for (const [name, kind, actions, label] of [
     ['atomic approval', 'atomic-batch', [{ type: 'send_calls', step: 'publish', calls: [{}, {}] }], 'Approve and swap'],
     ['atomic funded allowance', 'atomic-batch', [{ type: 'send_calls', step: 'publish', calls: [{}] }], 'Confirm swap'],
+    ['direct approval', 'frontend-swap', [{ type: 'transfer', step: 'approve' }, { step: 'publish', status: 'pending' }], 'Approve token'],
     ['self-paid signing', 'frontend-swap', [{ type: 'sign', step: 'sign', signing_standard: 'eip3009' }, { step: 'publish' }], 'Sign to swap'],
     ['native publication', 'frontend-swap', [{ type: 'transfer', step: 'publish' }], 'Confirm swap'],
     ['ordinary bridge', 'wallet-transfer', [{ type: 'transfer', step: 'deposit' }], 'Send from wallet'],
@@ -74,7 +75,7 @@ for (const [name, kind, actions, label] of [
 ]) {
     test(`${name} resolves from the prepared backend workflow`, () => {
         const flow = resolve({ swapData: { ...swapData, quote_revision: 1 },
-            depositActions: actions.map(action => ({ ...action, status: 'action_required' })) })
+            depositActions: actions.map(action => ({ ...action, status: action.status ?? 'action_required' })) })
         assert.equal(flow.resolution, 'resolved')
         assert.equal(flow.kind, kind)
         assert.equal(flow.actionButtonText, label)
@@ -109,7 +110,7 @@ test('unknown actionable workflows stay unsupported even with a saved execution 
 for (const status of ['pending', 'completed', 'failed']) {
     test(`backend ${status} history identifies every rail without local storage`, () => {
         for (const [kind, plan] of [
-            ['atomic-batch', [{ step: 'approve' }, { step: 'publish' }]],
+            ['frontend-swap', [{ step: 'approve' }, { step: 'publish' }]],
             ['frontend-swap', [{ step: 'sign', signing_standard: 'eip3009' }, { step: 'publish' }]],
             ['frontend-swap', [{ step: 'publish' }]],
             ['gasless-deposit', [{ step: 'sign', signing_standard: 'eip3009' }]],
@@ -127,13 +128,13 @@ for (const [kind, evidence, input] of [
     ['manual-deposit', 'deposit-method', { swapData: { ...swapData, use_deposit_address: true } }],
     ['exchange-deposit', 'deposit-method', { swapData: { ...swapData, use_deposit_address: true, source_exchange: { name: 'coinbase' } } }],
     ['specialized-wallet', 'source-provider', { sourceProvider: 'hyperliquid' }],
-    ['specialized-wallet', 'source-provider', { swapData: { ...swapData, source_network: { ...network, type: 'polymarket' } } }],
+    ['specialized-wallet', 'source-provider', { sourceProvider: 'third-party' }],
     ['wallet-transfer', 'legacy-transfer', { depositActions: [{ type: 'transfer' }] }],
     ['wallet-transfer', 'deposit-step', { depositActions: [{ step: 'deposit' }] }],
     ['frontend-swap', 'publish-step', { depositActions: frontend }],
     ['frontend-swap', 'publish-step', { depositActions: [{ type: 'transfer', step: 'publish', status: 'action_required' }] }],
     ['atomic-batch', 'atomic-calls', { depositActions: [{ type: 'send_calls', step: 'publish', calls: [] }] }],
-    ['atomic-batch', 'atomic-approval', { depositActions: [{ step: 'approve', status: 'completed' }, { step: 'publish', status: 'pending' }] }],
+    ['frontend-swap', 'direct-approval', { depositActions: [{ step: 'approve', status: 'completed' }, { step: 'publish', status: 'pending' }] }],
     ['frontend-swap', 'frontend-signature', { depositActions: [{ step: 'sign', signing_standard: 'permit2_witness' }] }],
     ['frontend-swap', 'frontend-signature', { depositActions: [{ step: 'sign', signing_standard: 'eip2612' }] }],
     ['gasless-deposit', 'gasless-signature', { depositActions: [{ step: 'sign', signing_standard: 'permit2' }] }],
@@ -333,7 +334,7 @@ test('native publication is distinct from an ERC-20 publication with missing exe
 test('manual and specialized sources keep their identity even with a batch-shaped deposit action', () => {
     const depositActions = [{ type: 'send_calls', step: 'publish' }]
     assert.equal(resolve({ depositActions, swapData: { ...swapData, use_deposit_address: true } }).kind, 'manual-deposit')
-    for (const sourceProvider of ['hyperliquid', 'polymarket']) {
+    for (const sourceProvider of ['hyperliquid', 'polymarket', 'third-party']) {
         const flow = resolve({ depositActions, sourceProvider })
         assert.equal(flow.kind, 'specialized-wallet')
         assert.equal(flow.sourceProvider, sourceProvider)
@@ -356,6 +357,8 @@ test('completed allowance placeholders preserve the known single-transaction exe
     const flow = resolve({ transaction: { kind: 'frontend-swap' }, depositActions })
     assert.equal(flow.kind, 'frontend-swap')
     assert.equal(flow.evidence, 'stored-transaction')
+    assert.equal(resolve({ transaction: { kind: 'atomic-batch' }, depositActions }).kind, 'atomic-batch')
+    assert.equal(resolve({ depositActions }).kind, 'frontend-swap')
     const actionable = [{ type: 'send_calls', step: 'publish', status: 'action_required', calls: [{}, {}] }]
     assert.equal(resolve({ transaction: { kind: 'frontend-swap' }, depositActions: actionable }).kind, 'atomic-batch')
 })

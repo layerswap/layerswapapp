@@ -1,3 +1,4 @@
+import type { GasWithToken } from '@layerswap/widget-types';
 import type { AmountMode } from '@/lib/amountPresets';
 import { SwapStatus, type Refuel } from '@layerswap/widget-types';
 import AppSettings from "../AppSettings";
@@ -242,6 +243,7 @@ export type SwapBasicData = {
     amountPresetError?: string
     amountPresetPending?: boolean
     amountPresetBalance?: number
+    amountPresetGas?: GasWithToken
     source_network: Network,
     source_token: Token,
     source_exchange?: Exchange,

@@ -1,6 +1,7 @@
 import type { Config } from '@wagmi/core'
 import type { Chain, Transport } from 'viem'
 import type { AppNetworkAdapter } from "@layerswap/utils"
+import { DEFAULT_WALLETCONNECT_PROJECT_ID } from "@layerswap/wallet-core"
 import { getEvmChainsConfig } from '../evmUtils/chainConfigs'
 import { buildEVMConnectors } from './Connectors'
 import { getEvmConfig, hasEvmConfig, provideExternalEvmConfig, setEvmConfigInitParams, } from '../service/getEvmConfig'
@@ -8,7 +9,7 @@ import { attachWagmiSync } from '../service/syncWagmi'
 import type { WalletConnectConfig } from '../types'
 
 const DEFAULT_WC_CONFIG: WalletConnectConfig = {
-    projectId: '6113382c2e587bff00e2b5c3d68531f3',
+    projectId: DEFAULT_WALLETCONNECT_PROJECT_ID,
     name: 'Layerswap',
     description: 'Layerswap App',
     url: 'https://www.layerswap.app',

@@ -89,8 +89,13 @@ export function CallbackProvider({ children, callbacks }: CallbackProviderProps)
     )
 }
 
+/** Presentation previews can render without mounting live callback observers. */
+export function useOptionalCallbacks(): CallbackContextValue | undefined {
+    return useContext(CallbackContext)
+}
+
 export function useCallbacks(): CallbackContextValue {
-    const context = useContext(CallbackContext)
+    const context = useOptionalCallbacks()
     if (!context) {
         throw new Error('useCallbacks must be used within a CallbackProvider')
     }

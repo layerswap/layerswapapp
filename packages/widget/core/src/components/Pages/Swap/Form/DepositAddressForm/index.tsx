@@ -103,7 +103,13 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
         if (disableAutoConnect) return;
         if (hasWallet) return;
         if (isWalletModalOpenRef.current) return;
-        connect(undefined, { dismissible: false, topContent: <EasyDepositBanner variant="modal" currentStepIndex={0} />, fullHeight: true, hideHeader: true });
+        connect(undefined, {
+            placement: 'widget-body',
+            dismissible: false,
+            topContent: <EasyDepositBanner variant="modal" currentStepIndex={0} />,
+            fullHeight: true,
+            hideHeader: true,
+        });
         return () => { cancel(); };
     }, [hasWallet, connect, cancel, disableAutoConnect]);
 

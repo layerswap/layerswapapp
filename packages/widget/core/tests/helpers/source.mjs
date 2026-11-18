@@ -18,6 +18,7 @@ export function loadSource(path, imports = {}) {
 export const rounding = loadSource('../../../utils/src/truncateDecimals.ts')
 export const maxHelpers = loadSource('components/Input/Amount/helpers.ts', { '@layerswap/utils': rounding, '@/lib/gases/resolveGasBalanceBudget': loadSource('lib/gases/resolveGasBalanceBudget.ts') })
 export const amountPresets = loadSource('lib/amountPresets.ts', {
+    '@/lib/gases/resolveGasBalanceBudget': loadSource('lib/gases/resolveGasBalanceBudget.ts'),
     '@/components/Input/Amount/helpers': maxHelpers, '@layerswap/utils': rounding,
     '@layerswap/utils/known-ids': require('@layerswap/utils/known-ids'),
 })

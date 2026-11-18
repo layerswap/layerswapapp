@@ -102,7 +102,7 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
     return nextResolve(specifier, context)
   }
   if (specifier.endsWith('/AppSettings')) return { url: settingsUrl, shortCircuit: true }
-  if (specifier.endsWith('/context/swap') && ['/useSwapRetry.js', '/useResolvedSwapStatus.js', '/useDepositActionPolling.js'].some(path => context.parentURL?.endsWith(path))) {
+  if (specifier.endsWith('/context/swap') && ['/TransferBlock.js', '/useSwapRetry.js', '/useResolvedSwapStatus.js', '/useDepositActionPolling.js'].some(path => context.parentURL?.endsWith(path))) {
     return { url: fixtureUrl, shortCircuit: true }
   }
   if (context.parentURL?.endsWith('/Form/FormWrapper.js')) {
@@ -322,7 +322,10 @@ test('real transfer button, gasless execution, API client and host logger share 
   assert.equal(requests, 1)
   assert.deepEqual(errors.map(e => e.type), ['APIError', 'SwapWithdrawalError'])
   assert.doesNotMatch(JSON.stringify(errors), /test-secret-|X-LS-APIKEY|echoedRequest|"config"|"headers"/)
-  assert.deepEqual(lifecycle.map(e => e.step), ['wallet_prompt_opened', 'gasless_authorization_failed'])
+  assert.deepEqual(lifecycle.map(e => e.step), ['wallet_prompt_opened', 'gasless_authorization_failed', 'transfer_blocked'])
+  assert.equal(lifecycle[2].reasonCode, 'gasless_unavailable')
+  assert.equal(lifecycle[2].reason, 'Unavailable')
+  assert.equal(lifecycle[2].path, 'TransferTokenButton')
   assert.equal(errors[0].occurrenceId, errors[1].occurrenceId)
   assert.equal(errors[0].occurrenceId, lifecycle[1].occurrenceId)
   assert.equal(errors[1].cause.method, 'post')

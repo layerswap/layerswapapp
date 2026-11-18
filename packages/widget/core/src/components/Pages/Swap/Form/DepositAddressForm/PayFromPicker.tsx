@@ -8,6 +8,7 @@ import { useRecentNetworksStore } from "@/stores/recentRoutesStore";
 import { useRouteSortingStore } from "@/stores/routeSortingStore";
 import useSuggestionsLimit from "@/hooks/useSuggestionsLimit";
 import useDepositAddressAvailableRoutes from "@/hooks/useDepositAddressAvailableRoutes";
+import { useSwapRouteRecency } from "@/stores/swapRouteHistoryStore";
 import { PayFromTriggerContent, payFromTriggerClassName } from "./PayFromTriggerView";
 
 type PayFromPickerProps = {
@@ -24,6 +25,7 @@ const PayFromPicker: FC<PayFromPickerProps> = ({ selectedSource, onSourceChange,
     const { suggestionsLimit } = useSuggestionsLimit({ hasWallet: wallets.length > 0 });
     const sortingOption = useRouteSortingStore((s) => s.sortingOption);
     const routesHistory = useRecentNetworksStore(state => state.recentRoutes);
+    const swapRecency = useSwapRouteRecency();
 
     const { availableRoutes } = useDepositAddressAvailableRoutes(destinationNetwork, destinationToken);
 
@@ -34,6 +36,7 @@ const PayFromPicker: FC<PayFromPickerProps> = ({ selectedSource, onSourceChange,
             balances: null,
             groupBy: 'token',
             recents: routesHistory,
+            swapRecency,
             balancesLoaded: false,
             search: searchQuery,
             suggestionsLimit,
@@ -41,7 +44,7 @@ const PayFromPicker: FC<PayFromPickerProps> = ({ selectedSource, onSourceChange,
             skipBalanceGate: true,
             hideSuggestions: true,
         });
-    }, [availableRoutes, searchQuery, routesHistory, suggestionsLimit, sortingOption]);
+    }, [availableRoutes, searchQuery, routesHistory, swapRecency, suggestionsLimit, sortingOption]);
 
     // Disable until the destination resolves a non-empty source list.
     const hasOptions = availableRoutes.length > 0;

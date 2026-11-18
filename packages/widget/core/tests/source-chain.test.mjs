@@ -124,6 +124,34 @@ test('a wallet already on the source chain is left alone and reports nothing', a
   assert.deepEqual(lifecycle, [])
 })
 
+test('Fuel testnet chain 0 is a reported network, for both numeric and string IDs', () => {
+  const mainnet = { chain_id: '9889' }
+  const testnet = { chain_id: '0' }
+  assert.equal(needsChainSwitch({ chainId: 0 }, mainnet), true)
+  assert.equal(needsChainSwitch({ chainId: '0' }, mainnet), true)
+  assert.equal(needsChainSwitch({ chainId: 9889 }, testnet), true)
+  assert.equal(needsChainSwitch({ chainId: 0 }, testnet), false)
+  assert.equal(needsChainSwitch({ chainId: '0' }, testnet), false)
+})
+
+for (const [from, to] of [[0, '9889'], [9889, '0']]) {
+  test(`Fuel switches from ${from} to ${to} before allowing the transfer`, async () => {
+    const events = []
+    const switches = []
+    const wallet = { chainId: from, providerName: 'Fuel' }
+    await ensureSourceChain({
+      wallet,
+      network: { name: 'FUEL', display_name: 'Fuel', chain_id: to },
+      context, path: 'SendTransactionButton',
+      switchChain: async (...args) => { switches.push(args) },
+      onLifecycle: event => events.push(event),
+    })
+    assert.deepEqual(switches, [[wallet, to]])
+    assert.deepEqual(events.map(event => event.step), ['network_switch_started', 'network_switched'])
+    assert.equal(events.at(-1).action, `switch_to_${to}`)
+  })
+}
+
 const PENDING_MESSAGE = "Request of type 'wallet_switchEthereumChain' already pending for origin https://layerswap.io. Please wait."
 
 for (const result of ['switched', 'rejected', 'pending', 'timeout', 'failed', 'unsupported']) {

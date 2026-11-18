@@ -1195,7 +1195,11 @@ const specialized = (
             source_network: network,
         },
         quote: { ...quote, source_network: network },
-        wallet: { kind: 'specialized', provider, connected: true, ...wallet },
+        wallet: {
+            kind: 'specialized', provider, connected: true,
+            preparationLabel: provider === 'Hyperliquid' ? 'Preparing balance' : 'Setting up your account',
+            ...wallet,
+        },
     });
 };
 const specializedScenarios = (['Hyperliquid', 'Polymarket'] as const).flatMap(

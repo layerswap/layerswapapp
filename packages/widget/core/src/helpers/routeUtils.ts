@@ -3,6 +3,7 @@ import { NetworkBalance } from "@layerswap/widget-types";
 import { NetworkTokenElement } from "../Models/Route";
 import { RoutesHistory } from "@/stores/recentRoutesStore";
 import { SwapDirection } from "@/components/Pages/Swap/Form/SwapFormValues";
+import { getRouteRecency, type SwapRouteRecency } from "@/stores/swapRouteHistoryStore";
 
 /**
  * Pure route-sorting utilities shared by `useFormRoutes` and the flat
@@ -13,12 +14,24 @@ import { SwapDirection } from "@/components/Pages/Swap/Form/SwapFormValues";
 export const extractTokenElementsAsSuggested = (routes: NetworkRoute[]): NetworkTokenElement[] =>
     routes.flatMap(route => (route.tokens || []).map(token => ({ type: 'suggested_token', route: { token, route } })))
 
-export const sortSuggestedTokenElements = (direction: SwapDirection, balances: Record<string, NetworkBalance> | null, routesHistory: RoutesHistory) => (a: NetworkTokenElement, b: NetworkTokenElement) => {
+export const sortSuggestedTokenElements = (
+    direction: SwapDirection,
+    balances: Record<string, NetworkBalance> | null,
+    routesHistory: RoutesHistory,
+    swapRecency?: SwapRouteRecency,
+) => (a: NetworkTokenElement, b: NetworkTokenElement) => {
     if (direction === "from" && balances) {
         const a_balance = getNetworkTokenElementBalance(a, balances)
         const b_balance = getNetworkTokenElementBalance(b, balances)
         if (a_balance !== b_balance) {
             return b_balance - a_balance
+        }
+    }
+    if (swapRecency) {
+        const a_recency = getRouteRecency(swapRecency, direction, a.route.route.name, a.route.token.symbol)
+        const b_recency = getRouteRecency(swapRecency, direction, b.route.route.name, b.route.token.symbol)
+        if (a_recency !== b_recency) {
+            return b_recency - a_recency
         }
     }
     if (routesHistory) {

@@ -441,6 +441,8 @@ function getPreviewWallet({
         return (
             <BalanceWarningView
                 amount={s.balanceWarning.amount}
+                requiredAmount={s.swap.requested_amount}
+                network={s.swap.source_network.display_name}
                 asset={s.swap.source_token.asset}
                 refreshing={s.balanceWarning.refreshing}
                 refreshButton={
@@ -482,6 +484,7 @@ function getPreviewWallet({
     if (state.kind === 'specialized')
         return (
             <SpecializedWithdrawalView
+                preparationLabel={state.preparationLabel}
                 provider={state.provider}
                 network={s.swap.source_network}
                 sourceAddress={s.sourceAddress}

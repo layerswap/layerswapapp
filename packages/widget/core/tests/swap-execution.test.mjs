@@ -4,12 +4,17 @@ import { registerHooks } from 'node:module'
 import { extname } from 'node:path'
 
 const previousStorage = Object.getOwnPropertyDescriptor(globalThis, 'localStorage')
+const previousWindow = Object.getOwnPropertyDescriptor(globalThis, 'window')
 const storage = new Map()
 Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
     getItem: key => storage.get(key) ?? null,
     setItem: (key, value) => storage.set(key, value),
     removeItem: key => storage.delete(key),
 } })
+Object.defineProperty(globalThis, 'window', {
+    configurable: true,
+    value: { localStorage: globalThis.localStorage },
+})
 const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
     if (specifier.endsWith('/lib/apiClients/layerSwapApiClient')) {
         return { url: 'data:text/javascript,' + encodeURIComponent(`
@@ -32,6 +37,8 @@ beforeEach(() => {
 })
 after(() => {
     hooks.deregister()
+    if (previousWindow) Object.defineProperty(globalThis, 'window', previousWindow)
+    else delete globalThis.window
     if (previousStorage) Object.defineProperty(globalThis, 'localStorage', previousStorage)
     else delete globalThis.localStorage
 })

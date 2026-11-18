@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { browserOnlyMiddleware } from '@layerswap/utils/common'
 
 interface WalletState {
     contractWallets: ContractWalletInfo[];
@@ -19,7 +20,7 @@ export class ContractWalletInfo {
 }
 
 
-export const useContractWalletsStore = create<WalletState>()(persist((set, get) => ({
+export const useContractWalletsStore = create<WalletState>()(browserOnlyMiddleware(persist)((set, get) => ({
     contractWallets: [],
     getContractWallet: (address, network_internal_name) => {
         return get().contractWallets.find(x => x.key == ContractWalletInfo.keyDeriver(address, network_internal_name))
@@ -44,6 +45,6 @@ export const useContractWalletsStore = create<WalletState>()(persist((set, get) 
 }),
     {
         name: 'contractWallets',
-        storage: createJSONStorage(() => sessionStorage),
+        storage: createJSONStorage(() => window.sessionStorage),
     }
 ))

@@ -13,6 +13,7 @@ import { ConnectWalletButton } from "@layerswap/ui-kit";
 import { CurrencySelectItemDisplay } from "./Routes";
 import { SelectItem } from "@/components/Select/Selector/SelectItem";
 import clsx from "clsx";
+import { useSwapRouteRecency } from "@/stores/swapRouteHistoryStore";
 
 type Props = {
     routes: NetworkRoute[];
@@ -48,19 +49,22 @@ export const FlatContent: FC<Props> = ({
     const [isScrolling, setIsScrolling] = useState(false);
     const scrollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
     const recentRoutes = useRecentNetworksStore(s => s.recentRoutes);
+    const swapRecency = useSwapRouteRecency();
     const { wallets } = useWallet();
     const { shouldFocus } = useSelectorState();
 
     const items = useMemo(() => {
+        // Deposit SourceStep advances directly to amount entry for the selected
+        // destination, so this list only offers usable routes.
         const flattened = extractTokenElementsAsSuggested(routes).filter(
             e => e.route.token.status === "active"
         );
-        const sorted = flattened.sort(sortSuggestedTokenElements(direction, balances, recentRoutes));
+        const sorted = flattened.sort(sortSuggestedTokenElements(direction, balances, recentRoutes, swapRecency));
         if (onlyWithBalance) {
             return sorted.filter(e => getTokenElementBalanceAmount(e, balances) > 0);
         }
         return sorted;
-    }, [routes, balances, direction, recentRoutes, onlyWithBalance]);
+    }, [routes, balances, direction, recentRoutes, swapRecency, onlyWithBalance]);
 
     const showSkeletons = balancesLoading && items.length === 0 && direction === "from";
     const showEmptyState = !!emptyState && !showSkeletons && !balancesLoading && items.length === 0;

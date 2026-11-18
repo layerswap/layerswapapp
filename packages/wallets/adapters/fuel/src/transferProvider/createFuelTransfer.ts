@@ -5,6 +5,7 @@ import { Address } from '@fuel-ts/address'
 import { transactionBuilder } from "./transactionBuilder"
 import { toTransferError } from "./toTransferError"
 import { getFuelInstance, hasFuelInstance } from "../service/getFuel"
+import { ensureFuelChain } from "../service/ensureFuelChain"
 
 export function createFuelTransfer(): TransferProvider {
     return {
@@ -25,14 +26,23 @@ export function createFuelTransfer(): TransferProvider {
                 if (!connector) throw new Error("Fuel wallet not found")
 
                 const sender = new Address(sourceAddress ?? selectedWallet.address).toB256()
-                const assertAuthorized = async () => {
+                const assertReady = async () => {
                     const connected = await connector.isConnected()
                     const accounts = connected ? await connector.accounts() : []
                     if (!accounts.some(address => new Address(address).toB256().toLowerCase() === sender.toLowerCase())) {
                         throw new Error("address is not authorized for this connection.")
                     }
+                    if (network.chain_id != null && network.chain_id !== '') {
+                        await ensureFuelChain({
+                            connector,
+                            chainId: network.chain_id,
+                            displayName: network.display_name ?? network.name,
+                            knownNetworks: [{ chainId: network.chain_id, rpcUrls: [network.node_url, ...(network.nodes ?? [])] }],
+                            allowSwitch: false,
+                        })
+                    }
                 }
-                await assertAuthorized()
+                await assertReady()
 
                 const fuelProvider = new Provider(network.node_url)
                 // Bind to the selected connector. Fuel.getWallet binds to the SDK's
@@ -41,7 +51,7 @@ export function createFuelTransfer(): TransferProvider {
                 const scriptTransaction = await transactionBuilder({ fuelWallet, callData })
                 await fuelProvider.simulate(scriptTransaction)
 
-                await assertAuthorized()
+                await assertReady()
                 const transactionResponse = await fuelWallet.sendTransaction(scriptTransaction)
 
                 if (swapId && transactionResponse) {
