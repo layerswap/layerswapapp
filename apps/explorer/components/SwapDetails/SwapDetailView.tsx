@@ -47,6 +47,9 @@ export default function SwapDetailView({
     } = swap;
 
     const sourceAccountAddress = swap.source_address || inputTransaction.from || '';
+    const destinationTransaction = outputTransaction || refundedTransaction;
+    const destinationAccountAddress = destinationTransaction?.to || swap.destination_address || '';
+    const destinationAccountNetwork = destinationTransaction?.network || destination_network;
 
     const isPending = status === SwapStatus.LsTransferPending || status === SwapStatus.UserTransferPending;
     const isFailed = status === SwapStatus.Failed || status === SwapStatus.Refunded;
@@ -115,7 +118,8 @@ export default function SwapDetailView({
                                 networkName={destination_exchange ? destination_network?.display_name : undefined}
                                 exchangeLogo={destination_exchange?.logo}
                                 exchangeName={destination_exchange?.display_name || (refundNetwork || destination_network)?.display_name}
-                                accountExplorerUrl={(refundNetwork || destination_network)?.account_explorer_template?.replace('{0}', (outputTransaction || refundedTransaction)?.to || '')}
+                                toAddress={destinationAccountAddress}
+                                accountExplorerUrl={destinationAccountNetwork?.account_explorer_template?.replace('{0}', destinationAccountAddress)}
                                 txExplorerUrl={(refundNetwork || destination_network)?.transaction_explorer_template?.replace('{0}', (outputTransaction || refundedTransaction)?.transaction_hash || '')}
                                 isPending={isPending}
                                 isRefunded={!!refundedTransaction}
