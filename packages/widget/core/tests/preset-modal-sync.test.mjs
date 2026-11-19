@@ -81,6 +81,9 @@ const availabilityView = loadSource('components/Pages/Swap/Withdraw/Presentation
   '../../Form/SecondaryComponents/validationError/constants': { ICON_CLASSES_WARNING: '' },
 })
 const { SwapQuoteDetails } = loadSource('components/Pages/Swap/Withdraw/SwapQuoteDetails.tsx', {
+  '@/context/swap': { useSwapDataState: () => data ?? {} },
+  '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
+  '@/lib/gases/resolveTransferGas': loadSource('lib/gases/resolveTransferGas.ts', { '@/helpers/depositActions': loadSource('helpers/depositActions.ts') }),
   './Presentation/QuoteAvailabilityView': availabilityView,
   '../Form/FeeDetails/SwapQuote': { default: () => createElement('div', null, 'Quote details') },
 })
@@ -149,6 +152,7 @@ const { default: Withdraw } = loadSource('components/Pages/Swap/Withdraw/Withdra
   '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
   '@/hooks/useFee': { transformSwapDataToQuoteArgs: values => values, useQuoteData: () => ({ maxAllowedAmount: state.maximum, minAllowedAmount: state.minimum }) },
   '@/lib/balances/useBalance': { useBalance: () => ({ balances: state.balances }) },
+  '@/lib/gases/resolveTransferGas': loadSource('lib/gases/resolveTransferGas.ts', { '@/helpers/depositActions': loadSource('helpers/depositActions.ts') }),
   '@/lib/gases/useSWRGas': gasHook, '@/lib/gases/useOutOfGas': { default: useOutOfGas },
   '../Form/SecondaryComponents/validationError/AdjustAmountButton': { AdjustAmountButton: ({ onEditAmount }) => createElement('button', { onClick: onEditAmount }, 'Adjust amount') },
   '../Form/SecondaryComponents/validationError/RefreshBalanceButton': { RefreshBalanceButton: () => createElement('button', null, 'Refresh') },

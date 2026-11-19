@@ -1,3 +1,4 @@
+import type { GasWithToken } from '@layerswap/widget-types';
 import { TransferBlock } from '../TransferBlock';
 import SubmitButton, {
     type SubmitButtonProps,
@@ -150,6 +151,8 @@ export type SendTransactionViewProps = SubmitButtonProps & {
     readOnly?: boolean;
     error?: boolean;
     swapError?: boolean;
+    feeUpdated?: boolean;
+    feeToReview?: GasWithToken;
     swapId?: string;
     criticalMarketPriceImpact?: boolean;
     showCriticalMarketPriceImpactButtons?: boolean;
@@ -188,6 +191,8 @@ export function getSendTransactionPresentation({
     readOnly,
     error,
     swapError,
+    feeUpdated,
+    feeToReview,
     swapId,
     criticalMarketPriceImpact,
     showCriticalMarketPriceImpactButtons,
@@ -322,11 +327,20 @@ export function getSendTransactionPresentation({
         >
             {error || swapError || networkSwitch?.isError || workflowFailed
                 ? 'Try again'
-                : workflowCompleted ? 'Completed' : primaryActionText}
+                : workflowCompleted ? 'Completed' : feeUpdated ? 'Continue' : primaryActionText}
         </ButtonWrapper>
     );
     return { walletProgress, controls: (
                 <>
+                    {feeUpdated && (
+                        <ErrorDisplay
+                            icon={<InfoIcon className={ICON_CLASSES_WARNING} />}
+                            title="Network fee updated"
+                            message={feeToReview
+                                ? `Review the network fee of ${feeToReview.gas.toFixed(feeToReview.token.decimals)} ${feeToReview.token.symbol} before continuing to your wallet.`
+                                : "Review the updated network fee before continuing to your wallet."}
+                        />
+                    )}
                     {message}
                     {!!(
                         !swapId &&

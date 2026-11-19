@@ -1,3 +1,6 @@
+import { useSwapDataState } from '@/context/swap';
+import { getActionableDepositAction } from '@/helpers/depositActions';
+import { resolveTransferGas } from '@/lib/gases/resolveTransferGas';
 import { type Refuel } from '@layerswap/widget-types';
 import { FC } from 'react';
 import { SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
@@ -38,7 +41,11 @@ export const SwapQuoteDetails: FC<Props> = ({
         destination_address,
     } = swapData || {};
 
+    const { depositActionsResponse } = useSwapDataState();
+    const transferGas = resolveTransferGas(getActionableDepositAction(depositActionsResponse), source_network, source_token, sourceAddress);
     const values: SwapValues = {
+        gasAmount: transferGas?.amount,
+        gasTransaction: transferGas?.transaction,
         amount: requested_amount?.toString(),
         from: source_network,
         to: destination_network,

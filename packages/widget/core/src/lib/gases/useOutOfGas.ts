@@ -40,13 +40,13 @@ const useOutOfGas = ({
     }
 
     const numAmount = Number(amount)
-    const gasAndReserve = resolveGasBalanceBudget(gasData)
+    const gasAndReserve = resolveGasBalanceBudget(gasData, { exactTransfer: !!transaction })
     const totalNeeded = numAmount + gasAndReserve
     const balanceCoversAmount = numAmount <= balance
     const balanceExceedsMaxWithGas = balance > (maxAllowedAmount + gasAndReserve)
     const balanceAboveMin = balance > minAllowedAmount
 
-    const outOfGas = totalNeeded > balance
+    const outOfGas = totalNeeded > balance + Number.EPSILON * Math.max(balance, totalNeeded)
         && balanceCoversAmount
         && balanceAboveMin
         && !balanceExceedsMaxWithGas

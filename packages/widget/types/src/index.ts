@@ -95,4 +95,5 @@ export type {
   RpcHealthCheckStore,
   RpcHealthCheckProvider,
 } from './resolvers/rpcHealth';
+export { TransferFeeReviewRequired } from './resolvers/transfer';
 export type { TransferProps, TransferProgress, TransferProvider, WalletWithdrawal, WithdrawalAction, AtomicBatchProvider, AtomicBatchContext, AtomicBatchCall } from './resolvers/transfer';

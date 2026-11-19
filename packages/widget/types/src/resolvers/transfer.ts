@@ -1,12 +1,20 @@
 import { type Wallet } from '../wallet';
 import { Network, NetworkRoute, NetworkWithTokens, Token } from "../types"
 import { TokenBalance } from "./balanceModels"
+import type { GasWithToken } from "./gas"
+
+/** Stops a transfer before signing while the caller reviews its prepared fee. */
+export class TransferFeeReviewRequired extends Error {}
 
 export type TransferProps = {
     network: Network,
     token: Token,
     callData: string
     amountInBaseUnits?: string
+    /** Called before opening the wallet with the fee of the transaction about to be signed. */
+    reviewFee?: (fee: GasWithToken) => Promise<void>
+    /** Called immediately before a prepared transfer requests wallet signing. */
+    onWalletPrompt?: () => void
     encodedArgs?: string[] | null
     depositAddress?: string
     amount: number

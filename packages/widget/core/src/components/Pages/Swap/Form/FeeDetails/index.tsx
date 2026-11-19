@@ -6,7 +6,7 @@ import { QuoteReward, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
 import useSWRGas from '@/lib/gases/useSWRGas';
 import useSWRNftBalance from '@/lib/nft/useSWRNftBalance';
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore';
-import { Network } from '@layerswap/widget-types';
+import { GasProps, Network } from '@layerswap/widget-types';
 import { FC, useState } from 'react';
 import { ManualQuoteView } from '../../Withdraw/Presentation/ManualQuoteView';
 import { QuoteDetailsSummary } from '../../Withdraw/Presentation/QuoteDetailsSummary';
@@ -16,6 +16,8 @@ import { DetailedEstimates } from './SwapQuote/DetailedEstimates';
 export interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {
     from?: Network;
     to?: Network;
+    gasAmount?: number;
+    gasTransaction?: Pick<GasProps, 'recipientAddress' | 'callData' | 'amountInBaseUnits'>;
 }
 
 export interface QuoteComponentProps {
@@ -98,9 +100,9 @@ export const DetailsButton: FC<QuoteComponentProps & { enabled?: boolean }> = ({
         selectedSourceAccount?.address,
         values.from,
         values.fromAsset,
-        values.amount,
+        values.gasAmount ?? values.amount,
         wallet,
-        { enabled },
+        { enabled, transaction: values.gasTransaction },
     );
     const gasTokenPriceInUsd = resolveTokenUsdPrice(gasData?.token, quote);
     const gasFeeInUsd =
