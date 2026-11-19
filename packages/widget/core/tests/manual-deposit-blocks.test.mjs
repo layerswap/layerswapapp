@@ -13,19 +13,39 @@ for (const [key, value] of Object.entries({ window: dom.window, document: dom.wi
 const { createRoot } = await import('react-dom/client')
 const state = {}
 const events = []
-const callbacks = { useCallbacks: () => ({ onSwapLifecycle: event => events.push(event) }), useOptionalCallbacks: () => ({}) }
+const widgetTypes = await import('@layerswap/widget-types')
+const callbacks = {
+  useCallbacks: () => ({
+    onSwapLifecycle: event => events.push(event),
+    getLatestLifecycleEvent: () => events.at(-1),
+  }),
+  useOptionalCallbacks: () => ({}),
+}
 const layout = { useClientLayoutEffect: React.useLayoutEffect }
 const { useTransferBlocked } = loadSource('hooks/useTransferBlocked.ts', {
   react: React, '@/hooks/useClientLayoutEffect': layout, '@/context/callbackProvider': callbacks,
+  '@layerswap/widget-types': widgetTypes,
 })
 const { useLifecycleObservation } = loadSource('hooks/useLifecycleObservation.ts', {
   react: React, '@/hooks/useClientLayoutEffect': layout, '@/context/callbackProvider': callbacks,
-  '@layerswap/widget-types': await import('@layerswap/widget-types'),
+  '@layerswap/widget-types': widgetTypes,
 })
-const button = ({ children, onClick, isSubmitting }) => createElement('button', { onClick, disabled: isSubmitting }, children)
+const button = ({ children, onClick, isSubmitting, isDisabled, type }) => {
+  if (children === 'Retry') state.retryAction = onClick
+  return createElement('button', { onClick, type, disabled: isSubmitting || isDisabled }, children)
+}
 const empty = () => null
+const recoveryView = loadSource('components/Pages/Swap/Form/DepositAddressForm/DepositAddressRecoveryView.tsx', {
+  '@/components/Buttons/submitButton': { default: button },
+  '@/components/Icons/FailIcon': { default: empty },
+  '@/lib/depositAddressError': loadSource('lib/depositAddressError.ts'),
+  '../SecondaryComponents/validationError/ErrorDisplay': loadSource(
+    'components/Pages/Swap/Form/SecondaryComponents/validationError/ErrorDisplay.tsx', { react: React },
+  ),
+})
 const { useManualWithdrawController } = loadSource('components/Pages/Swap/Withdraw/ManualWithdraw.tsx', {
   react: React,
+  '@layerswap/widget-types': widgetTypes,
   './TransferBlock': loadSource('components/Pages/Swap/Withdraw/TransferBlock.tsx', {
     '@/context/callbackProvider': callbacks,
     '@/context/swap': { useSwapDataState: () => ({ swapBasicData, ...state }) },
@@ -33,10 +53,7 @@ const { useManualWithdrawController } = loadSource('components/Pages/Swap/Withdr
     '@/lib/swapLifecycle': { lifecycleContextFromSwap: (_, swap) => ({ swapId: swap?.id }) },
   }),
   '@/lib/depositAddressError': loadSource('lib/depositAddressError.ts'),
-  '../Form/DepositAddressForm/DepositAddressRecoveryView': {
-    DepositAddressRecoveryView: ({ message, isRetrying, onRetry }) => createElement('div', null,
-      createElement('p', null, message), createElement(button, { onClick: onRetry, isSubmitting: isRetrying }, 'Retry')),
-  },
+  '../Form/DepositAddressForm/DepositAddressRecoveryView': recoveryView,
   './Presentation/ManualSourceSelectorView': { ManualSourceSelectorView: ({ onSelect }) => { state.selectSource = onSelect; return createElement('span', null, 'Source selector') } },
   './Presentation/DepositQRCodeView': { DepositQRCodeView: empty },
   './Presentation/ManualDepositButtonView': loadSource('components/Pages/Swap/Withdraw/Presentation/ManualDepositButtonView.tsx', { '@/components/Buttons/submitButton': { default: button } }),
@@ -70,14 +87,13 @@ function View() {
     state.mutate = request.mutate
   }
   const model = useManualWithdrawController({ swapBasicData, depositActions: state.actions }, state.active)
-  state.retryAction = model.footer?.props?.children?.props?.onRetry
   return createElement(React.Fragment, null, model.controls, state.active ? model.footer : null)
 }
 const render = () => act(async () => {
   root.render(createElement(StrictMode, null, createElement(SWRConfig, { value: { provider: () => new Map() } }, createElement(View))))
 })
 beforeEach(() => {
-  Object.assign(state, { swapDetails: { id: 'manual-swap' }, actions: undefined, depositActionsError: undefined, active: true, retries: 0, copies: 0, refresh: undefined, mutate: undefined, realSWR: false, depositActionsValidating: false })
+  Object.assign(state, { swapDetails: { id: 'manual-swap' }, actions: undefined, depositActionsError: undefined, active: true, retries: 0, copies: 0, refresh: undefined, mutate: undefined, retryAction: undefined, realSWR: false, depositActionsValidating: false })
   events.length = 0
   container = document.createElement('div'); document.body.append(container); root = createRoot(container)
 })
@@ -100,6 +116,8 @@ for (const error of [false, true]) {
     await render(); await render()
     assert.deepEqual(events.map(event => event.reasonCode), ['deposit_actions_unavailable'])
     assert.match(container.textContent, /No deposit address|API unavailable/)
+    assert.match(container.querySelector('[role="alert"]').textContent, /Couldn't generate deposit address/)
+    assert.equal(container.querySelector('button').type, 'button')
     assert.match(container.textContent, /Amount and quoteSource selector/)
     assert.equal(events[0].stage, 'input_transfer')
     state.refresh = () => { state.actions = [{ type: 'manual_transfer', to_address: 'usable-address' }]; state.depositActionsError = undefined }

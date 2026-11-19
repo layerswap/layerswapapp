@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect'
 import { advanceLifecycleObservationScope, type LifecycleObservationScope } from '@/lib/lifecycleObservationScope'
-import type { SwapLifecycleStage, TransferBlockedReasonCode } from '@layerswap/widget-types'
+import { SwapLifecycleStep, type SwapLifecycleStage, type TransferBlockedReasonCode } from '@layerswap/widget-types'
 import { useCallbacks } from '@/context/callbackProvider'
 import type { SwapLifecycleContext } from '@/lib/swapLifecycle'
 
@@ -45,7 +45,7 @@ export function useTransferBlocked(
             if (disposed) return
             const { context: currentContext, reason: currentReason, onSwapLifecycle: emit } = latest.current
             emit({
-                step: 'transfer_blocked',
+                step: SwapLifecycleStep.TransferBlocked,
                 stage,
                 outcome: 'blocked',
                 path,

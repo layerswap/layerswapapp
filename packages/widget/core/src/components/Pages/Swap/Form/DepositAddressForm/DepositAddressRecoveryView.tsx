@@ -1,7 +1,7 @@
 import FailIcon from '@/components/Icons/FailIcon';
 import { DEPOSIT_ADDRESS_ERROR_TITLE } from '@/lib/depositAddressError';
 import { ErrorDisplay } from '../SecondaryComponents/validationError/ErrorDisplay';
-import { DepositAddressFormButtonView } from './DepositAddressFormButtonView';
+import SubmitButton from '@/components/Buttons/submitButton';
 
 export function DepositAddressErrorView({ message }: { message: string }) {
     return <div role="alert">
@@ -17,8 +17,13 @@ export function DepositAddressRecoveryView({ message, isRetrying, onRetry }: {
 }) {
     return <div className="flex flex-col gap-2 w-full">
         <DepositAddressErrorView message={message} />
-        <DepositAddressFormButtonView hasDepositError isValid isSubmitting={isRetrying}
-            showDepositInfo={false} depositAddress={undefined} isProcessing={false}
-            isCompleted={false} onRetry={onRetry} />
+        <SubmitButton
+            type="button"
+            buttonStyle="secondary"
+            onClick={onRetry}
+            isSubmitting={isRetrying}
+        >
+            Retry
+        </SubmitButton>
     </div>;
 }

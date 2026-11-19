@@ -1,6 +1,6 @@
 import { advanceLifecycleObservationScope, type LifecycleObservationScope } from '@/lib/lifecycleObservationScope'
 import { useEffect, useRef } from 'react'
-import { lifecycleObservationFingerprint, type SwapLifecycleEvent } from '@layerswap/widget-types'
+import { isStaleWaitingObservation, lifecycleObservationFingerprint, type SwapLifecycleEvent } from '@layerswap/widget-types'
 import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect'
 import { useCallbacks } from '@/context/callbackProvider'
 import type { SwapLifecycleContext } from '@/lib/swapLifecycle'
@@ -35,26 +35,26 @@ export function useLifecycleObservation(observation: ObservedLifecycleEvent | un
             committed.current = undefined
         }
         // Re-arm: A → gone → A is reported again.
-        if (!transition) { committed.current = undefined; return }
+        if (!transition) {
+            committed.current = undefined
+            return
+        }
         // StrictMode replay or an unrelated re-render.
-        if (committed.current === transition) return
+        if (committed.current === transition) {
+            return
+        }
         const { observation: current, context: currentContext, onSwapLifecycle: emit } = latest.current
-        if (!current) return
-        const latestEvent = getLatestLifecycleEvent?.()
-        const isWaiting = current.step === 'awaiting_wallet_action' || current.step === 'awaiting_user_deposit'
+        if (!current) {
+            return
+        }
+        const event = { ...current, ...currentContext }
         // A retry can create B and open its wallet prompt before B's ID reaches
         // this effect. Re-arm B, but never rewind that prompt to a waiting phase.
-        const progressed = latestEvent?.swapId === swapId && latestEvent && [
-            'wallet_prompt_opened', 'wallet_action_rejected', 'wallet_action_failed',
-            'transaction_submitted', 'gasless_authorization_submitted',
-            'deposit_address_copied', 'input_transaction_detected', 'input_transfer_pending',
-            'input_transfer_confirmed', 'output_transfer_pending', 'swap_completed',
-        ].includes(latestEvent.step)
-        if (scopeChanged && isWaiting && progressed) {
+        if (scopeChanged && isStaleWaitingObservation(event, getLatestLifecycleEvent())) {
             committed.current = transition
             return
         }
-        emit({ ...current, ...currentContext })
+        emit(event)
         committed.current = transition
     }, [transition, swapId, getLatestLifecycleEvent])
 }

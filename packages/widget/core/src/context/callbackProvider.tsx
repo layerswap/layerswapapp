@@ -1,4 +1,4 @@
-import { type SwapLifecycleEvent, type SwapStatusEvent, type WidgetCallbacks } from '@layerswap/widget-types';
+import { SwapLifecycleStep, type SwapLifecycleEvent, type SwapStatusEvent, type WidgetCallbacks } from '@layerswap/widget-types';
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
 import { SwapResponse } from '@/lib/apiClients/layerSwapApiClient'
 import { createContext, useContext, ReactNode, useCallback, useMemo, useRef, useState } from 'react'
@@ -22,7 +22,7 @@ export interface CallbackProviderProps {
 
 type CallbackContextValue = Required<Omit<CallbacksContextType, 'onError'>> & {
     /** Internal guard against a late waiting observation rewinding an active operation. */
-    getLatestLifecycleEvent?: () => SwapLifecycleEvent | undefined
+    getLatestLifecycleEvent: () => SwapLifecycleEvent | undefined
 }
 const CallbackContext = createContext<CallbackContextValue | undefined>(undefined)
 
@@ -54,7 +54,7 @@ export function CallbackProvider({ children, callbacks }: CallbackProviderProps)
         event = { ...event, amountMode: widgetTelemetry.amountInputMethod(event) }
         // Creation is an explicit operation result. Wallet prompts/phase observations never
         // establish or reset backend history.
-        if (event.step === 'swap_created' && event.swapId) backendStatuses.created(event.swapId)
+        if (event.step === SwapLifecycleStep.SwapCreated && event.swapId) backendStatuses.created(event.swapId)
         latestLifecycleEvent.current = event
         widgetTelemetry.lifecycle(event)
         if (!observations.lifecycle(event)) return

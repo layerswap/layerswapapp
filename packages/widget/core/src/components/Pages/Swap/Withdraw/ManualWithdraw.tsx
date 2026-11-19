@@ -26,6 +26,7 @@ import {
     Network,
     NetworkRoute,
     Token,
+    SwapLifecycleStep,
     type Refuel,
 } from '@layerswap/widget-types';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
@@ -38,7 +39,7 @@ import { lifecycleContextFromSwap } from '@/lib/swapLifecycle'
 import { type ObservedLifecycleEvent, useLifecycleObservation } from '@/hooks/useLifecycleObservation'
 
 const AWAITING_USER_DEPOSIT: ObservedLifecycleEvent = {
-    step: 'awaiting_user_deposit',
+    step: SwapLifecycleStep.AwaitingUserDeposit,
     stage: 'input_transfer',
     outcome: 'pending',
     path: 'ManualWithdraw',
@@ -144,7 +145,7 @@ export function useManualWithdrawController({
             setCopiedAddress(depositAddress);
             copy(depositAddress);
             onSwapLifecycle({
-                step: 'deposit_address_copied',
+                step: SwapLifecycleStep.DepositAddressCopied,
                 stage: 'input_transfer',
                 outcome: 'pending',
                 path: 'ManualWithdraw',

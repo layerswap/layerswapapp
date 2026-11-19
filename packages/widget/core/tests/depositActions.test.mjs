@@ -455,6 +455,7 @@ function createWorkflow({
         '@/lib/swapLifecycle': lifecycle,
         '@/hooks/useTransferBlocked': loadSource('../src/hooks/useTransferBlocked.ts', {
             react: React,
+            '@layerswap/widget-types': require('@layerswap/widget-types'),
             '@/hooks/useClientLayoutEffect': { useClientLayoutEffect: React.useLayoutEffect },
             '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: event => {
                 calls.lifecycle.push(event); calls.blocked.push(event.reasonCode)
