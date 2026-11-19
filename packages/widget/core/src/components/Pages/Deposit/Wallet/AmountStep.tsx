@@ -1,5 +1,5 @@
 import { isAmountPreset } from '@/lib/amountPresets';
-import { FC, useCallback } from "react";
+import { FC, useCallback, useState } from "react";
 import { useFormikContext } from "formik";
 import SubmitButton from "@/components/Buttons/submitButton";
 import SourcePicker from "@/components/Input/SourcePicker";
@@ -10,6 +10,9 @@ import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import QuoteDetails from "@/components/Pages/Swap/Form/FeeDetails";
 import { useDepositStep } from "../depositStepContext";
 import QuoteSummary from "../_shared/QuoteSummary";
+import { useCheckSwapPrerequisites, useSwapPrerequisites } from "@/hooks/useSwapPrerequisites";
+import { prerequisitesFromForm } from "@/lib/prerequisites/context";
+import { PrerequisitePanel } from "@/components/SwapPrerequisites/PrerequisitePanel";
 
 const AmountStep: FC = () => {
     const { values, setFieldValue, submitForm } = useFormikContext<SwapFormValues>();
@@ -46,20 +49,34 @@ const AmountStep: FC = () => {
 
     const isQuoteLoading = quoteLoading || (isAmountPreset(values.amountMode) && !!values.amountPresetPending);
     const { formValidation } = useValidationContext();
+    const prerequisites = useSwapPrerequisites(prerequisitesFromForm(values));
+    const checkPrerequisites = useCheckSwapPrerequisites();
+    const [isCheckingSetup, setIsCheckingSetup] = useState(false);
+    const [setupError, setSetupError] = useState<string>();
 
+    const receiveAmount = fee?.quote?.receive_amount;
     const hasQuote = !!fee?.quote && !quoteError;
     const isValid = !formValidation.message;
-    const canContinue = isValid && hasQuote && !isQuoteLoading && !!sourceAccount?.address;
+    const canContinue = isValid && hasQuote && !isQuoteLoading && !!sourceAccount?.address && prerequisites.isReady;
 
     // Submitting through Formik lets the owning SwapForm (Wallet/index.tsx)
     // report form_submitted and move to the processing step.
-    const handleContinue = useCallback(() => {
-        if (!canContinue || !values?.amount) return;
+    const handleContinue = useCallback(async () => {
+        if (!canContinue || !values?.amount || isCheckingSetup) return;
+        setSetupError(undefined);
+        setIsCheckingSetup(true);
+        try {
+            await checkPrerequisites(prerequisitesFromForm(values, receiveAmount));
+        } catch (error) {
+            setSetupError(error instanceof Error ? error.message : "Could not check account setup");
+            return;
+        } finally {
+            setIsCheckingSetup(false);
+        }
         setFieldValue("depositMethod", "wallet", false);
         submitForm();
-    }, [canContinue, values?.amount, setFieldValue, submitForm]);
+    }, [canContinue, values, isCheckingSetup, receiveAmount, checkPrerequisites, setFieldValue, submitForm]);
 
-    const receiveAmount = fee?.quote?.receive_amount;
     const destinationPriceInUsd = fee?.quote?.destination_token?.price_in_usd;
     const receiveAmountInUsd =
         receiveAmount != null && destinationPriceInUsd
@@ -68,7 +85,7 @@ const AmountStep: FC = () => {
 
     const submitLabel = isQuoteLoading
         ? "Fetching best route…"
-        : formValidation.message || "Continue";
+        : formValidation.message || prerequisites.blockingMessage || "Continue";
 
     return (
         <div className="flex flex-col gap-3 w-full flex-1 min-h-0 justify-between">
@@ -102,9 +119,12 @@ const AmountStep: FC = () => {
                         isQuoteLoading={isQuoteLoading}
                     />
                 ) : <></>}
+
+                <PrerequisitePanel state={prerequisites} />
             </div>
 
-            <SubmitButton isDisabled={!canContinue} onClick={handleContinue}>
+            {setupError && <p role="alert" className="text-sm text-secondary-text">{setupError}</p>}
+            <SubmitButton isDisabled={!canContinue} isSubmitting={isCheckingSetup} onClick={handleContinue}>
                 {submitLabel}
             </SubmitButton>
         </div>
