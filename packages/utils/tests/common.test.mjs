@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
     baseUnitsToNumber,
+    browserOnlyMiddleware,
     bytesToHex,
     ceilUsd,
     checkStorageIsAvailable,
@@ -41,4 +42,27 @@ test('formatting and validation helpers retain their existing behavior', () => {
 test('browser helpers are safe during server rendering', () => {
     assert.equal(checkStorageIsAvailable('localStorage'), false)
     assert.equal(isInIframe(), false)
+})
+
+test('browser-only middleware skips persistence on the server and retains it in the browser', () => {
+    const previousWindow = Object.getOwnPropertyDescriptor(globalThis, 'window')
+    const initializer = () => ({ ready: true })
+    let middlewareCalls = 0
+    const middleware = (storeInitializer) => {
+        middlewareCalls += 1
+        return storeInitializer
+    }
+
+    try {
+        delete globalThis.window
+        assert.equal(browserOnlyMiddleware(middleware)(initializer), initializer)
+        assert.equal(middlewareCalls, 0)
+
+        globalThis.window = {}
+        assert.equal(browserOnlyMiddleware(middleware)(initializer), initializer)
+        assert.equal(middlewareCalls, 1)
+    } finally {
+        if (previousWindow) Object.defineProperty(globalThis, 'window', previousWindow)
+        else delete globalThis.window
+    }
 })

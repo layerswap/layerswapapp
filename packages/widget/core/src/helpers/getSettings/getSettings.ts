@@ -38,7 +38,7 @@ export async function getSettings(apiKey: string, options?: GetSettingsOptions) 
             includeFeatureFlags ? fetchExtendedRouteFlags() : Promise.resolve(undefined),
         ])
 
-        if (!networkData) return
+        if (!networkData?.length) return null
 
         const settings = {
             networks: networkData,
