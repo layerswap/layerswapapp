@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
+import { browserOnlyMiddleware } from '@layerswap/utils/common'
 import type { Connection, Connector, GetAccountReturnType } from '@wagmi/core'
 
 export type WagmiAccountSnapshot = {
@@ -27,7 +28,7 @@ export type EvmStoreState = {
 }
 
 export const useEvmStore = create<EvmStoreState>()(
-    persist(
+    browserOnlyMiddleware(persist)(
         (set) => ({
             wagmiAccount: EMPTY_ACCOUNT,
             connections: [],
@@ -42,7 +43,7 @@ export const useEvmStore = create<EvmStoreState>()(
         }),
         {
             name: 'ls-evm-store',
-            storage: createJSONStorage(() => localStorage),
+            storage: createJSONStorage(() => window.localStorage),
             partialize: (state) => ({ selectedAddress: state.selectedAddress }),
         },
     ),

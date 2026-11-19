@@ -1,4 +1,5 @@
 import { createJSONStorage, persist } from 'zustand/middleware'
+import { browserOnlyMiddleware } from '@layerswap/utils/common'
 import { createStore } from 'zustand/vanilla'
 
 export type ParadexAccountMap = Record<string, string>
@@ -12,7 +13,7 @@ type ParadexAccountStoreState = {
 type PersistedParadexAccountState = Pick<ParadexAccountStoreState, 'paradexAccounts'>
 
 export const paradexAccountStore = createStore<ParadexAccountStoreState>()(
-    persist<ParadexAccountStoreState, [], [], PersistedParadexAccountState>(
+    browserOnlyMiddleware(persist)<ParadexAccountStoreState, [], [], PersistedParadexAccountState>(
         (set) => ({
             paradexAccounts: {},
             addParadexAccount: ({ l1Address, paradexAddress }) => set((state) => ({
@@ -31,7 +32,7 @@ export const paradexAccountStore = createStore<ParadexAccountStoreState>()(
             // Preserve the existing key and state shape so persisted Paradex
             // account mappings survive the store extraction.
             name: 'ls-paradex-accounts',
-            storage: createJSONStorage(() => localStorage),
+            storage: createJSONStorage(() => window.localStorage),
             partialize: ({ paradexAccounts }) => ({ paradexAccounts }),
         },
     ),

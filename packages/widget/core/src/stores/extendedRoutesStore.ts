@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { browserOnlyMiddleware } from '@layerswap/utils/common'
 
 /**
  * Persisted record of an extended-route flow, keyed by `swap.id`. Lets the
@@ -27,7 +28,7 @@ type ExtendedRoutesStore = {
 }
 
 export const useExtendedRoutesStore = create(
-    persist<ExtendedRoutesStore>(
+    browserOnlyMiddleware(persist)<ExtendedRoutesStore>(
         (set) => ({
             records: {},
             setRecord: (id, record) => {
@@ -42,7 +43,7 @@ export const useExtendedRoutesStore = create(
         }),
         {
             name: 'extendedRoutes',
-            storage: createJSONStorage(() => localStorage),
+            storage: createJSONStorage(() => window.localStorage),
         }
     ),
 )

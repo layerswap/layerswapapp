@@ -39,6 +39,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     const { balances, partialPublished, isLoading } = useAllWithdrawalBalances();
     const routesHistory = useRecentNetworksStore(state => state.recentRoutes)
     const swapRecency = useSwapRouteRecency()
+    const oppositeNetwork = direction === 'to' ? values.from?.name : values.to?.name
     const loadingSuggestions = useMemo(() => {
         return !partialPublished && isLoading && direction === "from"
     }, [isLoading, direction, partialPublished])
@@ -63,9 +64,10 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
             balancesLoaded: loadingSuggestions,
             search,
             suggestionsLimit,
-            sortingOption
+            sortingOption,
+            oppositeNetwork
         }),
-        [filteredRoutes, balances, direction, search, groupByToken, routesHistory, swapRecency, loadingSuggestions, suggestionsLimit, sortingOption]);
+        [filteredRoutes, balances, direction, search, groupByToken, routesHistory, swapRecency, loadingSuggestions, suggestionsLimit, sortingOption, oppositeNetwork]);
 
     const exchanges = useMemo(() => {
         return groupExchanges(exchangesRoutes, search, direction, { lockFrom, from, lockTo, to });
@@ -639,10 +641,12 @@ export type GroupRoutesProps = {
     skipBalanceGate?: boolean;
     /** When true, do not include the suggestions section at all */
     hideSuggestions?: boolean;
+    /** Source network to prioritize in the destination picker when same-network swaps are available. */
+    oppositeNetwork?: string;
 }
 
 export function groupRoutes(
-    { routes, direction, balances, groupBy, recents, swapRecency, balancesLoaded, search, suggestionsLimit = 4, sortingOption = SortingOption.RELEVANCE, skipBalanceGate = false, hideSuggestions = false }: GroupRoutesProps
+    { routes, direction, balances, groupBy, recents, swapRecency, balancesLoaded, search, suggestionsLimit = 4, sortingOption = SortingOption.RELEVANCE, skipBalanceGate = false, hideSuggestions = false, oppositeNetwork }: GroupRoutesProps
 ): RowElement[] {
 
     if (search) {
@@ -654,13 +658,29 @@ export function groupRoutes(
         ? []
         : getSuggestedRoutes(routes, balances, recents, direction, balancesLoaded, suggestionsLimit, skipBalanceGate, swapRecency)
 
+    // Source balances must keep their order; same-network pinning is only for destinations.
+    const pinnedNetwork = direction === 'to' ? oppositeNetwork : undefined
+
     // Apply custom sorting ONLY to "All Networks/All Tokens" section
     if (groupBy === "token") {
         const groupedTokens = resolveTokenRoutes(routes, balances, direction, recents, sortingOption)
+            .map(group => ({ ...group, items: moveToFront(group.items, i => isSameNetworkSwap(i.route.route.name, [i.route.token], pinnedNetwork)) }))
         return mergeGroups(suggestedRoutes, groupedTokens)
     }
-    const groupedNetworks = resolveNetworkRoutes(routes, balances, direction, recents, sortingOption)
+    const groupedNetworks = moveToFront(
+        resolveNetworkRoutes(routes, balances, direction, recents, sortingOption),
+        n => isSameNetworkSwap(n.route.name, n.route.tokens, pinnedNetwork)
+    )
     return mergeGroups(suggestedRoutes, groupedNetworks)
+}
+
+const isSameNetworkSwap = (networkName: string, tokens: NetworkRouteToken[] | undefined, oppositeNetwork?: string) =>
+    !!oppositeNetwork && networkName === oppositeNetwork && !!tokens?.some(t => t.status === 'active')
+
+function moveToFront<T>(items: T[], predicate: (item: T) => boolean): T[] {
+    const index = items.findIndex(predicate)
+    if (index <= 0) return items
+    return [items[index], ...items.slice(0, index), ...items.slice(index + 1)]
 }
 
 const mergeGroups = (suggestedRoutes: (NetworkTokenElement | TokenSceletonElement)[], allRoutes: GroupedTokenElement[] | NetworkElement[]) => {
@@ -819,7 +839,8 @@ function getSuggestedRoutes(routes: NetworkRoute[], balances: Record<string, Net
             return Array(effectiveLimit).fill({ type: "sceleton_token" });
     }
 
-    const tokenElements = extractTokenElementsAsSuggested(routes).filter(t => t.route.token.status === "active")
+    // Let users pick the assets they hold even when the current destination has no route.
+    const tokenElements = extractTokenElementsAsSuggested(routes).filter(t => direction === 'from' || t.route.token.status === 'active')
     const sorted = tokenElements.sort(sortSuggestedTokenElements(direction, balances, routesHistory, swapRecency))
     return sorted.slice(0, effectiveLimit)
 }

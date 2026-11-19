@@ -6,7 +6,7 @@ import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect';
 import { depositActionsKey, useDepositActionPolling } from '@/hooks/useDepositActionPolling';
 import { hasSwapExecutionProgress, hasUnacknowledgedWalletAction } from '@/helpers/swapProgress';
 import { gaslessAuthorizationKey, isGaslessCapableRoute, isGaslessDepositWorkflow } from '@/helpers/gasless';
-import { isDepositWorkflowComplete } from '@/helpers/depositActions';
+import { isApprovalAction, isDepositWorkflowComplete } from '@/helpers/depositActions';
 import { isBatchTransferAction } from '@/helpers/depositActions';
 import { executeAtomicBatch } from '@/lib/atomicBatchExecution';
 import { resolverService } from '@/lib/resolvers/resolverService';
@@ -460,6 +460,24 @@ export function useSendTransactionController({
             signal.throwIfAborted()
             markWalletExecutionStarted(swapData.id)
 
+            const savedApproval = useSwapTransactionStore.getState().stepTransactions[swapData.id]?.approve
+            if (savedApproval && !savedApproval.confirmed && !isDepositWorkflowComplete(activeDepositActions)) {
+                // A timeout or closed screen must not send the same pending
+                // approval again. Reconcile its receipt before continuing.
+                setActionStateText('Confirming approval…')
+                const approvalAction = activeDepositActions.find(action => action.step === 'approve') ?? { step: 'approve' }
+                const transition = await waitForSwapActionTransition({
+                    swapId: swapData.id,
+                    sourceAddress: selectedSourceAccount.address,
+                    previousAction: approvalAction,
+                    approvalTransaction: { hash: savedApproval.hash, network: (approvalAction.network ?? swapBasicData.source_network).name },
+                    signal,
+                })
+                signal.throwIfAborted()
+                activeDepositActions = transition.actions
+                setWorkflowState({ swapId: swapData.id, actions: activeDepositActions, swapData })
+            }
+
             // Follow the server's workflow without another click. Later responses
             // can reveal additional actions, so bound wallet requests independently
             // of the initial response to stop repeated transitions.
@@ -478,7 +496,7 @@ export function useSendTransactionController({
                     const failedStep = activeDepositActions.find(action => action.status === 'failed')
                     if (failedStep) throw new Error(failedStep.detail || 'The swap action failed')
                     if (isDepositWorkflowComplete(activeDepositActions)) {
-                        if (activeDepositActions.some(action => isBatchTransferAction(action) || action.step === 'approve')) throw new Error('Waiting for batch receipts or a backend input transaction before continuing.')
+                        if (activeDepositActions.some(isBatchTransferAction)) throw new Error('Waiting for batch receipts or a backend input transaction before continuing.')
                         // Server action completion can revert before funds are submitted.
                         // Only wallet transfer or confirmed gasless submission may clear
                         // the containing form and the signature needed to resume.
@@ -604,7 +622,7 @@ export function useSendTransactionController({
                             throw new TransferFeeReviewRequired()
                         },
                     })), currentAction)
-                    if (currentAction.step === 'approve_permit2') {
+                    if (isApprovalAction(currentAction)) {
                         approvalTransaction = { hash, network: (currentAction.network ?? swapBasicData.source_network).name }
                     }
                 }
@@ -612,7 +630,7 @@ export function useSendTransactionController({
                 signal.throwIfAborted()
                 if (currentAction && !requiresDepositActionRefresh(currentAction)) return
 
-                setActionStateText(currentAction?.step === 'approve_permit2' ? 'Confirming approval…' : 'Preparing transaction…')
+                setActionStateText(currentAction && isApprovalAction(currentAction) ? 'Confirming approval…' : 'Preparing transaction…')
                 const transition = await waitForSwapActionTransition({
                     swapId: swapData.id,
                     sourceAddress: selectedSourceAccount.address,
