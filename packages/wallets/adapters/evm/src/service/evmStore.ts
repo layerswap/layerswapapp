@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import type { Connection, Connector, GetAccountReturnType } from '@wagmi/core'
+import type { PublishedCapabilities } from '../transferProvider/walletCapabilities'
 
 export type WagmiAccountSnapshot = {
     address?: string
@@ -17,6 +18,7 @@ export type EvmStoreState = {
     wagmiAccount: WagmiAccountSnapshot
     connections: readonly Connection[]
     allConnectors: readonly Connector[]
+    walletCapabilities: PublishedCapabilities
     selectedAddress?: string
     ready: boolean
 
@@ -24,6 +26,7 @@ export type EvmStoreState = {
     _setWagmiAccount: (snapshot: WagmiAccountSnapshot) => void
     _setConnections: (connections: readonly Connection[]) => void
     _setConnectors: (connectors: readonly Connector[]) => void
+    _setWalletCapabilities: (capabilities: PublishedCapabilities) => void
 }
 
 export const useEvmStore = create<EvmStoreState>()(
@@ -32,6 +35,7 @@ export const useEvmStore = create<EvmStoreState>()(
             wagmiAccount: EMPTY_ACCOUNT,
             connections: [],
             allConnectors: [],
+            walletCapabilities: {},
             selectedAddress: undefined,
             ready: false,
 
@@ -39,6 +43,7 @@ export const useEvmStore = create<EvmStoreState>()(
             _setWagmiAccount: (snapshot) => set({ wagmiAccount: snapshot }),
             _setConnections: (connections) => set({ connections }),
             _setConnectors: (connectors) => set({ allConnectors: connectors, ready: connectors.length > 0 }),
+            _setWalletCapabilities: (walletCapabilities) => set({ walletCapabilities }),
         }),
         {
             name: 'ls-evm-store',

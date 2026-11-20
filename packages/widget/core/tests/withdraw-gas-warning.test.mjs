@@ -28,6 +28,9 @@ const mockUrl = `data:text/javascript,${encodeURIComponent(`
   export const useCallbacks = () => ({ onSwapLifecycle: event => state.events.push(event) })
   export const useQuoteData = () => ({ minAllowedAmount: state.minAllowedAmount, maxAllowedAmount: state.maxAllowedAmount })
   export const transformSwapDataToQuoteArgs = () => ({})
+  export const useSelectedSourceWallet = () => state.alternateGasFees === undefined ? undefined : { metadata: { capabilities: {
+    [(state.walletAddress ?? 'source').toLowerCase()]: { 0: { atomic: 'unsupported', alternateGasFees: state.alternateGasFees } },
+  } } }
   const passthrough = ({ children }) => children
   export const WalletActionTransition = passthrough
   export const Widget = { Content: passthrough, Footer: passthrough }
@@ -53,7 +56,7 @@ const mocked = [
   '/lib/balances/useBalance', '/context/settings', '/context/swapAccounts',
   '/validationError/ErrorDisplay', '/hooks/useFee', '/components/Icons/InfoIcon',
   '/validationError/RefreshBalanceButton', '/validationError/AdjustAmountButton',
-  '/Presentation/WalletActionTransition',
+  '/Presentation/WalletActionTransition', '/hooks/useSelectedSourceWallet',
 ]
 const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
   const parent = context.parentURL ?? ''
@@ -91,7 +94,7 @@ beforeEach(() => {
   useGaslessPreferenceStore.getState().resetGaslessPreference()
   Object.assign(state, {
     swapId: undefined, swapDetails: undefined, inputTransactionStatus: undefined,
-    walletId: undefined, wallets: [],
+    walletId: undefined, wallets: [], alternateGasFees: undefined,
     actions: undefined, gasRequests: [], events: [], walletAddress: undefined, locked: false, freshAttempts: 0, submitted: undefined, formValues: undefined, quoteLoading: false,
     swap: { source_network: network, source_token: token, destination_network: { name: 'BASE_MAINNET' }, destination_token: token, requested_amount: '0.95', use_deposit_address: false },
     balances: [{ network: network.name, token: token.symbol, amount: 1, isNativeCurrency: true }],
@@ -539,6 +542,27 @@ for (const symbol of ['BNB', 'ETH']) {
     assert.doesNotMatch(container.textContent, /Insufficient balance for gas/)
   })
 }
+
+test('a token gas warning stays hidden only when the wallet reported paying gas in another token', async () => {
+  state.swap.source_token = { symbol: 'USDC', decimals: 6, contract: '0xtoken' }
+  state.gasData = { gas: 0.00001, maxFee: 0.00006, token }
+  state.balances = [
+    { network: network.name, token: 'USDC', amount: 100, isNativeCurrency: false },
+    { network: network.name, token: token.symbol, amount: 0, isNativeCurrency: true },
+  ]
+  await render()
+  assert.match(container.textContent, /Required maximum gas fee: 0.00006 ETH/, 'unreported capabilities keep the warning')
+  state.alternateGasFees = true
+  await render()
+  assert.doesNotMatch(container.textContent, /Insufficient balance for gas/)
+  assert.equal(sendButton().disabled, false)
+  state.alternateGasFees = false
+  await render()
+  assert.match(container.textContent, /Required maximum gas fee: 0.00006 ETH/)
+  state.gasData = { gas: 0.0001, maxFee: 0.0002489, token }
+  await render()
+  assert.match(container.textContent, /Required maximum gas fee: 0.000249 ETH/)
+})
 
 test('a token gas warning ignores another network balance and missing native data', async () => {
   state.swap.source_token = { symbol: 'USDT', decimals: 18, contract: '0xtoken' }
