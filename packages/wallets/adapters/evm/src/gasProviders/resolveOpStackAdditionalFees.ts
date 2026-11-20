@@ -17,7 +17,9 @@ export async function resolveOpStackL1Fee({ publicClient, network, transaction }
     transaction: OpStackTransaction
 }): Promise<bigint> {
     const oracle = resolveOracle(network)
-    if (!oracle) return 0n
+    if (!oracle) {
+        return 0n
+    }
     // viem serializes the request itself; supply the original calldata and value.
     return estimateL1Fee(publicClient, {
         ...transaction,
@@ -31,7 +33,9 @@ export async function resolveOpStackOperatorFee({ publicClient, network, gasLimi
 }): Promise<bigint> {
     const policy = resolveEVMGasPolicy(Number(network.chain_id))
     const oracle = resolveOracle(network)
-    if (!policy.opStack?.operatorFee || !oracle) return 0n
+    if (!policy.opStack?.operatorFee || !oracle) {
+        return 0n
+    }
     // The oracle handles Isthmus/Jovian formulas. RPC failures must not become zero fees.
     return publicClient.readContract({
         address: oracle as `0x${string}`,

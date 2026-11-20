@@ -268,7 +268,9 @@ export default class getOptimismGas extends getEVMGas {
             resolveOpStackL1Fee({ publicClient: this.publicClient, network: this.from, transaction }),
         ])
         const feeAmounts = calculateGasFeeAmounts({ policy, estimatedGas, ...feeData })
-        if (!feeAmounts) return undefined
+        if (!feeAmounts) {
+            return undefined
+        }
 
         const operatorFee = await resolveOpStackOperatorFee({
             publicClient: this.publicClient,

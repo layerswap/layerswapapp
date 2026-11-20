@@ -10,8 +10,12 @@ import { parseUnits } from 'viem'
  * apart, and upstream truncation to token decimals never produces them.
  */
 export function parseNativeAmount(amount: number | string, decimals: number, amountInBaseUnits?: string): bigint {
-    if (amountInBaseUnits != null) return BigInt(amountInBaseUnits)
+    if (amountInBaseUnits != null) {
+        return BigInt(amountInBaseUnits)
+    }
 
     const text = String(amount)
-    return parseUnits(/e/i.test(text) ? Number(text).toFixed(decimals) : text, decimals)
+    const isExponential = /e/i.test(text)
+    const decimalText = isExponential ? Number(text).toFixed(decimals) : text
+    return parseUnits(decimalText, decimals)
 }
