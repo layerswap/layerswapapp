@@ -224,7 +224,7 @@ export default function TimelinePage() {
                                                 aria-hidden="true"
                                             />
                                         )}
-                                        Controls
+                                        <span>Controls</span>
                                     </span>
                                 </SecondaryButton>
                             )}

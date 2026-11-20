@@ -34,11 +34,10 @@ overrides:
   '@types/react': 19.2.3
   '@types/react-dom': 19.2.3
 
-# TypeScript 7 predates the peer ranges of two dev-time tools we still pin:
-# @typescript-eslint 8.52 (via eslint-config-next) caps at <6.0.0 — fixed in
-# 8.58+, which also needs eslint >=8.57 — and @module-federation/enhanced 0.9
-# caps at ^5, only lifted in 2.7. Neither runs tsc against our sources, so the
-# workspace accepts TS 7 for any typescript peer until those are upgraded.
+# TypeScript 7 predates the peer ranges of @module-federation/enhanced 0.9
+# (caps at ^5, only lifted in 2.7), so the workspace accepts TS 7 for any
+# typescript peer until it is upgraded. The typescript-eslint stack gets its
+# own TS 6 via .pnpmfile.cjs, since TS 7 no longer ships the compiler API.
 peerDependencyRules:
   allowedVersions:
     typescript: '7'
