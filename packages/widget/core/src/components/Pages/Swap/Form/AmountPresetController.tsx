@@ -9,7 +9,7 @@ import useWallet from '@/hooks/useWallet'
 import { transformFormValuesToQuoteArgs, useQuoteData } from '@/hooks/useFee'
 import { resolveQuoteError } from '@/hooks/useFormValidation'
 import { useBalance } from '@/lib/balances/useBalance'
-import { calculatePresetAmount, amountPresetSource, isAmountPreset, isWalletAmountFlow, supportsLiveAmountPreset, AmountPresetUnavailableError, type AmountPreset } from '@/lib/amountPresets'
+import { calculatePresetAmount, amountPresetSource, amountPresetGasFloorScope, isAmountPreset, isWalletAmountFlow, resolveAmountPresetGasFloor, supportsLiveAmountPreset, withGasFloor, AmountPresetUnavailableError, type AmountPreset } from '@/lib/amountPresets'
 import { resolverService } from '@/lib/resolvers/resolverService'
 import { minimumAmountMessage } from '@/lib/amountMessages'
 import { useUsdModeStore } from '@/stores/usdModeStore'
@@ -46,11 +46,13 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
     const { maxAllowedAmount, minAllowedAmount, minAllowedAmountInUsd, limitsError, quoteError } = useQuoteData(
         !frozen && sameSource && liveSupported ? transformFormValuesToQuoteArgs(values) : undefined,
     )
+    const gasFloor = resolveAmountPresetGasFloor(swap?.depositGasFloor, amountPresetGasFloorScope(source, values.to?.name, values.toAsset?.symbol))
     // The chosen preset and both limits identify the calculation. The amount is
     // intentionally excluded: applying a result must not start another request.
     const key = !frozen && sameSource && liveSupported && balance && maxAllowedAmount !== undefined && minAllowedAmount !== undefined
         ? ['amount-preset', mode, source, values.depositMethod, balance?.amount, balance?.request_time, maxAllowedAmount, minAllowedAmount,
-            values.to?.name, values.toAsset?.symbol, values.destination_address, !!values.refuel, revision]
+            values.to?.name, values.toAsset?.symbol, values.destination_address, !!values.refuel, revision,
+            gasFloor?.maxFee ?? gasFloor?.gas ?? null, gasFloor?.reserve ?? null]
         : null
     const { data: calculation, error, isValidating } = useSWR<{ amount: string; gas?: GasWithToken }>(key, async () => {
         let gas: GasWithToken | undefined
@@ -58,9 +60,9 @@ function ActiveAmountPreset({ mode }: { mode: AmountPreset }) {
             mode, network: values.from!, token: values.fromAsset!, balance,
             limit: maxAllowedAmount, minimum: minAllowedAmount, probeAmount: values.amount,
             estimateGas: async amount => {
-                gas = await resolverService.getGasResolver().getGas({
+                gas = withGasFloor(await resolverService.getGasResolver().getGas({
                     address: account!.address, network: values.from!, token: values.fromAsset!, amount, wallet,
-                })
+                }), gasFloor)
                 return gas
             },
         })

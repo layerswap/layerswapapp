@@ -157,7 +157,7 @@ export function useProviderWithdrawal({ swapBasicData, refuel, swapId }: Withdra
                 return;
             }
             if (cause instanceof AmountPresetChangedError) {
-                setError({ header: 'Amount updated', details: cause.message });
+                setError({ header: 'Adjust the amount', details: cause.message });
                 return;
             }
             lastFailureWasUserRejection.current = isUserRejection(cause);

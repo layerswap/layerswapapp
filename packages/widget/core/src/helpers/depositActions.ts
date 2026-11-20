@@ -1,4 +1,30 @@
 import type { BatchTransferDepositAction, DepositAction, SignDepositAction, TransferDepositAction } from "@/lib/apiClients/layerSwapApiClient";
+import type { GasProps, NetworkType } from "@layerswap/widget-types";
+
+// Only the EVM gas providers price a deposit action's own payload.
+const EVM_NETWORK_TYPE: `${NetworkType}` = 'evm'
+
+export type DepositGasTransaction = Pick<GasProps, 'recipientAddress' | 'callData' | 'amountInBaseUnits'>
+
+/** The actionable transfer and its exact payload, when it belongs to this swap's
+ * EVM source network, token and funding account. Fee quotes for it describe the
+ * real deposit transaction instead of a plain transfer. */
+export function resolveDepositGasTransaction(
+    actions: DepositAction[] | undefined,
+    source: { network: { name: string; type?: string }; token: string; address: string | undefined },
+): { action: TransferDepositAction; transaction: DepositGasTransaction } | undefined {
+    if (source.network.type !== EVM_NETWORK_TYPE) return undefined
+    const action = getActionableDepositAction(actions)
+    if (!action || !isTransferAction(action)) return undefined
+    if (action.network && action.network.name !== source.network.name) return undefined
+    if (action.token && action.token.symbol !== source.token) return undefined
+    if (action.from_address && action.from_address.toLowerCase() !== source.address?.toLowerCase()) return undefined
+    if (!action.to_address || action.amount == null) return undefined
+    return {
+        action,
+        transaction: { recipientAddress: action.to_address, callData: action.call_data ?? '', amountInBaseUnits: action.amount_in_base_units },
+    }
+}
 
 export function resolveDepositAddress(
     network: { type?: string } | undefined,

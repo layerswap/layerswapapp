@@ -256,7 +256,7 @@ function createWorkflow({
         './DepositWorkflowView': workflowView,
         '../messages/Message': { WalletMessageDetails: ({ children }) => children },
     })
-    const ErrorDisplay = () => null
+    const ErrorDisplay = ({ title, message, action }) => createElement('div', null, title, message, action)
     const walletViews = loadSource('../src/components/Pages/Swap/Withdraw/Presentation/WalletActionsView.tsx', {
         '../TransferBlock': { TransferBlock: props => mounted
             ? createElement(blockBoundary.TransferBlock, props)
@@ -276,6 +276,7 @@ function createWorkflow({
         '../../Form/SecondaryComponents/validationError/constants': {},
         '../../Form/SecondaryComponents/validationError/ErrorDismissButton': { default: noop },
         '../../Form/SecondaryComponents/validationError/ErrorDisplay': { ErrorDisplay },
+        '../../Form/SecondaryComponents/validationError/AdjustAmountButton': { AdjustAmountButton: ({ onEditAmount, isLoading }) => createElement('button', { onClick: onEditAmount, disabled: isLoading }, 'Adjust amount') },
         '../messages/Message': { default: ({ header, details }) => createElement('div', null, header, details) },
         '../messages/walletErrorMessage': loadSource('../src/components/Pages/Swap/Withdraw/messages/walletErrorMessage.ts', {
             '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
@@ -369,6 +370,12 @@ function createWorkflow({
                     setWalletActionExecuting: noop,
                 }),
                 createSwap: (...args) => state.createSwap ? state.createSwap(...args) : assert.fail('Retry must keep the existing swap'),
+                applyPresetRevision: () => {
+                    const proposal = state.presetRevisionProposal
+                    state.presetRevisionProposal = undefined
+                    if (proposal) state.swapBasicData = { ...state.swapBasicData, requested_amount: proposal.amount }
+                    return proposal?.amount
+                },
                 startFreshSwapAttempt: noop,
                 mutateSwap: async () => {},
                 setSwapId: id => { state.swapId = id },
@@ -2801,3 +2808,60 @@ for (const signatureState of ['completed sign-only action', 'saved signature bef
         })
     }
 }
+
+test('a preset the confirmation cannot send offers Adjust amount, which applies it for the next Confirm', async t => {
+    const dom = new JSDOM('<div id="root"></div>')
+    const previous = Object.getOwnPropertyDescriptors(globalThis)
+    Object.assign(globalThis, { window: dom.window, document: dom.window.document, IS_REACT_ACT_ENVIRONMENT: true })
+    const flow = createWorkflow({ mounted: true })
+    flow.network.chain_id = '8453'
+    flow.wallet.chainId = 8453
+    flow.state.resolveCurrentFlow = true
+    flow.state.renderControls = true
+    flow.state.swapId = undefined
+    flow.state.swapDetails = undefined
+    flow.state.depositActionsResponse = undefined
+    flow.state.walletExecutionStarted = false
+    flow.state.swapBasicData = { ...atomicFixtures.swap, source_network: flow.network, destination_network: { name: 'ARBITRUM_MAINNET' } }
+    const message = 'The network fee for this swap is higher than estimated. Adjust the amount to cover it.'
+    const creations = []
+    // The swap context publishes the proposal before rejecting; the draft keeps the reviewed amount.
+    flow.state.createSwap = async values => {
+        creations.push(values.amount)
+        if (creations.length === 1) {
+            flow.state.presetRevisionProposal = { amount: '0.65', message }
+            throw new amountPresets.AmountPresetChangedError(message)
+        }
+        throw new Error('creation stops here for the test')
+    }
+    const root = createRoot(document.getElementById('root'))
+    t.after(async () => {
+        await act(async () => root.unmount())
+        dom.window.close()
+        for (const key of ['window', 'document', 'IS_REACT_ACT_ENVIRONMENT']) {
+            if (previous[key]) Object.defineProperty(globalThis, key, previous[key]); else delete globalThis[key]
+        }
+    })
+    const render = () => act(async () => root.render(createElement(React.StrictMode, null, createElement(flow.Component))))
+    await render()
+    const reviewedAmount = flow.state.swapBasicData.requested_amount
+    await act(async () => { await flow.view.handleClick() })
+    assert.match(document.body.textContent, /Adjust the amount/)
+    assert.match(document.body.textContent, new RegExp(message.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
+    assert.doesNotMatch(document.body.textContent, /Something went wrong|Try again|Confirm swap/)
+    assert.equal(flow.state.swapBasicData.requested_amount, reviewedAmount, 'the reviewed amount stays until the user adjusts')
+    const adjust = [...document.querySelectorAll('button')].find(button => button.textContent === 'Adjust amount')
+    assert.ok(adjust, 'the proposal takes the send action\'s place')
+    assert.equal(adjust.disabled, false)
+    assert.deepEqual(flow.calls.executionStarts, [])
+    assert.deepEqual(flow.calls.errors, [], 'a proposal is not reported as a withdrawal error')
+    await act(async () => { adjust.click() })
+    assert.deepEqual(creations, [String(reviewedAmount)], 'Adjust only applies the amount; nothing is sent yet')
+    assert.equal(flow.state.presetRevisionProposal, undefined)
+    assert.equal(flow.state.swapBasicData.requested_amount, '0.65')
+    await render()
+    assert.doesNotMatch(document.body.textContent, /Adjust the amount/)
+    assert.equal(document.querySelector('button').textContent, 'Confirm swap', 'the confirm action returns for the applied amount')
+    await act(async () => { await flow.view.handleClick() })
+    assert.deepEqual(creations, [String(reviewedAmount), '0.65'], 'Confirm sends the applied amount')
+})

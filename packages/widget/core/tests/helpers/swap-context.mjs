@@ -24,7 +24,8 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
     const imports = {
         '@/components/utils/formatTokenAmount': { formatTokenAmount },
         '@/lib/amountPresets': amountPresets,
-        '@/lib/preparePresetAmount': { preparePresetAmount: () => { throw new Error('Unexpected preset preparation') } },
+        '@/lib/preparePresetAmount': { startPresetPreparation: () => { throw new Error('Unexpected preset preparation') } },
+        '@/lib/depositActionGas': { estimateDepositActionGas: async () => undefined },
         '@/helpers/swapProgress': swapProgress,
         '@/helpers/depository': { shouldUseDepository: () => false },
         react: React,
