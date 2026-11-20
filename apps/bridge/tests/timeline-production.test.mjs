@@ -1498,6 +1498,8 @@ for (const failure of ['rejected', 'failed']) {
             '@/stores/swapTransactionStore': stores,
             '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
             '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
+            '@/helpers/gasless': gasless,
+            '@/hooks/useIsGaslessActive': { useIsGaslessActive: () => false },
             '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
             '@/components/Input/Amount/helpers': loadSource('components/Input/Amount/helpers.ts', {
                 '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),

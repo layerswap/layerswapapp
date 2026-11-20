@@ -29,6 +29,8 @@ import { TransferBlock } from './TransferBlock';
 import { useHasSubmittedTransfer } from '@/hooks/useHasSubmittedTransfer';
 import { type ObservedLifecycleEvent, useLifecycleObservation } from '@/hooks/useLifecycleObservation';
 import { getActionableDepositAction, isTransferAction } from '@/helpers/depositActions';
+import { isGaslessDepositWorkflow } from '@/helpers/gasless';
+import { useIsGaslessActive } from '@/hooks/useIsGaslessActive';
 
 // "Transfer screen shown": reported once while the screen is visible, before any swap exists.
 const AWAITING_WALLET_ACTION: ObservedLifecycleEvent = {
@@ -44,6 +46,9 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
         useSwapDataState();
     const { startFreshSwapAttempt, canAdjustAmount } = useSwapDataUpdate();
     const hasSubmittedTransfer = useHasSubmittedTransfer();
+    const draftGasless = useIsGaslessActive(swapBasicData);
+    // Created swaps follow their execution plan even if the draft preference changed.
+    const isGaslessExecution = isGaslessDepositWorkflow(depositActionsResponse) ?? draftGasless;
 
     const { networks, sourceRoutes, destinationRoutes } = useSettingsState();
     const source_network =
@@ -194,7 +199,7 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
         Number(swapBasicData?.requested_amount) &&
         Number(walletBalanceAmount) < Number(swapBasicData?.requested_amount);
 
-    const { outOfGas } = useOutOfGas({
+    const { outOfGas, nativeGasShortage } = useOutOfGas({
         address: active ? selectedSourceAccount?.address : undefined,
         network: source_network,
         token: swapBasicData?.source_token,
@@ -244,6 +249,14 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
                 />
             </TransferBlock>
         );
+    } else if (!hasSubmittedTransfer && !isGaslessExecution && swapBasicData?.use_deposit_address === false && nativeGasShortage) {
+        // Keep execution mounted: a refreshed estimate or balance must not
+        // interrupt an in-flight wallet request. Sending rechecks pending funds.
+        const { requiredFee, availableBalance, symbol } = nativeGasShortage;
+        warning = <GasWarningView
+            message={`Required maximum gas fee: ${requiredFee} ${symbol}. Available native balance: ${availableBalance} ${symbol}. Add ${symbol} to your source account; reducing the token amount will not fund gas.`}
+            adjustButton={<RefreshBalanceButton onRefresh={mutate} isLoading={isLoading} />}
+        />;
     } else if (!hasSubmittedTransfer && swapBasicData?.use_deposit_address === false && outOfGas && !presetIsSyncing) {
         // A changing gas warning must preserve the active wallet execution.
         actionKey = 'transfer';

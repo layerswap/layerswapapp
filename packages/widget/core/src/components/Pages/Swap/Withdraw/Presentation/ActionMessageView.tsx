@@ -43,6 +43,8 @@ export function getActionMessage({
         return <ActionMessages.TransactionFailedMessage />;
     } else if (error?.name === ActionMessageType.TransactionExpired) {
         return <ActionMessages.TransactionExpiredMessage />;
+    } else if (error?.name === ActionMessageType.InsufficientGas) {
+        return <ActionMessages.InsufficientGasMessage message={error.message} />;
     } else if (error?.name === ActionMessageType.InsufficientFunds) {
         return <ActionMessages.InsufficientFundsMessage />;
     } else if (error?.name === ActionMessageType.WaletMismatch) {

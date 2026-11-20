@@ -22,7 +22,7 @@ const mockUrl = `data:text/javascript,${encodeURIComponent(`
   export const useSwapDataState = () => ({ swapBasicData: state.swap, amountPresetLocked: state.locked, swapId: state.swapId, swapDetails: state.swapDetails, inputTransactionStatus: state.inputTransactionStatus, depositActionsResponse: state.actions, quoteIsLoading: state.quoteLoading })
   export const useSwapDataUpdate = () => ({ setSubmitedFormValues(values) { state.submitted = values }, startFreshSwapAttempt() { state.freshAttempts++ }, canAdjustAmount: () => !state.locked })
   export const useSettingsState = () => ({ networks: [state.swap.source_network], sourceRoutes: [{ ...state.swap.source_network, tokens: [state.swap.source_token] }], destinationRoutes: [{ ...state.swap.destination_network, tokens: [state.swap.destination_token] }] })
-  export const useSelectedAccount = () => ({ address: state.walletAddress ?? 'source' })
+  export const useSelectedAccount = () => ({ id: state.walletId, address: state.walletAddress ?? 'source' })
   export const useBalance = () => ({ balances: state.balances, mutate() {}, isLoading: false })
   export const useOptionalCallbacks = () => ({})
   export const useCallbacks = () => ({ onSwapLifecycle: event => state.events.push(event) })
@@ -44,6 +44,10 @@ const gasUrl = `data:text/javascript,${encodeURIComponent(`
   import { state } from ${JSON.stringify(mockUrl)}
   export default (...args) => { state.gasRequests.push(args); return { gasData: state.gasData } }
 `)}`
+const walletUrl = `data:text/javascript,${encodeURIComponent(`
+  import { state } from ${JSON.stringify(mockUrl)}
+  export default () => ({ wallets: state.wallets })
+`)}`
 const mocked = [
   '/context/swap', '/Summary', '/components/Widget/Index', '/SwapQuoteDetails',
   '/lib/balances/useBalance', '/context/settings', '/context/swapAccounts',
@@ -53,6 +57,10 @@ const mocked = [
 ]
 const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
   const parent = context.parentURL ?? ''
+  if (parent.endsWith('/hooks/useIsGaslessActive.js')) {
+    if (specifier.endsWith('/context/swapAccounts')) return { url: mockUrl, shortCircuit: true }
+    if (specifier === './useWallet') return { url: walletUrl, shortCircuit: true }
+  }
     if (context.parentURL?.endsWith('/helpers/swapProgress.js') && specifier.endsWith('/lib/apiClients/layerSwapApiClient')) {
       return { url: 'data:text/javascript,export const TransactionType = { Input: "input" }; export const BackendTransactionStatus = { Failed: "failed" };', shortCircuit: true }
     }
@@ -71,6 +79,7 @@ const { state } = await import(mockUrl)
 const { createRoot } = await import('react-dom/client')
 const { default: Withdraw } = await import('../dist/esm/components/Pages/Swap/Withdraw/Withdraw.js')
 const { useSwapTransactionStore } = await import('../dist/esm/stores/swapTransactionStore.js')
+const { useGaslessPreferenceStore } = await import('../dist/esm/stores/gaslessPreferenceStore.js')
 const token = { symbol: 'ETH', precision: 6, decimals: 18 }
 const network = { name: 'ETHEREUM_MAINNET', type: 'evm', token }
 let root, container
@@ -79,8 +88,10 @@ beforeEach(() => {
   document.body.append(container)
   root = createRoot(container)
   useSwapTransactionStore.setState({ swapTransactions: {}, pendingSubmissions: {} })
+  useGaslessPreferenceStore.getState().resetGaslessPreference()
   Object.assign(state, {
     swapId: undefined, swapDetails: undefined, inputTransactionStatus: undefined,
+    walletId: undefined, wallets: [],
     actions: undefined, gasRequests: [], events: [], walletAddress: undefined, locked: false, freshAttempts: 0, submitted: undefined, formValues: undefined, quoteLoading: false,
     swap: { source_network: network, source_token: token, destination_network: { name: 'BASE_MAINNET' }, destination_token: token, requested_amount: '0.95', use_deposit_address: false },
     balances: [{ network: network.name, token: token.symbol, amount: 1, isNativeCurrency: true }],
@@ -499,4 +510,99 @@ test('Max retains a real gas warning when no valid reduced amount meets the mini
   await render()
   assert.equal(state.freshAttempts, 0)
   assert.equal(container.textContent.includes('Insufficient balance for gas'), true)
+})
+
+for (const symbol of ['BNB', 'ETH']) {
+  test(`token sends warn about missing ${symbol} independently of token amount or route limits`, async () => {
+    const native = { ...token, symbol }
+    state.swap.source_network = { ...network, token: native }
+    state.swap.source_token = { symbol: 'USDT', decimals: 18, contract: '0xtoken' }
+    state.gasData = { gas: 0.00001, maxFee: 0.00006, token: native }
+    state.balances = [
+      { network: network.name, token: 'USDT', amount: 100, isNativeCurrency: false },
+      { network: network.name, token: symbol, amount: 0, isNativeCurrency: true },
+    ]
+    state.minAllowedAmount = undefined
+    state.maxAllowedAmount = undefined
+    for (const amount of ['3', '1', '0.2']) {
+      state.swap.requested_amount = amount
+      await render()
+      assert.ok(container.textContent.includes(`Required maximum gas fee: 0.00006 ${symbol}`))
+      assert.ok(container.textContent.includes(`Available native balance: 0 ${symbol}`))
+      assert.match(container.textContent, /reducing the token amount will not fund gas/)
+      assert.match(container.textContent, /Refresh balance/)
+      assert.equal(!!adjustButton(), false)
+      assert.equal(sendButton().disabled, false)
+    }
+    state.balances[1].amount = 0.00006
+    await render()
+    assert.doesNotMatch(container.textContent, /Insufficient balance for gas/)
+  })
+}
+
+test('a token gas warning ignores another network balance and missing native data', async () => {
+  state.swap.source_token = { symbol: 'USDT', decimals: 18, contract: '0xtoken' }
+  state.balances = [
+    { network: network.name, token: 'USDT', amount: 100, isNativeCurrency: false },
+    { network: 'OTHER_NETWORK', token: 'ETH', amount: 0, isNativeCurrency: true },
+  ]
+  await render()
+  assert.doesNotMatch(container.textContent, /Insufficient balance for gas/)
+  state.balances[1].network = network.name
+  state.gasData = undefined
+  await render()
+  assert.doesNotMatch(container.textContent, /Insufficient balance for gas/)
+})
+
+function setGaslessTokenDeposit() {
+  state.walletId = 'gasless-wallet'
+  state.wallets = [{ id: state.walletId, asSourceSupportedNetworks: [network.name] }]
+  state.swap.source_token = {
+    symbol: 'USDC', decimals: 6, precision: 6, contract: '0xtoken',
+    supports_gasless_deposit: true, gasless_standard: 'eip3009',
+  }
+  state.balances = [
+    { network: network.name, token: 'USDC', amount: 100, isNativeCurrency: false },
+    { network: network.name, token: token.symbol, amount: 0, isNativeCurrency: true },
+  ]
+  state.gasData = { gas: 0.00001, maxFee: 0.00006, token }
+}
+
+test('a gasless draft with zero native funds has no gas warning until standard transfer is selected', async () => {
+  setGaslessTokenDeposit()
+  await render()
+  assert.doesNotMatch(container.textContent, /Insufficient balance for gas|Add ETH/)
+  assert.equal(sendButton().disabled, false)
+  assert.deepEqual(blocks(), [])
+
+  await act(() => useGaslessPreferenceStore.getState().switchToStandardTransfer())
+  assert.match(container.textContent, /Required maximum gas fee: 0.00006 ETH/)
+  assert.match(container.textContent, /Available native balance: 0 ETH/)
+  assert.equal(sendButton().disabled, false)
+})
+
+test('a restored gasless deposit follows its actions despite a disabled preference', async () => {
+  setGaslessTokenDeposit()
+  state.swapId = 'restored-gasless'
+  state.swapDetails = { ...state.swap, id: state.swapId }
+  state.actions = [{ type: 'sign', step: 'sign', status: 'action_required', signing_standard: 'eip3009' }]
+  useGaslessPreferenceStore.getState().setGaslessEnabled(false)
+  await render()
+  assert.doesNotMatch(container.textContent, /Insufficient balance for gas|Add ETH/)
+  assert.equal(sendButton().disabled, false)
+  assert.deepEqual(blocks(), [])
+})
+
+test('a restored self-paid swap keeps the native funding warning despite gasless capability and preference', async () => {
+  setGaslessTokenDeposit()
+  state.swapId = 'restored-self-paid'
+  state.swapDetails = { ...state.swap, id: state.swapId }
+  state.actions = [
+    { type: 'sign', step: 'sign', status: 'action_required', signing_standard: 'eip3009' },
+    { step: 'publish', status: 'pending' },
+  ]
+  await render()
+  assert.match(container.textContent, /Required maximum gas fee: 0.00006 ETH/)
+  assert.equal(sendButton().disabled, false)
+  assert.deepEqual(blocks(), [])
 })

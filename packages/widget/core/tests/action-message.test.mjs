@@ -114,3 +114,13 @@ for (const [name, expectedHeader] of [
     }
   })
 }
+
+for (const symbol of ['BNB', 'ETH']) {
+  test(`measured ${symbol} gas shortage renders its amounts instead of generic wallet copy`, () => {
+    const message = `Required maximum gas fee: 0.00006 ${symbol}. Available native balance: 0 ${symbol}. Add ${symbol} to source account.`
+    const html = renderError({ name: 'InsufficientGas', message })
+    assert.match(html, /Insufficient native balance for gas/)
+    assert.ok(html.includes(message))
+    assert.doesNotMatch(html, /The balance of the connected wallet is not enough|Something went wrong/)
+  })
+}

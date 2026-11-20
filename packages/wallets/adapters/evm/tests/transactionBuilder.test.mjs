@@ -319,7 +319,7 @@ for (const amount of ['0.000533814478846153', '0.00017042', '0.00015004', '0.000
         state.estimateGas = () => 22_615n
         await assert.rejects(transactionBuilder({ ...bscAction, amount }), error => {
             const mapped = toTransferError(error)
-            assert.equal(mapped.name, 'InsufficientFunds')
+            assert.equal(mapped.name, 'InsufficientGas')
             assert.equal(mapped.cause, error)
             return true
         })
@@ -393,3 +393,35 @@ test('the pending balance must cover the full fee cap, down to the last wei', as
     state.balance -= 1n
     await assert.rejects(transactionBuilder(action), InsufficientFundsError)
 })
+
+for (const [chainId, symbol, fee] of [['56', 'BNB', '0.00006'], ['1', 'ETH', '0.00012']]) {
+    for (const amount of [6, 3, 1]) {
+        test(`${symbol} shortage reports the native fee and balance for token amount ${amount}`, async () => {
+            state.balance = 0n
+            state.gasPrice = 1_000_000_000n
+            state.fees = { maxFeePerGas: 2_000_000_000n, maxPriorityFeePerGas: 1_000_000_000n }
+            state.estimateGas = () => 50_000n
+            const action = {
+                ...bscAction, amount,
+                token: { symbol: 'TOKEN', decimals: 18, contract: `0x${'56'.repeat(20)}` },
+                network: { ...bscAction.network, chain_id: chainId, token: { symbol, decimals: 18 } },
+                // Token funds must never be used as native gas funds.
+                balances: [{ token: 'TOKEN', amount: 1000000 }],
+            }
+            await assert.rejects(transactionBuilder(action), error => {
+                const mapped = toTransferError(error)
+                assert.equal(mapped.name, 'InsufficientGas')
+                assert.equal(mapped.reasonCode, 'insufficient_funds')
+                assert.ok(mapped.message.includes(`Required maximum gas fee: ${fee} ${symbol}.`))
+                assert.ok(mapped.message.includes(`Available native balance: 0 ${symbol}.`))
+                assert.ok(mapped.message.includes(action.selectedWallet.address))
+                assert.doesNotMatch(mapped.message, /Recalculate|Version:|ether to send/)
+                return true
+            })
+            assert.deepEqual(state.balanceArgs, { address: action.selectedWallet.address, blockTag: 'pending' })
+            assert.equal(state.estimate.value, 0n)
+            state.balance = chainId === '56' ? 60_000_000_000_000n : 120_000_000_000_000n
+            assert.equal((await transactionBuilder(action)).gas, 60_000n)
+        })
+    }
+}

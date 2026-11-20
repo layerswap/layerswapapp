@@ -1,5 +1,6 @@
 import { Network } from "@layerswap/widget-types";
-import { BaseError, createPublicClient, InsufficientFundsError } from "viem";
+import { createPublicClient } from "viem";
+import { EVMGasBalanceError } from './EVMGasBalanceError';
 import resolveChain from "../evmUtils/resolveChain";
 import { resolveFallbackTransport } from "../evmUtils/resolveTransports";
 import { buildTransactionGasParameters } from "./evmGasMath";
@@ -54,13 +55,10 @@ export const resolveEVMTransactionGasParameters = async ({
     if (feePerGas === undefined) {
         throw new Error(`Transaction fee is unavailable for chain ${chainId}`)
     }
-    const requiredBalance = (value ?? 0n) + gasParameters.gas * feePerGas
+    const requiredFee = gasParameters.gas * feePerGas
+    const requiredBalance = (value ?? 0n) + requiredFee
     if (balance < requiredBalance) {
-        throw new InsufficientFundsError({
-            cause: new BaseError(
-                'Balance does not cover the transfer and its current maximum gas fee. Recalculate the amount before sending.',
-            ),
-        })
+        throw new EVMGasBalanceError({ network, account, balance, requiredFee, value: value ?? 0n })
     }
 
     return gasParameters

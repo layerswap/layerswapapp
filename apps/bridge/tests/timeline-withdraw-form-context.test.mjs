@@ -54,6 +54,8 @@ const imports = {
     '@/hooks/useLifecycleObservation': { useLifecycleObservation: noop },
     '@/stores/swapTransactionStore': { useSwapTransactionStore: selector => selector({}) },
     '@/helpers/depositActions': { getActionableDepositAction: noop, isTransferAction: () => false },
+    '@/helpers/gasless': { isGaslessDepositWorkflow: () => undefined },
+    '@/hooks/useIsGaslessActive': { useIsGaslessActive: () => false },
 };
 const { outputText } = ts.transpileModule(readFileSync(new URL('src/components/Pages/Swap/Withdraw/Withdraw.tsx', core), 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
