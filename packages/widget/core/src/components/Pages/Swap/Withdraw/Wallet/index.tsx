@@ -33,6 +33,7 @@ import { isUserRejection } from "./Common/isUserRejection";
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import { useWithdrawalScope } from '../useWithdrawalExecution';
 import { withdrawalSelectionKey } from '../withdrawalHelpers';
+import { UnsupportedSourceWallet } from './UnsupportedSourceWallet';
 
 type Props = {
     swapData: SwapBasicData
@@ -126,8 +127,11 @@ export function useWalletWithdrawalController({
         const connect = <ConnectWalletView {...connection} />;
         controls = selectedSourceAccount && selectedProviderReady ? (
             <TransferBlock reasonCode="wallet_unsupported_for_network" path="WalletWithdrawal"
-                reason={`${selectedSourceAccount.providerName ?? 'The selected wallet'} cannot send from ${source_network.name}`}>
-                {connect}
+                reason={`${selectedSourceAccount.displayName || selectedSourceAccount.providerName || 'The selected wallet'} cannot send from ${source_network.name}`}>
+                <UnsupportedSourceWallet
+                    swapData={swapBasicData}
+                    walletName={selectedSourceAccount.displayName || selectedSourceAccount.providerName || 'The selected wallet'}
+                />
             </TransferBlock>
         ) : connect;
     }

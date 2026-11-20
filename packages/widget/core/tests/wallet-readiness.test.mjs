@@ -22,6 +22,24 @@ for (const [key, value] of Object.entries(globals)) {
 const mockUrl = `data:text/javascript,${encodeURIComponent(`
   import { createElement } from ${JSON.stringify(import.meta.resolve('react'))}
   export const state = {}
+  export const useSelectSwapAccount = () => account => {
+    state.selections.push(account)
+    state.account = { ...state.account, ...account }
+  }
+  export const ButtonWrapper = ({ children, onClick }) => createElement('button', { onClick }, children)
+  export const WalletsList = ({ wallets, onSelect }) => createElement('div', null,
+    ...wallets.map(wallet => createElement('button', {
+      key: wallet.id,
+      onClick: () => onSelect({ walletId: wallet.id, address: wallet.address, providerName: wallet.providerName }),
+    }, wallet.id)),
+    createElement('button', { onClick: () => {
+      if (!state.connectedWallet) return
+      state.walletState.wallets.push(state.connectedWallet)
+      onSelect({ walletId: state.connectedWallet.id, address: state.connectedWallet.address, providerName: state.connectedWallet.providerName })
+    } }, 'Connect new wallet'))
+  export const Drawer = ({ show, children, setShow }) => show ? createElement('div', { role: 'dialog' }, children, createElement('button', { onClick: () => setShow(false) }, 'Close picker')) : null
+  Drawer.Snap = ({ children }) => children
+
   export default function useWallet() { return state.walletState }
   export const useSelectedAccount = () => state.account
   export const useSwapDataState = () => state.swapState
@@ -72,6 +90,15 @@ const hooks = registerHooks({
       return { url: 'data:text/javascript,export const TransactionType = { Input: "input" }; export const BackendTransactionStatus = { Failed: "failed" };', shortCircuit: true }
     }
     if (['/TransferBlock.js', '/useHasSubmittedTransfer.js'].some(path => context.parentURL?.endsWith(path)) && specifier.endsWith('/context/swap')) return { url: mockUrl, shortCircuit: true }
+    if (context.parentURL?.endsWith('/UnsupportedSourceWallet.js')) {
+      if (specifier.endsWith('/Presentation/WalletActionsView')) return { url: mockUrl, shortCircuit: true }
+      if (specifier.endsWith('/messages/Message')) return { url: 'data:text/javascript,export default ({ details }) => details', shortCircuit: true }
+    }
+    if (context.parentURL?.endsWith('/WalletTransferPicker.js')) {
+      if (specifier.endsWith('/Modal/vaulModal')) return { url: 'data:text/javascript,' + encodeURIComponent(`import { Drawer } from ${JSON.stringify(mockUrl)}; export default Drawer`), shortCircuit: true }
+      if (specifier.endsWith('/WalletComponents/WalletsList')) return { url: 'data:text/javascript,' + encodeURIComponent(`import { WalletsList } from ${JSON.stringify(mockUrl)}; export default WalletsList`), shortCircuit: true }
+      if (specifier.endsWith('/hooks/useWallet') || specifier.endsWith('/context/swapAccounts')) return { url: mockUrl, shortCircuit: true }
+    }
     if (context.parentURL?.endsWith('/components/Pages/Swap/Withdraw/Wallet/index.js')) {
       if (specifier.endsWith('/RPCUnhealthyMessage')) return { url: 'data:text/javascript,export default () => %22RPC unhealthy%22', shortCircuit: true }
       if (specifier === '@layerswap/wallet-core') return { url: providerReadinessUrl, shortCircuit: true }
@@ -111,6 +138,8 @@ beforeEach(() => {
   document.body.append(container)
   root = createRoot(container)
   events = []
+  state.selections = []
+  state.connectedWallet = undefined
   state.account = {
     id: 'selected-wallet', address: 'source', providerName: 'selected-provider',
     provider: { id: 'selected-provider', name: 'selected-provider', ready: false },
@@ -175,7 +204,8 @@ test('a ready selected provider reports a truly unsupported wallet once regardle
   await render()
   await render()
 
-  assert.equal(container.textContent, 'Connect wallet')
+  assert.match(container.textContent, /selected-provider cannot send from ETHEREUM_MAINNET/)
+  assert.equal(container.querySelector('button').textContent, 'Choose source wallet')
   assert.equal(events.length, 1)
   assert.equal(events[0].step, 'transfer_blocked')
   assert.equal(events[0].reasonCode, 'wallet_unsupported_for_network')
@@ -214,7 +244,7 @@ for (const reason of ['rpc_unhealthy', 'wallet_unsupported_for_network', 'same_a
       await act(() => useSwapTransactionStore.setState({ swapTransactions: {}, pendingSubmissions: {} }))
       await render()
       const expectedText = reason === 'rpc_unhealthy' ? 'RPC unhealthy'
-        : reason === 'same_account_required' ? 'Accounts must match' : 'Connect wallet'
+        : reason === 'same_account_required' ? 'Accounts must match' : 'selected-provider cannot send from ETHEREUM_MAINNET. Choose a compatible source wallet or connect another one.Choose source wallet'
       assert.equal(container.textContent, expectedText)
       assert.deepEqual(events.map(event => event.reasonCode), [reason])
       if (reason === 'rpc_unhealthy') assert.equal(events[0].reason, 'RPC probe failed')
@@ -253,4 +283,48 @@ test('changing a mounted boundary reason reports the new visible block once', as
     ['rpc_unhealthy', 'RPC probe failed'],
     ['gasless_unavailable', 'Paymaster unavailable'],
   ])
+})
+
+for (const newlyConnected of [false, true]) {
+  test(`unsupported Passport recovers through explicit ${newlyConnected ? 'new connection' : 'connected wallet'} selection`, async () => {
+    const compatibleWallet = {
+      id: 'MetaMask', address: 'compatible-source', providerName: 'EVM',
+      withdrawalSupportedNetworks: [sourceNetwork.name],
+    }
+    const passport = { id: 'Passport', address: 'passport-source', isNotAvailable: true }
+    state.account = { id: passport.id, address: passport.address, displayName: 'Immutable Passport', providerName: 'EVM', provider: { ready: true } }
+    state.walletState = {
+      wallets: newlyConnected ? [] : [compatibleWallet],
+      provider: { ready: true, connectedWallets: newlyConnected ? [passport] : [passport, compatibleWallet] },
+    }
+    if (newlyConnected) state.connectedWallet = compatibleWallet
+    await render()
+    assert.match(container.textContent, /Immutable Passport cannot send from ETHEREUM_MAINNET/)
+    assert.equal(state.account.id, 'Passport', 'never silently changes the funding wallet')
+    assert.equal(events[0].reason, 'Immutable Passport cannot send from ETHEREUM_MAINNET')
+
+    await act(() => container.querySelector('button').click())
+    const dialog = container.querySelector('[role=dialog]')
+    assert.ok(dialog)
+    assert.equal(dialog.textContent.includes('Passport'), false, 'unsupported wallet is excluded')
+    assert.deepEqual(state.selections, [])
+    const choice = [...dialog.querySelectorAll('button')].find(button => button.textContent === (newlyConnected ? 'Connect new wallet' : 'MetaMask'))
+    await act(() => choice.click())
+    await render()
+    assert.deepEqual(state.selections, [{ id: 'MetaMask', address: 'compatible-source', providerName: 'EVM' }])
+    assert.equal(container.querySelector('[role=dialog]'), null)
+    assert.equal(container.textContent, 'Send transaction')
+  })
+}
+
+test('dismissing recovery leaves the unsupported source selected', async () => {
+  state.account.provider.ready = true
+  await render()
+  await act(() => container.querySelector('button').click())
+  assert.ok(container.querySelector('[role=dialog]'))
+  const close = [...container.querySelectorAll('button')].find(button => button.textContent === 'Close picker')
+  await act(() => close.click())
+  assert.equal(container.querySelector('[role=dialog]'), null)
+  assert.deepEqual(state.selections, [])
+  assert.equal(state.account.id, 'selected-wallet')
 })
