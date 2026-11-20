@@ -24,6 +24,7 @@ const swapCreation = loadSource('lib/swapCreation.ts', {
   './swapLifecycle': { lifecycleErrorDetails: () => ({}) },
 })
 const { preparePresetAmount } = loadSource('lib/preparePresetAmount.ts', {
+  '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
   '@layerswap/widget-types': { usesDepository: () => false },
   '@/hooks/useFee': { buildLimitsUrl: () => '/limits' },
   './apiClients/layerSwapApiClient': { default: class { async fetcher() { return { data: state.limits } } } },

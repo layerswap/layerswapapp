@@ -1,5 +1,6 @@
 import { Exchange } from "@/Models/Exchange";
 import type { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
+import { getExtendedProviderForNetwork } from "@/lib/extendedRoutes/registry";
 
 export type DepositMethod = 'wallet' | 'deposit_address' | undefined;
 
@@ -9,10 +10,10 @@ type FrontendSwapOptions = {
     destinationNetwork: string | undefined;
 }
 
-// Frontend-swap support is always requested. The backend remains the authority that
-// resolves the actual execution lane for the selected route and current capacity.
-export function wantsFrontendSwap(_options: FrontendSwapOptions): true {
-    return true;
+// Addressless provider deposits cannot execute frontend swaps as the connected
+// wallet. Resolve this before the extended source is mapped to its real network.
+export function wantsFrontendSwap({ sourceNetwork }: FrontendSwapOptions): boolean {
+    return getExtendedProviderForNetwork(sourceNetwork)?.supportsFrontendSwap !== false;
 }
 
 // Deposit address (manual transfer) flow with no source exchange: amount is optional

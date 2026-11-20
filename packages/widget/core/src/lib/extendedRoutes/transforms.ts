@@ -79,7 +79,7 @@ export type ExtendedCreateSwapParamsArgs = {
     referenceId?: string
     refuel?: boolean
     sourceAddress?: string
-    useFrontendSwap: true
+    useFrontendSwap: boolean
 }
 
 export function buildCreateSwapParamsForExtendedRoute({
@@ -108,7 +108,7 @@ export function buildCreateSwapParamsForExtendedRoute({
         reference_id: referenceId,
         refuel: !!refuel,
         use_deposit_address: !depository,
-        use_frontend_swap: useFrontendSwap,
+        use_frontend_swap: useFrontendSwap && provider.supportsFrontendSwap !== false,
         use_gasless: false,
         use_depository: depository || undefined,
         source_address: undefined,

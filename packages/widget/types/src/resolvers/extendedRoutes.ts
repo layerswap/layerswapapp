@@ -42,6 +42,8 @@ export interface ExtendedRouteProvider {
     enabledByDefault: boolean
     /** How the real backend leg is funded. */
     funding?: 'deposit_address' | 'depository'
+    /** Whether the real backend leg may use frontend swap execution. Defaults to true. */
+    supportsFrontendSwap?: boolean
     /** Whether the backend swap needs the source address for refunds. */
     requiresRefundAddress?: boolean
     /** Extended network names this provider owns, e.g. [HYPERLIQUID_MAINNET, HYPERLIQUID_TESTNET]. */

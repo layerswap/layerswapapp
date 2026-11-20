@@ -14,6 +14,7 @@ function loadSource(path, imports = {}) {
   new Function('require', 'module', 'exports', outputText)(name => {
     if (['react', 'react/jsx-runtime', 'swr', 'zustand'].includes(name)) return require(name)
     if (name in imports) return imports[name]
+    if (name === '@/lib/extendedRoutes/registry') return { getExtendedProviderForNetwork: () => undefined }
     throw new Error(`Unexpected dependency: ${name}`)
   }, module, module.exports)
   return module.exports

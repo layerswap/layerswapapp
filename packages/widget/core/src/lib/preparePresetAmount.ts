@@ -8,6 +8,7 @@ import { transformLimitsForExtendedRoute, type ExtendedLimits } from './extended
 import { useBalanceStore } from '@/stores/balanceStore'
 import { resolverService } from './resolvers/resolverService'
 import { calculatePresetAmount, isAmountPreset, isWalletAmountFlow, supportsLiveAmountPreset } from './amountPresets'
+import { wantsFrontendSwap } from '@/helpers/swapFlow'
 
 /** Fresh reads before creation. Never changes a created swap or its actions. */
 export async function preparePresetAmount(values: SwapFormValues, address: string | undefined, wallet: Wallet | undefined, sourceRoutes: NetworkRoute[], useGasless: boolean, publishLimits?: (key: string, response: ApiResponse<ExtendedLimits>) => Promise<unknown>) {
@@ -30,7 +31,12 @@ export async function preparePresetAmount(values: SwapFormValues, address: strin
         destinationNetwork: to.name, destinationToken: toAsset.symbol,
         destinationAddress: values.destination_address, refuel: values.refuel,
         useDepositAddress: plan ? !usesDepository(plan.mapping.provider) : false,
-        useFrontendSwap: true, useGasless: !plan && useGasless,
+        useFrontendSwap: wantsFrontendSwap({
+            depositMethod: values.depositMethod,
+            sourceNetwork: from.name,
+            destinationNetwork: to.name,
+        }),
+        useGasless: !plan && useGasless,
     })
     const [balanceData, limitsResponse] = await Promise.all([
         useBalanceStore.getState().fetchBalance(address, from, { ignoreCache: true }),
