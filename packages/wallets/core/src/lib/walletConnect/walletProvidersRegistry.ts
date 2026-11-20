@@ -1,4 +1,5 @@
 import type { StoreApi } from "zustand/vanilla"
+import type { LoginWallet } from "@layerswap/widget-types"
 import type { WalletConnectionProvider, WalletProviderStoreRegistry } from "@/types"
 
 /**
@@ -19,10 +20,13 @@ export type WalletProvidersRegistry = WalletProviderStoreRegistry & {
     getEntries(): readonly Entry[]
     getStoreById(id: string): StoreApi<WalletConnectionProvider> | undefined
     setEntries(next: readonly Entry[]): void
+    getLoginWallet(): LoginWallet | undefined
+    setLoginWallet(next: LoginWallet | undefined): void
 }
 
 export function createWalletProvidersRegistry(): WalletProvidersRegistry {
     let entries: readonly Entry[] = []
+    let loginWallet: LoginWallet | undefined
     const listeners = new Set<Listener>()
     const innerUnsubs = new Map<string, () => void>()
 
@@ -60,6 +64,14 @@ export function createWalletProvidersRegistry(): WalletProvidersRegistry {
                 }
             }
             entries = next
+            notify()
+        },
+        getLoginWallet(): LoginWallet | undefined {
+            return loginWallet
+        },
+        setLoginWallet(next: LoginWallet | undefined): void {
+            if (next?.address === loginWallet?.address && next?.providerId === loginWallet?.providerId) return
+            loginWallet = next
             notify()
         },
         subscribe(listener: Listener): () => void {

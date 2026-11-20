@@ -18,10 +18,12 @@ type Props = {
     fee: ReturnType<typeof useQuoteData>['quote'];
     quoteTokenPrices?: QuoteTokenPrices;
     hideManualTransfer?: boolean;
+    /** Hide "Connect new wallet" for this provider's family. */
+    hideConnectForProviderId?: string;
     onRoutePickerTriggerClick?: () => void;
 }
 
-const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd, fee, quoteTokenPrices, hideManualTransfer, onRoutePickerTriggerClick }: Props) => {
+const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd, fee, quoteTokenPrices, hideManualTransfer, hideConnectForProviderId, onRoutePickerTriggerClick }: Props) => {
     const { values } = useFormikContext<SwapFormValues>()
 
     const { fromAsset: fromCurrency, from, depositMethod } = values || {}
@@ -40,7 +42,7 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, mi
                 Send from
             </label>
             <div className="col-span-5 justify-self-end">
-                <SourceWalletPicker hideManualTransfer={hideManualTransfer} />
+                <SourceWalletPicker hideManualTransfer={hideManualTransfer} hideConnectForProviderId={hideConnectForProviderId} />
             </div>
         </div>
         <div className="relative">

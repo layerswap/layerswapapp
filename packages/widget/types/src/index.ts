@@ -1,6 +1,7 @@
 export type { ThemeData, ThemeColor, StatusColor } from './theme';
 export type {
   WidgetConfig,
+  LoginWallet,
   WidgetCallbacks,
   WidgetProps,
   WalletDefaults,

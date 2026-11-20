@@ -10,10 +10,13 @@ import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { useDepositSelection } from "../depositSelectionContext";
 import { DepositMethodId } from "../depositMethods";
 import { pickSourceToken, useMergedSourceRoutes } from "./useSourceRoute";
+import { useLoginWallet, withLoginAddress } from "@layerswap/wallet-core";
 
 type ExtendedDepositOption = {
     /** The provider is configured as a source at all — resolved synchronously, so
-     * the card can render in a stable state on first paint (no show-then-hide). */
+     * the card can render in a stable state on first paint (no show-then-hide).
+     * False while the login wallet's family signs this source but the login
+     * wallet isn't detected: the connect step would offer nothing. */
     present: boolean;
     /** Destination-scoped reachability is still resolving — the card shows a
      * loading state until this clears. */
@@ -49,7 +52,8 @@ type ExtendedDepositOption = {
 export function useExtendedDepositOption(providerId: DepositMethodId): ExtendedDepositOption {
     const mergedSources = useMergedSourceRoutes();
     const { destination, destinationToken } = useDepositSelection();
-    const { wallets } = useWallet();
+    const { wallets, providers } = useWallet();
+    const loginWallet = useLoginWallet();
 
     // The deposit method of the real backend route this provider funds through:
     // 'deposit_address' for CCTP-style sources, 'wallet' for depository sources.
@@ -63,13 +67,20 @@ export function useExtendedDepositOption(providerId: DepositMethodId): ExtendedD
         [mergedSources, providerId],
     );
     const token = useMemo(() => pickSourceToken(network), [network]);
-    const present = !!network && !!token;
 
-    // An already-connected wallet that can sign this source's withdrawals (EVM), if any.
-    const compatibleWallet = useMemo(
-        () => (network ? wallets.find(w => w.withdrawalSupportedNetworks?.includes(network.name)) : undefined),
-        [network, wallets],
-    );
+    const signedByLoginFamily = !!loginWallet && !!network && providers.some(p =>
+        p.id === loginWallet.providerId && p.withdrawalSupportedNetworks?.includes(network.name));
+
+    // An already-connected wallet that can sign this source's withdrawals (EVM).
+    // When the login wallet's family signs it, only the login wallet qualifies.
+    const compatibleWallet = useMemo(() => {
+        if (!network) return undefined;
+        const supports = (w: Wallet) => !!w.withdrawalSupportedNetworks?.includes(network.name);
+        const login = wallets.find(w => w.isLoginWallet && supports(w));
+        if (login && loginWallet) return withLoginAddress(login, loginWallet);
+        return signedByLoginFamily ? undefined : wallets.find(supports);
+    }, [network, wallets, loginWallet, signedByLoginFamily]);
+    const present = !!network && !!token && !(signedByLoginFamily && !compatibleWallet);
 
     // Reachability for the fixed destination, from the gated (scoped) route list.
     const reachValues = useMemo<SwapFormValues>(

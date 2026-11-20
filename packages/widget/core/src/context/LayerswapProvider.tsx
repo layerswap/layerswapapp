@@ -74,7 +74,7 @@ const NO_PROVIDERS: (WalletProvider | WalletWrapper | WalletProviderDescriptor)[
 let liveProviderInstances = 0
 
 const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callbacks, config, walletProviders = NO_PROVIDERS }) => {
-    let { apiKey, version, settings: _settings, theme, initialValues, loadingComponent, apiUri, imtblPassport, tonConfigs, walletConnect } = config || {}
+    let { apiKey, version, settings: _settings, theme, initialValues, loadingComponent, apiUri, imtblPassport, tonConfigs, walletConnect, loginWallet } = config || {}
     const [fetchedSettings, setFetchedSettings] = useState<LayerSwapSettings | null>(null)
     const [settingsError, setSettingsError] = useState<Error | null>(null)
     const [settingsFetchAttempt, setSettingsFetchAttempt] = useState(0)
@@ -205,6 +205,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
                                     <WalletsProviders
                                         appName={initialValues?.appName}
                                         walletProviders={resolvedProviders}
+                                        loginWallet={loginWallet}
                                     >
                                         <ResolverProviders walletProviders={resolvedProviders}>
                                             <SwapAccountsProvider>
