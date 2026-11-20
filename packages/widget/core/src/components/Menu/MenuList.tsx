@@ -54,7 +54,7 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path?: string) => void }> = ({ g
                     Chat with our team
                 </Menu.Item>
                 <Menu.Item pathname='https://t.me/layerswap_dev' target="_blank" icon={<Users className="h-5 w-5" />}>
-                    Public Telegram chat
+                    Join Dev Community
                 </Menu.Item>
             </Menu.Group>
 
