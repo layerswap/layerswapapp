@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import useSWR from 'swr'
 import LayerSwapApiClient, { SwapResponse } from '@/lib/apiClients/layerSwapApiClient'
-import { ApiResponse } from '@/Models/ApiResponse'
+import type { ApiResponse } from '@layerswap/widget-types'
 import { useExtendedSourceSkin } from './useExtendedSourceSkin'
 
 export function useSwapByTransactionHash(hash: string, delayMs = 400) {

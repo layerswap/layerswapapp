@@ -3,16 +3,18 @@ import { readFileSync } from 'node:fs'
 import test from 'node:test'
 import vm from 'node:vm'
 import ts from 'typescript'
+import { ErrorHandler, setErrorLogger, defaultErrorLogger } from '@layerswap/widget-types'
+import { flattenContext } from '../faro-sanitizer.ts'
 
 const compiled = ts.transpileModule(readFileSync(new URL('../../components/utils/logError.ts', import.meta.url), 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText
 
-function loadLogError(impact) {
+function loadLogError(impact, nodeEnv = 'production') {
     const records = []
     const exports = {}
     vm.runInNewContext(compiled, {
-        exports, console, Error,
+        exports, console, Error, process: { env: { NODE_ENV: nodeEnv } },
         require: name => ({
             '../../lib/faro': {
                 captureEvent: (name, attributes) => records.push({ kind: 'event', name, attributes }),
@@ -82,4 +84,39 @@ test('user-impact exceptions are never deduplicated by the diagnostic policy', (
     const { logError, records } = loadLogError('user')
     logError(event); logError(event)
     assert.equal(records.length, 2)
+})
+
+test('wallet RPC diagnostics survive the public report, bridge logger and Faro flattening', t => {
+    const { logError, records } = loadLogError('user')
+    t.after(() => setErrorLogger(defaultErrorLogger))
+    setErrorLogger(logError)
+    const wallet = Object.assign(new Error('UNKNOWN_ERROR'), {
+        code: 163, data: { error: {
+            code: 41, data: { execution_error: { contract_address: '0x123', error: 'Assertion failed' } },
+            request: { signature: 'private-request' },
+        } },
+    })
+    ErrorHandler({ type: 'SwapWithdrawalError', name: 'UnexpectedErrorMessage', message: 'UNKNOWN_ERROR',
+        reasonCode: 'unknown_error', cause: new Error('Wallet failed', { cause: wallet }) })
+    assert.equal(records.length, 1)
+    const fields = flattenContext(records[0].context)
+    assert.equal(fields['cause.cause.code'], '163')
+    assert.equal(fields['cause.cause.data.error.code'], '41')
+    assert.equal(fields['cause.cause.data.error.data.execution_error.error.message'], 'Assertion failed')
+    assert.equal(fields.impact, 'user')
+    assert.equal(fields.reason_code, 'unknown_error')
+    assert.doesNotMatch(JSON.stringify(fields), /private-request|signature/)
+})
+
+test('local diagnostics retain repeated occurrences, multiline details and stacks', () => {
+    const { logError, records } = loadLogError('diagnostic', 'development')
+    const diagnostic = { ...event, message: 'failed\ncall details', stack: 'at widget.ts:10', cause: { message: 'cause\ndetails', stack: 'at rpc.ts:20' } }
+    logError(diagnostic)
+    logError(diagnostic)
+    assert.equal(records.length, 2)
+    for (const { attributes } of records) {
+        assert.equal(attributes.message, diagnostic.message)
+        assert.equal(attributes.stack, diagnostic.stack)
+        assert.deepEqual(attributes.cause, diagnostic.cause)
+    }
 })

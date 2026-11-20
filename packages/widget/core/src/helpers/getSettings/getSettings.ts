@@ -30,15 +30,15 @@ export async function getSettings(apiKey: string, options?: GetSettingsOptions) 
         ] = await Promise.all([
             apiClient.GetLSNetworksAsync(),
             apiClient.GetSourceExchangesAsync().catch(() => ({ data: [] })),
-            apiClient.GetRoutesAsync('sources'),
-            apiClient.GetRoutesAsync('destinations'),
+            apiClient.GetRoutesAsync('sources', true),
+            apiClient.GetRoutesAsync('destinations', true),
             // Resolves to undefined on any failure; the extended-route registry then
             // falls back to each provider's `enabledByDefault` (fail-closed for
             // credential-bearing routes).
             includeFeatureFlags ? fetchExtendedRouteFlags() : Promise.resolve(undefined),
         ])
 
-        if (!networkData) return
+        if (!networkData?.length) return null
 
         const settings = {
             networks: networkData,

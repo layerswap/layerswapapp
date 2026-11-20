@@ -7,6 +7,9 @@ export type GasProps = {
     token: Token,
     address?: string,
     recipientAddress?: string,
+    /** Exact deposit action calldata, including an empty string for a plain transfer. */
+    callData?: string,
+    amountInBaseUnits?: string,
     wallet?: Wallet,
     amount?: number,
 }

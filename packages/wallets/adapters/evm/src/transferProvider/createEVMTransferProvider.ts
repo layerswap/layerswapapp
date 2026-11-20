@@ -1,8 +1,8 @@
 import { Network } from "@layerswap/widget-types";
 import { TransferProvider, TransferProps } from "@layerswap/widget-types";
 import { sendTransaction, Config } from '@wagmi/core'
-import { foregroundWalletApp } from "@layerswap/wallet-core"
 import { toTransferError } from "./toTransferError"
+import { resolveWalletConnector } from '../service/resolveWalletConnector'
 
 type TransactionBuilder = (params: TransferProps) => Promise<any>
 
@@ -19,10 +19,8 @@ export function createEVMTransferProvider(
 
             try {
                 const tx = await buildTransaction(params)
-
-                await foregroundWalletApp(selectedWallet?.metadata?.deepLink)
-
-                const hash = await sendTransaction(config, tx)
+                const connector = resolveWalletConnector(config, selectedWallet)
+                const hash = await sendTransaction(config, { ...tx, connector })
 
                 if (hash) {
                     return hash

@@ -24,19 +24,60 @@ export type TransferProps = {
     /** Address that owns the source balance, when it differs from the signing wallet
      *  (e.g. an off-chain account a routed source draws from). Optional. */
     sourceAddress?: string
-    /** Exact decimal amount string, for sources that must sign the amount verbatim
-     *  (precision-exact) rather than re-deriving it from `amount`. Optional. */
-    amountExact?: string
     /** Backend source routes (from settings). Routed sources (e.g. Hyperliquid CCTP)
      *  use these to resolve the SAME destination the swap was created/priced against,
      *  so availability-based fallback can't diverge between pricing and signing. Optional. */
     sourceRoutes?: NetworkRoute[]
+    /** Opt-in submission tracking for relayed withdrawals. Report `preparing` before
+     *  setup/signing and `submitting` before sending the signed withdrawal to the
+     *  provider. Report `not_submitted` only after a definitive provider refusal;
+     *  transport failures and ambiguous responses must remain `submitting`. */
+    onSubmissionStateChange?: (state: 'preparing' | 'submitting' | 'not_submitted') => void
 }
 
 /** Generic in-flight progress a provider may surface to the UI (e.g. a prerequisite signing step). */
 export type TransferProgress = { title: string; description?: string }
 
+/** Backend-built transfer instructions consumed by a wallet adapter. */
+export type WithdrawalAction = {
+    to_address?: string
+    call_data?: string | null
+    amount?: number
+    amount_in_base_units?: string
+    token?: Token
+}
+
+/** Adapter-owned withdrawal behavior. The widget has no provider-name registry. */
+export type WalletWithdrawal = {
+    id: string
+    displayName: string
+    preparationLabel?: string
+    amountDecimals?: (token: Token) => number
+    prepareTransfer: (action: WithdrawalAction | undefined, amount: number) =>
+        Pick<TransferProps, 'amount' | 'depositAddress' | 'callData'>
+        & Partial<Pick<TransferProps, 'amountInBaseUnits' | 'token'>>
+}
+
 export interface TransferProvider {
+    withdrawal?: WalletWithdrawal
+    atomicBatch?: AtomicBatchProvider
     supportsNetwork(network: Network): boolean
     executeTransfer(params: TransferProps, wallet?: Wallet, onProgress?: (info: TransferProgress | undefined) => void): Promise<string>
+}
+
+export type AtomicBatchContext = {
+    network: Network
+    wallet: Wallet
+    account: string
+    signal?: AbortSignal
+    onWalletPrompt?: () => void
+}
+
+export type AtomicBatchCall = { to: `0x${string}`; data: `0x${string}`; value: bigint }
+
+/** IDs belong to the wallet call API and are never transaction hashes. */
+export interface AtomicBatchProvider {
+    getCapabilities(context: AtomicBatchContext, options?: { fresh?: boolean }): Promise<'supported' | 'ready' | 'unsupported'>
+    submit(context: AtomicBatchContext & { calls: AtomicBatchCall[]; validBefore: number }): Promise<{ id: string }>
+    getStatus(context: AtomicBatchContext, id: string): Promise<unknown>
 }

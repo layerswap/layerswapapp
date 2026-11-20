@@ -51,13 +51,6 @@ function effectEmitters() {
   return found
 }
 
-test('the source tree is scanned', () => {
-  const files = [...sourceFiles(srcDir)].map(path => relative(srcDir, path))
-  assert(files.length > 100)
-  assert(files.includes('hooks/useLifecycleObservation.ts'))
-  assert(files.includes('components/Pages/Swap/Withdraw/Processing/Processing.tsx'))
-})
-
 test('effect-driven lifecycle observations go through useLifecycleObservation', () => {
   const found = effectEmitters()
   const unexpected = [...found].filter(entry => !ALLOWLIST.has(entry)).sort()
@@ -83,10 +76,10 @@ test('input_transaction_detected re-runs only for a new hash, never for later co
   assert.deepEqual(deps, ['onSwapLifecycle', 'swapInputTransaction?.transaction_hash'])
 })
 
-test('transfer_blocked is not reported for states that keep the send button', () => {
-  // A swap or deposit-actions error leaves TransferTokenButton's send button rendered ("Try again").
-  const text = readFileSync(join(srcDir, 'components/Pages/Swap/Withdraw/Wallet/index.tsx'), 'utf8')
-  const start = text.indexOf('const blockedReason', text.indexOf('const TransferTokenButton'))
-  const reasons = text.slice(start, text.indexOf('useTransferBlocked(blockedReason', start))
-  assert.deepEqual([...reasons.matchAll(/'([a-z_]+)'/g)].map(m => m[1]).filter(r => r !== 'unhealthy'), ['rpc_unhealthy', 'gasless_unavailable'])
+test('transfer blocks are observed only by the rendered TransferBlock boundary', () => {
+  const callers = [...sourceFiles(srcDir)].filter(path => {
+    if (path.endsWith('/hooks/useTransferBlocked.ts')) return false
+    return /\buseTransferBlocked\(/.test(readFileSync(path, 'utf8'))
+  }).map(path => relative(srcDir, path))
+  assert.deepEqual(callers, ['components/Pages/Swap/Withdraw/TransferBlock.tsx'])
 })

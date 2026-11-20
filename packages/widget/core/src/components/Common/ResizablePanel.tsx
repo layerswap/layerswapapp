@@ -1,6 +1,7 @@
 import { useMeasure } from "@uidotdev/usehooks";
 import { motion } from "framer-motion";
 import { ReactNode, useEffect, useState } from "react";
+import { useHydratedReducedMotion } from "@/hooks/useHydratedReducedMotion";
 
 type ResizablePanelProps = {
     children: ReactNode;
@@ -25,6 +26,7 @@ type ResizablePanelProps = {
 
 export default function ResizablePanel({ children, className, transitionKey }: ResizablePanelProps) {
     const [ref, { height }] = useMeasure();
+    const reducedMotion = useHydratedReducedMotion();
     const stepMode = transitionKey !== undefined;
 
     // In step mode the tween is off by default and switched on for a short
@@ -33,16 +35,16 @@ export default function ResizablePanel({ children, className, transitionKey }: R
     const [tweening, setTweening] = useState(!stepMode);
 
     useEffect(() => {
-        if (!stepMode) return;
+        if (!stepMode || reducedMotion) return;
         setTweening(true);
         const t = setTimeout(() => setTweening(false), 250);
         return () => clearTimeout(t);
-    }, [transitionKey, stepMode]);
+    }, [transitionKey, stepMode, reducedMotion]);
 
     return (
         <motion.div
             animate={{ height: height || "auto" }}
-            transition={tweening ? { duration: 0.2, ease: "easeInOut" } : { duration: 0 }}
+            transition={tweening && !reducedMotion ? { duration: 0.2, ease: "easeInOut" } : { duration: 0 }}
             style={{ width: "100%" }}
             className="relative overflow-hidden"
         >

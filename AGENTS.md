@@ -169,6 +169,11 @@ Read the relevant specialist file:
 
 ## Guidelines
 
+- Make code as readable as possible; readability takes priority over brevity.
+- Use descriptive names, explicit types for meaningful state, and straightforward control flow.
+- Expand dense conditions and one-line control flow into readable blocks.
+- Extract helpers for coherent tasks, and keep the main workflow easy to follow in order.
+- Explain non-obvious constraints and decisions in comments; avoid unnecessary abstraction.
 - Always read the full file context, not just diffs
 - Provide copy-paste ready code fixes
 - Include effort estimates for fixes

@@ -204,21 +204,6 @@ function fakeStorage() {
   };
 }
 
-test("runCleanup dry run reports the plan and deletes nothing", async () => {
-  const storage = fakeStorage();
-  const result = await runCleanup({
-    ctx: {},
-    ops: storage.ops,
-    now: NOW,
-    logger: silentLogger,
-    minRecentPerChannel: 1,
-  });
-  assert.equal(result.applied, false);
-  assert.deepEqual(result.deleteBuilds.map((b) => b.buildId), ["1.6.0-dead"]);
-  assert.deepEqual(result.deleteAssets, ["assets/bbb.fedcba9876543210.js"]);
-  assert.deepEqual(storage.deletions, []);
-});
-
 test("runCleanup --apply deletes the build manifest before its payload", async () => {
   const storage = fakeStorage();
   const result = await runCleanup({

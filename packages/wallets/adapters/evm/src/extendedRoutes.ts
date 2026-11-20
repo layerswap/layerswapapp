@@ -10,6 +10,7 @@ import { HYPERLIQUID_ROUTES } from "./additionalProviders/hyperliquid/routes"
 import { createPolymarketTransferProvider } from "./additionalProviders/polymarket/createPolymarketTransferProvider"
 import { POLYMARKET_CONFIG } from "./additionalProviders/polymarket/constants"
 import { polymarketProvider } from "./additionalProviders/polymarket/polymarketExtendedRouteProvider"
+import { polymarketWithdrawal } from './additionalProviders/polymarket/withdrawal'
 import { getEvmConfig } from "./service/getEvmConfig"
 import type { EVMProviderConfig, WalletConnectConfig } from "./types"
 
@@ -68,7 +69,8 @@ export function createEVMProvider<TNetwork = NetworkWithTokens>(
             : [
                 evmGasProvider,
                 new LazyGasProvider(
-                    network => network.type === NetworkType.Hyperliquid && !!network.token,
+                    // Hyperliquid fees use the selected USDC token, not native token metadata.
+                    network => network.type === NetworkType.Hyperliquid,
                     () => import("./additionalProviders/hyperliquid/hyperliquidGasProvider")
                         .then(module => new module.HyperliquidGasProvider()),
                 ),
@@ -84,6 +86,7 @@ export function createEVMProvider<TNetwork = NetworkWithTokens>(
                         network.name === KnownInternalNames.Networks.PolymarketMainnet
                     return {
                         supportsNetwork,
+                        withdrawal: polymarketWithdrawal,
                         executeTransfer(params, wallet, onProgress) {
                             return createPolymarketTransferProvider(getEvmConfig(), supportsNetwork)
                                 .executeTransfer(params, wallet, onProgress)

@@ -14,6 +14,7 @@ import NavigatableItemComponent from './NavigatableItem';
 
 interface RegisteredItem {
     children: Set<number>;
+    declaredChildCount?: number;
     version: number;
 }
 
@@ -33,7 +34,7 @@ function createAutoDetectionStore() {
         const sorted = Array.from(registeredItems.entries())
             .filter(([, item]) => item.version === currentVersion)
             .sort((a, b) => a[0] - b[0]);
-        const items = sorted.map(([, item]) => ({ childCount: item.children.size }));
+        const items = sorted.map(([, item]) => ({ childCount: item.declaredChildCount ?? item.children.size }));
         const indexMap = new Map(sorted.map(([originalIndex], idx) => [originalIndex, idx]));
         cachedSnapshot = { items, indexMap };
     };
@@ -46,6 +47,7 @@ function createAutoDetectionStore() {
                 if (existing.version === currentVersion) return;
                 existing.version = currentVersion;
                 existing.children = new Set();
+                existing.declaredChildCount = undefined;
             } else {
                 registeredItems.set(index, { children: new Set(), version: currentVersion });
             }
@@ -82,6 +84,21 @@ function createAutoDetectionStore() {
             const parent = registeredItems.get(parentIndex);
             if (parent && parent.children.has(childIndex)) {
                 parent.children.delete(childIndex);
+                rebuild();
+                listeners.forEach(l => l());
+            }
+        },
+        setChildCount(parentIndex: number, count: number | undefined) {
+            if (parentIndex < 0) return;
+
+            let parent = registeredItems.get(parentIndex);
+            if (!parent) {
+                parent = { children: new Set(), version: currentVersion };
+                registeredItems.set(parentIndex, parent);
+            }
+
+            if (parent.declaredChildCount !== count) {
+                parent.declaredChildCount = count;
                 rebuild();
                 listeners.forEach(l => l());
             }
@@ -176,6 +193,7 @@ function NavigatableListRoot({
         unregister: store.unregister,
         registerChild: store.registerChild,
         unregisterChild: store.unregisterChild,
+        setChildCount: store.setChildCount,
         getNavigableIndex: store.getNavigableIndex,
         registerClickHandler: store.registerClickHandler,
         unregisterClickHandler: store.unregisterClickHandler

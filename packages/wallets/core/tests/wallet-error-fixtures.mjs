@@ -22,6 +22,10 @@ export const FIXTURES = [
     { label: 'Ledger decline relayed as -32603', source: 'sdk:@ledgerhq/errors src/index.ts:340', error: { code: -32603, message: 'Ledger: Condition of use not satisfied (denied by the user?)' }, expected: 'user_rejected' },
     { label: 'ethers v5 SERVER_ERROR around 4001', source: 'sdk:ethers@5 json-rpc-provider.js:487', error: { code: 'SERVER_ERROR', message: 'processing response error', error: { code: 4001 } }, expected: 'user_rejected' },
     { label: 'CAIP-25 user rejected', source: 'spec', error: { code: 5000, message: 'User rejected.' }, expected: 'user_rejected' },
+    { label: 'CAIP-25 5000 around a redacted signature decline', source: 'faro:local MetaMask Mobile via WalletConnect', error: { code: 5000, message: 'MetaMask Tx Signature: [REDACTED]' }, expected: 'user_rejected' },
+    // MetaMask Mobile relays its own RPC failure over WalletConnect as 5000
+    { label: 'CAIP-25 5000 carrying a wallet RPC failure', source: 'faro:local MetaMask Mobile via WalletConnect', error: { code: 5000, message: 'RPC 0xa Custom eth_getBlockByNumber: RPC endpoint returned HTTP client error.' }, expected: 'network_error' },
+    { label: 'viem UserRejectedRequestError around a 5000 wallet RPC failure', source: 'faro:local MetaMask Mobile via WalletConnect', error: { name: 'UserRejectedRequestError', code: 4001, message: 'User rejected the request.', cause: { code: 5000, message: 'RPC 0xa Custom eth_getBlockByNumber: RPC endpoint returned HTTP client error.' } }, expected: 'network_error' },
     // --- other reasons nested under the bucket
     { label: '-32603 with data.message insufficient funds', source: 'review:PR#2166', error: { code: -32603, message: 'Internal JSON-RPC error.', data: { message: 'insufficient funds for gas * price + value' } }, expected: 'insufficient_funds' },
     { label: 'TimeoutError name carrying -32603', source: 'review:PR#2166', error: { name: 'TimeoutError', code: -32603 }, expected: 'timeout' },

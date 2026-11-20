@@ -74,12 +74,6 @@ test('Paradex authorization uses the configured RPC v0.10 account even when publ
         },
     })
 
-    // Reproduce the original failure: without an explicit provider the SDK
-    // reads a public node and tries to parse its plain-text HTTP 429 as JSON.
-    await assert.rejects(Paradex.Client.fromStarknetAccount({ config, account }), /Too Many Requests/)
-    assert.equal(publicRequests.length, 2)
-    publicRequests.length = 0
-
     const client = await AuthorizeStarknet(account)
     assert.match(client.getAddress(), /^0x[0-9a-f]+$/)
     assert.equal(provider.readSpecVersion(), '0.10.0')

@@ -186,6 +186,21 @@ class NativeTrialNavigation(unittest.TestCase):
             # Only regex backreferences may remain; no dashboard variables or Grafana globals.
             self.assertIsNone(re.search(r'\$\{[a-z_]|\$__', rule['data'][0]['model']['expr']))
 
+        # Technical failures historically carried the TransactionRejected UI label.
+        # Only explicit classification/impact may suppress an issue observation.
+        for uid in ['ls-faro-issue-burst', 'ls-faro-unseen-group']:
+            expression = rules[uid]['data'][0]['model']['expr']
+            self.assertNotIn('TransactionRejected', expression)
+            self.assertIn('context_reason_code!="user_rejected"', expression)
+            self.assertIn('context_impact!="expected"', expression)
+
+    def test_issue_views_exclude_verified_declines_instead_of_rejected_ui_names(self):
+        self.assertNotIn('TransactionRejected', trial.ERRORS)
+        for field, value in [('context_reason_code', 'user_rejected'), ('event_data_reason_code', 'user_rejected'),
+                             ('context_impact', 'expected'), ('event_data_impact', 'expected')]:
+            self.assertIn('(eq .' + field + ' "' + value + '")', trial.ERRORS)
+        self.assertIn('signal!="expected"', trial.UNEXPECTED)
+
     def test_committed_resources_contain_no_datasource_uids(self):
         # Datasource UIDs identify a Grafana instance; the public repo keeps placeholders only.
         allowed = {'${DS_LOKI}', '${DS_TEMPO}', '__expr__', '-- Grafana --'}

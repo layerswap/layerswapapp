@@ -35,6 +35,11 @@ export function App() {
   from the fixed CDN source without redeploying your app. Exact build pinning is
   not supported.
 
+Internally, widget telemetry identifies the rendered form as `cross-chain`,
+`exchange`, `deposit-address`, `deposit-widget-address`, or
+`deposit-widget-wallet`. These values describe the active flow and are not
+configuration options for the React package.
+
 ## Deposit widget
 
 Use `LayerswapDepositWidget` to fund a fixed destination. You choose the network,
@@ -59,6 +64,10 @@ Pass a valid recipient address for the destination network. Both destination
 props are required. The deposit widget accepts the common props below, plus
 options such as `mode="button"` and `methods={['wallet', 'deposit_address']}`.
 Import `DepositConfig` for the full set of deposit options.
+
+The telemetry `form_mode` identifies the active form: `cross-chain`, `exchange`,
+`deposit-address`, `deposit-widget-address`, or `deposit-widget-wallet`. These
+values describe the user's flow; they are not additional widget configuration options.
 
 ## Use your existing wagmi config
 

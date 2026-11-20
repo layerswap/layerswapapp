@@ -1,3 +1,5 @@
+import { defaultWalletConnectChainRegistry, type WalletConnectChainRegistry } from './chainRegistry'
+
 const BASE = 'https://api.web3modal.org'
 
 export type Web3ModalWallet = {
@@ -29,26 +31,12 @@ export type FetchWalletsParams = {
     projectId: string;
 }
 
-const EVM_CHAINS = [
-    'eip155:1', 'eip155:10', 'eip155:56', 'eip155:137',
-    'eip155:43114', 'eip155:42161', 'eip155:324', 'eip155:8453',
-].join(',')
-
-const SOLANA_CHAINS = [
-    'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
-    'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
-].join(',')
-
-const STELLAR_CHAINS = [
-    'stellar:pubnet',
-    'stellar:testnet',
-].join(',')
-
-export function chainsForNamespace(namespace: string): string {
-    if (namespace === 'eip155') return EVM_CHAINS
-    if (namespace === 'solana') return SOLANA_CHAINS
-    if (namespace === 'stellar') return STELLAR_CHAINS
-    return ''
+export function chainsForNamespace(namespace: string, registry: WalletConnectChainRegistry = defaultWalletConnectChainRegistry): string {
+    const definition = registry.get(namespace)
+    if (!definition) {
+        throw new Error(`WalletConnect namespace "${namespace}" is not registered`)
+    }
+    return definition.explorerChainIds.join(',')
 }
 
 const DANGEROUS_URL_PROTOCOLS = ['javascript:', 'data:', 'vbscript:', 'file:']
@@ -82,23 +70,7 @@ export function walletImageUrl(imageId: string, projectId: string): string {
     return `https://explorer-api.walletconnect.com/v3/logo/md/${imageId}?projectId=${projectId}`
 }
 
-// Web3Modal explorer API reference: https://docs.reown.com/cloud/explorer
-// The `st` / `sv` (source type / source version) params are internal AppKit
-// telemetry routing keys required for the API to return results.
-export async function fetchWallets(params: FetchWalletsParams): Promise<GetWalletsResponse> {
-    const url = new URL(`${BASE}/getWallets`)
-    url.searchParams.set('projectId', params.projectId)
-    url.searchParams.set('st', 'appkit')
-    url.searchParams.set('sv', 'react-viem')
-    url.searchParams.set('page', String(params.page ?? 1))
-    url.searchParams.set('entries', String(params.entries ?? 40))
-    if (params.chains) url.searchParams.set('chains', params.chains)
-    if (params.search) url.searchParams.set('search', params.search)
-
-    const res = await fetch(url.toString())
-    if (!res.ok) throw new Error(`getWallets failed: ${res.status}`)
-    const data: GetWalletsResponse = await res.json()
-
+function validateWallets(data: GetWalletsResponse): GetWalletsResponse {
     if (!Array.isArray(data?.data)) {
         throw new Error('Invalid response: missing data array')
     }
@@ -114,4 +86,22 @@ export async function fetchWallets(params: FetchWalletsParams): Promise<GetWalle
     }
 
     return data
+}
+
+// Web3Modal explorer API reference: https://docs.reown.com/cloud/explorer
+// The `st` / `sv` (source type / source version) params are internal AppKit
+// telemetry routing keys required for the API to return results.
+export async function fetchWallets(params: FetchWalletsParams): Promise<GetWalletsResponse> {
+    const url = new URL(`${BASE}/getWallets`)
+    url.searchParams.set('projectId', params.projectId)
+    url.searchParams.set('st', 'appkit')
+    url.searchParams.set('sv', 'react-viem')
+    url.searchParams.set('page', String(params.page ?? 1))
+    url.searchParams.set('entries', String(params.entries ?? 40))
+    if (params.chains) url.searchParams.set('chains', params.chains)
+    if (params.search) url.searchParams.set('search', params.search)
+
+    const res = await fetch(url.toString())
+    if (!res.ok) throw new Error(`getWallets failed: ${res.status}`)
+    return validateWallets(await res.json())
 }

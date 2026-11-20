@@ -5,7 +5,7 @@ import { create } from 'zustand'
 export type GaslessFailureStage = 'create' | 'deposit'
 
 type GaslessPreferenceState = {
-    // Scoped to the current swap flow — reset to default when the swap modal closes.
+    // Reset to default when a submitted swap's modal closes.
     gaslessEnabled: boolean
     // Transient failure markers — cleared on switch, fresh submit, or toggle.
     gaslessUnavailable: boolean

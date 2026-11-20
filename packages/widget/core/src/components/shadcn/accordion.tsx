@@ -1,5 +1,6 @@
 import * as React from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence, type Transition } from "framer-motion"
+import { useHydratedReducedMotion } from "@/hooks/useHydratedReducedMotion"
 import { classNames } from "../utils/classNames"
 
 interface AccordionContextValue {
@@ -133,10 +134,13 @@ const AccordionItemProvider = ({ value, children }: { value: string; children: R
 interface AccordionContentProps extends React.HTMLAttributes<HTMLDivElement> {
     estimatedHeight?: number
     itemsCount?: number
+    animate?: boolean
+    transition?: Transition
 }
 
 const AccordionContent = React.forwardRef<HTMLDivElement, AccordionContentProps>(
-    ({ className, children, estimatedHeight, itemsCount, ...props }, ref) => {
+    ({ className, children, estimatedHeight, itemsCount, animate = true, transition, ...props }, ref) => {
+        const reducedMotion = useHydratedReducedMotion()
         const context = React.useContext(AccordionContext)
         const itemContext = React.useContext(AccordionItemContext)
         
@@ -166,6 +170,14 @@ const AccordionContent = React.forwardRef<HTMLDivElement, AccordionContentProps>
             return Math.min(baseDuration + (itemsCount * perItemDuration), maxDuration)
         }, [itemsCount])
 
+        if (!animate || reducedMotion) {
+            return isOpen ? (
+                <div className={classNames("AccordionContent", className)}>
+                    <div ref={ref} className="pt-1" {...props}>{children}</div>
+                </div>
+            ) : null
+        }
+
         return (
             <motion.div
                 initial={false}
@@ -173,13 +185,15 @@ const AccordionContent = React.forwardRef<HTMLDivElement, AccordionContentProps>
                     height: isOpen ? (estimatedHeight || "auto") : 0,
                     opacity: isOpen ? 1 : 0
                 }}
-                transition={{
+                transition={transition ?? {
                     duration: 0.2,
                     ease: "easeInOut",
                     height: { duration: isOpen ? heightDuration : 0.15 },
                     opacity: { duration: 0.1, delay: isOpen ? 0.05 : 0 }
                 }}
                 style={{ overflow: "hidden" }}
+                aria-hidden={!isOpen}
+                inert={!isOpen}
                 className={classNames("AccordionContent", className)}
             >
                 <AnimatePresence mode="wait">
@@ -188,7 +202,7 @@ const AccordionContent = React.forwardRef<HTMLDivElement, AccordionContentProps>
                             initial={{ opacity: 1 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            transition={{ duration: 0.1 }}
+                            transition={transition ?? { duration: 0.1 }}
                         >
                             <div ref={ref} className="pt-1" {...props}>
                                 {children}

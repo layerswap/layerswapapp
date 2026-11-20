@@ -52,7 +52,7 @@ for (const code of forbidden) {
   });
 }
 
-test('allows normal React hooks, JSX, portals and browser roots', async () => {
+test('allows normal React hooks, JSX, portals and the imperative browser root', async () => {
   const [result] = await eslint.lintText(`
     import { useState } from 'react';
     import type { ReactNode } from 'react';
@@ -60,8 +60,91 @@ test('allows normal React hooks, JSX, portals and browser roots', async () => {
     import { createRoot } from 'react-dom/client';
     const jsx = <div />;
     const client = await import('react-dom/client');
+  `, { filePath: 'apps/widget-cdn/src/mountRoot.tsx' });
+  assert.deepEqual(result.messages, []);
+});
+
+for (const code of [
+  "import runtime from 'react/compiler-runtime';",
+  "export * from 'react-dom/client';",
+  "const runtime = await import('react/compiler-runtime');",
+  "const runtime = require(`react-dom/client`);",
+]) {
+  test(`rejects unshared React entry: ${code}`, async () => {
+    const [result] = await eslint.lintText(code, { filePath: browserFiles[0] });
+    assert.equal(result.errorCount, 1, JSON.stringify(result.messages));
+    assert.equal(result.messages[0].ruleId, 'widget-react-shares/no-unshared-entry');
+  });
+}
+
+test('allows functions and entry points already covered by the share list', async () => {
+  const [result] = await eslint.lintText(`
+    import { useTransition } from 'react';
+    import { jsx } from 'react/jsx-runtime';
   `, { filePath: browserFiles[0] });
   assert.deepEqual(result.messages, []);
+});
+
+for (const code of [
+  "import type { CustomConsole } from 'react/compiler-runtime';",
+  "import { type CustomConsole } from 'react/compiler-runtime';",
+  "export type { CustomConsole } from 'react/compiler-runtime';",
+  "export { type CustomConsole } from 'react/compiler-runtime';",
+  "export type * from 'react/compiler-runtime';",
+]) {
+  test(`allows type-only React entry: ${code}`, async () => {
+    const [result] = await eslint.lintText(code, { filePath: browserFiles[0] });
+    assert.deepEqual(result.messages, []);
+  });
+}
+
+for (const code of [
+  "import { type CustomConsole, c } from 'react/compiler-runtime';",
+  "export { type CustomConsole, c } from 'react/compiler-runtime';",
+]) {
+  test(`rejects mixed type/runtime React entry: ${code}`, async () => {
+    const [result] = await eslint.lintText(code, { filePath: browserFiles[0] });
+    assert.equal(result.errorCount, 1, JSON.stringify(result.messages));
+    assert.equal(result.messages[0].ruleId, 'widget-react-shares/no-unshared-entry');
+  });
+}
+
+test('allows only react-dom/client in the imperative mount exception', async () => {
+  const [result] = await eslint.lintText(
+    "import runtime from 'react/compiler-runtime';",
+    { filePath: 'apps/widget-cdn/src/mountRoot.tsx' },
+  );
+  assert.equal(result.errorCount, 1, JSON.stringify(result.messages));
+  assert.equal(result.messages[0].ruleId, 'widget-react-shares/no-unshared-entry');
+});
+
+test('requires every explicit React share on both federation sides', async () => {
+  const entries = `{
+    react: {},
+    'react/jsx-runtime': {},
+    'react/jsx-dev-runtime': {},
+    'react-dom': {},
+  }`;
+  const owners = {
+    'apps/widget-cdn/rspack.config.mjs': `const SHARED_SINGLETONS = ${entries};`,
+    'packages/widget/react/src/remoteWidgetHost.tsx': `function hostReactShare() { return ${entries}; }`,
+  };
+  for (const [filePath, complete] of Object.entries(owners)) {
+    const [valid] = await eslint.lintText(complete, { filePath });
+    assert.equal(valid.errorCount, 0, JSON.stringify(valid.messages));
+    const [invalid] = await eslint.lintText(complete.replace("'react/jsx-runtime': {},", ''), { filePath });
+    assert.equal(invalid.messages[0].ruleId, 'widget-react-shares/required');
+    assert.match(invalid.messages[0].message, /react\/jsx-runtime/);
+  }
+});
+
+test('does not accept required names from an unrelated object', async () => {
+  const [result] = await eslint.lintText(`
+    const SHARED_SINGLETONS = { react: {}, 'react-dom': {} };
+    const unrelated = { 'react/jsx-runtime': {}, 'react/jsx-dev-runtime': {} };
+  `, { filePath: 'apps/widget-cdn/rspack.config.mjs' });
+  assert.equal(result.errorCount, 1, JSON.stringify(result.messages));
+  assert.match(result.messages[0].message, /react\/jsx-runtime, react\/jsx-dev-runtime/);
 });
 
 for (const filePath of [

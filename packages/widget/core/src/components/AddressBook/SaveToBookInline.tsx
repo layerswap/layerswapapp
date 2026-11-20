@@ -43,7 +43,7 @@ export const SaveToBookNameForm: FC<{ address: string, network: { name?: string,
                         'pr-20 w-full text-base rounded-lg border truncate hover:overflow-x-scroll focus:border-primary focus:ring-0 focus:outline-hidden',
                         compact
                             ? 'pl-3 h-9 bg-secondary-300 border-transparent placeholder:text-secondary-text'
-                            : 'h-12 leading-4 font-semibold border-secondary-800 !bg-secondary-500 placeholder:text-primary-text-tertiary/80 placeholder:font-normal'
+                            : 'pl-4 h-12 leading-4 font-semibold border-secondary-800 !bg-secondary-500 placeholder:text-primary-text-tertiary/80 placeholder:font-normal'
                     )}
                 />
                 <div className={clsx('absolute top-1/2 -translate-y-1/2 flex items-center gap-2', compact ? 'right-2' : 'right-3')}>

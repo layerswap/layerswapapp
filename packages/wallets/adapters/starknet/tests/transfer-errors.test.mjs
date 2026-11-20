@@ -28,14 +28,28 @@ test('a plain-object Starknet wallet decline keeps its real message', () => {
     assert.equal(isUserRejection(thrown), true)
 })
 
-test("'Execute failed' keeps the rejected copy but is reported as a failure until its origin is verified", () => {
+test("'Execute failed' shows a wallet error and is reported as an unknown failure", () => {
     const original = new Error('Execute failed')
     const thrown = toTransferError(original)
-    expectShape(thrown, original, 'TransactionRejected')
+    expectShape(thrown, original, 'UnexpectedErrorMessage')
     assert.equal(thrown.reasonCode, undefined)
     assert.notEqual(normalizeWalletErrorCode(thrown), 'user_rejected')
     assert.equal(normalizeWalletErrorCode(thrown), 'unknown_error')
     assert.equal(isUserRejection(thrown), false)
+})
+
+test('Ready X and OKX execution errors retain their diagnostic codes without becoming declines', () => {
+    for (const [code, message, reasonCode] of [
+        [163, 'UNKNOWN_ERROR', 'unknown_error'],
+        [4100, 'The requested method and/or account has not been authorized by the user.', 'unauthorized'],
+    ]) {
+        const original = Object.assign(new Error(message), { name: 'WalletRPCError', code })
+        const thrown = toTransferError(original)
+        expectShape(thrown, original, 'UnexpectedErrorMessage')
+        assert.equal(thrown.cause.code, code)
+        assert.equal(normalizeWalletErrorCode(thrown), reasonCode)
+        assert.equal(isUserRejection(thrown), false)
+    }
 })
 
 test('other Starknet failures keep their labels and a string message', () => {

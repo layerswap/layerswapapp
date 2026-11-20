@@ -10,7 +10,7 @@ import VolumeChart from "./components/VolumeChart";
 import FlowSection from "./components/FlowSection";
 import AssetsTable from "./components/AssetsTable";
 import { fillTimelineGaps, fmtUsd, generatedAtLabel } from "./components/format";
-import { ApiResponse } from "@layerswap/widget/types";
+import { ApiResponse } from "@layerswap/widget-types";
 import { apiClient } from "@/lib/apiClient";
 
 const PERIOD_LABELS: Record<AnalyticsPeriod, string> = {

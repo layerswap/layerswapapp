@@ -60,6 +60,8 @@ const SwapSummary: FC = () => {
             refuel
         },
         sourceAccountAddress,
+        sentAmountInUsd: swapInputTransaction?.usd_value,
+        receivedAmountInUsd: swapOutputTransaction?.usd_value,
         receiveAmount: calculatedReceiveAmount
     }
 

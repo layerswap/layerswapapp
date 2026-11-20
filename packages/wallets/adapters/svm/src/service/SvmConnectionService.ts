@@ -1,19 +1,21 @@
 import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
-import { NetworkType } from '@layerswap/widget-types';
 import type { RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types";
 import type { WalletModalConnector } from "@layerswap/wallet-core/types"
 import { buildDeepLink, chainsToNetworkTypes, clearPendingDynamicWcMetadata, createRegistryConnector, getDynamicWcMetadata, getPendingDynamicWcMetadata, isWalletConnectRegistryConnector, mapConnectError, setDynamicWcMetadata, setPendingMetadataForRegistry, subscribeDisplayUri, walletKey, type AppNetworkAdapter, type WalletConnectWalletBase } from "@layerswap/wallet-core"
 import { findRegistryWalletByName } from "@layerswap/wallet-core"
 import { resolveWalletConnectorIcon } from "@layerswap/wallet-core"
-import { name as PROVIDER_NAME, id as PROVIDER_ID } from '../constants'
+import { name as PROVIDER_NAME, id as PROVIDER_ID, solanaWalletConnectChain } from '../constants'
 import { resolveSolanaWalletConnectorIcon } from '../utils'
 import { SolanaWalletConnectAdapter } from '../connectors/SolanaWalletConnectAdapter'
 import { svmAdapterManager } from './svmAdapterManager'
 import { useSvmStore } from './svmStore'
 
+const walletConnectTopic = (adapter: unknown) =>
+    adapter instanceof SolanaWalletConnectAdapter ? adapter.sessionTopic : undefined
+
 const SOLANA_WC_MODAL_NAME = 'WalletConnect'
 const SOLANA_HIDDEN_WC_NAME = 'Hidden WalletConnect'
-const SVM_NS = PROVIDER_ID
+const SVM_NS = solanaWalletConnectChain.namespace
 
 const normalizeWcName = (name?: string) => name === SOLANA_HIDDEN_WC_NAME ? SOLANA_WC_MODAL_NAME : name
 type RegistryRequestFn = (params?: RequestAdditionalConnectorsParams) => Promise<{
@@ -127,7 +129,7 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
 
         const isWalletConnect = snapshot.name === SOLANA_WC_MODAL_NAME || snapshot.name === SOLANA_HIDDEN_WC_NAME
         const dynamicMeta = isWalletConnect
-            ? (getDynamicWcMetadata(SVM_NS, activeAddress) || getPendingDynamicWcMetadata(SVM_NS))
+            ? (getPendingDynamicWcMetadata(SVM_NS) || getDynamicWcMetadata(SVM_NS, activeAddress))
             : null
 
         const normalizedName = normalizeWcName(snapshot.name) || snapshot.name
@@ -153,7 +155,7 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
             autofillSupportedNetworks: supported,
             withdrawalSupportedNetworks: supported,
             networkIcon: this.getNetworkIcon(),
-            metadata: { deepLink: dynamicMeta?.deepLink },
+            metadata: { deepLink: dynamicMeta?.deepLink, walletConnectTopic: walletConnectTopic(svmAdapterManager.getAdapter(snapshot.name)) },
         }
     }
 
@@ -260,6 +262,10 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
             const targetAdapter = useWalletConnect ? hiddenWcAdapter : installedAdapter
             if (!targetAdapter) throw new Error('Connector not found')
 
+            // Every registry wallet uses the same hidden transport. A new wallet
+            // selection must pair again, not relabel its predecessor's session.
+            if (useWalletConnect) await targetAdapter.disconnect()
+
             if (useSvmStore.getState().activeAddress) {
                 const activeAdapter = svmAdapterManager.getActiveAdapter()
                 const adaptersToDisconnect = svmAdapterManager.getAdapters().filter(adapter =>
@@ -342,7 +348,7 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
                 autofillSupportedNetworks: supported,
                 withdrawalSupportedNetworks: supported,
                 networkIcon: this.getNetworkIcon(),
-                metadata: { deepLink: wcDeepLink },
+                metadata: { deepLink: wcDeepLink, walletConnectTopic: walletConnectTopic(connectedAdapter) },
             }
             return wallet
         } catch (e) {
@@ -388,7 +394,7 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
             id: PROVIDER_ID,
             capabilities: {
                 walletConnectRegistry: {
-                    networkTypes: [NetworkType.Solana],
+                    networkTypes: [solanaWalletConnectChain.networkType],
                 },
             },
             providerIcon: this.getProviderIcon(),

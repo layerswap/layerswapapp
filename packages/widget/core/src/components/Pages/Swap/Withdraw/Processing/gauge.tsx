@@ -51,7 +51,7 @@ export const Gauge = ({
             >
                 <circle
                     className="text-primary/20"
-                    strokeWidth="12"
+                    strokeWidth="8"
                     stroke="currentColor"
                     fill="transparent"
                     shapeRendering="geometricPrecision"
@@ -60,10 +60,10 @@ export const Gauge = ({
                     cy="60"
                 />
                 <circle
-                    className="text-primary animate-gauge_fill"
-                    strokeWidth="12"
+                    className="text-primary"
+                    strokeWidth="8"
                     strokeDasharray={strokeDasharray}
-                    strokeDashoffset={initialOffset}
+                    strokeDashoffset={strokeDashoffset}
                     shapeRendering="geometricPrecision"
                     strokeLinecap="round"
                     stroke="currentColor"
@@ -71,15 +71,11 @@ export const Gauge = ({
                     r="53"
                     cx="60"
                     cy="60"
-                    style={{
-                        strokeDashoffset: strokeDashoffset,
-                        transition: "stroke-dasharray 1s ease 0s,stroke 1s ease 0s",
-                    }}
                 />
             </svg>
             {showCheckmark && value == 100 ? (
-                <div className="absolute flex animate-gauge_fadeIn">
-                   <Check className="h-5 w-5 text-primary" strokeWidth={4} aria-hidden="true" />
+                <div className="absolute flex">
+                   <Check className="h-5 w-5 text-primary" strokeWidth={3} aria-hidden="true" />
                 </div>
             ) : null}
         </div>

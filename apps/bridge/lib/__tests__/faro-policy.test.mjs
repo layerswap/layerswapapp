@@ -29,11 +29,11 @@ test('deployed builds retain errors only; local builds retain verbosity; samplin
     for (const mode of ['development', 'test', undefined]) {
         assert.deepEqual(getFaroVolumePolicy(mode).consoleInstrumentation.disabledLevels, [])
         assert.equal(getFaroVolumePolicy(mode).trackResources, true)
-        assert.equal(getFaroVolumePolicy(mode).dedupe, true)
+        assert.equal(getFaroVolumePolicy(mode).dedupe, mode !== 'development')
     }
     assert(!('sessionTracking' in production), 'volume policy must not override sampling')
     const source = readFileSync(new URL('../faro.ts', import.meta.url), 'utf8')
-    assert(source.includes('sessionTracking: getSessionTrackingConfig(process.env.NEXT_PUBLIC_FARO_SAMPLE_RATE, () => PersistentSessionsManager.fetchUserSession())'))
+    assert(source.includes('getSessionTrackingConfig(process.env.NEXT_PUBLIC_FARO_SAMPLE_RATE, () => PersistentSessionsManager.fetchUserSession())'))
     assert(!source.includes('samplingRate:'), 'faro.ts must not configure a rate without the session-bound sampler')
     assert(source.includes('enablePerformanceInstrumentation: true'))
     assert(source.includes('errorSerializer: serializeConsoleArgs'))
@@ -171,6 +171,7 @@ test('trace items keep failed first-party and non-request spans, and are dropped
 test('successful balance reads are not captured; other operations and failed reads are', () => {
     const operation = (operation, outcome) => ({ name: 'widget_operation', attributes: { operation, outcome } })
     assert.equal(shouldCaptureWidgetTelemetry(operation('balance_fetch', 'succeeded')), false)
+    assert.equal(shouldCaptureWidgetTelemetry(operation('balance_fetch', 'succeeded'), 'development'), true)
     assert.equal(shouldCaptureWidgetTelemetry(operation('balance_fetch', 'partial')), true)
     assert.equal(shouldCaptureWidgetTelemetry(operation('balance_fetch', 'failed')), true)
     assert.equal(shouldCaptureWidgetTelemetry(operation('quote_request', 'succeeded')), true)

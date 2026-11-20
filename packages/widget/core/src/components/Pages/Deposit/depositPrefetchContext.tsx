@@ -1,7 +1,7 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import LayerSwapApiClient, { CreateSwapParams, DepositAction, SwapResponse } from "@/lib/apiClients/layerSwapApiClient";
-import { ApiResponse } from "@/Models/ApiResponse";
+import type { ApiResponse } from "@layerswap/widget-types";
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import useDepositAddressSources from "@/hooks/useDepositAddressSources";
@@ -13,6 +13,7 @@ import { useSelectedAccount } from "@/context/swapAccounts";
 import { useCallbacks } from "@/context/callbackProvider";
 import { WalletIsSupportedForSource } from "@/context/swap";
 import { useRecentNetworksStore } from "@/stores/recentRoutesStore";
+import { recordSwapRouteHistory } from "@/stores/swapRouteHistoryStore";
 import { useContractAddressStore } from "@/stores/contractAddressStore";
 import { Address } from "@/lib/address/Address";
 import { useDepositSelection } from "./depositSelectionContext";
@@ -160,6 +161,8 @@ export function DepositPrefetchProvider({ children }: { children: ReactNode }) {
                 reference_id: initialSettings.externalId,
                 refuel: false,
                 use_deposit_address: true,
+                use_frontend_swap: true,
+                use_gasless: false,
                 source_address: sourceAddressForSwap,
                 refund_address: sourceAddressForSwap,
             };
@@ -243,6 +246,7 @@ export function DepositPrefetchProvider({ children }: { children: ReactNode }) {
                     from: { network: swap.swap.source_network.name, token: swap.swap.source_token.symbol },
                     to: { network: swap.swap.destination_network.name, token: swap.swap.destination_token.symbol },
                 });
+                void recordSwapRouteHistory(swap);
             }
         }
         if (values) {

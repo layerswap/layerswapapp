@@ -24,18 +24,20 @@ const InsufficientFundsMessage: FC = () => {
         details='The balance of the connected wallet is not enough' />
 }
 
-const TransactionRejectedMessage: FC = () => {
+const TransactionRejectedMessage: FC<{ isSignature?: boolean }> = ({ isSignature }) => {
     return <WalletMessage
         status="error"
-        header='Transaction rejected'
-        details={`You've rejected the transaction in your wallet. Click “Try again” to open the prompt again.`} />
+        header={isSignature ? 'Signing rejected' : 'Transaction rejected'}
+        details={isSignature
+            ? `You've rejected the signing request in your wallet. Click “Try again” to open the prompt again.`
+            : `You've rejected the transaction in your wallet. Click “Try again” to open the prompt again.`} />
 }
 
 const DifferentAccountsNotAllowedError: FC<{ network: string }> = ({ network }) => {
     return <WalletMessage
         status="error"
         header='Action needed'
-        details={`Transfers between ${network} and other chains are only allowed within the same account. Please make sure you&apos;re using the same address on both source and destination.`} />
+        details={`Transfers between ${network} and other chains are only allowed within the same account. Please make sure you're using the same address on both source and destination.`} />
 }
 
 const TransactionFailedMessage: FC = () => {
@@ -52,11 +54,11 @@ const TransactionExpiredMessage: FC = () => {
         details='Refresh the transfer details and try again' />
 }
 
-const WalletMismatchMessage: FC<{ address: string; network: { name: string } }> = ({ address, network }) => {
+const WalletMismatchMessage: FC<{ address: string; network: { name: string }; details?: string }> = ({ address, network, details }) => {
     return <WalletMessage
         status="error"
         header='Account mismatch'
-        details={`Select ${new Address(address, network).toShortString()} in your wallet, then try again`} />
+        details={details ?? `Select ${new Address(address, network).toShortString()} in your wallet, then try again`} />
 }
 
 const SwapErrorMessage: FC<{ message?: string }> = ({ message }) => {

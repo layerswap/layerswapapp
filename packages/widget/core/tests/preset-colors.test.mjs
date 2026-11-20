@@ -1,0 +1,48 @@
+import assert from 'node:assert/strict'
+import test from 'node:test'
+import Color from 'color'
+import { createElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { loadSource } from './helpers/source.mjs'
+
+const themes = loadSource('Models/Theme.ts')
+const presetColors = loadSource('helpers/amountPresetColors.ts')
+const ColorSchema = loadSource('components/ColorSchema.tsx', {
+    '../Models/Theme': themes,
+    '../helpers/amountPresetColors': presetColors,
+}).default
+
+const rgb = value => value.split(',').map(Number)
+const contrast = (a, b) => Color(a).contrast(Color(b))
+const background = (theme, opacity) => rgb(theme.secondary[300]).map((channel, index) => channel * opacity + rgb(theme.secondary[500])[index] * (1 - opacity))
+
+for (const [name, theme] of Object.entries(themes.THEME_COLORS)) {
+    test(`${name}: preset labels and selection have sufficient contrast`, () => {
+        const colors = presetColors.resolveAmountPresetColors(theme.secondary, theme.primary)
+        const selected = rgb(colors.selectedBackground)
+        const track = background(theme, 0.35)
+        assert.ok(contrast(selected, rgb(colors.selectedText)) >= 4.5, 'Selected label contrast')
+        assert.ok(contrast(selected, track) >= 3, 'Selection must stand out from the track')
+        assert.ok(contrast(rgb(colors.text), track) >= 4.5, 'Unselected enabled label contrast')
+    })
+}
+
+test('ColorSchema emits the resolved colours and handles partial/default themes', () => {
+    for (const theme of [undefined, { primary: { DEFAULT: '1, 2, 3' } }, themes.THEME_COLORS.light, themes.THEME_COLORS.ton]) {
+        const markup = renderToStaticMarkup(createElement(ColorSchema, { themeData: theme }))
+        const palette = theme?.secondary ? theme : themes.THEME_COLORS.default
+        const colors = presetColors.resolveAmountPresetColors(palette.secondary, palette.primary)
+        for (const [token, key] of [['selected', 'selectedBackground'], ['selected-text', 'selectedText'], ['text', 'text']]) {
+            assert.ok(markup.includes(`--ls-colors-preset-${token}: ${colors[key]};`))
+        }
+    }
+})
+
+test('non-numeric custom CSS colours keep their original theme values', () => {
+    const theme = themes.THEME_COLORS.default
+    const secondary = { ...theme.secondary, text: 'var(--custom-text)' }
+    assert.deepEqual(presetColors.resolveAmountPresetColors(secondary, theme.primary), {
+        selectedBackground: secondary.text, selectedText: secondary[700],
+        text: secondary.text,
+    })
+})

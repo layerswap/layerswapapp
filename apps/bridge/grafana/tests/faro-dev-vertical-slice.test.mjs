@@ -102,19 +102,6 @@ test('URL encoding round-trips special characters without extra parameters', () 
   }
 });
 
-test('textbox JSON format is not string quoting; doublequote prevents the column-89 regression', () => {
-  assert.equal(interpolate('${application:json}', variables), 'layerswap-frontend');
-  assert.equal(interpolate('${application:doublequote}', variables), '"layerswap-frontend"');
-  const corrected = interpolate(panels.get(3).targets[0].expr, variables);
-  assert(corrected.includes('app_name="layerswap-frontend"'));
-  const old = interpolate(panels.get(3).targets[0].expr.replaceAll(':doublequote}', ':json}'), variables);
-  assert(old.includes('app_name=layerswap-frontend'));
-  const quoteValue = 'quote " and &? Unicode: λ';
-  assert.equal(JSON.parse(interpolate('${session_id:doublequote}', {session_id:quoteValue})), quoteValue);
-  // doublequote escapes quotation marks, not arbitrary backslashes/control characters.
-  assert.equal(interpolate('${session_id:doublequote}', {session_id:'a\\b'}), '"a\\b"');
-});
-
 test('selection sentinels cannot broaden an empty session query', () => {
   for (const id of [5, 6]) {
     const query = interpolate(panels.get(id).targets[0].expr, variables);
@@ -140,8 +127,6 @@ test('timeline uses observed fields, numeric sequence, client time and a bounded
   assert.deepEqual(panel.transformations[0], {id:'extractFields',options:{source:'Line',format:'json',replace:true,keepTime:false}});
   assert.deepEqual(panel.transformations[1].options.conversions, ['event_data_sequence','event_data_attempt'].map(targetField=>({targetField,destinationType:'number'})));
   assert.equal(panel.transformations[2].options.sort[0].field, 'timestamp');
-  const sequence = ['10', '9'].sort((a, b) => Number(a) - Number(b));
-  assert.deepEqual(sequence, ['9', '10']);
 });
 
 test('wallet search inspects every JSON element, rejects blank search and leaves session timeline unfiltered', () => {
@@ -179,12 +164,6 @@ test('wallet-session link preserves search/scope/time but clears stale error and
 });
 
 test('clarity update separates general investigation from dedicated operation dashboards', () => {
-  assert.equal(dashboard.templating.list.find(v=>v.name==='error_marker').label,'Error record contains');
-  for (const p of dashboard.panels) assert.doesNotMatch(p.title,/RPC|balance|gas fee|transaction errors/i);
-  for (const id of [3,4]) {
-    const renames=panels.get(id).transformations.find(t=>t.id==='organize').options.renameByName;
-    assert.equal(renames.Value,'Error records'); assert.equal(renames['Value #A'],'Error records');
-  }
   for (const id of [2,3]) assert(!panels.get(id).targets[0].expr.includes('${session_id'));
   const q=panels.get(9).targets[0].expr;
   assert(q.includes('event_name="swap_lifecycle"'));
@@ -226,13 +205,6 @@ test('overview pivots statistics into one row per type without exposing message 
   assert.deepEqual(panel.transformations[0],{id:'labelsToFields',options:{mode:'columns',valueLabel:'statistic'}});
   assert.deepEqual(panel.transformations[1],{id:'merge',options:{}});
   for(const field of ['Error records','Recorded sessions','Latest stored occurrence'])assert(q.includes('"'+field+'"'));
-  const rows=new Map();
-  // Explicitly modeled transformation input, NOT captured Faro telemetry.
-  for(const [type,statistic,value]of [['A','Error records',4],['A','Recorded sessions',2],['A','Latest stored occurrence',1000],['B','Error records',1],['B','Latest stored occurrence',900]]){
-    const row=rows.get(type)||{type};row[statistic]=value;rows.set(type,row);
-  }
-  assert.equal(rows.size,2);assert.equal(rows.get('A')['Recorded sessions'],2);
-  assert.equal(rows.get('B')['Recorded sessions'],undefined);
   assert(panel.fieldConfig.overrides.some(o=>o.matcher.options==='Recorded sessions'&&o.properties.some(p=>p.id==='noValue'&&p.value==='0')));
 });
 

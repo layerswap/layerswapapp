@@ -1,5 +1,11 @@
 # @layerswap/widget-react
 
+## 1.0.2
+
+### Patch Changes
+
+- Fix React runtime compatibility between host applications and the CDN widget.
+
 ## 1.0.1
 
 ### Patch Changes

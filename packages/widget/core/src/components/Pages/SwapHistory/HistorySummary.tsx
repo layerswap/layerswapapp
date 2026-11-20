@@ -2,7 +2,7 @@
 import { SwapStatus, type Wallet } from '@layerswap/widget-types';
 import useSWR from "swr"
 import LayerSwapApiClient, { SwapResponse, TransactionType } from "@/lib/apiClients/layerSwapApiClient"
-import { ApiResponse } from "@/Models/ApiResponse"
+import type { ApiResponse } from "@layerswap/widget-types"
 import { useInitialSettings } from "@/context/settings"
 import { Partner } from "@/Models/Partner"
 import { ChevronRightIcon } from 'lucide-react'

@@ -5,9 +5,9 @@ import { extname } from 'node:path'
 import { JSDOM } from 'jsdom'
 import { act, createElement, StrictMode } from 'react'
 
-const dom = new JSDOM('<!doctype html><html><body></body></html>')
+const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://widget.test' })
 const previous = Object.getOwnPropertyDescriptors(globalThis)
-for (const [key, value] of Object.entries({ window: dom.window, document: dom.window.document, IS_REACT_ACT_ENVIRONMENT: true })) {
+for (const [key, value] of Object.entries({ window: dom.window, document: dom.window.document, localStorage: dom.window.localStorage, IS_REACT_ACT_ENVIRONMENT: true })) {
   Object.defineProperty(globalThis, key, { configurable: true, writable: true, value })
 }
 // Only the network boundary is replaced. Poll timing, SWR, hooks, presentation resolver,
@@ -31,8 +31,10 @@ const { useSwapPolling } = await import('../dist/esm/hooks/useSwapPolling.js')
 const { useSwapStatusNotification } = await import('../dist/esm/hooks/useSwapStatusNotification.js')
 const { resolveSwapPhase } = await import('../dist/esm/components/utils/resolveSwapPhase.js')
 const { resolveSwapPollingInterval } = await import('../dist/esm/lib/swapPollingPolicy.js')
+const { useSwapTransactionStore: store } = await import('../dist/esm/stores/swapTransactionStore.js')
 let root, container, callbacks
 beforeEach(() => {
+  store.setState(store.getInitialState(), true)
   container = document.createElement('div')
   document.body.append(container)
   root = createRoot(container)
@@ -41,7 +43,7 @@ afterEach(async () => { await act(async () => root.unmount()); container.remove(
 after(() => {
   hooks.deregister()
   dom.window.close()
-  for (const key of ['window', 'document', 'IS_REACT_ACT_ENVIRONMENT']) {
+  for (const key of ['window', 'document', 'localStorage', 'IS_REACT_ACT_ENVIRONMENT']) {
     if (previous[key]) Object.defineProperty(globalThis, key, previous[key]); else delete globalThis[key]
   }
 })
@@ -78,9 +80,9 @@ test('local failure and wallet retries do not stop backend polling or replay sta
   globalThis.__swapTransport = async () => { requests++; return response }
   const { render, events } = harness()
   await render()
-  assert.equal(container.textContent, 'input_pending')
+  assert.equal(container.textContent, 'awaiting_user_deposit')
   await render({ localStatus: 'failed' })
-  assert.equal(container.textContent, 'failed')
+  assert.equal(container.textContent, 'awaiting_user_deposit')
   const before = requests
   for (let i = 0; i < 3; i++) await act(async () => { t.mock.timers.tick(500) })
   assert.ok(requests > before, 'polling survives the terminal UI phase')
@@ -95,6 +97,30 @@ test('local failure and wallet retries do not stop backend polling or replay sta
   const settled = requests
   await act(async () => { t.mock.timers.tick(30000) })
   assert.equal(requests, settled, 'settled backend completion stops polling')
+})
+
+test('backend polling replaces an uncertain atomic marker with an indexed receipt', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 10000 })
+  let response = payload('user_transfer_pending')
+  globalThis.__swapTransport = async () => response
+  store.getState().setSwapTransactionKind('s1', 'atomic-batch')
+  store.getState().markSubmissionPending('s1')
+  const { render } = harness()
+  await render()
+  assert.equal(store.getState().pendingSubmissions.s1, true)
+  assert.equal(container.textContent, 'awaiting_user_deposit', 'a marker cannot manufacture submission progress')
+
+  const hash = `0x${'a'.repeat(64)}`
+  response = { ...payload('ls_transfer_pending', [{ ...input, status: 'pending', transaction_hash: hash }]),
+    error: { message: 'Incomplete response' } }
+  for (let i = 0; i < 4; i++) await act(async () => { t.mock.timers.tick(500) })
+  assert.equal(store.getState().pendingSubmissions.s1, true, 'an error response cannot reconcile submission')
+
+  response = { ...response, error: undefined }
+  for (let i = 0; i < 4; i++) await act(async () => { t.mock.timers.tick(500) })
+  assert.equal(store.getState().pendingSubmissions.s1, undefined)
+  assert.equal(store.getState().swapTransactions.s1.kind, 'atomic-batch')
+  assert.equal(store.getState().swapTransactions.s1.hash, hash)
 })
 
 test('gasless expiry still observes later backend expiry', async t => {

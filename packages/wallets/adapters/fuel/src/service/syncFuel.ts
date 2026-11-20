@@ -1,4 +1,4 @@
-import { Fuel, FuelConnectorEventTypes } from '@fuel-ts/account'
+import { Fuel, FuelConnectorEventTypes, type FuelConnector } from '@fuel-ts/account'
 import { useFuelStore } from './fuelStore'
 
 let _attached = false
@@ -20,39 +20,47 @@ async function syncConnectedWallets(): Promise<void> {
 export function attachFuelSync(fuel: Fuel): () => void {
     if (_fuel === fuel && _dispose) return _dispose
     _dispose?.()
+    let disposed = false
 
     useFuelStore.getState()._setFuel(fuel)
 
     const refreshConnectors = async () => {
         try {
             const connectors = await fuel.connectors()
+            if (disposed) return
             useFuelStore.getState()._setConnectors(connectors)
-            // Re-attach per-connector network listeners whenever the list changes
-            attachConnectorNetworkListeners(connectors)
+            attachConnectorListeners(connectors)
         } catch {
             // swallow
         }
     }
 
     const onConnection = () => {
-        syncConnectedWallets().catch(() => { /* swallow */ })
+        void refreshAll()
     }
     const onCurrentConnector = () => {
         syncConnectedWallets().catch(() => { /* swallow */ })
     }
 
     let perConnectorDisposers: Array<() => void> = []
-    function attachConnectorNetworkListeners(connectors: readonly any[]) {
+    function attachConnectorListeners(connectors: readonly FuelConnector[]) {
         // Detach previous listeners
         perConnectorDisposers.forEach(fn => fn())
         perConnectorDisposers = []
 
         for (const c of connectors) {
-            const handler = async () => {
-                await syncConnectedWallets()
+            const handler = () => { void refreshAll() }
+            // Listen to every connector, including ones the SDK has not selected.
+            // Connection events need refreshed status flags before reconciliation.
+            for (const event of [
+                FuelConnectorEventTypes.accounts,
+                FuelConnectorEventTypes.currentAccount,
+                FuelConnectorEventTypes.connection,
+                FuelConnectorEventTypes.currentNetwork,
+            ] as const) {
+                c.on(event, handler)
+                perConnectorDisposers.push(() => c.off(event, handler))
             }
-            c.on(FuelConnectorEventTypes.currentNetwork, handler)
-            perConnectorDisposers.push(() => c.off(FuelConnectorEventTypes.currentNetwork, handler))
         }
     }
 
@@ -60,14 +68,13 @@ export function attachFuelSync(fuel: Fuel): () => void {
     // flags reveal. Shared by initial population, bounded re-detection and
     // the window-focus refresh below.
     const refreshAll = () => refreshConnectors()
-        .then(() => syncConnectedWallets())
+        .then(() => { if (!disposed) return syncConnectedWallets() })
         .catch(() => { /* swallow */ })
     const onConnectors = () => { void refreshAll() }
 
     let retryTimers: ReturnType<typeof setTimeout>[] = []
     const onWindowFocus = () => { void refreshAll() }
 
-    let disposed = false
     const dispose = () => {
         if (disposed) return
         disposed = true

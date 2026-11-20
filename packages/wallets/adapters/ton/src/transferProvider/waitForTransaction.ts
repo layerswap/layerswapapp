@@ -1,4 +1,4 @@
-import { beginCell, Cell, loadMessage, Message, storeMessage, TonClient, Transaction } from "@ton/ton";
+import { Address, beginCell, Cell, external, loadMessage, Message, storeMessage, TonClient, Transaction } from "@ton/ton";
 
 /**
  * Waits for a transaction to appear on-chain by incoming external message.
@@ -7,23 +7,25 @@ import { beginCell, Cell, loadMessage, Message, storeMessage, TonClient, Transac
  */
 export async function waitForTransaction(
     inMessageBoc: string,
+    walletAddress: string,
     client: TonClient,
     retries: number = 10,
     timeout: number = 1000,
 ): Promise<Transaction | undefined> {
-    const inMessage = loadMessage(Cell.fromBase64(inMessageBoc).beginParse());
-
-    if (inMessage.info.type !== 'external-in') {
-        throw new Error(`Message must be "external-in", got ${inMessage.info.type}`);
+    const account = Address.parse(walletAddress);
+    const returnedCell = Cell.fromBase64(inMessageBoc);
+    // Some wallets return only the signed body. Rebuild its envelope for lookup only.
+    const targetInMessageHashes = [getNormalizedExtMessageHash(external({ to: account, body: returnedCell }))];
+    try {
+        const inMessage = loadMessage(returnedCell.beginParse());
+        if (inMessage.info.type === 'external-in' && inMessage.info.dest.equals(account)) {
+            targetInMessageHashes.push(getNormalizedExtMessageHash(inMessage));
+        }
+    } catch {
+        // A body-only reply is not a complete message; match its reconstructed hash instead.
     }
-    const account = inMessage.info.dest;
 
-    const targetInMessageHash = getNormalizedExtMessageHash(inMessage);
-
-    let attempt = 0;
-    while (attempt < retries) {
-        console.log(`Waiting for transaction to appear in network. Attempt: ${attempt}`);
-
+    for (let attempt = 0; attempt < retries; attempt++) {
         const transactions = await retry(
             () =>
                 client.getTransactions(account, {
@@ -39,7 +41,7 @@ export async function waitForTransaction(
             }
 
             const inMessageHash = getNormalizedExtMessageHash(transaction.inMessage);
-            if (inMessageHash.equals(targetInMessageHash)) {
+            if (targetInMessageHashes.some(targetHash => inMessageHash.equals(targetHash))) {
                 return transaction;
             }
         }

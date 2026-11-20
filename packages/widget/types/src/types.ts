@@ -1,4 +1,4 @@
-import { NetworkType, type Refuel } from './network';
+import type { NetworkType, GaslessStandard, Refuel } from './network';
 
 export class Network {
     name: string;
@@ -36,7 +36,7 @@ export class Token {
     listing_date: string;
     status?: 'active' | 'inactive' | 'not_found';
     supports_gasless_deposit?: boolean;
-    gasless_standard?: string | null;
+    gasless_standard?: GaslessStandard | null;
     source_rank?: number | undefined;
     destination_rank?: number | undefined;
 }
@@ -44,6 +44,7 @@ export class Token {
 export class Metadata {
     evm_oracle_contract?: `0x${string}` | null;
     evm_multicall_contract?: string | null;
+    evm_balance_viewer_contract?: string | null;
     listing_date: string;
     zks_paymaster_contract?: `0x${string}` | null;
     watchdog_contract?: string | null;

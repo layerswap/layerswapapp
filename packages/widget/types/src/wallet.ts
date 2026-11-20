@@ -36,18 +36,26 @@ export type Wallet = {
   id: string;
   internalId?: string;
   displayName?: string;
+  /** Wallet-reported implementation version, when exposed by the provider. */
+  version?: string;
   isActive: boolean;
   address: string | `0x${string}`;
   addresses: string[];
   providerName: string;
   icon?: string;
   metadata?: {
+    connectorId?: string;
+    connectorUid?: string;
     starknetAccount?: any;
     wallet?: any;
     l1Address?: string;
     l1ProviderName?: string;
     l1ChainId?: string | number;
     deepLink?: string;
+    /** Runtime wagmi connector identity; separate from the displayed wallet name. */
+    evmConnectorUid?: string;
+    /** WalletConnect session topic; identifies the session that receives this wallet's requests. */
+    walletConnectTopic?: string;
   };
   chainId?: string | number;
   isLoading?: boolean;

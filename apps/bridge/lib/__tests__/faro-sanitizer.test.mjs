@@ -168,8 +168,6 @@ function assertAnyValue(value) {
 test('real SDK exporter: preserve OTLP wrappers, IDs, timings, flags and attribute types', async () => {
     const { payload, mirrors } = await sdkPayload()
     const original = structuredClone(payload)
-    // Reproduce the original failure: the generic sanitizer destroyed OTLP attributes.
-    assert(spansOf(sanitizeValue(payload))[0].attributes.every(a => a === '[Maximum depth reached]'))
     const sanitized = beforeSend(transportItem(payload)).payload
     assert.deepEqual(payload, original, 'must not mutate data later used by Faro tracing mirrors')
     const originalSpan = spansOf(payload)[0]

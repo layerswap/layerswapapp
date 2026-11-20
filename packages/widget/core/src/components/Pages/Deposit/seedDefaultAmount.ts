@@ -1,4 +1,5 @@
 import { NetworkRouteToken } from "@layerswap/widget-types";
+import { formatTokenAmount } from "@/components/utils/formatTokenAmount";
 
 /**
  * Token amount equivalent to `defaultAmountUsd` worth of `token`, truncated to
@@ -19,5 +20,5 @@ export function seedDefaultAmount(
     const tokenAmount = defaultAmountUsd / price;
     const factor = Math.pow(10, precision);
     const truncated = Math.trunc(tokenAmount * factor) / factor;
-    return truncated > 0 ? truncated.toString() : undefined;
+    return truncated > 0 ? formatTokenAmount(truncated, precision) : undefined;
 }

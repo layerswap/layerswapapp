@@ -1,5 +1,5 @@
 "use client"
-import { ApiResponse } from '@layerswap/widget/types'
+import { ApiResponse } from '@layerswap/widget-types'
 import useSWR from "swr"
 import { CheckCircle2, ChevronRight } from "lucide-react";
 import Image from "next/image";
@@ -76,7 +76,7 @@ export default function DataTable() {
                                                                 <div className="flex flex-row items-center">
                                                                     <div className="relative h-4 w-4 md:h-5 md:w-5">
                                                                         <span>
-                                                                            <Image alt={`Source token icon ${index}`} src={sourceToken?.logo || ''} width={20} height={20} decoding="async" data-nimg="responsive" className="rounded-md" />
+                                                                            {sourceToken ? <Image alt={`Source token icon ${index}`} src={sourceToken.logo || ''} width={20} height={20} decoding="async" data-nimg="responsive" className="rounded-md" /> : null}
                                                                         </span>
                                                                     </div>
                                                                     <div className="mx-2.5">
@@ -111,7 +111,7 @@ export default function DataTable() {
                                                                 <div className="flex flex-row items-center ml-4 mb-1">
                                                                     <div className="relative h-4 w-4 md:h-5 md:w-5">
                                                                         <span>
-                                                                            <Image alt={`Destination token icon ${index}`} src={destinationToken?.logo || ''} width={20} height={20} decoding="async" data-nimg="responsive" className="rounded-md" />
+                                                                            {destinationToken ? <Image alt={`Destination token icon ${index}`} src={destinationToken.logo || ''} width={20} height={20} decoding="async" data-nimg="responsive" className="rounded-md" /> : null}
                                                                         </span>
                                                                     </div>
                                                                     {output_transaction?.amount ?

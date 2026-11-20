@@ -6,6 +6,7 @@ export type {
     WalletProviderCapabilities,
     WalletConnectionProviderProps,
     WalletConnectionProvider,
+    EnsureWalletChainOptions,
     MultiStepHandler,
     SelectAccountProps,
     RequestAdditionalConnectorsParams,

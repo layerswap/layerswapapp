@@ -2,6 +2,7 @@ import { NetworkType } from '@layerswap/widget-types';
 import { BalanceProvider, TokenBalance } from "@layerswap/widget-types";
 import { resolveHyperliquidNodeUrl, HYPERLIQUID_USDC_SYMBOL } from "./constants";
 import { HyperliquidClient } from "./hyperliquidClient";
+import { formatUnits } from "viem";
 
 export class HyperliquidBalanceProvider extends BalanceProvider {
     private client: HyperliquidClient;
@@ -35,11 +36,12 @@ export class HyperliquidBalanceProvider extends BalanceProvider {
                 // available + perps withdrawable). The withdrawal flow can pull from
                 // either pool — and consolidate between them — so the user's spendable
                 // balance is the sum, not spot alone.
-                const split = await this.client.getWithdrawableSplit(address, nodeUrl, usdcToken.symbol, options?.timeoutMs, options?.retryCount);
-                if (split.combined >= 0) {
+                const decimals = usdcToken.decimals ?? 6;
+                const split = await this.client.getWithdrawableSplit(address, nodeUrl, usdcToken.symbol, decimals, options?.timeoutMs, options?.retryCount);
+                if (split.combined >= 0n) {
                     balances.push({
                         network: network.name,
-                        amount: split.combined,
+                        amount: Number(formatUnits(split.combined, decimals)),
                         decimals: usdcToken.decimals,
                         isNativeCurrency: false,
                         token: usdcToken.symbol,

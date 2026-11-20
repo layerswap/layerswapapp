@@ -1,5 +1,6 @@
 import { WithdrawableSplit } from './hyperliquidClient'
 import { HYPERLIQUID_DEX_PERP, HYPERLIQUID_DEX_SPOT } from './constants'
+import { formatUnits } from 'viem'
 
 /**
  * The decision of how to source a Hyperliquid withdrawal from the two HyperCore
@@ -16,14 +17,8 @@ export type WithdrawalPlan =
         transfer?: { toPerp: boolean; amount: string }
     }
 
-/** Round UP to `decimals` so a consolidated pool truly reaches the target. */
-const roundUpToDecimals = (value: number, decimals: number): number => {
-    const factor = 10 ** decimals
-    return Math.ceil(value * factor) / factor
-}
-
 /**
- * Pick the cheapest way to fund a withdrawal of `required` USDC (amount + headroom)
+ * Pick the cheapest way to fund `required` USDC base units (amount + headroom)
  * from the spot/perps split:
  *  - spot alone covers it  → withdraw from spot, no transfer
  *  - else perp alone covers → withdraw from perp, no transfer
@@ -31,10 +26,10 @@ const roundUpToDecimals = (value: number, decimals: number): number => {
  *    amount; ties prefer spot), then withdraw from it
  *  - else                   → insufficient
  *
- * The transfer `deficit` is rounded up to `decimals` (so the target reaches the
- * strictly-greater threshold) and clamped to the source pool's available balance.
+ * All comparisons and the transfer deficit use exact base units. If the combined
+ * balance covers the requirement, the source pool can cover the entire deficit.
  */
-export function planWithdrawal(split: WithdrawableSplit, required: number, decimals: number): WithdrawalPlan {
+export function planWithdrawal(split: WithdrawableSplit, required: bigint, decimals: number): WithdrawalPlan {
     const { spot, perps, combined } = split
 
     if (spot >= required) return { sourceDex: HYPERLIQUID_DEX_SPOT }
@@ -44,13 +39,11 @@ export function planWithdrawal(split: WithdrawableSplit, required: number, decim
     // Neither pool alone covers it; consolidate into the larger pool.
     const targetIsSpot = spot >= perps
     const targetCurrent = targetIsSpot ? spot : perps
-    const sourceAvailable = targetIsSpot ? perps : spot
-
-    const deficit = Math.min(roundUpToDecimals(required - targetCurrent, decimals), sourceAvailable)
+    const deficit = required - targetCurrent
 
     return {
         sourceDex: targetIsSpot ? HYPERLIQUID_DEX_SPOT : HYPERLIQUID_DEX_PERP,
         // toPerp: true moves spot→perp (target = perp); false moves perp→spot (target = spot).
-        transfer: { toPerp: !targetIsSpot, amount: deficit.toFixed(decimals) },
+        transfer: { toPerp: !targetIsSpot, amount: formatUnits(deficit, decimals) },
     }
 }

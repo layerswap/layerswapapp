@@ -1,4 +1,5 @@
-import { buildDeepLink } from "@layerswap/wallet-core"
+import { buildDeepLink, subscribeWalletRequests } from "@layerswap/wallet-core"
+import { isUserRejection } from '@layerswap/wallet-core/errors'
 import {
     ChainNotConfiguredError,
     type Connector,
@@ -9,7 +10,6 @@ import {
 import type { Compute, ExactPartial, Omit } from '@wagmi/core/internal'
 import type { EthereumProvider } from '@walletconnect/ethereum-provider'
 import {
-    type AddEthereumChainParameter,
     type Address,
     type ProviderConnectInfo,
     type ProviderRpcError,
@@ -17,8 +17,9 @@ import {
     SwitchChainError,
     UserRejectedRequestError,
     getAddress,
-    numberToHex,
 } from 'viem'
+import { EIP155_NAMESPACE } from '../../constants'
+import { ensureEvmChain } from '../../service/ensureEvmChain'
 
 type WalletConnectConnector = Connector & {
     onDisplayUri(uri: string): void
@@ -84,7 +85,7 @@ type Params = {
     },
     icon: string,
 } & WalletConnectParameters
-walletConnect.type = 'metamask'
+walletConnect.type = 'walletConnect'
 export function walletConnect(parameters: Params) {
     const isNewChainsStale = parameters.isNewChainsStale ?? true
     const { id, name, rdns, type, mobile, icon } = parameters
@@ -100,6 +101,7 @@ export function walletConnect(parameters: Params) {
             chainId: number
         }>
         getNamespaceChainsIds(): number[]
+        getSessionTopic(): string | undefined
         getRequestedChainsIds(): Promise<number[]>
         isChainsStale(): Promise<boolean>
         onConnect(connectInfo: ProviderConnectInfo): void
@@ -114,7 +116,7 @@ export function walletConnect(parameters: Params) {
 
     let provider_: Provider | undefined
     let providerPromise: Promise<typeof provider_>
-    const NAMESPACE = 'eip155'
+    const NAMESPACE = EIP155_NAMESPACE
 
     let accountsChanged: WalletConnectConnector['onAccountsChanged'] | undefined
     let chainChanged: WalletConnectConnector['onChainChanged'] | undefined
@@ -131,6 +133,8 @@ export function walletConnect(parameters: Params) {
         deepLink: mobile.native || mobile.universal,
         icon: icon,
         resolveURI: (uri: string) => getResolveUri(id, uri, mobile),
+        // Requests are recorded per session topic; wallets carry it to claim them.
+        getSessionTopic: () => provider_?.session?.topic,
         async setup() {
             const provider = await this.getProvider().catch(() => null)
             if (!provider) return
@@ -262,11 +266,12 @@ export function walletConnect(parameters: Params) {
             async function initProvider() {
                 const optionalChains = config.chains.map((x) => x.id) as [number]
                 if (!optionalChains.length) return
-                const { EthereumProvider } = await import(
+                const { EthereumProvider, OPTIONAL_METHODS } = await import(
                     '@walletconnect/ethereum-provider'
                 )
-                return await EthereumProvider.init({
+                const provider = await EthereumProvider.init({
                     ...parameters,
+                    optionalMethods: [...new Set([...OPTIONAL_METHODS, 'wallet_getCapabilities', 'wallet_sendCalls', 'wallet_getCallsStatus'])],
                     disableProviderPing: true,
                     optionalChains,
                     projectId: parameters.projectId,
@@ -281,6 +286,8 @@ export function walletConnect(parameters: Params) {
                     ),
                     showQrModal: parameters.showQrModal ?? true,
                 })
+                subscribeWalletRequests(provider.signer.client, NAMESPACE)
+                return provider
             }
 
             if (!provider_) {
@@ -288,7 +295,7 @@ export function walletConnect(parameters: Params) {
                 provider_ = await providerPromise
                 provider_?.events.setMaxListeners(Number.POSITIVE_INFINITY)
             }
-            if (chainId) await this.switchChain?.({ chainId })
+            if (chainId && provider_?.chainId !== chainId) await this.switchChain?.({ chainId })
             return provider_!
         },
         async getChainId() {
@@ -317,77 +324,24 @@ export function walletConnect(parameters: Params) {
             }
         },
         async switchChain({ addEthereumChainParameter, chainId }) {
-            const provider = await this.getProvider()
-            if (!provider) throw new ProviderNotFoundError()
-
             const chain = config.chains.find((x) => x.id === chainId)
             if (!chain) throw new SwitchChainError(new ChainNotConfiguredError())
 
             try {
-                await Promise.all([
-                    new Promise<void>((resolve) => {
-                        const listener = ({
-                            chainId: currentChainId,
-                        }: { chainId?: number | undefined }) => {
-                            if (currentChainId === chainId) {
-                                config.emitter.off('change', listener)
-                                resolve()
-                            }
-                        }
-                        config.emitter.on('change', listener)
-                    }),
-                    provider.request({
-                        method: 'wallet_switchEthereumChain',
-                        params: [{ chainId: numberToHex(chainId) }],
-                    }),
-                ])
-
-                const requestedChains = await this.getRequestedChainsIds()
-                this.setRequestedChainsIds([...requestedChains, chainId])
-
+                await ensureEvmChain({
+                    getProvider: () => this.getProvider(),
+                    chain,
+                    addEthereumChainParameter,
+                    onReady: async () => {
+                        const requestedChains = await this.getRequestedChainsIds()
+                        config.emitter.emit('change', { chainId })
+                        if (!requestedChains.includes(chainId)) await this.setRequestedChainsIds([...requestedChains, chainId])
+                    },
+                })
                 return chain
-            } catch (err) {
-                const error = err as RpcError
-
-                if (/(user rejected)/i.test(error.message))
-                    throw new UserRejectedRequestError(error)
-
-                // Indicates chain is not added to provider
-                try {
-                    let blockExplorerUrls: string[] | undefined
-                    if (addEthereumChainParameter?.blockExplorerUrls)
-                        blockExplorerUrls = addEthereumChainParameter.blockExplorerUrls
-                    else
-                        blockExplorerUrls = chain.blockExplorers?.default.url
-                            ? [chain.blockExplorers?.default.url]
-                            : []
-
-                    let rpcUrls: readonly string[]
-                    if (addEthereumChainParameter?.rpcUrls?.length)
-                        rpcUrls = addEthereumChainParameter.rpcUrls
-                    else rpcUrls = [...chain.rpcUrls.default.http]
-
-                    const addEthereumChain = {
-                        blockExplorerUrls,
-                        chainId: numberToHex(chainId),
-                        chainName: addEthereumChainParameter?.chainName ?? chain.name,
-                        iconUrls: addEthereumChainParameter?.iconUrls,
-                        nativeCurrency:
-                            addEthereumChainParameter?.nativeCurrency ?? chain.nativeCurrency,
-                        rpcUrls,
-                    } satisfies AddEthereumChainParameter
-
-                    await provider.request({
-                        method: 'wallet_addEthereumChain',
-                        params: [addEthereumChain],
-                    })
-
-                    const requestedChains = await this.getRequestedChainsIds()
-                    this.setRequestedChainsIds([...requestedChains, chainId])
-                    return chain
-                } catch (error) {
-                    throw new UserRejectedRequestError(error as Error)
-                }
+            } catch (error) {
+                if (isUserRejection(error)) throw new UserRejectedRequestError(error as Error)
+                throw error
             }
         },
         onAccountsChanged(accounts) {

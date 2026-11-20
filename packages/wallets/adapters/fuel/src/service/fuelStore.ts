@@ -10,6 +10,7 @@ export type FuelStoreState = {
 
     _setConnectors: (connectors: readonly FuelConnector[]) => void
     _setFuel: (fuel: Fuel | undefined) => void
+    _setConnectedWallets: (wallets: Wallet[]) => void
     connectWallet: (wallet: Wallet) => void
     disconnectWallet: (connectorName?: string) => void
 }
@@ -28,11 +29,14 @@ export const useFuelStore = create<FuelStoreState>()((set) => ({
     // publish is a fresh identity.
     _setConnectors: (connectors) => set({ connectors: [...connectors], ready: connectors.length > 0 }),
     _setFuel: (fuel) => set({ fuel }),
-    // Mirrors the global wallet store's dedupe-by-(id,address) semantics so the
-    // same connector reconnecting replaces its entry instead of appending.
+    _setConnectedWallets: (connectedWallets) => set({ connectedWallets }),
+    // One entry per connector; its `addresses` list holds all authorized accounts.
+    // Reauthorization must replace the old primary address, not keep it selectable.
     connectWallet: (wallet) => set((state) => {
-        const filtered = state.connectedWallets.filter(w => !(w.id === wallet.id && w.address === wallet.address))
-        return { connectedWallets: [...filtered, wallet] }
+        const index = state.connectedWallets.findIndex(w => w.id === wallet.id)
+        const connectedWallets = state.connectedWallets.filter(w => w.id !== wallet.id)
+        connectedWallets.splice(index < 0 ? connectedWallets.length : index, 0, wallet)
+        return { connectedWallets }
     }),
     disconnectWallet: (connectorName) => set((state) => ({
         connectedWallets: connectorName

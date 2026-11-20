@@ -6,9 +6,8 @@ import { resolveError } from '../evmUtils/resolveError'
 /**
  * Map a failed EVM transfer to the error the widget renders and the host is
  * told about. `name` is UI copy; the classification travels as `reasonCode`
- * (declared here for declines, inferred from `cause` otherwise). Legacy nested
- * `-1` / `data.code` cancellations are only known to `resolveError`, so the
- * decline must be declared explicitly rather than left to the shared classifier.
+ * (declared here for declines, inferred from `cause` otherwise). Preserve the
+ * original cause so RPC failures retain their diagnostics and classification.
  */
 export function toTransferError(error: unknown): Error {
     const message = errorMessage(error)

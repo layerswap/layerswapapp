@@ -13,9 +13,9 @@ function expectRejected(thrown, original) {
     assert.equal(normalizeWalletErrorCode(thrown), 'user_rejected')
     assert.equal(isUserRejection(thrown), true)
 }
-function expectNotRejected(thrown, original, name) {
+function expectNotRejected(thrown, original, name, reasonCode = undefined) {
     expectShape(thrown, original, name)
-    assert.equal(thrown.reasonCode, undefined)
+    assert.equal(thrown.reasonCode, reasonCode)
     assert.equal(isUserRejection(thrown), false)
 }
 import { toTransferError } from '../dist/esm/transferProvider/toTransferError.js'
@@ -29,17 +29,32 @@ test('Fuel wallet declines (including a prompt closed without an answer) are dec
     }
 })
 
-test('Fuel funds and unexpected failures keep their labels without a reason code', () => {
+test('Fuel funding failures declare insufficient funds while unexpected failures keep their label', () => {
     for (const message of [
         "The account(s) sending the transaction don't have enough funds to cover the transaction.",
         'the target cannot be met due to no coins available or exceeding the 255 coin limit.',
     ]) {
         const original = new Error(message)
-        expectNotRejected(toTransferError(original), original, 'InsufficientFunds')
+        const thrown = toTransferError(original)
+        expectNotRejected(thrown, original, 'InsufficientFunds', 'insufficient_funds')
+        assert.equal(normalizeWalletErrorCode(thrown), 'insufficient_funds')
     }
     for (const original of [new Error('No transaction ID returned'), new Error('Session closed'), 'Fuel wallet not found']) {
         const thrown = toTransferError(original)
         expectNotRejected(thrown, original, 'UnexpectedErrorMessage')
         assert.equal(thrown.message, original instanceof Error ? original.message : original)
+    }
+})
+
+test('Fuel authorization failures are account mismatches, not user rejections', () => {
+    for (const original of [
+        new Error('address is not authorized for this connection.'),
+        { code: -32603, message: 'Address is not authorized for this connection' },
+        'address is not authorized for this connection.',
+    ]) {
+        const thrown = toTransferError(original)
+        expectShape(thrown, original, 'WaletMismatch')
+        assert.equal(normalizeWalletErrorCode(thrown), 'unauthorized')
+        assert.equal(isUserRejection(thrown), false)
     }
 })

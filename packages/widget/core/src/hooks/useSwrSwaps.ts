@@ -1,7 +1,7 @@
 import useSWRInfinite from 'swr/infinite'
 import { useEffect } from 'react'
 import LayerSwapApiClient, { SwapResponse } from '../lib/apiClients/layerSwapApiClient'
-import { ApiResponse, EmptyApiResponse } from '../Models/ApiResponse'
+import { type ApiResponse, EmptyApiResponse } from '@layerswap/widget-types'
 
 const PAGE_SIZE = 20
 

@@ -42,7 +42,8 @@ export function createTronTransfer(): TransferProvider {
                 const gasData = await new TronGasProvider().getGas({
                     address: selectedWallet.address,
                     network,
-                    token
+                    token,
+                    amount
                 })
 
                 const amountInWei = Math.pow(10, token.decimals) * amount

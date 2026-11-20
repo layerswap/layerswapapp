@@ -40,6 +40,7 @@ export function useExtendedSwapDisplay(swapId: string | undefined): ExtendedSwap
 }
 
 export type ExtendedSwapData = {
+    sourceProvider: string
     /** Swap basic data with the source side re-pointed at the extended network/token
      * and `requested_amount` set to A (the amount that leaves the extended source). */
     swapBasicData: SwapBasicData & { refuel: boolean }
@@ -93,6 +94,6 @@ export function useExtendedSwapData(
             }
         }
 
-        return { swapBasicData, quote }
+        return { swapBasicData, quote, sourceProvider: record.providerId }
     }, [display, base, backendQuote, sourceRoutes])
 }

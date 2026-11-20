@@ -2,14 +2,12 @@ import { type Wallet } from '@layerswap/widget-types';
 import { useMemo } from "react";
 import useFormRoutes from "@/hooks/useFormRoutes";
 import useWallet from "@/hooks/useWallet";
-import { useQuoteData } from "@/hooks/useFee";
 import { getExtendedProviderForNetwork, getSourceProviders, resolveExtendedRoutePlan } from "@/lib/extendedRoutes/registry";
 import { depositMethodForFunding } from "@layerswap/widget-types";
 import { getKey, useBalanceStore } from "@/stores/balanceStore";
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { useDepositSelection } from "../depositSelectionContext";
-import { useDepositSettings } from "@/context/depositSettings";
 import { DepositMethodId } from "../depositMethods";
 import { pickSourceToken, useMergedSourceRoutes } from "./useSourceRoute";
 
@@ -33,10 +31,6 @@ type ExtendedDepositOption = {
     /** The `compatibleWallet`'s withdrawable balance on this source, in the source
      * token. `undefined` until the balance resolves. */
     compatibleWalletBalance?: number;
-    /** True only when we positively know the `compatibleWallet` can't cover the
-     * minimum deposit. Stays false while balance/limit is unknown so the picker
-     * keeps the auto-select shortcut. */
-    compatibleWalletBelowMinimum: boolean;
 };
 
 /**
@@ -56,8 +50,6 @@ export function useExtendedDepositOption(providerId: DepositMethodId): ExtendedD
     const mergedSources = useMergedSourceRoutes();
     const { destination, destinationToken } = useDepositSelection();
     const { wallets } = useWallet();
-    const { methods } = useDepositSettings();
-    const enabled = methods.includes(providerId);
 
     // The deposit method of the real backend route this provider funds through:
     // 'deposit_address' for CCTP-style sources, 'wallet' for depository sources.
@@ -115,28 +107,6 @@ export function useExtendedDepositOption(providerId: DepositMethodId): ExtendedD
         return match?.amount;
     }, [balanceEntry, token]);
 
-    // The route's minimum deposit (source-token units). With no amount this fires
-    // only the lightweight `/limits` call — and warms the cache for the amount step.
-    // Gated on the method being enabled, so a hidden card costs no request.
-    const { minAllowedAmount } = useQuoteData(
-        enabled && present && destination && destinationToken
-            ? {
-                from: network!.name,
-                to: destination.name,
-                fromCurrency: token!.symbol,
-                toCurrency: destinationToken.symbol,
-                amount: undefined,
-                refuel: false,
-                depositMethod,
-            }
-            : undefined,
-    );
-
-    // Only "true" when we positively know the wallet can't cover the minimum, so an
-    // unknown/loading balance or limit keeps the auto-select shortcut.
-    const compatibleWalletBelowMinimum =
-        compatibleWalletBalance != null && minAllowedAmount != null && compatibleWalletBalance < minAllowedAmount;
-
     return useMemo(
         () => ({
             present,
@@ -147,8 +117,7 @@ export function useExtendedDepositOption(providerId: DepositMethodId): ExtendedD
             networkName: network?.name,
             compatibleWallet,
             compatibleWalletBalance,
-            compatibleWalletBelowMinimum,
         }),
-        [present, isLoading, available, network, token, compatibleWallet, compatibleWalletBalance, minAllowedAmount, compatibleWalletBelowMinimum],
+        [present, isLoading, available, network, token, compatibleWallet, compatibleWalletBalance],
     );
 }

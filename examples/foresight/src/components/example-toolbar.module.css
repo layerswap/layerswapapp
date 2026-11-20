@@ -1,0 +1,117 @@
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  border-bottom: 1px solid #333439;
+  background: #17181b;
+  color: #eeeef2;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.inner,
+.identity,
+.brand,
+.links,
+.sourceLink,
+.docsLink {
+  display: flex;
+  align-items: center;
+}
+
+.inner {
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 48px;
+  padding-block: 4px;
+}
+
+.identity {
+  gap: 12px;
+}
+
+.brand {
+  gap: 7px;
+  min-height: 36px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.35px;
+}
+
+.label {
+  padding-left: 12px;
+  border-left: 1px solid #42434a;
+  color: #c7c8d0;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.links {
+  gap: 20px;
+}
+
+.sourceLink,
+.docsLink {
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.toolbar a:hover {
+  color: #fff;
+}
+
+.sourceLink:hover,
+.docsLink:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.toolbar a:focus-visible {
+  outline: 2px solid #ff83aa;
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+@media (max-width: 560px) {
+  .inner {
+    gap: 12px;
+    min-height: 44px;
+    padding-block: 2px;
+  }
+
+  .identity {
+    gap: 8px;
+  }
+
+  .brand {
+    gap: 6px;
+    font-size: 13px;
+  }
+
+  .brand svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .label {
+    padding-left: 8px;
+    font-size: 10px;
+  }
+
+  .links {
+    gap: 14px;
+    font-size: 11px;
+  }
+
+  .sourceLink {
+    min-width: 32px;
+  }
+
+  .sourceLink span {
+    display: none;
+  }
+}

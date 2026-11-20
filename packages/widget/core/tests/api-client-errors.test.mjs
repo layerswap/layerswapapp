@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test, { after, afterEach } from 'node:test'
 import { registerHooks } from 'node:module'
 import { extname } from 'node:path'
-import { AxiosError } from 'axios'
+import { AxiosError, CanceledError } from 'axios'
 import { ErrorHandler, setErrorLogger } from '@layerswap/widget-types'
 
 const hooks = registerHooks({
@@ -72,6 +72,32 @@ test('the reported route drops the query string', async () => {
   assert.equal(reported[0].endpoint, '/swaps/swap-1/deposit_actions')
   assert.equal(reported[0].cause.url, 'https://api.test')
   assert.equal(reported[0].cause.method, 'get')
+})
+
+test('cancelling a status fetch aborts its HTTP transport without reporting a host error', async () => {
+  const reported = []
+  setErrorLogger(event => reported.push(event))
+  const client = new LayerSwapApiClient()
+  const controller = new AbortController()
+  const started = Promise.withResolvers()
+  client._authInterceptor.defaults.adapter = config => new Promise((_, reject) => {
+    started.resolve(config)
+    if (!config.signal) {
+      reject(new Error('The HTTP request must receive its cancellation signal'))
+      return
+    }
+    config.signal.addEventListener('abort', () => reject(new CanceledError('cancelled', config)), { once: true })
+  })
+  const pending = client.fetcher('/swaps/swap-1?exclude_deposit_actions=true', { signal: controller.signal })
+  const rejected = assert.rejects(pending, error => error.code === 'ERR_CANCELED')
+  try {
+    const config = await started.promise
+    assert.equal(config.signal, controller.signal)
+  } finally {
+    controller.abort()
+    await rejected
+  }
+  assert.deepEqual(reported, [])
 })
 
 test('re-reporting an authorization failure through the withdrawal boundary cannot expose request internals', async () => {

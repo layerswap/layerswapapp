@@ -1,5 +1,6 @@
 import type { NetworkType } from '@layerswap/widget-types'
 import type { WalletConnectLink } from '@layerswap/widget-types'
+import { defaultWalletConnectChainRegistry, type WalletConnectChainRegistry } from './chainRegistry'
 
 export type { WalletConnectLink }
 
@@ -43,16 +44,10 @@ export type QrCodeState =
     | { state: 'loading'; value: undefined; deepLink?: undefined }
     | { state: 'fetched'; value: string; deepLink?: string }
 
-const CAIP_NAMESPACE_TO_NETWORK_TYPE: Record<string, NetworkType> = {
-    eip155: 'evm' as NetworkType,
-    solana: 'solana' as NetworkType,
-    stellar: 'stellar' as NetworkType,
-}
-
-export const chainsToNetworkTypes = (chains: string[] | undefined): NetworkType[] => {
+export const chainsToNetworkTypes = (chains: readonly string[] | undefined, registry: WalletConnectChainRegistry = defaultWalletConnectChainRegistry): NetworkType[] => {
     const types = new Set<NetworkType>()
     for (const chain of chains ?? []) {
-        const networkType = CAIP_NAMESPACE_TO_NETWORK_TYPE[chain.split(':')[0]]
+        const networkType = registry.get(chain.split(':')[0])?.networkType
         if (networkType) types.add(networkType)
     }
     return [...types]

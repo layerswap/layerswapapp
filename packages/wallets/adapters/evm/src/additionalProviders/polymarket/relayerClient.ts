@@ -21,6 +21,16 @@ export type {
     RelayerSubmitResponse,
 } from "./protocol";
 
+/** The proxy refused the request before forwarding it to the relayer. */
+export class RelayerNotSubmittedError extends Error {
+    readonly header = 'Polymarket is unavailable'
+
+    constructor() {
+        super('Polymarket withdrawals are temporarily unavailable. Please try again later.')
+        this.name = 'RelayerNotSubmittedError'
+    }
+}
+
 /** Build the error for a failed proxy response. A kill-switch refusal gets user-facing
  * copy (`header` is what the withdrawal UI shows as the title); anything else keeps the
  * raw status + body for diagnostics. */
@@ -29,9 +39,7 @@ async function relayerError(res: Response, context: string): Promise<Error> {
     let code: string | undefined
     try { code = JSON.parse(text)?.error } catch { /* non-JSON body */ }
     if (code === PROVIDER_DISABLED_CODE) {
-        const e = new Error('Polymarket withdrawals are temporarily unavailable. Please try again later.')
-        ;(e as any).header = 'Polymarket is unavailable'
-        return e
+        return new RelayerNotSubmittedError()
     }
     return new Error(`${context} failed: ${res.status} ${text.slice(0, 300)}`)
 }

@@ -4,6 +4,11 @@ import { SwapStatus } from './SwapStatus';
 export type ErrorSummary = {
   name?: string; message?: string; stack?: string; code?: string | number;
   status?: string | number; method?: string; url?: string; cause?: ErrorSummary;
+  shortMessage?: string; details?: string;
+  data?: ErrorSummary; error?: ErrorSummary; originalError?: ErrorSummary; info?: ErrorSummary;
+  /** Allowlisted Starknet simulation/revert diagnostics; string leaves become { message }. */
+  revert_error?: ErrorSummary; execution_error?: ErrorSummary; revert_reason?: string;
+  contract_address?: string; class_hash?: string; selector?: string; transaction_index?: number;
 };
 export type ErrorResponseSummary = { code?: string | number; message?: string; error?: ErrorSummary };
 export type FailedTokenSummary = {
@@ -160,6 +165,8 @@ export type SwapLifecycleOutcome =
 export type TransferBlockedReasonCode =
   | 'rpc_unhealthy'
   | 'same_account_required'
+  | 'wallet_account_mismatch'
+  | 'quote_unavailable'
   | 'wallet_unsupported_for_network'
   | 'deposit_actions_unavailable'
   | 'swap_error'
@@ -186,6 +193,8 @@ export type WalletErrorReasonCode =
   | 'internal_rpc_error'
   | 'network_error'
   | 'timeout'
+  /** The wallet is still showing an earlier prompt of the same kind (EIP-1193 -32002). */
+  | 'request_pending'
   | 'unknown_error';
 
 /**
@@ -281,6 +290,13 @@ export type SwapLifecycleEvent = {
   phase?: string;
   depositMethod?: string;
   requestedAmount?: string;
+  /** Last explicit input method, not the form's automatic behavior mode. */
+  amountMode?: 'manual' | 'min' | 'half' | 'max' | 'unknown';
+  sourceWalletAddress?: string;
+  walletBalance?: number;
+  walletBalanceNetwork?: string;
+  walletBalanceToken?: string;
+  walletBalanceTimestamp?: string;
   fromAddress?: string;
   toAddress?: string;
   sourceNetwork?: string;

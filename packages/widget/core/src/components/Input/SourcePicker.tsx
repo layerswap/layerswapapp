@@ -1,3 +1,4 @@
+import { isAmountPreset } from '@/lib/amountPresets';
 import SourceWalletPicker from "./SourceWalletPicker";
 import RoutePicker from "./RoutePicker";
 import AmountField from "./Amount";
@@ -48,8 +49,8 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, mi
                 <div className={clsx(
                     "absolute z-10 -top-6.5 left-0",
                     {
-                        "hidden": !showQuickActions,
-                        "block": showQuickActions
+                        "hidden": !showQuickActions && !isAmountPreset(values.amountMode),
+                        "block": showQuickActions || isAmountPreset(values.amountMode)
                     },
                     "group-hover/source:block"
                 )}>

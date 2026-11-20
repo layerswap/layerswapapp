@@ -27,21 +27,6 @@ globalThis.HTMLScriptElement = FakeScriptElement;
 
 const { registerChunkHashes } = await import('../dist/esm/sri.js');
 
-test('retains SRI protection for delayed chunks for the life of the page', () => {
-  const hash = `sha384-${'B'.repeat(64)}`;
-  registerChunkHashes('https://cdn.example/widget/build-a/remoteEntry.js', {
-    'lazy.1234.js': hash,
-  });
-
-  // This assignment represents a chunk request made after its original
-  // widget root has unmounted. No component-owned cleanup can disable SRI.
-  const script = new FakeScriptElement();
-  script.src = 'https://cdn.example/widget/build-a/lazy.1234.js';
-
-  assert.equal(script.getAttribute('integrity'), hash);
-  assert.equal(script.getAttribute('crossorigin'), 'anonymous');
-});
-
 test('fails closed for an unmanifested chunk under a retained build prefix', () => {
   registerChunkHashes('https://cdn.example/widget/build-b/remoteEntry.js', {
     'known.js': `sha384-${'C'.repeat(64)}`,

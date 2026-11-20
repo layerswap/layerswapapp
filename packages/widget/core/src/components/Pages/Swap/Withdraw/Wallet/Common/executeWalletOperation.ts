@@ -9,6 +9,8 @@ type WalletOperationOptions = {
     onSettled?: (outcome: WidgetOperationOutcome, attributes?: WidgetTelemetryAttributes) => void
     /** Relayed withdrawals can succeed without a source-chain transaction hash. */
     allowEmptyHash?: boolean
+    /** Approval transactions do not submit the swap input transfer. */
+    reportsSubmission?: boolean
     /** A recoverable error (such as the first expired Stellar transaction) has no terminal event. */
     shouldReportError?: (error: unknown) => boolean
     /** Preserve flows that stop reporting outcomes after their UI unmounts. */
@@ -17,7 +19,7 @@ type WalletOperationOptions = {
 
 /** Reports only the wallet request; preparation and success hand-off belong to the caller. */
 export async function executeWalletOperation(
-    { context, onLifecycle, onSettled, allowEmptyHash = false, shouldReportError, isActive }: WalletOperationOptions,
+    { context, onLifecycle, onSettled, allowEmptyHash = false, reportsSubmission = true, shouldReportError, isActive }: WalletOperationOptions,
     execute: () => Promise<string | undefined>,
 ): Promise<string> {
     const active = () => isActive?.() ?? true
@@ -60,7 +62,7 @@ export async function executeWalletOperation(
 
     if (active()) {
         onSettled?.('succeeded')
-        onLifecycle({
+        if (reportsSubmission) onLifecycle({
             ...context,
             step: 'transaction_submitted',
             stage: 'input_transfer',

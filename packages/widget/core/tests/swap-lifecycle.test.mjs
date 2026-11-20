@@ -3,7 +3,6 @@ import test, { after } from 'node:test'
 import { registerHooks } from 'node:module'
 import { extname } from 'node:path'
 import { getErrorOccurrenceId } from '@layerswap/widget-types'
-import { normalizeWalletErrorCode } from '@layerswap/wallet-core/errors'
 
 // The widget emits extensionless relative imports for bundlers; resolve those in Node.
 const hooks = registerHooks({
@@ -97,6 +96,7 @@ test('wallet failures get a bounded reason code and keep the raw provider code',
     [Object.assign(new Error('cannot estimate gas; transaction may fail'), { code: 'UNPREDICTABLE_GAS_LIMIT' }), 'gas_estimation_failed', 'UNPREDICTABLE_GAS_LIMIT'],
     [Object.assign(new Error('Unrecognized chain ID "0x1a4". Try adding the chain first.'), { code: 4902 }), 'chain_not_added', '4902'],
     [Object.assign(new Error('Internal JSON-RPC error.'), { code: -32603 }), 'internal_rpc_error', '-32603'],
+    [Object.assign(new Error("Request of type 'wallet_switchEthereumChain' already pending for origin https://layerswap.io."), { code: -32002 }), 'request_pending', '-32002'],
     [Object.assign(new Error('The request took too long to respond.'), { name: 'TimeoutError' }), 'timeout', undefined],
     [Object.assign(new Error('Execution reverted for an unknown reason.'), { name: 'ContractFunctionExecutionError' }), 'contract_reverted', undefined],
     [new Error('something unexpected'), 'unknown_error', undefined],
@@ -109,15 +109,23 @@ test('wallet failures get a bounded reason code and keep the raw provider code',
   }
 })
 
-test('classification follows the cause chain and prefers structured codes over text', () => {
-  const wrapped = new Error('Transaction failed', { cause: Object.assign(new Error('nonce too low'), { code: 'NONCE_EXPIRED' }) })
-  assert.equal(normalizeWalletErrorCode(wrapped), 'nonce_or_replacement')
-  // A rejection code wins even when the message mentions gas.
-  assert.equal(normalizeWalletErrorCode(Object.assign(new Error('gas estimation failed'), { code: 4001 })), 'user_rejected')
-  assert.equal(normalizeWalletErrorCode('Failed to fetch'), 'network_error')
-  assert.equal(normalizeWalletErrorCode(undefined), 'unknown_error')
+test('lifecycle raw provider codes stay bounded', () => {
   // Very long provider codes stay bounded.
   assert.equal(lifecycleErrorDetails(Object.assign(new Error('x'), { code: 'A'.repeat(500) })).errorCode.length, 128)
+})
+
+test('wallet lifecycle events retain codes wrapped by the Starknet adapter and RPC SDK', () => {
+  for (const [code, message, expectedReason] of [[163, 'UNKNOWN_ERROR', 'unknown_error'], [4100, 'Unauthorized', 'unauthorized'], [4001, 'User rejected', 'user_rejected']]) {
+    const original = Object.assign(new Error(message), { code })
+    const error = Object.assign(new Error(message, { cause: original }), { name: 'UnexpectedErrorMessage' })
+    const details = lifecycleErrorDetails(error)
+    assert.equal(details.reasonCode, expectedReason)
+    assert.equal(details.errorCode, String(code))
+    assert.equal(details.occurrenceId, getErrorOccurrenceId(original))
+    assert.equal(details.reason, message)
+  }
+  assert.equal(lifecycleErrorDetails({ data: { originalError: { code: 4100 } } }).errorCode, '4100')
+  assert.equal(lifecycleErrorDetails({ code: -32603, data: { originalError: { code: 4100 } } }).errorCode, '-32603')
 })
 
 test('ambiguous -32000 RPC errors use their details and preserve the raw code', () => {
@@ -130,25 +138,12 @@ test('ambiguous -32000 RPC errors use their details and preserve the raw code', 
   for (const code of [-32000, '-32000']) {
     for (const [message, reasonCode] of cases) {
       const error = Object.assign(new Error(message), { code })
-      assert.equal(normalizeWalletErrorCode(error), reasonCode, message)
       const details = lifecycleErrorDetails(error)
       assert.equal(details.reasonCode, reasonCode, message)
       assert.equal(details.errorCode, '-32000')
       assert.equal(details.reason, message)
     }
   }
-})
-
-test('ambiguous -32000 RPC codes do not override typed or nested wallet errors', () => {
-  const typed = Object.assign(new Error('Transaction failed'), {
-    code: -32000,
-    name: 'NonceTooLowError',
-  })
-  assert.equal(normalizeWalletErrorCode(typed), 'nonce_or_replacement')
-  const wrapped = Object.assign(new Error('Transaction failed', {
-    cause: new Error('execution reverted'),
-  }), { code: -32000 })
-  assert.equal(normalizeWalletErrorCode(wrapped), 'contract_reverted')
 })
 
 test('flow_closed outcome follows the phase table for every phase', () => {

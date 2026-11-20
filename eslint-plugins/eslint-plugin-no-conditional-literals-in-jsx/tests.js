@@ -17,34 +17,28 @@ ruleTester.run('no-conditional-literals-in-jsx', noConditionalLiterals, {
   valid: [
     {
       code: `<div>{conditional && 'string'}</div>`,
-      errors,
     },
     {
       code: `<div>{conditional || 'string'}</div>`,
-      errors,
     },
     {
       // The error happens when DOM elements are added or removed; swapping
       // is ok
       code: `<div>{conditional ? 'a' : 'b'}</div>`,
-      errors,
     },
     {
       // As long as conditionally-rendered stuff is wrapped in div or span, it's fine
       code: `<div>text {conditional && <div>wrapped is ok</div>}</div>`,
-      errors,
     },
     {
       // Logic within an attribute doesn't affect the DOM
       code: `<Avatar alt={conditional && 'string'} />`,
-      errors,
     },
     {
       // JSX auto-adds whitespace when there are newlines. Make sure they don't trigger
       code: `<div>
           {conditional && 'string'}
         </div>`,
-      errors,
     },
   ],
   invalid: [
@@ -86,7 +80,6 @@ ruleTester.run('no-unwrapped-jsx-text', noUnwrappedJsxText, {
   valid: [
     {
       code: `<div>{conditional && <img></img>} <span>'string'</span></div>`,
-      errors: [{'messageId': "noUnwrappedJSX"}]
     }
   ],
   invalid: [
@@ -97,6 +90,5 @@ ruleTester.run('no-unwrapped-jsx-text', noUnwrappedJsxText, {
     },
   ],
 })
-
 
 console.log("All tests passed!");

@@ -147,6 +147,7 @@ const SwapsList: FC<SwapsListProps> = ({
     const parentRef = useRef<HTMLDivElement>(null)
     const scrollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
     const swapTransactions = useSwapTransactionStore(s => s.swapTransactions)
+    const pendingSubmissions = useSwapTransactionStore(s => s.pendingSubmissions)
 
     const handleScroll = useCallback(() => {
         if (!isScrolling) setIsScrolling(true)
@@ -161,12 +162,12 @@ const SwapsList: FC<SwapsListProps> = ({
     }, [])
 
     const pendingSwaps = useMemo(
-        () => pendingDeposit.swaps.filter(s => shouldDisplay(s, swapTransactions)),
-        [pendingDeposit.swaps, swapTransactions]
+        () => pendingDeposit.swaps.filter(s => shouldDisplay(s, swapTransactions, pendingSubmissions)),
+        [pendingDeposit.swaps, swapTransactions, pendingSubmissions]
     )
     const filteredCompleted = useMemo(
-        () => completed.swaps.filter(s => shouldDisplay(s, swapTransactions)),
-        [completed.swaps, swapTransactions]
+        () => completed.swaps.filter(s => shouldDisplay(s, swapTransactions, pendingSubmissions)),
+        [completed.swaps, swapTransactions, pendingSubmissions]
     )
 
     const grouppedSwaps = useMemo(() => Object

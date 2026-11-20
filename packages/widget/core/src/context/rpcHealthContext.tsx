@@ -3,6 +3,7 @@ import { useMemo, useSyncExternalStore } from 'react'
 import { Network } from '@layerswap/widget-types';
 import type { RpcHealthCheckResult, RpcHealthCheckStore } from '@layerswap/widget-types';
 import { resolverService } from '@/lib/resolvers/resolverService'
+import { rpcHealthForNetwork, suggestRpcForNetwork } from '@/lib/rpcHealth/scopeRpcHealth'
 
 /**
  * Hook to access RPC health check functionality for a specific network.
@@ -10,13 +11,13 @@ import { resolverService } from '@/lib/resolvers/resolverService'
  *
  * @param network - The network to check RPC health for
  */
-export function useRpcHealth(network: Network): RpcHealthCheckResult | null {
+export function useRpcHealth(network: Network, enabled = true): RpcHealthCheckResult | null {
     const resolver = resolverService.getRpcHealthCheckResolver()
     const provider = resolver?.getProviderForNetwork(network)
 
     const store: RpcHealthCheckStore | null = useMemo(
-        () => provider?.createStore() ?? null,
-        [provider],
+        () => enabled ? provider?.createStore() ?? null : null,
+        [provider, enabled],
     )
 
     const snapshot = useSyncExternalStore(
@@ -27,11 +28,13 @@ export function useRpcHealth(network: Network): RpcHealthCheckResult | null {
 
     if (!store) return null
 
+    // The store probes the wallet's active chain; scope its verdict and RPC repair to `network`.
     return {
         ...snapshot,
+        health: rpcHealthForNetwork(snapshot.health, network),
         checkManually: store.checkManually,
         suggestRpc: store.suggestRpc,
-        suggestRpcForCurrentChain: store.suggestRpcForCurrentChain,
+        suggestRpcForCurrentChain: (rpcUrl, chainDetails) => suggestRpcForNetwork(store, network, rpcUrl, chainDetails),
     }
 }
 

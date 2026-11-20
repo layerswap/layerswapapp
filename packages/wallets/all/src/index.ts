@@ -1,10 +1,9 @@
 // Import all wallet provider factories and types
 //
-// IMPORTANT: only `createEVMProvider`, `createImmutablePassportProvider`, and
-// `imtblPassportLoginCallback` are value-imported eagerly from the chain
-// packages. Every other chain is wired via a descriptor (see
-// ./descriptors/*) so the chain SDK stays out of the host's entry chunk
-// until the user actually opens the connect modal. Direct consumers can
+// EVM is wired eagerly. Every other chain uses a descriptor (see
+// ./descriptors/*) so the chain SDK stays out of the host's entry chunk.
+// The widget preloads descriptors after page load, or sooner for session
+// restoration and wallet interactions. Direct consumers can
 // still `import { create<X>Provider } from "@layerswap/wallet-<chain>"`
 // themselves if they want the eager path.
 
@@ -52,6 +51,8 @@ import type { StellarProviderConfig } from "@layerswap/wallet-stellar";
 import { createStellarDescriptor } from "./descriptors/stellar";
 
 import { WalletProviderDescriptor, WalletProvider, WalletWrapper } from "@layerswap/wallet-core/types"
+import { registerDefaultWalletConnectChains } from './walletConnectRegistry'
+export { registerDefaultWalletConnectChains }
 
 export { defineWalletDescriptor } from "./descriptors/defineWalletDescriptor";
 export type { DescriptorNetworkOptions } from "./descriptors/defineWalletDescriptor";
@@ -100,9 +101,10 @@ export type DefaultWalletConfig = {
 /**
  * Creates and returns a default configuration of all wallet providers.
  *
- * Only EVM (and Immutable Passport, when configured) is wired eagerly. Every
+ * Only EVM is wired eagerly. Every
  * other chain ships as a `WalletProviderDescriptor` — the real SDK is
- * dynamic-imported on first connect-modal open. This keeps starknet,
+ * dynamic-imported after page load or earlier wallet interaction/session
+ * restoration. This keeps starknet,
  * @paradex/sdk, @ton/*, @tonconnect/sdk, @fuel-ts/*, @solana/web3.js,
  * tronweb (+ its transitive `validator`/`bignumber.js`), Stellar Wallets Kit,
  * @stellar/stellar-sdk, bitcoinjs-lib,
@@ -140,6 +142,7 @@ export type DefaultWalletConfig = {
  * ```
  */
 export function getDefaultProviders(config: DefaultWalletConfig = {}) {
+    registerDefaultWalletConnectChains()
     const { walletConnect, ton, immutablePassport } = config;
 
     const providers: (WalletProvider | WalletWrapper | WalletProviderDescriptor)[] = [

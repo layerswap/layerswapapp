@@ -1,5 +1,5 @@
 import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
-import type { WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types";
+import type { EnsureWalletChainOptions, WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types";
 import type { AppNetworkAdapter } from "@layerswap/wallet-core"
 import { sleep } from "@layerswap/utils"
 import type { FuelConnector } from '@fuel-ts/account'
@@ -8,11 +8,15 @@ import { name as PROVIDER_NAME, id as PROVIDER_ID } from '../constants'
 import { BAKO_STATE } from '../connectors/bako-safe/Bako'
 import { resolveFuelWalletConnectorIcon } from '../utils'
 import { useFuelStore } from './fuelStore'
+import { resolveFuelChainId, type KnownFuelNetwork } from './resolveFuelChainId'
+import { ensureFuelChain } from './ensureFuelChain'
 
 export class FuelConnectionService<Network> implements WalletConnectionService<never, Network> {
+    // All services share the wallet store. An older account query must not
+    // overwrite a newer permissions snapshot, even from another widget.
+    private static _walletSyncVersion = 0
     private _networks: Network[] = []
     private _networkAdapter: AppNetworkAdapter<Network> | undefined
-    private _networksKey = ''
     // `connectWallet` mutates the module-global `BAKO_STATE.{state.last_req,
     // period_durtion}` while connecting. Rapid double-clicks or a retry firing
     // while a connect is still in flight would interleave those writes. Chain
@@ -20,18 +24,29 @@ export class FuelConnectionService<Network> implements WalletConnectionService<n
     private _connectQueue: Promise<unknown> = Promise.resolve()
 
     setNetworks(networks: Network[], networkAdapter: AppNetworkAdapter<Network>): void {
-        const key = networks.map(network => networkAdapter.getId(network)).join('|')
-        if (this._networksKey === key) return
+        // RPC URLs can change even when the configured network IDs stay the same.
         this._networks = networks
         this._networkAdapter = networkAdapter
-        this._networksKey = key
+    }
+
+    private getKnownNetworks(): KnownFuelNetwork[] {
+        const adapter = this._networkAdapter
+        if (!adapter) {
+            return []
+        }
+        return this._networks.filter(network => adapter.isFuelNetwork(network)).map(network => ({
+            chainId: adapter.getChainId(network),
+            rpcUrls: adapter.getRpcUrls(network),
+        }))
     }
 
     private addWallet(wallet: Wallet): void {
+        FuelConnectionService._walletSyncVersion++
         useFuelStore.getState().connectWallet(wallet)
     }
 
     private removeWallet(connectorName?: string): void {
+        FuelConnectionService._walletSyncVersion++
         useFuelStore.getState().disconnectWallet(connectorName)
     }
 
@@ -85,7 +100,7 @@ export class FuelConnectionService<Network> implements WalletConnectionService<n
 
     async resolveFuelWallet(connector: FuelConnector, address: string, addresses: string[]): Promise<Wallet> {
         const network = await connector.currentNetwork()
-        const chainId = network.chainId ?? (network.url.toLowerCase().includes('testnet') ? 0 : 9889)
+        const chainId = resolveFuelChainId(network, this.getKnownNetworks())
         const icon = this.resolveConnectorImageIcon(connector.metadata.image)
 
         return {
@@ -124,7 +139,7 @@ export class FuelConnectionService<Network> implements WalletConnectionService<n
                 await fuelConnector?.connect()
 
                 const addresses = (await fuelConnector?.accounts())?.map(a => new Address(a).toB256())
-                if (!addresses || !fuelConnector) return undefined
+                if (!addresses?.length || !fuelConnector) return undefined
 
                 const result = await this.resolveFuelWallet(fuelConnector, addresses[0], addresses)
                 this.addWallet(result)
@@ -185,40 +200,56 @@ export class FuelConnectionService<Network> implements WalletConnectionService<n
         }
     }
 
-    async switchChain(connector: Wallet, chainId: string | number): Promise<void> {
-        try {
-            const fuelConnector = useFuelStore.getState().connectors.find(c => c.name === connector.id)
-            if (!fuelConnector) throw new Error('Connector not found')
-            const res = await fuelConnector.selectNetwork({ chainId: Number(chainId) })
-            if (!res) throw new Error('Could not switch chain')
-        } catch (e) {
-            const msg = e instanceof Error ? e.message : String(e)
-            console.error(`[Fuel] Failed to switch chain to ${chainId}: ${msg}`)
+    async switchChain(wallet: Wallet, chainId: string | number): Promise<void> {
+        await this.ensureChain(wallet, chainId)
+    }
+
+    async ensureChain(wallet: Wallet, chainId: string | number, options: EnsureWalletChainOptions = {}): Promise<void> {
+        const connector = useFuelStore.getState().connectors.find(c => c.name === wallet.id)
+        if (!connector) {
+            throw new Error('Fuel connector not found')
         }
+        await ensureFuelChain({ ...options, connector, chainId, knownNetworks: this.getKnownNetworks() })
     }
 
     async resolveConnectedWallets(): Promise<Wallet[]> {
-        const connectors = useFuelStore.getState().connectors.filter(c => c.connected)
+        const { connectors, connectedWallets } = useFuelStore.getState()
+        const lastKnownWallets = new Map(connectedWallets.map(wallet => [wallet.id, wallet]))
         const wallets: Wallet[] = []
-        for (const connector of connectors) {
+        for (const connector of connectors.filter(c => c.connected)) {
+            const lastKnownWallet = lastKnownWallets.get(connector.name)
+            let addresses: string[]
             try {
-                const addresses = (await connector.accounts()).map(a => Address.fromAddressOrString(a).toB256())
-                if (connector.connected && addresses.length > 0) {
-                    const w = await this.resolveFuelWallet(connector, addresses[0], addresses)
-                    wallets.push(w)
-                }
+                addresses = (await connector.accounts()).map(a => new Address(a).toB256())
+            } catch (e) {
+                const msg = e instanceof Error ? e.message : String(e)
+                console.error(`[Fuel] Failed to query accounts for ${connector.name}: ${msg}`)
+                // Keep the full snapshot only when account permissions are unknown.
+                if (connector.connected && lastKnownWallet) wallets.push(lastKnownWallet)
+                continue
+            }
+            if (!connector.connected || addresses.length === 0) continue
+
+            try {
+                const w = await this.resolveFuelWallet(connector, addresses[0], addresses)
+                if (connector.connected) wallets.push(w)
             } catch (e) {
                 const msg = e instanceof Error ? e.message : String(e)
                 console.error(`[Fuel] Failed to resolve connected wallet for ${connector.name}: ${msg}`)
+                // Preserve cached network metadata, but always apply confirmed permissions.
+                if (connector.connected && lastKnownWallet) {
+                    wallets.push({ ...lastKnownWallet, address: addresses[0], addresses })
+                }
             }
         }
         return wallets
     }
 
     async syncConnectedWallets(): Promise<void> {
+        const version = ++FuelConnectionService._walletSyncVersion
         const wallets = await this.resolveConnectedWallets()
-        for (const wallet of wallets) {
-            this.addWallet(wallet)
+        if (version === FuelConnectionService._walletSyncVersion) {
+            useFuelStore.getState()._setConnectedWallets(wallets)
         }
     }
 
@@ -229,6 +260,7 @@ export class FuelConnectionService<Network> implements WalletConnectionService<n
             disconnectWallets: this.disconnectWallets.bind(this),
             switchAccount: this.switchAccount.bind(this),
             switchChain: this.switchChain.bind(this),
+            ensureChain: this.ensureChain.bind(this),
 
             availableConnectors: this.getAvailableConnectors(),
             autofillSupportedNetworks: this.getSupportedNetworks(),
