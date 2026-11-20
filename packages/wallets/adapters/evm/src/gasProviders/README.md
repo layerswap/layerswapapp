@@ -16,10 +16,15 @@ select gas behavior. Every entry includes its chain name for maintenance.
 - `transactionGasMode`: wallet-controlled, explicit legacy, or explicit EIP-1559.
   Explicit modes require complete fee data for both quotes and submission.
 - `reserveMaximumFee`: expose the maximum fee separately for Max budgeting.
-- `checkBalanceBeforeSend`: check pending native balance against transfer value
-  plus the prepared maximum fee before requesting a wallet transaction.
-  A failed balance read aborts preparation rather than assuming sufficient funds.
+- Fee funding is never checked before the wallet request: smart accounts and
+  paymasters can pay fees without native balance. The widget shows an advisory
+  gas warning; the wallet reports a real shortfall.
 - `accountBalanceReserve`: chain-specific balance that must remain in the account.
+- `opStack`: `operatorFee` adds the oracle's `getOperatorFee(gasLimit)` to the
+  L1 data fee. The oracle always comes from network metadata
+  (`evm_oracle_contract`); chains with it but no `opStack` policy get the L1 data
+  fee only. Both are budgeted into quotes only and fail the quote on RPC error. Requires viem 2.31+, whose
+  `estimateL1Fee` serializes locally instead of preparing against the account.
 
 `NetworkSettings.ts` retains ordering and fee-unit conversion overrides. Those are
 not transaction fee policies.
@@ -39,9 +44,10 @@ not transaction fee policies.
 
 Unknown IDs retain the default: 1.2 price multiplier, no gas-limit margin beyond
 100%, and wallet-controlled submission. This preserves existing behavior; it is
-not a claim that every new chain's Max budget matches wallet defaults. Existing
-L1-data-fee estimation remains in the gas provider; changing submission policies
-for those chains requires validation of the complete fee budget.
+not a claim that every new chain's Max budget matches wallet defaults. OP Stack
+chains with oracle metadata but no `opStack` policy still quote the L1 data fee;
+opting one into explicit submission requires validating its complete fee budget,
+as Base's policy does.
 
 BSC deliberately retains a 1.2 legacy gas-price multiplier. The prepared price is
 used in both quoting and submission rather than relying on a wallet's price floor.

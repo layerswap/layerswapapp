@@ -10,6 +10,8 @@ import type { GasProps } from '@layerswap/widget-types'
 type GasOptions = {
     enabled?: boolean
     transaction?: Pick<GasProps, 'recipientAddress' | 'callData' | 'amountInBaseUnits'>
+    /** Display-only: show the previous estimate while a new amount loads. */
+    keepPreviousData?: boolean
 }
 
 const useSWRGas = (
@@ -18,7 +20,7 @@ const useSWRGas = (
     token?: Token | null,
     amount?: number | string | null,
     wallet?: Wallet,
-    { enabled = true, transaction }: GasOptions = {},
+    { enabled = true, transaction, keepPreviousData = false }: GasOptions = {},
 ): { gasData: GasWithToken | undefined, isGasLoading: boolean, gasError: any } => {
 
     const hasAmount = amount != null && amount !== ''
@@ -41,7 +43,7 @@ const useSWRGas = (
     const { data: gasData, error: gasError, isLoading } = useSWR((enabled && network && token && address && canEstimate) ? gasKey : null, () => {
         if (!network || !token || !address || !canEstimate) return
         return resolverService.getGasResolver().getGas({ address, network, token, amount: estimationAmount, wallet, ...transaction })
-    }, { refreshInterval: enabled ? 60000 : 0, keepPreviousData: !enabled })
+    }, { refreshInterval: enabled ? 60000 : 0, keepPreviousData: keepPreviousData || !enabled })
 
     return {
         gasData,
