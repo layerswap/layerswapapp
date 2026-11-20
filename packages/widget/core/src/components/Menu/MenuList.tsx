@@ -50,12 +50,6 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path?: string) => void }> = ({ g
                 <Menu.Item pathname='https://docs.layerswap.io/get-started/choose-your-integration' target="_blank" icon={<Users className="h-5 w-5" />} >
                     Developer Docs
                 </Menu.Item>
-                <Menu.Item pathname='https://layerswap.io/dashboard/chat' target="_blank" icon={<ChatIcon strokeWidth={2} className="h-5 w-5" />}>
-                    Chat with our team
-                </Menu.Item>
-                <Menu.Item pathname='https://t.me/layerswap_dev' target="_blank" icon={<Users className="h-5 w-5" />}>
-                    Join Dev Community
-                </Menu.Item>
             </Menu.Group>
 
             <Menu.Group>
