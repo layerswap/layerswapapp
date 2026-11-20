@@ -702,6 +702,37 @@ for (const [name, flow, connected] of [
   ['no transfer method', { depositMethod: undefined }, false],
   ['disconnected wallet', { depositMethod: 'wallet' }, false],
 ]) {
+  for (const isUsdMode of [false, true]) {
+    test(`${name}: 50% requires a route maximum in ${isUsdMode ? 'USD' : 'token'} mode`, async () => {
+      Object.assign(initialValues, flow, { amountMode: 'manual', amountPresetSource: undefined })
+      state.renderPresets = true
+      state.usdMode = true
+      usdStore.setState({ isUsdMode, usdAmount: '' })
+      if (!connected) state.wallets = []
+      state.limit = undefined
+      await render()
+      const button = container.querySelector('[data-attr="half-amount"]')
+      const previousValues = formik.values
+      assert.equal(button.disabled, true)
+      await act(() => button.click())
+      assert.deepEqual(formik.values, previousValues)
+
+      state.limit = 10
+      await render()
+      assert.equal(button.disabled, false)
+      await act(() => button.click())
+      assert.equal(formik.values.amount, '5', 'Use the route maximum even when a wallet balance is cached')
+      assert.equal(formik.values.amountMode, 'fixed')
+
+      for (const unavailableLimit of [undefined, NaN, Infinity, -1]) {
+        state.limit = unavailableLimit
+        await render()
+        assert.equal(button.disabled, true)
+        await act(() => button.click())
+        assert.equal(formik.values.amount, '5', 'Losing the maximum must preserve the chosen amount')
+      }
+    })
+  }
   for (const mode of ['min', 'half', 'max']) {
     for (const isUsdMode of [false, true]) {
       test(`${name} ${mode} in ${isUsdMode ? 'USD' : 'token'} mode is a one-time shortcut`, async () => {
@@ -716,7 +747,7 @@ for (const [name, flow, connected] of [
         assert.equal(button.disabled, false)
         assert.equal(button.getAttribute('aria-pressed'), null, 'One-time buttons do not expose toggle state')
         await act(() => button.click())
-        const chosenAmount = mode === 'min' ? '0.001' : mode === 'half' ? (connected ? '0.5' : '5') : '10'
+        const chosenAmount = mode === 'min' ? '0.001' : mode === 'half' ? '5' : '10'
         assert.equal(formik.values.amount, chosenAmount)
         assert.equal(formik.values.amountMode, 'fixed')
         assert.equal(formik.values.amountPresetPending, false)
@@ -733,7 +764,7 @@ for (const [name, flow, connected] of [
         assert.equal(formik.values.amount, chosenAmount)
         // Clicking again applies the latest shortcut value; it does not toggle a binding.
         await act(() => button.click())
-        assert.equal(formik.values.amount, mode === 'min' ? '0.02' : mode === 'half' ? (connected ? '0.2' : '0.375') : '0.75')
+        assert.equal(formik.values.amount, mode === 'min' ? '0.02' : mode === 'half' ? '0.375' : '0.75')
         assert.equal(formik.values.amountMode, 'fixed')
       })
     }

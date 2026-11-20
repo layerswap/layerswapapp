@@ -2,6 +2,9 @@ import {
   memo,
   RefObject,
   useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -18,7 +21,9 @@ import { CollapsableHeader } from "./CollapsableHeader";
 import { StickyHeader } from "./StickyHeader";
 import { SwapDirection } from "@/components/Pages/Swap/Form/SwapFormValues";
 import clsx from "clsx";
-import { NavigatableItem } from "@/components/NavigatableList";
+import { NavigatableItem, NavigatableRegistrationContext, useNavigatableListState } from "@/components/NavigatableList";
+import { useVirtualizer } from "@/lib/virtual";
+import { defaultRangeExtractor, type Range } from "@/lib/virtual/core";
 
 type GenericAccordionRowProps = {
   item: NetworkElement | GroupedTokenElement;
@@ -54,7 +59,7 @@ export const CollapsibleRow = ({
   const groupName = item.type === "grouped_token" ? item.symbol : item.route.name;
   const headerId = `${groupName}-header`;
 
-  const childrenList: ChildWrapper[] | undefined = useMemo(() => {
+  const childrenList: ChildWrapper[] = useMemo(() => {
     if (item.type === "grouped_token") {
       const grouped = item as GroupedTokenElement;
       return grouped.items.map((el) => ({
@@ -74,6 +79,14 @@ export const CollapsibleRow = ({
   const headerRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const isOpen = openValues?.some((ov) => ov === groupName);
+  const registration = useContext(NavigatableRegistrationContext);
+  const childrenCount = childrenList?.length ?? 0;
+
+  useEffect(() => {
+    if (!registration || !isOpen) return;
+    registration.setChildCount(index, childrenCount);
+    return () => registration.setChildCount(index, undefined);
+  }, [registration, index, isOpen, childrenCount]);
 
   const stickyToggle = () => {
     toggleContent(groupName);
@@ -104,7 +117,7 @@ export const CollapsibleRow = ({
               <CollapsableHeader
                 item={item}
                 direction={direction}
-                hideTokenImages={isOpen}
+                isOpen={isOpen}
                 hideBalances={hideBalances}
               />
             </AccordionTrigger>
@@ -132,24 +145,17 @@ export const CollapsibleRow = ({
         >
           <div className="has-[.token-item]:mt-1 bg-secondary-500 rounded-xl overflow-hidden">
             <div className="overflow-y-auto styled-scroll p-2">
-              {childrenList?.map(({ token, route }, childIndex) => {
-                const isSelected = selectedRoute === route.name && selectedToken === token.symbol;
-
-                return (
-                  <TokenItem
-                    key={`${groupName}-${childIndex}`}
-                    token={token}
-                    route={route}
-                    childIndex={childIndex}
-                    groupName={groupName}
-                    parentIndex={index}
-                    isSelected={isSelected}
-                    direction={direction}
-                    onSelect={onSelect}
-                    hideBalances={hideBalances}
-                  />
-                );
-              })}
+              <VirtualTokenList
+                childrenList={childrenList}
+                groupName={groupName}
+                parentIndex={index}
+                selectedRoute={selectedRoute}
+                selectedToken={selectedToken}
+                direction={direction}
+                onSelect={onSelect}
+                scrollContainerRef={scrollContainerRef}
+                hideBalances={hideBalances}
+              />
             </div>
           </div>
         </AccordionContent>
@@ -157,6 +163,108 @@ export const CollapsibleRow = ({
     </motion.div>
   );
 }
+
+// Only the visible tokens are mounted; networks like Ethereum have 1000+ tokens.
+const VirtualTokenList = ({
+  childrenList,
+  groupName,
+  parentIndex,
+  selectedRoute,
+  selectedToken,
+  direction,
+  onSelect,
+  scrollContainerRef,
+  hideBalances,
+}: {
+  childrenList: ChildWrapper[];
+  groupName: string;
+  parentIndex: number;
+  selectedRoute: string | undefined;
+  selectedToken: string | undefined;
+  direction: SwapDirection;
+  onSelect: (route: NetworkRoute, token: NetworkRouteToken) => void;
+  scrollContainerRef: RefObject<HTMLDivElement | null>;
+  hideBalances?: boolean;
+}) => {
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const [scrollMargin, setScrollMargin] = useState(0);
+  const registration = useContext(NavigatableRegistrationContext);
+  const { focusedIndex } = useNavigatableListState();
+  const navigableParentIndex = registration?.getNavigableIndex(parentIndex) ?? -1;
+  const effectiveParentIndex = navigableParentIndex >= 0 ? navigableParentIndex : parentIndex;
+  const focusedChildIndex = focusedIndex?.parent === effectiveParentIndex ? focusedIndex.child : undefined;
+
+  // Keep the focused token mounted so its scroll-into-view effect and Enter handler still work.
+  const rangeExtractor = useCallback((range: Range) => {
+    const indexes = defaultRangeExtractor(range);
+    if (focusedChildIndex === undefined || focusedChildIndex >= range.count || indexes.includes(focusedChildIndex)) {
+      return indexes;
+    }
+    return [...indexes, focusedChildIndex].sort((a, b) => a - b);
+  }, [focusedChildIndex]);
+
+  // The list sits below other rows inside the shared scroll container, so its offset must be measured.
+  useLayoutEffect(() => {
+    const list = listRef.current;
+    const scroller = scrollContainerRef.current;
+    if (!list || !scroller) return;
+    const offset = list.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop;
+    setScrollMargin((prev) => (Math.abs(prev - offset) < 1 ? prev : offset));
+  });
+
+  const virtualizer = useVirtualizer({
+    count: childrenList.length,
+    estimateSize: () => 52,
+    getScrollElement: () => scrollContainerRef.current,
+    // The virtualizer scrolls to initialOffset on mount; keep the shared container where it is.
+    initialOffset: () => scrollContainerRef.current?.scrollTop ?? 0,
+    scrollMargin,
+    overscan: 10,
+    rangeExtractor,
+  });
+
+  const items = virtualizer.getVirtualItems();
+
+  return (
+    <div
+      ref={listRef}
+      style={{ height: virtualizer.getTotalSize(), position: "relative" }}
+    >
+      {items.map((virtualRow) => {
+        const { token, route } = childrenList[virtualRow.index];
+        const isSelected = selectedRoute === route.name && selectedToken === token.symbol;
+
+        return (
+          <div
+            key={`${groupName}-${virtualRow.index}`}
+            data-index={virtualRow.index}
+            ref={virtualizer.measureElement}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              // Per-row offsets: the pinned focused token can make the range non-contiguous.
+              transform: `translateY(${virtualRow.start - scrollMargin}px)`,
+            }}
+          >
+            <TokenItem
+              token={token}
+              route={route}
+              childIndex={virtualRow.index}
+              groupName={groupName}
+              parentIndex={parentIndex}
+              isSelected={isSelected}
+              direction={direction}
+              onSelect={onSelect}
+              hideBalances={hideBalances}
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 // Memoized child item to prevent re-renders when siblings change focus
 const TokenItem = memo<{

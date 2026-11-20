@@ -100,7 +100,7 @@ export type SwapContextData = {
     depositAddressIsFromAccount?: boolean,
     depositActionsResponse?: DepositAction[],
     depositActionsError?: string,
-    approvalTransaction?: ApprovalTransaction & { status?: string },
+    approvalTransaction?: ApprovalTransaction & { status?: string; notFound?: boolean },
     withdrawType: WithdrawType | undefined,
     swapBasicData: SwapBasicData & { refuel: boolean } | undefined,
     quote: SwapQuote | undefined,
@@ -469,7 +469,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     // that determines the resolved swap status. Execution owns the wait lifetime.
     const activeApproval = approvalWait?.swapId === swapId
         && approvalWait?.sourceAddress === selectedSourceAccount?.address ? approvalWait : undefined
-    const { data: approvalReceipt } = useSWR<ApiResponse<{ status: string }>>(
+    const { data: approvalReceipt, error: approvalReceiptError } = useSWR<ApiResponse<{ status: string }>>(
         activeApproval ? [activeApproval.network, activeApproval.hash] : null,
         ([network, hash]: [string, string]) => layerswapApiClient.GetTransactionStatus(network, hash),
         {
@@ -479,8 +479,9 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         },
     )
     const approvalStatus = approvalReceipt?.data?.status?.toLowerCase()
+    const approvalNotFound = approvalReceiptError?.response?.status === 404
     const approvalTransaction = useMemo(() => activeApproval
-        ? { ...activeApproval, status: approvalStatus } : undefined, [activeApproval, approvalStatus])
+        ? { ...activeApproval, status: approvalStatus, notFound: approvalNotFound } : undefined, [activeApproval, approvalStatus, approvalNotFound])
 
     const resolved = useMemo(
         () => resolveSwapPhase({

@@ -135,9 +135,9 @@ test('mixed, reordered, inconsistent and incomplete atomic workflows fail before
     for (const actions of [
         [...valid, { type: 'sign', step: 'sign', status: 'action_required' }],
         [valid[1], valid[0]],
-        [valid[0]],
         [valid[0], { ...valid[1], order: 3 }],
-        [valid[0], { ...valid[1], status: 'waiting' }],
+        // Sequential reset approvals must become actionable one at a time.
+        [...fixture.deposit_actions.allowance_reset.slice(0, 2), { step: 'publish', status: 'pending' }],
         [{ ...valid[0], network: { ...fixture.network, chain_id: '1' } }, valid[1]],
         [{ ...valid[0], valid_before: 2000000001 }, valid[1]],
         [{ ...valid[0], amount_in_base_units: 9007199254740993 }, valid[1]],
