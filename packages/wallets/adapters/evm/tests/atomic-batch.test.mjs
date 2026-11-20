@@ -8,7 +8,7 @@ import { arbitrum, scroll } from 'viem/chains'
 
 const hooks = registerHooks({
     resolve(specifier, context, nextResolve) {
-        if (specifier === '@layerswap/wallet-core' && context.parentURL?.endsWith('/atomicBatch.js')) {
+        if (specifier === '@layerswap/wallet-core' && ['/atomicBatch.js', '/walletCapabilities.js'].some(file => context.parentURL?.endsWith(file))) {
             return { url: 'data:text/javascript,export const foregroundWalletApp = async () => {}; export const getDynamicWcMetadata = () => undefined', shortCircuit: true }
         }
         if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
@@ -19,6 +19,7 @@ const hooks = registerHooks({
 })
 after(() => hooks.deregister())
 const { createAtomicBatchProvider } = await import('../dist/esm/transferProvider/atomicBatch.js')
+const { getWalletCapabilityService } = await import('../dist/esm/transferProvider/walletCapabilities.js')
 const account = `0x${'3'.repeat(40)}`
 const target = `0x${'2'.repeat(40)}`
 const hash = `0x${'a'.repeat(64)}`
@@ -502,4 +503,52 @@ test('atomic tracking refuses viem sequential fallback IDs before any hash RPC',
     const h = walletHarness()
     await assert.rejects(h.provider.getStatus(h.context, `0x${'a'.repeat(128)}${'5792'.repeat(16)}`), /Sequential/)
     assert.deepEqual(h.requests, [])
+})
+
+test('alternate gas fees share the atomic capability query and fall back to the all-chains entry', async () => {
+    const capabilities = h => getWalletCapabilityService(h.config).getCapabilities(h.context)
+    const h = walletHarness()
+    h.state.onCapabilities = () => ({ '0xa4b1': { atomic: { status: 'supported' }, alternateGasFees: { supported: true } } })
+    assert.equal(await h.provider.getCapabilities(h.context), 'supported')
+    assert.equal((await capabilities(h)).alternateGasFees, true)
+    assert.equal(h.requests.filter(r => r.method === 'wallet_getCapabilities').length, 1)
+
+    const global = walletHarness()
+    global.state.onCapabilities = () => ({ '0x0': { alternateGasFees: { supported: true } } })
+    assert.equal((await capabilities(global)).alternateGasFees, true)
+
+    const none = walletHarness()
+    none.state.onCapabilities = () => ({ '0xa4b1': { atomic: { status: 'ready' } } })
+    assert.equal((await capabilities(none)).alternateGasFees, false)
+
+    const failing = walletHarness()
+    failing.state.onCapabilities = () => { throw new Error('unsupported method') }
+    assert.deepEqual(await capabilities(failing), { atomic: 'unsupported', alternateGasFees: false })
+})
+
+test('accepted answers are published for every chain until the connection account set changes', async () => {
+    const h = walletHarness()
+    const service = getWalletCapabilityService(h.config)
+    const uid = h.context.wallet.metadata.connectorUid
+    let notified = 0
+    service.subscribe(() => { notified++ })
+    h.state.onCapabilities = () => ({
+        '0xa4b1': { atomic: { status: 'supported' } },
+        '0xe708': { atomic: { status: 'ready' }, alternateGasFees: { supported: true } },
+    })
+    await service.getCapabilities(h.context)
+    assert.deepEqual(service.getPublished()[uid][account.toLowerCase()], {
+        42161: { atomic: 'supported', alternateGasFees: false },
+        59144: { atomic: 'ready', alternateGasFees: true },
+    })
+    assert.equal(notified, 1)
+
+    h.state.chainId = 1
+    h.state.changed()
+    assert.ok(service.getPublished()[uid], 'a chain switch keeps the all-chains answer')
+
+    h.state.accounts = [account, target]
+    h.state.changed()
+    assert.equal(service.getPublished()[uid], undefined)
+    assert.equal(notified, 2)
 })

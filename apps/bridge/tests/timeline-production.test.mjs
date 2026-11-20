@@ -1496,6 +1496,9 @@ for (const failure of ['rejected', 'failed']) {
             '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
             '@/helpers/gasless': gasless,
             '@/hooks/useIsGaslessActive': { useIsGaslessActive: () => false },
+            '@/hooks/useSelectedSourceWallet': { useSelectedSourceWallet: () => undefined },
+            '@/helpers/walletCapabilities': { getWalletCapabilities: () => undefined },
+            '@/components/utils/formatTokenAmount': { formatTokenAmount: value => String(value) },
             '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
             '@/components/Input/Amount/helpers': loadSource('components/Input/Amount/helpers.ts', {
                 '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),

@@ -373,6 +373,9 @@ test('exact gas loading preserves the pending wallet request and its execution l
         '@/helpers/depositActions': helpers,
         '@/helpers/gasless': { isGaslessDepositWorkflow: () => false },
         '@/hooks/useIsGaslessActive': { useIsGaslessActive: () => false },
+        '@/hooks/useSelectedSourceWallet': { useSelectedSourceWallet: () => undefined },
+        '@/helpers/walletCapabilities': { getWalletCapabilities: () => undefined },
+        '@/components/utils/formatTokenAmount': { formatTokenAmount: value => String(value) },
     });
     function Screen() {
         const [, set] = React.useState(0);

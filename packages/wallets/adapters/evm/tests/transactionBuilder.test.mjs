@@ -425,3 +425,35 @@ for (const [chainId, symbol, fee] of [['56', 'BNB', '0.00006'], ['1', 'ETH', '0.
         })
     }
 }
+
+test('a wallet paying gas in another token sends a token transfer despite no native balance', async () => {
+    state.balance = 0n
+    state.gasPrice = 1_000_000_000n
+    state.fees = { maxFeePerGas: 2_000_000_000n, maxPriorityFeePerGas: 1_000_000_000n }
+    state.estimateGas = () => 50_000n
+    const action = {
+        ...bscAction, amount: 1,
+        token: { symbol: 'TOKEN', decimals: 18, contract: `0x${'56'.repeat(20)}` },
+        network: { ...bscAction.network, chain_id: '1', token: { symbol: 'ETH', decimals: 18 } },
+    }
+    let asked = 0
+    const tx = await transactionBuilder(action, { hasAlternateGasFees: async () => { asked++; return true } })
+    assert.equal(tx.gas, 60_000n)
+    assert.equal(asked, 1)
+    await assert.rejects(transactionBuilder(action, { hasAlternateGasFees: async () => false }), InsufficientFundsError)
+    await assert.rejects(transactionBuilder(action, { hasAlternateGasFees: async () => { throw new Error('no answer') } }), InsufficientFundsError)
+    state.balance = 120_000_000_000_000n
+    asked = 0
+    await transactionBuilder(action, { hasAlternateGasFees: async () => { asked++; return true } })
+    assert.equal(asked, 0)
+})
+
+test('alternate gas fees never fund a native amount above the balance', async () => {
+    state.balance = 1n
+    state.gasPrice = 1_000_000_000n
+    state.estimateGas = () => 22_615n
+    await assert.rejects(
+        transactionBuilder({ ...bscAction, amount: '0.0001' }, { hasAlternateGasFees: async () => true }),
+        InsufficientFundsError,
+    )
+})

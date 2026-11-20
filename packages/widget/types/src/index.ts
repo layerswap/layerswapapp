@@ -52,7 +52,7 @@ export type {
   TransferBlockedReasonCode,
   WalletErrorReasonCode,
 } from './logEvents';
-export type { InternalConnector, Wallet, WalletConnectConfig, WalletConnectLink } from './wallet';
+export type { InternalConnector, Wallet, WalletCapabilities, WalletConnectConfig, WalletConnectLink } from './wallet';
 export { ActionMessageType } from './actionMessage';
 export { GasCalculation } from './GasCalculation';
 export { Network, NetworkWithTokens, Token, Metadata, NetworkRoute, NetworkRouteToken } from './types';

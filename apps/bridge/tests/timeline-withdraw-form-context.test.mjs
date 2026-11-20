@@ -56,6 +56,9 @@ const imports = {
     '@/helpers/depositActions': { getActionableDepositAction: noop, isTransferAction: () => false },
     '@/helpers/gasless': { isGaslessDepositWorkflow: () => undefined },
     '@/hooks/useIsGaslessActive': { useIsGaslessActive: () => false },
+    '@/hooks/useSelectedSourceWallet': { useSelectedSourceWallet: () => undefined },
+    '@/helpers/walletCapabilities': { getWalletCapabilities: () => undefined },
+    '@/components/utils/formatTokenAmount': { formatTokenAmount: value => String(value) },
 };
 const { outputText } = ts.transpileModule(readFileSync(new URL('src/components/Pages/Swap/Withdraw/Withdraw.tsx', core), 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
