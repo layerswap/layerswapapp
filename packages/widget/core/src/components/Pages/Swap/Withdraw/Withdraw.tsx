@@ -29,6 +29,8 @@ import { TransferBlock } from './TransferBlock';
 import { useHasSubmittedTransfer } from '@/hooks/useHasSubmittedTransfer';
 import { type ObservedLifecycleEvent, useLifecycleObservation } from '@/hooks/useLifecycleObservation';
 import { getActionableDepositAction, isTransferAction } from '@/helpers/depositActions';
+import { isGaslessDepositWorkflow } from '@/helpers/gasless';
+import { useIsGaslessActive } from '@/hooks/useIsGaslessActive';
 
 // "Transfer screen shown": reported once while the screen is visible, before any swap exists.
 const AWAITING_WALLET_ACTION: ObservedLifecycleEvent = {
@@ -44,6 +46,9 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
         useSwapDataState();
     const { startFreshSwapAttempt, canAdjustAmount } = useSwapDataUpdate();
     const hasSubmittedTransfer = useHasSubmittedTransfer();
+    const draftGasless = useIsGaslessActive(swapBasicData);
+    // Created swaps follow their execution plan even if the draft preference changed.
+    const isGaslessExecution = isGaslessDepositWorkflow(depositActionsResponse) ?? draftGasless;
 
     const { networks, sourceRoutes, destinationRoutes } = useSettingsState();
     const source_network =
@@ -242,7 +247,7 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
                 />
             </TransferBlock>
         );
-    } else if (!hasSubmittedTransfer && swapBasicData?.use_deposit_address === false && nativeGasShortage) {
+    } else if (!hasSubmittedTransfer && !isGaslessExecution && swapBasicData?.use_deposit_address === false && nativeGasShortage) {
         // Keep execution mounted: a refreshed estimate or balance must not
         // interrupt an in-flight wallet request. Sending rechecks pending funds.
         const { requiredFee, availableBalance, symbol } = nativeGasShortage;

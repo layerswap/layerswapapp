@@ -510,6 +510,10 @@ function createWorkflow({
                 '@/lib/amountPresets': amountPresets,
                 '@/components/Widget/Index': {},
                 '@/helpers/swapFlow': { isDepositAddressSwap: () => false },
+                '@/hooks/useIsGaslessActive': loadSource('../src/hooks/useIsGaslessActive.ts', {
+                    ...buttonImports,
+                    './useWallet': buttonImports['@/hooks/useWallet'],
+                }),
                 '@/hooks/useFee': { transformSwapDataToQuoteArgs: noop, useQuoteData: () => ({}) },
                 '@/lib/balances/useBalance': { useBalance: () => ({ balances: state.balances }) },
                 '@/lib/gases/useOutOfGas': { default: () => ({ outOfGas: state.outOfGas }) },

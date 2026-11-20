@@ -140,6 +140,8 @@ const { default: Withdraw } = loadSource('components/Pages/Swap/Withdraw/Withdra
     '@/hooks/useTransferBlocked': loadSource('hooks/useTransferBlocked.ts', callbackImports),
   }),
   '@/hooks/useHasSubmittedTransfer': { useHasSubmittedTransfer: () => false },
+  '@/hooks/useIsGaslessActive': { useIsGaslessActive: () => false },
+  '@/helpers/gasless': { isGaslessDepositWorkflow: () => undefined },
   '@layerswap/widget-types': require('@layerswap/widget-types'),
   '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
   '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput() {} } },
