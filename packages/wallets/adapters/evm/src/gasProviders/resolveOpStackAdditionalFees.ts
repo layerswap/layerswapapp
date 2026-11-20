@@ -11,7 +11,11 @@ export type OpStackFees = { oracle: `0x${string}`; operatorFee: boolean }
 /** The oracle comes from network metadata; the `opStack` policy only opts into the operator fee. */
 export function resolveOpStackFees(network: Network, policy: EVMGasPolicy): OpStackFees | undefined {
     const oracle = network.metadata?.evm_oracle_contract as `0x${string}` | undefined
-    return oracle ? { oracle, operatorFee: !!policy.opStack?.operatorFee } : undefined
+    if (!oracle) {
+        return undefined
+    }
+
+    return { oracle, operatorFee: !!policy.opStack?.operatorFee }
 }
 
 export async function resolveOpStackL1Fee({ publicClient, oracle, transaction }: {

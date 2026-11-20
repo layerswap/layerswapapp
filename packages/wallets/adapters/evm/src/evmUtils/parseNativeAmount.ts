@@ -11,7 +11,9 @@ export function parseNativeAmount(amount: number | string, decimals: number, amo
     }
 
     const text = String(amount)
-    const isExponential = /e/i.test(text)
-    const decimalText = isExponential ? Number(text).toFixed(decimals) : text
-    return parseUnits(decimalText, decimals)
+    if (/e/i.test(text)) {
+        return parseUnits(Number(text).toFixed(decimals), decimals)
+    }
+
+    return parseUnits(text, decimals)
 }

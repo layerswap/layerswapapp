@@ -48,9 +48,10 @@ export class EVMGasProvider implements GasProvider {
             const getGas = opStackFees ? getOptimismGas : getEthereumGas
 
             // Only the OP Stack L1 data fee depends on the exact value; other quotes never read it.
-            const nativeValue = opStackFees && !token.contract
-                ? parseNativeAmount(amount ?? 0, token.decimals, amountInBaseUnits)
-                : 0n
+            let nativeValue = 0n
+            if (opStackFees && !token.contract) {
+                nativeValue = parseNativeAmount(amount ?? 0, token.decimals, amountInBaseUnits)
+            }
 
             const gasProvider = new getGas(
                 {
@@ -250,9 +251,10 @@ export default class getOptimismGas extends getEVMGas {
             return undefined
         }
 
-        const operatorFee = hasOperatorFee
-            ? await resolveOpStackOperatorFee({ publicClient: this.publicClient, oracle, gasLimit: feeAmounts.gasLimit })
-            : 0n
+        let operatorFee = 0n
+        if (hasOperatorFee) {
+            operatorFee = await resolveOpStackOperatorFee({ publicClient: this.publicClient, oracle, gasLimit: feeAmounts.gasLimit })
+        }
         const additionalFees = l1Fee + operatorFee
         const gas = Number(formatUnits(feeAmounts.estimatedFee + additionalFees, this.nativeToken.decimals))
         const maxFee = Number(formatUnits(feeAmounts.maximumFee + additionalFees, this.nativeToken.decimals))
