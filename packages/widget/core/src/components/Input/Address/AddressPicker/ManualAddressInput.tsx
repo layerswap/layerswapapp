@@ -1,8 +1,6 @@
 import { NetworkType, type Wallet } from '@layerswap/widget-types';
-import { ChangeEvent, FC, useCallback, useState } from "react";
-import { Pencil } from "lucide-react";
+import { FC } from "react";
 import { Partner } from "@/Models/Partner";
-import { FilledX } from "@layerswap/ui-kit/components";
 import { AddressGroup, AddressItem } from ".";
 import { Address } from "@/lib/address/Address";
 import { FormikHelpers } from "formik";
@@ -10,6 +8,7 @@ import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { useAddressName } from "@/stores/addressBookStore";
 import SaveToBookInline from "@/components/AddressBook/SaveToBookInline";
 import AddressPickerItem from "./AddressPickerItem";
+import AddressTextInput from "../AddressTextInput";
 
 type AddressInput = {
     manualAddress: string,
@@ -27,17 +26,6 @@ type AddressInput = {
 
 const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress, setNewAddress, values, name, inputReference, setFieldValue, close, addresses, partner }) => {
     const { to: destination } = values || {}
-    const [isFocused, setIsFocused] = useState(false);
-    const placeholder = "Enter address"
-
-    const handleRemoveNewDepositeAddress = useCallback(async () => {
-        setManualAddress('')
-    }, [setManualAddress])
-
-    const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-        setManualAddress(e.target.value)
-    }, [])
-
     const handleSaveNewAddress = () => {
         if (Address.isValid(manualAddress, destination) && destination) {
             if (destination) {
@@ -64,42 +52,13 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
     return (
         <div className="text-left">
             <div className="flex flex-wrap flex-col md:flex-row items-center">
-                <div className="relative flex grow rounded-lg shadow-xs focus-within:ring-0 focus-within:ring-primary focus-within:border-primary w-full lg:w-fit">
-                    <input
-                        onChange={handleInputChange}
-                        value={manualAddress}
-                        placeholder={placeholder}
-                        autoCorrect="off"
-                        type={"text"}
-                        name={name}
-                        id={name}
-                        ref={inputReference}
-                        tabIndex={0}
-                        onFocus={() => setIsFocused(true)}
-                        onBlur={() => setIsFocused(false)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                handleSaveNewAddress()
-                            }
-                        }}
-                        className='autofill-secondary pl-4 pr-12 disabled:cursor-not-allowed grow h-12 border border-secondary-800 focus:border-primary leading-4 placeholder:text-primary-text-tertiary/80 focus:placeholder:text-left placeholder:font-normal focus:placeholder:pl-0 placeholder:pl-8 block font-semibold w-full !bg-secondary-500 rounded-lg truncate hover:overflow-x-scroll focus:ring-0 focus:outline-hidden'
-                    />
-                    {
-                        !isFocused && !manualAddress &&
-                        <Pencil className="h-5 w-5 text-primary-text-tertiary absolute inset-y-0 top-[calc(50%-10px)] left-4" />
-                    }
-                    {
-                        manualAddress &&
-                        <button
-                            type="button"
-                            className="absolute top-1/2 -translate-y-1/2 right-3 text-secondary-text hover:text-primary-text transition"
-                            onClick={handleRemoveNewDepositeAddress}
-                        >
-                            <FilledX className="h-5 w-5" />
-                        </button>
-                    }
-
-                </div>
+                <AddressTextInput
+                    value={manualAddress}
+                    onChange={setManualAddress}
+                    name={name}
+                    inputRef={inputReference}
+                    onEnter={handleSaveNewAddress}
+                />
 
                 {
                     errorMessage &&

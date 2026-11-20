@@ -62,6 +62,8 @@ const { default: FormButton } = loadSource('components/Pages/Swap/Form/Secondary
   '@/components/Buttons/submitButton': { default: SubmitButton },
   '@/context/settings': { useInitialSettings: () => ({}) },
   '@/components/Input/Address': { default: ({ children }) => children() },
+  '@/components/Input/Address/RefundAddressPicker': { default: () => null },
+  '@/context/validationContext': { useValidationContext: () => ({ formValidation: {}, showRefundAddress: false }) },
 })
 function ValidationButton() {
   const { values } = useFormikContext()
@@ -339,7 +341,7 @@ for (const mode of ['max', 'half', 'min']) {
     ['ROUTE_NOT_FOUND_ERROR', 'Route not found', 'Route not found'],
     ['ROUTE_NOT_FOUND_ERROR', 'Rate not available', 'Rate not available'],
     ['PRICE_IMPACT_TOO_HIGH', 'Provider price impact exceeded', 'Price impact too high'],
-    ['UNEXPECTED_ERROR', 'Internal error', 'Route not found'],
+    ['UNEXPECTED_ERROR', 'Internal error', 'Internal error'],
   ]) {
     for (const shape of ['api', 'axios']) {
       test(`${mode} displays the same ${code}/${message} error as manual input (${shape})`, async () => {

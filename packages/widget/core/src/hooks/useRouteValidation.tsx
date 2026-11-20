@@ -7,6 +7,7 @@ import { useSelectedAccount } from '@/context/swapAccounts';
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues';
 import { ICON_CLASSES_WARNING } from '@/components/Pages/Swap/Form/SecondaryComponents/validationError/constants';
 import { isExtendedSourceNetwork } from '@/lib/extendedRoutes/registry';
+import { resolveQuoteError } from './useFormValidation';
 
 interface ValidationDetails {
     title?: string;
@@ -24,22 +25,23 @@ export function useRouteValidation(quoteError?: QuoteError, hasQuote?: boolean, 
     let validationMessage: string = '';
     let validationDetails: ValidationDetails = {};
 
+    if (quoteErrorCode && quoteErrorCode !== 'REFUND_ADDRESS_MISSING') {
+        validationMessage = resolveQuoteError(quoteError)?.message || '';
+        validationDetails = { title: 'Unable to quote', type: 'warning', icon: <RouteOff className={ICON_CLASSES_WARNING} /> };
+    }
+
     if (!hasQuote && autoSlippageWouldWork) {
         validationDetails = { title: 'Route Unavailable', type: 'warning', icon: <RouteOff className={ICON_CLASSES_WARNING} /> };
         validationMessage = `This might be because of high slippage, try switching the slippage percentage to "Auto"`;
     }
 
-    if (((from?.name && from?.name.toLowerCase() === initialSettings.sameAccountNetwork?.toLowerCase()) || (to?.name && to?.name.toLowerCase() === initialSettings.sameAccountNetwork?.toLowerCase()))) {
+    if (values.depositMethod !== 'deposit_address' && ((from?.name && from?.name.toLowerCase() === initialSettings.sameAccountNetwork?.toLowerCase()) || (to?.name && to?.name.toLowerCase() === initialSettings.sameAccountNetwork?.toLowerCase()))) {
         const network = from?.name.toLowerCase() === initialSettings.sameAccountNetwork?.toLowerCase() ? from : to;
         if ((selectedSourceAccount && destination_address && selectedSourceAccount?.address?.toLowerCase() !== destination_address?.toLowerCase())) {
             validationMessage = `Transfers between ${network?.display_name} and other chains are only allowed within the same account. Please make sure you're using the same address on both source and destination.`;
             validationDetails = { title: 'Action Needed', type: 'warning', icon: <RouteOff className={ICON_CLASSES_WARNING} /> };
         }
 
-        if (values.depositMethod === "deposit_address") {
-            validationMessage = `Manually transferring between ${from?.display_name} and ${to?.display_name} networks is not supported.`;
-            validationDetails = { title: 'Manual Transfer is not supported', type: 'warning', icon: <RouteOff className={ICON_CLASSES_WARNING} /> };
-        }
     }
 
     if (quoteErrorCode === "QUOTE_REQUIRES_NO_DEPOSIT_ADDRESS" && !isExtendedSourceNetwork(from?.name)) {

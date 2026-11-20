@@ -15,6 +15,12 @@ export type SwapFormValues = {
   /** Fee verified by the same calculation as the preset amount. */
   amountPresetGas?: GasWithToken;
   destination_address?: string;
+  refund_address?: string;
+  /** A manual refund recipient is only valid for the source on which it was entered. */
+  refundAddressNetwork?: string;
+  refundAddressRequired?: boolean;
+  /** Request rejected at creation; a cached quote cannot dismiss this requirement. */
+  refundAddressRequiredFor?: string;
   //TODO: refactor
   fromAsset?: NetworkRouteToken & { manuallySet?: boolean };
   toAsset?: NetworkRouteToken & { manuallySet?: boolean };

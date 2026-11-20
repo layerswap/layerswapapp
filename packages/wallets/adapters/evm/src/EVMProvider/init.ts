@@ -93,10 +93,15 @@ export function initEvmProvider<Network>(opts: InitOptions<Network>): void {
     }
 
     const { chains, transports } = getEvmChainsConfig(networks, networkAdapter)
+    const [firstChain, ...remainingChains] = chains
+    // Wagmi requires at least one chain. Leave initialization pending when
+    // settings are empty or contain only other ecosystems; updated settings
+    // can retry without poisoning the singleton with an empty configuration.
+    if (!firstChain) return
     const connectors = buildEVMConnectors(resolvedWalletConnectConfigs)
 
     setEvmConfigInitParams({
-        chains,
+        chains: [firstChain, ...remainingChains],
         transports,
         connectors: [...connectors],
         ssr: true,

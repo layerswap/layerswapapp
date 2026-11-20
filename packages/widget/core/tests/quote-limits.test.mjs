@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import test from 'node:test'
 import ts from 'typescript'
+import { Address } from './helpers/address.mjs'
 
 const require = createRequire(import.meta.url)
 
@@ -36,6 +37,7 @@ function harness() {
     '@/stores/gaslessPreferenceStore': {},
     '@/helpers/gasless': {},
     '@/helpers/swapFlow': {},
+    '@/helpers/refundAddress': loadSource('../src/helpers/refundAddress.ts', { '@/lib/address/Address': { Address } }),
     '@/lib/address/Address': { Address: { isValid: () => true } },
     '@/lib/apiClients': {
       LayerswapApiClient: class {

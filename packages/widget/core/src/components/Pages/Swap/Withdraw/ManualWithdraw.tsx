@@ -3,6 +3,7 @@ import { DepositQRCodeView } from './Presentation/DepositQRCodeView';
 import { ManualDepositButtonView } from './Presentation/ManualDepositButtonView';
 import { Partner } from '@/Models/Partner';
 import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon';
+import RefundAddressSummary from '@/components/Input/Address/RefundAddressSummary';
 import { Widget } from '@/components/Widget/Index';
 import { useAsyncModal } from '@/context/asyncModal';
 import { useInitialSettings } from '@/context/settings';
@@ -163,6 +164,8 @@ export function useManualWithdrawController({
             toAsset: swapBasicData?.destination_token,
             refuel: !!refuel,
             destination_address: swapBasicData?.destination_address,
+            refund_address: swapBasicData?.refund_address,
+            refundAddressNetwork: swapBasicData?.source_network.name,
             fromExchange: swapBasicData?.source_exchange,
             depositMethod: 'deposit_address',
         };
@@ -177,6 +180,8 @@ export function useManualWithdrawController({
             toAsset: swapBasicData?.destination_token,
             refuel: !!refuel,
             destination_address: swapBasicData?.destination_address,
+            refund_address: network.name === swapBasicData.source_network.name ? swapBasicData.refund_address : undefined,
+            refundAddressNetwork: network.name === swapBasicData.source_network.name ? network.name : undefined,
             fromExchange: swapBasicData?.source_exchange,
             depositMethod: 'deposit_address',
         };
@@ -275,11 +280,14 @@ export function useManualWithdrawController({
                     savedName,
                 }}
                 quoteDetails={
-                    <QuoteDetails
-                        swapValues={swapValues}
-                        quote={quote}
-                        isQuoteLoading={isQuoteLoading}
-                    />
+                    <>
+                        <QuoteDetails
+                            swapValues={swapValues}
+                            quote={quote}
+                            isQuoteLoading={isQuoteLoading}
+                        />
+                        {swapBasicData.refund_address && <RefundAddressSummary network={swapBasicData.source_network} address={swapBasicData.refund_address} />}
+                    </>
                 }
             />
         ), footer: <ManualDepositButtonView copied={copied && copiedAddress === depositAddress} onCopy={handleCopy} /> };
