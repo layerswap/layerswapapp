@@ -371,6 +371,8 @@ test('exact gas loading preserves the pending wallet request and its execution l
         './Presentation/WalletActionTransition': transition,
         '@/hooks/useLifecycleObservation': { useLifecycleObservation: noop },
         '@/helpers/depositActions': helpers,
+        '@/helpers/gasless': { isGaslessDepositWorkflow: () => false },
+        '@/hooks/useIsGaslessActive': { useIsGaslessActive: () => false },
     });
     function Screen() {
         const [, set] = React.useState(0);
