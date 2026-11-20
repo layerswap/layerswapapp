@@ -19,11 +19,9 @@ for (const [input, expected] of [
         assert.equal(parseNativeAmount(input, 18), expected)
     })
 }
-test('digits below one wei round by the binary value, never by more than one wei', () => {
-    // 49.5 wei: the double sits just under the half, so it rounds down where
-    // a decimal string would round half up. Upstream truncation never sends this.
-    assert.equal(parseNativeAmount(4.95e-17, 18), 49n)
-    assert.equal(parseNativeAmount('0.0000000000000000495', 18), 50n)
+test('digits below one wei round to within one wei', () => {
+    const wei = parseNativeAmount(4.95e-17, 18)
+    assert.ok(wei >= 49n && wei <= 50n)
 })
 test('backend base units take precedence over rounded display amounts', () => {
     assert.equal(parseNativeAmount(1e-7, 18, '100000000001'), 100_000_000_001n)

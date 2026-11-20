@@ -14,13 +14,7 @@ type ResolveEVMTransactionGasParametersArgs = {
     value?: bigint
 }
 
-/**
- * Prepare the explicit gas parameters a chain policy asks for. Whether the
- * account can fund them is the wallet's decision, never asserted here: smart
- * accounts and paymasters pay fees in tokens or have them sponsored, so the
- * native balance says nothing about affordability. L1 data and operator fees
- * are likewise charged by the chain and shown by the wallet, not pre-checked.
- */
+/** Funding is never checked here: smart accounts and paymasters may pay fees without native balance. */
 export const resolveEVMTransactionGasParameters = async ({
     network,
     account,

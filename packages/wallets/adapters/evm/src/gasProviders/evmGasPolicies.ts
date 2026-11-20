@@ -10,7 +10,6 @@ export type EVMAccountBalanceReserve = Readonly<{
 }>
 
 export type EVMOpStackFees = Readonly<{
-    gasPriceOracle: `0x${string}`
     operatorFee: boolean
 }>
 
@@ -84,10 +83,7 @@ const BASE_GAS_POLICY = createEVMGasPolicy({
     gasLimitMarginBps: 12_000n,
     reserveMaximumFee: true,
     transactionGasMode: 'explicit-eip1559',
-    opStack: {
-        gasPriceOracle: '0x420000000000000000000000000000000000000F',
-        operatorFee: true,
-    },
+    opStack: { operatorFee: true },
 })
 
 // All chain-specific gas overrides belong here. Entries not overriding transaction

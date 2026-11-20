@@ -2,7 +2,8 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { createPublicClient, custom, decodeFunctionData, encodeAbiParameters, parseAbi, parseTransaction } from 'viem'
 import { base, baseSepolia } from 'viem/chains'
-import { resolveOpStackL1Fee, resolveOpStackOperatorFee } from '../dist/esm/gasProviders/resolveOpStackAdditionalFees.js'
+import { resolveOpStackFees, resolveOpStackL1Fee, resolveOpStackOperatorFee } from '../dist/esm/gasProviders/resolveOpStackAdditionalFees.js'
+import { resolveEVMGasPolicy } from '../dist/esm/gasProviders/evmGasPolicies.js'
 
 const abi = parseAbi([
     'function getL1Fee(bytes transaction) view returns (uint256)',
@@ -37,7 +38,9 @@ for (const chain of [base, baseSepolia]) {
                     return encodeAbiParameters([{ type: 'uint256' }], [654_321n])
                 },
             }) })
-            const context = { publicClient, network: { chain_id: String(chain.id) } }
+            const { oracle: resolvedOracle } = resolveOpStackFees(
+                { chain_id: String(chain.id), metadata: { evm_oracle_contract: oracle } }, resolveEVMGasPolicy(chain.id))
+            const context = { publicClient, oracle: resolvedOracle }
             const [l1Fee, operatorFee] = await Promise.all([
                 resolveOpStackL1Fee({ ...context, transaction: { account, to, value, data } }),
                 resolveOpStackOperatorFee({ ...context, gasLimit: 27_138n }),
@@ -47,14 +50,18 @@ for (const chain of [base, baseSepolia]) {
             assert.deepEqual(seen.map(call => call.functionName).sort(), ['getL1Fee', 'getOperatorFee'])
         })
     }
-
 }
 
-test('non-OP chains do not request rollup fees', async () => {
-    const publicClient = createPublicClient({ chain: base, transport: custom({
-        request: async () => assert.fail('Unexpected oracle RPC'),
-    }) })
-    const context = { publicClient, network: { chain_id: '1' } }
-    assert.equal(await resolveOpStackL1Fee({ ...context, transaction: { account, to } }), 0n)
-    assert.equal(await resolveOpStackOperatorFee({ ...context, gasLimit: 21_000n }), 0n)
+test('OP fee config: the oracle comes from metadata and the policy only enables operator fees', () => {
+    const metadataOracle = `0x${'78'.repeat(20)}`
+    assert.equal(resolveOpStackFees({ chain_id: '1' }, resolveEVMGasPolicy(1)), undefined)
+    assert.equal(resolveOpStackFees({ chain_id: '8453' }, resolveEVMGasPolicy(8453)), undefined)
+    assert.deepEqual(
+        resolveOpStackFees({ chain_id: '8453', metadata: { evm_oracle_contract: metadataOracle } }, resolveEVMGasPolicy(8453)),
+        { oracle: metadataOracle, operatorFee: true },
+    )
+    assert.deepEqual(
+        resolveOpStackFees({ chain_id: '10', metadata: { evm_oracle_contract: metadataOracle } }, resolveEVMGasPolicy(10)),
+        { oracle: metadataOracle, operatorFee: false },
+    )
 })
