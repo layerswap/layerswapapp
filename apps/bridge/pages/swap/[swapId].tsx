@@ -9,6 +9,7 @@ import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
 import WidgetWrapper from '../../components/WidgetWrapper';
 import MaintananceContent from '../../components/maintanance/maintanance';
 import { resolveExtendedRouteFlags } from '../../flags';
+import { setSettingsResponseHeaders } from '../../helpers/settingsResponse';
 
 const SwapDetails = ({ settings, themeData, apiKey, swapData }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter()
@@ -94,10 +95,12 @@ export const getServerSideProps = async (ctx) => {
   } : null
 
   const themeData = await getThemeData(ctx.query)
+  const compressedSettings = encodeSettingsForSSR(settings)
+  setSettingsResponseHeaders(ctx.res, !!compressedSettings, false)
 
   return {
     props: {
-      settings: encodeSettingsForSSR(settings),
+      settings: compressedSettings,
       themeData,
       apiKey,
       swapData: swapData || null,

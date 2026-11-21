@@ -34,16 +34,16 @@ export default class LayerSwapApiClient {
     fetcher = (url: string, options?: { signal?: AbortSignal }) =>
         this.AuthenticatedRequest<ApiResponse<any>>("GET", url, undefined, undefined, options?.signal)
 
-    async GetRoutesAsync(direction: 'sources' | 'destinations', _useFrontendSwap: true = true): Promise<ApiResponse<NetworkWithTokens[]>> {
-        return await this.UnauthenticatedRequest<ApiResponse<NetworkWithTokens[]>>("GET", `/${direction}?include_unmatched=true&include_swaps=true&include_unavailable=true&use_frontend_swap=true`)
+    async GetRoutesAsync(direction: 'sources' | 'destinations', _useFrontendSwap: true = true, options?: RequestOptions): Promise<ApiResponse<NetworkWithTokens[]>> {
+        return await this.UnauthenticatedRequest<ApiResponse<NetworkWithTokens[]>>("GET", `/${direction}?include_unmatched=true&include_swaps=true&include_unavailable=true&use_frontend_swap=true`, undefined, undefined, options)
     }
 
-    async GetSourceExchangesAsync(): Promise<ApiResponse<Exchange[]>> {
-        return await this.UnauthenticatedRequest<ApiResponse<Exchange[]>>("GET", `/source_exchanges`);
+    async GetSourceExchangesAsync(options?: RequestOptions): Promise<ApiResponse<Exchange[]>> {
+        return await this.UnauthenticatedRequest<ApiResponse<Exchange[]>>("GET", `/source_exchanges`, undefined, undefined, options);
     }
 
-    async GetLSNetworksAsync(): Promise<ApiResponse<NetworkWithTokens[]>> {
-        return await this.UnauthenticatedRequest<ApiResponse<NetworkWithTokens[]>>("GET", `/networks`);
+    async GetLSNetworksAsync(options?: RequestOptions): Promise<ApiResponse<NetworkWithTokens[]>> {
+        return await this.UnauthenticatedRequest<ApiResponse<NetworkWithTokens[]>>("GET", `/networks`, undefined, undefined, options);
     }
 
     async CreateSwapAsync(params: CreateSwapParams): Promise<ApiResponse<SwapResponse>> {
@@ -145,11 +145,14 @@ export default class LayerSwapApiClient {
 
     private async UnauthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}, options?: RequestOptions): Promise<T> {
         let uri = LayerSwapApiClient.apiBaseEndpoint + "/api/v2" + endpoint;
-        return await this._unauthInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
+        return await this._unauthInterceptor(uri, { method: method, data: data, signal: options?.signal, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
             .then(res => {
                 return res?.data;
             })
             .catch(async reason => {
+                if (options?.signal?.aborted && reason?.code === 'ERR_CANCELED') {
+                    return Promise.reject(reason);
+                }
                 if (reason instanceof AuthRefreshFailedError) {
                     return Promise.resolve(new EmptyApiResponse());
                 }
@@ -162,6 +165,7 @@ export default class LayerSwapApiClient {
 }
 
 type RequestOptions = {
+    signal?: AbortSignal
     /** HTTP statuses that are a normal outcome for this endpoint: still rejected, never reported. */
     expectedStatuses?: number[]
 }
