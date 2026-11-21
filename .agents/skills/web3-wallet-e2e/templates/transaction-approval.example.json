@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "requested-transaction",
+  "kind": "confirmation-approval",
+  "description": "Approve the user-requested transaction and observe the expected app result",
+  "url": "https://your-app.example/REPLACE_WITH_OBSERVED_ROUTE",
+  "expectedAccount": "0x1111111111111111111111111111111111111111",
+  "chainId": 1,
+  "connectSteps": [
+    {
+      "action": "click",
+      "target": {
+        "by": "role",
+        "value": "button",
+        "name": "REPLACE_WITH_OBSERVED_CONNECT_CONTROL"
+      }
+    }
+  ],
+  "prepareSteps": [],
+  "trigger": {
+    "by": "role",
+    "value": "button",
+    "name": "REPLACE_WITH_OBSERVED_REQUEST_CONTROL"
+  },
+  "expected": {
+    "requestType": "REPLACE_WITH_NATIVE_TEXT",
+    "network": "Ethereum Mainnet",
+    "amount": "REPLACE_WITH_NATIVE_AMOUNT_AND_TOKEN",
+    "recipient": "0x2222222222222222222222222222222222222222",
+    "fee": "REPLACE_WITH_NATIVE_FEE"
+  },
+  "after": {
+    "by": "text",
+    "value": "REPLACE_WITH_OBSERVED_APPROVAL_RESULT"
+  }
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Shared Web3 Wallet Sessions"
+  short_description: "Reuse the same isolated test wallet across chats"
+  default_prompt: "Use $web3-wallet-session to resolve and safely open the registered test wallet without using personal Chrome or creating another wallet."
