@@ -21,6 +21,7 @@ const { groupRoutes } = loadSource('hooks/useFormRoutes.ts', {
     '../context/settings': {},
     './useAllWithdrawalBalances': {},
     '../helpers/routes': {},
+    '../helpers/routeCatalog': loadSource('helpers/routeCatalog.ts'),
     '@/lib/apiClients/layerSwapApiClient': {},
     './useExchangeNetworks': {},
     '@/stores/recentRoutesStore': {},

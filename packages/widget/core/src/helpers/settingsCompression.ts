@@ -1,3 +1,4 @@
+import { catalogNetworks, indexRouteCatalog, resolveCatalogRoutes } from "./routeCatalog";
 import { Exchange } from "../Models/Exchange";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import { NetworkRoute, NetworkRouteToken, NetworkWithTokens } from "@layerswap/widget-types";
@@ -85,7 +86,7 @@ function compactRoute(route: NetworkRoute): CompactRoute {
         name: route.name,
         source_rank: route.source_rank,
         destination_rank: route.destination_rank,
-        tokens: (route.tokens || []).map(compactRouteToken),
+        tokens: Array.isArray(route.tokens) ? route.tokens.filter(token => token?.symbol).map(compactRouteToken) : [],
     };
 
     if (route.deposit_methods && route.deposit_methods.length > 0) {
@@ -93,6 +94,11 @@ function compactRoute(route: NetworkRoute): CompactRoute {
     }
 
     return compact;
+}
+
+function compactRoutes(routes: NetworkRoute[] | undefined): CompactRoute[] {
+    if (!Array.isArray(routes)) return [];
+    return routes.filter(route => route?.name).map(compactRoute);
 }
 
 export function compactSettings(settings: LayerSwapSettings | null | undefined): MaybeCompressedSettings | null {
@@ -104,8 +110,8 @@ export function compactSettings(settings: LayerSwapSettings | null | undefined):
         __compressedSettingsV1: true,
         networks: settings.networks || [],
         sourceExchanges: settings.sourceExchanges || [],
-        sourceRoutes: (settings.sourceRoutes || []).map(compactRoute),
-        destinationRoutes: (settings.destinationRoutes || []).map(compactRoute),
+        sourceRoutes: compactRoutes(settings.sourceRoutes),
+        destinationRoutes: compactRoutes(settings.destinationRoutes),
         featureFlags: settings.featureFlags,
     };
 }
@@ -136,80 +142,6 @@ export function encodeSettingsForSSR(settings: LayerSwapSettings | null | undefi
     } catch {
         return compact;
     }
-}
-
-function isCompressedSettings(settings: MaybeCompressedSettings | null | undefined): settings is CompressedLayerSwapSettings {
-    return !!settings && "__compressedSettingsV1" in settings;
-}
-
-function inflateRouteToken(
-    compactToken: CompactRouteToken,
-    baseToken: NetworkRouteToken | undefined
-): NetworkRouteToken {
-    const resolvedToken: NetworkRouteToken = {
-        ...(baseToken || {}),
-        symbol: compactToken.symbol,
-    } as NetworkRouteToken;
-
-    if (compactToken.status !== undefined) {
-        resolvedToken.status = compactToken.status;
-    }
-    if (compactToken.supports_gasless_deposit !== undefined) {
-        resolvedToken.supports_gasless_deposit = compactToken.supports_gasless_deposit;
-    }
-    if (compactToken.gasless_standard !== undefined) {
-        resolvedToken.gasless_standard = compactToken.gasless_standard;
-    }
-    if (compactToken.source_rank !== undefined) {
-        resolvedToken.source_rank = compactToken.source_rank;
-    }
-    if (compactToken.destination_rank !== undefined) {
-        resolvedToken.destination_rank = compactToken.destination_rank;
-    }
-    if (compactToken.refuel !== undefined) {
-        resolvedToken.refuel = compactToken.refuel;
-    }
-
-    return resolvedToken;
-}
-
-function inflateRoutes(
-    compactRoutes: CompactRoute[],
-    networksByName: Map<string, NetworkWithTokens>
-): NetworkRoute[] {
-    return compactRoutes.reduce<NetworkRoute[]>((routes, compactRoute) => {
-        const baseNetwork = networksByName.get(compactRoute.name);
-        if (!baseNetwork) {
-            return routes;
-        }
-
-        const baseTokensBySymbol = new Map<string, NetworkRouteToken>(
-            (baseNetwork.tokens || []).map((token) => [token.symbol, token])
-        );
-
-        const tokens = (compactRoute.tokens || []).map((compactToken) =>
-            inflateRouteToken(compactToken, baseTokensBySymbol.get(compactToken.symbol))
-        );
-
-        const inflatedRoute: NetworkRoute = {
-            ...baseNetwork,
-            name: compactRoute.name,
-            tokens,
-        };
-
-        if (compactRoute.source_rank !== undefined) {
-            inflatedRoute.source_rank = compactRoute.source_rank;
-        }
-        if (compactRoute.destination_rank !== undefined) {
-            inflatedRoute.destination_rank = compactRoute.destination_rank;
-        }
-        if (compactRoute.deposit_methods !== undefined) {
-            inflatedRoute.deposit_methods = compactRoute.deposit_methods;
-        }
-
-        routes.push(inflatedRoute);
-        return routes;
-    }, []);
 }
 
 export function inflateSettings(settings: MaybeCompressedSettings | null | undefined): LayerSwapSettings | null {
@@ -243,22 +175,15 @@ export function inflateSettings(settings: MaybeCompressedSettings | null | undef
     // Empty settings are unavailable, even when the response itself succeeded.
     // Preserve the null contract used by the bridge's maintenance pages before
     // wallet providers attempt to initialize with an empty chain list.
-    if (!settings.networks?.length) {
-        return null;
-    }
-
-    if (!isCompressedSettings(settings)) {
-        return settings;
-    }
-
-    const networks = settings.networks || [];
-    const networksByName = new Map<string, NetworkWithTokens>(networks.map((network) => [network.name, network]));
+    const networks = catalogNetworks(settings.networks);
+    if (!networks.length) return null;
+    const catalog = indexRouteCatalog(networks);
 
     return {
         networks,
         sourceExchanges: settings.sourceExchanges || [],
-        sourceRoutes: inflateRoutes(settings.sourceRoutes || [], networksByName),
-        destinationRoutes: inflateRoutes(settings.destinationRoutes || [], networksByName),
+        sourceRoutes: resolveCatalogRoutes(settings.sourceRoutes, catalog),
+        destinationRoutes: resolveCatalogRoutes(settings.destinationRoutes, catalog),
         featureFlags: settings.featureFlags,
     };
 }
