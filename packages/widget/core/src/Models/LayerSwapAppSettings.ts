@@ -3,18 +3,16 @@ import { Exchange } from "./Exchange";
 import { LayerSwapSettings } from "./LayerSwapSettings";
 import { mergeExtendedSourceNetworks } from "../lib/extendedRoutes/registry";
 import { ExtendedRouteFlags } from "@layerswap/widget-types";
-import { catalogNetworks, indexRouteCatalog, resolveCatalogRoutes } from "../helpers/routeCatalog";
 
 export class LayerSwapAppSettings {
     constructor(settings: LayerSwapSettings) {
         const flags = settings.featureFlags;
 
-        this.networks = mergeExtendedSourceNetworks(catalogNetworks(settings.networks), flags);
-        const routeCatalog = indexRouteCatalog(this.networks);
+        this.networks = mergeExtendedSourceNetworks(settings.networks, flags);
         this.sourceExchanges = settings.sourceExchanges || [];
 
-        this.sourceRoutes = resolveCatalogRoutes(settings.sourceRoutes, routeCatalog);
-        this.destinationRoutes = resolveCatalogRoutes(settings.destinationRoutes, routeCatalog);
+        this.sourceRoutes = settings.sourceRoutes || [];
+        this.destinationRoutes = settings.destinationRoutes || []
         this.extendedRouteFlags = flags
     }
 

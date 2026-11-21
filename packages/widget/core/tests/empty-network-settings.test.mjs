@@ -18,10 +18,7 @@ function loadSource(path, imports = {}) {
     return module.exports
 }
 
-const catalog = loadSource('helpers/routeCatalog.ts')
-const { compactSettings, encodeSettingsForSSR, inflateSettings } = loadSource('helpers/settingsCompression.ts', {
-    './routeCatalog': catalog,
-})
+const { compactSettings, encodeSettingsForSSR, inflateSettings } = loadSource('helpers/settingsCompression.ts')
 const { gzipSync, strToU8 } = require('fflate')
 const emptySettings = { networks: [], sourceExchanges: [], sourceRoutes: [], destinationRoutes: [] }
 
@@ -47,7 +44,7 @@ test('empty network settings remain unavailable across SSR encoding and inflatio
 })
 
 test('valid network settings survive the SSR round trip', () => {
-    const settings = { ...emptySettings, networks: [{ name: 'ETHEREUM_MAINNET', display_name: 'Ethereum', tokens: [] }], featureFlags: {} }
+    const settings = { ...emptySettings, networks: [{ name: 'ETHEREUM_MAINNET', tokens: [] }], featureFlags: {} }
     assert.deepEqual(inflateSettings(encodeSettingsForSSR(settings)), settings)
 })
 
@@ -64,45 +61,19 @@ test('a successful networks API response with an empty array is rejected', async
     assert.equal(await getSettings('mainnet'), null)
 })
 
-test('catalog skew removes only unresolvable routes from raw, compact and encoded settings', () => {
-    const bnb = { symbol: 'BNB', asset: 'BNB', decimals: 18, price_in_usd: 600, source_rank: 5 }
-    const invalid = { symbol: 'BAD', decimals: 6 }
-    const token = { symbol: 'USDC', asset: 'USDC', decimals: 6, price_in_usd: 1 }
-    const missing = { symbol: 'BNBTiger', asset: 'BNBTiger', decimals: 9 }
-    const bsc = { name: 'BSC_MAINNET', display_name: 'BSC', tokens: [bnb, null, invalid, token] }
-    const base = { name: 'BASE_MAINNET', display_name: 'Base', tokens: [token] }
-    const routes = [
-        null,
-        { ...bsc, tokens: [null, missing, { ...bnb, status: 'active', source_rank: 0 }, invalid, token] },
-        { ...base, tokens: [missing] },
-        { ...base, name: 'UNKNOWN' },
-    ]
+test('SSR drops tokens missing from the network catalog and keeps their siblings sortable', () => {
+    const bnb = { symbol: 'BNB', asset: 'BNB' }
+    const usdc = { symbol: 'USDC', asset: 'USDC' }
+    const missing = { symbol: 'BNBTiger', asset: 'BNBTiger' }
+    const bsc = { name: 'BSC_MAINNET', tokens: [bnb, usdc] }
+    const base = { name: 'BASE_MAINNET', tokens: [usdc] }
+    const routes = [{ ...bsc, tokens: [usdc, missing, bnb] }, { ...base, tokens: [missing] }]
     const settings = { ...emptySettings, networks: [bsc, base], sourceRoutes: routes, destinationRoutes: routes }
-    for (const input of [settings, compactSettings(settings), encodeSettingsForSSR(settings)]) {
-        const resolved = inflateSettings(input)
-        assert.deepEqual(resolved.networks[0].tokens, [bnb, token])
-        for (const list of [resolved.sourceRoutes, resolved.destinationRoutes]) {
-            assert.deepEqual(list.map(route => route.name), ['BSC_MAINNET'])
-            const tokens = list[0].tokens
-            assert.deepEqual(tokens.map(t => t.asset).sort((a, b) => a.localeCompare(b)), ['BNB', 'USDC'])
-            assert.equal(tokens[0].source_rank, 0)
-            assert.equal(tokens[0].status, 'active')
-            assert.equal(tokens[0].decimals, 18)
-        }
-    }
-})
 
-test('full route responses preserve route-specific metadata and zero-valued overrides', () => {
-    const base = { symbol: 'USDC', asset: 'USDC', decimals: 6, price_in_usd: 1, supports_gasless_deposit: true }
-    const network = { name: 'BASE_MAINNET', display_name: 'Base', tokens: [base] }
-    const route = {
-        ...network, deposit_methods: [], token: { symbol: 'ETH', status: 'active' },
-        tokens: [{ ...base, destination_rank: 0, price_in_usd: 0, supports_gasless_deposit: false }],
+    const resolved = inflateSettings(encodeSettingsForSSR(settings))
+    for (const list of [resolved.sourceRoutes, resolved.destinationRoutes]) {
+        const sorted = [...list[0].tokens].sort((a, b) => a.asset.localeCompare(b.asset))
+        assert.deepEqual(sorted, [bnb, usdc])
+        assert.deepEqual(list.map(route => route.name), ['BSC_MAINNET'])
     }
-    const [resolved] = catalog.resolveCatalogRoutes([route], catalog.indexRouteCatalog([network]))
-    assert.deepEqual(resolved.token, route.token)
-    assert.deepEqual(resolved.deposit_methods, [])
-    assert.equal(resolved.tokens[0].destination_rank, 0)
-    assert.equal(resolved.tokens[0].price_in_usd, 0)
-    assert.equal(resolved.tokens[0].supports_gasless_deposit, false)
 })

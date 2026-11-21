@@ -7,7 +7,6 @@ import { useInitialSettings, useSettingsState } from "../context/settings";
 import { NetworkElement, RowElement, NetworkTokenElement, TitleElement, GroupedTokenElement, TokenSceletonElement } from "../Models/Route";
 import useAllWithdrawalBalances from "./useAllWithdrawalBalances";
 import { NetworkBalance } from "@layerswap/widget-types";
-import { indexRouteCatalog, resolveCatalogRoutes } from "../helpers/routeCatalog";
 import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL } from "../helpers/routes";
 import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 import { Exchange } from "@/Models/Exchange";
@@ -174,11 +173,6 @@ function useRoutes({ direction, values }: Props) {
     const defaultRoutes = direction === 'from' ? sourceRoutes : destinationRoutes;
     const { routes, isLoading } = useRoutesData<NetworkRoute>(url, defaultRoutes || [], apiClient.fetcher);
 
-    const catalogRoutes = useMemo(() => {
-        if (routes === defaultRoutes) return routes;
-        return resolveCatalogRoutes(routes, indexRouteCatalog(networks));
-    }, [routes, defaultRoutes, networks]);
-
     // Only the opposite side's selection matters per branch; keep the other side's
     // deps inert so selection changes don't needlessly invalidate the memo.
     const fromName = direction === 'to' ? values.from?.name : undefined;
@@ -186,11 +180,11 @@ function useRoutes({ direction, values }: Props) {
     const toSymbol = direction === 'from' ? values.toAsset?.symbol : undefined;
     const finalRoutes = useMemo(() => {
         // Re-add extended sources after SWR revalidation (the backend list lacks them).
-        if (direction === 'from') return mergeExtendedSourceRoutes(catalogRoutes, networks, toName, toSymbol, extendedRouteFlags);
+        if (direction === 'from') return mergeExtendedSourceRoutes(routes, networks, toName, toSymbol, extendedRouteFlags);
         // An extended source is a real backend destination too — exclude it from the
         // destination list when it's the selected source so it can't route to itself.
-        return isExtendedSourceNetwork(fromName) ? catalogRoutes.filter(r => r.name !== fromName) : catalogRoutes;
-    }, [catalogRoutes, direction, networks, fromName, toName, toSymbol, extendedRouteFlags]);
+        return isExtendedSourceNetwork(fromName) ? routes.filter(r => r.name !== fromName) : routes;
+    }, [routes, direction, networks, fromName, toName, toSymbol, extendedRouteFlags]);
     return { routes: finalRoutes, isLoading };
 }
 
