@@ -67,8 +67,9 @@ export function useManualWithdrawController({
 }: Props, active = true) {
     const { wallets } = useWallet();
     const { createSwap, setSwapId, mutateDepositActions } = useSwapDataUpdate();
-    const { swapDetails, depositActionsError, depositActionsValidating } = useSwapDataState();
+    const { swapDetails, depositActionsError } = useSwapDataState();
     const retryingAddress = useRef(false);
+    const [isRetryingAddress, setIsRetryingAddress] = useState(false);
     const { onSwapLifecycle } = useCallbacks();
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [selectedFrom, setSelectedFrom] = useState<{
@@ -228,24 +229,25 @@ export function useManualWithdrawController({
     const addressError = getDepositAddressError(depositAddress, depositActions, depositActionsError);
     const recoveryError = swapDetails?.id && !loading ? addressError : undefined;
     const retryAddress = async () => {
-        // The ref closes the gap before SWR publishes isValidating, including
-        // multiple invocations of the same event handler in one commit.
-        if (retryingAddress.current || depositActionsValidating) {
+        // The ref guards repeated invocations before the retrying state commits.
+        if (retryingAddress.current) {
             return;
         }
         retryingAddress.current = true;
+        setIsRetryingAddress(true);
         try {
             // Bound mutate revalidates this swap; fetch errors stay in SWR state.
             await mutateDepositActions();
         } finally {
             retryingAddress.current = false;
+            setIsRetryingAddress(false);
         }
     };
     const footer = recoveryError ? (
         <TransferBlock reasonCode="deposit_actions_unavailable" path="ManualWithdraw"
             stage="input_transfer" reason={recoveryError}>
             <DepositAddressRecoveryView message={recoveryError}
-                isRetrying={!!depositActionsValidating} onRetry={retryAddress} />
+                isRetrying={isRetryingAddress} onRetry={retryAddress} />
         </TransferBlock>
     ) : (
         <ManualDepositButtonView loading={!depositAddress || loading}

@@ -100,7 +100,6 @@ export type SwapContextData = {
     depositAddressIsFromAccount?: boolean,
     depositActionsResponse?: DepositAction[],
     depositActionsError?: string,
-    depositActionsValidating?: boolean,
     approvalTransaction?: ApprovalTransaction & { status?: string; notFound?: boolean },
     withdrawType: WithdrawType | undefined,
     swapBasicData: SwapBasicData & { refuel: boolean } | undefined,
@@ -407,7 +406,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         && (!swapStatus || swapStatus === SwapStatus.Created || swapStatus === SwapStatus.UserTransferPending)
     // Load missing history even when reopening a swap that already has an input
     // transaction. Once cached, retain it without automatic refreshes after broadcast.
-    const { data: depositActions, error: depositActionsSwrError, isValidating: depositActionsValidating, mutate: mutateDepositActions } = useSWR<ApiResponse<DepositAction[]>>(deposit_actions_endpoint, () => layerswapApiClient.GetDepositActionsAsync(swapId!, depositActionsSourceAddress), {
+    const { data: depositActions, error: depositActionsSwrError, mutate: mutateDepositActions } = useSWR<ApiResponse<DepositAction[]>>(deposit_actions_endpoint, () => layerswapApiClient.GetDepositActionsAsync(swapId!, depositActionsSourceAddress), {
         keepPreviousData: false,
         onSuccess: response => {
             if (swapId && !response.error) recordSwapExecution(swapId, { swapData: swapBasicData, depositActions: response.data });
@@ -769,7 +768,6 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         swapDetailsError,
         depositActionsResponse,
         depositActionsError,
-        depositActionsValidating,
         approvalTransaction,
         quote,
         quoteIsLoading: quoteIsLoading || (!swapId && !swapBasicFormData?.amountPresetError && (!!draftQuoteLoading || !!swapBasicFormData?.amountPresetPending)),
@@ -787,7 +785,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         flow,
         swapError,
         setSwapError
-    }), [gaslessAuthorization, inputTransactionStatus, withdrawType, depositAddressIsFromAccount, error, swapDetailsError, depositActionsResponse, depositActionsError, depositActionsValidating, approvalTransaction, quote, quoteIsLoading, draftQuoteLoading, swapBasicFormData, amountPresetLocked, amountPresetRevision, quoteError, refuel, swapBasicData, swapDetails, swapId, walletExecutionStarted, walletActionFeedback, swapModalOpen, resolved, flow, swapError]);
+    }), [gaslessAuthorization, inputTransactionStatus, withdrawType, depositAddressIsFromAccount, error, swapDetailsError, depositActionsResponse, depositActionsError, approvalTransaction, quote, quoteIsLoading, draftQuoteLoading, swapBasicFormData, amountPresetLocked, amountPresetRevision, quoteError, refuel, swapBasicData, swapDetails, swapId, walletExecutionStarted, walletActionFeedback, swapModalOpen, resolved, flow, swapError]);
 
     return (
         <SwapDataStateContext.Provider value={stateValue}>

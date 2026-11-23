@@ -83,7 +83,6 @@ function View() {
   if (state.realSWR) {
     state.actions = request.data
     state.depositActionsError = request.error?.message
-    state.depositActionsValidating = request.isValidating
     state.mutate = request.mutate
   }
   const model = useManualWithdrawController({ swapBasicData, depositActions: state.actions }, state.active)
@@ -93,7 +92,7 @@ const render = () => act(async () => {
   root.render(createElement(StrictMode, null, createElement(SWRConfig, { value: { provider: () => new Map() } }, createElement(View))))
 })
 beforeEach(() => {
-  Object.assign(state, { swapDetails: { id: 'manual-swap' }, actions: undefined, depositActionsError: undefined, active: true, retries: 0, copies: 0, refresh: undefined, mutate: undefined, retryAction: undefined, realSWR: false, depositActionsValidating: false })
+  Object.assign(state, { swapDetails: { id: 'manual-swap' }, actions: undefined, depositActionsError: undefined, active: true, retries: 0, copies: 0, refresh: undefined, mutate: undefined, retryAction: undefined, realSWR: false })
   events.length = 0
   container = document.createElement('div'); document.body.append(container); root = createRoot(container)
 })
