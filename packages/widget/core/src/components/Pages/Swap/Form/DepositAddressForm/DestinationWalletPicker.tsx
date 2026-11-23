@@ -1,7 +1,7 @@
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 import { useFormikContext } from "formik";
 import { ChevronDown, Plus, Wallet } from "lucide-react";
-import { Network, NetworkRoute, NetworkRouteToken, Token } from "@layerswap/widget-types";
+import { Network, NetworkRoute, Token } from "@layerswap/widget-types";
 import useWallet from "@/hooks/useWallet";
 import { useProvidersConnectReady } from "@layerswap/wallet-core";
 import { useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";
@@ -18,7 +18,7 @@ import { useAddressName } from "@/stores/addressBookStore";
 type DestinationWalletPickerProps = {
     address: string | undefined;
     destination: NetworkRoute | undefined;
-    token: NetworkRouteToken | undefined;
+    token: Token | undefined;
 }
 
 const DestinationWalletPicker: FC<DestinationWalletPickerProps> = ({ address, destination, token }) => {

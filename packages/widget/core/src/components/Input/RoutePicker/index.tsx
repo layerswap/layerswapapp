@@ -5,7 +5,7 @@ import { SelectedRouteDisplay } from "./Routes";
 import useFormRoutes from "@/hooks/useFormRoutes";
 import Balance from "../Amount/Balance";
 import { Content } from "./Content";
-import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
+import { NetworkRoute, Token } from "@layerswap/widget-types";
 import { SwapQuote } from "@/lib/apiClients/layerSwapApiClient";
 import { QuoteTokenPrices } from "@/hooks/useFee";
 import PickerWalletConnect from "./RouterPickerWalletConnect";
@@ -40,6 +40,10 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
             const updatedRoute = allRoutes.find(r => r.name === selectedRoute.name);
             const updatedToken = updatedRoute?.tokens?.find(t => t.symbol === selectedToken.symbol);
 
+            if (direction === 'to' && updatedRoute && updatedRoute.refuel_asset !== selectedRoute.refuel_asset) {
+                setFieldValue('to', updatedRoute, false)
+            }
+
             if (updatedToken === selectedToken) return;
 
             if (updatedRoute && updatedToken) {
@@ -55,7 +59,7 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
         updateValues();
     }, [selectedRoute, selectedToken, allRoutes, direction, setFieldValue]);
 
-    const handleSelect = useCallback(async (route: NetworkRoute, token: NetworkRouteToken) => {
+    const handleSelect = useCallback(async (route: NetworkRoute, token: Token) => {
         widgetTelemetry.interaction(direction === 'from' ? 'select_source_route' : 'select_destination_route', 'selection', true,
             { selected_network: route.name, selected_token: token.symbol })
         swapInProgress.current = false;
