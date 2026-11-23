@@ -155,7 +155,7 @@ export function useSendTransactionController({
     refuel,
     ...props
 }: SendFromWalletButtonProps, active = true) {
-    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, flow, refuel: refuelData, swapError, setSwapError, walletExecutionStarted, gaslessAuthorization, inputTransactionStatus, presetRevisionProposal } = useSwapDataState()
+    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, depositActionsError, flow, refuel: refuelData, swapError, setSwapError, walletExecutionStarted, gaslessAuthorization, inputTransactionStatus, presetRevisionProposal } = useSwapDataState()
     const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
     const gaslessErrorMessage = useGaslessPreferenceStore(s => s.gaslessErrorMessage)
     const gaslessFailureStage = useGaslessPreferenceStore(s => s.gaslessFailureStage)
@@ -676,7 +676,7 @@ export function useSendTransactionController({
     }
 
     const handleClick = () => {
-        if (error || swapError || networkSwitch.isError) {
+        if (error || swapError || depositActionsError || networkSwitch.isError) {
             onSwapLifecycle({
                 step: 'retry_requested',
                 stage: 'wallet_action',
@@ -769,7 +769,7 @@ export function useSendTransactionController({
             depositActions: depositActions,
             stepTransactions: stepTransactions,
             error: error,
-            swapError: !!swapError,
+            swapError: !!(swapError || depositActionsError),
             amountProposal: presetRevisionProposal ? { message: presetRevisionProposal.message, onAdjust: handleAdjustAmount } : undefined,
             swapId: swapId,
             criticalMarketPriceImpact: criticalMarketPriceImpact,

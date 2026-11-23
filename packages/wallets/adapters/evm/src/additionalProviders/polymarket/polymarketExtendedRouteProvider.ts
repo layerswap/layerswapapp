@@ -1,5 +1,5 @@
 import { NetworkType } from '@layerswap/widget-types';
-import { NetworkRoute, NetworkRouteToken, NetworkWithTokens, Token, realRoutePresent } from "@layerswap/widget-types";
+import { NetworkRoute, NetworkWithTokens, Token, realRoutePresent } from "@layerswap/widget-types";
 import { ExtendedRouteProvider, ExtendedTokenMapping, RealRouteRef, requiredDepositMethod } from "@layerswap/widget-types";
 import { getPolymarketCandidates, pickPolymarketDestination, POLYMARKET_CONFIG, POLYMARKET_DISPLAY_SYMBOL, PolymarketConfig } from "./routes";
 import { POLYMARKET_BASE_TOKEN_SYMBOL, POLYMARKET_DISPLAY_NAME, POLYMARKET_LOGO, POLYMARKET_PUSD_ADDRESS } from "./constants";
@@ -87,7 +87,7 @@ export const polymarketProvider: ExtendedRouteProvider = {
         const tokenMapping = this.mappings[networkName]
         if (!tokenMapping) return undefined
 
-        const tokens: NetworkRouteToken[] = network.tokens
+        const tokens: Token[] = network.tokens
             .filter(t => !!tokenMapping[t.symbol])
             .map(t => ({ ...t, status: 'active' as const }))
 

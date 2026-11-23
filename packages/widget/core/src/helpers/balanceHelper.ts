@@ -12,15 +12,19 @@ export function getTotalBalanceInUSD(networkBalance: NetworkBalance, network: Ne
     if (!networkBalance.balances || networkBalance.balances.length === 0) {
         return null;
     }
+    const prices = new Map<string, number>();
+    for (const token of network.tokens) {
+        if (token && !prices.has(token.symbol)) prices.set(token.symbol, token.price_in_usd || 0);
+    }
+
     return networkBalance.balances.reduce((total, tokenBalance) => {
-        const token = network.tokens.find(t => t?.symbol === tokenBalance.token);
+        const tokenPriceInUsd = prices.get(tokenBalance.token);
 
         // Only include balances for tokens that are present in the route
-        if (!token) {
+        if (tokenPriceInUsd === undefined) {
             return total;
         }
 
-        const tokenPriceInUsd = token.price_in_usd || 0;
         const amount = tokenBalance.amount || 0;
         return total + (amount * tokenPriceInUsd);
     }, 0);

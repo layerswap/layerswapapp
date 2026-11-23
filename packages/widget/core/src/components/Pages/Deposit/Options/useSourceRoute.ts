@@ -1,11 +1,11 @@
 import { useMemo } from "react";
 import { useSettingsState } from "@/context/settings";
 import { mergeExtendedSourceRoutes } from "@/lib/extendedRoutes/registry";
-import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
+import { NetworkRoute, Token } from "@layerswap/widget-types";
 
 const PREFERRED_SOURCE_TOKEN_SYMBOL = "USDC";
 
-export const pickSourceToken = (route?: NetworkRoute): NetworkRouteToken | undefined =>
+export const pickSourceToken = (route?: NetworkRoute): Token | undefined =>
     route?.tokens?.find(t => t.symbol === PREFERRED_SOURCE_TOKEN_SYMBOL) ?? route?.tokens?.[0];
 
 export function useMergedSourceRoutes(): NetworkRoute[] {
@@ -15,7 +15,7 @@ export function useMergedSourceRoutes(): NetworkRoute[] {
 
 export function useSourceRoute(
     networkName?: string,
-): { network: NetworkRoute; token: NetworkRouteToken } | undefined {
+): { network: NetworkRoute; token: Token } | undefined {
     const routes = useMergedSourceRoutes();
     return useMemo(() => {
         if (!networkName) return undefined;
