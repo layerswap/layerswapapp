@@ -51,9 +51,7 @@ test('a sufficient-allowance backend transfer with only base units submits one z
   const fixture = JSON.parse(readFileSync(new URL('./fixtures/atomic-batch.json', import.meta.url)))
   const publication = fixture.deposit_actions.sufficient_allowance[0]
   assert.equal(publication.amount, undefined)
-  const actions = await resolveAtomicDepositActions([publication], async () => ({
-    step: 'publish', status: 'action_required', action: publication,
-  }))
+  const actions = resolveAtomicDepositActions([publication])
   const { transactionBuilder } = loadAdapterSource('../../../wallets/adapters/evm/src/transferProvider/transactionBuilder.ts', {
     './resolveEVMTransactionRequest': loadAdapterSource('../../../wallets/adapters/evm/src/transferProvider/resolveEVMTransactionRequest.ts', {
       '../evmUtils/parseNativeAmount': loadAdapterSource('../../../wallets/adapters/evm/src/evmUtils/parseNativeAmount.ts', {}),

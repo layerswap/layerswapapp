@@ -203,8 +203,8 @@ export function resolveDepositExecution(
         kind = 'frontend-swap';
         evidence = 'direct-approval';
     } else if (publicationWithoutHistory) {
-        // Only an actionable transfer has been disambiguated by next_action at the API boundary.
-        // A sufficient-allowance batch and a legacy publish can share other placeholders.
+        // A status-only publication cannot establish the execution path.
+        // Wait for executable deposit actions or persisted execution evidence.
         kind = 'unresolved';
         evidence = 'ambiguous-publication';
     } else if (hasPublish) {

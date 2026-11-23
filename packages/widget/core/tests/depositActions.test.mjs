@@ -473,7 +473,7 @@ function createWorkflow({
             '../Wallet/Common/isUserRejection': rejection,
             '@layerswap/wallet-core/errors': walletErrors,
             '@layerswap/widget-types': walletTypes,
-            '../messages/Message': { WalletUnknownError: noop },
+            '../messages/Message': { default: ({ header, details }) => createElement('div', null, header, details), WalletUnknownError: noop },
             '../messages/TransactionMessages': messages,
             '../messages/walletErrorMessage': loadSource('../src/components/Pages/Swap/Withdraw/messages/walletErrorMessage.ts', {
                 '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
@@ -630,7 +630,7 @@ function createWorkflow({
 
 for (const name of ['zero_allowance', 'allowance_reset', 'sufficient_allowance']) test(`new backend ${name} uses the exact transaction count its calls require`, async () => {
     const flow = createWorkflow({ atomic: true })
-    const actions = await atomicActions.resolveAtomicDepositActions(atomicFixtures.deposit_actions[name], async () => atomicFixtures.next_actions[name])
+    const actions = await atomicActions.resolveAtomicDepositActions(atomicFixtures.deposit_actions[name])
     flow.state.apiActions = actions
     flow.state.depositActionsResponse = actions
     flow.state.quote = { receive_amount: 1, destination_token: atomicFixtures.swap.destination_token }
@@ -688,7 +688,7 @@ for (const allowance of ['zero_allowance', 'sufficient_allowance']) {
         flow.preferences.gaslessEnabled = true
         flow.state.sourceToken = { ...atomicFixtures.token, supports_gasless_deposit: true, gasless_standard: 'eip3009' }
         flow.state.apiActions = await atomicActions.resolveAtomicDepositActions(
-            atomicFixtures.deposit_actions[allowance], async () => atomicFixtures.next_actions[allowance])
+            atomicFixtures.deposit_actions[allowance])
         flow.state.depositActionsResponse = flow.state.apiActions
         flow.render()
         await flow.poll()
@@ -856,7 +856,7 @@ for (const [name, actions] of [
         flow.state.swapBasicData = { ...atomicFixtures.swap, source_network: flow.network,
             destination_network: name === 'bridge' ? { name: 'ARBITRUM_MAINNET' } : flow.network }
         const resolvedActions = name === 'funded swap'
-            ? await atomicActions.resolveAtomicDepositActions(actions, async () => atomicFixtures.next_actions.sufficient_allowance)
+            ? await atomicActions.resolveAtomicDepositActions(actions)
             : actions
         const preparedActions = resolvedActions.map(action => ({ ...structuredClone(action), network: flow.network }))
         flow.state.apiActions = preparedActions
@@ -922,6 +922,52 @@ for (const [name, actions] of [
         }
     })
 }
+
+test('an action-loading failure replaces preparation with an error and retries the same swap', async t => {
+    const dom = new JSDOM('<div id="root"></div>')
+    const previous = Object.getOwnPropertyDescriptors(globalThis)
+    Object.assign(globalThis, { window: dom.window, document: dom.window.document, IS_REACT_ACT_ENVIRONMENT: true })
+    const flow = createWorkflow({ mounted: true, walletController: true, page2Host: true })
+    flow.state.resolveCurrentFlow = true
+    flow.state.swapBasicData = { ...atomicFixtures.swap, source_network: { ...flow.network, type: 'evm' } }
+    flow.state.apiActions = undefined
+    flow.state.depositActionsResponse = undefined
+    const root = createRoot(document.getElementById('root'))
+    t.after(async () => {
+        await act(() => root.unmount())
+        dom.window.close()
+        for (const key of ['window', 'document', 'IS_REACT_ACT_ENVIRONMENT']) {
+            if (previous[key]) Object.defineProperty(globalThis, key, previous[key]); else delete globalThis[key]
+        }
+    })
+    const render = () => act(async () => root.render(createElement(flow.Component)))
+    await render()
+    await flow.poll()
+    await render()
+    assert.equal(document.querySelector('button').textContent, 'Preparing…')
+    assert.equal(document.querySelector('button').disabled, true)
+
+    flow.state.depositActionsError = 'Request failed with status code 404'
+    await render()
+    assert.equal(document.querySelector('button').textContent, 'Try again')
+    assert.equal(document.querySelector('button').disabled, false)
+    assert.match(document.body.textContent, /Couldn't prepare transaction/)
+    assert.match(document.body.textContent, /Please try again/)
+    assert.deepEqual(flow.calls.transfer, [])
+
+    const actions = atomicActions.resolveAtomicDepositActions(atomicFixtures.deposit_actions.sufficient_allowance)
+    flow.state.apiActions = actions
+    const transfers = []
+    flow.state.executeTransfer = async props => { transfers.push(props); return '0xpublication' }
+    await act(async () => flow.view.handleClick())
+    assert.equal(flow.state.swapId, swapId)
+    assert.deepEqual(flow.calls.refresh, [[swapId, sourceAddress]])
+    assert.equal(flow.calls.lifecycle.filter(event => event.step === 'retry_requested').length, 1)
+    assert.equal(transfers.length, 1)
+    assert.equal(transfers[0].callData, actions[0].call_data)
+    assert.deepEqual(flow.calls.storedTransactions, [[swapId, '0xpublication']])
+    assert.deepEqual(flow.calls.errors, [])
+})
 
 test('an unsupported backend action cannot switch chains or send a transaction', async () => {
     const flow = createWorkflow()
@@ -1207,7 +1253,7 @@ test('a fresh sequential reset keeps approvals separate and retries publication 
     const [reset, approval, publication] = atomicFixtures.deposit_actions.allowance_reset
     flow.state.sourceToken = { ...atomicFixtures.token, supports_gasless_deposit: true, gasless_standard: 'permit2' }
     flow.state.apiActions = await atomicActions.resolveAtomicDepositActions(
-        [reset, { step: 'publish', status: 'pending' }], () => assert.fail('no batch lookup'))
+        [reset, { step: 'publish', status: 'pending' }])
     flow.state.swapId = undefined
     flow.state.swapDetails = undefined
     flow.state.createSwap = async () => ({ swap: { id: swapId, metadata: {} }, deposit_actions: flow.state.apiActions })
@@ -1235,9 +1281,7 @@ test('a fresh sequential reset keeps approvals separate and retries publication 
         const next = ++confirmations === 1
             ? [{ step: 'approve', status: 'completed' }, approval, { step: 'publish', status: 'pending' }]
             : [{ step: 'approve', status: 'completed' }, publication]
-        return atomicActions.resolveAtomicDepositActions(next, async () => ({
-            step: 'publish', status: 'action_required', action: publication,
-        }))
+        return atomicActions.resolveAtomicDepositActions(next)
     }
     await flow.render().button.props.onClick()
     const receipt = flow.stores.useSwapTransactionStore.getState().stepTransactions[swapId].approve
