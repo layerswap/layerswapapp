@@ -24,6 +24,7 @@ const network = { name: 'BASE_MAINNET', token }
 const account = { id: 'wallet', address: 'source' }
 const createdAmounts = []
 const transfers = []
+let revision
 const swapCreation = loadSource('lib/swapCreation.ts', {
   '@layerswap/widget-types': { getErrorOccurrenceId: () => 'test' },
   '@/lib/ErrorHandler': { ErrorHandler: noop },
@@ -39,7 +40,16 @@ const context = createSwapContext({
   getSwapId: () => undefined, getAccount: () => account,
   swr: { default: () => ({}) },
   overrides: {
-    '@/lib/preparePresetAmount': { startPresetPreparation: async () => ({ calculate: async () => '0.85' }) },
+    '@/hooks/useWithdrawalProvider': { useWithdrawalProvider: () => definition },
+    '@/lib/preparePresetAmount': { startPresetPreparation: async () => ({
+      calculate: async (gasFloor, getDepositGas) => {
+        if (revision.depositFee && !gasFloor && !getDepositGas) return '0.9'
+        return revision.amount
+      },
+    }) },
+    '@/lib/depositActionGas': {
+      estimateDepositActionGas: async () => revision.depositFee ? { gas: 0.105, token } : undefined,
+    },
     '@/helpers/gasless': { isGaslessCapableRoute: () => false },
     '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
     '@/lib/extendedRoutes/registry': { resolveExtendedRoutePlan: () => undefined },
@@ -89,7 +99,7 @@ const { SpecializedWithdrawalView } = loadSource('components/Pages/Swap/Withdraw
 })
 const definition = {
   id: 'provider', displayName: 'Provider',
-  prepareTransfer: action => ({ toAddress: action.to_address, amount: action.amount }),
+  prepareTransfer: (action, amount) => ({ depositAddress: action.to_address, callData: '', amount }),
 }
 let data, updates
 function Controls({ swap }) {
@@ -102,7 +112,15 @@ function Probe() {
   return data.swapBasicData ? createElement(Controls, { swap: data.swapBasicData }) : null
 }
 
-test('provider withdrawals accept the shared proposal before creating and sending the revised amount', async () => {
+for (const scenario of [
+  { name: 'large preparation reduction', amount: '0.85', depositFee: false },
+  { name: 'small preparation reduction', amount: '0.895', depositFee: false },
+  { name: 'small deposit-fee reduction', amount: '0.895', depositFee: true },
+]) test(`provider withdrawals confirm the accepted source amount after a ${scenario.name}`, async () => {
+  revision = scenario
+  createdAmounts.length = 0
+  transfers.length = 0
+  const provisionalAmounts = scenario.depositFee ? ['0.9'] : []
   const container = document.createElement('div')
   const root = createRoot(container)
   try {
@@ -112,19 +130,21 @@ test('provider withdrawals accept the shared proposal before creating and sendin
       depositMethod: 'wallet', amountMode: 'max', amountPresetSource: amountPresets.amountPresetSource(network.name, token.symbol, account.id, account.address),
     }))
     await act(() => container.querySelector('button').click())
+    assert.deepEqual(transfers.map(transfer => transfer.amount), [], 'a revised amount must be confirmed before provider execution')
     assert.equal(data.swapBasicData.requested_amount, '0.9')
-    assert.equal(data.presetRevisionProposal.amount, '0.85')
+    assert.equal(data.presetRevisionProposal.amount, scenario.amount)
+    assert.equal(data.swapId, undefined)
     assert.equal(container.querySelector('button').textContent, 'Adjust amount')
     assert.doesNotMatch(container.textContent, /Try again/)
-    assert.deepEqual(createdAmounts, [])
-    assert.deepEqual(transfers, [])
+    assert.deepEqual(createdAmounts, provisionalAmounts)
     await act(() => container.querySelector('button').click())
     assert.equal(data.presetRevisionProposal, undefined)
-    assert.equal(data.swapBasicData.requested_amount, '0.85')
+    assert.equal(data.swapBasicData.requested_amount, scenario.amount)
     assert.equal(container.querySelector('button').textContent, 'Withdraw from Provider')
+    assert.deepEqual(transfers, [])
     await act(() => container.querySelector('button').click())
-    assert.deepEqual(createdAmounts, ['0.85'])
-    assert.deepEqual(transfers.map(transfer => transfer.amount), [0.85])
+    assert.deepEqual(createdAmounts, [...provisionalAmounts, scenario.amount])
+    assert.deepEqual(transfers.map(transfer => transfer.amount), [Number(scenario.amount)])
   } finally {
     await act(() => root.unmount())
   }

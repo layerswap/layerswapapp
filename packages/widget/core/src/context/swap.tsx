@@ -777,10 +777,15 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             setPresetRevisionProposal({ amount, message: message ?? AMOUNT_ADJUSTMENT_MESSAGE, floor })
             throw new AmountPresetChangedError(message)
         }
-        // A small reduction is sent in the same click instead: the summary and the wallet
-        // prompt both show the final amount.
+        // Regular wallet transfers can send a small reduction in the same click.
+        // Providers capture the source amount before creation, so their next confirmation
+        // must capture the revised amount before prepareTransfer receives it.
         const revise = (amount: string, reason: 'changed' | 'deposit-fee', floor?: AmountPresetGasFloor): SwapFormValues => {
-            if (!isSmallAmountRevision(values.amount ?? '', amount, values.fromAsset?.price_in_usd)) propose(amount, reason === 'deposit-fee' ? DEPOSIT_FEE_ADJUSTMENT_MESSAGE : undefined, floor)
+            const requiresProviderConfirmation = !!withdrawalProvider
+            const isSmallRevision = isSmallAmountRevision(values.amount ?? '', amount, values.fromAsset?.price_in_usd)
+            if (requiresProviderConfirmation || !isSmallRevision) {
+                propose(amount, reason === 'deposit-fee' ? DEPOSIT_FEE_ADJUSTMENT_MESSAGE : undefined, floor)
+            }
             if (floor) recordDepositGasFloor(floor)
             setSwapBasicFormData(current => current ? { ...current, requested_amount: amount } : current)
             return { ...values, amount }
@@ -838,7 +843,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             setPreparingPreset(false)
             setAmountPresetRevision(revision => revision + 1)
         })
-    }, [createSwapRequest, onSwapLifecycle, selectedSourceAccount, selectedWallet, sourceRoutes, mutateCache, recordDepositGasFloor])
+    }, [createSwapRequest, onSwapLifecycle, selectedSourceAccount, selectedWallet, sourceRoutes, mutateCache, recordDepositGasFloor, withdrawalProvider])
 
     const updateFns = useMemo<UpdateSwapInterface>(() => ({
         createSwap,
