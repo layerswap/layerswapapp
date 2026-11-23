@@ -32,7 +32,14 @@ const { BalanceResolver } = loadSource('lib/balances/balanceResolver.ts', {
 const context = createSwapContext({
   Client: class {}, getSwapId: () => undefined, getAccount: () => state.account,
   overrides: {
+    '@/lib/preparePresetAmount': { startPresetPreparation: async () => ({ calculate: () => state.confirmation.promise }) },
     '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
+    '@/lib/swapLifecycle': { lifecycleContextFromForm: values => ({ requestedAmount: values.amount }) },
+    '@/lib/swapCreation': loadSource('lib/swapCreation.ts', {
+      '@layerswap/widget-types': require('@layerswap/widget-types'),
+      '@/lib/ErrorHandler': { ErrorHandler() {} },
+      './swapLifecycle': { lifecycleErrorDetails: () => ({}) },
+    }),
     '@/hooks/useSwapPolling': { useSwapPolling: id => ({ data: id ? state.backendResponse : undefined, mutate() {} }) },
   },
 })
@@ -94,6 +101,12 @@ const { default: SubmitButton } = loadSource('components/Buttons/submitButton.ts
   '../Icons/spinIcon': { default: () => createElement('span', { 'data-spinner': true }) }, clsx: { default: require('clsx') },
 })
 const noop = () => null
+const proposalView = loadSource('components/Pages/Swap/Withdraw/Presentation/AmountProposalView.tsx', {
+  '@/components/Icons/InfoIcon': { default: noop },
+  '../../Form/SecondaryComponents/validationError/constants': {},
+  '../../Form/SecondaryComponents/validationError/ErrorDisplay': errorDisplay,
+  '../../Form/SecondaryComponents/validationError/AdjustAmountButton': { AdjustAmountButton: ({ onEditAmount }) => createElement('button', { onClick: onEditAmount }, 'Adjust amount') },
+})
 const { SendTransactionView } = loadSource('components/Pages/Swap/Withdraw/Presentation/WalletActionsView.tsx', {
   '../TransferBlock': { TransferBlock: ({ children }) => children },
   '@/components/utils/resolveSwapFlow': { resolveSwapFlow },
@@ -108,7 +121,7 @@ const { SendTransactionView } = loadSource('components/Pages/Swap/Withdraw/Prese
   '../../Form/SecondaryComponents/validationError/constants': {},
   '../../Form/SecondaryComponents/validationError/ErrorDismissButton': { default: noop },
   '../../Form/SecondaryComponents/validationError/ErrorDisplay': errorDisplay,
-  '../../Form/SecondaryComponents/validationError/AdjustAmountButton': { AdjustAmountButton: noop },
+  './AmountProposalView': proposalView,
   '../messages/Message': {}, '../Wallet/Common/ensureSourceChain': {},
   '../messages/walletErrorMessage': loadSource('components/Pages/Swap/Withdraw/messages/walletErrorMessage.ts', {
     '@layerswap/widget-types': require('@layerswap/widget-types'),
@@ -125,9 +138,11 @@ const callbackImports = {
 const { default: WalletTransferButton } = loadSource('components/Pages/Swap/Withdraw/WalletTransferButton.tsx', {
   './Presentation/Page2Sections': { WalletTransferView: ({ children, warning }) => createElement('div', null, warning, children) },
   './Wallet': { WalletTransferAction: () => {
-    const { quoteIsLoading, quoteError } = context.useSwapDataState()
+    const { quoteIsLoading, quoteError, presetRevisionProposal } = context.useSwapDataState()
+    const { applyPresetRevision } = context.useSwapDataUpdate()
     useEffect(() => { state.walletMounts++; return () => { state.walletUnmounts++ } }, [])
-    return createElement(SendTransactionView, { quoteIsLoading, quoteError: !!quoteError })
+    return createElement(SendTransactionView, { quoteIsLoading, quoteError: !!quoteError,
+      amountProposal: presetRevisionProposal ? { message: presetRevisionProposal.message, onAdjust: applyPresetRevision } : undefined })
   } },
 })
 const { default: Withdraw } = loadSource('components/Pages/Swap/Withdraw/Withdraw.tsx', {
@@ -578,4 +593,65 @@ test('Adjust after wallet rejection and a USDC balance decrease restores configu
   assert.equal(formik.values.amountPresetPending, false)
   assert.doesNotMatch(container.textContent, /Balance unavailable|Something went wrong/)
   assert.equal(container.querySelector('button').disabled, false)
+})
+
+
+async function proposeBalanceReduction() {
+  await render(); await openReview()
+  const reviewed = summaryAmount()
+  state.confirmation = Promise.withResolvers()
+  let rejected
+  await act(() => { rejected = assert.rejects(updates.createSwap(formik.values, {}), amountPresets.AmountPresetChangedError) })
+  await decreaseBalance()
+  const proposed = '0.001411528'
+  await act(async () => { state.confirmation.resolve(proposed); await rejected })
+  return { reviewed, proposed }
+}
+
+test('a proposal freezes the live summary until Adjust accepts it and resumes Formik', async () => {
+  const { reviewed, proposed } = await proposeBalanceReduction()
+  assert.equal(data.presetRevisionProposal.amount, proposed)
+  assert.equal(data.amountPresetLocked, true)
+  assert.equal(summaryAmount(), reviewed)
+  assert.equal(formik.values.amount, reviewed)
+  assert.doesNotMatch(container.textContent, /Insufficient balance/)
+  const adjust = [...container.querySelectorAll('button')].find(button => button.textContent === 'Adjust amount')
+  assert.ok(adjust, 'the proposal action must not be hidden by a balance block')
+  state.gasRequest = Promise.withResolvers()
+  await act(() => adjust.click())
+  assert.equal(data.presetRevisionProposal, undefined)
+  assert.equal(data.amountPresetLocked, false)
+  assert.equal(summaryAmount(), proposed)
+  assert.equal(formik.values.amount, proposed)
+  await act(() => state.gasRequest.resolve())
+  assert.equal(summaryAmount(), proposed)
+  assert.equal(formik.values.amount, proposed)
+})
+
+test('changing the funding account clears the proposal and releases its live preset lock', async () => {
+  await proposeBalanceReduction()
+  state.account = { ...state.account, address: 'another-account' }
+  await render()
+  assert.equal(data.presetRevisionProposal, undefined)
+  assert.equal(data.amountPresetLocked, false)
+  assert.equal(formik.values.amountMode, 'manual')
+  assert.equal(updates.applyPresetRevision(), undefined)
+})
+
+test('a fresh attempt clears the proposal and resumes live amounts', async () => {
+  const { proposed } = await proposeBalanceReduction()
+  await act(() => updates.startFreshSwapAttempt())
+  assert.equal(data.presetRevisionProposal, undefined)
+  assert.equal(data.amountPresetLocked, false)
+  assert.equal(summaryAmount(), proposed)
+})
+
+
+test('closing a review with a pending proposal lets the form resume live amounts', async () => {
+  const { proposed } = await proposeBalanceReduction()
+  await act(() => updates.setSwapViewMounted(false))
+  assert.equal(data.amountPresetLocked, false)
+  assert.equal(formik.values.amount, proposed)
+  await act(() => updates.setSubmitedFormValues(formik.values))
+  assert.equal(data.presetRevisionProposal, undefined)
 })

@@ -26,7 +26,7 @@ const imports = {
     '@/context/settings': { useSettingsState: () => ({ networks: [network], sourceRoutes: [network], destinationRoutes: [network] }) },
     '@/context/swap': {
         useSwapDataState: () => ({ swapBasicData: swap }),
-        useSwapDataUpdate: () => ({ canAdjustAmount: () => canAdjust, startFreshSwapAttempt: () => edits++, setSubmitedFormValues: noop }),
+        useSwapDataUpdate: () => ({ canAdjustAmount: () => canAdjust, startFreshSwapAttempt: () => edits++, setSubmitedFormValues: noop, recordDepositGasFloor: noop }),
     },
     '@/context/swapAccounts': { useSelectedAccount: () => ({ id: 'wallet', address: 'source' }) },
     '@/helpers/swapFlow': { isDepositAddressSwap: () => false },
@@ -34,8 +34,7 @@ const imports = {
     '@/lib/balances/useBalance': { useBalance: () => ({ balances: [{ network: network.name, token: 'ETH', amount: 1 }] }) },
     '@/lib/gases/useOutOfGas': { default: () => ({ outOfGas: true }) },
     '@/lib/gases/useSWRGas': { default: () => ({}) },
-    '@/components/Input/Amount/helpers': { resolveMaxAllowedAmount: () => 0.9 },
-    '@/lib/amountPresets': { amountPresetSource: noop, isAmountPreset: () => false },
+    '@/lib/amountPresets': { amountPresetSource: noop, amountPresetGasFloorScope: noop, isAmountPreset: () => false, resolveDepositFeeAdjustedAmount: () => '0.9' },
     '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
     '../Form/SecondaryComponents/validationError/AdjustAmountButton': {
         AdjustAmountButton: ({ onEditAmount }) => { adjust = onEditAmount; return React.createElement('button', null, 'Adjust amount'); },
@@ -53,7 +52,7 @@ const imports = {
     '@/hooks/useTransferBlocked': { useTransferBlocked: noop },
     '@/hooks/useLifecycleObservation': { useLifecycleObservation: noop },
     '@/stores/swapTransactionStore': { useSwapTransactionStore: selector => selector({}) },
-    '@/helpers/depositActions': { getActionableDepositAction: noop, isTransferAction: () => false },
+    '@/helpers/depositActions': { resolveDepositGasTransaction: noop },
 };
 const { outputText } = ts.transpileModule(readFileSync(new URL('src/components/Pages/Swap/Withdraw/Withdraw.tsx', core), 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },

@@ -38,7 +38,7 @@ import { isDepositAddressFlow, isDepositAddressSwap, wantsFrontendSwap } from '@
 import { useSwapPolling } from '@/hooks/useSwapPolling';
 import { useSwapStatusNotification } from '@/hooks/useSwapStatusNotification';
 import { lifecycleContextFromForm } from '@/lib/swapLifecycle';
-import { createSwapAttempt } from '@/lib/swapCreation';
+import { createSwapAttempt, requestSwap, type PreparedSwapRequest, type SwapCreationResult, type SwapCreationHooks } from '@/lib/swapCreation';
 import { recordSwapExecution } from '@/lib/swapExecution';
 import { isAtomicBatchEligible } from '@/helpers/atomicBatch';
 import { useAtomicBatchCapability } from '@/hooks/useAtomicBatchCapability';
@@ -159,9 +159,11 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const applyPresetRevision = useCallback(() => {
         const proposal = latestPresetRevisionProposal.current
         if (!proposal) return undefined
+        latestPresetRevisionProposal.current = undefined
         if (proposal.floor) recordDepositGasFloor(proposal.floor)
         setSwapBasicFormData(current => current ? { ...current, requested_amount: proposal.amount } : current)
         setPresetRevisionProposal(undefined)
+        setAmountPresetRevision(revision => revision + 1)
         return proposal.amount
     }, [recordDepositGasFloor])
     const [quoteIsLoading, setQuoteLoading] = useState<boolean>(false)
@@ -261,7 +263,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         })
     }, [sourceRoutes, destinationRoutes])
 
-    const amountPresetLocked = preparingPreset || walletActionExecuting || (swapViewMounted && (!!swapId || presetCreated))
+    const amountPresetLocked = preparingPreset || walletActionExecuting
+        || (swapViewMounted && (!!swapId || presetCreated || !!presetRevisionProposal))
     const syncAmountPresetDraft = useCallback((values: SwapFormValues) => {
         if (presetPreparation.current || walletActionInFlight.current || amountPresetLocked) return false
         if (!swapId) setSwapBasicFormData(current => {
@@ -566,7 +569,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         destinationToken: swapBasicData?.destination_token.symbol,
     })
 
-    const createSwapRequest = useCallback(async (values: SwapFormValues, query: InitialSettings, partner?: Partner) => {
+    const createSwapRequest = useCallback(async (values: SwapFormValues, query: InitialSettings, partner?: Partner): Promise<SwapCreationResult> => {
         if (!values)
             throw new Error("No swap data")
 
@@ -577,137 +580,132 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         if (!depositAddressFlow && !amount)
             throw new Error("Form data is missing")
 
-        return createSwapAttempt(async () => {
-            const sourceWalletIsSupported = selectedWallet && WalletIsSupportedForSource({
-                sourceNetwork: from,
-                sourceWallet: selectedWallet
-            })
-            const contractCheckResult = (depositAddressFlow && selectedWallet) ? await checkContractStatus(selectedWallet.address, from, to) : null
-            const isContract = contractCheckResult?.sourceIsContract ?? false
-            const sourceIsSupported = sourceWalletIsSupported && !isContract
-
-            const slippage = useSlippageStore.getState().slippage
-            const gaslessEnabled = useGaslessPreferenceStore.getState().gaslessEnabled
-
-            const useDepository = shouldUseDepository(values, !!sourceIsSupported, selectedSourceAccount?.address)
-            const useGasless = isGaslessCapableRoute({
-                depositMethod,
-                supportsGaslessDeposit: fromCurrency.supports_gasless_deposit,
-                sourceTokenContract: fromCurrency.contract,
-                gaslessStandard: fromCurrency.gasless_standard,
-                sourceIsSupported: !!sourceIsSupported,
-                sourceAddress: selectedSourceAccount?.address,
-            }) && gaslessEnabled
-
-            const extendedPlan = resolveExtendedRoutePlan({
-                sourceNetworkName: from.name,
-                sourceTokenSymbol: fromCurrency.symbol,
-                destinationNetworkName: to.name,
-                destinationTokenSymbol: toCurrency.symbol,
-                sourceAmount: amount,
-                availableRoutes: sourceRoutes,
-            })
-            const isExtendedBridge = !!extendedPlan
-            const useFrontendSwap = wantsFrontendSwap({
-                depositMethod,
-                sourceNetwork: from.name,
-                destinationNetwork: to.name,
-            })
-
-            let useAtomicBatch = false
-            if (selectedWallet && selectedSourceAccount && isAtomicBatchEligible({
-                network: from, token: fromCurrency, depositMethod, useGasless, sourceIsSupported: !!sourceIsSupported,
-                sourceAddress: selectedSourceAccount.address, sourceExchange: fromExchange, extended: isExtendedBridge,
-            })) {
-                if (selectionKey !== currentSelection.current.key) throw new Error('Selected wallet changed before preparing the swap')
-                const selection = currentSelection.current.revision
-                const network = { ...from, token: fromCurrency }
-                const atomic = resolverService.getTransferResolver().getAtomicBatchProvider(network)
-                useAtomicBatch = await atomic?.getCapabilities({ network, wallet: selectedWallet, account: selectedSourceAccount.address }) === 'supported'
-                if (selection !== currentSelection.current.revision || gaslessEnabled !== useGaslessPreferenceStore.getState().gaslessEnabled) throw new Error('Wallet or execution mode changed while preparing the swap')
-            }
-
-            const data: CreateSwapParams = extendedPlan ? buildCreateSwapParamsForExtendedRoute({
-                plan: extendedPlan,
-                destinationNetworkName: to.name,
-                destinationTokenSymbol: toCurrency.symbol,
-                destinationAddress: destination_address,
-                referenceId: query.externalId,
-                refuel,
-                sourceAddress: selectedSourceAccount?.address,
-                useFrontendSwap,
-            }) : {
-                amount: amount || undefined,
-                source_network: from.name,
-                destination_network: to.name,
-                source_token: fromCurrency.symbol,
-                destination_token: toCurrency.symbol,
-                source_exchange: fromExchange?.name,
-                destination_address: destination_address,
-                reference_id: query.externalId,
-                refuel: !!refuel,
-                use_deposit_address: depositMethod === 'wallet' ? false : true,
-                source_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
-                refund_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
-                use_frontend_swap: useFrontendSwap,
-                use_gasless: useGasless,
-                ...(useAtomicBatch ? { use_atomic_batch: true } : {}),
-                ...(useDepository && { use_depository: true }),
-            }
-
-            if (!isExtendedBridge && depositMethod === 'wallet' && slippage && slippage > 0 && slippage < 0.8) {
-                data.slippage = slippage.toString()
-            }
-
-            return {
-                request: () => layerswapApiClient.CreateSwapAsync(data),
-                useGasless,
-                onCreated: [
-                    {
-                        name: 'swapTransactions.setKind',
-                        run: response => recordSwapExecution(response.swap.id, { swapData: response.swap, depositActions: response.deposit_actions }),
-                    },
-                    { name: 'onSwapCreate', run: onSwapCreate },
-                    // Persist the extended identity so the post-create UI and the withdraw step
-                    // can keep showing the extended source and resume after a reload.
-                    ...(extendedPlan ? [{
-                        name: 'extendedRoutes.setRecord',
-                        run: (swap: SwapResponse) => useExtendedRoutesStore.getState().setRecord(swap.swap.id, {
-                            providerId: extendedPlan.mapping.provider.id,
-                            extendedNetwork: from.name,
-                            extendedToken: fromCurrency.symbol,
-                            realNetwork: extendedPlan.mapping.real.networkName,
-                            realToken: extendedPlan.mapping.real.tokenSymbol,
-                            sourceAddress: selectedSourceAccount?.address || '',
-                            sourceAmount: (amount || '').toString(),
-                            createdAt: Date.now(),
-                        }),
-                    }] : []),
-                    {
-                        name: 'recentRoutes.updateRecentNetworks',
-                        run: () => updateRecentTokens({
-                            from: !fromExchange ? { network: from.name, token: fromCurrency.symbol } : undefined,
-                            to: { network: to.name, token: toCurrency.symbol }
-                        }),
-                    },
-                    {
-                        name: 'swapRouteHistory.recordSwapRouteHistory',
-                        run: swap => {
-                            void recordSwapRouteHistory(swap, {
-                                sourceRoute: fromExchange ? null : { network: from.name, token: fromCurrency.symbol },
-                                destinationRoute: { network: to.name, token: toCurrency.symbol },
-                            })
-                        },
-                    },
-                ],
-            }
-        }, {
-            path: 'SwapDataProvider.createSwap',
-            lifecycleContext: lifecycleContextFromForm(values),
-            onLifecycle: onSwapLifecycle,
-            onGaslessUnavailable: () => useGaslessPreferenceStore.getState().reportGaslessUnavailable('create'),
+        const sourceWalletIsSupported = selectedWallet && WalletIsSupportedForSource({
+            sourceNetwork: from,
+            sourceWallet: selectedWallet
         })
-    }, [selectedSourceAccount, selectedWallet, selectionKey, onSwapCreate, onSwapLifecycle, updateRecentTokens, swapDetails?.id, networks, sourceRoutes])
+        const contractCheckResult = (depositAddressFlow && selectedWallet) ? await checkContractStatus(selectedWallet.address, from, to) : null
+        const isContract = contractCheckResult?.sourceIsContract ?? false
+        const sourceIsSupported = sourceWalletIsSupported && !isContract
+
+        const slippage = useSlippageStore.getState().slippage
+        const gaslessEnabled = useGaslessPreferenceStore.getState().gaslessEnabled
+
+        const useDepository = shouldUseDepository(values, !!sourceIsSupported, selectedSourceAccount?.address)
+        const useGasless = isGaslessCapableRoute({
+            depositMethod,
+            supportsGaslessDeposit: fromCurrency.supports_gasless_deposit,
+            sourceTokenContract: fromCurrency.contract,
+            gaslessStandard: fromCurrency.gasless_standard,
+            sourceIsSupported: !!sourceIsSupported,
+            sourceAddress: selectedSourceAccount?.address,
+        }) && gaslessEnabled
+
+        const extendedPlan = resolveExtendedRoutePlan({
+            sourceNetworkName: from.name,
+            sourceTokenSymbol: fromCurrency.symbol,
+            destinationNetworkName: to.name,
+            destinationTokenSymbol: toCurrency.symbol,
+            sourceAmount: amount,
+            availableRoutes: sourceRoutes,
+        })
+        const isExtendedBridge = !!extendedPlan
+        const useFrontendSwap = wantsFrontendSwap({
+            depositMethod,
+            sourceNetwork: from.name,
+            destinationNetwork: to.name,
+        })
+
+        let useAtomicBatch = false
+        if (selectedWallet && selectedSourceAccount && isAtomicBatchEligible({
+            network: from, token: fromCurrency, depositMethod, useGasless, sourceIsSupported: !!sourceIsSupported,
+            sourceAddress: selectedSourceAccount.address, sourceExchange: fromExchange, extended: isExtendedBridge,
+        })) {
+            if (selectionKey !== currentSelection.current.key) throw new Error('Selected wallet changed before preparing the swap')
+            const selection = currentSelection.current.revision
+            const network = { ...from, token: fromCurrency }
+            const atomic = resolverService.getTransferResolver().getAtomicBatchProvider(network)
+            useAtomicBatch = await atomic?.getCapabilities({ network, wallet: selectedWallet, account: selectedSourceAccount.address }) === 'supported'
+            if (selection !== currentSelection.current.revision || gaslessEnabled !== useGaslessPreferenceStore.getState().gaslessEnabled) throw new Error('Wallet or execution mode changed while preparing the swap')
+        }
+
+        const data: CreateSwapParams = extendedPlan ? buildCreateSwapParamsForExtendedRoute({
+            plan: extendedPlan,
+            destinationNetworkName: to.name,
+            destinationTokenSymbol: toCurrency.symbol,
+            destinationAddress: destination_address,
+            referenceId: query.externalId,
+            refuel,
+            sourceAddress: selectedSourceAccount?.address,
+            useFrontendSwap,
+        }) : {
+            amount: amount || undefined,
+            source_network: from.name,
+            destination_network: to.name,
+            source_token: fromCurrency.symbol,
+            destination_token: toCurrency.symbol,
+            source_exchange: fromExchange?.name,
+            destination_address: destination_address,
+            reference_id: query.externalId,
+            refuel: !!refuel,
+            use_deposit_address: depositMethod === 'wallet' ? false : true,
+            source_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
+            refund_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
+            use_frontend_swap: useFrontendSwap,
+            use_gasless: useGasless,
+            ...(useAtomicBatch ? { use_atomic_batch: true } : {}),
+            ...(useDepository && { use_depository: true }),
+        }
+
+        if (!isExtendedBridge && depositMethod === 'wallet' && slippage && slippage > 0 && slippage < 0.8) {
+            data.slippage = slippage.toString()
+        }
+
+        const prepared: PreparedSwapRequest = {
+            request: () => layerswapApiClient.CreateSwapAsync(data),
+            useGasless,
+            onCreated: [
+                {
+                    name: 'swapTransactions.setKind',
+                    run: response => recordSwapExecution(response.swap.id, { swapData: response.swap, depositActions: response.deposit_actions }),
+                },
+                { name: 'onSwapCreate', run: onSwapCreate },
+                // Persist the extended identity so the post-create UI and the withdraw step
+                // can keep showing the extended source and resume after a reload.
+                ...(extendedPlan ? [{
+                    name: 'extendedRoutes.setRecord',
+                    run: (swap: SwapResponse) => useExtendedRoutesStore.getState().setRecord(swap.swap.id, {
+                        providerId: extendedPlan.mapping.provider.id,
+                        extendedNetwork: from.name,
+                        extendedToken: fromCurrency.symbol,
+                        realNetwork: extendedPlan.mapping.real.networkName,
+                        realToken: extendedPlan.mapping.real.tokenSymbol,
+                        sourceAddress: selectedSourceAccount?.address || '',
+                        sourceAmount: (amount || '').toString(),
+                        createdAt: Date.now(),
+                    }),
+                }] : []),
+                {
+                    name: 'recentRoutes.updateRecentNetworks',
+                    run: () => updateRecentTokens({
+                        from: !fromExchange ? { network: from.name, token: fromCurrency.symbol } : undefined,
+                        to: { network: to.name, token: toCurrency.symbol }
+                    }),
+                },
+                {
+                    name: 'swapRouteHistory.recordSwapRouteHistory',
+                    run: swap => {
+                        void recordSwapRouteHistory(swap, {
+                            sourceRoute: fromExchange ? null : { network: from.name, token: fromCurrency.symbol },
+                            destinationRoute: { network: to.name, token: toCurrency.symbol },
+                        })
+                    },
+                },
+            ],
+        }
+        const swap = await requestSwap(prepared, () => useGaslessPreferenceStore.getState().reportGaslessUnavailable('create'))
+        return { swap, onCreated: prepared.onCreated, lifecycleContext: lifecycleContextFromForm(values) }
+    }, [selectedSourceAccount, selectedWallet, selectionKey, onSwapCreate, updateRecentTokens, swapDetails?.id, networks, sourceRoutes])
 
     const canAdjustAmount = useCallback(() => {
         // The provider may have submitted before the API sees an input transaction.
@@ -730,10 +728,24 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
 
     const selectedPresetSource = amountPresetSource(sourceNetwork?.name, swapBasicData?.source_token.symbol, swapBasicData?.use_deposit_address ? undefined : selectedSourceAccount?.id, swapBasicData?.use_deposit_address ? undefined : selectedSourceAccount?.address)
     const latestPresetSource = useRef(selectedPresetSource)
-    latestPresetSource.current = selectedPresetSource
+    useClientLayoutEffect(() => {
+        if (latestPresetSource.current === selectedPresetSource) return
+        latestPresetSource.current = selectedPresetSource
+        // A proposal belongs to its funding account. Release its lock when that
+        // account changes so the form can discard stale preset intent.
+        latestPresetRevisionProposal.current = undefined
+        setPresetRevisionProposal(undefined)
+    }, [selectedPresetSource])
 
     const createSwap = useCallback(async (values: SwapFormValues, query: InitialSettings, partner?: Partner) => {
-        if (!isAmountPreset(values.amountMode) || !isWalletAmountFlow(values)) return createSwapRequest(values, query, partner)
+        const hooks: SwapCreationHooks = {
+            path: 'SwapDataProvider.createSwap',
+            lifecycleContext: lifecycleContextFromForm(values),
+            onLifecycle: onSwapLifecycle,
+        }
+        if (!isAmountPreset(values.amountMode) || !isWalletAmountFlow(values)) {
+            return createSwapAttempt(() => createSwapRequest(values, query, partner), hooks)
+        }
         if (presetPreparation.current) throw new Error('The swap is already being prepared.')
         const source = latestPresetSource.current
         if (!selectedSourceAccount || !selectedWallet || values.amountPresetSource !== source)
@@ -752,6 +764,11 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         const gasFloor = resolveAmountPresetGasFloor(latestDepositGasFloor.current, floorScope)
         setPresetRevisionProposal(undefined)
         const { address } = selectedSourceAccount
+        const assertCurrentSource = () => {
+            if (source !== latestPresetSource.current) {
+                throw new Error('The source account changed. Select an amount preset again.')
+            }
+        }
         // An amount the confirmation cannot send becomes a proposal: the reviewed amount
         // stays on screen, the caller never attaches a swap id, and Adjust amount applies
         // the proposal (and its fee floor) before confirming again.
@@ -767,7 +784,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             setSwapBasicFormData(current => current ? { ...current, requested_amount: amount } : current)
             return { ...values, amount }
         }
-        const finish = (created: SwapResponse) => {
+        const finish = (created: SwapCreationResult) => {
             setPresetCreated(true)
             return created
         }
@@ -775,7 +792,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             const preparation = await startPresetPreparation(values, address, selectedWallet, sourceRoutes, useGasless,
                 (key, response) => mutateCache(key, response, { revalidate: false }))
             const amount = await preparation.calculate(gasFloor)
-            if (source !== latestPresetSource.current) throw new Error('The source account changed. Select an amount preset again.')
+            assertCurrentSource()
             let sendValues = values
             if (Number(amount) < Number(values.amount)) sendValues = revise(amount, 'changed')
             else if (values.amountMode === 'min' && Number(amount) > Number(values.amount)) propose(amount)
@@ -788,14 +805,15 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             // account can fund instead of letting the wallet refuse the transfer. The floor
             // is recorded only once the amount is settled: recorded early, it would make
             // the live preset rewrite a proposed amount before the user accepts it.
-            const depositGas = await estimateDepositActionGas(created.deposit_actions, sendValues, address, selectedWallet)
+            const depositGas = await estimateDepositActionGas(created.swap.deposit_actions, sendValues, address, selectedWallet)
+            assertCurrentSource()
             if (!depositGas) return finish(created)
             const floor = { scope: floorScope, gas: depositGas }
             if (values.amountMode === 'min') {
                 recordDepositGasFloor(floor)
-                return finish(created)
             }
             const affordable = await preparation.calculate(gasFloor, async () => depositGas)
+            assertCurrentSource()
             if (Number(affordable) >= Number(sendValues.amount)) {
                 recordDepositGasFloor(floor)
                 return finish(created)
@@ -803,21 +821,23 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             sendValues = revise(affordable, 'deposit-fee', floor)
             const replacement = await createSwapRequest(sendValues, query, partner)
             // One replacement per click. A further shortfall is proposed instead.
-            const replacementGas = await estimateDepositActionGas(replacement.deposit_actions, sendValues, address, selectedWallet)
+            const replacementGas = await estimateDepositActionGas(replacement.swap.deposit_actions, sendValues, address, selectedWallet)
+            assertCurrentSource()
             if (replacementGas) {
                 const stillAffordable = await preparation.calculate(gasFloor, async () => replacementGas)
+                assertCurrentSource()
                 const replacementFloor = { scope: floorScope, gas: replacementGas }
                 if (Number(stillAffordable) < Number(sendValues.amount)) propose(stillAffordable, DEPOSIT_FEE_ADJUSTMENT_MESSAGE, replacementFloor)
                 recordDepositGasFloor(replacementFloor)
             }
             return finish(replacement)
         }
-        return confirmAndCreate().finally(() => {
+        return createSwapAttempt(confirmAndCreate, hooks).finally(() => {
             presetPreparation.current = false
             setPreparingPreset(false)
             setAmountPresetRevision(revision => revision + 1)
         })
-    }, [createSwapRequest, selectedSourceAccount, selectedWallet, sourceRoutes, mutateCache, recordDepositGasFloor])
+    }, [createSwapRequest, onSwapLifecycle, selectedSourceAccount, selectedWallet, sourceRoutes, mutateCache, recordDepositGasFloor])
 
     const updateFns = useMemo<UpdateSwapInterface>(() => ({
         createSwap,

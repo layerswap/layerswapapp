@@ -37,7 +37,7 @@ const AWAITING_WALLET_ACTION: ObservedLifecycleEvent = {
 }
 
 export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: SwapFormValues) => void) {
-    const { swapBasicData, swapDetails, swapId, amountPresetLocked, depositActionsResponse, refuel, quoteIsLoading } =
+    const { swapBasicData, swapDetails, swapId, amountPresetLocked, depositActionsResponse, refuel, quoteIsLoading, presetRevisionProposal } =
         useSwapDataState();
     const { startFreshSwapAttempt, canAdjustAmount, recordDepositGasFloor } = useSwapDataUpdate();
     const hasSubmittedTransfer = useHasSubmittedTransfer();
@@ -184,7 +184,9 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
         && (swapBasicData?.amountPresetPending || !Object.is(swapBasicData?.amountPresetBalance, walletBalanceAmount));
     // A submitted swap only needs a read-only status check. Its original balance
     // may already be spent, so funding warnings must not replace recovery controls.
-    const showInsufficientBalanceWarning = !hasSubmittedTransfer && !presetIsSyncing &&
+    // The proposal already explains the funding change and owns its acceptance.
+    // A generic balance block would hide that action while its amount is frozen.
+    const showInsufficientBalanceWarning = !presetRevisionProposal && !hasSubmittedTransfer && !presetIsSyncing &&
         swapBasicData?.use_deposit_address === false &&
         swapBasicData?.requested_amount &&
         Number(swapBasicData?.requested_amount) &&
@@ -238,7 +240,7 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
                 />
             </TransferBlock>
         );
-    } else if (!hasSubmittedTransfer && swapBasicData?.use_deposit_address === false && outOfGas && !presetIsSyncing) {
+    } else if (!presetRevisionProposal && !hasSubmittedTransfer && swapBasicData?.use_deposit_address === false && outOfGas && !presetIsSyncing) {
         // A changing gas warning must preserve the active wallet execution.
         actionKey = 'transfer';
         warning = <GasWarningView adjustButton={showAdjustAmount && <AdjustAmountButton compact onEditAmount={handleEditAmount} isLoading={quoteIsLoading} />} />;

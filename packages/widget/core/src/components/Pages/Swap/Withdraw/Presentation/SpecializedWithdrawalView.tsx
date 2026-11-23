@@ -6,6 +6,7 @@ import { type ReactNode } from 'react';
 import WalletMessage from '../messages/Message';
 import { ActionMessages } from '../messages/TransactionMessages';
 import { ButtonWrapper } from './WalletActionsView';
+import { AmountProposalView, type AmountProposalAction } from './AmountProposalView';
 export type SpecializedWithdrawalViewProps = {
     provider: string;
     preparationLabel?: string;
@@ -20,6 +21,7 @@ export type SpecializedWithdrawalViewProps = {
     rejected?: boolean;
     connectButton: ReactNode;
     handleWithdraw?: () => void;
+    amountProposal?: AmountProposalAction;
 };
 export function SpecializedWithdrawalView({
     provider,
@@ -35,6 +37,7 @@ export function SpecializedWithdrawalView({
     rejected,
     connectButton,
     handleWithdraw,
+    amountProposal,
 }: SpecializedWithdrawalViewProps) {
     // Once submitted, retain the existing progress UI across wallet changes.
     if (!submissionAccepted && !isConnected) {
@@ -59,6 +62,10 @@ export function SpecializedWithdrawalView({
                 />
             </TransferBlock>
         );
+    }
+
+    if (amountProposal && !loading && !submissionAccepted) {
+        return <AmountProposalView {...amountProposal} />;
     }
 
     return (

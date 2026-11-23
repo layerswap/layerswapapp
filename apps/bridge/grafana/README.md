@@ -181,6 +181,12 @@ optional unless the emitting code has them at that step.
 | terminal | completion, failure, expiry, cancellation, refund completion, flow close/error | normally once per fingerprint; terminal state ends journey timers |
 | diagnostic | `retry_requested`, `suspected_stall`, `transfer_blocked` | per retry, timer threshold or blocking-state transition |
 
+For wallet amount presets, creation spans confirmation preparation, deposit-fee
+verification and any replacement request. Only the accepted swap emits
+`swap_created` and a swap ID. `swap_creation_failed` means the attempt ended
+without an accepted swap, including an amount proposal or a failed fee check;
+provisional API IDs remain private. The creation timer covers this whole attempt.
+
 Use `journey_id` and `sequence` to reconstruct the ordered journey, including
 events before the API creates a `swap_id`. `attempt`, `previous_step`,
 `previous_step_duration_ms` and `journey_duration_ms` make retries and slow

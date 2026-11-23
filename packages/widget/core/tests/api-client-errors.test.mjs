@@ -20,7 +20,7 @@ const hooks = registerHooks({
 after(() => hooks.deregister())
 
 const { default: LayerSwapApiClient } = await import('../dist/esm/lib/apiClients/layerSwapApiClient.js')
-const { createSwapAttempt } = await import('../dist/esm/lib/swapCreation.js')
+const { createSwapAttempt, requestSwap } = await import('../dist/esm/lib/swapCreation.js')
 const { registerWidgetErrorLogger } = await import('../dist/esm/lib/ErrorHandler.js')
 
 afterEach(() => registerWidgetErrorLogger())
@@ -121,8 +121,14 @@ test('the onError occurrence id matches the swap_creation_failed lifecycle event
   setErrorLogger(event => reported.push(event))
   const client = failingClient()
   await assert.rejects(createSwapAttempt(
-    async () => ({ request: () => client.CreateSwapAsync({ source_address: SOURCE_ADDRESS }), useGasless: false, onCreated: [] }),
-    { path: 'test.createSwap', lifecycleContext: {}, onLifecycle: event => lifecycle.push(event), onGaslessUnavailable: () => {} },
+    async () => ({
+      swap: await requestSwap({
+        request: () => client.CreateSwapAsync({ source_address: SOURCE_ADDRESS }),
+        useGasless: false,
+      }, () => {}),
+      onCreated: [],
+    }),
+    { path: 'test.createSwap', lifecycleContext: {}, onLifecycle: event => lifecycle.push(event) },
   ))
   const failed = lifecycle.find(event => event.step === 'swap_creation_failed')
   assert.ok(failed?.occurrenceId)

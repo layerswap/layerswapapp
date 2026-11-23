@@ -276,7 +276,12 @@ function createWorkflow({
         '../../Form/SecondaryComponents/validationError/constants': {},
         '../../Form/SecondaryComponents/validationError/ErrorDismissButton': { default: noop },
         '../../Form/SecondaryComponents/validationError/ErrorDisplay': { ErrorDisplay },
-        '../../Form/SecondaryComponents/validationError/AdjustAmountButton': { AdjustAmountButton: ({ onEditAmount, isLoading }) => createElement('button', { onClick: onEditAmount, disabled: isLoading }, 'Adjust amount') },
+        './AmountProposalView': loadSource('../src/components/Pages/Swap/Withdraw/Presentation/AmountProposalView.tsx', {
+            '@/components/Icons/InfoIcon': { default: noop },
+            '../../Form/SecondaryComponents/validationError/constants': {},
+            '../../Form/SecondaryComponents/validationError/ErrorDisplay': { ErrorDisplay },
+            '../../Form/SecondaryComponents/validationError/AdjustAmountButton': { AdjustAmountButton: ({ onEditAmount }) => createElement('button', { onClick: onEditAmount }, 'Adjust amount') },
+        }),
         '../messages/Message': { default: ({ header, details }) => createElement('div', null, header, details) },
         '../messages/walletErrorMessage': loadSource('../src/components/Pages/Swap/Withdraw/messages/walletErrorMessage.ts', {
             '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
@@ -2746,6 +2751,7 @@ for (const scenario of [
             '../messages/Message': { default: ({ header }) => createElement('p', null, header) },
             '../messages/TransactionMessages': { ActionMessages: { WalletMismatchMessage: () => createElement('p', null, 'Wrong account') } },
             './WalletActionsView': flow.walletViews,
+            './AmountProposalView': { AmountProposalView: () => null },
         })
         await act(() => root.render(createElement(SpecializedWithdrawalView, {
             ...scenario, provider: 'Provider', network: flow.network,

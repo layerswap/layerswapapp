@@ -80,7 +80,10 @@ async function setup({ capability = async () => 'supported', gasless = false, na
             } : undefined }) },
             '@/hooks/useSwapPolling': { useSwapPolling: id => ({ data: id ? swapSnapshot : undefined }) },
             '@/lib/swapLifecycle': { lifecycleContextFromForm: () => ({}) },
-            '@/lib/swapCreation': { createSwapAttempt: async prepare => (await (await prepare()).request()).data },
+            '@/lib/swapCreation': {
+                createSwapAttempt: async create => (await create()).swap,
+                requestSwap: async ({ request }) => (await request()).data,
+            },
             '@layerswap/utils': { KnownInternalNames: { Networks: {} } },
         },
     })

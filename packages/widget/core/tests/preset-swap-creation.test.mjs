@@ -5,6 +5,7 @@ import { JSDOM } from 'jsdom'
 import { create } from 'zustand'
 import { createSwapContext } from './helpers/swap-context.mjs'
 import { loadSource, amountPresets } from './helpers/source.mjs'
+import { createSwapLifecycleTelemetry } from '../../../../apps/bridge/lib/faro-swap-lifecycle.ts'
 
 const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://widget.example' })
 const previous = Object.getOwnPropertyDescriptors(globalThis)
@@ -27,13 +28,22 @@ const context = createSwapContext({
   Client: class {
     async CreateSwapAsync(params) {
       state.created.push(params)
-      return { data: { swap: { id: 'created', source_address: 'source' }, deposit_actions: state.depositActions } }
+      if (state.request) await state.request(params)
+      return { data: { swap: { id: state.created.length === 1 ? 'created' : `created-${state.created.length}`, source_address: 'source', requested_amount: params.amount }, deposit_actions: state.depositActions } }
     }
   },
   getSwapId: () => undefined, getAccount: () => state.account,
   stores,
   swr: { default: () => ({}), useSWRConfig: () => ({ mutate: async (key, response) => { state.publishedLimits.push({ key, response }) } }) },
   overrides: {
+    './callbackProvider': { useCallbacks: () => ({
+      onSwapCreate: response => state.announced.push(response.swap.id),
+      onSwapLifecycle: event => {
+        state.lifecycle.push(event)
+        state.telemetry?.record(event)
+      },
+    }) },
+    '@/stores/swapRouteHistoryStore': { recordSwapRouteHistory: response => state.history.push(response.swap.id) },
     '@/stores/contractAddressStore': { useContractAddressStore: () => ({ checkContractStatus: async () => ({ sourceIsContract: false }) }) },
     '@/lib/preparePresetAmount': { startPresetPreparation: async (...args) => {
       state.prepares++
@@ -51,7 +61,7 @@ const context = createSwapContext({
     '@/helpers/gasless': { isGaslessCapableRoute: () => false },
     '@/lib/extendedRoutes/registry': { resolveExtendedRoutePlan: () => undefined },
     '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
-    '@/lib/swapLifecycle': { lifecycleContextFromForm: () => ({}) },
+    '@/lib/swapLifecycle': { lifecycleContextFromForm: values => ({ requestedAmount: values.amount }) },
     '@/lib/swapCreation': swapCreation,
   },
 })
@@ -66,9 +76,9 @@ const render = key => act(() => root.render(createElement(context.SwapDataProvid
 beforeEach(async () => {
   transactionStore.setState({ swapTransactions: {}, pendingSubmissions: {} })
   container = document.createElement('div'); document.body.append(container); root = createRoot(container)
-  Object.assign(state, { account: { id: 'wallet', address: 'source' }, created: [], prepares: 0, prepareArgs: [], calculations: [],
+  Object.assign(state, { account: { id: 'wallet', address: 'source' }, created: [], announced: [], lifecycle: [], history: [], prepares: 0, prepareArgs: [], calculations: [],
     preparation: Promise.withResolvers(), verification: Promise.withResolvers(), limits: undefined, publishedLimits: [],
-    depositActions: undefined, depositGas: undefined, depositGasArgs: [] })
+    depositActions: undefined, depositGas: undefined, depositGasArgs: [], request: undefined, telemetry: undefined })
   state.verify = () => state.verification.promise
   values = { from: network, to: network, fromAsset: token, toAsset: token, amount: '0.9', destination_address: 'destination',
     depositMethod: 'wallet', amountMode: 'max', amountPresetSource: amountPresets.amountPresetSource(network.name, token.symbol, 'wallet', 'source') }
@@ -163,7 +173,7 @@ test('a changed final Max stops before creation and proposes the new amount with
   assert.equal(data.swapBasicData.requested_amount, '0.9', 'the reviewed amount stays until the user adjusts')
   assert.deepEqual(data.presetRevisionProposal, { amount: '0.85', message: amountPresets.AMOUNT_ADJUSTMENT_MESSAGE, floor: undefined })
   assert.equal(data.quoteIsLoading, false)
-  assert.equal(data.amountPresetLocked, false)
+  assert.equal(data.amountPresetLocked, true, 'the proposal freezes live changes')
   let applied
   await act(() => { applied = updates.applyPresetRevision() })
   assert.equal(applied, '0.85')
@@ -290,7 +300,7 @@ for (const [mode, fresh] of [['min', '1'], ['half', '0.4']]) {
     assert.equal(data.swapBasicData.requested_amount, values.amount)
     assert.equal(data.presetRevisionProposal.amount, fresh)
     assert.equal(data.swapBasicData.amountMode, mode)
-    assert.equal(data.amountPresetLocked, false)
+    assert.equal(data.amountPresetLocked, true)
   })
   test(`${mode}: unchanged confirmation creates exactly the reviewed amount and freezes the draft`, async () => {
     values.amountMode = mode
@@ -348,7 +358,11 @@ test('a deposit fee that cuts Max by more than the guard proposes the amount and
   assert.equal(data.swapBasicData.requested_amount, '0.9', 'the reviewed amount stays on screen')
   assert.equal(data.swapBasicData.amountMode, 'max')
   assert.equal(data.quoteIsLoading, false)
-  assert.equal(data.amountPresetLocked, false, 'the draft is open for the adjusted confirmation')
+  assert.equal(data.amountPresetLocked, true, 'the reviewed amount is frozen until acceptance')
+  assert.deepEqual(state.announced, [])
+  assert.deepEqual(state.lifecycle.map(event => event.step), ['swap_creation_started', 'swap_creation_failed'])
+  assert.ok(state.lifecycle.every(event => !event.swapId), 'discarded candidates stay hidden')
+  assert.deepEqual(state.history, [])
   assert.equal(data.swapId, undefined)
   let applied
   await act(() => { applied = updates.applyPresetRevision() })
@@ -365,7 +379,11 @@ test('a small deposit fee shortfall replaces the swap with the affordable amount
   state.verify = async () => '0.895'
   let created
   await act(async () => { created = await updates.createSwap(values, {}) })
-  assert.equal(created.swap.id, 'created')
+  assert.equal(created.swap.id, 'created-2')
+  assert.deepEqual(state.announced, ['created-2'])
+  assert.deepEqual(state.history, ['created-2'])
+  assert.deepEqual(state.lifecycle.map(event => event.step), ['swap_creation_started', 'swap_created'])
+  assert.equal(state.lifecycle[1].requestedAmount, state.created[1].amount)
   assert.deepEqual(state.created.map(request => request.amount), ['0.9', '0.895'], 'the replacement carries the affordable amount')
   assert.equal(state.calculations.length, 3, 'confirmation, the deposit fee check, and one recheck of the replacement')
   assert.equal(state.depositGasArgs[1][1].amount, '0.895', 'the replacement is priced at its own amount')
@@ -385,7 +403,11 @@ test('a tiny send applies a shortfall worth under a cent even when it exceeds on
   state.verify = async () => '0.000098'
   let created
   await act(async () => { created = await updates.createSwap(tiny, {}) })
-  assert.equal(created.swap.id, 'created')
+  assert.equal(created.swap.id, 'created-2')
+  assert.deepEqual(state.announced, ['created-2'])
+  assert.deepEqual(state.history, ['created-2'])
+  assert.deepEqual(state.lifecycle.map(event => event.step), ['swap_creation_started', 'swap_created'])
+  assert.equal(state.lifecycle[1].requestedAmount, state.created[1].amount)
   assert.deepEqual(state.created.map(request => request.amount), ['0.0001', '0.000098'])
   assert.equal(data.presetRevisionProposal, undefined)
 })
@@ -405,7 +427,11 @@ test('a replacement that still falls short is proposed instead of a third swap',
   assert.equal(data.presetRevisionProposal.amount, '0.891')
   assert.equal(data.presetRevisionProposal.floor.gas, depositGas)
   assert.equal(data.swapBasicData.amountPresetPending, undefined)
-  assert.equal(data.amountPresetLocked, false)
+  assert.equal(data.amountPresetLocked, true)
+  assert.deepEqual(state.announced, [])
+  assert.deepEqual(state.lifecycle.map(event => event.step), ['swap_creation_started', 'swap_creation_failed'])
+  assert.ok(state.lifecycle.every(event => !event.swapId), 'discarded candidates stay hidden')
+  assert.deepEqual(state.history, [])
 })
 
 test('a small change found by the confirmation check is sent without another review', async () => {
@@ -447,16 +473,30 @@ test('a deposit fee that still fits creates the swap and only records the floor'
   assert.equal(data.amountPresetLocked, true, 'creation freezes the reviewed amount as before')
 })
 
-test('min presets record the deposit fee but never revise their fixed amount', async () => {
-  values.amountMode = 'min'
-  await act(() => updates.setSubmitedFormValues(values))
-  Object.assign(state, { depositActions, depositGas: { gas: 5, token } })
-  state.preparation.resolve(values.amount)
-  await act(async () => { await updates.createSwap(values, {}) })
-  assert.equal(state.created.length, 1)
-  assert.equal(state.calculations.length, 1, 'a minimum cannot be reduced to fit a fee')
-  assert.equal(data.depositGasFloor.gas.gas, 5)
-})
+for (const affordable of [true, false]) {
+  test(`Min validates the actual deposit fee: ${affordable ? 'affordable' : 'unaffordable'}`, async () => {
+    values.amountMode = 'min'
+    await act(() => updates.setSubmitedFormValues(values))
+    const depositGas = { gas: affordable ? 0.004 : 0.1, token }
+    Object.assign(state, { depositActions, depositGas })
+    state.preparation.resolve(values.amount)
+    state.verify = (_floor, estimateGas) => amountPresets.calculatePresetAmount({
+      network, token, balance: { amount: 0.905 }, limit: 2, minimum: 0.9,
+      mode: 'min', probeAmount: values.amount, preserveAmount: true, estimateGas,
+    })
+    await act(async () => {
+      const creation = updates.createSwap(values, {})
+      if (affordable) await creation
+      else await assert.rejects(creation, /Not enough ETH for network fees/)
+    })
+    assert.equal(state.created.length, 1)
+    assert.equal(state.calculations.length, 2, 'the actual deposit fee must validate Min too')
+    assert.equal(data.depositGasFloor.gas, depositGas)
+    assert.equal(data.swapBasicData.requested_amount, values.amount)
+    assert.deepEqual(state.announced, affordable ? ['created'] : [])
+    assert.equal(data.presetRevisionProposal, undefined)
+  })
+}
 
 test('an unavailable deposit fee estimate never blocks the wallet', async () => {
   Object.assign(state, { depositActions, depositGas: undefined })
@@ -466,3 +506,120 @@ test('an unavailable deposit fee estimate never blocks the wallet', async () => 
   assert.equal(state.calculations.length, 1)
   assert.equal(data.depositGasFloor, undefined)
 })
+
+
+for (const affordable of ['0.9', '0.65']) {
+  test(`changing the account during the deposit check discards its ${affordable === '0.9' ? 'success' : 'proposal'}`, async () => {
+    Object.assign(state, { depositActions, depositGas: { gas: 0.2, token } })
+    state.preparation.resolve(values.amount)
+    let rejected
+    await act(() => { rejected = assert.rejects(updates.createSwap(values, {}), /source account changed/) })
+    assert.equal(state.created.length, 1)
+    state.account = { ...state.account, address: 'another-account' }
+    await render()
+    await act(async () => { state.verification.resolve(affordable); await rejected })
+    assert.equal(data.presetRevisionProposal, undefined)
+    assert.equal(data.depositGasFloor, undefined)
+    assert.deepEqual(state.announced, [])
+    assert.deepEqual(state.history, [])
+  })
+}
+
+function trackCreation(t) {
+  t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 1000 })
+  const records = []
+  const telemetry = createSwapLifecycleTelemetry({
+    captureEvent: (_name, event) => { records.push(event); return true },
+    setSwapContext: () => true,
+  })
+  state.telemetry = telemetry
+  t.after(() => telemetry.dispose())
+  telemetry.record({ step: 'form_submitted', stage: 'form', outcome: 'started', path: 'test' })
+  return records
+}
+
+for (const stage of ['preparation', 'request', 'verification']) {
+  test(`Faro detects a 61-second preset ${stage} and retains the full creation duration`, async t => {
+    const records = trackCreation(t)
+    const request = Promise.withResolvers()
+    if (stage !== 'preparation') state.preparation.resolve(values.amount)
+    if (stage === 'request') state.request = () => request.promise
+    if (stage === 'verification') Object.assign(state, { depositActions, depositGas: { gas: 0.004, token } })
+    let pending
+    await act(() => { pending = updates.createSwap(values, {}) })
+    assert.deepEqual(state.lifecycle.map(event => event.step), ['swap_creation_started'])
+    t.mock.timers.tick(61_000)
+    assert.deepEqual(records.map(event => event.step), ['form_submitted', 'swap_creation_started', 'suspected_stall'])
+    assert.equal(records.at(-1).stalled_step, 'swap_creation_started')
+    assert.deepEqual(state.announced, [])
+    assert.deepEqual(state.history, [])
+    await act(async () => {
+      state.preparation.resolve(values.amount)
+      request.resolve()
+      state.verification.resolve(values.amount)
+      await pending
+    })
+    assert.equal(records.at(-1).step, 'swap_created')
+    assert.equal(records.at(-1).previous_step_duration_ms, 61_000)
+    assert.deepEqual(state.announced, ['created'])
+    assert.deepEqual(state.history, ['created'])
+    t.mock.timers.tick(61_000)
+    assert.equal(records.at(-1).step, 'swap_created', 'acceptance ends the creation timer')
+  })
+}
+
+test('Faro measures a replacement as part of the original confirmation without exposing the discarded swap', async t => {
+  const records = trackCreation(t)
+  const replacement = Promise.withResolvers()
+  state.preparation.resolve(values.amount)
+  Object.assign(state, { depositActions, depositGas: { gas: 0.004, token } })
+  state.request = () => state.created.length === 2 ? replacement.promise : undefined
+  state.verify = () => state.created.length === 1 ? state.verification.promise : Promise.resolve('0.895')
+  let pending
+  await act(() => { pending = updates.createSwap(values, {}) })
+  t.mock.timers.tick(40_000)
+  await act(async () => { state.verification.resolve('0.895') })
+  assert.equal(state.created.length, 2)
+  assert.deepEqual(state.lifecycle.map(event => event.step), ['swap_creation_started'])
+  t.mock.timers.tick(21_000)
+  assert.equal(records.at(-1).step, 'suspected_stall', 'the replacement must not restart the timer')
+  assert.ok(records.every(event => !event.swap_id))
+  assert.deepEqual(state.announced, [])
+  await act(async () => { replacement.resolve(); await pending })
+  assert.equal(records.at(-1).previous_step_duration_ms, 61_000)
+  assert.equal(records.at(-1).swap_id, 'created-2')
+  assert.deepEqual(state.announced, ['created-2'])
+  assert.deepEqual(state.history, ['created-2'])
+})
+
+for (const exit of ['early proposal', 'deposit fee proposal', 'source change', 'fee-check failure', 'request failure']) {
+  test(`${exit} ends the creation timer without publishing provisional swaps`, async t => {
+    const records = trackCreation(t)
+    const request = Promise.withResolvers()
+    if (exit !== 'early proposal') state.preparation.resolve(values.amount)
+    Object.assign(state, { depositActions, depositGas: { gas: 0.004, token } })
+    if (exit === 'request failure') state.request = () => request.promise
+    let rejected
+    await act(() => { rejected = assert.rejects(updates.createSwap(values, {})) })
+    t.mock.timers.tick(30_000)
+    if (exit === 'source change') {
+      state.account = { ...state.account, address: 'another-account' }
+      await render()
+    }
+    await act(async () => {
+      if (exit === 'request failure') request.reject(new Error('API unavailable'))
+      else if (exit === 'fee-check failure') state.verification.reject(new Error('balance unavailable'))
+      else if (exit === 'early proposal') state.preparation.resolve('0.65')
+      else state.verification.resolve('0.65')
+      await rejected
+    })
+    assert.deepEqual(records.map(event => event.step), ['form_submitted', 'swap_creation_started', 'swap_creation_failed'])
+    assert.equal(records.at(-1).previous_step_duration_ms, 30_000)
+    assert.equal(state.created.length, exit === 'early proposal' ? 0 : 1)
+    assert.ok(records.every(event => !event.swap_id))
+    assert.deepEqual(state.announced, [])
+    assert.deepEqual(state.history, [])
+    t.mock.timers.tick(61_000)
+    assert.equal(records.length, 3, 'discarding a candidate must not leave a creation timer running')
+  })
+}

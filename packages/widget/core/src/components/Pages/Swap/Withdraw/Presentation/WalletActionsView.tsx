@@ -22,7 +22,7 @@ import { Loader2 } from 'lucide-react';
 import { type FC, type ReactNode } from 'react';
 import { ICON_CLASSES_WARNING } from '../../Form/SecondaryComponents/validationError/constants';
 import ErrorDismissButton from '../../Form/SecondaryComponents/validationError/ErrorDismissButton';
-import { AdjustAmountButton } from '../../Form/SecondaryComponents/validationError/AdjustAmountButton';
+import { AmountProposalView, type AmountProposalAction } from './AmountProposalView';
 import { ErrorDisplay } from '../../Form/SecondaryComponents/validationError/ErrorDisplay';
 import WalletMessage from '../messages/Message';
 import { walletDisconnectedMessage } from '../messages/walletErrorMessage';
@@ -152,7 +152,7 @@ export type SendTransactionViewProps = SubmitButtonProps & {
     error?: boolean;
     swapError?: boolean;
     /** The confirmation could not send the reviewed amount; Adjust applies the proposal for a new confirmation. */
-    amountProposal?: { message: string; onAdjust: () => void };
+    amountProposal?: AmountProposalAction;
     swapId?: string;
     criticalMarketPriceImpact?: boolean;
     showCriticalMarketPriceImpactButtons?: boolean;
@@ -316,12 +316,7 @@ export function getSendTransactionPresentation({
     // takes the send action's place until Adjust amount applies it.
     if (amountProposal && !pendingSubmission && !submissionAccepted && !workflowCompleted) {
         return { walletProgress, controls: (
-            <ErrorDisplay
-                icon={<InfoIcon className={ICON_CLASSES_WARNING} />}
-                title="Adjust the amount"
-                message={amountProposal.message}
-                action={<AdjustAmountButton onEditAmount={amountProposal.onAdjust} isLoading={loading} />}
-            />
+            <AmountProposalView {...amountProposal} />
         ) };
     }
     // A quote error disables the actual send action. Loading and completed
