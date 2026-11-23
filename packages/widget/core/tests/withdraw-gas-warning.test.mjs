@@ -554,7 +554,8 @@ test('a token gas warning follows the fee token returned by the gas provider for
   ]
   await render()
   assert.match(container.textContent, /Required maximum gas fee: 0.00006 ETH/)
-  assert.ok(state.gasRequests.every(args => args[4]?.metadata?.capabilities), 'the selected wallet reaches the gas provider')
+  const enabledRequests = state.gasRequests.filter(args => args[5]?.enabled !== false)
+  assert.ok(enabledRequests.length > 0 && enabledRequests.every(args => args[4]?.metadata?.capabilities), 'the selected wallet reaches the gas provider')
 
   // The provider priced the fee in USDC: the wallet pays it from the token balance.
   state.gasData = { gas: 0.03, maxFee: 0.18, token: usdc }
