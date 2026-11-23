@@ -32,7 +32,6 @@ import { type ObservedLifecycleEvent, useLifecycleObservation } from '@/hooks/us
 import { getActionableDepositAction, isTransferAction } from '@/helpers/depositActions';
 import { isGaslessDepositWorkflow } from '@/helpers/gasless';
 import { useIsGaslessActive } from '@/hooks/useIsGaslessActive';
-import { getWalletCapabilities } from '@/helpers/walletCapabilities';
 import { useSelectedSourceWallet } from '@/hooks/useSelectedSourceWallet';
 
 // "Transfer screen shown": reported once while the screen is visible, before any swap exists.
@@ -94,11 +93,12 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
     );
     const livePreset = !swapId && !amountPresetLocked && isAmountPreset(swapBasicData?.amountMode)
         && swapBasicData?.amountPresetSource === currentPresetSource;
+    const sourceWallet = useSelectedSourceWallet(source_network || undefined);
     const { gasData: estimatedGas } = useSWRGas(
         active ? selectedSourceAccount?.address : undefined,
         source_network,
         swapBasicData?.source_token,
-        gasEstimationAmount, undefined, { enabled: active && !livePreset, transaction: gasTransaction },
+        gasEstimationAmount, sourceWallet, { enabled: active && !livePreset, transaction: gasTransaction },
     );
 
     const gasData = livePreset ? swapBasicData?.amountPresetGas : estimatedGas;
@@ -217,8 +217,6 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
     const lastGasShortage = useRef(nativeGasShortage);
     if (nativeGasShortage || !presetIsSyncing) lastGasShortage.current = nativeGasShortage;
     const shownGasShortage = lastGasShortage.current;
-    const sourceWallet = useSelectedSourceWallet(source_network);
-    const walletPaysGasInToken = getWalletCapabilities(sourceWallet, selectedSourceAccount?.address, source_network)?.alternateGasFees === true;
 
     if (
         swapBasicData?.use_deposit_address === false &&
@@ -258,7 +256,7 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
                 />
             </TransferBlock>
         );
-    } else if (!hasSubmittedTransfer && !isGaslessExecution && swapBasicData?.use_deposit_address === false && shownGasShortage && !walletPaysGasInToken) {
+    } else if (!hasSubmittedTransfer && !isGaslessExecution && swapBasicData?.use_deposit_address === false && shownGasShortage) {
         // Keep execution mounted: a refreshed estimate or balance must not
         // interrupt an in-flight wallet request. Sending rechecks pending funds.
         const { requiredFee, availableBalance, symbol } = shownGasShortage;

@@ -543,22 +543,25 @@ for (const symbol of ['BNB', 'ETH']) {
   })
 }
 
-test('a token gas warning stays hidden only when the wallet reported paying gas in another token', async () => {
-  state.swap.source_token = { symbol: 'USDC', decimals: 6, contract: '0xtoken' }
+test('a token gas warning follows the fee token returned by the gas provider for the selected wallet', async () => {
+  const usdc = { symbol: 'USDC', decimals: 6, contract: '0xtoken' }
+  state.swap.source_token = usdc
+  state.alternateGasFees = true
   state.gasData = { gas: 0.00001, maxFee: 0.00006, token }
   state.balances = [
     { network: network.name, token: 'USDC', amount: 100, isNativeCurrency: false },
     { network: network.name, token: token.symbol, amount: 0, isNativeCurrency: true },
   ]
   await render()
-  assert.match(container.textContent, /Required maximum gas fee: 0.00006 ETH/, 'unreported capabilities keep the warning')
-  state.alternateGasFees = true
+  assert.match(container.textContent, /Required maximum gas fee: 0.00006 ETH/)
+  assert.ok(state.gasRequests.every(args => args[4]?.metadata?.capabilities), 'the selected wallet reaches the gas provider')
+
+  // The provider priced the fee in USDC: the wallet pays it from the token balance.
+  state.gasData = { gas: 0.03, maxFee: 0.18, token: usdc }
   await render()
   assert.doesNotMatch(container.textContent, /Insufficient balance for gas/)
   assert.equal(sendButton().disabled, false)
-  state.alternateGasFees = false
-  await render()
-  assert.match(container.textContent, /Required maximum gas fee: 0.00006 ETH/)
+
   state.gasData = { gas: 0.0001, maxFee: 0.0002489, token }
   await render()
   assert.match(container.textContent, /Required maximum gas fee: 0.000249 ETH/)
