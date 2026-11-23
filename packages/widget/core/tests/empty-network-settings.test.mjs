@@ -60,3 +60,20 @@ test('a successful networks API response with an empty array is rejected', async
     })
     assert.equal(await getSettings('mainnet'), null)
 })
+
+test('SSR drops tokens missing from the network catalog and keeps their siblings sortable', () => {
+    const bnb = { symbol: 'BNB', asset: 'BNB' }
+    const usdc = { symbol: 'USDC', asset: 'USDC' }
+    const missing = { symbol: 'BNBTiger', asset: 'BNBTiger' }
+    const bsc = { name: 'BSC_MAINNET', tokens: [bnb, usdc] }
+    const base = { name: 'BASE_MAINNET', tokens: [usdc] }
+    const routes = [{ ...bsc, tokens: [usdc, missing, bnb] }, { ...base, tokens: [missing] }]
+    const settings = { ...emptySettings, networks: [bsc, base], sourceRoutes: routes, destinationRoutes: routes }
+
+    const resolved = inflateSettings(encodeSettingsForSSR(settings))
+    for (const list of [resolved.sourceRoutes, resolved.destinationRoutes]) {
+        const sorted = [...list[0].tokens].sort((a, b) => a.asset.localeCompare(b.asset))
+        assert.deepEqual(sorted, [bnb, usdc])
+        assert.deepEqual(list.map(route => route.name), ['BSC_MAINNET'])
+    }
+})
