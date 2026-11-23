@@ -87,7 +87,7 @@ test('an explicit refresh uses the latest complete deposit_actions plan', async 
     assert.equal(requests.length, 2, 'one HTTP request per explicit refresh')
 })
 
-test('both decimal transfer and hex send_calls values retain precision above the safe integer range', async () => {
+test('normalization retains decimal and hex values above the safe integer range (not a submission guarantee)', async () => {
     const precise = fixture.deposit_actions.precise_value
     const actions = clone(fixture.deposit_actions.zero_allowance)
     actions[1].amount_in_base_units = precise[0].amount_in_base_units
@@ -185,6 +185,37 @@ for (const shape of ['transfer', 'send_calls', 'completed-approval']) {
         assert.equal(action.call_data, next.action.calls[0].data)
         assert.equal(action.to_address, next.action.calls[0].to)
         assert.equal(action.calls, undefined)
+    })
+}
+
+for (const shape of ['transfer', 'send_calls', 'completed-approval', 'completed-signature', 'atomic-plan']) {
+    for (const callData of [null, undefined, '', '0x', '0x123', '0xnothex']) {
+        test(`${shape} rejects invalid publication calldata ${JSON.stringify(callData)} before execution`, () => {
+            const publish = { ...fixture.deposit_actions.sufficient_allowance[0], call_data: callData }
+            const actions = shape === 'send_calls'
+                ? [{ ...publish, type: 'send_calls', calls: [{ to: publish.to_address, data: callData, value: '0x0' }] }]
+                : shape === 'completed-approval' ? [{ step: 'approve', status: 'completed' }, publish]
+                : shape === 'completed-signature' ? [{ step: 'sign', status: 'completed' }, publish]
+                : shape === 'atomic-plan' ? [fixture.deposit_actions.zero_allowance[0], publish]
+                : [publish]
+            assert.throws(() => resolveAtomicDepositActions(actions), /Invalid .*publication|Invalid publication/)
+        })
+    }
+}
+
+for (const route of ['create', 'swap', 'actions']) {
+    test(`${route} refuses a publication with missing calldata while preserving an existing swap`, async () => {
+        const { client, requests } = clientFor([{ ...fixture.deposit_actions.sufficient_allowance[0], call_data: null }])
+        if (route === 'actions') {
+            await assert.rejects(client.GetDepositActionsAsync('atomic-swap'), /Invalid publication/)
+        } else {
+            const response = route === 'create'
+                ? await client.CreateSwapAsync({ source_address: fixture.account })
+                : await client.GetSwapAsync('atomic-swap')
+            assert.equal(response.data.swap.id, 'atomic-swap')
+            assert.equal(response.data.deposit_actions, undefined)
+        }
+        assert.equal(requests.length, 1)
     })
 }
 

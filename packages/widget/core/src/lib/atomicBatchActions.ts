@@ -2,12 +2,16 @@ import type { BatchTransferDepositAction, DepositAction, TransferDepositAction }
 
 const isDirectApproval = (action: DepositAction) => action.step === 'approve'
 
+function isValidPublicationCall(to: unknown, data: unknown): boolean {
+    return typeof to === 'string' && /^0x[0-9a-fA-F]{40}$/.test(to) && !/^0x0{40}$/i.test(to)
+        && typeof data === 'string' && /^0x(?:[0-9a-fA-F]{2})+$/.test(data)
+}
+
 /** One call is already atomic and can return a transaction hash directly. */
 function resolvePublication(action: BatchTransferDepositAction): BatchTransferDepositAction | TransferDepositAction {
     if (action.calls.length !== 1) return action
     const call = action.calls[0]
-    if (!call || !/^0x[0-9a-fA-F]{40}$/.test(call.to) || /^0x0{40}$/i.test(call.to)
-        || typeof call.data !== 'string' || !/^0x(?:[0-9a-fA-F]{2})*$/.test(call.data)
+    if (!call || !isValidPublicationCall(call.to, call.data)
         || typeof call.value !== 'string' || !/^0x[0-9a-fA-F]+$/.test(call.value)
         || BigInt(call.value) >= 2n ** 256n) {
         throw new Error('Invalid single-call publication')
@@ -42,6 +46,15 @@ export function combineAtomicDepositActions(actions: DepositAction[]): BatchTran
 
 /** Normalize the complete backend response without a second action or allowance lookup. */
 export function resolveAtomicDepositActions(actions: DepositAction[]): DepositAction[] {
+    for (const action of actions) {
+        // Publication must invoke the swap contract, including after signing or approval.
+        // Native deposits can omit calldata; an actionable ERC-20 publication cannot.
+        if (action.type === 'transfer' && action.step === 'publish' && action.status === 'action_required'
+            && action.network?.type === 'evm' && action.token?.contract
+            && !isValidPublicationCall(action.to_address, action.call_data)) {
+            throw new Error('Invalid publication target or calldata')
+        }
+    }
     if (actions.length === 1 && actions[0].type === 'send_calls') {
         return [resolvePublication(actions[0])]
     }
@@ -68,7 +81,7 @@ export function resolveAtomicDepositActions(actions: DepositAction[]): DepositAc
         return [combineAtomicDepositActions(actions)]
     }
     // A single publication is already executable, including with sufficient allowance.
-    // EVM execution accepts a display amount, but the exact base-unit value takes precedence.
+    // EVM execution requires a display amount. ERC-20 publications currently send zero native value.
     const publish = actions.length === 1 ? actions[0] : undefined
     if (publish?.type !== 'transfer' || publish.step !== 'publish' || publish.status !== 'action_required'
         || publish.network?.type !== 'evm' || !publish.token?.contract) return actions
