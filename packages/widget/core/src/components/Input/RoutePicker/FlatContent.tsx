@@ -1,5 +1,5 @@
 import { FC, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
+import { NetworkRoute, Token } from "@layerswap/widget-types";
 import { NetworkBalance } from "@layerswap/widget-types";
 import { SwapDirection } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { useVirtualizer } from "@/lib/virtual";
@@ -22,7 +22,7 @@ type Props = {
     direction: SwapDirection;
     selectedRoute: string | undefined;
     selectedToken: string | undefined;
-    onSelect: (route: NetworkRoute, token: NetworkRouteToken) => Promise<void> | void;
+    onSelect: (route: NetworkRoute, token: Token) => Promise<void> | void;
     hideBalances?: boolean;
     /** Show only tokens the connected wallet actually holds (balance > 0). */
     onlyWithBalance?: boolean;

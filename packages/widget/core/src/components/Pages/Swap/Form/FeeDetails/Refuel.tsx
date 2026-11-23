@@ -25,7 +25,7 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, quote }) => {
     const { balances } = useBalance(destination_address, to)
 
     const destinationNativeBalance = destination_address && balances?.find(b => (b.token === to?.token?.symbol) && (b.network === to.name))
-    const needRefuel = toCurrency && toCurrency.refuel && to && to.token && destination_address && Address.isValid(destination_address, to) && destinationNativeBalance && destinationNativeBalance?.amount == 0
+    const needRefuel = toCurrency && to && to.refuel_asset && toCurrency.symbol !== to.refuel_asset && to.token && destination_address && Address.isValid(destination_address, to) && destinationNativeBalance && destinationNativeBalance?.amount == 0
     const previouslySelectedDestination = useRef(to)
 
     const { formValidation } = useValidationContext()
@@ -76,7 +76,7 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, quote }) => {
                     {
                         refuel && !quote &&
                         <p className="text-xs">
-                            <span>You&apos;ll get</span> <span>{toCurrency.refuel?.token.asset}</span> <span>for gas fees</span>
+                            <span>You&apos;ll get</span> <span>{to?.token?.asset}</span> <span>for gas fees</span>
                         </p>
                     }
                 </button>

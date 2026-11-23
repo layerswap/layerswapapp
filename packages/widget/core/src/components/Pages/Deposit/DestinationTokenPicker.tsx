@@ -1,6 +1,6 @@
 import { FC, useMemo } from "react";
 import { useSettingsState } from "@/context/settings";
-import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
+import { NetworkRoute, Token } from "@layerswap/widget-types";
 import { useDepositSelection } from "./depositSelectionContext";
 
 import { DestinationTokenPickerView } from "./DestinationTokenPickerView";
@@ -15,12 +15,12 @@ export type SupportedDestination = {
 
 export type ResolvedDestination = {
     network: NetworkRoute;
-    token: NetworkRouteToken;
+    token: Token;
 };
 
 /**
  * Resolves the integrator-provided destination (a single network plus its
- * allowed token symbols) into the full `NetworkRoute` + `NetworkRouteToken`
+ * allowed token symbols) into the full `NetworkRoute` + `Token`
  * objects from settings, one entry per token. Tokens that don't match an
  * active token in settings are dropped.
  */
