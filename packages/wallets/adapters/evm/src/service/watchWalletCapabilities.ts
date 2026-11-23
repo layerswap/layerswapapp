@@ -8,13 +8,13 @@ export function watchWalletCapabilities(config: Config, onChange: (capabilities:
 
     const read = (connection: Connection, refresh: boolean) => {
         const { connector, accounts, chainId } = connection
-        const account = accounts[0]
-        if (!account) return
-        if (!refresh && service.getPublished()[connector.uid]?.[account.toLowerCase()]) return
         // The connector identity is enough to resolve this exact connection.
         const wallet = { id: connector.name, internalId: connector.id, metadata: { connectorId: connector.id, connectorUid: connector.uid } } as Wallet
         const network = { chain_id: String(chainId) } as Network
-        service.getCapabilities({ wallet, account, network }).catch(() => undefined)
+        for (const account of accounts) {
+            if (!refresh && service.getPublished()[connector.uid]?.[account.toLowerCase()]) continue
+            service.getCapabilities({ wallet, account, network }).catch(() => undefined)
+        }
     }
     const readAll = (refresh: boolean) => getConnections(config).forEach(connection => read(connection, refresh))
     const onVisible = () => {

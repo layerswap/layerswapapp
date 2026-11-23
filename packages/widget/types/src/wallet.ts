@@ -6,6 +6,9 @@ export type WalletCapabilities = {
   alternateGasFees: boolean;
 };
 
+/** Capabilities by chain id; 0 holds the wallet's all-chains entry. */
+export type ChainCapabilities = Record<number, WalletCapabilities>;
+
 export type WalletConnectLink = {
   native?: string | null;
   universal?: string | null;
@@ -63,7 +66,7 @@ export type Wallet = {
     /** WalletConnect session topic; identifies the session that receives this wallet's requests. */
     walletConnectTopic?: string;
     /** EIP-5792 capabilities by lowercase account, then chain id (0 applies to all chains). */
-    capabilities?: Record<string, Record<number, WalletCapabilities>>;
+    capabilities?: Record<string, ChainCapabilities>;
   };
   chainId?: string | number;
   isLoading?: boolean;

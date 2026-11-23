@@ -1,4 +1,4 @@
-import { type Wallet, type WalletCapabilities } from '@layerswap/widget-types';
+import { type ChainCapabilities, type Wallet } from '@layerswap/widget-types';
 import type { Connector } from 'wagmi'
 import { getDynamicWcMetadata, getPendingDynamicWcMetadata, type AppNetworkAdapter } from "@layerswap/wallet-core"
 import { evmConnectorNameResolver, resolveEVMWalletConnectorIcon } from '../evmUtils'
@@ -28,7 +28,7 @@ export type ResolveWalletProps<Network> = {
     }
     providerName: string
     /** Published EIP-5792 answers for this connection, by lowercase account. */
-    capabilities?: Record<string, Record<number, WalletCapabilities>>
+    capabilities?: Record<string, ChainCapabilities>
 }
 
 export function resolveWallet<Network>(props: ResolveWalletProps<Network>): Wallet | undefined {

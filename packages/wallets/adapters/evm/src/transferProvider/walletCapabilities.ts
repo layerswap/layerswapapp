@@ -1,14 +1,11 @@
 import { type Config, type Connection, type Connector } from '@wagmi/core'
 import { createWalletClient, custom, isAddress, type EIP1193Provider } from 'viem'
 import { getCapabilities } from 'viem/actions'
-import type { AtomicBatchContext, Wallet, WalletCapabilities } from '@layerswap/widget-types'
+import { capabilitiesForChain, type AtomicBatchContext, type ChainCapabilities, type Wallet, type WalletCapabilities } from '@layerswap/widget-types'
 import { getDynamicWcMetadata } from '@layerswap/wallet-core'
 import { EIP155_NAMESPACE, HIDDEN_WALLETCONNECT_ID } from '../constants'
 
 export type WalletCapabilityContext = Pick<AtomicBatchContext, 'network' | 'wallet' | 'account' | 'signal'>
-
-/** Capabilities by chain id; 0 holds the wallet's all-chains entry. */
-export type ChainCapabilities = Record<number, WalletCapabilities>
 
 /** Accepted answers by connector uid, then lowercase account. */
 export type PublishedCapabilities = Readonly<Record<string, Record<string, ChainCapabilities>>>
@@ -331,17 +328,6 @@ export async function createClientForConnector(connector: Connector) {
         throw new Error('Wallet provider unavailable')
     }
     return createWalletClient({ transport: custom(provider, { retryCount: 0 }) })
-}
-
-/** A chain's entry, falling back to the wallet's all-chains (0) entry per capability. */
-export function capabilitiesForChain(chains: ChainCapabilities | undefined, chainId: number): WalletCapabilities | undefined {
-    const chain = chains?.[chainId]
-    const global = chains?.[0]
-    if (!chain && !global) return undefined
-    return {
-        atomic: chain?.atomic !== 'unsupported' && chain?.atomic ? chain.atomic : global?.atomic ?? 'unsupported',
-        alternateGasFees: chain?.alternateGasFees || global?.alternateGasFees || false,
-    }
 }
 
 function parseChainCapabilities(response: Record<number, Record<string, any> | undefined>): ChainCapabilities {

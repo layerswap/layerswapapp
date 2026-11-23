@@ -24,13 +24,6 @@ const InsufficientFundsMessage: FC = () => {
         details='The balance of the connected wallet is not enough' />
 }
 
-const InsufficientGasMessage: FC<{ message?: string }> = ({ message }) => {
-    return <WalletMessage
-        status="error"
-        header='Insufficient native balance for gas'
-        details={message ?? 'Add the source network’s native currency to your source account to pay for gas.'} />
-}
-
 const TransactionRejectedMessage: FC<{ isSignature?: boolean }> = ({ isSignature }) => {
     return <WalletMessage
         status="error"
@@ -90,7 +83,6 @@ export const ActionMessages = {
     ConfirmActionMessage,
     TransactionInProgressMessage,
     InsufficientFundsMessage,
-    InsufficientGasMessage,
     TransactionRejectedMessage,
     WalletMismatchMessage,
     TransactionFailedMessage,

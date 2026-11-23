@@ -6,6 +6,7 @@ import { JSDOM } from 'jsdom'
 import React, { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import { SWRConfig } from 'swr'
+import * as widgetTypes from '@layerswap/widget-types'
 import { createSwapContext } from './helpers/swap-context.mjs'
 
 const dom = new JSDOM('<div id="root"></div>', { url: 'https://widget.example' })
@@ -58,7 +59,9 @@ async function setup({ capability = async () => 'supported', stored, gasless = f
     const values = { from: network, to: network, fromAsset: token, toAsset: { symbol: 'AAVE' },
         destination_address: fixture.account, amount: '1', depositMethod: depositAddress ? 'deposit_address' : 'wallet' }
     const capabilityHook = pure('../src/hooks/useAtomicBatchCapability.ts', {
-        '@/helpers/walletCapabilities': pure('../src/helpers/walletCapabilities.ts'),
+        '@/helpers/walletCapabilities': pure('../src/helpers/walletCapabilities.ts', {
+            '@layerswap/widget-types': widgetTypes,
+        }),
     })
     const context = createSwapContext({
         Client: class {
