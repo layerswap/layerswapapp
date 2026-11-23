@@ -332,7 +332,7 @@ test('Min selects the route minimum even when the balance is too low', async () 
   assert.equal(formik.values.amountMode, 'min')
 })
 
-test('one-time 50% retains the production zero fallback while route limits are unavailable', async () => {
+test('one-time 50% waits for route limits without changing the amount', async () => {
   state.account = undefined
   state.wallets = []
   props.limitsMinAmount = undefined
@@ -340,23 +340,31 @@ test('one-time 50% retains the production zero fallback while route limits are u
   await render()
 
   const group = container.querySelector('[role="group"][aria-label="Amount shortcuts"]')
-  assert.equal(group.getAttribute('aria-disabled'), 'false')
-  assert.equal(group.querySelectorAll('button:disabled').length, 2)
-  await act(() => container.querySelector('[data-attr="half-amount"]').click())
-  assert.equal(formik.values.amount, '0')
-  assert.equal(formik.values.amountMode, 'fixed')
+  assert.equal(group.getAttribute('aria-disabled'), 'true')
+  assert.equal(group.querySelectorAll('button:disabled').length, 3)
+  const previousValues = formik.values
+  const half = container.querySelector('[data-attr="half-amount"]')
+  await act(() => half.click())
+  assert.deepEqual(formik.values, previousValues)
 
   props.limitsMinAmount = 0.001
   await render()
   assert.equal(group.getAttribute('aria-disabled'), 'false')
-  assert.equal(group.querySelectorAll('button:disabled').length, 1)
+  assert.equal(group.querySelectorAll('button:disabled').length, 2)
   await act(() => container.querySelector('[data-attr="min-amount"]').click())
   assert.equal(formik.values.amountMode, 'fixed')
   assert.equal(formik.values.amount, '0.001')
+
+  props.limitsMaxAmount = 10
+  await render()
+  assert.equal(half.disabled, false)
+  await act(() => half.click())
+  assert.equal(formik.values.amount, '5')
+  assert.equal(formik.values.amountMode, 'fixed')
 })
 
-for (const [balance, expected] of [[1.000003, '0.500001'], [0, '0.25']]) {
-  test(`one-time 50% matches production for balance ${balance} with a smaller route cap`, async () => {
+for (const balance of [1.000003, 0]) {
+  test(`manual 50% uses the route maximum regardless of wallet balance ${balance}`, async () => {
     props.depositMethod = 'deposit_address'
     props.fromCurrency = { ...token, decimals: 6 }
     props.limitsMaxAmount = 0.5
@@ -365,7 +373,7 @@ for (const [balance, expected] of [[1.000003, '0.500001'], [0, '0.25']]) {
     const half = container.querySelector('[data-attr="half-amount"]')
     assert.equal(half.disabled, false, 'One-time 50% does not wait for a gas estimate')
     await act(() => half.click())
-    assert.equal(formik.values.amount, expected)
+    assert.equal(formik.values.amount, '0.25')
     assert.equal(formik.values.amountMode, 'fixed')
     assert.equal(half.getAttribute('aria-pressed'), null)
   })

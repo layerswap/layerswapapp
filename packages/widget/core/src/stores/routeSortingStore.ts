@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
+import { browserOnlyMiddleware } from '@layerswap/utils/common'
 
 export enum SortingOption {
     RELEVANCE = 'relevance',
@@ -15,14 +16,14 @@ type RouteSortingState = {
 }
 
 export const useRouteSortingStore = create<RouteSortingState>()(
-    persist(
+    browserOnlyMiddleware(persist)(
         (set) => ({
             sortingOption: SortingOption.RELEVANCE,
             setSortingOption: (val) => set({ sortingOption: val }),
         }),
         {
             name: 'ls-route-sorting',
-            storage: createJSONStorage(() => localStorage),
+            storage: createJSONStorage(() => window.localStorage),
         }
     )
 )

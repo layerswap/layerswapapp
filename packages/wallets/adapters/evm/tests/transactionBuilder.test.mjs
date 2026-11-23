@@ -7,18 +7,20 @@ import { extname } from 'node:path'
 const rpcUrl = `data:text/javascript,${encodeURIComponent(`
     export * from ${JSON.stringify(import.meta.resolve('viem'))}
     export const state = {}
-    export const createPublicClient = () => {
+    export const createPublicClient = ({ chain }) => {
         state.clients++
         return {
+            chain,
+            readContract: async args => { state.operatorEstimate = args; if (state.operatorError) throw state.operatorError; return state.operatorFee },
             estimateGas: async args => { state.estimate = args; return state.estimateGas(args) },
             estimateFeesPerGas: async args => { if (state.feesError) throw state.feesError; return args?.type === 'legacy' ? { gasPrice: state.gasPrice } : state.fees },
             getGasPrice: async () => state.gasPrice,
             estimateMaxPriorityFeePerGas: async () => { state.priorityRequests++; if (state.priorityError) throw state.priorityError; return state.priorityFee },
             getCode: async () => state.accountCode,
             getBalance: async args => { state.balanceArgs = args; state.balanceRequests++; if (state.balanceError) throw state.balanceError; return state.balance },
-            extend: () => ({ estimateL1Fee: async args => { state.l1Estimate = args; return state.l1Fee } }),
         }
     }
+    export const estimateL1Fee = async (client, args) => { state.l1Estimate = args; if (state.l1Error) throw state.l1Error; return state.l1Fee }
     export default network => ({ id: Number(network.chain_id) })
     export const resolveFallbackTransport = nodes => {
         state.nodes = nodes
@@ -28,6 +30,9 @@ const rpcUrl = `data:text/javascript,${encodeURIComponent(`
 `)}`
 const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
     const parent = context.parentURL ?? ''
+    if (parent.endsWith('/gasProviders/resolveOpStackAdditionalFees.js') && specifier === 'viem/op-stack') {
+        return { url: rpcUrl, shortCircuit: true }
+    }
     if ((parent.endsWith('/gasProviders/resolveEVMTransactionGasParameters.js') || parent.endsWith('/gasProviders/evmGasProvider.js')) && [
         'viem', '../evmUtils/resolveChain', '../evmUtils/resolveTransports',
     ].includes(specifier)) return { url: rpcUrl, shortCircuit: true }
@@ -43,8 +48,7 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
 const { state } = await import(rpcUrl)
 const { transactionBuilder } = await import('../dist/esm/transferProvider/transactionBuilder.js')
 const { EVMGasProvider } = await import('../dist/esm/gasProviders/evmGasProvider.js')
-const { toTransferError } = await import('../dist/esm/transferProvider/toTransferError.js')
-const { createWalletClient, custom, InsufficientFundsError, parseUnits, parseTransaction } = await import('viem')
+const { createWalletClient, custom, parseUnits } = await import('viem')
 const token = { symbol: 'MON', decimals: 18 }
 const params = {
     amount: 1,
@@ -58,7 +62,7 @@ beforeEach(() => Object.assign(state, {
     nodes: undefined, gasPrice: 102_000_000_000n, priorityFee: 2_000_000_000n,
     priorityRequests: 0, feesError: undefined, priorityError: undefined, accountCode: '0x', estimateGas: () => 22_515n,
     balanceRequests: 0, balanceArgs: undefined, balanceError: undefined, balance: 20n * 10n ** 18n,
-    l1Fee: 1_000_000_000n, l1Estimate: undefined,
+    l1Fee: 1_000_000_000n, l1Estimate: undefined, l1Error: undefined, operatorFee: 0n, operatorError: undefined, operatorEstimate: undefined,
     fees: { maxFeePerGas: 122_000_000_000n, maxPriorityFeePerGas: 2_000_000_000n },
 }))
 after(() => hooks.deregister())
@@ -228,10 +232,12 @@ test('Optimism L1 fees serialize the same deposit payload as the execution estim
         address: action.selectedWallet.address, recipientAddress: action.depositAddress,
     })
     assert.ok(quote)
-    const serialized = parseTransaction(state.l1Estimate.data)
-    assert.equal(serialized.data, action.callData)
-    assert.equal(serialized.to, action.depositAddress)
-    assert.equal(serialized.value, 10n ** 18n)
+    assert.equal(state.l1Estimate.data, action.callData)
+    assert.equal(state.l1Estimate.to, action.depositAddress)
+    assert.equal(state.l1Estimate.value, 10n ** 18n)
+    assert.equal(state.l1Estimate.gasPriceOracleAddress, action.network.metadata.evm_oracle_contract)
+    // Oracle metadata alone enables the L1 data fee, not the operator fee.
+    assert.equal(state.operatorEstimate, undefined)
     assert.deepEqual(state.nodes, [action.network.node_url])
     assert.equal(parseUnits(String(quote.gas), 18), 22_515n * state.fees.maxFeePerGas + state.l1Fee)
 })
@@ -291,7 +297,6 @@ test('BSC Max reserves and submits the same legacy price and buffered limit', as
     assert.equal(tx.maxPriorityFeePerGas, undefined)
     assert.equal(fee, tx.gas * tx.gasPrice)
     assert.ok(tx.value + fee <= state.balance)
-    assert.deepEqual(state.balanceArgs, { address: tx.account, blockTag: 'pending' })
     assert.equal(state.priorityRequests, 0)
 })
 
@@ -312,21 +317,17 @@ test('Ethereum Max budgets the explicit EIP-1559 cap rather than wallet defaults
     assert.ok(tx.value + fee <= state.balance)
 })
 
-for (const amount of ['0.000533814478846153', '0.00017042', '0.00015004', '0.00014413']) {
-    test(`BSC blocks an unaffordable native amount before signing: ${amount}`, async () => {
-        state.balance = amount === '0.000533814478846153' ? 534_967_843_846_153n : 201_580_604_423_077n
-        state.gasPrice = 3_000_000_000n
-        state.estimateGas = () => 22_615n
-        await assert.rejects(transactionBuilder({ ...bscAction, amount }), error => {
-            const mapped = toTransferError(error)
-            assert.equal(mapped.name, 'InsufficientGas')
-            assert.equal(mapped.cause, error)
-            return true
-        })
-    })
-}
+test('BSC passes a native amount the balance cannot cover with fees to the wallet unchanged', async () => {
+    const amount = '0.000533814478846153'
+    state.balance = 534_967_843_846_153n
+    state.gasPrice = 3_000_000_000n
+    state.estimateGas = () => 22_615n
+    const tx = await transactionBuilder({ ...bscAction, amount })
+    assert.equal(tx.value, parseUnits(amount, 18))
+    assert.ok(tx.value + tx.gas * tx.gasPrice > state.balance)
+})
 
-test('a fee increase after the quote blocks the fixed deposit amount instead of reducing it', async () => {
+test('a fee increase after the quote submits the fixed deposit amount with the current fee', async () => {
     state.balance = 534_967_843_846_153n
     state.gasPrice = 50_000_000n
     state.estimateGas = () => 22_615n
@@ -334,16 +335,10 @@ test('a fee increase after the quote blocks the fixed deposit amount instead of 
     const fee = parseUnits(String(quote.maxFee), 18)
     const amountInBaseUnits = String(state.balance - (fee * 102n + 99n) / 100n)
     state.gasPrice = 3_000_000_000n
-    await assert.rejects(transactionBuilder({ ...bscAction, amount: '0', amountInBaseUnits }), InsufficientFundsError)
+    const tx = await transactionBuilder({ ...bscAction, amount: '0', amountInBaseUnits })
+    assert.equal(tx.value, BigInt(amountInBaseUnits))
+    assert.equal(tx.gasPrice, 3_000_000_000n)
     assert.equal(state.estimate.value, BigInt(amountInBaseUnits))
-})
-
-test('token transfers also require enough native balance for the explicit gas budget', async () => {
-    state.balance = 1n
-    await assert.rejects(transactionBuilder({
-        ...bscAction, token: { ...bscAction.token, contract: `0x${'56'.repeat(20)}` },
-    }), InsufficientFundsError)
-    assert.equal(state.estimate.value, 0n)
 })
 
 test('BSC refuses to silently return to wallet fees when its price is unavailable', async () => {
@@ -352,12 +347,7 @@ test('BSC refuses to silently return to wallet fees when its price is unavailabl
     assert.equal(await quoteAction(bscAction), undefined)
 })
 
-test('balance RPC failure aborts preparation rather than assuming sufficient funds', async () => {
-    state.balanceError = new Error('balance RPC unavailable')
-    await assert.rejects(transactionBuilder(bscAction), error => error === state.balanceError)
-})
-
-for (const chainId of ['56', '1']) {
+for (const chainId of ['56', '1', '8453']) {
     test(`chain ${chainId} passes its quoted gas parameters through to eth_sendTransaction`, async () => {
         const action = { ...bscAction, network: { ...bscAction.network, chain_id: chainId } }
         const tx = await transactionBuilder(action)
@@ -384,76 +374,109 @@ for (const chainId of ['56', '1']) {
     })
 }
 
-test('the pending balance must cover the full fee cap, down to the last wei', async () => {
-    state.estimateGas = () => 22_615n
-    const value = 100_000n
-    state.balance = value + 27_138n * state.gasPrice
-    const action = { ...bscAction, amountInBaseUnits: String(value) }
-    assert.equal((await transactionBuilder(action)).value, value)
-    state.balance -= 1n
-    await assert.rejects(transactionBuilder(action), InsufficientFundsError)
-})
+const baseAction = {
+    ...bscAction,
+    network: {
+        ...bscAction.network, name: 'BASE_MAINNET', chain_id: '8453', token: { symbol: 'ETH', decimals: 18 },
+        metadata: { evm_oracle_contract: '0x420000000000000000000000000000000000000F' },
+    },
+    token: { symbol: 'ETH', decimals: 18 },
+}
 
-for (const [chainId, symbol, fee] of [['56', 'BNB', '0.00006'], ['1', 'ETH', '0.00012']]) {
-    for (const amount of [6, 3, 1]) {
-        test(`${symbol} shortage reports the native fee and balance for token amount ${amount}`, async () => {
+// Fee funding is the wallet's decision, so neither quotes nor submissions read the sender balance.
+for (const chainId of ['56', '1', '8453']) {
+    for (const contract of [undefined, `0x${'56'.repeat(20)}`]) {
+        test(`chain ${chainId} ${contract ? 'token' : 'native'} quotes and preparation never read the sender balance`, async () => {
             state.balance = 0n
-            state.gasPrice = 1_000_000_000n
-            state.fees = { maxFeePerGas: 2_000_000_000n, maxPriorityFeePerGas: 1_000_000_000n }
-            state.estimateGas = () => 50_000n
-            const action = {
-                ...bscAction, amount,
-                token: { symbol: 'TOKEN', decimals: 18, contract: `0x${'56'.repeat(20)}` },
-                network: { ...bscAction.network, chain_id: chainId, token: { symbol, decimals: 18 } },
-                // Token funds must never be used as native gas funds.
-                balances: [{ token: 'TOKEN', amount: 1000000 }],
-            }
-            await assert.rejects(transactionBuilder(action), error => {
-                const mapped = toTransferError(error)
-                assert.equal(mapped.name, 'InsufficientGas')
-                assert.equal(mapped.reasonCode, 'insufficient_funds')
-                assert.ok(mapped.message.includes(`Required maximum gas fee: ${fee} ${symbol}.`))
-                assert.ok(mapped.message.includes(`Available native balance: 0 ${symbol}.`))
-                assert.ok(mapped.message.includes(action.selectedWallet.address))
-                assert.doesNotMatch(mapped.message, /Recalculate|Version:|ether to send/)
-                return true
-            })
-            assert.deepEqual(state.balanceArgs, { address: action.selectedWallet.address, blockTag: 'pending' })
-            assert.equal(state.estimate.value, 0n)
-            state.balance = chainId === '56' ? 60_000_000_000_000n : 120_000_000_000_000n
-            assert.equal((await transactionBuilder(action)).gas, 60_000n)
+            state.balanceError = new Error('balance RPC unavailable')
+            const network = chainId === '8453' ? baseAction.network : { ...bscAction.network, chain_id: chainId }
+            const action = { ...bscAction, network, token: { ...bscAction.token, contract } }
+            assert.ok(await quoteAction(action))
+            const tx = await transactionBuilder(action)
+            assert.ok(tx.gas > 0n)
+            assert.equal(tx.value, contract ? 0n : 10n ** 18n)
+            assert.equal(state.balanceRequests, 0)
         })
     }
 }
 
-test('a wallet paying gas in another token sends a token transfer despite no native balance', async () => {
-    state.balance = 0n
-    state.gasPrice = 1_000_000_000n
-    state.fees = { maxFeePerGas: 2_000_000_000n, maxPriorityFeePerGas: 1_000_000_000n }
-    state.estimateGas = () => 50_000n
-    const action = {
-        ...bscAction, amount: 1,
-        token: { symbol: 'TOKEN', decimals: 18, contract: `0x${'56'.repeat(20)}` },
-        network: { ...bscAction.network, chain_id: '1', token: { symbol: 'ETH', decimals: 18 } },
-    }
-    let asked = 0
-    const tx = await transactionBuilder(action, { hasAlternateGasFees: async () => { asked++; return true } })
-    assert.equal(tx.gas, 60_000n)
-    assert.equal(asked, 1)
-    await assert.rejects(transactionBuilder(action, { hasAlternateGasFees: async () => false }), InsufficientFundsError)
-    await assert.rejects(transactionBuilder(action, { hasAlternateGasFees: async () => { throw new Error('no answer') } }), InsufficientFundsError)
-    state.balance = 120_000_000_000_000n
-    asked = 0
-    await transactionBuilder(action, { hasAlternateGasFees: async () => { asked++; return true } })
-    assert.equal(asked, 0)
+test('Base Max includes L1 and operator fees and passes the same execution budget to the wallet', async () => {
+    state.balance = 12_728_522_241_408_235n
+    state.estimateGas = () => 22_615n
+    state.fees = { maxFeePerGas: 20_000_000n, maxPriorityFeePerGas: 1_000_000n }
+    state.l1Fee = 40_000_000_000n
+    state.operatorFee = 10_000_000_000n
+    const quote = await quoteAction({ ...baseAction, amount: 0 })
+    const fee = parseUnits(quote.maxFee.toFixed(18), 18)
+    const amountInBaseUnits = String(state.balance - (fee * 102n + 99n) / 100n)
+    const tx = await transactionBuilder({ ...baseAction, amount: 0, amountInBaseUnits })
+    assert.equal(tx.gas, 27_138n)
+    assert.equal(tx.maxFeePerGas, 20_000_000n)
+    assert.equal(fee, tx.gas * tx.maxFeePerGas + state.l1Fee + state.operatorFee)
+    assert.deepEqual(state.operatorEstimate.args, [tx.gas])
+    assert.ok(tx.value + fee <= state.balance)
+    // Quoting the final amount hands the L1 estimator the exact submission payload.
+    await quoteAction({ ...baseAction, amount: 0, amountInBaseUnits })
+    assert.equal(state.l1Estimate.data, baseAction.callData)
+    assert.equal(state.l1Estimate.to, tx.to)
+    assert.equal(state.l1Estimate.value, tx.value)
 })
 
-test('alternate gas fees never fund a native amount above the balance', async () => {
-    state.balance = 1n
-    state.gasPrice = 1_000_000_000n
-    state.estimateGas = () => 22_615n
-    await assert.rejects(
-        transactionBuilder({ ...bscAction, amount: '0.0001' }, { hasAlternateGasFees: async () => true }),
-        InsufficientFundsError,
-    )
+for (const field of ['l1Error', 'operatorError']) {
+    test(`Base ${field} aborts quotes while sends leave rollup fees to the wallet`, async () => {
+        state[field] = new Error('oracle unavailable')
+        assert.equal(await quoteAction(baseAction), undefined)
+        const tx = await transactionBuilder(baseAction)
+        assert.equal(tx.gas, 27_018n)
+        assert.equal(tx.maxFeePerGas, state.fees.maxFeePerGas)
+    })
+}
+
+test('Base generic native quotes preserve the candidate value including sub-micro ETH amounts', async () => {
+    const quote = await new EVMGasProvider().getGas({
+        address: baseAction.selectedWallet.address, network: baseAction.network,
+        token: baseAction.token, amount: 1e-7,
+    })
+    assert.ok(quote.maxFee > 0)
+    assert.equal(state.l1Estimate.value, 100_000_000_000n)
+    // Execution estimation keeps using the value-free placeholder.
+    assert.equal(state.estimate.value, undefined)
+    assert.equal(state.estimate.data, state.l1Estimate.data)
+})
+
+test('Base preparation propagates the original RPC error', async () => {
+    const timeout = Object.assign(new Error('Transport request timed out'), { name: 'TimeoutError' })
+    state.estimateGas = () => { throw timeout }
+    await assert.rejects(transactionBuilder({ ...baseAction, amount: 0.0001476 }), error => error === timeout)
+})
+
+test('Base Sepolia quotes and validates the same complete fee budget', async () => {
+    const action = { ...baseAction, network: { ...baseAction.network, name: 'BASE_SEPOLIA', chain_id: '84532' } }
+    const quote = await quoteAction(action)
+    const tx = await transactionBuilder(action)
+    assert.equal(tx.chainId, 84532)
+    assert.equal(state.l1Estimate.chain.id, 84532)
+    assert.equal(state.l1Estimate.gasPriceOracleAddress, action.network.metadata.evm_oracle_contract)
+    assert.equal(parseUnits(quote.maxFee.toFixed(18), 18), tx.gas * tx.maxFeePerGas + state.l1Fee)
+})
+
+test('L1 estimation starts while execution estimation is still pending', async () => {
+    const pending = Promise.withResolvers()
+    state.estimateGas = () => pending.promise
+    const quote = quoteAction(baseAction)
+    // Allow the parallel async fee calls to start without resolving gas units.
+    await new Promise(resolve => setImmediate(resolve))
+    assert.equal(state.l1Estimate.data, baseAction.callData)
+    assert.equal(state.operatorEstimate, undefined)
+    pending.resolve(21_512n)
+    assert.ok(await quote)
+})
+
+test('small native amounts use identical base units for exact quotes and submission', async () => {
+    const action = { ...baseAction, amount: 1e-7 }
+    const quote = await quoteAction(action)
+    assert.ok(quote)
+    const tx = await transactionBuilder(action)
+    assert.equal(tx.value, 100_000_000_000n)
+    assert.equal(state.l1Estimate.value, tx.value)
 })

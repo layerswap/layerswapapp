@@ -32,6 +32,7 @@ function createRegistry() {
             'zustand/vanilla': { createStore },
         }),
         '@/lib/walletConnect/walletDescriptorLoader': { WalletDescriptorLoaderContext: React.createContext(null) },
+        '@/lib/walletConnect/scheduleWalletPreload': loadSource(`${wallets}lib/walletConnect/scheduleWalletPreload.ts`),
     })
     const { TransferResolver } = loadSource('lib/transfers/transferResolver.ts')
     const { GaslessResolver } = loadSource('lib/gasless/gaslessResolver.ts')

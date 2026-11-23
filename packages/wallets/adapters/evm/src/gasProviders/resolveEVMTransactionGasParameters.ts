@@ -1,6 +1,5 @@
 import { Network } from "@layerswap/widget-types";
 import { createPublicClient } from "viem";
-import { EVMGasBalanceError } from './EVMGasBalanceError';
 import resolveChain from "../evmUtils/resolveChain";
 import { resolveFallbackTransport } from "../evmUtils/resolveTransports";
 import { buildTransactionGasParameters } from "./evmGasMath";
@@ -13,17 +12,15 @@ type ResolveEVMTransactionGasParametersArgs = {
     to: `0x${string}`
     data?: `0x${string}`
     value?: bigint
-    /** Asked only on a native shortage: a wallet that pays gas in another token can still send. */
-    hasAlternateGasFees?: () => Promise<boolean>
 }
 
+/** Funding is never checked here: smart accounts and paymasters may pay fees without native balance. */
 export const resolveEVMTransactionGasParameters = async ({
     network,
     account,
     to,
     data,
     value,
-    hasAlternateGasFees,
 }: ResolveEVMTransactionGasParametersArgs) => {
     const chainId = Number(network.chain_id)
     const policy = resolveEVMGasPolicy(chainId)
@@ -39,33 +36,10 @@ export const resolveEVMTransactionGasParameters = async ({
         resolveEVMFeeData(publicClient, network),
     ])
 
-    const gasParameters = buildTransactionGasParameters({
+    return buildTransactionGasParameters({
         policy,
         chainId,
         estimatedGas,
         ...feesPerGas,
     })
-
-    if (!gasParameters || !policy.checkBalanceBeforeSend) {
-        return gasParameters
-    }
-
-    // Validate the exact payload using the fees passed to the wallet. Never
-    // silently reduce a deposit amount: it belongs to an already-created swap.
-    // Pending balance also accounts for transactions not yet mined.
-    const balance = await publicClient.getBalance({ address: account, blockTag: 'pending' })
-    const feePerGas = gasParameters.gasPrice ?? gasParameters.maxFeePerGas
-    if (feePerGas === undefined) {
-        throw new Error(`Transaction fee is unavailable for chain ${chainId}`)
-    }
-    const requiredFee = gasParameters.gas * feePerGas
-    const requiredBalance = (value ?? 0n) + requiredFee
-    if (balance < requiredBalance) {
-        if (balance >= (value ?? 0n) && await hasAlternateGasFees?.().catch(() => false)) {
-            return gasParameters
-        }
-        throw new EVMGasBalanceError({ network, account, balance, requiredFee, value: value ?? 0n })
-    }
-
-    return gasParameters
 }

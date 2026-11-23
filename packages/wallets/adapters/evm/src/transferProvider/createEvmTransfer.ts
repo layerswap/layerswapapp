@@ -1,10 +1,9 @@
 import { NetworkType } from '@layerswap/widget-types';
-import type { TransferProps, TransferProvider } from "@layerswap/widget-types";
+import type { TransferProvider } from "@layerswap/widget-types";
 import { getEvmConfig } from '../service/getEvmConfig'
 import { createEVMTransferProvider } from './createEVMTransferProvider'
 import { transactionBuilder } from './transactionBuilder'
 import { createAtomicBatchProvider } from './atomicBatch'
-import { capabilitiesForChain, getWalletCapabilityService } from './walletCapabilities'
 
 export function createEvmTransfer(): TransferProvider {
     const supportsNetwork = (network: Parameters<TransferProvider['supportsNetwork']>[0]) =>
@@ -21,20 +20,9 @@ export function createEvmTransfer(): TransferProvider {
             const provider = createEVMTransferProvider(
                 getEvmConfig(),
                 supportsNetwork,
-                transferParams => transactionBuilder(transferParams, {
-                    hasAlternateGasFees: () => hasAlternateGasFees(transferParams),
-                }),
+                transactionBuilder,
             )
             return provider.executeTransfer(params)
         },
     }
-}
-
-async function hasAlternateGasFees({ network, selectedWallet }: TransferProps): Promise<boolean> {
-    const account = selectedWallet.address
-    const stored = selectedWallet.metadata?.capabilities?.[account.toLowerCase()]
-    const known = capabilitiesForChain(stored, Number(network.chain_id))
-    if (known) return known.alternateGasFees
-    const capabilities = await getWalletCapabilityService(getEvmConfig()).getCapabilities({ network, wallet: selectedWallet, account })
-    return capabilities.alternateGasFees
 }
