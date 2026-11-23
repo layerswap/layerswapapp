@@ -12,6 +12,7 @@ import { calculateGasFeeAmounts, resolveAccountBalanceReserve } from "./evmGasMa
 import { resolveEVMGasPolicy } from "./evmGasPolicies";
 import { resolveEVMFeeData } from "./resolveEVMFeeData";
 import { resolveEVMTransactionRequest } from "../transferProvider/resolveEVMTransactionRequest";
+import { resolveTokenPaidGas } from "./resolveTokenPaidGas";
 
 type GasTransaction = ReturnType<typeof resolveEVMTransactionRequest>
 
@@ -26,7 +27,7 @@ export class EVMGasProvider implements GasProvider {
         return network.type === NetworkType.EVM && !!network.token
     }
 
-    getGas = async ({ address, network, token, recipientAddress, callData, amount, amountInBaseUnits }: GasProps) => {
+    getGas = async ({ address, network, token, recipientAddress, callData, amount, amountInBaseUnits, wallet }: GasProps) => {
 
         const chainId = Number(network?.chain_id)
         const destination = recipientAddress ?? '0x2fc617e933a52713247ce25730f6695920b3befe'
@@ -76,7 +77,12 @@ export class EVMGasProvider implements GasProvider {
             const resolvedGas = await gasProvider.resolveGas()
 
             if (resolvedGas) {
-                return { ...resolvedGas, token: network.token }
+                const tokenPaidGas = await resolveTokenPaidGas({
+                    publicClient, network, token, wallet, amount,
+                    account: address as `0x${string}`,
+                    nativeGas: resolvedGas,
+                })
+                return tokenPaidGas ?? { ...resolvedGas, token: network.token }
             }
         }
         catch (e) {

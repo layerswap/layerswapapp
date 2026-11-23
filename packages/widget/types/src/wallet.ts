@@ -1,5 +1,14 @@
 import type { NetworkType } from './network';
 
+export type WalletCapabilities = {
+  atomic: 'supported' | 'ready' | 'unsupported';
+  /** The wallet can pay gas in a token other than the chain's native currency. */
+  alternateGasFees: boolean;
+};
+
+/** Capabilities by chain id; 0 holds the wallet's all-chains entry. */
+export type ChainCapabilities = Record<number, WalletCapabilities>;
+
 export type WalletConnectLink = {
   native?: string | null;
   universal?: string | null;
@@ -56,6 +65,8 @@ export type Wallet = {
     evmConnectorUid?: string;
     /** WalletConnect session topic; identifies the session that receives this wallet's requests. */
     walletConnectTopic?: string;
+    /** EIP-5792 capabilities by lowercase account, then chain id (0 applies to all chains). */
+    capabilities?: Record<string, ChainCapabilities>;
   };
   chainId?: string | number;
   isLoading?: boolean;

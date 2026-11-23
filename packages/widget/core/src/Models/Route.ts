@@ -1,5 +1,5 @@
 import { Exchange } from "./Exchange";
-import { NetworkRouteToken, NetworkRoute } from "@layerswap/widget-types";
+import { Token, NetworkRoute } from "@layerswap/widget-types";
 
 export type NetworkElement = {
     type: 'network';
@@ -8,7 +8,7 @@ export type NetworkElement = {
 export type NetworkTokenElement = {
     type: 'network_token' | 'suggested_token';
     route: {
-        token: NetworkRouteToken;
+        token: Token;
         route: NetworkRoute
     }
 }
