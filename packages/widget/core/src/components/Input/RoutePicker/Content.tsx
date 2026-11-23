@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useRef, useState } from "react";
+import { FC, useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { NetworkElement, RowElement } from "@/Models/Route";
 import { useVirtualizer } from "@/lib/virtual";
 import { Accordion } from "@/components/shadcn/accordion";
@@ -30,10 +30,14 @@ type ContentProps = {
 
 export const Content: FC<ContentProps> = (props) => {
     const [isItemsScrolling, setIsItemsScrolling] = useState(false);
+    const deferredSearchQuery = useDeferredValue(props.searchQuery);
+    const onSelectRef = useRef(props.onSelect);
+    useLayoutEffect(() => { onSelectRef.current = props.onSelect; });
+    const onSelect = useCallback((route: NetworkRoute, token: NetworkRouteToken) => onSelectRef.current(route, token), []);
 
     return <>
         <RouteSearch searchQuery={props.searchQuery} setSearchQuery={props.setSearchQuery} shouldFocus={true} direction={props.direction} />
-        <Items {...props} isScrolling={isItemsScrolling} setIsScrolling={setIsItemsScrolling} />
+        <Items {...props} onSelect={onSelect} searchQuery={deferredSearchQuery} isScrolling={isItemsScrolling} setIsScrolling={setIsItemsScrolling} />
     </>
 }
 
@@ -82,11 +86,11 @@ const Items: FC<ContentProps & { isScrolling: boolean; setIsScrolling: (isScroll
         return () => clearTimeout(scrollTimeout.current as any);
     }, []);
 
-    const toggleAccordionItem = (value: string) => {
+    const toggleAccordionItem = useCallback((value: string) => {
         setOpenValues((prev) =>
             prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
         )
-    }
+    }, [])
 
     const virtualizer = useVirtualizer({
         count: rowElements.length,

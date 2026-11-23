@@ -127,7 +127,7 @@ export const CollapsibleRow = ({
         <StickyHeader
           item={item}
           direction={direction}
-          scrollContainer={scrollContainerRef.current}
+          scrollContainerRef={scrollContainerRef}
           open={isOpen}
           headerRef={headerRef}
           contentRef={contentRef}

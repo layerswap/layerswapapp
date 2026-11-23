@@ -1,4 +1,4 @@
-import { FC, useMemo, useState } from "react";
+import { FC, useDeferredValue, useMemo, useState } from "react";
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import useWallet from "@/hooks/useWallet";
 import useDepositAddressDestinations from "@/hooks/useDepositAddressDestinations";
@@ -37,6 +37,7 @@ const ReceivePicker: FC<ReceivePickerProps> = ({
     hideWalletPicker,
 }) => {
     const [searchQuery, setSearchQuery] = useState('');
+    const deferredSearchQuery = useDeferredValue(searchQuery);
     const { wallets } = useWallet();
     const { suggestionsLimit } = useSuggestionsLimit({ hasWallet: wallets.length > 0 });
     const sortingOption = useRouteSortingStore((s) => s.sortingOption);
@@ -63,13 +64,13 @@ const ReceivePicker: FC<ReceivePickerProps> = ({
             recents: routesHistory,
             swapRecency,
             balancesLoaded: false,
-            search: searchQuery,
+            search: deferredSearchQuery,
             suggestionsLimit,
             sortingOption,
             skipBalanceGate: true,
             hideSuggestions: true,
         });
-    }, [availableRoutes, searchQuery, routesHistory, swapRecency, suggestionsLimit, sortingOption]);
+    }, [availableRoutes, deferredSearchQuery, routesHistory, swapRecency, suggestionsLimit, sortingOption]);
 
     const hasMultipleOptions = availableRoutes.length > 1 || availableRoutes.some(r => r.tokens.length > 1);
 

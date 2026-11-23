@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useFormikContext } from "formik";
 import { Selector, SelectorContent, SelectorTrigger } from "@/components/Select/Selector/Index";
 import { Content } from "@/components/Input/RoutePicker/Content";
@@ -23,6 +23,7 @@ const DestinationSelector: FC<Props> = ({ locked }) => {
     const { to, toAsset } = values || {};
 
     const [searchQuery, setSearchQuery] = useState("");
+    const deferredSearchQuery = useDeferredValue(searchQuery);
     const sortingOption = useRouteSortingStore((s) => s.sortingOption);
     const routesHistory = useRecentNetworksStore((state) => state.recentRoutes);
     const swapRecency = useSwapRouteRecency();
@@ -49,13 +50,13 @@ const DestinationSelector: FC<Props> = ({ locked }) => {
             recents: routesHistory,
             swapRecency,
             balancesLoaded: false,
-            search: searchQuery,
+            search: deferredSearchQuery,
             suggestionsLimit: 4,
             sortingOption,
             skipBalanceGate: true,
             hideSuggestions: true,
         });
-    }, [availableRoutes, searchQuery, routesHistory, swapRecency, sortingOption]);
+    }, [availableRoutes, deferredSearchQuery, routesHistory, swapRecency, sortingOption]);
 
     // Pre-populate the highest-ranked destination so downstream sub-flows have
     // something to use when the dropdown is enabled and no destination is set.

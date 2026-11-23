@@ -1,8 +1,8 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useRef, useState } from "react";
+import { FC, useCallback, useDeferredValue, useEffect, useRef, useState } from "react";
 import { Selector, SelectorContent, SelectorTrigger } from "@/components/Select/Selector/Index";
 import { SelectedRouteDisplay } from "./Routes";
-import useFormRoutes from "@/hooks/useFormRoutes";
+import useFormRoutes, { useRouteElements } from "@/hooks/useFormRoutes";
 import Balance from "../Amount/Balance";
 import { Content } from "./Content";
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
@@ -23,14 +23,9 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
 
-    const [searchQuery, setSearchQuery] = useState("")
-    const { wallets } = useWallet()
-
     const ref = useRef<HTMLDivElement>(null);
 
-    const { suggestionsLimit } = useSuggestionsLimit({ hasWallet: wallets.length > 0, });
-
-    const { allRoutes, isLoading, routeElements, selectedRoute, selectedToken } = useFormRoutes({ direction, values }, searchQuery, suggestionsLimit)
+    const { allRoutes, isLoading, selectedRoute, selectedToken } = useFormRoutes({ direction, values })
     const currencyFieldName = direction === 'from' ? 'fromAsset' : 'toAsset';
 
     useEffect(() => {
@@ -102,12 +97,12 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
                         ref={ref}
                     >
                         {({ closeModal }) => (
-                            <Content
-                                onSelect={(r, t) => { handleSelect(r, t); closeModal(); }}
-                                searchQuery={searchQuery}
-                                setSearchQuery={setSearchQuery}
-                                rowElements={routeElements}
+                            <PickerContent
+                                routes={allRoutes}
                                 direction={direction}
+                                oppositeNetwork={direction === 'to' ? values.from?.name : values.to?.name}
+                                onSelect={handleSelect}
+                                closeModal={closeModal}
                                 selectedRoute={selectedRoute?.name}
                                 selectedToken={selectedToken?.symbol}
                             />
@@ -122,5 +117,35 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
         </div>
     )
 };
+
+type PickerContentProps = {
+    routes: NetworkRoute[];
+    direction: SwapDirection;
+    oppositeNetwork: string | undefined;
+    onSelect: (route: NetworkRoute, token: NetworkRouteToken) => Promise<void>;
+    closeModal: () => void;
+    selectedRoute: string | undefined;
+    selectedToken: string | undefined;
+}
+
+const PickerContent: FC<PickerContentProps> = ({ routes, direction, oppositeNetwork, onSelect, closeModal, selectedRoute, selectedToken }) => {
+    const [searchQuery, setSearchQuery] = useState("")
+    const deferredSearchQuery = useDeferredValue(searchQuery)
+    const { wallets } = useWallet()
+    const { suggestionsLimit } = useSuggestionsLimit({ hasWallet: wallets.length > 0 });
+    const rowElements = useRouteElements({ routes, direction, oppositeNetwork, search: deferredSearchQuery, suggestionsLimit })
+
+    return (
+        <Content
+            onSelect={(route, token) => { onSelect(route, token); closeModal(); }}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            rowElements={rowElements}
+            direction={direction}
+            selectedRoute={selectedRoute}
+            selectedToken={selectedToken}
+        />
+    )
+}
 
 export default RoutePicker

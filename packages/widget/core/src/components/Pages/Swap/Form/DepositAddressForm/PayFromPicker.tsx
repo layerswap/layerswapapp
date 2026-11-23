@@ -1,4 +1,4 @@
-import { FC, useMemo, useState } from "react";
+import { FC, useDeferredValue, useMemo, useState } from "react";
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import useWallet from "@/hooks/useWallet";
 import { Selector, SelectorContent, SelectorTrigger } from "@/components/Select/Selector/Index";
@@ -21,6 +21,7 @@ type PayFromPickerProps = {
 
 const PayFromPicker: FC<PayFromPickerProps> = ({ selectedSource, onSourceChange, destinationNetwork, destinationToken, hideDestinationPicker }) => {
     const [searchQuery, setSearchQuery] = useState('');
+    const deferredSearchQuery = useDeferredValue(searchQuery);
     const { wallets } = useWallet();
     const { suggestionsLimit } = useSuggestionsLimit({ hasWallet: wallets.length > 0 });
     const sortingOption = useRouteSortingStore((s) => s.sortingOption);
@@ -38,13 +39,13 @@ const PayFromPicker: FC<PayFromPickerProps> = ({ selectedSource, onSourceChange,
             recents: routesHistory,
             swapRecency,
             balancesLoaded: false,
-            search: searchQuery,
+            search: deferredSearchQuery,
             suggestionsLimit,
             sortingOption,
             skipBalanceGate: true,
             hideSuggestions: true,
         });
-    }, [availableRoutes, searchQuery, routesHistory, swapRecency, suggestionsLimit, sortingOption]);
+    }, [availableRoutes, deferredSearchQuery, routesHistory, swapRecency, suggestionsLimit, sortingOption]);
 
     // Disable until the destination resolves a non-empty source list.
     const hasOptions = availableRoutes.length > 0;

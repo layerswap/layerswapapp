@@ -12,6 +12,7 @@ import { formatUsd } from "@/components/utils/formatUsdAmount";
 import { SwapDirection } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { getTotalBalanceInUSD } from "@/helpers/balanceHelper";
 import { useMemo, memo } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { TokenInfoIcon, TokenTitleWithBalance } from "./TokenTitleDetails";
 
 type TokenItemProps = {
@@ -181,20 +182,20 @@ export const GroupedTokenHeader = ({
     const swapAccounts = useSwapAccounts(direction)
 
     const tokens = item.items;
-    const balances = useBalanceStore(s => s.balances)
+    const balanceKeys = useMemo(() => hideBalances ? [] : tokens.map(({ route }) => {
+        const address = swapAccounts.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.route.name))?.address
+        return address && route.route ? getKey(address, route.route) : 'unknown'
+    }), [tokens, swapAccounts, direction, hideBalances])
+    const networkBalances = useBalanceStore(useShallow(s => balanceKeys.map(key => s.balances[key]?.data)))
 
     const networksWithBalance: NetworkRoute[] = hideBalances ? [] : Array.from(
         new Map(
             tokens
-                .map(({ route }) => {
-                    const address = swapAccounts.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.route.name))?.address
-                    const key = address && route.route ? getKey(address, route.route) : 'unknown'
-
+                .map(({ route }, index) => {
                     const tokenSymbol = route.token.symbol;
                     const networkRoute = route.route;
 
-                    const networkBalances = balances?.[key];
-                    const balanceEntry = networkBalances?.data?.balances?.find(
+                    const balanceEntry = networkBalances[index]?.balances?.find(
                         (b) => b.token === tokenSymbol && b.amount && b.amount >= 0
                     );
 
@@ -206,15 +207,11 @@ export const GroupedTokenHeader = ({
 
     const tokenBalances = hideBalances
         ? { sum: 0, hasVale: false }
-        : tokens.reduce((acc, { route }) => {
-            const address = swapAccounts.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.route.name))?.address
-            const key = address && route.route ? getKey(address, route.route) : 'unknown'
-
+        : tokens.reduce((acc, { route }, index) => {
             const tokenSymbol = route.token.symbol;
             const price = route.token.price_in_usd;
 
-            const networkBalances = balances?.[key];
-            const balanceEntry = networkBalances?.data?.balances?.find(
+            const balanceEntry = networkBalances[index]?.balances?.find(
                 (b) => b.token === tokenSymbol
             );
 

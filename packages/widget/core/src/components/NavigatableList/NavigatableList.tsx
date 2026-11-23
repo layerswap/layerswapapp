@@ -195,6 +195,7 @@ function NavigatableListRoot({
         unregisterChild: store.unregisterChild,
         setChildCount: store.setChildCount,
         getNavigableIndex: store.getNavigableIndex,
+        subscribe: store.subscribe,
         registerClickHandler: store.registerClickHandler,
         unregisterClickHandler: store.unregisterClickHandler
     }), [store, registrationVersion]); // eslint-disable-line react-hooks/exhaustive-deps
