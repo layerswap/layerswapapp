@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "pnpm lint && next build",
     "start": "next start",
-    "analyze": "cross-env ANALYZE=true next build --webpack",
+    "analyze": "ANALYZE=true next build --webpack",
     "lint": "eslint .",
     "check:types": "tsc --noEmit",
     "test": "node --experimental-strip-types --test lib/__tests__/*.test.mjs",

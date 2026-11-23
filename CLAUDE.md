@@ -15,7 +15,7 @@ pnpm build        # Production build
 pnpm lint         # Browser widget import restrictions
 pnpm --filter @layerswap/bridge lint  # Next.js + custom JSX literal plugin
 pnpm test:lint    # Shared JSX plugin tests + browser import restriction tests
-ANALYZE=true pnpm build  # Bundle analysis
+pnpm --filter @layerswap/bridge analyze  # Bundle analysis (webpack; the analyzer skips Turbopack builds)
 ```
 
 ## Environment Variables
@@ -58,7 +58,7 @@ Defined in `Models/Network.ts` as `NetworkType` enum: EVM, Starknet, Solana, Cos
 
 ## Linting Rules
 
-- **Custom ESLint plugin** `no-conditional-literals-in-jsx`: shared workspace package at `eslint-plugins/eslint-plugin-no-conditional-literals-in-jsx`, registered in the root `package.json` and enabled for the Next apps by `eslint.shared.mjs` (imported by each app's flat `eslint.config.mjs`). It prevents conditional literals and unwrapped text in JSX (both set to `error`). Standalone examples reference this same directory with a relative `file:` dependency.
+- **Custom ESLint plugin** `no-conditional-literals-in-jsx`: shared workspace package at `eslint-plugins/eslint-plugin-no-conditional-literals-in-jsx`, registered in the root `package.json` and enabled by `eslint.shared.mjs` in the bridge and widget-playground flat `eslint.config.mjs` (explorer does not use it yet). It prevents conditional literals and unwrapped text in JSX (both set to `error`). Standalone examples reference this same directory with a relative `file:` dependency.
 - `react-hooks/exhaustive-deps` is **disabled**
 - `react/display-name` is **disabled**
 
