@@ -9,7 +9,7 @@ import { SwapDataProvider, useSwapDataState, useSwapDataUpdate } from "@/context
 import { useInitialSettings } from "@/context/settings";
 import { type ApiError, LSAPIKnownErrorCode } from "@layerswap/widget-types";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
-import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
+import { NetworkRoute, Token } from "@layerswap/widget-types";
 import { useDepositInitialValues, useDepositSelection } from "../depositSelectionContext";
 import { useDepositPrefetch } from "../depositPrefetchContext";
 import { useReportCloseLock } from "../depositStepContext";
@@ -61,7 +61,7 @@ const DepositDestinationRow: FC = () => {
         return [{ ...pairs[0].network, tokens: pairs.map(p => p.token) }];
     }, [resolved, destination, destinationToken]);
 
-    const handleChange = useCallback((network: NetworkRoute, token: NetworkRouteToken) => {
+    const handleChange = useCallback((network: NetworkRoute, token: Token) => {
         setSelection(network, token);
         setFieldValue('to', network, false);
         setFieldValue('toAsset', token, true);

@@ -1,4 +1,4 @@
-import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
+import { NetworkRoute, Token } from "@layerswap/widget-types";
 import { Info } from "lucide-react";
 import { ExtendedAddress } from "../Address/AddressPicker/AddressWithIcon";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
@@ -9,13 +9,13 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components//shadcn/to
 import { ImageWithFallback } from "@layerswap/ui-kit/components";
 
 type TokenTitleWithBalanceProps = {
-    item: NetworkRouteToken;
+    item: Token;
     route: NetworkRoute;
     tokenbalance?: TokenBalance;
     usdAmount?: number;
 }
 
-export const TokenInfoIcon = ({ item, route, className }: { item: NetworkRouteToken, route: NetworkRoute, className?: string }) => {
+export const TokenInfoIcon = ({ item, route, className }: { item: Token, route: NetworkRoute, className?: string }) => {
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [isTooltipOpen, setIsTooltipOpen] = useState(false);
 
@@ -70,7 +70,7 @@ export const TokenTitleWithBalance = ({ item, route, tokenbalance, usdAmount }: 
     );
 };
 type TokenInfoTriggerProps = {
-    item: NetworkRouteToken;
+    item: Token;
     isPopoverOpen?: boolean;
     isTooltipOpen?: boolean;
 }
@@ -86,7 +86,7 @@ const TokenInfoTrigger = ({ item, isPopoverOpen, isTooltipOpen }: TokenInfoTrigg
 }
 
 type NativeTokenTitleProps = {
-    item: NetworkRouteToken;
+    item: Token;
     route: NetworkRoute;
     onTooltipOpenChange?: (open: boolean) => void;
     onPopoverOpenChange?: (open: boolean) => void;

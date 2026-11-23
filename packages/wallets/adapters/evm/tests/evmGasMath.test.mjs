@@ -16,7 +16,7 @@ import {
 const monadPolicy = resolveEVMGasPolicy(143)
 const defaultPolicy = resolveEVMGasPolicy(10)
 
-for (const chainId of [1, 143, 10143]) {
+for (const chainId of [1, 8453, 84532, 143, 10143]) {
     for (const missing of ['maxFeePerGas', 'maxPriorityFeePerGas']) {
         test(`chain ${chainId} rejects incomplete ${missing} in quotes and submission`, () => {
             const args = {

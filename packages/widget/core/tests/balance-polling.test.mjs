@@ -187,3 +187,25 @@ test('sorting includes late balances and finishes when another network fails', a
   assert.equal(useBalanceStore.getState().sortingDataIsLoading, false)
   assert.equal(useBalanceStore.getState().sortingUnsubscribe, undefined)
 })
+
+test('resolved sorting balances keep their identity until a balance changes', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] })
+  const { useBalanceStore, selectResolvedSortingBalances } = store
+  t.after(() => useBalanceStore.getState().cleanupSortingBalances())
+  useBalanceStore.getState().initSortingBalances([{ address: 'source', network }])
+  await act(async () => { requests[0].resolve({ balances: [{ token: 'USDC', amount: 1 }] }) })
+  const resolved = selectResolvedSortingBalances(useBalanceStore.getState())
+  assert.equal(resolved[network.name].balances[0].amount, 1)
+
+  useBalanceStore.setState({ lastFetchMap: {} })
+  assert.equal(selectResolvedSortingBalances(useBalanceStore.getState()), resolved)
+
+  let refresh
+  await act(async () => { refresh = useBalanceStore.getState().fetchBalance('source', network, { ignoreCache: true }) })
+  assert.equal(selectResolvedSortingBalances(useBalanceStore.getState()), resolved)
+
+  await act(async () => { requests[1].resolve({ balances: [{ token: 'USDC', amount: 2 }] }); await refresh })
+  const updated = selectResolvedSortingBalances(useBalanceStore.getState())
+  assert.notEqual(updated, resolved)
+  assert.equal(updated[network.name].balances[0].amount, 2)
+})

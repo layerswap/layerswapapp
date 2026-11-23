@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { AxiosInstance, Method } from "axios";
 import { AuthRefreshFailedError } from "../Errors/AuthRefreshFailedError";
 import { type ApiResponse, EmptyApiResponse } from "@layerswap/widget-types";
-import { NetworkWithTokens, Network, Token } from "@layerswap/widget-types";
+import { NetworkWithTokens, NetworkRoute, Network, Token } from "@layerswap/widget-types";
 import { Exchange } from "../../Models/Exchange";
 import { ErrorHandler } from "@/lib/ErrorHandler";
 import { startApiOperation } from '../widgetTelemetry';
@@ -34,8 +34,8 @@ export default class LayerSwapApiClient {
     fetcher = (url: string, options?: { signal?: AbortSignal }) =>
         this.AuthenticatedRequest<ApiResponse<any>>("GET", url, undefined, undefined, options?.signal)
 
-    async GetRoutesAsync(direction: 'sources' | 'destinations', _useFrontendSwap: true = true): Promise<ApiResponse<NetworkWithTokens[]>> {
-        return await this.UnauthenticatedRequest<ApiResponse<NetworkWithTokens[]>>("GET", `/${direction}?include_unmatched=true&include_swaps=true&include_unavailable=true&use_frontend_swap=true`)
+    async GetRoutesAsync(direction: 'sources' | 'destinations', _useFrontendSwap: true = true): Promise<ApiResponse<NetworkRoute[]>> {
+        return await this.UnauthenticatedRequest<ApiResponse<NetworkRoute[]>>("GET", `/${direction}?include_unmatched=true&include_swaps=true&include_unavailable=true&use_frontend_swap=true`)
     }
 
     async GetSourceExchangesAsync(): Promise<ApiResponse<Exchange[]>> {
@@ -53,7 +53,7 @@ export default class LayerSwapApiClient {
             use_frontend_swap: true,
             use_gasless: params.use_gasless === true,
         }, { 'X-LS-CORRELATION-ID': correlationId });
-        return this.resolveSwapDepositActions(response, response.data?.swap?.source_address ?? params.source_address);
+        return this.resolveSwapDepositActions(response);
     }
 
     async GetTransactionStatus(network: string, tx_id: string): Promise<ApiResponse<any>> {
@@ -79,39 +79,23 @@ export default class LayerSwapApiClient {
         if (response.error || !Array.isArray(response.data)) {
             return response;
         }
-        const actions = await this.resolveDepositActions(swapId, response.data, sourceAddress);
+        const actions = resolveAtomicDepositActions(response.data);
         return { ...response, data: actions };
-    }
-
-    async GetNextActionAsync(swapId: string, sourceAddress?: string): Promise<ApiResponse<NextActionResponse>> {
-        const query = sourceAddress ? `?source_address=${encodeURIComponent(sourceAddress)}` : '';
-        return this.AuthenticatedRequest('GET', `/swaps/${swapId}/next_action${query}`);
     }
 
     async GetSwapAsync(swapId: string, sourceAddress?: string): Promise<ApiResponse<SwapResponse>> {
         const query = sourceAddress ? `?source_address=${encodeURIComponent(sourceAddress)}` : "";
         const response = await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("GET", `/swaps/${swapId}${query}`);
-        return this.resolveSwapDepositActions(response, sourceAddress);
+        return this.resolveSwapDepositActions(response);
     }
 
-    private resolveDepositActions(swapId: string, actions: DepositAction[], sourceAddress?: string): Promise<DepositAction[]> {
-        return resolveAtomicDepositActions(actions, async () => {
-            const next = await this.GetNextActionAsync(swapId, sourceAddress);
-            if (!next.data || next.error) {
-                throw new Error(next.error?.message || 'Could not load the atomic swap action');
-            }
-            return next.data;
-        });
-    }
-
-    private async resolveSwapDepositActions(response: ApiResponse<SwapResponse>, sourceAddress?: string): Promise<ApiResponse<SwapResponse>> {
+    private resolveSwapDepositActions(response: ApiResponse<SwapResponse>): ApiResponse<SwapResponse> {
         const swapData = response.data;
         if (response.error || !swapData?.swap?.id || !Array.isArray(swapData.deposit_actions)) {
             return response;
         }
-        const { swap, deposit_actions: actions } = swapData;
         try {
-            const resolved = await this.resolveDepositActions(swap.id, actions, sourceAddress ?? swap.source_address);
+            const resolved = resolveAtomicDepositActions(swapData.deposit_actions);
             return { ...response, data: { ...swapData, deposit_actions: resolved } };
         } catch {
             // Preserve an authoritative swap (especially a successful create).
@@ -357,10 +341,6 @@ export type PendingDepositAction = Partial<DepositActionBase> & {
 export type BatchTransferDepositAction = DepositActionBase & {
     type: 'send_calls',
     calls: { to: string; data: string | null; value: string }[],
-}
-
-export type NextActionResponse = DepositActionWorkflow & {
-    action?: DepositAction,
 }
 
 export type DepositAction = TransferDepositAction | SignDepositAction | PendingDepositAction | BatchTransferDepositAction
