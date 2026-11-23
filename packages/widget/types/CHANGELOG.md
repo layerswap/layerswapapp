@@ -1,5 +1,15 @@
 # @layerswap/widget-types
 
+## 2.7.0
+
+### Minor Changes
+
+- Read refuel availability from destination entries and refuel amounts from quotes. `NetworkRouteToken` is replaced by `Token`.
+- 8f004b1: Read the EVM BalanceViewer contract from network metadata instead of a hardcoded list.
+- Move provider-specific withdrawal rules into wallet adapters and share the withdrawal flow across providers. Withdrawal progress resets when the selected wallet changes.
+- Keep transfer status controls visible after submission instead of replacing them with a balance warning. `transfer_blocked` is reported only by the control actually blocking the transfer.
+- Warn when the native balance can't cover gas, showing the required fee and a refresh action. Wallet capabilities (EIP-5792) are read once per connection. If the wallet can pay gas in another token, the warning is hidden and gas is priced in the transferred token when enough of it remains.
+
 ## 2.6.0
 
 ### Minor Changes

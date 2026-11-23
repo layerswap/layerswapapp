@@ -1,5 +1,21 @@
 # @layerswap/wallet-svm
 
+## 2.7.0
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [8f004b1]
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @layerswap/widget-types@2.7.0
+  - @layerswap/wallet-core@2.7.0
+  - @layerswap/utils@2.7.0
+
 ## 2.6.0
 
 ### Patch Changes
