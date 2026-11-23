@@ -1,7 +1,7 @@
 import type { DepositAction, GaslessAuthorizationResult, SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
 import type { GaslessAuthorization, SwapStepTransactions, SwapTransaction, SwapExecutionKind } from '@/stores/swapTransactionStore';
 import type { ResolvedSwapStatus } from './resolveSwapPhase';
-import { getActionableDepositAction, getDepositActionLabel } from '../../helpers/depositActions.js';
+import { getActionableDepositAction, getDepositActionLabel, hasAtomicApprovalPlan, isApprovalAction } from '../../helpers/depositActions.js';
 
 export type SwapFlowKind =
     | 'manual-deposit'
@@ -13,7 +13,7 @@ export type SwapFlowKind =
 export type SwapFlowEvidence =
     | 'deposit-method' | 'source-provider' | 'publish-step' | 'deposit-step'
     | 'frontend-signature' | 'gasless-signature' | 'gasless-authorization'
-    | 'atomic-calls' | 'atomic-approval' | 'atomic-transaction' | 'stored-transaction'
+    | 'atomic-calls' | 'atomic-approval' | 'direct-approval' | 'atomic-transaction' | 'stored-transaction'
     | 'quote-route' | 'wallet-capability'
     | 'legacy-transfer' | 'empty-transfer-workflow' | 'missing-actions' | 'ambiguous-signature' | 'ambiguous-publication' | 'unknown-actions';
 
@@ -96,12 +96,12 @@ export function resolveSwapFlow(input: ResolveSwapFlowInput): ResolvedSwapFlow {
             }
         }
         const storedKind = input.transaction?.kind;
-        if (storedKind === 'frontend-swap' && evidence === 'atomic-approval'
+        if ((storedKind === 'frontend-swap' || storedKind === 'atomic-batch') && evidence === 'direct-approval'
             && actions?.every(action => !action.type)) {
-            // Allowance history can retain approval placeholders after a single
-            // intake transaction. Its recorded execution keeps that identity.
+            // Status-only approval history is shared by both execution modes.
+            // Preserve a previously observed batch instead of inferring one.
             kind = storedKind;
-            evidence = 'stored-transaction';
+            evidence = storedKind === 'atomic-batch' ? 'atomic-transaction' : 'stored-transaction';
         } else if (storedKind && storedKind !== 'transaction' && kind === 'unresolved' && evidence !== 'unknown-actions'
             && (evidence !== 'ambiguous-publication' || storedKind === 'atomic-batch' || storedKind === 'frontend-swap')) {
             kind = storedKind;
@@ -127,7 +127,7 @@ export function resolveSwapFlow(input: ResolveSwapFlowInput): ResolvedSwapFlow {
     const walletProgress = !manual && kind !== 'specialized-wallet' && (
         submittedWalletTransfer
         || (actions?.filter(action => !!action.step).length ?? 0) > 1
-        || (!!stepTransactions?.approve_permit2?.explorerUrl && !!actions?.some(action => action.step === 'approve_permit2'))
+        || !!actions?.some(action => isApprovalAction(action) && stepTransactions?.[action.step]?.explorerUrl)
         || (!!quote?.destination_token && hasPublish)
     ) ? 'workflow' : 'controls';
     const continuousWorkflow = walletSwap && walletProgress === 'workflow' && !input.isDepositFlow;
@@ -196,9 +196,12 @@ export function resolveDepositExecution(
     if (actions?.some(action => action.type === 'send_calls')) {
         kind = 'atomic-batch';
         evidence = 'atomic-calls';
-    } else if (actions?.some(action => action.step === 'approve')) {
+    } else if (actions && hasAtomicApprovalPlan(actions)) {
         kind = 'atomic-batch';
         evidence = 'atomic-approval';
+    } else if (actions?.some(action => action.step === 'approve')) {
+        kind = 'frontend-swap';
+        evidence = 'direct-approval';
     } else if (publicationWithoutHistory) {
         // Only an actionable transfer has been disambiguated by next_action at the API boundary.
         // A sufficient-allowance batch and a legacy publish can share other placeholders.

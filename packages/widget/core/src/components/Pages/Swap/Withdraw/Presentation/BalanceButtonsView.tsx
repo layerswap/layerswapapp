@@ -21,7 +21,7 @@ export function RefreshBalanceButtonView({
                 aria-hidden="true"
                 className={`${showSpinner ? 'animate-spin' : ''} w-4 h-4 shrink-0`}
             />
-            <span>Refresh</span>
+            <span>Refresh balance</span>
         </button>
     );
 }

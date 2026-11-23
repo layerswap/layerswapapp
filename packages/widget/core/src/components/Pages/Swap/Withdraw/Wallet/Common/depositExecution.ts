@@ -39,7 +39,7 @@ export type DepositExecutionContext = {
 }
 
 export { isSignAction, isTransferAction, getActionableDepositAction, getDepositActionLabel, getDepositActionDescription, requiresDepositActionRefresh } from '@/helpers/depositActions';
-import { getActionableDepositAction, isTransferAction, isSignAction } from '@/helpers/depositActions';
+import { getActionableDepositAction, hasAtomicApprovalPlan, isApprovalAction, isTransferAction, isSignAction } from '@/helpers/depositActions';
 
 const isExpiredTransaction = (error: unknown) => (error as Error)?.name === ActionMessageType.TransactionExpired
 
@@ -47,10 +47,11 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
     const { swapData, swapBasicData, selectedWallet, sourceAddress, layerswapApiClient, setActionStateText, setSwapTransaction, onSuccess, onLifecycle, signal } = ctx
 
     if (!action || !isTransferAction(action)) throw new Error('No transfer action')
-    if (action.step === 'approve' || ctx.depositActions.some(item => item.step === 'approve')) throw new Error('Atomic approvals must be submitted together with the swap')
+    if (hasAtomicApprovalPlan(ctx.depositActions)) throw new Error('Atomic approvals must be submitted together with the swap')
+    const approval = isApprovalAction(action)
     const transferProps = resolveTransactionData(swapData, action, swapBasicData, selectedWallet)
     const lifecycleContext = lifecycleContextFromSwap(swapBasicData, swapData)
-    const confirmationText = action.step === 'approve_permit2' ? "Approve in your wallet" : "Confirm in your wallet"
+    const confirmationText = approval ? "Approve in your wallet" : "Confirm in your wallet"
     setActionStateText(confirmationText)
 
     let hash: string
@@ -66,13 +67,13 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
             context: {
                 ...lifecycleContext,
                 path: 'WalletTransfer',
-                action: action.step === 'approve_permit2' ? 'approve_permit2' : 'send_transaction',
+                action: approval ? action.step : 'send_transaction',
                 provider: selectedWallet.providerName,
             },
             onLifecycle,
             // Keep one timing operation across the Stellar refresh and both wallet requests.
             onSettled: finishTelemetry,
-            reportsSubmission: action.step !== 'approve_permit2',
+            reportsSubmission: !approval,
             shouldReportError: error => !(retriesExpiry && isExpiredTransaction(error)),
         }, () => onClick(props))
     }
@@ -113,7 +114,7 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
 
     // Save the approval receipt even if the screen closed during the wallet request.
     // It must not replace the execution transaction or mark the swap as submitted.
-    if (action.step === 'approve_permit2') {
+    if (isApprovalAction(action)) {
         await useSwapTransactionStore.getState().setStepTransaction(
             swapData.id,
             action.step,
@@ -265,10 +266,13 @@ export const completeGaslessSubmission = (ctx: DepositExecutionContext, authoriz
 
 const resolveTransactionData = (swapDetails: SwapDetails, depositAction: TransferDepositAction, swapBasicData: SwapBasicData, selectedWallet: Wallet): TransferProps => {
     if (!depositAction.to_address) throw new Error('Deposit action is missing a target address')
-    if (depositAction.amount === undefined) throw new Error('Deposit action is missing an amount')
+    if (depositAction.amount === undefined
+        && !(isApprovalAction(depositAction) && depositAction.amount_in_base_units !== undefined)) {
+        throw new Error('Deposit action is missing an amount')
+    }
 
     return {
-        amount: depositAction.amount,
+        amount: depositAction.amount ?? 0,
         amountInBaseUnits: depositAction.amount_in_base_units,
         callData: depositAction.call_data ?? '',
         encodedArgs: depositAction.encoded_args,
