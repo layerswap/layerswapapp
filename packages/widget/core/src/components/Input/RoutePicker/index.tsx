@@ -40,6 +40,10 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
             const updatedRoute = allRoutes.find(r => r.name === selectedRoute.name);
             const updatedToken = updatedRoute?.tokens?.find(t => t.symbol === selectedToken.symbol);
 
+            if (direction === 'to' && updatedRoute && updatedRoute.refuel_asset !== selectedRoute.refuel_asset) {
+                setFieldValue('to', updatedRoute, false)
+            }
+
             if (updatedToken === selectedToken) return;
 
             if (updatedRoute && updatedToken) {
