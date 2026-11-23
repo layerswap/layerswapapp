@@ -5,7 +5,7 @@ import type { ApiResponse } from "@layerswap/widget-types";
 import { NetworkRoute, Token } from "@layerswap/widget-types";
 import { useInitialSettings, useSettingsState } from "../context/settings";
 import { NetworkElement, RowElement, NetworkTokenElement, TitleElement, GroupedTokenElement, TokenSceletonElement } from "../Models/Route";
-import useAllWithdrawalBalances from "./useAllWithdrawalBalances";
+import { useResolvedWithdrawalBalances, useWithdrawalBalancesInit } from "./useAllWithdrawalBalances";
 import { NetworkBalance } from "@layerswap/widget-types";
 import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL } from "../helpers/routes";
 import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
@@ -16,16 +16,18 @@ import { useRouteTokenSwitchStore } from "@/stores/routeTokenSwitchStore";
 import { SwapDirection, SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { getTotalBalanceInUSD } from "../helpers/balanceHelper";
 import { SortingOption, useRouteSortingStore } from "@/stores/routeSortingStore";
-import { extractTokenElementsAsSuggested, sortSuggestedTokenElements } from "../helpers/routeUtils";
+import { extractTokenElementsAsSuggested, getTokenBalanceAmount, selectTop, sortSuggestedTokenElements } from "../helpers/routeUtils";
 import { isExtendedSourceNetwork, mergeExtendedSourceRoutes } from "@/lib/extendedRoutes/registry";
-import { useSwapRouteRecency, type SwapRouteRecency } from "@/stores/swapRouteHistoryStore";
+import { useHydrateSwapRouteHistory, useSwapRouteRecency, type SwapRouteRecency } from "@/stores/swapRouteHistoryStore";
 
 type Props = {
     direction: SwapDirection;
     values: SwapFormValues;
 };
 
-export default function useFormRoutes({ direction, values }: Props, search?: string, suggestionsLimit: number = 4) {
+export default function useFormRoutes({ direction, values }: Props) {
+    useWithdrawalBalancesInit();
+    useHydrateSwapRouteHistory();
     const { routes, isLoading: routesLoading } = useRoutes({ direction, values });
     const { exchangesRoutes, isLoading: exchangesRoutesLoading } = useExchangeRoutes({ direction, values })
     const { networks: withdrawalNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeNetworks({
@@ -34,15 +36,6 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
         toAsset: values.toAsset?.symbol
     });
     const { lockFrom, from, lockTo, to, lockFromAsset, fromAsset, lockToAsset, toAsset } = useInitialSettings()
-    const groupByToken = useRouteTokenSwitchStore((s) => s.showTokens)
-    const sortingOption = useRouteSortingStore((s) => s.sortingOption)
-    const { balances, partialPublished, isLoading } = useAllWithdrawalBalances();
-    const routesHistory = useRecentNetworksStore(state => state.recentRoutes)
-    const swapRecency = useSwapRouteRecency()
-    const oppositeNetwork = direction === 'to' ? values.from?.name : values.to?.name
-    const loadingSuggestions = useMemo(() => {
-        return !partialPublished && isLoading && direction === "from"
-    }, [isLoading, direction, partialPublished])
     // Apply query-based filtering
     const filteredRoutes = useMemo(() => {
         let filtered = filterRoutesByQuery(routes, direction, { lockFrom, from, lockTo, to, lockFromAsset, fromAsset, lockToAsset, toAsset });
@@ -53,9 +46,54 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
         return filtered;
     }, [routes, direction, lockFrom, from, lockTo, to, lockFromAsset, fromAsset, lockToAsset, toAsset, values.depositMethod]);
 
-    const routeElements = useMemo(() =>
+    const exchanges = useMemo(() => {
+        return groupExchanges(exchangesRoutes, undefined, direction, { lockFrom, from, lockTo, to });
+    }, [exchangesRoutes, direction, lockFrom, from, lockTo, to]);
+
+
+    const selectedRoute = useMemo(() => resolveSelectedRoute(values, direction), [values, direction]);
+    const selectedToken = useMemo(() => resolveSelectedToken(values, direction), [values, direction]);
+
+    return useMemo(() => ({
+        allRoutes: filteredRoutes,
+        isLoading: routesLoading,
+        exchanges,
+        exchangesRoutesLoading,
+        exchangeNetworks: withdrawalNetworks,
+        exchangeSourceNetworksLoading,
+        selectedRoute,
+        selectedToken,
+    }), [
+        filteredRoutes,
+        routesLoading,
+        exchanges,
+        exchangesRoutesLoading,
+        withdrawalNetworks,
+        exchangeSourceNetworksLoading,
+        selectedRoute,
+        selectedToken
+    ]);
+}
+
+type RouteElementsProps = {
+    routes: NetworkRoute[];
+    direction: SwapDirection;
+    oppositeNetwork?: string;
+    search?: string;
+    suggestionsLimit?: number;
+};
+
+export function useRouteElements({ routes, direction, oppositeNetwork, search, suggestionsLimit = 4 }: RouteElementsProps): RowElement[] {
+    const groupByToken = useRouteTokenSwitchStore((s) => s.showTokens)
+    const sortingOption = useRouteSortingStore((s) => s.sortingOption)
+    const { balances, partialPublished, isLoading } = useResolvedWithdrawalBalances();
+    const routesHistory = useRecentNetworksStore(state => state.recentRoutes)
+    const swapRecency = useSwapRouteRecency()
+    const loadingSuggestions = !partialPublished && isLoading && direction === "from"
+
+    return useMemo(() =>
         groupRoutes({
-            routes: filteredRoutes,
+            routes,
             direction,
             balances,
             groupBy: groupByToken ? "token" : "network",
@@ -67,37 +105,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
             sortingOption,
             oppositeNetwork
         }),
-        [filteredRoutes, balances, direction, search, groupByToken, routesHistory, swapRecency, loadingSuggestions, suggestionsLimit, sortingOption, oppositeNetwork]);
-
-    const exchanges = useMemo(() => {
-        return groupExchanges(exchangesRoutes, search, direction, { lockFrom, from, lockTo, to });
-    }, [exchangesRoutes, search, direction, lockFrom, from, lockTo, to]);
-
-
-    const selectedRoute = useMemo(() => resolveSelectedRoute(values, direction), [values, direction]);
-    const selectedToken = useMemo(() => resolveSelectedToken(values, direction), [values, direction]);
-
-    return useMemo(() => ({
-        allRoutes: filteredRoutes,
-        isLoading: routesLoading,
-        routeElements,
-        exchanges,
-        exchangesRoutesLoading,
-        exchangeNetworks: withdrawalNetworks,
-        exchangeSourceNetworksLoading,
-        selectedRoute,
-        selectedToken,
-    }), [
-        filteredRoutes,
-        routesLoading,
-        routeElements,
-        exchanges,
-        exchangesRoutesLoading,
-        withdrawalNetworks,
-        exchangeSourceNetworksLoading,
-        selectedRoute,
-        selectedToken
-    ]);
+        [routes, balances, direction, search, groupByToken, routesHistory, swapRecency, loadingSuggestions, suggestionsLimit, sortingOption, oppositeNetwork]);
 }
 
 function useRoutesData<T extends object>(url: string, defaultData: T[], fetcher: (url: string) => Promise<ApiResponse<T[]>>) {
@@ -191,9 +199,8 @@ function useRoutes({ direction, values }: Props) {
 // ---------- Token Helpers ----------
 
 function resolveTokenUSDBalance(route: NetworkRoute, token: Token, balances: Record<string, NetworkBalance>): number {
-    const networkBalance = balances?.[route.name]?.balances || [];
-    const match = networkBalance.find(b => b.token === token.symbol);
-    return match?.amount && match.amount > 0 ? match.amount * token.price_in_usd : 0;
+    const amount = getTokenBalanceAmount(balances, route.name, token.symbol);
+    return amount > 0 ? amount * token.price_in_usd : 0;
 }
 
 // ---------- Sorting Functions ----------
@@ -599,6 +606,7 @@ const searchInNetworks = (routes: NetworkRoute[], search: string, direction: Swa
 
 const searchInTokens = (routes: NetworkRoute[], search: string): NetworkTokenElement[] => {
     const lower = search.toLowerCase().replace(/\s+/g, " ").trim();
+    const [firstpart, secondpart] = lower.split(' ')
 
     return extractTokenElementsAsSuggested(routes).filter(e => {
         const { token, route } = e.route;
@@ -607,9 +615,6 @@ const searchInTokens = (routes: NetworkRoute[], search: string): NetworkTokenEle
         const symbolMatch = token.symbol.toLowerCase().includes(lower);
         const contractMatch = token.contract?.toLowerCase().includes(lower);
         const nameMatch = token.display_asset?.toLowerCase().includes(lower);
-        const splitted = lower.split(' ')
-        const firstpart = splitted?.[0]
-        const secondpart = splitted?.[1]
 
         const combo = (firstpart && secondpart) ? (
             (token.asset.toLowerCase().includes(firstpart) && route.name.toLowerCase().includes(secondpart))
@@ -823,7 +828,7 @@ function useExchangeRoutes({ values }: Props) {
         if (!isLoading && apiResponse?.data) setExchangesData(apiResponse.data)
     }, [apiResponse])
 
-    const res = exchangesRoutes.map(r => ({ ...r, cex: true } as { cex: true } & Exchange))
+    const res = useMemo(() => exchangesRoutes.map(r => ({ ...r, cex: true } as { cex: true } & Exchange)), [exchangesRoutes])
 
     return { exchangesRoutes: res, isLoading }
 }
@@ -841,8 +846,7 @@ function getSuggestedRoutes(routes: NetworkRoute[], balances: Record<string, Net
 
     // Let users pick the assets they hold even when the current destination has no route.
     const tokenElements = extractTokenElementsAsSuggested(routes).filter(t => direction === 'from' || t.route.token.status === 'active')
-    const sorted = tokenElements.sort(sortSuggestedTokenElements(direction, balances, routesHistory, swapRecency))
-    return sorted.slice(0, effectiveLimit)
+    return selectTop(tokenElements, sortSuggestedTokenElements(direction, balances, routesHistory, swapRecency), effectiveLimit)
 }
 
 const resolveTitle = (text: string): TitleElement => {

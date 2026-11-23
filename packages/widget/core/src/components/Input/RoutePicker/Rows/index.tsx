@@ -1,4 +1,4 @@
-import { RefObject } from "react";
+import { memo, RefObject } from "react";
 import { RowElement } from "@/Models/Route";
 import { CurrencySelectItemDisplay } from "../Routes";
 import { CollapsibleRow } from "./CollapsibleRow";
@@ -23,7 +23,7 @@ type Props = {
     hideBalances?: boolean;
 };
 
-export default function Row({
+function Row({
     item,
     direction,
     selectedRoute,
@@ -109,3 +109,5 @@ export default function Row({
             return null
     }
 }
+
+export default memo(Row)
