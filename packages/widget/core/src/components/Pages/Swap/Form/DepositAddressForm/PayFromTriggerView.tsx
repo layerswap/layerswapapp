@@ -1,4 +1,4 @@
-import type { NetworkRoute, NetworkRouteToken } from '@layerswap/widget-types';
+import type { NetworkRoute, Token } from '@layerswap/widget-types';
 import { SelectedRouteDisplay } from '@/components/Input/RoutePicker/Routes';
 import PickerTriggerContent from '@/components/Pages/Deposit/_shared/PickerTriggerContent';
 
@@ -7,7 +7,7 @@ export function PayFromTriggerContent({
     hasMultipleOptions,
     hideDestinationPicker,
 }: {
-    selectedSource: { network: NetworkRoute; token: NetworkRouteToken } | null;
+    selectedSource: { network: NetworkRoute; token: Token } | null;
     hasMultipleOptions: boolean;
     hideDestinationPicker?: boolean;
 }) {

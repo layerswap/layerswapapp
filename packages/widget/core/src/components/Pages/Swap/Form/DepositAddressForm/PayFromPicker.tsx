@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
+import { NetworkRoute, Token } from "@layerswap/widget-types";
 import { Selector, SelectorContent, SelectorTrigger } from "@/components/Select/Selector/Index";
 import { TokenGroupedContent } from "@/components/Input/RoutePicker/TokenGroupedContent";
 import useDepositAddressAvailableRoutes from "@/hooks/useDepositAddressAvailableRoutes";
@@ -7,8 +7,8 @@ import { useHydrateSwapRouteHistory } from "@/stores/swapRouteHistoryStore";
 import { PayFromTriggerContent, payFromTriggerClassName } from "./PayFromTriggerView";
 
 type PayFromPickerProps = {
-    selectedSource: { network: NetworkRoute; token: NetworkRouteToken } | null;
-    onSourceChange: (network: NetworkRoute, token: NetworkRouteToken) => void;
+    selectedSource: { network: NetworkRoute; token: Token } | null;
+    onSourceChange: (network: NetworkRoute, token: Token) => void;
     destinationNetwork: string | undefined;
     destinationToken: string | undefined;
     hideDestinationPicker?: boolean;

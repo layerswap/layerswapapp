@@ -1,4 +1,4 @@
-import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
+import { NetworkRoute, Token } from "@layerswap/widget-types";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import { SelectItem } from "@/components/Select/Selector/SelectItem";
 import { ChevronDown, Info } from "lucide-react";
@@ -17,7 +17,7 @@ import { TokenInfoIcon, TokenTitleWithBalance } from "./TokenTitleDetails";
 
 type TokenItemProps = {
     route: NetworkRoute;
-    item: NetworkRouteToken;
+    item: Token;
     type?: RowElement['type'];
     selected: boolean;
     direction: SwapDirection;
@@ -39,7 +39,7 @@ export const CurrencySelectItemDisplay = memo((props: TokenItemProps) => {
 
 type NetworkTokenItemProps = {
     route: NetworkRoute;
-    item: NetworkRouteToken;
+    item: Token;
     direction: SwapDirection;
     type?: RowElement['type'];
     hideBalances?: boolean;
@@ -308,7 +308,7 @@ export const SelectedCurrencyDisplay = (props: SelectedCurrencyDisplayProps) => 
 
 type SelectedRouteDisplayProps = {
     route?: NetworkRoute;
-    token?: NetworkRouteToken;
+    token?: Token;
     placeholder: string;
 }
 

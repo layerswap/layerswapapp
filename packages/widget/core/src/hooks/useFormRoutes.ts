@@ -2,7 +2,7 @@
 import useSWR from "swr";
 import { useEffect, useMemo, useState } from "react";
 import type { ApiResponse } from "@layerswap/widget-types";
-import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
+import { NetworkRoute, Token } from "@layerswap/widget-types";
 import { useInitialSettings, useSettingsState } from "../context/settings";
 import { NetworkElement, RowElement, NetworkTokenElement, TitleElement, GroupedTokenElement, TokenSceletonElement } from "../Models/Route";
 import { useResolvedWithdrawalBalances, useWithdrawalBalancesInit } from "./useAllWithdrawalBalances";
@@ -198,7 +198,7 @@ function useRoutes({ direction, values }: Props) {
 
 // ---------- Token Helpers ----------
 
-function resolveTokenUSDBalance(route: NetworkRoute, token: NetworkRouteToken, balances: Record<string, NetworkBalance>): number {
+function resolveTokenUSDBalance(route: NetworkRoute, token: Token, balances: Record<string, NetworkBalance>): number {
     const amount = getTokenBalanceAmount(balances, route.name, token.symbol);
     return amount > 0 ? amount * token.price_in_usd : 0;
 }
@@ -288,11 +288,11 @@ function sortRoutes(
 }
 
 function sortTokensByMostUsed(
-    tokens: NetworkRouteToken[],
+    tokens: Token[],
     route: NetworkRoute,
     routesHistory: RoutesHistory,
     direction: SwapDirection
-): NetworkRouteToken[] {
+): Token[] {
     const { historyKey } = directionKeys(direction);
     const routeHistory = routesHistory[historyKey]?.[route.name] || {};
 
@@ -308,9 +308,9 @@ function sortTokensByMostUsed(
 }
 
 function sortTokensByTrending(
-    tokens: NetworkRouteToken[],
+    tokens: Token[],
     direction: SwapDirection
-): NetworkRouteToken[] {
+): Token[] {
     const { rankKey } = directionKeys(direction);
     return [...tokens].sort((a, b) => {
         const aRank = a[rankKey] || 999999;
@@ -324,9 +324,9 @@ function sortTokensByTrending(
 }
 
 function sortTokensAlphabetically(
-    tokens: NetworkRouteToken[],
+    tokens: Token[],
     ascending: boolean = true
-): NetworkRouteToken[] {
+): Token[] {
     return [...tokens].sort((a, b) => {
         const comparison = a.asset.localeCompare(b.asset);
         return ascending ? comparison : -comparison;
@@ -334,13 +334,13 @@ function sortTokensAlphabetically(
 }
 
 function sortTokens(
-    tokens: NetworkRouteToken[],
+    tokens: Token[],
     route: NetworkRoute,
     sortingOption: SortingOption,
     direction: SwapDirection,
     balances: Record<string, NetworkBalance> | null,
     routesHistory: RoutesHistory
-): NetworkRouteToken[] {
+): Token[] {
     switch (sortingOption) {
         case 'relevance':
             return sortTokensByRelevance(tokens, route, balances, routesHistory, direction);
@@ -483,12 +483,12 @@ function sortRoutesByRelevance(
 }
 
 function sortTokensByRelevance(
-    tokens: NetworkRouteToken[],
+    tokens: Token[],
     route: NetworkRoute,
     balances: Record<string, NetworkBalance> | null,
     routesHistory: RoutesHistory,
     direction: SwapDirection
-): NetworkRouteToken[] {
+): Token[] {
     const { historyKey, rankKey } = directionKeys(direction);
     const routeHistory = routesHistory[historyKey]?.[route.name] || {};
 
@@ -679,7 +679,7 @@ export function groupRoutes(
     return mergeGroups(suggestedRoutes, groupedNetworks)
 }
 
-const isSameNetworkSwap = (networkName: string, tokens: NetworkRouteToken[] | undefined, oppositeNetwork?: string) =>
+const isSameNetworkSwap = (networkName: string, tokens: Token[] | undefined, oppositeNetwork?: string) =>
     !!oppositeNetwork && networkName === oppositeNetwork && !!tokens?.some(t => t.status === 'active')
 
 function moveToFront<T>(items: T[], predicate: (item: T) => boolean): T[] {
@@ -786,7 +786,7 @@ function groupByTokens(routes: NetworkRoute[]): GroupedTokenElement[] {
 function sortNetworkTokens(
     route: NetworkRoute,
     balances: Record<string, NetworkBalance> | null
-): NetworkRouteToken[] {
+): Token[] {
     return [...(route.tokens || [])].sort((a, b) => {
         const balanceA = resolveTokenUSDBalance(route, a, balances || {});
         const balanceB = resolveTokenUSDBalance(route, b, balances || {});

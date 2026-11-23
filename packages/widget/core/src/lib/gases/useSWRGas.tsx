@@ -35,9 +35,9 @@ const useSWRGas = (
     const canEstimate = estimationAmount !== undefined && Number.isFinite(estimationAmount)
         && (hasTransaction ? estimationAmount >= 0 : estimationAmount > 0)
     const baseKey = `/gases/${address}/${network?.name}/${token?.symbol}/${estimationAmount}`
-    const gasKey = hasTransaction
-        ? [baseKey, transaction.recipientAddress, transaction.callData, transaction.amountInBaseUnits ?? null]
-        : baseKey
+    // Wallet capabilities can change which token pays the fee.
+    const gasKey = [baseKey, wallet?.metadata?.capabilities ?? null,
+        ...(hasTransaction ? [transaction.recipientAddress, transaction.callData, transaction.amountInBaseUnits ?? null] : [])]
 
     // Preserve the last values while hidden controls finish their collapse animation.
     const { data: gasData, error: gasError, isLoading } = useSWR((enabled && network && token && address && canEstimate) ? gasKey : null, () => {

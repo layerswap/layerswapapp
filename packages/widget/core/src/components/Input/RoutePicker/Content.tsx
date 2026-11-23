@@ -4,7 +4,7 @@ import { useVirtualizer } from "@/lib/virtual";
 import { Accordion } from "@/components/shadcn/accordion";
 import Row from "./Rows";
 import { LayoutGroup, motion } from "framer-motion";
-import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
+import { NetworkRoute, Token } from "@layerswap/widget-types";
 import useWallet from "@/hooks/useWallet";
 import { useProvidersConnectReady } from "@layerswap/wallet-core";
 import ConnectWalletButton from "@/components/Common/ConnectWalletButton";
@@ -15,7 +15,7 @@ import NavigatableList from "@/components/NavigatableList";
 import { useSelectorState } from "@/components/Select/Selector/Index";
 
 export type ContentProps = {
-    onSelect: (route: NetworkRoute, token: NetworkRouteToken) => Promise<void> | void;
+    onSelect: (route: NetworkRoute, token: Token) => Promise<void> | void;
     searchQuery: string;
     setSearchQuery: (query: string) => void;
     /** The query `rowElements` were built from; may lag behind `searchQuery`. */
@@ -34,7 +34,7 @@ export const Content: FC<ContentProps> = (props) => {
     const [isItemsScrolling, setIsItemsScrolling] = useState(false);
     const onSelectRef = useRef(props.onSelect);
     useLayoutEffect(() => { onSelectRef.current = props.onSelect; });
-    const onSelect = useCallback((route: NetworkRoute, token: NetworkRouteToken) => onSelectRef.current(route, token), []);
+    const onSelect = useCallback((route: NetworkRoute, token: Token) => onSelectRef.current(route, token), []);
 
     return <>
         <RouteSearch searchQuery={props.searchQuery} setSearchQuery={props.setSearchQuery} shouldFocus={true} direction={props.direction} />

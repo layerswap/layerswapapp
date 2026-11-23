@@ -1,5 +1,5 @@
 import { FC, useMemo } from "react";
-import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
+import { NetworkRoute, Token } from "@layerswap/widget-types";
 import useDepositAddressDestinations from "@/hooks/useDepositAddressDestinations";
 import { Selector, SelectorContent, SelectorTrigger } from "@/components/Select/Selector/Index";
 import { SelectedRouteDisplay } from "@/components/Input/RoutePicker/Routes";
@@ -8,8 +8,8 @@ import DestinationWalletPicker from "./DestinationWalletPicker";
 import { useHydrateSwapRouteHistory } from "@/stores/swapRouteHistoryStore";
 
 type ReceivePickerProps = {
-    selectedDestination: { network: NetworkRoute; token: NetworkRouteToken } | null;
-    onDestinationChange: (network: NetworkRoute, token: NetworkRouteToken) => void;
+    selectedDestination: { network: NetworkRoute; token: Token } | null;
+    onDestinationChange: (network: NetworkRoute, token: Token) => void;
     destinationAddress: string | undefined;
     destination: NetworkRoute | undefined;
     /** Constrain the destination options to this route list instead of the full
