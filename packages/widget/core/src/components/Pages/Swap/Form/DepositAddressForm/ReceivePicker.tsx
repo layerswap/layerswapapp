@@ -1,16 +1,11 @@
-import { FC, useDeferredValue, useMemo, useState } from "react";
+import { FC, useMemo } from "react";
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
-import useWallet from "@/hooks/useWallet";
 import useDepositAddressDestinations from "@/hooks/useDepositAddressDestinations";
 import { Selector, SelectorContent, SelectorTrigger } from "@/components/Select/Selector/Index";
 import { SelectedRouteDisplay } from "@/components/Input/RoutePicker/Routes";
-import { Content } from "@/components/Input/RoutePicker/Content";
-import { groupRoutes } from "@/hooks/useFormRoutes";
-import { useRecentNetworksStore } from "@/stores/recentRoutesStore";
-import { useRouteSortingStore } from "@/stores/routeSortingStore";
-import useSuggestionsLimit from "@/hooks/useSuggestionsLimit";
+import { TokenGroupedContent } from "@/components/Input/RoutePicker/TokenGroupedContent";
 import DestinationWalletPicker from "./DestinationWalletPicker";
-import { useSwapRouteRecency } from "@/stores/swapRouteHistoryStore";
+import { useHydrateSwapRouteHistory } from "@/stores/swapRouteHistoryStore";
 
 type ReceivePickerProps = {
     selectedDestination: { network: NetworkRoute; token: NetworkRouteToken } | null;
@@ -36,13 +31,7 @@ const ReceivePicker: FC<ReceivePickerProps> = ({
     routes,
     hideWalletPicker,
 }) => {
-    const [searchQuery, setSearchQuery] = useState('');
-    const deferredSearchQuery = useDeferredValue(searchQuery);
-    const { wallets } = useWallet();
-    const { suggestionsLimit } = useSuggestionsLimit({ hasWallet: wallets.length > 0 });
-    const sortingOption = useRouteSortingStore((s) => s.sortingOption);
-    const routesHistory = useRecentNetworksStore(state => state.recentRoutes);
-    const swapRecency = useSwapRouteRecency();
+    useHydrateSwapRouteHistory();
 
     // Skip the network fetch entirely when the caller supplies a fixed route set.
     const { data: destinationRoutesData } = useDepositAddressDestinations({ enabled: !routes });
@@ -54,23 +43,6 @@ const ReceivePicker: FC<ReceivePickerProps> = ({
             .map(route => ({ ...route, tokens: route.tokens?.filter(t => t.status === 'active') ?? [] }))
             .filter(route => route.tokens.length > 0);
     }, [routes, destinationRoutesData]);
-
-    const routeElements = useMemo(() => {
-        return groupRoutes({
-            routes: availableRoutes,
-            direction: 'to',
-            balances: null,
-            groupBy: 'token',
-            recents: routesHistory,
-            swapRecency,
-            balancesLoaded: false,
-            search: deferredSearchQuery,
-            suggestionsLimit,
-            sortingOption,
-            skipBalanceGate: true,
-            hideSuggestions: true,
-        });
-    }, [availableRoutes, deferredSearchQuery, routesHistory, swapRecency, suggestionsLimit, sortingOption]);
 
     const hasMultipleOptions = availableRoutes.length > 1 || availableRoutes.some(r => r.tokens.length > 1);
 
@@ -89,11 +61,9 @@ const ReceivePicker: FC<ReceivePickerProps> = ({
                         </SelectorTrigger>
                         <SelectorContent isLoading={false}>
                             {({ closeModal }) => (
-                                <Content
+                                <TokenGroupedContent
+                                    routes={availableRoutes}
                                     onSelect={(r, t) => { onDestinationChange(r, t); closeModal(); }}
-                                    searchQuery={searchQuery}
-                                    setSearchQuery={setSearchQuery}
-                                    rowElements={routeElements}
                                     direction="to"
                                     selectedRoute={selectedDestination?.network.name}
                                     selectedToken={selectedDestination?.token.symbol}

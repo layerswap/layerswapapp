@@ -140,6 +140,7 @@ const PickerContent: FC<PickerContentProps> = ({ routes, direction, oppositeNetw
             onSelect={(route, token) => { onSelect(route, token); closeModal(); }}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
+            resultsQuery={deferredSearchQuery}
             rowElements={rowElements}
             direction={direction}
             selectedRoute={selectedRoute}

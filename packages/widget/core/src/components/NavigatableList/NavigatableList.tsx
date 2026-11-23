@@ -129,6 +129,8 @@ function createAutoDetectionStore() {
 export interface NavigatableListProps {
     children: ReactNode;
     enabled?: boolean;
+    /** Items are about to be replaced; Enter is swallowed instead of activating a stale item. */
+    isPending?: boolean;
     onReset?: () => void;
     keyboardNavigatingClass?: string;
     navigateToFirstChild?: boolean;
@@ -137,6 +139,7 @@ export interface NavigatableListProps {
 function NavigatableListRoot({
     children,
     enabled = true,
+    isPending = false,
     onReset,
     keyboardNavigatingClass = 'keyboard-navigating',
     navigateToFirstChild
@@ -160,6 +163,7 @@ function NavigatableListRoot({
     const { focusedIndex, handleHover, handleFocus, isKeyboardNavigating } = useNavigatableList({
         navigableItems: snapshot.items,
         enabled,
+        isPending,
         onReset,
         keyboardNavigatingClass,
         onEnter: store.triggerClickByKey,

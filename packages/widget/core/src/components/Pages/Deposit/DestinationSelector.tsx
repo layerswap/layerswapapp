@@ -1,15 +1,12 @@
-import { FC, useDeferredValue, useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useMemo } from "react";
 import { useFormikContext } from "formik";
 import { Selector, SelectorContent, SelectorTrigger } from "@/components/Select/Selector/Index";
-import { Content } from "@/components/Input/RoutePicker/Content";
+import { TokenGroupedContent } from "@/components/Input/RoutePicker/TokenGroupedContent";
 import { SelectedRouteDisplay } from "@/components/Input/RoutePicker/Routes";
-import { groupRoutes } from "@/hooks/useFormRoutes";
-import { useRecentNetworksStore } from "@/stores/recentRoutesStore";
-import { useRouteSortingStore } from "@/stores/routeSortingStore";
 import useDepositAddressDestinations from "@/hooks/useDepositAddressDestinations";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { NetworkRoute } from "@layerswap/widget-types";
-import { useSwapRouteRecency } from "@/stores/swapRouteHistoryStore";
+import { useHydrateSwapRouteHistory } from "@/stores/swapRouteHistoryStore";
 
 type Props = {
     /** When true, render a static (non-interactive) badge — the destination is
@@ -22,11 +19,7 @@ const DestinationSelector: FC<Props> = ({ locked }) => {
     const { values, setFieldValue } = useFormikContext<SwapFormValues>();
     const { to, toAsset } = values || {};
 
-    const [searchQuery, setSearchQuery] = useState("");
-    const deferredSearchQuery = useDeferredValue(searchQuery);
-    const sortingOption = useRouteSortingStore((s) => s.sortingOption);
-    const routesHistory = useRecentNetworksStore((state) => state.recentRoutes);
-    const swapRecency = useSwapRouteRecency();
+    useHydrateSwapRouteHistory();
 
     const { data: destinationRoutesData } = useDepositAddressDestinations({ enabled: !locked });
     const isLoading = !locked && destinationRoutesData === undefined;
@@ -40,23 +33,6 @@ const DestinationSelector: FC<Props> = ({ locked }) => {
     }, [destinationRoutesData]);
 
     const isEmpty = !locked && !isLoading && availableRoutes.length === 0;
-
-    const routeElements = useMemo(() => {
-        return groupRoutes({
-            routes: availableRoutes,
-            direction: "to",
-            balances: null,
-            groupBy: "token",
-            recents: routesHistory,
-            swapRecency,
-            balancesLoaded: false,
-            search: deferredSearchQuery,
-            suggestionsLimit: 4,
-            sortingOption,
-            skipBalanceGate: true,
-            hideSuggestions: true,
-        });
-    }, [availableRoutes, deferredSearchQuery, routesHistory, swapRecency, sortingOption]);
 
     // Pre-populate the highest-ranked destination so downstream sub-flows have
     // something to use when the dropdown is enabled and no destination is set.
@@ -109,15 +85,13 @@ const DestinationSelector: FC<Props> = ({ locked }) => {
             </SelectorTrigger>
             <SelectorContent isLoading={false}>
                 {({ closeModal }) => (
-                    <Content
+                    <TokenGroupedContent
+                        routes={availableRoutes}
                         onSelect={(r, t) => {
                             setFieldValue("to", r, false);
                             setFieldValue("toAsset", t, true);
                             closeModal();
                         }}
-                        searchQuery={searchQuery}
-                        setSearchQuery={setSearchQuery}
-                        rowElements={routeElements}
                         direction="to"
                         selectedRoute={to?.name}
                         selectedToken={toAsset?.symbol}

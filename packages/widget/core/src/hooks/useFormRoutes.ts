@@ -18,7 +18,7 @@ import { getTotalBalanceInUSD } from "../helpers/balanceHelper";
 import { SortingOption, useRouteSortingStore } from "@/stores/routeSortingStore";
 import { extractTokenElementsAsSuggested, getTokenBalanceAmount, selectTop, sortSuggestedTokenElements } from "../helpers/routeUtils";
 import { isExtendedSourceNetwork, mergeExtendedSourceRoutes } from "@/lib/extendedRoutes/registry";
-import { useSwapRouteRecency, type SwapRouteRecency } from "@/stores/swapRouteHistoryStore";
+import { useHydrateSwapRouteHistory, useSwapRouteRecency, type SwapRouteRecency } from "@/stores/swapRouteHistoryStore";
 
 type Props = {
     direction: SwapDirection;
@@ -27,6 +27,7 @@ type Props = {
 
 export default function useFormRoutes({ direction, values }: Props) {
     useWithdrawalBalancesInit();
+    useHydrateSwapRouteHistory();
     const { routes, isLoading: routesLoading } = useRoutes({ direction, values });
     const { exchangesRoutes, isLoading: exchangesRoutesLoading } = useExchangeRoutes({ direction, values })
     const { networks: withdrawalNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeNetworks({

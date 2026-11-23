@@ -1,4 +1,4 @@
-import { FC, useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { NetworkElement, RowElement } from "@/Models/Route";
 import { useVirtualizer } from "@/lib/virtual";
 import { Accordion } from "@/components/shadcn/accordion";
@@ -14,10 +14,12 @@ import RouteSearch from "./RouteSearch";
 import NavigatableList from "@/components/NavigatableList";
 import { useSelectorState } from "@/components/Select/Selector/Index";
 
-type ContentProps = {
+export type ContentProps = {
     onSelect: (route: NetworkRoute, token: NetworkRouteToken) => Promise<void> | void;
     searchQuery: string;
     setSearchQuery: (query: string) => void;
+    /** The query `rowElements` were built from; may lag behind `searchQuery`. */
+    resultsQuery: string;
     rowElements: RowElement[];
     selectedRoute: string | undefined;
     selectedToken: string | undefined;
@@ -30,18 +32,17 @@ type ContentProps = {
 
 export const Content: FC<ContentProps> = (props) => {
     const [isItemsScrolling, setIsItemsScrolling] = useState(false);
-    const deferredSearchQuery = useDeferredValue(props.searchQuery);
     const onSelectRef = useRef(props.onSelect);
     useLayoutEffect(() => { onSelectRef.current = props.onSelect; });
     const onSelect = useCallback((route: NetworkRoute, token: NetworkRouteToken) => onSelectRef.current(route, token), []);
 
     return <>
         <RouteSearch searchQuery={props.searchQuery} setSearchQuery={props.setSearchQuery} shouldFocus={true} direction={props.direction} />
-        <Items {...props} onSelect={onSelect} searchQuery={deferredSearchQuery} isScrolling={isItemsScrolling} setIsScrolling={setIsItemsScrolling} />
+        <Items {...props} onSelect={onSelect} searchQuery={props.resultsQuery} isSearchPending={props.searchQuery !== props.resultsQuery} isScrolling={isItemsScrolling} setIsScrolling={setIsItemsScrolling} />
     </>
 }
 
-const Items: FC<ContentProps & { isScrolling: boolean; setIsScrolling: (isScrolling: boolean) => void; }> = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, isScrolling, setIsScrolling, hideTokenSwitch, hideBalances, hideConnectButton }) => {
+const Items: FC<ContentProps & { isScrolling: boolean; setIsScrolling: (isScrolling: boolean) => void; isSearchPending: boolean; }> = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, isScrolling, setIsScrolling, isSearchPending, hideTokenSwitch, hideBalances, hideConnectButton }) => {
     const parentRef = useRef<HTMLDivElement>(null)
     const [openValues, setOpenValues] = useState<string[]>(selectedRoute ? [selectedRoute] : [])
     const { wallets } = useWallet()
@@ -124,6 +125,7 @@ const Items: FC<ContentProps & { isScrolling: boolean; setIsScrolling: (isScroll
 
     return <NavigatableList
         enabled={shouldFocus}
+        isPending={isSearchPending}
         onReset={onReset}
         navigateToFirstChild={isSingleNetwork}
     >

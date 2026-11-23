@@ -1,14 +1,9 @@
-import { FC, useDeferredValue, useMemo, useState } from "react";
+import { FC } from "react";
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
-import useWallet from "@/hooks/useWallet";
 import { Selector, SelectorContent, SelectorTrigger } from "@/components/Select/Selector/Index";
-import { Content } from "@/components/Input/RoutePicker/Content";
-import { groupRoutes } from "@/hooks/useFormRoutes";
-import { useRecentNetworksStore } from "@/stores/recentRoutesStore";
-import { useRouteSortingStore } from "@/stores/routeSortingStore";
-import useSuggestionsLimit from "@/hooks/useSuggestionsLimit";
+import { TokenGroupedContent } from "@/components/Input/RoutePicker/TokenGroupedContent";
 import useDepositAddressAvailableRoutes from "@/hooks/useDepositAddressAvailableRoutes";
-import { useSwapRouteRecency } from "@/stores/swapRouteHistoryStore";
+import { useHydrateSwapRouteHistory } from "@/stores/swapRouteHistoryStore";
 import { PayFromTriggerContent, payFromTriggerClassName } from "./PayFromTriggerView";
 
 type PayFromPickerProps = {
@@ -20,32 +15,8 @@ type PayFromPickerProps = {
 }
 
 const PayFromPicker: FC<PayFromPickerProps> = ({ selectedSource, onSourceChange, destinationNetwork, destinationToken, hideDestinationPicker }) => {
-    const [searchQuery, setSearchQuery] = useState('');
-    const deferredSearchQuery = useDeferredValue(searchQuery);
-    const { wallets } = useWallet();
-    const { suggestionsLimit } = useSuggestionsLimit({ hasWallet: wallets.length > 0 });
-    const sortingOption = useRouteSortingStore((s) => s.sortingOption);
-    const routesHistory = useRecentNetworksStore(state => state.recentRoutes);
-    const swapRecency = useSwapRouteRecency();
-
+    useHydrateSwapRouteHistory();
     const { availableRoutes } = useDepositAddressAvailableRoutes(destinationNetwork, destinationToken);
-
-    const routeElements = useMemo(() => {
-        return groupRoutes({
-            routes: availableRoutes,
-            direction: 'from',
-            balances: null,
-            groupBy: 'token',
-            recents: routesHistory,
-            swapRecency,
-            balancesLoaded: false,
-            search: deferredSearchQuery,
-            suggestionsLimit,
-            sortingOption,
-            skipBalanceGate: true,
-            hideSuggestions: true,
-        });
-    }, [availableRoutes, deferredSearchQuery, routesHistory, swapRecency, suggestionsLimit, sortingOption]);
 
     // Disable until the destination resolves a non-empty source list.
     const hasOptions = availableRoutes.length > 0;
@@ -61,11 +32,9 @@ const PayFromPicker: FC<PayFromPickerProps> = ({ selectedSource, onSourceChange,
                     </SelectorTrigger>
                     <SelectorContent isLoading={false}>
                         {({ closeModal }) => (
-                            <Content
+                            <TokenGroupedContent
+                                routes={availableRoutes}
                                 onSelect={(r, t) => { onSourceChange(r, t); closeModal(); }}
-                                searchQuery={searchQuery}
-                                setSearchQuery={setSearchQuery}
-                                rowElements={routeElements}
                                 direction="from"
                                 selectedRoute={selectedSource?.network.name}
                                 selectedToken={selectedSource?.token.symbol}
