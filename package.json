@@ -7,6 +7,7 @@
     "@types/node": "^24.5.1",
     "@typescript-eslint/parser": "8.73.0",
     "autoprefixer": "^10.4.21",
+    "esbuild": "catalog:",
     "eslint": "^9.39.5",
     "eslint-plugin-no-conditional-literals-in-jsx": "workspace:*",
     "postcss": "^8.5.10",
@@ -15,7 +16,7 @@
     "tailwindcss": "^4.0.15",
     "tailwindcss-animate": "^1.0.5",
     "tsc-alias": "^1.8.16",
-    "tsc-watch": "^6.2.0",
+    "tsc-watch": "^7.2.1",
     "typescript": "catalog:"
   },
   "packageManager": "pnpm@10.20.0",

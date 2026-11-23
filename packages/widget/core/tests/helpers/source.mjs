@@ -1,19 +1,13 @@
-import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import ts from 'typescript'
+import { loadCommonJs } from '../../../../../scripts/test-source.mjs'
 import { resolveDepositExecution } from '../../dist/esm/components/utils/resolveSwapFlow.js'
 const require = createRequire(import.meta.url)
 export function loadSource(path, imports = {}) {
-    const { outputText } = ts.transpileModule(readFileSync(new URL(`../../src/${path}`, import.meta.url), 'utf8'), {
-        compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
-    })
-    const module = { exports: {} }
-    new Function('require', 'module', 'exports', outputText)(name => {
+    return loadCommonJs(new URL(`../../src/${path}`, import.meta.url), name => {
         if (name in imports) return imports[name]
         if (name === 'react/jsx-runtime') return require(name)
         throw new Error(`Unexpected ${path} dependency: ${name}`)
-    }, module, module.exports)
-    return module.exports
+    })
 }
 export const rounding = loadSource('components/utils/RoundDecimals.ts')
 export const maxHelpers = loadSource('components/Input/Amount/helpers.ts', { '@/components/utils/RoundDecimals': rounding, '@/lib/gases/resolveGasBalanceBudget': loadSource('lib/gases/resolveGasBalanceBudget.ts') })

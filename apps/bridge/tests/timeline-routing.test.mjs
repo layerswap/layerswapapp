@@ -10,7 +10,7 @@ const configure = require('../next.config.js');
 const { PHASE_DEVELOPMENT_SERVER, PHASE_PRODUCTION_BUILD, PHASE_PRODUCTION_SERVER, PHASE_EXPORT } = require('next/constants');
 const { defaultConfig } = require('next/dist/server/config-shared');
 const { createValidFileMatcher, findPageFile } = require('next/dist/server/lib/find-page-file');
-const { getPageFromPath } = require('next/dist/build/entries');
+const { getPageFromPath } = require('next/dist/build/route-discovery');
 const pages = resolve(dirname(fileURLToPath(import.meta.url)), '../pages');
 const pageFiles = readdirSync(pages, { recursive: true }).filter((file) => /\.(tsx?|jsx?|mjs)$/.test(file));
 const productionRoutes = [

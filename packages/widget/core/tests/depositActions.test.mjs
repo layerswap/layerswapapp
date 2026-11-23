@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import test from 'node:test'
-import ts from 'typescript'
+import { loadCommonJs } from '../../../../scripts/test-source.mjs'
 import React, { act, createElement, Fragment } from 'react'
 import { createRoot } from 'react-dom/client'
 import { JSDOM } from 'jsdom'
@@ -13,19 +13,14 @@ const require = createRequire(import.meta.url)
 const walletPath = '../src/components/Pages/Swap/Withdraw/Wallet/Common/'
 
 function loadSource(path, imports = {}) {
-    const { outputText } = ts.transpileModule(readFileSync(new URL(path, import.meta.url), 'utf8'), {
-        compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
-    })
-    const module = { exports: {} }
-    new Function('require', 'module', 'exports', outputText)(name => {
+    return loadCommonJs(new URL(path, import.meta.url), name => {
         if (name === 'react/jsx-runtime') return require(name)
         if (name === '../components/utils/resolveSwapFlow.js' || name === '@/components/utils/resolveSwapFlow') return loadSource("../src/components/utils/resolveSwapFlow.ts");
         if (name === '../../helpers/depositActions.js') return loadSource('../src/helpers/depositActions.ts');
         if (name in imports) return imports[name]
         if (name === '@/lib/swapExecution') return { recordSwapExecution: () => {} }
         throw new Error(`Unexpected dependency: ${name}`)
-    }, module, module.exports)
-    return module.exports
+    })
 }
 
 const walletTypes = loadSource('../../types/src/actionMessage.ts')

@@ -1,21 +1,15 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
 import test from 'node:test'
-import ts from 'typescript'
+import { loadCommonJs } from '../../../../../scripts/test-source.mjs'
 import { formatUnits, parseUnits } from 'viem'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
 function loadProvider(path, imports) {
-    const { outputText } = ts.transpileModule(readFileSync(new URL(path, import.meta.url), 'utf8'), {
-        compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-    })
-    const module = { exports: {} }
-    new Function('require', 'module', 'exports', outputText)(name => {
+    return loadCommonJs(new URL(path, import.meta.url), name => {
         if (name in imports) return imports[name]
         throw new Error(`Unexpected dependency: ${name}`)
-    }, module, module.exports)
-    return module.exports
+    })
 }
 
 const polymarketProtocol = loadProvider('../src/additionalProviders/polymarket/protocol.ts', {})

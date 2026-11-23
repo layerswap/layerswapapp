@@ -9,6 +9,7 @@ on:
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
       - "package.json"
+      - "scripts/test-source.mjs"
       - ".github/workflows/bridge-widget-pr.yml"
 
 permissions:

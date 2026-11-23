@@ -1,10 +1,8 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { createRequire } from 'node:module'
-import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import vm from 'node:vm'
-import ts from 'typescript'
+import { runInNewContext } from '../../../../scripts/test-source.mjs'
 import * as web from '@grafana/faro-web-sdk'
 import * as sanitizer from '../faro-sanitizer.ts'
 import * as sessionContext from '../faro-session-context.ts'
@@ -25,12 +23,9 @@ const { createPageMeta } = require(join(dirname(require.resolve('@grafana/faro-w
 // the installed SDK below. This harness never contacts a collector.
 function browserHarness(env, pathname = '/') {
     let config
-    const exports = {}
     const window = { location: { origin: 'https://layerswap.io', pathname } }
-    const source = readFileSync(new URL('../faro.ts', import.meta.url), 'utf8')
-    const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText
-    vm.runInNewContext(compiled, {
-        exports, process: { env }, window, console,
+    const exports = runInNewContext(new URL('../faro.ts', import.meta.url), {
+        process: { env }, window, console,
         require: name => ({
             './faro-sanitizer': sanitizer,
             './faro-session-context': sessionContext,

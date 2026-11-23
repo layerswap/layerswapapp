@@ -1,16 +1,11 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import test from 'node:test'
-import vm from 'node:vm'
-import ts from 'typescript'
+import { runInNewContext } from '../../../../scripts/test-source.mjs'
 
-const compiled = ts.transpileModule(readFileSync(new URL('../../pages/api/axiom.ts', import.meta.url), 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-}).outputText
+const source = new URL('../../pages/api/axiom.ts', import.meta.url)
 function harness(fetch, env = {}) {
-    const exports = {}
-    vm.runInNewContext(compiled, { exports, require: createRequire(import.meta.url), URL, AbortSignal, console: { error() {} },
+    const exports = runInNewContext(source, { require: createRequire(import.meta.url), URL, AbortSignal, console: { error() {} },
         process: { env: { NEXT_PUBLIC_TELEMETRY_PROVIDER: 'axiom', AXIOM_TOKEN: 'secret', AXIOM_DATASET: 'frontend', ...env } }, fetch })
     return async (body, overrides = {}) => {
         const res = { setHeader() {}, status(code) { this.statusCode = code; return this }, end() {}, json(body) { this.body = body } }

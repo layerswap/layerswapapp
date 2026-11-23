@@ -1,10 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
-import ts from 'typescript';
+import { loadCommonJs } from '../../../scripts/test-source.mjs';
 
 const require = createRequire(import.meta.url);
 const core = new URL('../../../packages/widget/core/', import.meta.url);
@@ -55,16 +54,11 @@ const imports = {
     '@/stores/swapTransactionStore': { useSwapTransactionStore: selector => selector({}) },
     '@/helpers/depositActions': { getActionableDepositAction: noop, isTransferAction: () => false },
 };
-const { outputText } = ts.transpileModule(readFileSync(new URL('src/components/Pages/Swap/Withdraw/Withdraw.tsx', core), 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
-});
-const module = { exports: {} };
-new Function('require', 'module', 'exports', outputText)(name => {
+const { default: Withdraw, useWithdrawBalance } = loadCommonJs(new URL('src/components/Pages/Swap/Withdraw/Withdraw.tsx', core), name => {
     if (name === 'react' || name === 'react/jsx-runtime') return require(name);
     if (name in imports) return imports[name];
     throw new Error(`Unexpected dependency: ${name}`);
-}, module, module.exports);
-const { default: Withdraw, useWithdrawBalance } = module.exports;
+});
 
 test('direct swap links SSR without Formik and retain balance warnings without draft editing', () => {
     const html = renderToString(React.createElement(Withdraw, { type: 'widget' }));

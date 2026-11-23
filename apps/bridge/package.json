@@ -5,7 +5,7 @@
   "scripts": {
     "debug": "next dev",
     "dev": "next dev",
-    "build": "next build",
+    "build": "pnpm lint && next build",
     "start": "next start",
     "analyze": "cross-env ANALYZE=true next build --webpack",
     "lint": "eslint .",
@@ -58,7 +58,7 @@
     "@types/crypto-js": "^4.1.1",
     "@types/react": "catalog:",
     "chromatic": "^6.24.1",
-    "esbuild": "0.25.3",
+    "esbuild": "catalog:",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.4.6",
     "eslint-plugin-no-conditional-literals-in-jsx": "workspace:*",

@@ -1,20 +1,15 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
 import test from 'node:test'
-import vm from 'node:vm'
-import ts from 'typescript'
+import { runInNewContext } from '../../../../scripts/test-source.mjs'
 import { ErrorHandler, setErrorLogger, defaultErrorLogger } from '@layerswap/widget-types'
 import { flattenContext } from '../faro-sanitizer.ts'
 
-const compiled = ts.transpileModule(readFileSync(new URL('../../components/utils/logError.ts', import.meta.url), 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-}).outputText
+const source = new URL('../../components/utils/logError.ts', import.meta.url)
 
 function loadLogError(impact, nodeEnv = 'production') {
     const records = []
-    const exports = {}
-    vm.runInNewContext(compiled, {
-        exports, console, Error, process: { env: { NODE_ENV: nodeEnv } },
+    const exports = runInNewContext(source, {
+        console, Error, process: { env: { NODE_ENV: nodeEnv } },
         require: name => ({
             '../../lib/faro': {
                 captureEvent: (name, attributes) => records.push({ kind: 'event', name, attributes }),

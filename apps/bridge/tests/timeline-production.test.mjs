@@ -1,11 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { JSDOM } from 'jsdom';
-import ts from 'typescript';
+import { loadCommonJs } from '../../../scripts/test-source.mjs';
 
 const require = createRequire(import.meta.url);
 const core = new URL('../../../packages/widget/core/src/', import.meta.url);
@@ -24,11 +23,7 @@ const childrenOnly = ({ children }) => React.createElement(React.Fragment, null,
 // Use current source with real React state. Only external services and unrelated
 // presentation are replaced, so these regressions do not depend on a dist build.
 function loadSource(path, imports = {}) {
-    const { outputText } = ts.transpileModule(readFileSync(new URL(path, core), 'utf8'), {
-        compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
-    });
-    const module = { exports: {} };
-    new Function('require', 'module', 'exports', outputText)(name => {
+    return loadCommonJs(new URL(path, core), name => {
         if (name === 'react' || name === 'react/jsx-runtime') return require(name);
         if (name === '../components/utils/resolveSwapFlow.js') return loadSource("components/utils/resolveSwapFlow.ts");
         if (name === '../../helpers/depositActions.js') return loadSource('helpers/depositActions.ts');
@@ -87,8 +82,7 @@ function loadSource(path, imports = {}) {
         if (name.endsWith('/TransferBlock')) return { TransferBlock: ({ children }) => React.createElement(React.Fragment, null, children) };
         if (name === '@/hooks/useHasSubmittedTransfer') return { useHasSubmittedTransfer: () => false };
         throw new Error(`Unexpected dependency: ${name}`);
-    }, module, module.exports);
-    return module.exports;
+    });
 }
 
 function loadDepositActionPolling(api, stores, swapContext) {
