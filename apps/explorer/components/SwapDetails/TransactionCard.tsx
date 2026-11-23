@@ -21,6 +21,7 @@ interface TransactionCardProps {
     exchangeLogo?: string;
     exchangeName?: string;
     fromAddress?: string;
+    toAddress?: string;
     accountExplorerUrl?: string;
     txExplorerUrl?: string;
     showConfirmations?: boolean;
@@ -42,6 +43,7 @@ export default function TransactionCard({
     exchangeLogo,
     exchangeName,
     fromAddress,
+    toAddress,
     accountExplorerUrl,
     txExplorerUrl,
     showConfirmations = false,
@@ -51,6 +53,9 @@ export default function TransactionCard({
 }: TransactionCardProps) {
     const isSource = title === "From";
     const displayTransaction = transaction || refundedTransaction;
+    const displayAddress = isSource
+        ? fromAddress || displayTransaction?.from
+        : toAddress || displayTransaction?.to;
     const displayAmount = amount ?? displayTransaction?.amount;
     const hasAmount = displayAmount !== undefined && displayAmount !== null;
 
@@ -135,7 +140,7 @@ export default function TransactionCard({
                         {title === "From" ? "From Address" : "To Address"}
                     </div>
                     <div className="text-sm lg:text-base font-medium text-tx-base w-full">
-                        {displayTransaction?.from || displayTransaction?.to ? (
+                        {displayAddress ? (
                             <div className="flex justify-between items-center text-primary-text hover:text-secondary-text">
                                 <Link
                                     href={accountExplorerUrl || '#'}
@@ -143,11 +148,11 @@ export default function TransactionCard({
                                     className="hover:text-secondary-text w-fit contents items-center"
                                 >
                                     <span className="break-all link link-underline link-underline-black">
-                                        {title === "From" ? (fromAddress || displayTransaction?.from) : displayTransaction?.to}
+                                        {displayAddress}
                                     </span>
                                 </Link>
                                 <CopyButton
-                                    toCopy={title === "From" ? (fromAddress || displayTransaction?.from) : displayTransaction?.to}
+                                    toCopy={displayAddress}
                                     iconHeight={16}
                                     iconClassName="order-2"
                                     iconWidth={16}

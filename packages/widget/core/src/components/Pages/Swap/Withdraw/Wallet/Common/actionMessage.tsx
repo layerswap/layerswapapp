@@ -20,7 +20,7 @@ function useActionMessageProps({ error, isSignatureError, isLoading, selectedSou
     const gaslessErrorMessage = useGaslessPreferenceStore(
         (s) => s.gaslessErrorMessage,
     );
-    const { swapError } = useSwapDataState();
+    const { swapError, depositActionsError } = useSwapDataState();
 
     useEffect(() => {
         if (
@@ -44,6 +44,7 @@ function useActionMessageProps({ error, isSignatureError, isLoading, selectedSou
         error, isSignatureError, isLoading, selectedSourceAddress, sourceNetwork,
         gaslessUnavailable, gaslessErrorMessage: gaslessErrorMessage ?? undefined,
         swapError: !!swapError,
+        depositActionsError,
     };
 }
 export function useActionMessage(props: Parameters<typeof useActionMessageProps>[0]) {

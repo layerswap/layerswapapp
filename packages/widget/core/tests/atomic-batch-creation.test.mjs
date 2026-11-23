@@ -5,7 +5,8 @@ import ts from 'typescript'
 import { JSDOM } from 'jsdom'
 import React, { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
-import useSWR, { SWRConfig } from 'swr'
+import { SWRConfig } from 'swr'
+import * as widgetTypes from '@layerswap/widget-types'
 import { createSwapContext } from './helpers/swap-context.mjs'
 
 const dom = new JSDOM('<div id="root"></div>', { url: 'https://widget.example' })
@@ -38,9 +39,13 @@ const fixture = JSON.parse(readFileSync(new URL('./fixtures/atomic-batch.json', 
 const store = state => Object.assign(selector => selector(state), { getState: () => state })
 const flush = async () => { for (let i = 0; i < 10; i++) await Promise.resolve() }
 
-async function setup({ capability = async () => 'supported', gasless = false, native = false, depositAddress = false, existing = false, discover = false, provider = '0X', liveSource = false, submit = true, quoteReady = true, swrDedupingInterval = 2000 } = {}) {
+const storedCapabilities = (atomic, chainId = Number(fixture.network.chain_id)) =>
+    ({ capabilities: { [fixture.account.toLowerCase()]: { [chainId]: { atomic, alternateGasFees: false } } } })
+
+async function setup({ capability = async () => 'supported', stored, gasless = false, native = false, depositAddress = false, existing = false, discover = false, provider = '0X', submit = true, quoteReady = true, swrDedupingInterval = 2000 } = {}) {
     let update, state, wallet = { id: 'Selected', providerName: 'EVM', address: fixture.account, addresses: [fixture.account],
-        asSourceSupportedNetworks: [fixture.network.name], chainId: 42161, isActive: true }
+        asSourceSupportedNetworks: [fixture.network.name], chainId: 42161, isActive: true,
+        metadata: stored ? storedCapabilities(stored) : undefined }
     const requests = [], checks = []
     const resolvers = { resolverService: { getTransferResolver: () => ({ getAtomicBatchProvider: () => ({
         getCapabilities: async ctx => { checks.push(ctx); return capability(ctx) },
@@ -55,7 +60,9 @@ async function setup({ capability = async () => 'supported', gasless = false, na
     const values = { from: network, to: network, fromAsset: token, toAsset: { symbol: 'AAVE' },
         destination_address: fixture.account, amount: '1', depositMethod: depositAddress ? 'deposit_address' : 'wallet' }
     const capabilityHook = pure('../src/hooks/useAtomicBatchCapability.ts', {
-        swr: { default: useSWR }, '@/lib/resolvers/resolverService': resolvers,
+        '@/helpers/walletCapabilities': pure('../src/helpers/walletCapabilities.ts', {
+            '@layerswap/widget-types': widgetTypes,
+        }),
     })
     const context = createSwapContext({
         Client: class {
@@ -86,21 +93,12 @@ async function setup({ capability = async () => 'supported', gasless = false, na
         },
     })
     const labels = []
-    const Discovery = pure('../src/components/Pages/Swap/Form/AtomicBatchDiscovery.tsx', {
-        react: React,
-        formik: { useFormikContext: () => ({ values }) },
-        '@/context/swap': context,
-        '@/context/swapAccounts': { useSelectedAccount: () => wallet },
-        '@/hooks/useWallet': { default: () => ({ wallets: [wallet] }) },
-        '@/hooks/useAtomicBatchCapability': capabilityHook,
-        '@/lib/address/Address': { Address: { equals: (a, b) => a === b } },
-    }).default
     function Read() { update = context.useSwapDataUpdate(); state = context.useSwapDataState(); labels.push(state.flow.actionButtonText); return null }
     const root = createRoot(document.getElementById('root'))
     const swrConfig = { provider: () => new Map(), dedupingInterval: swrDedupingInterval }
     const render = () => act(() => root.render(createElement(SWRConfig, { value: swrConfig },
         createElement(context.SwapDataProvider, null,
-            createElement(React.Fragment, null, liveSource ? createElement(Discovery) : null, createElement(Read))))))
+            createElement(Read)))))
     await render()
     if (submit) await act(() => update.setSubmitedFormValues(values))
     return { requests, checks, values, preferences, labels,
@@ -125,26 +123,25 @@ for (const [capability, kind, label] of [
     ['supported', 'atomic-batch', 'Approve and swap'],
     ['ready', 'frontend-swap', 'Sign to swap'],
     ['unsupported', 'frontend-swap', 'Sign to swap'],
-]) test(`a draft discovers ${capability} support without creating a swap`, async () => {
-    const h = await setup({ discover: true, capability: async () => capability })
+]) test(`a draft uses the ${capability} support the wallet reported on connect`, async () => {
+    const h = await setup({ discover: true, stored: capability, capability: async () => capability })
     try {
         assert.equal(h.state.flow.kind, kind)
         assert.equal(h.state.flow.actionButtonText, label)
         assert.equal(h.state.flow.compactQuote, false)
-        assert.equal(h.checks.length, 1)
-        assert.equal(h.requests.length, 0)
         await h.changeWallet({})
         await act(() => h.update.setSubmitedFormValues({ ...h.values, amount: '2' }))
-        assert.equal(h.checks.length, 1, 'rerenders and amount edits do not query wallet capabilities again')
+        assert.equal(h.checks.length, 0, 'drafts never query the wallet')
         assert.equal(h.requests.length, 0, 'reviewing the draft never creates a swap')
         await act(async () => { await h.update.createSwap(h.values, {}) })
+        assert.equal(h.checks.length, 1, 'creation rechecks the wallet')
         assert.equal(h.requests.length, 1)
         assert.equal(h.requests[0].use_atomic_batch, capability === 'supported' ? true : undefined)
     } finally { await act(() => h.root.unmount()) }
 })
 
-for (const mode of ['native', 'gasless', 'depositAddress', 'bridge']) test(`${mode} drafts do not start batching discovery in the swap context`, async () => {
-    const h = await setup({ discover: true, [mode]: true, provider: mode === 'bridge' ? 'ACROSS' : '0X' })
+for (const mode of ['native', 'gasless', 'depositAddress', 'bridge']) test(`${mode} drafts do not use batching support in the swap context`, async () => {
+    const h = await setup({ discover: true, stored: 'supported', [mode]: true, provider: mode === 'bridge' ? 'ACROSS' : '0X' })
     try {
         assert.equal(h.checks.length, 0)
         assert.equal(h.requests.length, 0)
@@ -153,81 +150,34 @@ for (const mode of ['native', 'gasless', 'depositAddress', 'bridge']) test(`${mo
     } finally { await act(() => h.root.unmount()) }
 })
 
-test('a stale capability response cannot relabel the newly selected account', async () => {
-    const responses = []
-    const h = await setup({ discover: true, capability: () => new Promise(resolve => responses.push(resolve)) })
+test('support reported for one account does not label another account', async () => {
+    const h = await setup({ discover: true, stored: 'supported' })
     try {
+        assert.equal(h.state.flow.actionButtonText, 'Approve and swap')
         await h.changeWallet({ address: `0x${'4'.repeat(40)}`, addresses: [`0x${'4'.repeat(40)}`] })
-        assert.equal(responses.length, 2)
-        await act(async () => { responses[0]('supported'); await flush() })
         assert.equal(h.state.flow.actionButtonText, 'Sign to swap')
-        await act(async () => { responses[1]('unsupported'); await flush() })
+        assert.equal(h.checks.length, 0)
+    } finally { await act(() => h.root.unmount()) }
+})
+
+test('only the source chain or the all-chains entry decides draft support', async () => {
+    const h = await setup({ discover: true })
+    try {
+        await h.changeWallet({ metadata: storedCapabilities('supported', 1) })
         assert.equal(h.state.flow.actionButtonText, 'Sign to swap')
-        assert.equal(h.requests.length, 0)
+        await h.changeWallet({ metadata: storedCapabilities('supported', 0) })
+        assert.equal(h.state.flow.actionButtonText, 'Approve and swap')
+        assert.equal(h.checks.length, 0)
     } finally { await act(() => h.root.unmount()) }
 })
 
-for (const capability of ['supported', 'unsupported']) test(`wallet discovery resolves ${capability} support before the quote and review`, async () => {
-    let respond
-    const h = await setup({ liveSource: true, submit: false, quoteReady: false, discover: true,
-        capability: () => new Promise(resolve => { respond = resolve }) })
-    try {
-        assert.equal(h.state.swapBasicData, undefined, 'no submitted draft is needed')
-        assert.equal(h.state.quote, undefined, 'wallet discovery does not wait for a quote')
-        assert.equal(h.checks.length, 1)
-        await act(async () => { respond(capability); await flush() })
-        h.labels.length = 0
-        await h.review()
-        const label = capability === 'supported' ? 'Approve and swap' : 'Sign to swap'
-        assert.equal(h.state.flow.actionButtonText, label)
-        assert.ok(h.labels.length > 0)
-        assert.ok(h.labels.every(value => value === label), 'the first review render uses the detected capability')
-        assert.equal(h.checks.length, 1, 'opening review reuses the result')
-        assert.equal(h.requests.length, 0)
-    } finally { await act(() => h.root.unmount()) }
-})
-
-test('token and amount edits reuse wallet support discovered on the form', async () => {
-    const h = await setup({ liveSource: true, submit: false, quoteReady: false, discover: true })
-    try {
-        assert.equal(h.checks.length, 1)
-        await h.changeSource({ fromAsset: { ...h.values.fromAsset, symbol: 'OTHER', contract: `0x${'5'.repeat(40)}` }, amount: '2' })
-        assert.equal(h.checks.length, 1)
-        await h.review()
-        assert.equal(h.state.flow.actionButtonText, 'Approve and swap')
-        assert.equal(h.checks.length, 1)
-    } finally { await act(() => h.root.unmount()) }
-})
-
-test('returning to a wallet refreshes its cached support without using another chain response', async t => {
-    t.mock.timers.enable({ apis: ['setTimeout'] })
-    const responses = []
-    const h = await setup({ discover: true, swrDedupingInterval: 0, capability: () => new Promise(resolve => responses.push(resolve)) })
-    try {
-        await act(async () => { responses[0]('supported'); await flush() })
-        assert.equal(h.state.flow.actionButtonText, 'Approve and swap')
-        // SWR clears the completed request on a timer even when dedupingInterval is zero.
-        // Run that cleanup before returning to this chain so revalidation starts reliably.
-        await act(async () => { t.mock.timers.tick(1) })
-        await h.changeWallet({ chainId: 1 })
-        await h.changeWallet({ chainId: 42161 })
-        assert.equal(responses.length, 3)
-        assert.equal(h.state.flow.actionButtonText, 'Approve and swap')
-        await act(async () => { responses[1]('unsupported'); await flush() })
-        assert.equal(h.state.flow.actionButtonText, 'Approve and swap')
-        await act(async () => { responses[2]('unsupported'); await flush() })
-        assert.equal(h.state.flow.actionButtonText, 'Sign to swap')
-    } finally { await act(() => h.root.unmount()) }
-})
-
-test('changing the runtime connector identity rediscovers support', async () => {
-    let checks = 0
-    const h = await setup({ discover: true, capability: async () => ++checks === 1 ? 'supported' : 'unsupported' })
+test('a new connection without reported support falls back to the standard flow', async () => {
+    const h = await setup({ discover: true, stored: 'supported' })
     try {
         assert.equal(h.state.flow.actionButtonText, 'Approve and swap')
         await h.changeWallet({ metadata: { connectorId: 'selected', connectorUid: 'new-connection' } })
-        assert.equal(checks, 2)
         assert.equal(h.state.flow.actionButtonText, 'Sign to swap')
+        assert.equal(h.checks.length, 0)
     } finally { await act(() => h.root.unmount()) }
 })
 
@@ -277,7 +227,7 @@ test('switching source routes refreshes creation with stable wallet, account and
 })
 
 test('existing and completed swaps never rediscover capabilities after wallet changes', async () => {
-    const h = await setup({ existing: true, discover: true, liveSource: true })
+    const h = await setup({ existing: true, discover: true, stored: 'supported' })
     try {
         assert.equal(h.state.swapId, 'capability-discovery-swap')
         assert.equal(h.checks.length, 0)
@@ -285,7 +235,7 @@ test('existing and completed swaps never rediscover capabilities after wallet ch
         await h.changeWallet({ address: `0x${'4'.repeat(40)}`, addresses: [`0x${'4'.repeat(40)}`] })
         assert.equal(h.checks.length, 0, 'backend observation must not cause new wallet requests')
         await act(() => h.update.setSwapId(undefined))
-        assert.equal(h.checks.length, 1, 'returning to a draft can discover support without creating a swap')
+        assert.equal(h.checks.length, 0, 'returning to a draft reads stored support without a wallet request')
         assert.equal(h.requests.length, 0)
     } finally { await act(() => h.root.unmount()) }
 })

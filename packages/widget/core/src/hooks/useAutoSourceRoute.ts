@@ -2,14 +2,14 @@ import { useEffect, useMemo } from 'react'
 import { useFormikContext } from 'formik'
 import useDepositAddressSources from './useDepositAddressSources'
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
-import { NetworkRoute, NetworkRouteToken } from '@layerswap/widget-types';
+import { NetworkRoute, Token } from '@layerswap/widget-types';
 
 /**
  * Picks the top-ranked source route + active token for the deposit-address
  * flow. Shared between the form's auto-source effect and the deposit widget's
  * prefetcher so both always agree on the same pick.
  */
-export function pickAutoSource(sourceRoutes: NetworkRoute[] | undefined): { network: NetworkRoute, token: NetworkRouteToken } | undefined {
+export function pickAutoSource(sourceRoutes: NetworkRoute[] | undefined): { network: NetworkRoute, token: Token } | undefined {
     if (!sourceRoutes || sourceRoutes.length === 0) return undefined
 
     // Lower source_rank = higher priority. Use ?? so rank 0 (the best possible value)
