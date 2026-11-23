@@ -80,7 +80,11 @@ const { default: Summary } = loadSource('components/Pages/Swap/Withdraw/Summary/
 })
 const passthrough = ({ children }) => children
 const gasHook = { default: () => ({ gasData: state.gas }) }
-const { default: useOutOfGas } = loadSource('lib/gases/useOutOfGas.ts', { './useSWRGas': gasHook, './resolveGasBalanceBudget': loadSource('lib/gases/resolveGasBalanceBudget.ts') })
+const { default: useOutOfGas } = loadSource('lib/gases/useOutOfGas.ts', {
+  '@layerswap/widget-types': require('@layerswap/widget-types'),
+  './useSWRGas': gasHook,
+  './resolveGasBalanceBudget': loadSource('lib/gases/resolveGasBalanceBudget.ts'),
+})
 const errorDisplay = loadSource('components/Pages/Swap/Form/SecondaryComponents/validationError/ErrorDisplay.tsx', { react: React })
 const availabilityView = loadSource('components/Pages/Swap/Withdraw/Presentation/QuoteAvailabilityView.tsx', {
   'lucide-react': { RouteOff: () => null },
@@ -152,6 +156,11 @@ const { default: Withdraw } = loadSource('components/Pages/Swap/Withdraw/Withdra
     '@/hooks/useTransferBlocked': loadSource('hooks/useTransferBlocked.ts', callbackImports),
   }),
   '@/hooks/useHasSubmittedTransfer': { useHasSubmittedTransfer: () => false },
+  '@/hooks/useIsGaslessActive': { useIsGaslessActive: () => false },
+  '@/hooks/useSelectedSourceWallet': { useSelectedSourceWallet: () => undefined },
+  '@/helpers/walletCapabilities': { getWalletCapabilities: () => undefined },
+  '@/components/utils/formatTokenAmount': { formatTokenAmount: value => String(value) },
+  '@/helpers/gasless': { isGaslessDepositWorkflow: () => undefined },
   '@layerswap/widget-types': require('@layerswap/widget-types'),
   '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
   '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput() {} } },

@@ -15,6 +15,7 @@ export function QuoteDetailsSummary({
     gasFeeInUsd,
     isGasless,
     isQuoteLoading,
+    isGasLoading,
     isExchange,
     averageCompletionTime,
     reward,
@@ -23,6 +24,7 @@ export function QuoteDetailsSummary({
     gasFeeInUsd?: number | null;
     isGasless?: boolean;
     isQuoteLoading?: boolean;
+    isGasLoading?: boolean;
     isExchange?: boolean;
     averageCompletionTime?: string;
     reward?: QuoteReward;
@@ -41,7 +43,7 @@ export function QuoteDetailsSummary({
                     ) : (
                         <div
                             className={clsx('inline-flex items-center gap-1', {
-                                'animate-pulse-strong': isQuoteLoading,
+                                'animate-pulse-strong': isQuoteLoading || isGasLoading,
                             })}
                         >
                             <div className="p-0.5">

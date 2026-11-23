@@ -149,6 +149,7 @@ test('exact gas loading preserves the pending wallet request and its execution l
     });
     const budget = loadSource('lib/gases/resolveGasBalanceBudget.ts');
     const { default: useOutOfGas } = loadSource('lib/gases/useOutOfGas.ts', {
+        '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
         './useSWRGas': { default: realGasHook },
         './resolveGasBalanceBudget': budget,
     });
@@ -371,6 +372,11 @@ test('exact gas loading preserves the pending wallet request and its execution l
         './Presentation/WalletActionTransition': transition,
         '@/hooks/useLifecycleObservation': { useLifecycleObservation: noop },
         '@/helpers/depositActions': helpers,
+        '@/helpers/gasless': { isGaslessDepositWorkflow: () => false },
+        '@/hooks/useIsGaslessActive': { useIsGaslessActive: () => false },
+        '@/hooks/useSelectedSourceWallet': { useSelectedSourceWallet: () => undefined },
+        '@/helpers/walletCapabilities': { getWalletCapabilities: () => undefined },
+        '@/components/utils/formatTokenAmount': { formatTokenAmount: value => String(value) },
     });
     function Screen() {
         const [, set] = React.useState(0);
