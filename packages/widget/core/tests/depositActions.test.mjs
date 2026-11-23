@@ -521,6 +521,13 @@ function createWorkflow({
                 '@/lib/amountPresets': amountPresets,
                 '@/components/Widget/Index': {},
                 '@/helpers/swapFlow': { isDepositAddressSwap: () => false },
+                '@/hooks/useIsGaslessActive': loadSource('../src/hooks/useIsGaslessActive.ts', {
+                    ...buttonImports,
+                    './useWallet': buttonImports['@/hooks/useWallet'],
+                }),
+                '@/hooks/useSelectedSourceWallet': { useSelectedSourceWallet: () => undefined },
+                '@/helpers/walletCapabilities': { getWalletCapabilities: () => undefined },
+                '@/components/utils/formatTokenAmount': { formatTokenAmount: value => String(value) },
                 '@/hooks/useFee': { transformSwapDataToQuoteArgs: noop, useQuoteData: () => ({}) },
                 '@/lib/balances/useBalance': { useBalance: () => ({ balances: state.balances }) },
                 '@/lib/gases/useOutOfGas': { default: () => ({ outOfGas: state.outOfGas }) },
