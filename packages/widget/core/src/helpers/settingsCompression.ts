@@ -145,7 +145,7 @@ function isCompressedSettings(settings: MaybeCompressedSettings | null | undefin
 function inflateRouteToken(
     compactToken: CompactRouteToken,
     baseToken: Token
-): NetworkRouteToken {
+): Token {
     const resolvedToken = { ...baseToken };
 
     if (compactToken.status !== undefined) {
@@ -181,7 +181,7 @@ function inflateRoutes(
             (baseNetwork.tokens || []).map((token) => [token.symbol, token])
         );
 
-        const tokens: NetworkRouteToken[] = [];
+        const tokens: Token[] = [];
         for (const compactToken of compactRoute.tokens || []) {
             const baseToken = baseTokensBySymbol.get(compactToken.symbol);
             if (baseToken) tokens.push(inflateRouteToken(compactToken, baseToken));
