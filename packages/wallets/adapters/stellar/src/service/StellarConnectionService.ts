@@ -8,8 +8,10 @@ import type {
 } from '@layerswap/wallet-core/types'
 import {
     buildDeepLink,
+    chainsToNetworkTypes,
     clearPendingDynamicWcMetadata,
     createRegistryConnector,
+    findRegistryWalletByName,
     getDynamicWcMetadata,
     getPendingDynamicWcMetadata,
     isWalletConnectRegistryConnector,
@@ -17,6 +19,7 @@ import {
     setPendingMetadataForRegistry,
     subscribeDisplayUri,
     walletIconResolver,
+    walletKey,
     type AppNetworkAdapter,
     type WalletConnectWalletBase,
 } from '@layerswap/wallet-core'
@@ -71,7 +74,20 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
         const isMobilePlatform = this.deps.isMobilePlatform ?? false
         const configured = stellarStore.getState().wallets
             .filter(wallet => wallet.id !== STELLAR_APPKIT_WALLET_CONNECT_ID)
-            .map(toStellarConnector)
+            .map(wallet => {
+                const connector = toStellarConnector(wallet)
+                const registryMatch = this.deps.registryConnectors?.find(registryWallet =>
+                    walletKey(registryWallet.name) === walletKey(wallet.name)
+                    || walletKey(registryWallet.id) === walletKey(wallet.name),
+                )
+                return {
+                    ...connector,
+                    hasBrowserExtension: connector.hasBrowserExtension ?? (registryMatch ? true : undefined),
+                    networkTypes: chainsToNetworkTypes(registryMatch?.chains ?? []),
+                    mobile: registryMatch?.mobile,
+                    isMobileSupported: connector.isMobileSupported || registryMatch?.isMobileSupported,
+                }
+            })
             .filter(connector => !isMobilePlatform || connector.isMobileSupported)
         const recent = (this.deps.recentConnectors ?? [])
             .filter(connector => !isMobilePlatform || connector.isMobileSupported)
@@ -95,14 +111,24 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
 
     async connectWallet({ connector }: { connector: WalletModalConnector }): Promise<Wallet | undefined> {
         const wallets = stellarStore.getState().wallets
-        const registryConnector = isWalletConnectRegistryConnector(connector) ? connector : undefined
-        const wallet = registryConnector
+        const isMobilePlatform = this.deps.isMobilePlatform ?? false
+        const configuredWallet = wallets.find(item => item.id === connector.id)
+        let registryConnector = isWalletConnectRegistryConnector(connector) ? connector : undefined
+        if (!registryConnector && isMobilePlatform && configuredWallet && configuredWallet.type !== 'BRIDGE_WALLET'
+            && !configuredWallet.isAvailable && !configuredWallet.isPlatformWrapper && this.deps.requestRegistryConnectors
+        ) {
+            const registryWallet = await findRegistryWalletByName(this.deps.requestRegistryConnectors, connector.name)
+            if (registryWallet) {
+                registryConnector = createRegistryConnector(registryWallet, isMobilePlatform, PROVIDER_NAME)
+            }
+        }
+        const useWalletConnect = !!registryConnector || (connector.hasBrowserExtension && (connector.showQrCode || (isMobilePlatform && connector.extensionNotFound)))
+        const wallet = useWalletConnect
             ? wallets.find(item => item.type === 'BRIDGE_WALLET')
-            : wallets.find(item => item.id === connector.id)
+            : configuredWallet
         if (!wallet) throw new Error('Stellar wallet connector not found')
 
         const isWalletConnect = wallet.type === 'BRIDGE_WALLET'
-        const isMobilePlatform = this.deps.isMobilePlatform ?? false
         const mobile = registryConnector?.mobile
         const deepLink = mobile?.native || mobile?.universal || undefined
         const resolveURI = registryConnector && mobile && deepLink

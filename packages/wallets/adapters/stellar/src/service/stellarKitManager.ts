@@ -135,7 +135,6 @@ class StellarKitManager {
         const persisted = readPersistedSession()
         kitModule.StellarWalletsKit.init({
             modules,
-            selectedWalletId: persisted?.walletId,
             network,
         })
         this.kit = kitModule.StellarWalletsKit
