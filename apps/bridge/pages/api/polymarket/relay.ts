@@ -30,7 +30,7 @@ import { validateRelaySubmitRequest } from "../../../lib/polymarket/validateRela
  * Optional: POLYMARKET_RELAYER_URL (defaults to relayer-v2.polymarket.com).
  */
 
-// A legit submit (a 4-call SAFE batch) is well under 10KB; cap the parsed body so the
+// A legit submit (at most a 3-call SAFE batch) is well under 10KB; cap the parsed body so the
 // MultiSend decoder never sees megabytes of attacker hex.
 export const config = { api: { bodyParser: { sizeLimit: "100kb" } } };
 

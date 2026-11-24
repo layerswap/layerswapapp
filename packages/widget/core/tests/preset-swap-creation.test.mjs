@@ -25,7 +25,7 @@ const swapCreation = loadSource('lib/swapCreation.ts', {
 })
 const { preparePresetAmount } = loadSource('lib/preparePresetAmount.ts', {
   '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
-  '@layerswap/widget-types': { usesDepository: () => false },
+  '@layerswap/widget-types': { usesWalletFunding: () => false },
   '@/hooks/useFee': { buildLimitsUrl: () => '/limits' },
   './apiClients/layerSwapApiClient': { default: class { async fetcher() { return { data: state.limits } } } },
   './extendedRoutes/registry': { resolveExtendedRoutePlan: () => undefined },
