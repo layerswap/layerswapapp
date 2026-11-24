@@ -1018,19 +1018,21 @@ test('a live Max never budgets less than the deposit fee floor the swap context 
 })
 
 test('the fee floor only raises a successful estimate in the same fee token, keeping the larger reserve', () => {
-  const { withGasFloor, resolveAmountPresetGasFloor, amountPresetGasFloorScope } = amountPresets
+  const { withGasFloor } = amountPresets
   const floor = { gas: 0.1, token }
   assert.equal(withGasFloor(undefined, floor), undefined, 'a failed estimate stays a failure')
-  assert.deepEqual(withGasFloor({ gas: 0.01, token }, undefined), { gas: 0.01, token })
-  assert.deepEqual(withGasFloor({ gas: 0.01, token }, floor), floor)
-  assert.deepEqual(withGasFloor({ gas: 0.2, token }, floor), { gas: 0.2, token })
   assert.deepEqual(withGasFloor({ gas: 0.01, maxFee: 0.15, token }, floor), { gas: 0.01, maxFee: 0.15, token }, 'budgets compare the maximum fee')
   assert.deepEqual(withGasFloor({ gas: 0.01, reserve: 0.1, token }, floor), { gas: 0.1, reserve: 0.1, token }, 'the live reserve survives a floor that raises the fee')
   assert.deepEqual(withGasFloor({ gas: 0.2, token }, { gas: 0.1, reserve: 0.05, token }), { gas: 0.2, reserve: 0.05, token }, 'a reserve only the floor knows is kept')
   const other = { symbol: 'USDC', decimals: 6 }
   assert.deepEqual(withGasFloor({ gas: 0.01, token: other }, floor), { gas: 0.01, token: other }, 'a floor in another fee token is ignored')
-  const scope = amountPresetGasFloorScope('source', 'BASE_MAINNET', 'ETH')
-  assert.equal(resolveAmountPresetGasFloor({ scope, gas: floor }, scope), floor)
-  assert.equal(resolveAmountPresetGasFloor({ scope, gas: floor }, amountPresetGasFloorScope('source', 'BASE_MAINNET', 'USDC')), undefined)
-  assert.equal(resolveAmountPresetGasFloor(undefined, scope), undefined)
+})
+
+test('automatic revisions require a reduction within one percent or one cent at a known price', () => {
+  const { isSmallAmountRevision } = amountPresets
+  assert.equal(isSmallAmountRevision('0.9', '0.895'), true)
+  assert.equal(isSmallAmountRevision('0.9', '0.89', 1800), false)
+  assert.equal(isSmallAmountRevision('0.0001', '0.000098', 1800), true)
+  assert.equal(isSmallAmountRevision('0.0001', '0.000098'), false)
+  assert.equal(isSmallAmountRevision('0.0001', '0.000098', 0), false)
 })

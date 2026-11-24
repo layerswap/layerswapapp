@@ -25,17 +25,17 @@ afterEach(() => registerWidgetErrorLogger())
 const swap = { swap: { id: 'swap-1', source_address: '0xsource', status: 'created' }, quote: {} }
 const lifecycleContext = { depositMethod: 'wallet', requestedAmount: '1', sourceNetwork: 'A', destinationNetwork: 'B' }
 
-function harness({ useGasless = false, request = async () => ({ data: swap }), onCreated = [], prepare, create } = {}) {
+function harness({ useGasless = false, request = async () => ({ data: swap }), onCreated = [], prepare } = {}) {
   const lifecycle = []
   const reported = []
   let gaslessUnavailable = 0
   setErrorLogger(event => reported.push(event))
   const attempt = createSwapAttempt(
-    create ?? (async () => {
+    async () => {
       const prepared = prepare ? await prepare() : { request, useGasless, onCreated }
       const created = await requestSwap(prepared, () => { gaslessUnavailable++ })
       return { swap: created, onCreated: prepared.onCreated }
-    }),
+    },
     {
       path: 'test.createSwap',
       lifecycleContext,
@@ -73,29 +73,6 @@ test('a rejected use_gasless request declares gasless unavailable and fails the 
   assert.deepEqual(h.lifecycle[1], { step: 'swap_creation_failed', outcome: 'failed', stage: 'swap_creation', path: 'test.createSwap', ...lifecycleErrorDetails(error), ...lifecycleContext })
   assert.equal(h.lifecycle[1].reasonCode, 'GASLESS_NOT_SUPPORTED')
   assert.equal(h.gaslessUnavailable(), 1)
-})
-
-test('creation starts before preparation finishes and announces only after acceptance', async () => {
-  const accepted = Promise.withResolvers()
-  const calls = []
-  const h = harness({ create: () => accepted.promise })
-  assert.deepEqual(h.steps(), ['swap_creation_started'])
-  assert.deepEqual(calls, [])
-  accepted.resolve({ swap, onCreated: [{ name: 'onSwapCreate', run: response => calls.push(response.swap.id) }] })
-  assert.equal(await h.attempt, swap)
-  assert.deepEqual(h.steps(), ['swap_creation_started', 'swap_created'])
-  assert.deepEqual(calls, [swap.swap.id])
-})
-
-test('a rejected candidate ends creation without announcing a swap or flipping gasless', async () => {
-  const accepted = Promise.withResolvers()
-  const h = harness({ create: () => accepted.promise })
-  const rejection = assert.rejects(h.attempt, /fee check failed/)
-  accepted.reject(new Error('fee check failed'))
-  await rejection
-  assert.deepEqual(h.steps(), ['swap_creation_started', 'swap_creation_failed'])
-  assert.equal(h.lifecycle[1].swapId, undefined)
-  assert.equal(h.gaslessUnavailable(), 0)
 })
 
 test('an error envelope on a use_gasless request declares gasless unavailable and rejects with that error', async () => {

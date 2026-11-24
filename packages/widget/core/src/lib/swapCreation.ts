@@ -4,6 +4,7 @@ import type { ApiResponse } from '@layerswap/widget-types'
 import type { SwapResponse } from '@/lib/apiClients/layerSwapApiClient'
 import { ErrorHandler } from '@/lib/ErrorHandler'
 import { lifecycleErrorDetails, type SwapLifecycleContext } from './swapLifecycle'
+import { AmountPresetChangedError } from './amountPresets'
 
 // Swap creation is split into three scopes so that each has one owner:
 //  - attempt (createSwapAttempt): owns the full confirmation and its accepted outcome,
@@ -87,11 +88,21 @@ export function announceCreatedSwap(swap: SwapResponse, effects: ReadonlyArray<S
     }
 }
 
+const AMOUNT_ADJUSTMENT_REASON_CODE = 'amount_adjustment_required'
+
+// A proposed amount waits for the user; failure counts must not include it.
+function creationFailureDetails(error: unknown): Pick<SwapLifecycleEvent, 'outcome' | 'reasonCode' | 'reason' | 'errorCode' | 'occurrenceId'> {
+    if (error instanceof AmountPresetChangedError) {
+        return { outcome: 'blocked', reasonCode: AMOUNT_ADJUSTMENT_REASON_CODE, reason: error.message }
+    }
+    return { outcome: 'failed', ...lifecycleErrorDetails(error) }
+}
+
 /**
  * Attempt scope. Invariants:
  *  (a) start is emitted before any preparation, request or fee verification;
  *  (b) exactly one of swap_created / swap_creation_failed ends the attempt, including
- *      proposals and discarded candidates; only the accepted swap is announced;
+ *      proposals (outcome `blocked`) and discarded candidates; only the accepted swap is announced;
  *  (c) onGaslessUnavailable fires only from requestSwap;
  *  (d) post-creation effects never affect (a)/(b).
  */
@@ -105,7 +116,7 @@ export async function createSwapAttempt(
     try {
         result = await create()
     } catch (error) {
-        hooks.onLifecycle({ step: 'swap_creation_failed', outcome: 'failed', ...base, ...lifecycleErrorDetails(error), ...hooks.lifecycleContext })
+        hooks.onLifecycle({ step: 'swap_creation_failed', ...base, ...creationFailureDetails(error), ...hooks.lifecycleContext })
         throw error
     }
     const { swap, onCreated, lifecycleContext } = result

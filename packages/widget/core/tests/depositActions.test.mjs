@@ -2777,6 +2777,7 @@ for (const scenario of [
 
 for (const scenario of [
     { name: 'wrong provider account', isConnected: true, accountMismatch: true, reason: 'wallet_account_mismatch', text: /Wrong account/ },
+    { name: 'provider amount proposal', isConnected: true, amountProposal: { message: 'Adjust amount' }, text: /Adjust amount/ },
     { name: 'normal provider connection', isConnected: false, accountMismatch: true, text: /Connect wallet/ },
     { name: 'submitted provider transfer after account change', isConnected: true, accountMismatch: true, submissionAccepted: true, loading: true, text: /Withdrawing/ },
     { name: 'submitted provider transfer after disconnect', isConnected: false, accountMismatch: true, submissionAccepted: true, loading: true, progress: { title: 'Provider progress' }, text: /Provider progress/ },
@@ -2802,7 +2803,7 @@ for (const scenario of [
             '../messages/Message': { default: ({ header }) => createElement('p', null, header) },
             '../messages/TransactionMessages': { ActionMessages: { WalletMismatchMessage: () => createElement('p', null, 'Wrong account') } },
             './WalletActionsView': flow.walletViews,
-            './AmountProposalView': { AmountProposalView: () => null },
+            './AmountProposalView': { AmountProposalView: ({ message }) => createElement('p', null, message) },
         })
         await act(() => root.render(createElement(SpecializedWithdrawalView, {
             ...scenario, provider: 'Provider', network: flow.network,
@@ -2866,59 +2867,29 @@ for (const signatureState of ['completed sign-only action', 'saved signature bef
     }
 }
 
-test('a preset the confirmation cannot send offers Adjust amount, which applies it for the next Confirm', async t => {
-    const dom = new JSDOM('<div id="root"></div>')
-    const previous = Object.getOwnPropertyDescriptors(globalThis)
-    Object.assign(globalThis, { window: dom.window, document: dom.window.document, IS_REACT_ACT_ENVIRONMENT: true })
-    const flow = createWorkflow({ mounted: true })
+test('the send action offers a proposal and confirms only after adjustment', async () => {
+    const flow = createWorkflow()
     flow.network.chain_id = '8453'
     flow.wallet.chainId = 8453
-    flow.state.resolveCurrentFlow = true
-    flow.state.renderControls = true
-    flow.state.swapId = undefined
-    flow.state.swapDetails = undefined
-    flow.state.depositActionsResponse = undefined
-    flow.state.walletExecutionStarted = false
-    flow.state.swapBasicData = { ...atomicFixtures.swap, source_network: flow.network, destination_network: { name: 'ARBITRUM_MAINNET' } }
-    const message = 'The network fee for this swap is higher than estimated. Adjust the amount to cover it.'
-    const creations = []
-    // The swap context publishes the proposal before rejecting; the draft keeps the reviewed amount.
-    flow.state.createSwap = async values => {
-        creations.push(values.amount)
-        if (creations.length === 1) {
-            flow.state.presetRevisionProposal = { amount: '0.65', message }
-            throw new amountPresets.AmountPresetChangedError(message)
-        }
-        throw new Error('creation stops here for the test')
-    }
-    const root = createRoot(document.getElementById('root'))
-    t.after(async () => {
-        await act(async () => root.unmount())
-        dom.window.close()
-        for (const key of ['window', 'document', 'IS_REACT_ACT_ENVIRONMENT']) {
-            if (previous[key]) Object.defineProperty(globalThis, key, previous[key]); else delete globalThis[key]
-        }
+    Object.assign(flow.state, {
+        resolveCurrentFlow: true, swapId: undefined, swapDetails: undefined, depositActionsResponse: undefined,
+        swapBasicData: { ...atomicFixtures.swap, source_network: flow.network, destination_network: { name: 'ARBITRUM_MAINNET' } },
     })
-    const render = () => act(async () => root.render(createElement(React.StrictMode, null, createElement(flow.Component))))
-    await render()
-    const reviewedAmount = flow.state.swapBasicData.requested_amount
-    await act(async () => { await flow.view.handleClick() })
-    assert.match(document.body.textContent, /Adjust the amount/)
-    assert.match(document.body.textContent, new RegExp(message.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
-    assert.doesNotMatch(document.body.textContent, /Something went wrong|Try again|Confirm swap/)
-    assert.equal(flow.state.swapBasicData.requested_amount, reviewedAmount, 'the reviewed amount stays until the user adjusts')
-    const adjust = [...document.querySelectorAll('button')].find(button => button.textContent === 'Adjust amount')
-    assert.ok(adjust, 'the proposal takes the send action\'s place')
-    assert.equal(adjust.disabled, false)
-    assert.deepEqual(flow.calls.executionStarts, [])
-    assert.deepEqual(flow.calls.errors, [], 'a proposal is not reported as a withdrawal error')
-    await act(async () => { adjust.click() })
-    assert.deepEqual(creations, [String(reviewedAmount)], 'Adjust only applies the amount; nothing is sent yet')
+    const amounts = []
+    flow.state.createSwap = async values => {
+        amounts.push(values.amount)
+        flow.state.presetRevisionProposal = { amount: '0.65', message: 'Adjust the amount to cover the deposit fee.' }
+        throw new amountPresets.AmountPresetChangedError()
+    }
+    const reviewed = String(flow.state.swapBasicData.requested_amount)
+    await flow.render().viewProps.handleClick()
+    const proposal = flow.render()
+    assert.equal(proposal.warning, 'Adjust the amount to cover the deposit fee.')
+    assert.equal(proposal.button, undefined, 'the proposal replaces Confirm')
+    assert.deepEqual(flow.calls.errors, [])
+    proposal.viewProps.amountProposal.onAdjust()
+    assert.deepEqual(amounts, [reviewed], 'Adjust does not submit')
     assert.equal(flow.state.presetRevisionProposal, undefined)
-    assert.equal(flow.state.swapBasicData.requested_amount, '0.65')
-    await render()
-    assert.doesNotMatch(document.body.textContent, /Adjust the amount/)
-    assert.equal(document.querySelector('button').textContent, 'Confirm swap', 'the confirm action returns for the applied amount')
-    await act(async () => { await flow.view.handleClick() })
-    assert.deepEqual(creations, [String(reviewedAmount), '0.65'], 'Confirm sends the applied amount')
+    await flow.render().button.props.onClick()
+    assert.deepEqual(amounts, [reviewed, '0.65'])
 })

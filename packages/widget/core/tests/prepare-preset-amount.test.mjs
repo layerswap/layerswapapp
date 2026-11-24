@@ -26,8 +26,8 @@ const setup = ({ balance = 1, gas = 0.1, maxFee, reserve, limits = { min_amount:
     './amountPresets': amountPresets,
   })
   // The confirmation check reads once and calculates once.
-  const preparePresetAmount = async (values, address, wallet, sourceRoutes, useGasless, publishLimits, gasFloor) =>
-    (await startPresetPreparation(values, address, wallet, sourceRoutes, useGasless, publishLimits)).calculate(gasFloor)
+  const preparePresetAmount = async (values, address, wallet, sourceRoutes, useGasless, publishLimits) =>
+    (await startPresetPreparation(values, address, wallet, sourceRoutes, useGasless, publishLimits)).calculate()
   return { preparePresetAmount, startPresetPreparation, calls }
 }
 
@@ -42,6 +42,7 @@ test('a preparation recalculates from the same balance and limits with another f
   assert.equal(reads(), 2)
   assert.equal(calls.filter(([name]) => name === 'gas').length, 1, 'a supplied fee replaces the live estimate')
   assert.equal(await preparation.calculate({ gas: 0.11, token }, async () => ({ gas: 0.05, token })), '0.8878', 'the floor still raises a smaller supplied fee')
+  assert.equal(await preparation.calculate({ gas: 0.2, token }), '0.796', 'the floor also raises the live estimate')
 })
 
 test('creation preparation bypasses cached balances, refreshes matching limits and estimates the payable amount', async () => {
@@ -161,11 +162,4 @@ test('confirmation preserves a reviewed amount that covers the buffered fee', as
   const { preparePresetAmount, calls } = setup({ gas: 0.10001 })
   assert.equal(await preparePresetAmount({ ...values, amount: '0.897' }, 'source', {}, [], false), '0.897')
   assert.equal(calls.filter(([name]) => name === 'gas').length, 1)
-})
-
-test('the confirmation check never budgets less than the deposit fee floor it is given', async () => {
-  const { preparePresetAmount, calls } = setup({ gas: 0.1 })
-  const amount = await preparePresetAmount({ ...values, amount: '0.898' }, 'source', {}, [], false, undefined, { gas: 0.2, token })
-  assert.equal(amount, '0.796')
-  assert.deepEqual(calls.filter(([name]) => name === 'gas').map(([, args]) => args.amount), [0.898, 0.796])
 })

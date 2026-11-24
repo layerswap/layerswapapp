@@ -67,7 +67,7 @@ function loadSource(path, imports = {}) {
         if (name === '@/lib/atomicBatchExecution') return { executeAtomicBatch: () => assert.fail('legacy flow cannot submit an atomic batch') };
         if (name === '@/lib/resolvers/resolverService') return {};
         if (name === '@/hooks/useClientLayoutEffect') return { useClientLayoutEffect: React.useLayoutEffect };
-        if (name === '@/lib/amountPresets') return loadSource('lib/amountPresets.ts', {
+        if (name === '@/lib/amountPresets' || name === './amountPresets') return loadSource('lib/amountPresets.ts', {
             '@/lib/gases/resolveGasBalanceBudget': loadSource('lib/gases/resolveGasBalanceBudget.ts'),
             '@/components/Input/Amount/helpers': loadSource('components/Input/Amount/helpers.ts', {
                 '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),

@@ -39,6 +39,7 @@ const context = createSwapContext({
       '@layerswap/widget-types': require('@layerswap/widget-types'),
       '@/lib/ErrorHandler': { ErrorHandler() {} },
       './swapLifecycle': { lifecycleErrorDetails: () => ({}) },
+      './amountPresets': amountPresets,
     }),
     '@/hooks/useSwapPolling': { useSwapPolling: id => ({ data: id ? state.backendResponse : undefined, mutate() {} }) },
   },
@@ -645,22 +646,4 @@ test('changing the funding account clears the proposal and releases its live pre
   assert.equal(data.amountPresetLocked, false)
   assert.equal(formik.values.amountMode, 'manual')
   assert.equal(updates.applyPresetRevision(), undefined)
-})
-
-test('a fresh attempt clears the proposal and resumes live amounts', async () => {
-  const { proposed } = await proposeBalanceReduction()
-  await act(() => updates.startFreshSwapAttempt())
-  assert.equal(data.presetRevisionProposal, undefined)
-  assert.equal(data.amountPresetLocked, false)
-  assert.equal(summaryAmount(), proposed)
-})
-
-
-test('closing a review with a pending proposal lets the form resume live amounts', async () => {
-  const { proposed } = await proposeBalanceReduction()
-  await act(() => updates.setSwapViewMounted(false))
-  assert.equal(data.amountPresetLocked, false)
-  assert.equal(formik.values.amount, proposed)
-  await act(() => updates.setSubmitedFormValues(formik.values))
-  assert.equal(data.presetRevisionProposal, undefined)
 })

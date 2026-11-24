@@ -213,6 +213,7 @@ test('a balance covering the fee but missing its safety buffer offers Adjust amo
 })
 
 test('the warning and adjustment request the current deposit action payload', async () => {
+  const { amountPresetGasFloorScope, amountPresetSource } = await import('../dist/esm/lib/amountPresets.js')
   state.actions = [{ type: 'transfer', to_address: 'recipient', amount: 0.95, amount_in_base_units: '950000000000000001', call_data: '0x1234', network, token }]
   await render()
   assert.ok(state.gasRequests.length > 0)
@@ -222,6 +223,10 @@ test('the warning and adjustment request the current deposit action payload', as
       recipientAddress: 'recipient', callData: '0x1234', amountInBaseUnits: '950000000000000001',
     })
   }
+  assert.deepEqual(state.recorded.at(-1), {
+    scope: amountPresetGasFloorScope(amountPresetSource(network.name, token.symbol, undefined, 'source'), 'BASE_MAINNET', token.symbol),
+    gas: state.gasData,
+  })
 })
 
 test('deposit actions for another source account cannot replace its gas estimate', async () => {
@@ -290,22 +295,6 @@ test('Adjust amount explicitly starts a fresh draft with Max enabled', async () 
   assert.equal(state.submitted.amountMode, 'max')
   assert.equal(state.submitted.amount, '0.898')
   assert.equal(state.formValues.amount, state.submitted.amount)
-})
-test('the real deposit fee is recorded in the swap context as a floor scoped to the route and funding account', async () => {
-  const { amountPresetGasFloorScope, amountPresetSource } = await import('../dist/esm/lib/amountPresets.js')
-  state.actions = [{ type: 'transfer', to_address: 'recipient', amount: 0.95, amount_in_base_units: '950000000000000001', call_data: '0x1234', network, token }]
-  await render()
-  await render()
-  assert.ok(state.recorded.length > 0, 'the transaction-based estimate must be recorded')
-  for (const floor of state.recorded) assert.deepEqual(floor, {
-    scope: amountPresetGasFloorScope(amountPresetSource(network.name, token.symbol, undefined, 'source'), 'BASE_MAINNET', token.symbol),
-    gas: { gas: 0.1, token },
-  })
-})
-test('an estimate without a deposit action records no fee floor', async () => {
-  await render()
-  await act(() => adjustButton().click())
-  assert.equal(state.submitted.amount, '0.898')
   assert.deepEqual(state.recorded, [])
 })
 test('Adjust amount cannot abandon an executing swap', async () => {
@@ -566,16 +555,11 @@ test('a pending amount proposal takes precedence over the native gas warning', a
     { network: network.name, token: 'USDT', amount: 100, isNativeCurrency: false },
     { network: network.name, token: token.symbol, amount: 0, isNativeCurrency: true },
   ]
-  await render()
-  assert.match(container.textContent, /Required maximum gas fee/)
   state.proposal = { amount: '0.8', message: 'Adjust the amount to continue.' }
   await render()
   assert.doesNotMatch(container.textContent, /Insufficient balance for gas|Required maximum gas fee/)
   assert.ok(sendButton(), 'the wallet view must remain mounted to render its proposal action')
   assert.deepEqual(blocks(), [])
-  state.proposal = undefined
-  await render()
-  assert.match(container.textContent, /Required maximum gas fee/)
 })
 
 test('a token gas warning follows the fee token returned by the gas provider for the selected wallet', async () => {

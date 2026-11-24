@@ -184,8 +184,10 @@ optional unless the emitting code has them at that step.
 For wallet amount presets, creation spans confirmation preparation, deposit-fee
 verification and any replacement request. Only the accepted swap emits
 `swap_created` and a swap ID. `swap_creation_failed` means the attempt ended
-without an accepted swap, including an amount proposal or a failed fee check;
-provisional API IDs remain private. The creation timer covers this whole attempt.
+without an accepted swap; provisional API IDs remain private. An amount proposal
+waiting for the user's adjustment reports outcome `blocked` with reason code
+`amount_adjustment_required`, so failure panels and alerts (outcome `failed`)
+exclude it. The creation timer covers this whole attempt.
 
 Use `journey_id` and `sequence` to reconstruct the ordered journey, including
 events before the API creates a `swap_id`. `attempt`, `previous_step`,

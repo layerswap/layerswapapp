@@ -786,11 +786,15 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             if (requiresProviderConfirmation || !isSmallRevision) {
                 propose(amount, reason === 'deposit-fee' ? DEPOSIT_FEE_ADJUSTMENT_MESSAGE : undefined, floor)
             }
-            if (floor) recordDepositGasFloor(floor)
-            setSwapBasicFormData(current => current ? { ...current, requested_amount: amount } : current)
             return { ...values, amount }
         }
-        const finish = (created: SwapCreationResult) => {
+        // Candidate amounts and floors stay local until the attempt is accepted.
+        const finish = (created: SwapCreationResult, sent: SwapFormValues, floor?: AmountPresetGasFloor) => {
+            if (floor) recordDepositGasFloor(floor)
+            const { amount } = sent
+            if (amount !== undefined && amount !== values.amount) {
+                setSwapBasicFormData(current => current ? { ...current, requested_amount: amount } : current)
+            }
             setPresetCreated(true)
             return created
         }
@@ -813,30 +817,26 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             // the live preset rewrite a proposed amount before the user accepts it.
             const depositGas = await estimateDepositActionGas(created.swap.deposit_actions, sendValues, address, selectedWallet)
             assertCurrentSource()
-            if (!depositGas) return finish(created)
+            if (!depositGas) return finish(created, sendValues)
             const floor = { scope: floorScope, gas: depositGas }
             if (values.amountMode === 'min') {
+                // Exception: Min can't be reduced, so keep the observed fee for later affordability checks even if this attempt fails.
                 recordDepositGasFloor(floor)
             }
             const affordable = await preparation.calculate(gasFloor, async () => depositGas)
             assertCurrentSource()
-            if (Number(affordable) >= Number(sendValues.amount)) {
-                recordDepositGasFloor(floor)
-                return finish(created)
-            }
+            if (Number(affordable) >= Number(sendValues.amount)) return finish(created, sendValues, floor)
             sendValues = revise(affordable, 'deposit-fee', floor)
             const replacement = await createSwapRequest(sendValues, query, partner)
             // One replacement per click. A further shortfall is proposed instead.
             const replacementGas = await estimateDepositActionGas(replacement.swap.deposit_actions, sendValues, address, selectedWallet)
             assertCurrentSource()
-            if (replacementGas) {
-                const stillAffordable = await preparation.calculate(gasFloor, async () => replacementGas)
-                assertCurrentSource()
-                const replacementFloor = { scope: floorScope, gas: replacementGas }
-                if (Number(stillAffordable) < Number(sendValues.amount)) propose(stillAffordable, DEPOSIT_FEE_ADJUSTMENT_MESSAGE, replacementFloor)
-                recordDepositGasFloor(replacementFloor)
-            }
-            return finish(replacement)
+            if (!replacementGas) return finish(replacement, sendValues, floor)
+            const stillAffordable = await preparation.calculate(gasFloor, async () => replacementGas)
+            assertCurrentSource()
+            const replacementFloor = { scope: floorScope, gas: replacementGas }
+            if (Number(stillAffordable) < Number(sendValues.amount)) propose(stillAffordable, DEPOSIT_FEE_ADJUSTMENT_MESSAGE, replacementFloor)
+            return finish(replacement, sendValues, replacementFloor)
         }
         return createSwapAttempt(confirmAndCreate, hooks).finally(() => {
             presetPreparation.current = false
