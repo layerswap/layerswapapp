@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import type { SwapBasicData } from '@/lib/apiClients/layerSwapApiClient';
+import type { SelectAccountProps } from '@layerswap/wallet-core/types';
+import { useSelectSwapAccount } from '@/context/swapAccounts';
+import { SourceWalletDrawer } from '@/components/Wallet/WalletComponents/SourceWalletDrawer';
 import { ButtonWrapper } from '../Presentation/WalletActionsView';
 import WalletMessage from '../messages/Message';
-import { WalletTransferPicker } from '../WalletTransferPicker';
 
 type Props = {
     swapData: SwapBasicData;
@@ -11,6 +13,16 @@ type Props = {
 
 export function UnsupportedSourceWallet({ swapData, walletName }: Props) {
     const [openModal, setOpenModal] = useState(false);
+    const selectSourceAccount = useSelectSwapAccount('from');
+
+    const selectWallet = (account: SelectAccountProps) => {
+        selectSourceAccount({
+            id: account.walletId,
+            address: account.address,
+            providerName: account.providerName,
+        });
+        setOpenModal(false);
+    };
 
     return (
         <div className="flex flex-col gap-2 w-full">
@@ -20,7 +32,13 @@ export function UnsupportedSourceWallet({ swapData, walletName }: Props) {
                 details={`${walletName} cannot send from ${swapData.source_network.display_name ?? swapData.source_network.name}. Choose a compatible source wallet or connect another one.`}
             />
             <ButtonWrapper onClick={() => setOpenModal(true)}>Choose source wallet</ButtonWrapper>
-            <WalletTransferPicker swapData={swapData} openModal={openModal} setOpenModal={setOpenModal} />
+            <SourceWalletDrawer
+                network={swapData.source_network}
+                token={swapData.source_token}
+                show={openModal}
+                setShow={setOpenModal}
+                onSelect={selectWallet}
+            />
         </div>
     );
 }

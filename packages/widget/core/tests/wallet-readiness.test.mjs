@@ -93,11 +93,12 @@ const hooks = registerHooks({
     if (context.parentURL?.endsWith('/UnsupportedSourceWallet.js')) {
       if (specifier.endsWith('/Presentation/WalletActionsView')) return { url: mockUrl, shortCircuit: true }
       if (specifier.endsWith('/messages/Message')) return { url: 'data:text/javascript,export default ({ details }) => details', shortCircuit: true }
+      if (specifier.endsWith('/context/swapAccounts')) return { url: mockUrl, shortCircuit: true }
     }
-    if (context.parentURL?.endsWith('/WalletTransferPicker.js')) {
+    if (context.parentURL?.endsWith('/SourceWalletDrawer.js')) {
       if (specifier.endsWith('/Modal/vaulModal')) return { url: 'data:text/javascript,' + encodeURIComponent(`import { Drawer } from ${JSON.stringify(mockUrl)}; export default Drawer`), shortCircuit: true }
-      if (specifier.endsWith('/WalletComponents/WalletsList')) return { url: 'data:text/javascript,' + encodeURIComponent(`import { WalletsList } from ${JSON.stringify(mockUrl)}; export default WalletsList`), shortCircuit: true }
-      if (specifier.endsWith('/hooks/useWallet') || specifier.endsWith('/context/swapAccounts')) return { url: mockUrl, shortCircuit: true }
+      if (specifier.endsWith('/WalletsList')) return { url: 'data:text/javascript,' + encodeURIComponent(`import { WalletsList } from ${JSON.stringify(mockUrl)}; export default WalletsList`), shortCircuit: true }
+      if (specifier.endsWith('/hooks/useWallet')) return { url: mockUrl, shortCircuit: true }
     }
     if (context.parentURL?.endsWith('/components/Pages/Swap/Withdraw/Wallet/index.js')) {
       if (specifier.endsWith('/RPCUnhealthyMessage')) return { url: 'data:text/javascript,export default () => %22RPC unhealthy%22', shortCircuit: true }
