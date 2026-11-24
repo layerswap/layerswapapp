@@ -8,6 +8,7 @@ import {
     watchConnectors,
 } from '@wagmi/core'
 import { snapshotFromAccount, useEvmStore } from './evmStore'
+import { watchWalletCapabilities } from './watchWalletCapabilities'
 
 let _attached = false
 let _dispose: (() => void) | null = null
@@ -38,6 +39,9 @@ export function attachWagmiSync(config: Config): () => void {
             onChange: (connectors) => {
                 useEvmStore.getState()._setConnectors(connectors)
             },
+        }))
+        unwatchers.push(watchWalletCapabilities(config, capabilities => {
+            useEvmStore.getState()._setWalletCapabilities(capabilities)
         }))
     } catch (error) {
         unwatchers.forEach(unwatch => unwatch())

@@ -1,3 +1,5 @@
+import type { Network, Token } from './types';
+
 export enum NetworkType {
   EVM = 'evm',
   Starknet = 'starknet',
@@ -15,51 +17,9 @@ export enum NetworkType {
 
 export type GaslessStandard = 'none' | 'eip3009' | 'erc2612' | 'permit2';
 
-type RefuelToken = {
-  /** Canonical identifier used in Layerswap API requests and lookups. */
-  symbol: string;
-  /** User-facing ticker used in labels and messages. */
-  asset: string;
-  display_asset?: string;
-  logo: string;
-  contract: string | null | undefined;
-  decimals: number;
-  price_in_usd: number;
-  precision: number;
-  listing_date: string;
-  status?: 'active' | 'inactive' | 'not_found';
-  supports_gasless_deposit?: boolean;
-  gasless_standard?: GaslessStandard | null;
-  source_rank?: number;
-  destination_rank?: number;
-};
-
-type RefuelNetwork = {
-  name: string;
-  display_name: string;
-  logo: string;
-  chain_id: string | null;
-  node_url: string;
-  nodes: string[];
-  type: NetworkType;
-  transaction_explorer_template: string;
-  account_explorer_template: string;
-  metadata?: {
-    evm_oracle_contract?: `0x${string}` | null;
-    evm_multicall_contract?: string | null;
-    listing_date: string;
-    zks_paymaster_contract?: `0x${string}` | null;
-    watchdog_contract?: string | null;
-  };
-  deposit_methods: string[];
-  token?: RefuelToken;
-  source_rank?: number;
-  destination_rank?: number;
-};
-
 export type Refuel = {
-  network: RefuelNetwork;
-  token: RefuelToken;
+  network: Network;
+  token: Token;
   amount: number;
   amount_in_usd: number;
 };

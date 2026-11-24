@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { RefObject, useEffect } from "react";
 import ReactPortal from "@/components/Common/ReactPortal";
 import { CollapsableHeader } from "./CollapsableHeader";
 import { GroupedTokenElement, NetworkElement } from "@/Models/Route";
@@ -7,7 +7,7 @@ import { SwapDirection } from "@/components/Pages/Swap/Form/SwapFormValues";
 type StickyHeaderProps = {
     item: NetworkElement | GroupedTokenElement;
     direction: SwapDirection;
-    scrollContainer: HTMLDivElement | null;
+    scrollContainerRef: RefObject<HTMLDivElement | null>;
     open: boolean | undefined;
     headerRef: React.RefObject<HTMLDivElement | null>;
     contentRef: React.RefObject<HTMLDivElement | null>;
@@ -21,7 +21,7 @@ type StickyHeaderProps = {
 export function StickyHeader({
     item,
     direction,
-    scrollContainer,
+    scrollContainerRef,
     open,
     headerRef,
     contentRef,
@@ -38,7 +38,10 @@ export function StickyHeader({
             return;
         }
 
-        const onScroll = () => {
+        const scrollContainer = scrollContainerRef.current;
+        let frame = 0;
+        const updateSticky = () => {
+            frame = 0;
             if (!headerRef.current || !contentRef.current || !scrollContainer) return;
 
             const headerRect = headerRef.current.getBoundingClientRect();
@@ -53,9 +56,16 @@ export function StickyHeader({
             setSticky(passedTop && !contentGone && Boolean(childrenCount && childrenCount > 1));
         };
 
+        const onScroll = () => {
+            if (!frame) frame = requestAnimationFrame(updateSticky);
+        };
+
         scrollContainer?.addEventListener("scroll", onScroll, { passive: true });
-        return () => scrollContainer?.removeEventListener("scroll", onScroll);
-    }, [scrollContainer, open, headerRef, contentRef, childrenCount]);
+        return () => {
+            scrollContainer?.removeEventListener("scroll", onScroll);
+            cancelAnimationFrame(frame);
+        };
+    }, [scrollContainerRef, open, headerRef, contentRef, childrenCount]);
 
     if (!isSticky) return null;
 
@@ -68,7 +78,7 @@ export function StickyHeader({
                 <CollapsableHeader
                     item={item}
                     direction={direction}
-                    hideTokenImages={open}
+                    isOpen={open}
                     hideBalances={hideBalances}
                 />
             </div>

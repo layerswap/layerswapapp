@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { browserOnlyMiddleware } from '@layerswap/utils/common'
 
 export type RoutesHistory = {
     sourceRoutes: RouteItem,
@@ -23,7 +24,7 @@ interface RecentNetworksState {
     ) => void;
 }
 
-export const useRecentNetworksStore = create<RecentNetworksState>()(persist((set) => ({
+export const useRecentNetworksStore = create<RecentNetworksState>()(browserOnlyMiddleware(persist)((set) => ({
     recentRoutes: {
         sourceRoutes: {},
         destinationRoutes: {},
@@ -35,7 +36,7 @@ export const useRecentNetworksStore = create<RecentNetworksState>()(persist((set
     }
 }), {
     name: 'recentRoutes',
-    storage: createJSONStorage(() => localStorage),
+    storage: createJSONStorage(() => window.localStorage),
 }))
 
 const updateRecentNetworksHelper = (

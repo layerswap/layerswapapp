@@ -14,6 +14,7 @@ import NavigatableItemComponent from './NavigatableItem';
 
 interface RegisteredItem {
     children: Set<number>;
+    declaredChildCount?: number;
     version: number;
 }
 
@@ -33,7 +34,7 @@ function createAutoDetectionStore() {
         const sorted = Array.from(registeredItems.entries())
             .filter(([, item]) => item.version === currentVersion)
             .sort((a, b) => a[0] - b[0]);
-        const items = sorted.map(([, item]) => ({ childCount: item.children.size }));
+        const items = sorted.map(([, item]) => ({ childCount: item.declaredChildCount ?? item.children.size }));
         const indexMap = new Map(sorted.map(([originalIndex], idx) => [originalIndex, idx]));
         cachedSnapshot = { items, indexMap };
     };
@@ -46,6 +47,7 @@ function createAutoDetectionStore() {
                 if (existing.version === currentVersion) return;
                 existing.version = currentVersion;
                 existing.children = new Set();
+                existing.declaredChildCount = undefined;
             } else {
                 registeredItems.set(index, { children: new Set(), version: currentVersion });
             }
@@ -86,6 +88,21 @@ function createAutoDetectionStore() {
                 listeners.forEach(l => l());
             }
         },
+        setChildCount(parentIndex: number, count: number | undefined) {
+            if (parentIndex < 0) return;
+
+            let parent = registeredItems.get(parentIndex);
+            if (!parent) {
+                parent = { children: new Set(), version: currentVersion };
+                registeredItems.set(parentIndex, parent);
+            }
+
+            if (parent.declaredChildCount !== count) {
+                parent.declaredChildCount = count;
+                rebuild();
+                listeners.forEach(l => l());
+            }
+        },
         getNavigableIndex(index: number): number {
             return cachedSnapshot.indexMap.get(index) ?? -1;
         },
@@ -112,6 +129,8 @@ function createAutoDetectionStore() {
 export interface NavigatableListProps {
     children: ReactNode;
     enabled?: boolean;
+    /** Items are about to be replaced; Enter is swallowed instead of activating a stale item. */
+    isPending?: boolean;
     onReset?: () => void;
     keyboardNavigatingClass?: string;
     navigateToFirstChild?: boolean;
@@ -120,6 +139,7 @@ export interface NavigatableListProps {
 function NavigatableListRoot({
     children,
     enabled = true,
+    isPending = false,
     onReset,
     keyboardNavigatingClass = 'keyboard-navigating',
     navigateToFirstChild
@@ -143,6 +163,7 @@ function NavigatableListRoot({
     const { focusedIndex, handleHover, handleFocus, isKeyboardNavigating } = useNavigatableList({
         navigableItems: snapshot.items,
         enabled,
+        isPending,
         onReset,
         keyboardNavigatingClass,
         onEnter: store.triggerClickByKey,
@@ -176,7 +197,9 @@ function NavigatableListRoot({
         unregister: store.unregister,
         registerChild: store.registerChild,
         unregisterChild: store.unregisterChild,
+        setChildCount: store.setChildCount,
         getNavigableIndex: store.getNavigableIndex,
+        subscribe: store.subscribe,
         registerClickHandler: store.registerClickHandler,
         unregisterClickHandler: store.unregisterClickHandler
     }), [store, registrationVersion]); // eslint-disable-line react-hooks/exhaustive-deps

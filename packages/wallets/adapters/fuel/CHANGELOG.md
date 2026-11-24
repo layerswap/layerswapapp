@@ -1,5 +1,25 @@
 # @layerswap/wallet-fuel
 
+## 2.7.0
+
+### Minor Changes
+
+- Fuel: detect the wrong network (including chain ID 0) and treat missing balances as zero, so unfunded transfers show insufficient funds.
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [8f004b1]
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @layerswap/widget-types@2.7.0
+  - @layerswap/wallet-core@2.7.0
+  - @layerswap/utils@2.7.0
+
 ## 2.6.0
 
 ### Patch Changes

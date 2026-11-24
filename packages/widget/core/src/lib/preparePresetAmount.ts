@@ -1,5 +1,5 @@
 import type { ApiResponse, NetworkRoute, Wallet } from '@layerswap/widget-types'
-import { usesDepository } from '@layerswap/widget-types'
+import { requiredDepositMethod } from '@layerswap/widget-types'
 import type { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
 import { buildLimitsUrl } from '@/hooks/useFee'
 import LayerSwapApiClient from './apiClients/layerSwapApiClient'
@@ -8,6 +8,7 @@ import { transformLimitsForExtendedRoute, type ExtendedLimits } from './extended
 import { useBalanceStore } from '@/stores/balanceStore'
 import { resolverService } from './resolvers/resolverService'
 import { calculatePresetAmount, isAmountPreset, isWalletAmountFlow, supportsLiveAmountPreset } from './amountPresets'
+import { wantsFrontendSwap } from '@/helpers/swapFlow'
 
 /** Fresh reads before creation. Never changes a created swap or its actions. */
 export async function preparePresetAmount(values: SwapFormValues, address: string | undefined, wallet: Wallet | undefined, sourceRoutes: NetworkRoute[], useGasless: boolean, publishLimits?: (key: string, response: ApiResponse<ExtendedLimits>) => Promise<unknown>) {
@@ -29,8 +30,13 @@ export async function preparePresetAmount(values: SwapFormValues, address: strin
         sourceToken: plan?.mapping.real.tokenSymbol ?? fromAsset.symbol,
         destinationNetwork: to.name, destinationToken: toAsset.symbol,
         destinationAddress: values.destination_address, refuel: values.refuel,
-        useDepositAddress: plan ? !usesDepository(plan.mapping.provider) : false,
-        useFrontendSwap: true, useGasless: !plan && useGasless,
+        useDepositAddress: plan ? requiredDepositMethod(plan.mapping.provider) === 'deposit_address' : false,
+        useFrontendSwap: wantsFrontendSwap({
+            depositMethod: values.depositMethod,
+            sourceNetwork: from.name,
+            destinationNetwork: to.name,
+        }),
+        useGasless: !plan && useGasless,
     })
     const [balanceData, limitsResponse] = await Promise.all([
         useBalanceStore.getState().fetchBalance(address, from, { ignoreCache: true }),

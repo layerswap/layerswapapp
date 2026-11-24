@@ -1,6 +1,7 @@
 import { type Wallet } from '@layerswap/widget-types';
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
+import { browserOnlyMiddleware } from '@layerswap/utils/common'
 
 type StarknetAccountMap = { [key: string]: string }
 
@@ -25,7 +26,7 @@ interface StarknetStoreState {
 }
 
 export const useStarknetStore = create<StarknetStoreState>()(
-    persist(
+    browserOnlyMiddleware(persist)(
         (set) => ({
             connectedWallets: [],
             setActiveWallet: (address) => set({ activeWalletAddress: address }),
@@ -75,7 +76,7 @@ export const useStarknetStore = create<StarknetStoreState>()(
         }),
         {
             name: 'ls-starknet-accounts',
-            storage: createJSONStorage(() => localStorage),
+            storage: createJSONStorage(() => window.localStorage),
             partialize: (state) => ({
                 starknetAccounts: state.starknetAccounts,
                 activeWalletAddress: state.activeWalletAddress,

@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
+import { browserOnlyMiddleware } from '@layerswap/utils/common'
 
 type UsdModeState = {
     isUsdMode: boolean
@@ -9,7 +10,7 @@ type UsdModeState = {
     reset: () => void
 }
 
-export const useUsdModeStore = create<UsdModeState>()(persist((set) => ({
+export const useUsdModeStore = create<UsdModeState>()(browserOnlyMiddleware(persist)((set) => ({
     isUsdMode: false,
     usdAmount: '',
     toggleMode: () => set((state) => ({ isUsdMode: !state.isUsdMode })),
@@ -17,6 +18,6 @@ export const useUsdModeStore = create<UsdModeState>()(persist((set) => ({
     reset: () => set({ isUsdMode: false, usdAmount: '' }),
 }), {
     name: 'usd-mode',
-    storage: createJSONStorage(() => localStorage),
+    storage: createJSONStorage(() => window.localStorage),
     partialize: (state) => ({ isUsdMode: state.isUsdMode }),
 }))

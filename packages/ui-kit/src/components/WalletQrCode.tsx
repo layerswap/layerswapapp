@@ -1,12 +1,24 @@
-import { FC, type RefObject } from "react";
+import { FC, useEffect, useState, type RefObject } from "react";
 import type { WalletModalConnector } from "@layerswap/wallet-core/types";
 import StyledQRCode from "./StyledQRCode";
 import CopyButton from "./CopyButton";
 import { ImageWithFallback } from "./ImageWithFallback";
 import WalletIcon from "./WalletIcon";
+import { motion } from "framer-motion";
 
 export const WalletQrCode: FC<{ selectedConnector: WalletModalConnector, portalContainerRef: RefObject<HTMLDivElement | null> }> = ({ selectedConnector, portalContainerRef }) => {
     const connectorIconSrc = selectedConnector.icon
+    const [qrMode, setQrMode] = useState<'waiting' | 'help' | 'plain'>('waiting')
+
+    useEffect(() => {
+        setQrMode('waiting')
+        if (selectedConnector.qr?.state !== 'fetched' || !selectedConnector.qr.value) {
+            return
+        }
+
+        const timeout = setTimeout(() => setQrMode('help'), 7000)
+        return () => clearTimeout(timeout)
+    }, [selectedConnector.id, selectedConnector.qr?.state, selectedConnector.qr?.value])
 
     const ConnectorImg = ({ className, size }: { className?: string, size: number }) =>
         connectorIconSrc ? (
@@ -25,7 +37,7 @@ export const WalletQrCode: FC<{ selectedConnector: WalletModalConnector, portalC
                 <ConnectorImg className="w-6 h-6" size={24} />
                 <p className="text-sm font-medium text-primary-text">{selectedConnector?.name}</p>
             </div>
-            <div className="bg-secondary-500 p-3 rounded-2xl">
+            <div className={`${qrMode === 'plain' ? 'bg-white' : 'bg-secondary-500'} p-3 rounded-2xl`}>
                 {
                     selectedConnector?.qr?.state == 'fetched' ?
                         <StyledQRCode
@@ -33,6 +45,7 @@ export const WalletQrCode: FC<{ selectedConnector: WalletModalConnector, portalC
                             size={220}
                             logo={selectedConnector.icon}
                             ecLevel="M"
+                            plain={qrMode === 'plain'}
                         />
                         :
                         <div className="w-[220px] h-[220px] relative">
@@ -41,7 +54,13 @@ export const WalletQrCode: FC<{ selectedConnector: WalletModalConnector, portalC
                         </div>
                 }
             </div>
-            <p className="text-xs text-secondary-text">Scan with your phone to connect</p>
+            <p className="h-4 text-xs text-secondary-text">
+                {qrMode === 'help' ? (
+                    <motion.button type="button" className="underline" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} onClick={() => setQrMode('plain')}>
+                        Trouble scanning? Show a regular QR
+                    </motion.button>
+                ) : <span>Scan with your phone to connect</span>}
+            </p>
         </div>
         <div className="w-full flex flex-col gap-2">
             <div className='bg-secondary-300 hover:bg-secondary-400 text-secondary-text w-full px-3 py-3 rounded-xl flex justify-center items-center text-sm font-medium transition duration-200 ease-in-out cursor-pointer'>

@@ -1,4 +1,4 @@
-import { NetworkType, type GaslessStandard, type Refuel } from './network';
+import type { NetworkType, GaslessStandard } from './network';
 
 export class Network {
     name: string;
@@ -44,15 +44,13 @@ export class Token {
 export class Metadata {
     evm_oracle_contract?: `0x${string}` | null;
     evm_multicall_contract?: string | null;
+    evm_balance_viewer_contract?: string | null;
     listing_date: string;
     zks_paymaster_contract?: `0x${string}` | null;
     watchdog_contract?: string | null;
 }
 
 export class NetworkRoute extends Network {
-    tokens: NetworkRouteToken[]
-}
-
-export class NetworkRouteToken extends Token {
-    refuel?: Refuel
+    tokens: Token[]
+    refuel_asset?: string | null;
 }
