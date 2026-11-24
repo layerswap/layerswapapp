@@ -9,7 +9,7 @@ import { useSlippageStore } from '@/stores/slippageStore'
 import { sleep } from '@layerswap/utils';
 import { useSettingsState } from '@/context/settings'
 import { resolveExtendedRoutePlan } from '@/lib/extendedRoutes/registry'
-import { usesWalletFunding } from '@layerswap/widget-types';
+import { requiredDepositMethod } from '@layerswap/widget-types';
 import { transformLimitsForExtendedRoute, transformQuoteForExtendedRoute } from '@/lib/extendedRoutes/transforms'
 import { isPositiveDecimal } from '@/lib/extendedRoutes/amounts'
 import { LayerswapApiClient } from '@/lib/apiClients';
@@ -119,7 +119,7 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
     const isBridge = !!extendedPlan
     const effectiveFrom = isBridge ? extendedMapping!.real.networkName : from
     const effectiveFromToken = isBridge ? extendedMapping!.real.tokenSymbol : fromCurrency
-    const effectiveUseDepositAddress = extendedPlan ? !usesWalletFunding(extendedMapping!.provider) : use_deposit_address
+    const effectiveUseDepositAddress = extendedPlan ? requiredDepositMethod(extendedMapping!.provider) === 'deposit_address' : use_deposit_address
 
     const extendedNetworkObj = useMemo(() => extendedMapping ? networks.find(n => n.name === extendedMapping.extendedNetworkName) : undefined, [networks, extendedMapping])
     const extendedTokenObj = useMemo(() => extendedNetworkObj?.tokens.find(t => t.symbol === extendedMapping?.extendedTokenSymbol), [extendedNetworkObj, extendedMapping])

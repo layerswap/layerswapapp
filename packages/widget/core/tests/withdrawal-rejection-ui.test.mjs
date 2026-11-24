@@ -99,10 +99,15 @@ const { useWithdrawalProvider } = await import('../dist/esm/hooks/useWithdrawalP
 const { TransferResolver } = await import('../dist/esm/lib/transfers/transferResolver.js')
 const { hyperliquidWithdrawal } = loadSource('../../../wallets/adapters/evm/src/additionalProviders/hyperliquid/withdrawal.ts')
 const { polymarketWithdrawal } = loadSource('../../../wallets/adapters/evm/src/additionalProviders/polymarket/withdrawal.ts')
+const { setExtendedRouteProviders } = await import('../dist/esm/lib/extendedRoutes/registry.js')
+// Polymarket's route provider marks its source as not sent by the connected wallet.
+const addresslessSource = { id: 'polymarket', extendedNetworkNames: ['source'], supportsFrontendSwap: false }
 function useHyperliquidWithdrawal(props, active) {
+  setExtendedRouteProviders([])
   return useProviderWithdrawal(props, hyperliquidWithdrawal, active)
 }
 function usePolymarketWithdrawal(props, active) {
+  setExtendedRouteProviders([addresslessSource])
   return useProviderWithdrawal(props, polymarketWithdrawal, active)
 }
 const stores = await import('../dist/esm/stores/swapTransactionStore.js')

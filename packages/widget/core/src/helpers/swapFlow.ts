@@ -10,10 +10,14 @@ type FrontendSwapOptions = {
     destinationNetwork: string | undefined;
 }
 
-// Addressless provider deposits cannot execute frontend swaps as the connected
+// Addressless provider deposits are sent by a provider account, not the connected
 // wallet. Resolve this before the extended source is mapped to its real network.
-export function wantsFrontendSwap({ sourceNetwork }: FrontendSwapOptions): boolean {
+export function isSentByConnectedWallet(sourceNetwork: string | undefined): boolean {
     return getExtendedProviderForNetwork(sourceNetwork)?.supportsFrontendSwap !== false;
+}
+
+export function wantsFrontendSwap({ sourceNetwork }: FrontendSwapOptions): boolean {
+    return isSentByConnectedWallet(sourceNetwork);
 }
 
 // Deposit address (manual transfer) flow with no source exchange: amount is optional

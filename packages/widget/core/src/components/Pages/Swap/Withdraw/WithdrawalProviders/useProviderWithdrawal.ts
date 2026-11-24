@@ -5,6 +5,7 @@ import { AmountPresetChangedError } from '@/lib/amountPresets';
 import type { DepositAction } from '@/lib/apiClients/layerSwapApiClient';
 import { truncateToDecimals } from '@/components/utils/RoundDecimals';
 import { isTransferAction } from '@/helpers/depositActions';
+import { isSentByConnectedWallet } from '@/helpers/swapFlow';
 import { useSwapDataState, useSwapDataUpdate } from '@/context/swap';
 import { useWalletWithdrawalState } from '@/context/withdrawalContext';
 import { useSelectedAccount } from '@/context/swapAccounts';
@@ -37,7 +38,7 @@ export function useProviderWithdrawal({ swapBasicData, refuel, swapId }: Withdra
     const { wallets } = useWallet(source_network, 'withdrawal');
     const wallet = wallets.find(candidate => candidate.id === account?.id);
     const sourceAddress = account?.address;
-    const backendSourceAddress = definition.omitBackendSourceAddress ? undefined : sourceAddress;
+    const backendSourceAddress = isSentByConnectedWallet(source_network.name) ? sourceAddress : undefined;
     const selectionKey = withdrawalSelectionKey(source_network.name, account, wallet);
     const { begin, loading, inFlight } = useWithdrawalExecution(selectionKey, acquireWalletExecution);
     const [progress, setProgress] = useState<TransferProgress>();

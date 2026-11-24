@@ -1295,6 +1295,7 @@ for (const provider of ['Hyperliquid', 'Polymarket']) {
                 '@layerswap/widget-types': { ActionMessageType: { TransactionRejected: 'TransactionRejected' } },
                 './executeProviderWithdrawal': providerExecution,
                 '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
+                '@/helpers/swapFlow': { isSentByConnectedWallet: () => providerId !== 'polymarket' },
                 '@/lib/ErrorHandler': { ErrorHandler: noop },
                 '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: noop }) },
                 '@/lib/swapLifecycle': { lifecycleContextFromSwap: () => ({}) },

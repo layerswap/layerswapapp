@@ -76,15 +76,11 @@ export interface ExtendedRouteProvider {
     getRealCandidates?(networkName: string, tokenSymbol: string): DepositRouteRef[]
 }
 
-export function usesWalletFunding(provider: ExtendedRouteProvider): boolean {
-    return provider.funding === 'wallet'
-}
-
 export function depositMethodForFunding(funding: ExtendedRouteProvider['funding']): 'wallet' | 'deposit_address' {
-    return funding === 'wallet' ? 'wallet' : 'deposit_address'
+    return funding ?? 'deposit_address'
 }
 
-export function requiredDepositMethod(provider: ExtendedRouteProvider): string {
+export function requiredDepositMethod(provider: ExtendedRouteProvider): 'wallet' | 'deposit_address' {
     return depositMethodForFunding(provider.funding)
 }
 

@@ -1,7 +1,7 @@
 import { Network, Token } from "@layerswap/widget-types";
 import { CreateSwapParams, Quote } from "@/lib/apiClients/layerSwapApiClient";
 import { parseHmsString } from "@/components/utils/formatTime";
-import { ExtendedRoutePlan, ResolvedExtendedMapping, usesWalletFunding } from "@layerswap/widget-types";
+import { ExtendedRoutePlan, ResolvedExtendedMapping, requiredDepositMethod } from "@layerswap/widget-types";
 import { DecimalInput, decimalToNumber, isPositiveDecimal } from "./amounts";
 
 export type ExtendedLimits = {
@@ -106,7 +106,7 @@ export function buildCreateSwapParamsForExtendedRoute({
         destination_address: destinationAddress,
         reference_id: referenceId,
         refuel: !!refuel,
-        use_deposit_address: !usesWalletFunding(provider),
+        use_deposit_address: requiredDepositMethod(provider) === 'deposit_address',
         use_frontend_swap: useFrontendSwap && provider.supportsFrontendSwap !== false,
         use_gasless: false,
         source_address: undefined,

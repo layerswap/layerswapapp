@@ -12,7 +12,7 @@ const setup = ({ balance = 1, gas = 0.1, maxFee, reserve, limits = { min_amount:
   const calls = []
   const { preparePresetAmount } = loadSource('lib/preparePresetAmount.ts', {
     '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
-    '@layerswap/widget-types': { usesWalletFunding: () => false },
+    '@layerswap/widget-types': { requiredDepositMethod: () => 'deposit_address' },
     '@/hooks/useFee': { buildLimitsUrl: args => { calls.push(['limits', args]); return 'limits' } },
     './apiClients/layerSwapApiClient': { default: class { async fetcher() { return { data: limits } } } },
     './extendedRoutes/registry': { resolveExtendedRoutePlan: () => undefined },

@@ -1,5 +1,5 @@
 import type { ApiResponse, NetworkRoute, Wallet } from '@layerswap/widget-types'
-import { usesWalletFunding } from '@layerswap/widget-types'
+import { requiredDepositMethod } from '@layerswap/widget-types'
 import type { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
 import { buildLimitsUrl } from '@/hooks/useFee'
 import LayerSwapApiClient from './apiClients/layerSwapApiClient'
@@ -30,7 +30,7 @@ export async function preparePresetAmount(values: SwapFormValues, address: strin
         sourceToken: plan?.mapping.real.tokenSymbol ?? fromAsset.symbol,
         destinationNetwork: to.name, destinationToken: toAsset.symbol,
         destinationAddress: values.destination_address, refuel: values.refuel,
-        useDepositAddress: plan ? !usesWalletFunding(plan.mapping.provider) : false,
+        useDepositAddress: plan ? requiredDepositMethod(plan.mapping.provider) === 'deposit_address' : false,
         useFrontendSwap: wantsFrontendSwap({
             depositMethod: values.depositMethod,
             sourceNetwork: from.name,
