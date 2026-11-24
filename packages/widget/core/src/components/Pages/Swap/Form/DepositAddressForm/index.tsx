@@ -1,5 +1,6 @@
 import { getDepositAddressError } from '@/lib/depositAddressError';
 import { DepositAddressErrorView } from './DepositAddressRecoveryView';
+import { TransferBlock } from '../../Withdraw/TransferBlock';
 import { SwapStatus } from '@layerswap/widget-types';
 import { FC, ReactNode, Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
 import { Form, useFormikContext } from "formik";
@@ -221,8 +222,9 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
     const hasOutputTx = !!(outputTx?.transaction_hash && outputTx?.amount);
     const isCompleted = !!swapId && swapMatchesValues && hasOutputTx;
     const showDepositInfo = !!swapId && swapMatchesValues && !isProcessing;
-    const depositError = swapError || swapDetailsError
-        || getDepositAddressError(depositAddress, showDepositInfo ? depositActionsResponse : undefined, depositActionsError);
+    const addressError = getDepositAddressError(depositAddress, showDepositInfo ? depositActionsResponse : undefined, depositActionsError);
+    const depositError = swapError || swapDetailsError || addressError;
+    const blockedAddressError = showDepositInfo && !swapError && !swapDetailsError ? addressError : undefined;
 
     const retryDeposit = async () => {
         if (isSubmitting || isRetrying || !fieldKey || !isValid) return;
@@ -328,7 +330,12 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
                         </>
                     )}
                     <ValidationError />
-                    {depositError && (
+                    {blockedAddressError ? (
+                        <TransferBlock reasonCode="deposit_actions_unavailable" path="DepositAddressForm"
+                            stage="input_transfer" reason={blockedAddressError}>
+                            <DepositAddressErrorView message={blockedAddressError} />
+                        </TransferBlock>
+                    ) : depositError && (
                         <DepositAddressErrorView message={depositError} />
                     )}
                 </div >
