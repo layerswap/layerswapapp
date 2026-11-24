@@ -1,5 +1,38 @@
 # @layerswap/wallets
 
+## 2.7.0
+
+### Minor Changes
+
+- Preload wallet providers once the page is idle, so the connect dialog opens with them ready.
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies [8f004b1]
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @layerswap/widget-types@2.7.0
+  - @layerswap/wallet-evm@2.7.0
+  - @layerswap/wallet-fuel@2.7.0
+  - @layerswap/wallet-core@2.7.0
+  - @layerswap/utils@2.7.0
+  - @layerswap/wallet-starknet@2.7.0
+  - @layerswap/wallet-paradex@2.7.0
+  - @layerswap/wallet-ton@2.7.0
+  - @layerswap/wallet-bitcoin@2.7.0
+  - @layerswap/wallet-imtbl-passport@2.7.0
+  - @layerswap/wallet-stellar@2.7.0
+  - @layerswap/wallet-svm@2.7.0
+  - @layerswap/wallet-tron@2.7.0
+
 ## 2.6.0
 
 ### Patch Changes

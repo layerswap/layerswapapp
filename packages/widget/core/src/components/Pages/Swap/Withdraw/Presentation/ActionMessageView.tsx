@@ -13,6 +13,7 @@ export type ActionMessageViewProps = {
     gaslessUnavailable?: boolean;
     gaslessErrorMessage?: string;
     swapError?: boolean;
+    depositActionsError?: string;
     expanded?: boolean;
 };
 export function getActionMessage({
@@ -24,6 +25,7 @@ export function getActionMessage({
     gaslessUnavailable,
     gaslessErrorMessage,
     swapError,
+    depositActionsError,
     expanded,
 }: ActionMessageViewProps) {
     if (gaslessUnavailable) {
@@ -67,7 +69,13 @@ export function getActionMessage({
         const message = walletErrorMessage(normalizeWalletErrorCode(error), sourceNetwork);
         if (message) return <WalletMessage {...message} />;
     }
-    if (swapError) {
+    if (depositActionsError) {
+        return <WalletMessage
+            status="error"
+            header="Couldn't prepare transaction"
+            details="Couldn't load the transaction instructions. Please try again."
+        />;
+    } else if (swapError) {
         return <ActionMessages.SwapErrorMessage />;
     } else if (error) {
         return <WalletUnknownError expanded={expanded} />;

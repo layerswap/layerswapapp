@@ -33,7 +33,7 @@ import { useConnectModal } from "@/components/Wallet/WalletModal";
 const Processing = lazy(() => import(/* webpackChunkName: "swap-processing" */ "../../Withdraw/Processing"))
 const SwapSummary = lazy(() => import("../../Withdraw/Summary"));
 import ValidationError from "../SecondaryComponents/validationError";
-import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
+import { NetworkRoute, Token } from "@layerswap/widget-types";
 
 type Props = {
     partner?: Partner;
@@ -243,7 +243,7 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
     };
 
     // Clear the cached attempt key so re-selecting the same route re-creates the swap.
-    const resetSwap = (network?: NetworkRoute, token?: NetworkRouteToken) => {
+    const resetSwap = (network?: NetworkRoute, token?: Token) => {
         const isSameSource = from?.name === network?.name && fromAsset?.symbol === token?.symbol;
         if (isSameSource) {
             if (!swapId) attemptedKeyRef.current = null;

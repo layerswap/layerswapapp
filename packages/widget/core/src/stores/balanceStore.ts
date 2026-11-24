@@ -202,6 +202,14 @@ export const useBalanceStore = create<BalanceStore>()(
   }))
 )
 
+let lastResolvedSortingBalances: Record<string, NetworkBalance> | null = null
+
+const sameBalanceRecords = (a: Record<string, NetworkBalance>, b: Record<string, NetworkBalance>) => {
+  const aKeys = Object.keys(a)
+  if (aKeys.length !== Object.keys(b).length) return false
+  return aKeys.every(key => a[key] === b[key])
+}
+
 export const selectResolvedSortingBalances = (state: BalanceStore) => {
   const keys = state.balanceKeysForSorting
   if (!keys) return null
@@ -213,5 +221,9 @@ export const selectResolvedSortingBalances = (state: BalanceStore) => {
     return acc
   }, {})
 
+  if (lastResolvedSortingBalances && sameBalanceRecords(lastResolvedSortingBalances, balanceData)) {
+    return lastResolvedSortingBalances
+  }
+  lastResolvedSortingBalances = balanceData
   return balanceData
 }

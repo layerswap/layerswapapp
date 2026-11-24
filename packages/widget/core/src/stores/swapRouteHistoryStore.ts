@@ -167,15 +167,21 @@ export function recordFetchedSwapRouteHistory(
     return recordSwapRoutes(responses, undefined, repository)
 }
 
-export function useSwapRouteRecency() {
+export function useHydrateSwapRouteHistory() {
     const environment = getSwapRouteHistoryEnvironment()
-    const records = useSwapRouteHistoryStore(state =>
-        state.environment === environment ? state.records : EMPTY_RECORDS,
-    )
 
     useEffect(() => {
         void hydrateSwapRouteHistory(environment)
     }, [environment])
+
+    return environment
+}
+
+export function useSwapRouteRecency() {
+    const environment = useHydrateSwapRouteHistory()
+    const records = useSwapRouteHistoryStore(state =>
+        state.environment === environment ? state.records : EMPTY_RECORDS,
+    )
 
     return useMemo(() => buildSwapRouteRecency(records), [records])
 }

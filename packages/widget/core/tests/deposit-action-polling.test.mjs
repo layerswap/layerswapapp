@@ -63,7 +63,7 @@ const approval = { type: 'transfer', step: 'approve_permit2', status: 'action_re
     to_address: '0x456', call_data: approvalCallData(5841963) }
 const waiting = () => ({ data: [{ ...sign, status: 'completed' }, publish] })
 const ready = () => ({ data: [{ ...sign, status: 'completed' }, { ...publish, status: 'action_required' }] })
-let root, container, result, config, requests, response, failure, authorization, receipts, receiptFailure, onReceipt
+let root, container, result, swapState, config, requests, response, failure, authorization, receipts, receiptFailure, onReceipt
 function SwapView({ id, children }) {
     const { setSwapId, setSwapViewMounted } = swapContext.useSwapDataUpdate()
     useLayoutEffect(() => { setSwapId(id) }, [id])
@@ -74,6 +74,7 @@ function SwapView({ id, children }) {
     return children
 }
 function Withdrawal({ id, address, executing }) {
+    swapState = swapContext.useSwapDataState()
     result = useDepositActionPolling(id, address, executing)
     return createElement('output', null, result.data?.find(action => action.status === 'action_required')?.step ?? 'waiting')
 }
@@ -517,6 +518,33 @@ test('retry revalidates through SWR and never returns stale data after a failed 
     failure = undefined
     response = { data: [] }
     await act(async () => { await assert.rejects(result.refresh('s1', 'source'), /No deposit actions/) })
+})
+
+for (const kind of ['http', 'api', 'empty']) {
+    test(`${kind} action-loading failure is exposed and clears after a successful retry`, async () => {
+        if (kind === 'http') failure = new Error('Request failed with status code 404')
+        if (kind === 'api') response = { error: { message: 'Actions unavailable' } }
+        if (kind === 'empty') response = { data: [] }
+        await render({ executing: false })
+        assert.ok(swapState.depositActionsError, 'missing actions must surface an error instead of indefinite preparation')
+        assert.equal(swapState.swapId, 's1')
+        failure = undefined
+        response = ready()
+        await act(async () => { await result.refresh('s1', 'source') })
+        assert.equal(swapState.depositActionsError, undefined)
+        assert.deepEqual(swapState.depositActionsResponse, response.data)
+        assert.equal(swapState.swapId, 's1')
+        assert.equal(requests.length, 2)
+    })
+}
+
+test('an action refresh failure keeps cached instructions and still blocks a failed explicit retry', async () => {
+    response = ready()
+    await render({ executing: false })
+    failure = new Error('Request failed with status code 404')
+    await act(async () => { await assert.rejects(result.refresh('s1', 'source'), /404/) })
+    assert.deepEqual(swapState.depositActionsResponse, response.data)
+    assert.equal(swapState.depositActionsError, undefined, 'usable cached instructions remain visible')
 })
 
 test('a newly created swap can start waiting before its SWR subscription mounts', async t => {

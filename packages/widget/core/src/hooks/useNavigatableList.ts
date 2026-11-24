@@ -31,6 +31,8 @@ function getFocusedElementIndex(): FocusedIndex | null {
 export interface UseNavigatableListOptions {
     navigableItems: NavigableItem[];
     enabled?: boolean;
+    /** When true, Enter is consumed without activating an item */
+    isPending?: boolean;
     onReset?: () => void;
     keyboardNavigatingClass?: string;
     /** Callback to trigger click on item by nav-index string (e.g., "0" or "1.2") */
@@ -42,6 +44,7 @@ export interface UseNavigatableListOptions {
 export const useNavigatableList = ({
     navigableItems,
     enabled = true,
+    isPending = false,
     onReset,
     keyboardNavigatingClass = 'keyboard-navigating',
     onEnter,
@@ -203,6 +206,7 @@ export const useNavigatableList = ({
 
     // Handle Enter key - receives navIndex from DOM focus, or null to use focusedIndex state
     const handleEnter = useCallback((navIndex: string | null) => {
+        if (isPending) return;
         // Use DOM-focused element's navIndex, or fall back to focusedIndex state
         const indexToUse = navIndex ?? (focusedIndex ? focusedIndexToString(focusedIndex) : null);
         if (indexToUse === null) {
@@ -212,7 +216,7 @@ export const useNavigatableList = ({
         if (onEnter) {
             onEnter(indexToUse);
         }
-    }, [onEnter, focusedIndex]);
+    }, [onEnter, focusedIndex, isPending]);
 
     useKeyboardNavigation(
         handleArrowDown,
