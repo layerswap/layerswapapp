@@ -11,6 +11,7 @@ export function loadSource(path, imports = {}) {
     new Function('require', 'module', 'exports', outputText)(name => {
         if (name in imports) return imports[name]
         if (name === '@/lib/extendedRoutes/registry') return { getExtendedProviderForNetwork: () => undefined }
+        if (name === '@/lib/lifecycleObservationScope') return loadSource('lib/lifecycleObservationScope.ts')
         if (name === 'react/jsx-runtime') return require(name)
         throw new Error(`Unexpected ${path} dependency: ${name}`)
     }, module, module.exports)

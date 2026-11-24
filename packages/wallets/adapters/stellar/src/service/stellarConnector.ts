@@ -3,10 +3,10 @@ import { name as PROVIDER_NAME } from '../constants'
 import type { StellarWalletSnapshot } from './stellarStore'
 
 // Wallets Kit reports both installed extensions and wallets that are usable
-// without installation as `isAvailable`. Albedo/xBull open their own web flow,
+// without installation as `isAvailable`. Albedo/xBull/Ghostsig open their own web flow,
 // while BRIDGE_WALLET modules (currently WalletConnect) use a pairing transport.
 // Neither kind should ever be presented as a missing browser extension.
-const LOADABLE_WALLET_IDS = new Set(['albedo', 'xbull'])
+const LOADABLE_WALLET_IDS = new Set(['albedo', 'xbull', 'ghostsig'])
 
 export function toStellarConnector(wallet: StellarWalletSnapshot): InternalConnector {
     const isBridgeWallet = wallet.type === 'BRIDGE_WALLET'
@@ -18,7 +18,7 @@ export function toStellarConnector(wallet: StellarWalletSnapshot): InternalConne
         icon: wallet.icon,
         type: isBridgeWallet ? 'walletConnect' : isUnavailable ? 'other' : 'injected',
         installUrl: wallet.url,
-        hasBrowserExtension: isBridgeWallet ? false : undefined,
+        hasBrowserExtension: isLoadable ? false : undefined,
         extensionNotFound: isUnavailable,
         isLoadable,
         isMobileSupported: isLoadable || wallet.isPlatformWrapper,
