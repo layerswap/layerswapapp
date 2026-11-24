@@ -11,17 +11,16 @@ import {
     chainsToNetworkTypes,
     clearPendingDynamicWcMetadata,
     createRegistryConnector,
-    findRegistryWalletByName,
     getDynamicWcMetadata,
     getPendingDynamicWcMetadata,
-    isWalletConnectRegistryConnector,
+    resolveWalletConnectConnection,
     setDynamicWcMetadata,
     setPendingMetadataForRegistry,
     subscribeDisplayUri,
     walletIconResolver,
     walletKey,
     type AppNetworkAdapter,
-    type WalletConnectWalletBase,
+    type WalletConnectServiceDeps,
 } from '@layerswap/wallet-core'
 import { id as PROVIDER_ID, name as PROVIDER_NAME, stellarWalletConnectChain } from '../constants'
 import { STELLAR_APPKIT_WALLET_CONNECT_ID } from './StellarWalletConnectModule'
@@ -29,32 +28,16 @@ import { stellarKitManager } from './stellarKitManager'
 import { stellarStore, type StellarWalletSnapshot } from './stellarStore'
 import { toStellarConnector } from './stellarConnector'
 
-type RegistryRequestFn = (params?: RequestAdditionalConnectorsParams) => Promise<{
-    connectors: WalletConnectWalletBase[]
-    nextPage: number | null
-    totalCount: number
-}>
-
-type RuntimeDeps = {
-    setSelectedConnector?: (connector: WalletModalConnector) => void
-    getSelectedConnector?: () => WalletModalConnector | undefined
-    addRecentConnector?: (connector: InternalConnector) => void
-    requestRegistryConnectors?: RegistryRequestFn
-    registryConnectors?: readonly WalletConnectWalletBase[]
-    recentConnectors?: readonly InternalConnector[]
-    isMobilePlatform?: boolean
-}
-
 type StellarKitConnectionManager = Pick<
     typeof stellarKitManager,
     'connect' | 'disconnect' | 'onDisplayUri'
 >
 
-export class StellarConnectionService<Network> implements WalletConnectionService<RuntimeDeps, Network> {
+export class StellarConnectionService<Network> implements WalletConnectionService<WalletConnectServiceDeps, Network> {
     private networks: Network[] = []
     private networkAdapter: AppNetworkAdapter<Network> | undefined
     private networksKey = ''
-    private deps: RuntimeDeps = {}
+    private deps: WalletConnectServiceDeps = {}
 
     constructor(private readonly kitManager: StellarKitConnectionManager = stellarKitManager) { }
 
@@ -66,7 +49,7 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
         this.networksKey = key
     }
 
-    configure(deps: RuntimeDeps): void {
+    configure(deps: WalletConnectServiceDeps): void {
         this.deps = { ...this.deps, ...deps }
     }
 
@@ -113,24 +96,22 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
         const wallets = stellarStore.getState().wallets
         const isMobilePlatform = this.deps.isMobilePlatform ?? false
         const configuredWallet = wallets.find(item => item.id === connector.id)
-        let registryConnector = isWalletConnectRegistryConnector(connector) ? connector : undefined
-        if (!registryConnector && isMobilePlatform && configuredWallet && configuredWallet.type !== 'BRIDGE_WALLET'
-            && !configuredWallet.isAvailable && !configuredWallet.isPlatformWrapper && this.deps.requestRegistryConnectors
-        ) {
-            const registryWallet = await findRegistryWalletByName(this.deps.requestRegistryConnectors, connector.name)
-            if (registryWallet) {
-                registryConnector = createRegistryConnector(registryWallet, isMobilePlatform, PROVIDER_NAME)
-            }
-        }
-        const useWalletConnect = !!registryConnector || (connector.hasBrowserExtension && (connector.showQrCode || (isMobilePlatform && connector.extensionNotFound)))
+        const { useWalletConnect, registryConnector, mobile, deepLink } = await resolveWalletConnectConnection(
+            connector,
+            PROVIDER_NAME,
+            this.deps,
+            !!configuredWallet
+                && configuredWallet.type !== 'BRIDGE_WALLET'
+                && !configuredWallet.isAvailable
+                && !configuredWallet.isPlatformWrapper,
+            (registryMatched, phoneRequested) => registryMatched || phoneRequested,
+        )
         const wallet = useWalletConnect
             ? wallets.find(item => item.type === 'BRIDGE_WALLET')
             : configuredWallet
         if (!wallet) throw new Error('Stellar wallet connector not found')
 
         const isWalletConnect = wallet.type === 'BRIDGE_WALLET'
-        const mobile = registryConnector?.mobile
-        const deepLink = mobile?.native || mobile?.universal || undefined
         const resolveURI = registryConnector && mobile && deepLink
             ? (uri: string) => buildDeepLink({ id: registryConnector.id, mobile }, uri)
             : undefined
