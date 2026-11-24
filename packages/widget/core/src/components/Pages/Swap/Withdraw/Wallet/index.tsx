@@ -125,13 +125,11 @@ export function useWalletWithdrawalController({
     if (!observingSubmission && transfer.rpcMessage) controls = transfer.rpcMessage;
     if (!observingSubmission && !wallet) {
         const connect = <ConnectWalletView {...connection} />;
+        const walletName = selectedSourceAccount?.displayName || selectedSourceAccount?.providerName || 'The selected wallet';
         controls = selectedSourceAccount && selectedProviderReady ? (
             <TransferBlock reasonCode="wallet_unsupported_for_network" path="WalletWithdrawal"
-                reason={`${selectedSourceAccount.displayName || selectedSourceAccount.providerName || 'The selected wallet'} cannot send from ${source_network.name}`}>
-                <UnsupportedSourceWallet
-                    swapData={swapBasicData}
-                    walletName={selectedSourceAccount.displayName || selectedSourceAccount.providerName || 'The selected wallet'}
-                />
+                reason={`${walletName} cannot send from ${source_network.name}`}>
+                {provider ? <UnsupportedSourceWallet swapData={swapBasicData} walletName={walletName} /> : connect}
             </TransferBlock>
         ) : connect;
     }

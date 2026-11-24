@@ -11,7 +11,6 @@ type Props = {
     setOpenModal: (show: boolean) => void;
 };
 
-/** Shared by the source account row and unsupported-wallet recovery. */
 export function WalletTransferPicker({ swapData, openModal, setOpenModal }: Props) {
     const { source_network, source_token } = swapData;
     const { provider } = useWallet(source_network, 'withdrawal');

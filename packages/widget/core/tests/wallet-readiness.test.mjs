@@ -329,6 +329,14 @@ test('dismissing recovery leaves the unsupported source selected', async () => {
   assert.equal(state.account.id, 'selected-wallet')
 })
 
+test('unsupported wallet without a network provider falls back to connect', async () => {
+  state.account.provider.ready = true
+  state.walletState = { wallets: [], provider: undefined }
+  await render()
+  assert.equal(container.textContent, 'Connect wallet')
+  assert.deepEqual(events.map(event => event.reasonCode), ['wallet_unsupported_for_network'])
+})
+
 test('the same mounted block is recorded independently for a replacement swap', async () => {
   await renderBoundary()
   state.swapState = { ...state.swapState, swapDetails: { id: 'second-swap' } }
