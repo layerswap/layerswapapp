@@ -103,16 +103,18 @@ class StellarKitManager {
         const kitPromise = import('@creit.tech/stellar-wallets-kit/sdk')
         const kitTypesPromise = import('@creit.tech/stellar-wallets-kit/types')
         const kitUtilsPromise = import('@creit.tech/stellar-wallets-kit/modules/utils')
-        const [kitModule, kitTypesModule, kitUtilsModule] = await Promise.all([
+        const [kitModule, kitTypesModule, kitUtilsModule, ghostsigModule] = await Promise.all([
             kitPromise,
             kitTypesPromise,
             kitUtilsPromise,
+            import('@creit.tech/stellar-wallets-kit/modules/ghostsig'),
         ])
         if (generation !== this.generation) return
 
         const isTestnet = AppSettings.ApiVersion === 'testnet' || AppSettings.ApiVersion === 'sandbox'
         const network = isTestnet ? kitTypesModule.Networks.TESTNET : kitTypesModule.Networks.PUBLIC
-        const modules = kitUtilsModule.defaultModules()
+        const modules = kitUtilsModule.defaultModules({ filterBy: module => module.productId !== ghostsigModule.GHOSTSIG_ID })
+        modules.push(new ghostsigModule.GhostsigModule({ network }))
         if (walletConnect?.projectId) {
             this.walletConnectModule = new StellarWalletConnectModule(walletConnect, undefined, [isTestnet ? StellarWalletConnectChain.Testnet : StellarWalletConnectChain.Public,])
             modules.push(this.walletConnectModule)

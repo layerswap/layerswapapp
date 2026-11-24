@@ -42,10 +42,8 @@ export async function resolveWalletConnectConnection(
     connector: WalletModalConnector,
     providerName: string,
     deps: WalletConnectServiceDeps,
-    { canResolveRegistry, selectWalletConnect }: {
-        canResolveRegistry?: boolean
-        selectWalletConnect: (registryMatched: boolean, phoneRequested: boolean) => boolean
-    },
+    canResolveRegistry: boolean,
+    selectWalletConnect: (registryMatched: boolean, phoneRequested: boolean) => boolean,
 ) {
     const isMobilePlatform = deps.isMobilePlatform ?? false
     let registryConnector = isWalletConnectRegistryConnector(connector) ? connector : undefined
