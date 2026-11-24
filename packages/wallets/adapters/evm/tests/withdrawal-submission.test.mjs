@@ -111,7 +111,7 @@ function createWithdrawal(providerName, failure, split = { spot: '100000000000',
     } else {
         const { createPolymarketTransferProvider } = loadProvider('../src/additionalProviders/polymarket/createPolymarketTransferProvider.ts', {
             ...common,
-            viem: { createPublicClient: () => ({}), decodeAbiParameters: () => ['id', 'usdc', 'receiver', 1n] },
+            viem: { createPublicClient: () => ({}), erc20Abi: [], decodeFunctionData: () => ({ functionName: 'transfer', args: ['receiver', 1n] }) },
             '../../evmUtils/resolveChain': { default: () => ({}) },
             '../../evmUtils/resolveTransports': { resolveFallbackTransport: () => ({}) },
             './withdrawal': loadProvider('../src/additionalProviders/polymarket/withdrawal.ts', {}),
@@ -122,7 +122,7 @@ function createWithdrawal(providerName, failure, split = { spot: '100000000000',
             './depositWithdraw': { buildPolymarketDepositCalls: () => [] },
             './safeWithdraw': { buildSafeBatchRequest: sign },
             './relayerClient': { ...polymarketRelayer, getRelayerNonce: async () => '1', isPolymarketDeployed: async () => true, submitRelayerTransaction: submit, ...relayer },
-            './constants': { resolvePolymarketConfig: () => ({}), POLYMARKET_USDC_E_ADDRESS: 'usdc' },
+            './constants': { resolvePolymarketConfig: () => ({}), POLYMARKET_USDC_E_ADDRESS: 'deposit' },
             './resolveError': { resolvePolymarketError: () => assert.fail('not a provider refusal') },
         })
         provider = createPolymarketTransferProvider({}, () => true)

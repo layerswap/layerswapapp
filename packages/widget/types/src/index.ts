@@ -80,7 +80,7 @@ export type {
   ResolvedExtendedMapping,
   ExtendedRoutePlan,
 } from './resolvers/extendedRoutes';
-export { usesDepository, depositMethodForFunding, requiredDepositMethod } from './resolvers/extendedRoutes';
+export { depositMethodForFunding, requiredDepositMethod } from './resolvers/extendedRoutes';
 export type { GasProvider, GasWithToken } from './resolvers/gas';
 export type { GaslessSignParams, GaslessProvider } from './resolvers/gasless';
 export { LazyBalanceProvider, LazyGasProvider } from './resolvers/lazyProviders';

@@ -52,7 +52,7 @@ export function useExtendedDepositOption(providerId: DepositMethodId): ExtendedD
     const { wallets } = useWallet();
 
     // The deposit method of the real backend route this provider funds through:
-    // 'deposit_address' for CCTP-style sources, 'wallet' for depository sources.
+    // 'deposit_address' for CCTP-style sources, 'wallet' for wallet-transfer sources like Polymarket.
     const provider = useMemo(() => getSourceProviders().find(p => p.id === providerId), [providerId]);
     const depositMethod = depositMethodForFunding(provider?.funding);
 

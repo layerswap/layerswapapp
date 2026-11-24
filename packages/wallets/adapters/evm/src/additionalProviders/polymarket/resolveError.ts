@@ -1,7 +1,7 @@
 export type StepError = { header: string; details: string }
 
 /**
- * Map a raw Polymarket relayer / depository / unwrap error string to user-facing copy.
+ * Map a raw Polymarket relayer / transfer / unwrap error string to user-facing copy.
  * Mirrors the sibling Hyperliquid/EVM resolveError pattern.
  */
 export function resolvePolymarketError(message: string): StepError {
@@ -12,7 +12,7 @@ export function resolvePolymarketError(message: string): StepError {
         return { header: 'No Polymarket account', details: 'This wallet has no Polymarket account. Connect the wallet that owns your Polymarket balance.' }
     if (lower.includes('nonce') || lower.includes('expired'))
         return { header: 'Please try again', details: 'The request expired. Please try again.' }
-    if (lower.includes('not allowed') || lower.includes('not whitelisted') || lower.includes('reverted') || lower.includes('unwrap') || lower.includes('depository'))
+    if (lower.includes('not allowed') || lower.includes('not whitelisted') || lower.includes('reverted') || lower.includes('unwrap'))
         return { header: 'Withdrawal could not be completed', details: 'The conversion or deposit step could not be completed. Please try again in a moment.' }
     return { header: 'Withdrawal failed', details: message || 'Polymarket rejected the withdrawal.' }
 }
