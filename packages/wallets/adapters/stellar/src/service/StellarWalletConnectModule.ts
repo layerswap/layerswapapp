@@ -82,7 +82,8 @@ export class StellarWalletConnectModule implements ModuleInterface, DisplayUriSo
         const stellar = (window as Window & {
             stellar?: { provider?: string; platform?: string }
         }).stellar
-        return stellar?.provider === 'freighter' && stellar.platform === 'mobile'
+        const isVarial = stellar?.provider === 'varial' || stellar?.provider === 'freighter'
+        return isVarial && stellar?.platform === 'mobile'
     }
 
     onDisplayUri(listener: (uri: string) => void): () => void {
