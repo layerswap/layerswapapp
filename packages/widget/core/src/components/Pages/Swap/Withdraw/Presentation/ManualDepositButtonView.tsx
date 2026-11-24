@@ -1,14 +1,16 @@
 import SubmitButton from '@/components/Buttons/submitButton';
 export function ManualDepositButtonView({
     copied = false,
+    loading = false,
     onCopy,
 }: {
     copied?: boolean;
+    loading?: boolean;
     onCopy?: () => void;
 }) {
     return (
-        <SubmitButton onClick={onCopy}>
-            {copied ? 'Copied!' : 'Copy deposit address'}
+        <SubmitButton type="button" onClick={onCopy} isSubmitting={loading}>
+            {loading ? 'Preparing deposit address…' : copied ? 'Copied!' : 'Copy deposit address'}
         </SubmitButton>
     );
 }
