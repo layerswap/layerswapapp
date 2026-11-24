@@ -219,15 +219,12 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Wa
             // The registry entry carries the mobile deeplink. An installed wallet
             // on mobile still needs its registry entry resolved on demand so we
             // can deeplink into its app instead of rendering a desktop QR.
-            const { useWalletConnect, registryConnector: identity, mobile, deepLink: wcDeepLink } = await resolveWalletConnectConnection(
-                connector,
-                PROVIDER_NAME,
-                this._deps,
-                !!installedAdapter && !isBareWcTile,
-                (registryMatched, phoneRequested) => isBareWcTile
+            const { useWalletConnect, registryConnector: identity, mobile, deepLink: wcDeepLink } = await resolveWalletConnectConnection(connector, PROVIDER_NAME, this._deps, {
+                canResolveRegistry: !!installedAdapter && !isBareWcTile,
+                selectWalletConnect: (registryMatched, phoneRequested) => isBareWcTile
                     ? !isMobilePlatform
                     : (registryMatched && (isMobilePlatform || !installedAdapter)) || phoneRequested,
-            )
+            })
             isWc = useWalletConnect && !!identity
 
             const targetAdapter = useWalletConnect ? hiddenWcAdapter : installedAdapter

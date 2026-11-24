@@ -96,16 +96,10 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
         const wallets = stellarStore.getState().wallets
         const isMobilePlatform = this.deps.isMobilePlatform ?? false
         const configuredWallet = wallets.find(item => item.id === connector.id)
-        const { useWalletConnect, registryConnector, mobile, deepLink } = await resolveWalletConnectConnection(
-            connector,
-            PROVIDER_NAME,
-            this.deps,
-            !!configuredWallet
-                && configuredWallet.type !== 'BRIDGE_WALLET'
-                && !configuredWallet.isAvailable
-                && !configuredWallet.isPlatformWrapper,
-            (registryMatched, phoneRequested) => registryMatched || phoneRequested,
-        )
+        const { useWalletConnect, registryConnector, mobile, deepLink } = await resolveWalletConnectConnection(connector, PROVIDER_NAME, this.deps, {
+            canResolveRegistry: !!configuredWallet && connector.extensionNotFound,
+            selectWalletConnect: (registryMatched, phoneRequested) => registryMatched || phoneRequested,
+        })
         const wallet = useWalletConnect
             ? wallets.find(item => item.type === 'BRIDGE_WALLET')
             : configuredWallet
