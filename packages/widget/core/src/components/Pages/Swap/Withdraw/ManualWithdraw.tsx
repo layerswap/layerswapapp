@@ -283,13 +283,14 @@ export function useManualWithdrawController({
                         className="flex"
                     />
                 }
-                qr={
+                depositAddressError={recoveryError}
+                qr={depositAddress ? (
                     <DepositQRCodeView
                         depositAddress={depositAddress}
                         showQR={showQR}
                         setShowQR={setShowQR}
                     />
-                }
+                ) : undefined}
                 destinationAddress={
                     swapBasicData?.destination_network &&
                     Address.isValid(
