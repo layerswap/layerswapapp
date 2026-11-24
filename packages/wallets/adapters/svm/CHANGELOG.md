@@ -1,5 +1,18 @@
 # @layerswap/wallet-svm
 
+## 2.7.1
+
+### Patch Changes
+
+- Upgraded Stellar Wallets Kit to 2.8.0 (Freighter is now Varial, Ghostsig added), with WalletConnect still reachable from merged wallet tiles. Solana and Stellar share WalletConnect connect resolution through wallet-core. The WalletConnect QR now offers a plain QR fallback after 7 seconds.
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies [acaa41b]
+- Updated dependencies
+  - @layerswap/widget-types@2.7.1
+  - @layerswap/wallet-core@2.7.1
+  - @layerswap/utils@2.7.1
+
 ## 2.7.0
 
 ### Patch Changes

@@ -40,8 +40,10 @@ export interface ExtendedRouteProvider {
     direction: 'source' | 'destination'
     /** Default state when no remote feature flag is available for this provider. */
     enabledByDefault: boolean
-    /** How the real backend leg is funded. */
-    funding?: 'deposit_address' | 'depository'
+    /** How the real backend leg is funded: a deposit address (default) or a wallet transfer. */
+    funding?: 'deposit_address' | 'wallet'
+    /** Whether the real backend leg may use frontend swap execution. Defaults to true. */
+    supportsFrontendSwap?: boolean
     /** Whether the backend swap needs the source address for refunds. */
     requiresRefundAddress?: boolean
     /** Extended network names this provider owns, e.g. [HYPERLIQUID_MAINNET, HYPERLIQUID_TESTNET]. */
@@ -74,15 +76,11 @@ export interface ExtendedRouteProvider {
     getRealCandidates?(networkName: string, tokenSymbol: string): DepositRouteRef[]
 }
 
-export function usesDepository(provider: ExtendedRouteProvider): boolean {
-    return provider.funding === 'depository'
-}
-
 export function depositMethodForFunding(funding: ExtendedRouteProvider['funding']): 'wallet' | 'deposit_address' {
-    return funding === 'depository' ? 'wallet' : 'deposit_address'
+    return funding ?? 'deposit_address'
 }
 
-export function requiredDepositMethod(provider: ExtendedRouteProvider): string {
+export function requiredDepositMethod(provider: ExtendedRouteProvider): 'wallet' | 'deposit_address' {
     return depositMethodForFunding(provider.funding)
 }
 

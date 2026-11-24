@@ -1,5 +1,27 @@
 # @layerswap/wallets
 
+## 2.7.1
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies [acaa41b]
+- Updated dependencies
+  - @layerswap/widget-types@2.7.1
+  - @layerswap/wallet-starknet@2.7.1
+  - @layerswap/wallet-core@2.7.1
+  - @layerswap/wallet-evm@2.7.1
+  - @layerswap/wallet-stellar@2.7.1
+  - @layerswap/wallet-svm@2.7.1
+  - @layerswap/wallet-bitcoin@2.7.1
+  - @layerswap/wallet-fuel@2.7.1
+  - @layerswap/wallet-imtbl-passport@2.7.1
+  - @layerswap/wallet-paradex@2.7.1
+  - @layerswap/wallet-ton@2.7.1
+  - @layerswap/wallet-tron@2.7.1
+  - @layerswap/utils@2.7.1
+
 ## 2.7.0
 
 ### Minor Changes

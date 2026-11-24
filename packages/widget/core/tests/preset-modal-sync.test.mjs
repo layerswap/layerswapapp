@@ -120,7 +120,10 @@ const { SendTransactionView } = loadSource('components/Pages/Swap/Withdraw/Prese
 const callbackImports = {
   react: React,
   '@/hooks/useClientLayoutEffect': loadSource('hooks/useClientLayoutEffect.ts', { react: React }),
-  '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: event => state.events.push(event) }) },
+  '@/context/callbackProvider': { useCallbacks: () => ({
+    onSwapLifecycle: event => state.events.push(event),
+    getLatestLifecycleEvent: () => state.events.at(-1),
+  }) },
   '@layerswap/widget-types': require('@layerswap/widget-types'),
 }
 // Keep the real footer, warnings and loading button. Only wallet execution is

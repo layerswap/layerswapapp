@@ -1,5 +1,17 @@
 # @layerswap/wallet-ton
 
+## 2.7.1
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies [acaa41b]
+- Updated dependencies
+  - @layerswap/widget-types@2.7.1
+  - @layerswap/wallet-core@2.7.1
+  - @layerswap/utils@2.7.1
+
 ## 2.7.0
 
 ### Minor Changes

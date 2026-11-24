@@ -122,9 +122,9 @@ type ResolveRoutesURLForSelectedTokenProps = {
     networkTypes?: string[],
     hasDepositAddress?: boolean,
     useDepositAddressSwaps?: boolean,
-    useFrontendSwap: true,
+    useFrontendSwap: boolean,
 }
-export const resolveRoutesURLForSelectedToken = ({ direction, network, token, includes, networkTypes, hasDepositAddress, useDepositAddressSwaps }: ResolveRoutesURLForSelectedTokenProps) => {
+export const resolveRoutesURLForSelectedToken = ({ direction, network, token, includes, networkTypes, hasDepositAddress, useDepositAddressSwaps, useFrontendSwap = true }: ResolveRoutesURLForSelectedTokenProps) => {
 
     const include_unmatched = includes.unmatched ? 'true' : 'false'
     const include_unavailable = includes.unavailable ? 'true' : 'false'
@@ -137,7 +137,7 @@ export const resolveRoutesURLForSelectedToken = ({ direction, network, token, in
             : { include_swaps: includes.swaps ? 'true' : 'false' }),
         ...(networkTypes ? { network_types: networkTypes?.join(',') } : {}),
         ...(hasDepositAddress ? { has_deposit_address: 'true' } : {}),
-        use_frontend_swap: 'true',
+        use_frontend_swap: String(useFrontendSwap),
         ...(network ?
             {
                 [direction === 'to' ? 'source_network' : 'destination_network']: network,
