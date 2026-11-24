@@ -1,22 +1,16 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import test from 'node:test'
-import ts from 'typescript'
+import { loadCommonJs } from '../../../../scripts/test-source.mjs'
 
 const require = createRequire(import.meta.url)
 
 function loadSource(path, imports = {}) {
-  const { outputText } = ts.transpileModule(readFileSync(new URL(path, import.meta.url), 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
-  })
-  const module = { exports: {} }
-  new Function('require', 'module', 'exports', outputText)(name => {
+  return loadCommonJs(new URL(path, import.meta.url), name => {
     if (['react', 'react/jsx-runtime', 'swr', 'zustand'].includes(name)) return require(name)
     if (name in imports) return imports[name]
     throw new Error(`Unexpected dependency: ${name}`)
-  }, module, module.exports)
-  return module.exports
+  })
 }
 
 function harness() {

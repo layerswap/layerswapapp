@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "pnpm lint && next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "check:types": "tsc --noEmit"
   },
   "dependencies": {
@@ -22,7 +22,7 @@
     "framer-motion": "^10.16.15",
     "heroicons": "^2.0.18",
     "lucide-react": "^0.379.0",
-    "next": "15.5.28",
+    "next": "16.4.6",
     "react": "catalog:",
     "react-dom": "catalog:",
     "recharts": "^3.10.1",
@@ -36,11 +36,11 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "autoprefixer": "^10.4.5",
-    "eslint": "8.43.0",
-    "eslint-config-next": "^15.5.28",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.4.6",
     "postcss": "^8.5.10",
     "tailwindcss": "^4.0.15",
-    "typescript": "^5"
+    "typescript": "catalog:"
   },
   "packageManager": "pnpm@10.20.0"
 }

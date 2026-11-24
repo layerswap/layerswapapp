@@ -1,25 +1,19 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import test from 'node:test'
-import ts from 'typescript'
+import { loadCommonJs } from '../../../../scripts/test-source.mjs'
 
 const require = createRequire(import.meta.url)
 
 // Load source directly so these regressions do not depend on a stale dist build.
 function loadSource(path, imports = {}) {
-    const { outputText } = ts.transpileModule(readFileSync(new URL(path, import.meta.url), 'utf8'), {
-        compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
-    })
-    const module = { exports: {} }
-    new Function('require', 'module', 'exports', outputText)(name => {
+    return loadCommonJs(new URL(path, import.meta.url), name => {
         if (name === 'react/jsx-runtime') return require(name)
         if (name === '../components/utils/resolveSwapFlow.js') return loadSource("../src/components/utils/resolveSwapFlow.ts");
         if (name === '../../helpers/depositActions.js') return loadSource('../src/helpers/depositActions.ts');
         if (name in imports) return imports[name]
         throw new Error(`Unexpected dependency: ${name}`)
-    }, module, module.exports)
-    return module.exports
+    })
 }
 
 const { ActionMessageType } = loadSource('../../types/src/actionMessage.ts')

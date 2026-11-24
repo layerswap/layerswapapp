@@ -1,11 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { JSDOM } from 'jsdom';
-import ts from 'typescript';
+import { loadCommonJs } from '../../../scripts/test-source.mjs';
 
 const req = createRequire(import.meta.url);
 const core = new URL('../../../packages/widget/core/src/', import.meta.url);
@@ -14,30 +13,14 @@ const coreReq = createRequire(new URL('../package.json', core));
 // Keep the real gas cache, transition and wallet execution controller. Replace
 // external contexts/services and hold the wallet and exact fee requests open.
 function loadSource(path, imports = {}) {
-    const { outputText } = ts.transpileModule(
-        readFileSync(new URL(path, core), 'utf8'),
-        {
-            compilerOptions: {
-                module: ts.ModuleKind.CommonJS,
-                target: ts.ScriptTarget.ES2022,
-                jsx: ts.JsxEmit.ReactJSX,
-            },
-        },
-    );
-    const module = { exports: {} };
-    new Function('require', 'module', 'exports', outputText)(
-        (name) => {
-            if (name === 'react' || name === 'react/jsx-runtime')
-                return req(name);
-            if (name in imports) return imports[name];
-            if (name.endsWith('/TransferBlock')) return { TransferBlock: ({ children }) => React.createElement(React.Fragment, null, children) };
-            if (name === '@/hooks/useHasSubmittedTransfer') return { useHasSubmittedTransfer: () => false };
-            throw new Error(`Unexpected dependency: ${name} at ${path}`);
-        },
-        module,
-        module.exports,
-    );
-    return module.exports;
+    return loadCommonJs(new URL(path, core), (name) => {
+        if (name === 'react' || name === 'react/jsx-runtime')
+            return req(name);
+        if (name in imports) return imports[name];
+        if (name.endsWith('/TransferBlock')) return { TransferBlock: ({ children }) => React.createElement(React.Fragment, null, children) };
+        if (name === '@/hooks/useHasSubmittedTransfer') return { useHasSubmittedTransfer: () => false };
+        throw new Error(`Unexpected dependency: ${name} at ${path}`);
+    });
 }
 
 test('exact gas loading preserves the pending wallet request and its execution lock', async () => {

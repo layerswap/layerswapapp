@@ -3,7 +3,7 @@ import test, { after } from 'node:test'
 import { createRequire, registerHooks } from 'node:module'
 import { readFileSync } from 'node:fs'
 import { extname } from 'node:path'
-import ts from 'typescript'
+import { loadCommonJs } from '../../../../scripts/test-source.mjs'
 import { ActionMessageType } from '@layerswap/widget-types'
 import { userRejectedError, walletActionError } from '@layerswap/wallet-core/errors'
 
@@ -25,15 +25,10 @@ const { widgetTelemetry } = await import('../dist/esm/lib/widgetTelemetry.js')
 
 const require = createRequire(import.meta.url)
 function loadAdapterSource(path, imports) {
-  const { outputText } = ts.transpileModule(readFileSync(new URL(path, import.meta.url), 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-  })
-  const module = { exports: {} }
-  new Function('require', 'module', 'exports', outputText)(name => {
+  return loadCommonJs(new URL(path, import.meta.url), name => {
     if (name in imports) return imports[name]
     return require(name)
-  }, module, module.exports)
-  return module.exports
+  })
 }
 
 function calldataContext(callData, network) {

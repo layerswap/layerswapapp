@@ -14,10 +14,12 @@ catalog:
   '@walletconnect/types': 2.21.8
   '@walletconnect/utils': 2.21.8
   axios: 1.20.0
+  esbuild: 0.25.3
   react: 19.2.3
   react-dom: 19.2.3
   rimraf: ^5.0.0
   swr: ^2.2.5
+  typescript: ^7.0.2
   viem: ^2.31.0
   wagmi: 2.14.11
   zustand: ^4.5.7
@@ -32,3 +34,11 @@ catalog:
 overrides:
   '@types/react': 19.2.3
   '@types/react-dom': 19.2.3
+
+# TypeScript 7 predates the peer ranges of @module-federation/enhanced 0.9
+# (caps at ^5, only lifted in 2.7), so the workspace accepts TS 7 for any
+# typescript peer until it is upgraded. The typescript-eslint stack gets its
+# own TS 6 via .pnpmfile.cjs, since TS 7 no longer ships the compiler API.
+peerDependencyRules:
+  allowedVersions:
+    typescript: '7'

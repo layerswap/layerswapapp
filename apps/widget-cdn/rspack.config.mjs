@@ -213,6 +213,8 @@ export default (env, argv) => {
           './mountDeposit': './src/mountDeposit.tsx',
         },
         shared: SHARED_SINGLETONS,
+        // dts-plugin needs the TS compiler API, which TS 7 no longer ships; hosts use @layerswap/widget-types.
+        dts: false,
         // Disable MF's dev-only live-reload bridge. With the remote consumed
         // by a host on a different origin (Vite on :3001), MF's bundled
         // client posts back to :3100 to negotiate live updates and 404s.

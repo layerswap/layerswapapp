@@ -1,14 +1,10 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
 import test from 'node:test'
-import vm from 'node:vm'
-import ts from 'typescript'
+import { runInNewContext } from '../../../../scripts/test-source.mjs'
 import { createJourneyId } from '../faro-swap-lifecycle.ts'
 import { createEngagementClock } from '../faro-engagement.ts'
 
-const compiled = ts.transpileModule(readFileSync(new URL('../../components/FaroExperience.tsx', import.meta.url), 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-}).outputText
+const source = new URL('../../components/FaroExperience.tsx', import.meta.url)
 
 for (const crypto of [undefined, {}, { randomUUID: () => 'secure-page-view-id' }]) {
     test(`page-view effect runs with ${crypto?.randomUUID ? 'secure crypto' : crypto ? 'crypto without randomUUID' : 'no crypto'}`, () => {
@@ -17,10 +13,9 @@ for (const crypto of [undefined, {}, { randomUUID: () => 'secure-page-view-id' }
         try {
             const records = []
             const effects = []
-            const exports = {}
             const target = { addEventListener() {}, removeEventListener() {} }
-            vm.runInNewContext(compiled, {
-                exports, performance, queueMicrotask: fn => fn(), clearInterval() {},
+            const exports = runInNewContext(source, {
+                performance, queueMicrotask: fn => fn(), clearInterval() {},
                 window: { ...target, setInterval: () => 1 },
                 document: { ...target, visibilityState: 'hidden', hasFocus: () => false },
                 require: name => ({
@@ -68,13 +63,12 @@ test('final engagement is queued before the Faro batch flush registered ahead of
     const buffer = []
     const sent = []
     const effects = []
-    const exports = {}
     const documentTarget = eventTarget()
     const document = Object.assign(documentTarget, { visibilityState: 'visible', hasFocus: () => true })
     // Faro's BatchExecutor registers this non-capture listener before the component mounts.
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') sent.push(...buffer.splice(0)) })
-    vm.runInNewContext(compiled, {
-        exports, performance: { now: () => time }, queueMicrotask: fn => fn(), clearInterval() {},
+    const exports = runInNewContext(source, {
+        performance: { now: () => time }, queueMicrotask: fn => fn(), clearInterval() {},
         window: { ...eventTarget(), setInterval: () => 1 },
         document,
         require: name => ({

@@ -1,8 +1,7 @@
 import { isFrontendSwapQuote, resolveSwapFlow } from '../../dist/esm/components/utils/resolveSwapFlow.js'
-import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import React from 'react'
-import ts from 'typescript'
+import { loadCommonJs } from '../../../../../scripts/test-source.mjs'
 import { formatTokenAmount } from '../../dist/esm/components/utils/formatTokenAmount.js'
 import { amountPresets, swapProgress } from './source.mjs'
 
@@ -96,13 +95,8 @@ export function createSwapContext({ Client, getSwapId, getAccount, stores, swapT
         isGaslessAuthorizationSubmitted: () => false,
         ...imports['@/helpers/gasless'],
     }
-    const { outputText } = ts.transpileModule(readFileSync(new URL('../../src/context/swap.tsx', import.meta.url), 'utf8'), {
-        compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
-    })
-    const module = { exports: {} }
-    new Function('require', 'module', 'exports', outputText)(name => {
+    return loadCommonJs(new URL('../../src/context/swap.tsx', import.meta.url), name => {
         if (name in imports) return imports[name]
         throw new Error(`Unexpected swap context dependency: ${name}`)
-    }, module, module.exports)
-    return module.exports
+    })
 }

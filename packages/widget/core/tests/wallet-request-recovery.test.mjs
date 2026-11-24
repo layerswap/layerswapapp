@@ -1,21 +1,14 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import React, { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import { JSDOM } from 'jsdom'
-import ts from 'typescript'
+import { loadCommonJs } from '../../../../scripts/test-source.mjs'
 
 const require = createRequire(import.meta.url)
 function load(path, imports = {}) {
-    const source = readFileSync(new URL(path, import.meta.url), 'utf8')
-    const { outputText } = ts.transpileModule(source, { compilerOptions: {
-        module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX,
-    } })
-    const module = { exports: {} }
-    new Function('require', 'module', 'exports', outputText)(id => id in imports ? imports[id] : require(id), module, module.exports)
-    return module.exports
+    return loadCommonJs(new URL(path, import.meta.url), id =>id in imports ? imports[id] : require(id))
 }
 
 test('mobile recovery only opens the selected wallet’s current request and clears between actions', async () => {

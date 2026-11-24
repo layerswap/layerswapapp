@@ -1,9 +1,8 @@
 import assert from 'node:assert/strict'
 import test, { after, beforeEach } from 'node:test'
-import { readFileSync } from 'node:fs'
 import { registerHooks } from 'node:module'
 import { extname } from 'node:path'
-import ts from 'typescript'
+import { loadCommonJs } from '../../../../scripts/test-source.mjs'
 import * as React from 'react'
 import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
@@ -54,16 +53,10 @@ const imports = {
         constructor(address) { this.normalized = address.toLowerCase() }
     } },
 }
-const source = readFileSync(new URL('../src/hooks/useSwapHistoryData.ts', import.meta.url), 'utf8')
-const { outputText } = ts.transpileModule(source, {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-})
-const module = { exports: {} }
-new Function('require', 'module', 'exports', outputText)(name => {
+const { useSwapHistoryData } = loadCommonJs(new URL('../src/hooks/useSwapHistoryData.ts', import.meta.url), name => {
     assert.ok(name in imports, `Unexpected history dependency: ${name}`)
     return imports[name]
-}, module, module.exports)
-const { useSwapHistoryData } = module.exports
+})
 
 beforeEach(() => {
     store.setState(store.getInitialState(), true)

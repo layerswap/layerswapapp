@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test, { after } from 'node:test'
 import { readFileSync } from 'node:fs'
-import ts from 'typescript'
+import { loadCommonJs } from '../../../../scripts/test-source.mjs'
 import { JSDOM } from 'jsdom'
 import React, { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
@@ -22,17 +22,12 @@ after(() => {
     }
 })
 function pure(path, imports = {}) {
-    const output = ts.transpileModule(readFileSync(new URL(path, import.meta.url), 'utf8'), {
-        compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-    }).outputText
-    const module = { exports: {} }
-    new Function('require', 'module', 'exports', output)(name => {
+    return loadCommonJs(new URL(path, import.meta.url), name => {
         if (name in imports) return imports[name]
         if (name === '../components/utils/resolveSwapFlow.js') return pure('../src/components/utils/resolveSwapFlow.ts')
         if (name === '../../helpers/depositActions.js') return pure('../src/helpers/depositActions.ts')
         throw new Error(`Unexpected dependency: ${name}`)
-    }, module, module.exports)
-    return module.exports
+    })
 }
 const fixture = JSON.parse(readFileSync(new URL('./fixtures/atomic-batch.json', import.meta.url)))
 const store = state => Object.assign(selector => selector(state), { getState: () => state })

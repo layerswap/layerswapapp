@@ -1,24 +1,19 @@
 import assert from 'node:assert/strict'
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
-import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
-import vm from 'node:vm'
-import ts from 'typescript'
+import { runInNewContext } from '../../../../scripts/test-source.mjs'
 import { FetchTransport, TransportItemType } from '@grafana/faro-web-sdk'
 
 const require = createRequire(import.meta.url)
-const compiled = ts.transpileModule(readFileSync(new URL('../../pages/api/local-telemetry.ts', import.meta.url), 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-}).outputText
+const source = new URL('../../pages/api/local-telemetry.ts', import.meta.url)
 
 async function harness(t, nodeEnv = 'development') {
     const directory = await mkdtemp(join(tmpdir(), 'layerswap-telemetry-'))
     t.after(() => rm(directory, { recursive: true, force: true }))
-    const exports = {}
-    vm.runInNewContext(compiled, { exports, require, URL, process: { env: { NODE_ENV: nodeEnv }, cwd: () => directory }, console: { error() {} } })
+    const exports = runInNewContext(source, { require, URL, process: { env: { NODE_ENV: nodeEnv }, cwd: () => directory }, console: { error() {} } })
     const post = async (body, overrides = {}) => {
         // Node's response methods return the response object; the handler must not.
         const res = { headers: {}, setHeader(key, value) { this.headers[key] = value }, status(code) { this.statusCode = code; return this }, end() { return this }, json(value) { this.body = value; return this } }

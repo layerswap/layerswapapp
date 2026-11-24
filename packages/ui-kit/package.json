@@ -66,7 +66,7 @@
     "react": "catalog:",
     "rimraf": "catalog:",
     "tsc-alias": "^1.8.16",
-    "typescript": "^5.9.2",
+    "typescript": "catalog:",
     "zustand": "catalog:"
   },
   "engines": {
