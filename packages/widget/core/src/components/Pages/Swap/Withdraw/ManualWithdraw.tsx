@@ -227,7 +227,7 @@ export function useManualWithdrawController({
     } = useExchangeNetworks(active ? exchangeNetworkParams : {});
 
     const addressError = getDepositAddressError(depositAddress, depositActions, depositActionsError);
-    const recoveryError = swapDetails?.id && !loading ? addressError : undefined;
+    const recoveryError = swapDetails?.id ? addressError : undefined;
     const retryAddress = async () => {
         // The ref guards repeated invocations before the retrying state commits.
         if (retryingAddress.current) {
@@ -247,7 +247,7 @@ export function useManualWithdrawController({
         <TransferBlock reasonCode="deposit_actions_unavailable" path="ManualWithdraw"
             stage="input_transfer" reason={recoveryError}>
             <DepositAddressRecoveryView message={recoveryError}
-                isRetrying={isRetryingAddress} onRetry={retryAddress} />
+                isRetrying={isRetryingAddress || loading} onRetry={retryAddress} />
         </TransferBlock>
     ) : (
         <ManualDepositButtonView loading={!depositAddress || loading}
