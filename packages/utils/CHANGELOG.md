@@ -1,5 +1,13 @@
 # @layerswap/utils
 
+## 2.7.1
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [acaa41b]
+  - @layerswap/widget-types@2.7.1
+
 ## 2.7.0
 
 ### Minor Changes

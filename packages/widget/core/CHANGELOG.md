@@ -1,5 +1,30 @@
 # @layerswap/widget
 
+## 2.7.1
+
+### Patch Changes
+
+- Missing deposit addresses and replacement swaps are now reported as `transfer_blocked` lifecycle events. Manual instructions show an unavailable state instead of a loading placeholder. `SwapLifecycleStep` is now exported as a constant map, and late waiting observations no longer roll back progressed lifecycle steps.
+- acaa41b: Polymarket swap creation now supplies the connected owner's Polygon address as
+  `refund_address`, allowing backend token-swap routes to pass refund validation.
+  `source_address` remains omitted because the Polymarket funder contract sends the
+  transfer. Refunds go to the owner's Polygon wallet as USDC.e.
+
+  Extended route funding now accepts only `wallet` or `deposit_address` (the default).
+  The `depository` mode and `usesDepository` export have been removed. Integrations
+  using regular wallet transfers should use `funding: 'wallet'`; deposit-address
+  integrations can keep their existing mode.
+
+- Unsupported source wallets now get an explicit recovery action to switch to a compatible wallet, shown ahead of the insufficient-balance warning. The form pickers and the recovery screen share one source wallet drawer.
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies [acaa41b]
+- Updated dependencies
+  - @layerswap/widget-types@2.7.1
+  - @layerswap/wallet-core@2.7.1
+  - @layerswap/ui-kit@2.7.1
+  - @layerswap/utils@2.7.1
+
 ## 2.7.0
 
 ### Minor Changes

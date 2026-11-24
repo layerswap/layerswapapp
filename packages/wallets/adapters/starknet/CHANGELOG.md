@@ -1,5 +1,18 @@
 # @layerswap/wallet-starknet
 
+## 2.7.1
+
+### Patch Changes
+
+- Added Outis as a supported Starknet wallet.
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies [acaa41b]
+- Updated dependencies
+  - @layerswap/widget-types@2.7.1
+  - @layerswap/wallet-core@2.7.1
+  - @layerswap/utils@2.7.1
+
 ## 2.7.0
 
 ### Minor Changes
