@@ -8,7 +8,6 @@ export type TransportOptions = {
 }
 
 const DEFAULT_RETRY_COUNT = 3
-const DEFAULT_RETRY_DELAY_MS = 1000
 const DEFAULT_TIMEOUT_MS = 60000
 const DEFAULT_BATCH = false
 
@@ -26,7 +25,6 @@ export const resolveTransports = (
         http(node, {
             batch: options?.batch ?? DEFAULT_BATCH,
             retryCount: options?.retryCount ?? DEFAULT_RETRY_COUNT,
-            retryDelay: DEFAULT_RETRY_DELAY_MS,
             timeout: options?.timeoutMs ?? DEFAULT_TIMEOUT_MS
         })
     )
@@ -42,12 +40,9 @@ export const resolveFallbackTransport = (
     nodes: string[],
     options?: TransportOptions
 ) => {
-    // Retry the fallback round, not each endpoint within every round. Otherwise
-    // three HTTP retries plus three fallback retries produce 16 attempts per node.
-    // Trying each node once also lets a healthy fallback respond immediately.
+    // An explicit http() retryCount overrides fallback's per-round 0, multiplying attempts
     return fallback(resolveTransports(nodes, { ...options, retryCount: 0 }), {
         retryCount: options?.retryCount ?? DEFAULT_RETRY_COUNT,
-        retryDelay: DEFAULT_RETRY_DELAY_MS,
     })
 }
 

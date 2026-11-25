@@ -10,7 +10,7 @@ import { ErrorHandler } from "@layerswap/widget-types";
 import { resolveFallbackTransport } from "../evmUtils/resolveTransports";
 import { calculateGasFeeAmounts, resolveAccountBalanceReserve } from "./evmGasMath";
 import { resolveEVMGasPolicy } from "./evmGasPolicies";
-import { resolveEVMFeeQuote } from "./resolveEVMFeeData";
+import { resolveEVMFeeData } from "./resolveEVMFeeData";
 import { resolveEVMTransactionRequest } from "../transferProvider/resolveEVMTransactionRequest";
 import { resolveTokenPaidGas } from "./resolveTokenPaidGas";
 
@@ -156,7 +156,7 @@ abstract class getEVMGas {
     abstract resolveGas(): Promise<ResolvedGas | undefined>
 
     protected async resolveFeeData() {
-        return resolveEVMFeeQuote(this.publicClient, this.from)
+        return resolveEVMFeeData(this.publicClient, this.from)
     }
 
     protected async estimateGasLimit(accountBalanceReserve = 0n) {
