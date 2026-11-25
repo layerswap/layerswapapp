@@ -8,6 +8,7 @@ import { createWalletProvidersRegistry, type WalletProvidersRegistry } from "@/l
 import { createDescriptorStubStore } from "@/lib/walletConnect/descriptorStubStore";
 import { WalletDescriptorLoaderContext } from "@/lib/walletConnect/walletDescriptorLoader";
 import { retryChunkLoad } from "@/lib/retryChunkLoad";
+import { scheduleWalletPreload } from "@/lib/walletConnect/scheduleWalletPreload";
 
 type RegistryEntry = { id: string; store: StoreApi<WalletConnectionProvider> }
 
@@ -94,6 +95,12 @@ export function DescriptorHydrationBoundary<Network>({
             }
         })
     }, [walletProviders, loadById])
+
+    // Prepare every configured wallet after the app has loaded. Interaction
+    // and session restoration can still start earlier through the same loader.
+    useEffect(() => scheduleWalletPreload(() => {
+        void loadAll()
+    }), [loadAll])
 
     const loaderValue = useMemo(() => ({ loadById, loadAll }), [loadById, loadAll])
 

@@ -6,6 +6,7 @@ export type StyledQRCodeProps = {
     size?: number
     logo?: string
     ecLevel?: "L" | "M" | "Q" | "H"
+    plain?: boolean
 }
 
 const FALLBACK_FG = "#E1E3E6"
@@ -18,12 +19,14 @@ const resolveForeground = (): string => {
     return raw ? `rgb(${raw})` : FALLBACK_FG
 }
 
-const StyledQRCodeImpl: FC<StyledQRCodeProps> = ({ value, size = 140, logo, ecLevel = "M" }) => {
+const StyledQRCodeImpl: FC<StyledQRCodeProps> = ({ value, size = 140, logo, ecLevel = "M", plain = false }) => {
     const [foreground, setForeground] = useState(FALLBACK_FG)
 
     useEffect(() => {
         setForeground(resolveForeground())
     }, [])
+
+    if (plain) return <QRCode value={value} size={size} ecLevel={ecLevel} quietZone={0} />
 
     const logoSize = Math.round(size * 0.25)
 

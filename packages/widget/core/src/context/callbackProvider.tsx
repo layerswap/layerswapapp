@@ -1,4 +1,4 @@
-import { type SwapLifecycleEvent, type SwapStatusEvent, type WidgetCallbacks } from '@layerswap/widget-types';
+import { SwapLifecycleStep, type SwapLifecycleEvent, type SwapStatusEvent, type WidgetCallbacks } from '@layerswap/widget-types';
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
 import { SwapResponse } from '@/lib/apiClients/layerSwapApiClient'
 import { createContext, useContext, ReactNode, useCallback, useMemo, useRef, useState } from 'react'
@@ -20,7 +20,10 @@ export interface CallbackProviderProps {
     callbacks?: CallbacksContextType
 }
 
-type CallbackContextValue = Required<Omit<CallbacksContextType, 'onError'>>
+type CallbackContextValue = Required<Omit<CallbacksContextType, 'onError'>> & {
+    /** Internal guard against a late waiting observation rewinding an active operation. */
+    getLatestLifecycleEvent: () => SwapLifecycleEvent | undefined
+}
 const CallbackContext = createContext<CallbackContextValue | undefined>(undefined)
 
 function reportCallbackError(caught: unknown) {
@@ -37,6 +40,8 @@ function reportCallbackError(caught: unknown) {
 export function CallbackProvider({ children, callbacks }: CallbackProviderProps) {
     const [observations] = useState(createCallbackObservations)
     const [backendStatuses] = useState(createSwapStatusObserver)
+    const latestLifecycleEvent = useRef<SwapLifecycleEvent | undefined>(undefined)
+    const getLatestLifecycleEvent = useCallback(() => latestLifecycleEvent.current, [])
     const callbacksRef = useRef(callbacks)
     useClientLayoutEffect(() => { callbacksRef.current = callbacks }, [callbacks])
 
@@ -49,7 +54,8 @@ export function CallbackProvider({ children, callbacks }: CallbackProviderProps)
         event = { ...event, amountMode: widgetTelemetry.amountInputMethod(event) }
         // Creation is an explicit operation result. Wallet prompts/phase observations never
         // establish or reset backend history.
-        if (event.step === 'swap_created' && event.swapId) backendStatuses.created(event.swapId)
+        if (event.step === SwapLifecycleStep.SwapCreated && event.swapId) backendStatuses.created(event.swapId)
+        latestLifecycleEvent.current = event
         widgetTelemetry.lifecycle(event)
         if (!observations.lifecycle(event)) return
         try { callbacksRef.current?.onSwapLifecycle?.(event) } catch (error) { reportCallbackError(error) }
@@ -79,9 +85,10 @@ export function CallbackProvider({ children, callbacks }: CallbackProviderProps)
             },
             onSwapStatusChange,
             onSwapLifecycle,
+            getLatestLifecycleEvent,
             onMenuNavigationChange: (path: string) => { try { callbacks?.onMenuNavigationChange?.(path) } catch (error) { reportCallbackError(error) } },
         }
-    }, [callbacks, onSwapStatusChange, onSwapLifecycle, observations, backendStatuses])
+    }, [callbacks, onSwapStatusChange, onSwapLifecycle, observations, backendStatuses, getLatestLifecycleEvent])
     return (
         <CallbackContext.Provider value={value}>
             {children}

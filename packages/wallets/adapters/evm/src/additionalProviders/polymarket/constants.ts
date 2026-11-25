@@ -6,9 +6,9 @@ import { KnownInternalNames } from "@layerswap/utils";
  * Polymarket holds user funds as pUSD (its collateral token) on Polygon, inside a
  * funder wallet (deposit wallet / Safe / proxy) deterministically derived from the
  * owner EOA. Flow 2 withdrawal: the user signs ONE gasless batch that unwraps pUSD →
- * USDC.e 1:1 via the permissionless CollateralOfframp, then deposits USDC.e into the
- * Layerswap Depository (`depositERC20`) — all broadcast by the Polymarket relayer. The
- * backend detects the depository `Deposited` event and bridges to the final destination.
+ * USDC.e 1:1 via the permissionless CollateralOfframp, then transfers USDC.e to Layerswap
+ * with the backend's transfer calldata — all broadcast by the Polymarket relayer. The
+ * backend detects the transfer and bridges to the final destination.
  */
 
 /** Symbol shown for the Polymarket source token. Polymarket holds collateral as pUSD,
@@ -77,7 +77,7 @@ export const POLYMARKET_DEPOSIT_WALLET_IMPLEMENTATION = '0x58CA52ebe0DadfdF531Cd
 export const POLYMARKET_RELAYER_PROXY_URL = 'https://layerswap.io/app/api/polymarket/relay'
 
 /** Typical completion time added to the quote, in seconds. The unwrap+deposit batch
- * confirms on-chain, then the backend detects the depository deposit. */
+ * confirms on-chain, then the backend detects the transfer. */
 export const POLYMARKET_ARRIVAL_SECONDS = 5
 
 /** Deposit-wallet batch signature validity window, in seconds. */
@@ -97,8 +97,8 @@ export type PolymarketConfig = {
     networkName: string
     /** Real backend network the withdrawal is fulfilled through (Polygon). */
     realNetworkName: string
-    /** Real backend source token. USDC.e — pUSD unwraps to it 1:1 and the depository
-     * deposit (`depositERC20`) is denominated in it. The displayed source token stays
+    /** Real backend source token. USDC.e — pUSD unwraps to it 1:1 and the deposit
+     * transfer is denominated in it. The displayed source token stays
      * `POLYMARKET_DISPLAY_SYMBOL` ('pUSD'); only the backend route uses this. */
     realTokenSymbol: string
     realDecimals: number

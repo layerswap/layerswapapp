@@ -1,5 +1,30 @@
 # @layerswap/widget-types
 
+## 2.7.1
+
+### Patch Changes
+
+- Missing deposit addresses and replacement swaps are now reported as `transfer_blocked` lifecycle events. Manual instructions show an unavailable state instead of a loading placeholder. `SwapLifecycleStep` is now exported as a constant map, and late waiting observations no longer roll back progressed lifecycle steps.
+- acaa41b: Polymarket swap creation now supplies the connected owner's Polygon address as
+  `refund_address`, allowing backend token-swap routes to pass refund validation.
+  `source_address` remains omitted because the Polymarket funder contract sends the
+  transfer. Refunds go to the owner's Polygon wallet as USDC.e.
+
+  Extended route funding now accepts only `wallet` or `deposit_address` (the default).
+  The `depository` mode and `usesDepository` export have been removed. Integrations
+  using regular wallet transfers should use `funding: 'wallet'`; deposit-address
+  integrations can keep their existing mode.
+
+## 2.7.0
+
+### Minor Changes
+
+- Read refuel availability from destination entries and refuel amounts from quotes. `NetworkRouteToken` is replaced by `Token`.
+- 8f004b1: Read the EVM BalanceViewer contract from network metadata instead of a hardcoded list.
+- Move provider-specific withdrawal rules into wallet adapters and share the withdrawal flow across providers. Withdrawal progress resets when the selected wallet changes.
+- Keep transfer status controls visible after submission instead of replacing them with a balance warning. `transfer_blocked` is reported only by the control actually blocking the transfer.
+- Warn when the native balance can't cover gas, showing the required fee and a refresh action. Wallet capabilities (EIP-5792) are read once per connection. If the wallet can pay gas in another token, the warning is hidden and gas is priced in the transferred token when enough of it remains.
+
 ## 2.6.0
 
 ### Minor Changes

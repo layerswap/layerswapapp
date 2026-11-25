@@ -25,6 +25,9 @@ const polymarketRelayer = loadProvider('../src/additionalProviders/polymarket/re
 })
 
 const { default: KnownInternalNames } = loadProvider('../../../../utils/src/knownIds.ts', {})
+const { browserOnlyMiddleware } = loadProvider('../../../../utils/src/common.ts', {
+    './formatUnits.js': { formatUnits },
+})
 const widgetTypes = {
     ...loadProvider('../../../../widget/types/src/extendedRouteAvailability.ts', {}),
     ...loadProvider('../../../../widget/types/src/resolvers/extendedRoutes.ts', {}),
@@ -108,7 +111,7 @@ function createWithdrawal(providerName, failure, split = { spot: '100000000000',
     } else {
         const { createPolymarketTransferProvider } = loadProvider('../src/additionalProviders/polymarket/createPolymarketTransferProvider.ts', {
             ...common,
-            viem: { createPublicClient: () => ({}), decodeAbiParameters: () => ['id', 'usdc', 'receiver', 1n] },
+            viem: { createPublicClient: () => ({}), erc20Abi: [], decodeFunctionData: () => ({ functionName: 'transfer', args: ['receiver', 1n] }) },
             '../../evmUtils/resolveChain': { default: () => ({}) },
             '../../evmUtils/resolveTransports': { resolveFallbackTransport: () => ({}) },
             './withdrawal': loadProvider('../src/additionalProviders/polymarket/withdrawal.ts', {}),
@@ -119,7 +122,7 @@ function createWithdrawal(providerName, failure, split = { spot: '100000000000',
             './depositWithdraw': { buildPolymarketDepositCalls: () => [] },
             './safeWithdraw': { buildSafeBatchRequest: sign },
             './relayerClient': { ...polymarketRelayer, getRelayerNonce: async () => '1', isPolymarketDeployed: async () => true, submitRelayerTransaction: submit, ...relayer },
-            './constants': { resolvePolymarketConfig: () => ({}), POLYMARKET_USDC_E_ADDRESS: 'usdc' },
+            './constants': { resolvePolymarketConfig: () => ({}), POLYMARKET_USDC_E_ADDRESS: 'deposit' },
             './resolveError': { resolvePolymarketError: () => assert.fail('not a provider refusal') },
         })
         provider = createPolymarketTransferProvider({}, () => true)
@@ -148,15 +151,23 @@ function createProviderExecution(t) {
         removeItem: key => saved.delete(key),
     }
     const previousStorage = Object.getOwnPropertyDescriptor(globalThis, 'localStorage')
+    const previousWindow = Object.getOwnPropertyDescriptor(globalThis, 'window')
     Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: storage })
+    Object.defineProperty(globalThis, 'window', {
+        configurable: true,
+        value: { localStorage: storage, sessionStorage: storage },
+    })
     t.after(() => {
         if (previousStorage) Object.defineProperty(globalThis, 'localStorage', previousStorage)
         else delete globalThis.localStorage
+        if (previousWindow) Object.defineProperty(globalThis, 'window', previousWindow)
+        else delete globalThis.window
     })
     const statuses = { Pending: 'pending', Failed: 'failed' }
     const transactionStore = loadProvider('../../../../widget/core/src/stores/swapTransactionStore.tsx', {
         zustand: { create },
         'zustand/middleware': { persist, createJSONStorage: () => createJSONStorage(() => storage) },
+        '@layerswap/utils/common': { browserOnlyMiddleware },
         '../lib/apiClients/layerSwapApiClient': { BackendTransactionStatus: statuses },
     })
     const { useSwapTransactionStore: store } = transactionStore

@@ -17,6 +17,7 @@ import {
     ArgentXIconBase64,
     BraavosIconBase64,
     OkxIconBase64,
+    OutisIconBase64,
     GlowIconBase64,
     SolflareIconBase64,
     TONIconBase64,
@@ -56,6 +57,7 @@ const KNOWN: Record<string, string> = {
     okxwallet: OkxIconBase64,
     okx: OkxIconBase64,
     'okx wallet': OkxIconBase64,
+    outis: OutisIconBase64,
     // SVM
     glow: GlowIconBase64,
     solflare: SolflareIconBase64,

@@ -33,6 +33,7 @@ import { isUserRejection } from "./Common/isUserRejection";
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import { useWithdrawalScope } from '../useWithdrawalExecution';
 import { withdrawalSelectionKey } from '../withdrawalHelpers';
+import { UnsupportedSourceWallet } from './UnsupportedSourceWallet';
 
 type Props = {
     swapData: SwapBasicData
@@ -69,6 +70,20 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
     </>;
 };
 
+export function useSourceWalletSupport(source_network: SwapBasicData['source_network']) {
+    const selectedSourceAccount = useSelectedAccount("from", source_network.name);
+    const { wallets, provider } = useWallet(source_network, "withdrawal")
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id && w.withdrawalSupportedNetworks?.includes(source_network?.name))
+    // The account can restore before its provider publishes the connected wallet.
+    // useWallet's network provider may belong to another account, so check the
+    // selected account's own snapshot before treating a missing wallet as unsupported.
+    const selectedProvider = selectedSourceAccount?.provider
+    const selectedProviderReady = isProviderHydrated(selectedProvider)
+        && selectedProvider.pendingSessionRestore !== true
+    const unsupported = !wallet && !!selectedSourceAccount && selectedProviderReady
+    return { selectedSourceAccount, wallets, provider, wallet, unsupported }
+}
+
 export function useWalletWithdrawalController({
     swapBasicData,
     refuel,
@@ -76,12 +91,10 @@ export function useWalletWithdrawalController({
 }: WithdrawPageProps, active = true) {
 
     const { source_network, destination_network, destination_address } = swapBasicData
-    const selectedSourceAccount = useSelectedAccount("from", swapBasicData.source_network.name);
-    const { wallets, provider } = useWallet(source_network, "withdrawal")
+    const { selectedSourceAccount, provider, wallet, unsupported } = useSourceWalletSupport(source_network)
     const { sameAccountNetwork } = useInitialSettings()
     const { swapDetails } = useSwapDataState()
     const { onSwapLifecycle } = useCallbacks()
-    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id && w.withdrawalSupportedNetworks?.includes(source_network?.name))
     const networkChainId = source_network?.chain_id ?? undefined
     const savedTransactionHash = useSwapTransactionStore(state => swapId ? state.swapTransactions[swapId]?.hash : undefined)
     const lifecycleContext = useMemo(
@@ -108,12 +121,6 @@ export function useWalletWithdrawalController({
     )
 
     const hasMultiStepHandler = !!provider?.multiStepHandlers?.some(handler => handler.supportedNetworks.includes(source_network?.name))
-    // The account can restore before its provider publishes the connected wallet.
-    // useWallet's network provider may belong to another account, so check the
-    // selected account's own snapshot before treating a missing wallet as unsupported.
-    const selectedProvider = selectedSourceAccount?.provider
-    const selectedProviderReady = isProviderHydrated(selectedProvider)
-        && selectedProvider.pendingSessionRestore !== true
     const connection = useConnectWalletController();
     const transfer = useTransferTokenController({ swapData: swapBasicData, refuel, chainId: Number(networkChainId), savedTransactionHash }, active && !!wallet && !sameAccountMismatch && !hasMultiStepHandler);
     const send = useSendTransactionController(transfer.sendProps, active && !!wallet && !sameAccountMismatch && !hasMultiStepHandler);
@@ -124,10 +131,11 @@ export function useWalletWithdrawalController({
     if (!observingSubmission && transfer.rpcMessage) controls = transfer.rpcMessage;
     if (!observingSubmission && !wallet) {
         const connect = <ConnectWalletView {...connection} />;
-        controls = selectedSourceAccount && selectedProviderReady ? (
+        const walletName = selectedSourceAccount?.displayName || selectedSourceAccount?.providerName || 'The selected wallet';
+        controls = unsupported ? (
             <TransferBlock reasonCode="wallet_unsupported_for_network" path="WalletWithdrawal"
-                reason={`${selectedSourceAccount.providerName ?? 'The selected wallet'} cannot send from ${source_network.name}`}>
-                {connect}
+                reason={`${walletName} cannot send from ${source_network.name}`}>
+                {provider ? <UnsupportedSourceWallet swapData={swapBasicData} walletName={walletName} /> : connect}
             </TransferBlock>
         ) : connect;
     }

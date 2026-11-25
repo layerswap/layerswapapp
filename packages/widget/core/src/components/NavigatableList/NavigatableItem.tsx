@@ -1,4 +1,4 @@
-import React, { forwardRef, ReactNode, useEffect, useContext, useCallback, memo, useRef } from 'react';
+import React, { forwardRef, ReactNode, useEffect, useContext, useCallback, memo, useRef, useSyncExternalStore } from 'react';
 import { useNavigatableListState, NavigatableRegistrationContext, FocusedIndex, focusedIndexEquals, focusedIndexToString } from './context';
 import clsx from 'clsx';
 import { useScrollIntoView, useSpaceKeyClick, useHoverHandler, useFocusHandler, useMergedRefs } from './hooks';
@@ -23,6 +23,8 @@ export interface NavigatableItemProps {
     tabIndex?: number;
 }
 
+const noopSubscribe = () => () => { };
+
 const NavigatableItemInner = forwardRef<HTMLDivElement, NavigatableItemProps>(({
     index,
     parentIndex,
@@ -39,17 +41,17 @@ const NavigatableItemInner = forwardRef<HTMLDivElement, NavigatableItemProps>(({
 
     const isChild = parentIndex !== undefined;
 
-    // Compute effective index for navigation (no memoization - must recalculate on each render
-    // because registrationContext is a stable ref but its internal state changes)
+    const parentLookupIndex = isChild ? parentIndex : index;
+    const navigableIndex = useSyncExternalStore(
+        registrationContext?.subscribe ?? noopSubscribe,
+        () => registrationContext?.getNavigableIndex(parentLookupIndex) ?? -1,
+        () => -1
+    );
+
     let effectiveIndex: FocusedIndex;
     if (isChild) {
-        // Child item: get the parent's navigable index
-        const parentNavigableIndex = registrationContext?.getNavigableIndex(parentIndex) ?? -1;
-        const effectiveParent = parentNavigableIndex >= 0 ? parentNavigableIndex : parentIndex;
-        effectiveIndex = { parent: effectiveParent, child: index };
+        effectiveIndex = { parent: navigableIndex >= 0 ? navigableIndex : parentIndex, child: index };
     } else {
-        // Parent item: use navigable index
-        const navigableIndex = registrationContext?.getNavigableIndex(index) ?? -1;
         effectiveIndex = { parent: navigableIndex >= 0 ? navigableIndex : index };
     }
 

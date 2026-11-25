@@ -47,9 +47,40 @@ export const sortSuggestedTokenElements = (
     return a_rank - b_rank
 }
 
+const tokenAmountsCache = new WeakMap<NetworkBalance, Map<string, number>>()
+
+/** Raw token amount held on a network, or 0 when unknown. */
+export const getTokenBalanceAmount = (balances: Record<string, NetworkBalance> | null | undefined, networkName: string, symbol: string): number => {
+    const networkBalance = balances?.[networkName]
+    if (!networkBalance) return 0
+    let amounts = tokenAmountsCache.get(networkBalance)
+    if (!amounts) {
+        amounts = new Map()
+        for (const balance of networkBalance.balances || []) {
+            if (!amounts.has(balance.token)) amounts.set(balance.token, balance.amount || 0)
+        }
+        tokenAmountsCache.set(networkBalance, amounts)
+    }
+    return amounts.get(symbol) || 0
+}
+
 /** Raw token amount held for a route/token, or 0 when unknown. */
 export const getTokenElementBalanceAmount = (item: NetworkTokenElement, balances: Record<string, NetworkBalance> | null) =>
-    balances?.[item.route.route.name]?.balances?.find(b => b.token === item.route.token.symbol)?.amount || 0
+    getTokenBalanceAmount(balances, item.route.route.name, item.route.token.symbol)
+
+/** The first `limit` items in `compare` order; same result as a stable sort + slice. */
+export function selectTop<T>(items: T[], compare: (a: T, b: T) => number, limit: number): T[] {
+    const top: T[] = []
+    if (limit <= 0) return top
+    for (const item of items) {
+        if (top.length === limit && compare(item, top[limit - 1]) >= 0) continue
+        let index = top.length
+        while (index > 0 && compare(item, top[index - 1]) < 0) index--
+        top.splice(index, 0, item)
+        if (top.length > limit) top.pop()
+    }
+    return top
+}
 
 const getNetworkTokenElementBalance = (item: NetworkTokenElement, balances: Record<string, NetworkBalance>) => {
     return getTokenElementBalanceAmount(item, balances) * item.route.token.price_in_usd
