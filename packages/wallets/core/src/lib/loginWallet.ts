@@ -16,6 +16,18 @@ export function withLoginAddress(wallet: Wallet, loginWallet: LoginWallet): Wall
     return address && address !== wallet.address ? { ...wallet, address } : wallet
 }
 
+// A provider's selectable accounts, limited to the configured login account
+// when the provider is the login wallet's family.
+export function restrictToLoginAccount(wallets: Wallet[], providerId: string | undefined, loginWallet: LoginWallet | undefined): Wallet[] {
+    if (!loginWallet || providerId !== loginWallet.providerId) return wallets
+    return wallets
+        .filter(wallet => wallet.isLoginWallet)
+        .map(wallet => {
+            const login = withLoginAddress(wallet, loginWallet)
+            return { ...login, addresses: [login.address] }
+        })
+}
+
 const markedSnapshotCache = new WeakMap<WalletConnectionProvider, { key: string, value: WalletConnectionProvider }>()
 
 // Returns the same snapshot when nothing matches, and a cached copy otherwise so

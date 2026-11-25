@@ -22,7 +22,7 @@ function loadLoginWallet() {
     }, module, module.exports)
     return module.exports
 }
-const { isLoginWalletMatch, markLoginWallet, withLoginAddress } = loadLoginWallet()
+const { isLoginWalletMatch, markLoginWallet, withLoginAddress, restrictToLoginAccount } = loadLoginWallet()
 
 const LOGIN = { address: '0xAbC0000000000000000000000000000000000001', providerId: 'evm' }
 const OTHER = '0x0000000000000000000000000000000000000002'
@@ -79,6 +79,28 @@ test('withLoginAddress selects the configured account, including a secondary one
     assert.equal(resolved.address, secondaryAddress)
     assert.deepEqual(resolved.addresses, multi.addresses)
     assert.equal(multi.address, OTHER)
+})
+
+test('restrictToLoginAccount leaves other families and swap (no login wallet) unchanged', () => {
+    const wallets = [wallet(OTHER), wallet(LOGIN.address, { isLoginWallet: true })]
+    assert.equal(restrictToLoginAccount(wallets, 'evm', undefined), wallets)
+    assert.equal(restrictToLoginAccount(wallets, 'solana', LOGIN), wallets)
+    assert.equal(restrictToLoginAccount(wallets, undefined, LOGIN), wallets)
+})
+
+test('restrictToLoginAccount keeps only the configured login account in its family', () => {
+    const other = wallet(OTHER)
+    const secondaryAddress = LOGIN.address.toLowerCase()
+    const multi = wallet(OTHER, { id: 'metamask', addresses: [OTHER, secondaryAddress], isLoginWallet: true })
+
+    const restricted = restrictToLoginAccount([other, multi], 'evm', LOGIN)
+    assert.equal(restricted.length, 1)
+    assert.equal(restricted[0].id, 'metamask')
+    assert.equal(restricted[0].address, secondaryAddress)
+    assert.deepEqual(restricted[0].addresses, [secondaryAddress])
+    assert.deepEqual(multi.addresses, [OTHER, secondaryAddress])
+
+    assert.deepEqual(restrictToLoginAccount([other], 'evm', LOGIN), [])
 })
 
 test('registry notifies only when the login wallet changes', () => {

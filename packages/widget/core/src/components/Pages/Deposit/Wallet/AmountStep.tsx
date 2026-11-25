@@ -83,7 +83,7 @@ const AmountStep: FC = () => {
                     fee={fee}
                     quoteTokenPrices={quoteTokenPrices}
                     hideManualTransfer
-                    hideConnectForProviderId={loginWallet?.providerId}
+                    loginWallet={loginWallet}
                     onRoutePickerTriggerClick={back}
                 />
 

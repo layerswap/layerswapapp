@@ -1,8 +1,8 @@
-import { type Wallet } from '@layerswap/widget-types';
+import { type LoginWallet, type Wallet } from '@layerswap/widget-types';
 import { useFormikContext } from "formik";
 import { Dispatch, FC, SetStateAction, useCallback, useState } from "react";
 import useWallet from "@/hooks/useWallet";
-import { useProvidersConnectReady } from "@layerswap/wallet-core";
+import { restrictToLoginAccount, useProvidersConnectReady } from "@layerswap/wallet-core";
 import { ChevronDown, CircleHelp, QrCode } from "lucide-react";
 import VaulDrawer, { ModalFooterPortal } from "@/components/Modal/vaulModal";
 import { SelectAccountProps } from "@layerswap/wallet-core/types";
@@ -20,10 +20,10 @@ import { useNamedAddress } from "@/stores/addressBookStore";
 
 type SourceWalletPickerProps = {
     hideManualTransfer?: boolean;
-    hideConnectForProviderId?: string;
+    loginWallet?: LoginWallet;
 }
 
-const SourceWalletPicker: FC<SourceWalletPickerProps> = ({ hideManualTransfer, hideConnectForProviderId }) => {
+const SourceWalletPicker: FC<SourceWalletPickerProps> = ({ hideManualTransfer, loginWallet }) => {
     const [openModal, setOpenModal] = useState<boolean>(false)
 
     const {
@@ -39,7 +39,10 @@ const SourceWalletPicker: FC<SourceWalletPickerProps> = ({ hideManualTransfer, h
     const sourceLabel = useNamedAddress(selectedSourceAccount?.address, values.from)
 
     const { selectedConnector } = useConnectModal()
-    const availableWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
+    // Selecting another account switches the wallet's active account, which a
+    // shared host connection would follow.
+    const isLoginFamily = !!loginWallet && provider?.id === loginWallet.providerId
+    const availableWallets = restrictToLoginAccount(provider?.connectedWallets?.filter(w => !w.isNotAvailable) || [], provider?.id, loginWallet)
 
     const handleWalletChange = () => {
         setOpenModal(true)
@@ -121,7 +124,7 @@ const SourceWalletPicker: FC<SourceWalletPickerProps> = ({ hideManualTransfer, h
                         network={values.from}
                         selectedDepositMethod={values.depositMethod}
                         selectable
-                        hideConnect={!!hideConnectForProviderId && provider?.id === hideConnectForProviderId}
+                        hideConnect={isLoginFamily}
                     />
                 </div>
                 {
