@@ -3,77 +3,112 @@ import test, { after } from 'node:test'
 import { registerHooks } from 'node:module'
 import { extname } from 'node:path'
 
-const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
-    if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
-        try { return nextResolve(`${specifier}.js`, context) }
-        catch (error) {
-            if (error.code !== 'ERR_MODULE_NOT_FOUND') throw error
+const hooks = registerHooks({
+    resolve(specifier, context, nextResolve) {
+        const isExtensionlessDistImport = specifier.startsWith('.')
+            && !extname(specifier)
+            && context.parentURL?.includes('/dist/esm/')
+        if (!isExtensionlessDistImport) {
+            return nextResolve(specifier, context)
+        }
+
+        try {
+            return nextResolve(`${specifier}.js`, context)
+        } catch (error) {
+            if (error.code !== 'ERR_MODULE_NOT_FOUND') {
+                throw error
+            }
             return nextResolve(`${specifier}/index.js`, context)
         }
-    }
-    return nextResolve(specifier, context)
-} })
+    },
+})
 after(() => hooks.deregister())
 
 const { resolveFallbackTransport, resolveTransports } = await import('../dist/esm/evmUtils/resolveTransports.js')
 const request = { method: 'eth_getBlockByNumber', params: ['latest', false] }
-const nodes = ['https://primary.invalid', 'https://secondary.invalid']
+const [primary, secondary] = ['https://primary.invalid', 'https://secondary.invalid']
+const nodes = [primary, secondary]
+const REQUEST_TIMEOUT_MS = 60000
 
 function mockRpc(t, response) {
     const attempts = []
     const delays = []
     t.mock.method(globalThis, 'fetch', async (url, init) => {
-        attempts.push(String(url))
-        return response(String(url), JSON.parse(init.body))
+        const endpoint = String(url)
+        attempts.push(endpoint)
+        const endpointAttempt = attempts.filter(attempt => attempt === endpoint).length
+        return response(endpoint, JSON.parse(init.body), endpointAttempt)
     })
+
     const setTimeoutOriginal = globalThis.setTimeout
     t.mock.method(globalThis, 'setTimeout', (callback, delay, ...args) => {
-        // Skip real backoff time, but assert the production delay below.
-        if (delay < 60000) delays.push(delay)
-        return setTimeoutOriginal(callback, delay < 60000 ? 0 : delay, ...args)
+        // Record retry backoff and skip waiting for it; leave request timeouts untouched.
+        if (delay >= REQUEST_TIMEOUT_MS) {
+            return setTimeoutOriginal(callback, delay, ...args)
+        }
+        delays.push(delay)
+        return setTimeoutOriginal(callback, 0, ...args)
     })
     return { attempts, delays }
 }
 
-const rateLimited = () => new Response('Too many requests', { status: 429 })
+const rateLimited = (retryAfterSeconds) => new Response('Too many requests', {
+    status: 429,
+    headers: retryAfterSeconds === undefined ? {} : { 'Retry-After': String(retryAfterSeconds) },
+})
+const failed = (status) => new Response('Failed', { status })
+const blockResult = (body) => Response.json({ jsonrpc: '2.0', id: body.id, result: { number: '0x1' } })
 
 for (const [retryCount, attemptsExpected] of [[undefined, 4], [0, 1], [1, 2]]) {
     test(`HTTP 429 honors retryCount=${retryCount ?? 'default'} without multiplying retries`, async t => {
-        const { attempts, delays } = mockRpc(t, rateLimited)
-        const transport = resolveFallbackTransport([nodes[0]], { retryCount })({})
+        const { attempts, delays } = mockRpc(t, () => rateLimited())
+        const transport = resolveFallbackTransport([primary], { retryCount })({})
         await assert.rejects(transport.request(request))
         assert.equal(attempts.length, attemptsExpected)
         assert.deepEqual(delays, [150, 300, 600].slice(0, attemptsExpected - 1))
     })
 }
 
-test('a rate-limited primary immediately falls back to a healthy secondary', async t => {
-    const { attempts, delays } = mockRpc(t, (url, body) => url === nodes[0]
-        ? rateLimited()
-        : Response.json({ jsonrpc: '2.0', id: body.id, result: { number: '0x1' } }))
-    const transport = resolveFallbackTransport(nodes)({})
-    assert.deepEqual(await transport.request(request), { number: '0x1' })
-    assert.deepEqual(attempts, nodes)
-    assert.deepEqual(delays, [])
-})
-
-test('each retry visits both endpoints once', async t => {
-    const { attempts } = mockRpc(t, rateLimited)
+test('each endpoint retries independently without fallback rounds', async t => {
+    const { attempts } = mockRpc(t, () => rateLimited())
     await assert.rejects(resolveFallbackTransport(nodes)({}).request(request))
-    assert.deepEqual(attempts, [...nodes, ...nodes, ...nodes, ...nodes])
+    assert.deepEqual(attempts, [primary, primary, primary, primary, secondary, secondary, secondary, secondary])
 })
 
-test('fallback retries honor the endpoint Retry-After header', async t => {
-    const { attempts, delays } = mockRpc(t, () => new Response('Too many requests', {
-        status: 429, headers: { 'Retry-After': '8' },
-    }))
-    await assert.rejects(resolveFallbackTransport([nodes[0]], { retryCount: 1 })({}).request(request))
-    assert.equal(attempts.length, 2)
-    assert.deepEqual(delays, [8000])
+test('a healthy secondary answers once the primary exhausts its retries', async t => {
+    const { attempts } = mockRpc(t, (url, body) => url === primary ? rateLimited() : blockResult(body))
+    assert.deepEqual(await resolveFallbackTransport(nodes)({}).request(request), { number: '0x1' })
+    assert.deepEqual(attempts, [primary, primary, primary, primary, secondary])
 })
+
+for (const secondaryStatus of [503, 404]) {
+    test(`a primary recovering after Retry-After succeeds despite a ${secondaryStatus} secondary`, async t => {
+        const { attempts, delays } = mockRpc(t, (url, body, endpointAttempt) => {
+            if (url === secondary) {
+                return failed(secondaryStatus)
+            }
+            return endpointAttempt === 1 ? rateLimited(8) : blockResult(body)
+        })
+        assert.deepEqual(await resolveFallbackTransport(nodes)({}).request(request), { number: '0x1' })
+        assert.deepEqual(attempts, [primary, primary])
+        assert.deepEqual(delays, [8000])
+    })
+}
+
+for (const [secondaryStatus, secondaryAttempts, secondaryDelays] of [[503, 4, [150, 300, 600]], [404, 1, []]]) {
+    test(`a rate-limited primary keeps its Retry-After when a ${secondaryStatus} secondary also fails`, async t => {
+        const { attempts, delays } = mockRpc(t, url => url === primary ? rateLimited(8) : failed(secondaryStatus))
+        await assert.rejects(resolveFallbackTransport(nodes)({}).request(request))
+        assert.deepEqual(attempts, [
+            primary, primary, primary, primary,
+            ...Array(secondaryAttempts).fill(secondary),
+        ])
+        assert.deepEqual(delays, [8000, 8000, 8000, ...secondaryDelays])
+    })
+}
 
 test('standalone HTTP transports retain their retry budget', async t => {
-    const { attempts } = mockRpc(t, rateLimited)
-    await assert.rejects(resolveTransports([nodes[0]])[0]({}).request(request))
+    const { attempts } = mockRpc(t, () => rateLimited())
+    await assert.rejects(resolveTransports([primary])[0]({}).request(request))
     assert.equal(attempts.length, 4)
 })

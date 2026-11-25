@@ -40,9 +40,7 @@ export const resolveFallbackTransport = (
     nodes: string[],
     options?: TransportOptions
 ) => {
-    // An explicit http() retryCount overrides fallback's per-round 0, multiplying attempts
-    return fallback(resolveTransports(nodes, { ...options, retryCount: 0 }), {
-        retryCount: options?.retryCount ?? DEFAULT_RETRY_COUNT,
-    })
+    // Endpoints retry themselves to honor their own Retry-After; fallback rounds would multiply attempts
+    return fallback(resolveTransports(nodes, options), { retryCount: 0 })
 }
 

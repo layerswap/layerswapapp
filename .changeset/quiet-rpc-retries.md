@@ -2,4 +2,4 @@
 "@layerswap/wallet-evm": patch
 ---
 
-Retry fallback RPC requests once per round instead of also retrying each endpoint, so a failing request no longer makes up to 16 attempts per node and a healthy fallback node responds without waiting on the failing one.
+Stop fallback RPC transports from retrying on top of each endpoint's own retries, so a failing request makes at most 4 attempts per endpoint by default instead of 16 while still honoring each endpoint's `Retry-After`.
