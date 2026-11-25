@@ -4,13 +4,13 @@ import { Dispatch, FC, SetStateAction, useCallback, useState } from "react";
 import useWallet from "@/hooks/useWallet";
 import { useProvidersConnectReady } from "@layerswap/wallet-core";
 import { ChevronDown, CircleHelp, QrCode } from "lucide-react";
-import VaulDrawer, { ModalFooterPortal } from "@/components/Modal/vaulModal";
+import { ModalFooterPortal } from "@/components/Modal/vaulModal";
 import { SelectAccountProps } from "@layerswap/wallet-core/types";
 import { WalletIcon } from "@layerswap/ui-kit/components";
 import WalletIconView from "@/components/Wallet/WalletIconView";
 import SubmitButton from "@/components/Buttons/submitButton";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
-import WalletsList from "@/components/Wallet/WalletComponents/WalletsList";
+import { SourceWalletDrawer } from "@/components/Wallet/WalletComponents/SourceWalletDrawer";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
 import FilledCheck from "@/components/Icons/FilledCheck";
 import clsx from "clsx";
@@ -38,7 +38,6 @@ const SourceWalletPicker: FC<SourceWalletPickerProps> = ({ hideManualTransfer })
     const sourceLabel = useNamedAddress(selectedSourceAccount?.address, values.from)
 
     const { selectedConnector } = useConnectModal()
-    const availableWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
 
     const handleWalletChange = () => {
         setOpenModal(true)
@@ -97,65 +96,51 @@ const SourceWalletPicker: FC<SourceWalletPickerProps> = ({ hideManualTransfer })
                     </button>
             }
         </span>
-        <VaulDrawer
+        <SourceWalletDrawer
+            network={values.from}
+            token={source_token}
             show={openModal}
             setShow={setOpenModal}
-            header='Send from'
-            modalId="connectedWallets"
+            onSelect={handleSelectWallet}
+            selectedDepositMethod={values.depositMethod}
+            snapClassName="pb-4 flex flex-col gap-3"
+            listClassName={clsx('w-full order-1', {
+                'order-3 space-y-2': values.depositMethod == 'deposit_address',
+            })}
         >
-            <VaulDrawer.Snap
-                id="item-1"
-                className="pb-4 flex flex-col gap-3"
-            >
-                <div
-                    className={clsx('w-full order-1', {
-                        'order-3 space-y-2': values.depositMethod == 'deposit_address',
-                    })}
-                >
-                    <WalletsList
-                        provider={provider}
-                        wallets={availableWallets}
-                        onSelect={handleSelectWallet}
-                        token={source_token}
-                        network={values.from}
-                        selectedDepositMethod={values.depositMethod}
-                        selectable
-                    />
-                </div>
-                {
-                    !hideManualTransfer && values.from?.deposit_methods?.includes('deposit_address') && !selectedConnector &&
-                    <>
-                        <div className="flex items-center justify-center gap-2 text-secondary-text order-2">
-                            <hr className="border-secondary-400 w-full" />
-                            <p>
-                                or
-                            </p>
-                            <hr className="border-secondary-400 w-full" />
-                        </div>
-                        <button
-                            type="button"
-                            onClick={() => handleSelectWallet()}
-                            className={clsx('w-full relative flex items-center justify-between gap-2 rounded-lg outline-none bg-secondary-500 p-3 py-4 text-secondary-text hover:bg-secondary-400 cursor-pointer order-1', {
-                                'order-3': values.depositMethod !== 'deposit_address',
-                            })}
-                        >
-                            <div className="flex items-center gap-2">
-                                <QrCode className="w-5 h-5" />
-                                <div className="text-base">
-                                    Transfer Manually
-                                </div>
+            {
+                !hideManualTransfer && values.from?.deposit_methods?.includes('deposit_address') && !selectedConnector &&
+                <>
+                    <div className="flex items-center justify-center gap-2 text-secondary-text order-2">
+                        <hr className="border-secondary-400 w-full" />
+                        <p>
+                            or
+                        </p>
+                        <hr className="border-secondary-400 w-full" />
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => handleSelectWallet()}
+                        className={clsx('w-full relative flex items-center justify-between gap-2 rounded-lg outline-none bg-secondary-500 p-3 py-4 text-secondary-text hover:bg-secondary-400 cursor-pointer order-1', {
+                            'order-3': values.depositMethod !== 'deposit_address',
+                        })}
+                    >
+                        <div className="flex items-center gap-2">
+                            <QrCode className="w-5 h-5" />
+                            <div className="text-base">
+                                Transfer Manually
                             </div>
-                            {
-                                values.depositMethod == 'deposit_address' &&
-                                <div className="flex h-6 items-center px-1">
-                                    <FilledCheck />
-                                </div>
-                            }
-                        </button>
-                    </>
-                }
-            </VaulDrawer.Snap >
-        </VaulDrawer>
+                        </div>
+                        {
+                            values.depositMethod == 'deposit_address' &&
+                            <div className="flex h-6 items-center px-1">
+                                <FilledCheck />
+                            </div>
+                        }
+                    </button>
+                </>
+            }
+        </SourceWalletDrawer>
     </>
 }
 
@@ -227,23 +212,14 @@ export const FormSourceWalletButton: FC<{ isDisabled?: boolean }> = ({ isDisable
             <button type="button" className="w-full outline-hidden" onClick={handleWalletChange} disabled={isDisabled}>
                 <Connect isDisabled={isDisabled} />
             </button>
-            <VaulDrawer
+            <SourceWalletDrawer
+                network={walletNetwork}
+                token={values.fromAsset}
                 show={openModal}
                 setShow={setOpenModal}
-                header={`Send from`}
-                modalId="connectedWallets"
-            >
-                <VaulDrawer.Snap id="item-1" className="space-y-3 pb-3">
-                    <WalletsList
-                        provider={provider}
-                        wallets={availableWallets}
-                        onSelect={handleSelectWallet}
-                        token={values.fromAsset}
-                        network={walletNetwork}
-                        selectable
-                    />
-                </VaulDrawer.Snap>
-            </VaulDrawer >
+                onSelect={handleSelectWallet}
+                snapClassName="space-y-3 pb-3"
+            />
             {
                 mountWalletPortal && values.from?.deposit_methods?.includes('deposit_address') && values.depositMethod !== 'deposit_address' && !selectedConnector &&
                 <ModalFooterPortal isWalletModalOpen={isWalletModalOpen}>

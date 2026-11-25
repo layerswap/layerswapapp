@@ -1,4 +1,4 @@
-import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
+import { NetworkRoute, Token } from "@layerswap/widget-types";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import { SelectItem } from "@/components/Select/Selector/SelectItem";
 import { ChevronDown, Info } from "lucide-react";
@@ -12,11 +12,12 @@ import { formatUsd } from "@/components/utils/formatUsdAmount";
 import { SwapDirection } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { getTotalBalanceInUSD } from "@/helpers/balanceHelper";
 import { useMemo, memo } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { TokenInfoIcon, TokenTitleWithBalance } from "./TokenTitleDetails";
 
 type TokenItemProps = {
     route: NetworkRoute;
-    item: NetworkRouteToken;
+    item: Token;
     type?: RowElement['type'];
     selected: boolean;
     direction: SwapDirection;
@@ -38,7 +39,7 @@ export const CurrencySelectItemDisplay = memo((props: TokenItemProps) => {
 
 type NetworkTokenItemProps = {
     route: NetworkRoute;
-    item: NetworkRouteToken;
+    item: Token;
     direction: SwapDirection;
     type?: RowElement['type'];
     hideBalances?: boolean;
@@ -90,12 +91,12 @@ type NetworkRouteItemProps = {
     item: NetworkRoute;
     selected: boolean;
     direction: SwapDirection;
-    hideTokenImages?: boolean;
+    isOpen?: boolean;
     hideBalances?: boolean;
 }
 
 export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
-    const { item, direction, hideTokenImages, hideBalances } = props
+    const { item, direction, isOpen, hideBalances } = props
     const swapAccounts = useSwapAccounts(direction)
 
     const selectedAccount = swapAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(item.name));
@@ -120,7 +121,7 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                     </span>
 
                     {hasLoadedBalances ? (
-                        <div className={`${showTokenLogos ? "flex flex-col space-y-0.5" : ""} ${hideTokenImages ? "hidden" : ""}`}>
+                        <div className={`${showTokenLogos ? "flex flex-col space-y-0.5" : ""} ${isOpen ? "hidden" : ""}`}>
                             <span className="text-secondary-text text-sm leading-4 font-medium">
                                 {formatUsd(totalInUSD)}
                             </span>
@@ -150,7 +151,7 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                     ) : <></>}
 
                     <ChevronDown
-                        className="w-3.5! h-3.5! absolute right-2 top-1/2 -translate-y-1/2 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
+                        className={`w-3.5! h-3.5! absolute right-2 top-1/2 -translate-y-1/2 text-secondary-text transition-opacity duration-200 group-hover/item:opacity-100 ${isOpen ? "opacity-100" : "opacity-0"}`}
                         aria-hidden="true"
                     />
                 </>
@@ -170,31 +171,31 @@ type SelectedCurrencyDisplayProps = {
 export const GroupedTokenHeader = ({
     item,
     direction,
-    hideTokenImages,
+    isOpen,
     hideBalances
 }: {
     item: GroupedTokenElement;
     direction: SwapDirection;
-    hideTokenImages?: boolean;
+    isOpen?: boolean;
     hideBalances?: boolean;
 }) => {
     const swapAccounts = useSwapAccounts(direction)
 
     const tokens = item.items;
-    const balances = useBalanceStore(s => s.balances)
+    const balanceKeys = useMemo(() => hideBalances ? [] : tokens.map(({ route }) => {
+        const address = swapAccounts.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.route.name))?.address
+        return address && route.route ? getKey(address, route.route) : 'unknown'
+    }), [tokens, swapAccounts, direction, hideBalances])
+    const networkBalances = useBalanceStore(useShallow(s => balanceKeys.map(key => s.balances[key]?.data)))
 
     const networksWithBalance: NetworkRoute[] = hideBalances ? [] : Array.from(
         new Map(
             tokens
-                .map(({ route }) => {
-                    const address = swapAccounts.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.route.name))?.address
-                    const key = address && route.route ? getKey(address, route.route) : 'unknown'
-
+                .map(({ route }, index) => {
                     const tokenSymbol = route.token.symbol;
                     const networkRoute = route.route;
 
-                    const networkBalances = balances?.[key];
-                    const balanceEntry = networkBalances?.data?.balances?.find(
+                    const balanceEntry = networkBalances[index]?.balances?.find(
                         (b) => b.token === tokenSymbol && b.amount && b.amount >= 0
                     );
 
@@ -206,15 +207,11 @@ export const GroupedTokenHeader = ({
 
     const tokenBalances = hideBalances
         ? { sum: 0, hasVale: false }
-        : tokens.reduce((acc, { route }) => {
-            const address = swapAccounts.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.route.name))?.address
-            const key = address && route.route ? getKey(address, route.route) : 'unknown'
-
+        : tokens.reduce((acc, { route }, index) => {
             const tokenSymbol = route.token.symbol;
             const price = route.token.price_in_usd;
 
-            const networkBalances = balances?.[key];
-            const balanceEntry = networkBalances?.data?.balances?.find(
+            const balanceEntry = networkBalances[index]?.balances?.find(
                 (b) => b.token === tokenSymbol
             );
 
@@ -239,7 +236,7 @@ export const GroupedTokenHeader = ({
                         <span className="truncate">{mainToken.asset}</span>
                     </span>
                     {hasLoadedBalances ? (
-                        <div className={`${showNetworkIcons ? "flex flex-col space-y-0.5" : ""} ${hideTokenImages ? "invisible" : "visible"}`}>
+                        <div className={`${showNetworkIcons ? "flex flex-col space-y-0.5" : ""} ${isOpen ? "invisible" : "visible"}`}>
                             <span className="text-secondary-text text-sm leading-4 font-medium">
                                 {formatUsd(tokenBalances.sum)}
                             </span>
@@ -269,7 +266,7 @@ export const GroupedTokenHeader = ({
                     ) : <></>}
 
                     <ChevronDown
-                        className="w-3.5! h-3.5! absolute right-2 top-1/2 -translate-y-1/2 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
+                        className={`w-3.5! h-3.5! absolute right-2 top-1/2 -translate-y-1/2 text-secondary-text transition-opacity duration-200 group-hover/item:opacity-100 ${isOpen ? "opacity-100" : "opacity-0"}`}
                         aria-hidden="true"
                     />
                 </>
@@ -311,7 +308,7 @@ export const SelectedCurrencyDisplay = (props: SelectedCurrencyDisplayProps) => 
 
 type SelectedRouteDisplayProps = {
     route?: NetworkRoute;
-    token?: NetworkRouteToken;
+    token?: Token;
     placeholder: string;
 }
 

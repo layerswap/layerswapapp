@@ -3,7 +3,7 @@ import { useInitialSettings, useSettingsState } from "@/context/settings";
 import { useDepositSettings } from "@/context/depositSettings";
 import { generateSwapInitialValues } from "@/lib/generateSwapInitialValues";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
-import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
+import { NetworkRoute, Token } from "@layerswap/widget-types";
 import useWallet from "@/hooks/useWallet";
 import { ResolvedDestination, SupportedDestination, useResolvedDestinations } from "./DestinationTokenPicker";
 import { seedDefaultAmount } from "./seedDefaultAmount";
@@ -14,10 +14,10 @@ type DepositSelectionContextValue = {
     /** Selected destination network (Formik `to`). */
     destination?: NetworkRoute;
     /** Selected destination token (Formik `toAsset`). */
-    destinationToken?: NetworkRouteToken;
+    destinationToken?: Token;
     /** Recipient address on the destination network — fixed for the whole flow. */
     destinationAddress: string;
-    setSelection: (network: NetworkRoute, token: NetworkRouteToken) => void;
+    setSelection: (network: NetworkRoute, token: Token) => void;
 };
 
 const DepositSelectionContext = createContext<DepositSelectionContextValue | null>(null);
@@ -43,7 +43,7 @@ export function DepositSelectionProvider({
     const { wallets } = useWallet();
     const [selected, setSelected] = useState<ResolvedDestination | undefined>(undefined);
 
-    const setSelection = useCallback((network: NetworkRoute, token: NetworkRouteToken) => {
+    const setSelection = useCallback((network: NetworkRoute, token: Token) => {
         setSelected({ network, token });
     }, []);
 
@@ -107,7 +107,7 @@ export function useDepositInitialValues(
     /** Pre-resolved source pick (e.g. from the deposit prefetcher). Seeding it
      * here lets Formik mount with a complete form, so a prefetched swap matches
      * the values immediately instead of waiting for the auto-source effect. */
-    source?: { network: NetworkRoute; token: NetworkRouteToken },
+    source?: { network: NetworkRoute; token: Token },
 ): SwapFormValues {
     const settings = useSettingsState();
     const initialSettings = useInitialSettings();

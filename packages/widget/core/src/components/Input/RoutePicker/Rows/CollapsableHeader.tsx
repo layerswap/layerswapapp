@@ -5,14 +5,14 @@ import { SwapDirection } from "@/components/Pages/Swap/Form/SwapFormValues";
 type Props = {
     item: GroupedTokenElement | NetworkElement
     direction: SwapDirection;
-    hideTokenImages?: boolean;
+    isOpen?: boolean;
     hideBalances?: boolean;
 };
 
 export const CollapsableHeader = ({
     item,
     direction,
-    hideTokenImages,
+    isOpen,
     hideBalances,
 }: Props) => {
     const groupedByToken = item.type === "grouped_token";
@@ -21,7 +21,7 @@ export const CollapsableHeader = ({
         <GroupedTokenHeader
             item={item as GroupedTokenElement}
             direction={direction}
-            hideTokenImages={hideTokenImages}
+            isOpen={isOpen}
             hideBalances={hideBalances}
         />
     ) : (
@@ -29,7 +29,7 @@ export const CollapsableHeader = ({
             item={(item as NetworkElement).route}
             selected={false}
             direction={direction}
-            hideTokenImages={hideTokenImages}
+            isOpen={isOpen}
             hideBalances={hideBalances}
         />
     );

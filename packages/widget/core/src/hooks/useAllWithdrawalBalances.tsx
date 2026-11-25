@@ -6,7 +6,11 @@ import { NetworkBalance } from "@layerswap/widget-types";
 import { useSwapAccounts } from "@/context/swapAccounts"
 
 export default function useAllWithdrawalBalances() {
+    useWithdrawalBalancesInit()
+    return useResolvedWithdrawalBalances()
+}
 
+export function useWithdrawalBalancesInit() {
     const networks = useSettingsState().networks
     const swapAccounts = useSwapAccounts("from")
 
@@ -39,7 +43,9 @@ export default function useAllWithdrawalBalances() {
             useBalanceStore.getState().cleanupSortingBalances()
         }
     }, [])
+}
 
+export function useResolvedWithdrawalBalances() {
     const lastBalancesRef = useRef<Record<string, NetworkBalance> | null>(null)
     const resolvedBalances = useBalanceStore(selectResolvedSortingBalances)
     const isLoading = useBalanceStore(s => s.sortingDataIsLoading)

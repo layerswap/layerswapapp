@@ -13,7 +13,9 @@ const previous = Object.getOwnPropertyDescriptors(globalThis)
 for (const [key, value] of Object.entries({ window: dom.window, document: dom.window.document, Element: dom.window.Element, IS_REACT_ACT_ENVIRONMENT: true }))
   Object.defineProperty(globalThis, key, { configurable: true, writable: true, value })
 const { createRoot } = await import('react-dom/client')
-const { default: useSWR, SWRConfig, useSWRConfig } = await import('swr')
+const { default: useSWR, SWRConfig, useSWRConfig, unstable_serialize } = await import('swr')
+// The manual fee cache entry useSWRGas reads for this account and amount.
+const manualGasKey = ['/gases/source/ETHEREUM_MAINNET/ETH/0.9898', null]
 const state = {}
 const { default: FormTelemetry } = loadSource('components/Pages/Swap/Form/FormTelemetry.tsx', {
   react: React, formik: require('formik'), '@/lib/widgetTelemetry': { widgetTelemetry },
@@ -702,6 +704,37 @@ for (const [name, flow, connected] of [
   ['no transfer method', { depositMethod: undefined }, false],
   ['disconnected wallet', { depositMethod: 'wallet' }, false],
 ]) {
+  for (const isUsdMode of [false, true]) {
+    test(`${name}: 50% requires a route maximum in ${isUsdMode ? 'USD' : 'token'} mode`, async () => {
+      Object.assign(initialValues, flow, { amountMode: 'manual', amountPresetSource: undefined })
+      state.renderPresets = true
+      state.usdMode = true
+      usdStore.setState({ isUsdMode, usdAmount: '' })
+      if (!connected) state.wallets = []
+      state.limit = undefined
+      await render()
+      const button = container.querySelector('[data-attr="half-amount"]')
+      const previousValues = formik.values
+      assert.equal(button.disabled, true)
+      await act(() => button.click())
+      assert.deepEqual(formik.values, previousValues)
+
+      state.limit = 10
+      await render()
+      assert.equal(button.disabled, false)
+      await act(() => button.click())
+      assert.equal(formik.values.amount, '5', 'Use the route maximum even when a wallet balance is cached')
+      assert.equal(formik.values.amountMode, 'fixed')
+
+      for (const unavailableLimit of [undefined, NaN, Infinity, -1]) {
+        state.limit = unavailableLimit
+        await render()
+        assert.equal(button.disabled, true)
+        await act(() => button.click())
+        assert.equal(formik.values.amount, '5', 'Losing the maximum must preserve the chosen amount')
+      }
+    })
+  }
   for (const mode of ['min', 'half', 'max']) {
     for (const isUsdMode of [false, true]) {
       test(`${name} ${mode} in ${isUsdMode ? 'USD' : 'token'} mode is a one-time shortcut`, async () => {
@@ -716,7 +749,7 @@ for (const [name, flow, connected] of [
         assert.equal(button.disabled, false)
         assert.equal(button.getAttribute('aria-pressed'), null, 'One-time buttons do not expose toggle state')
         await act(() => button.click())
-        const chosenAmount = mode === 'min' ? '0.001' : mode === 'half' ? (connected ? '0.5' : '5') : '10'
+        const chosenAmount = mode === 'min' ? '0.001' : mode === 'half' ? '5' : '10'
         assert.equal(formik.values.amount, chosenAmount)
         assert.equal(formik.values.amountMode, 'fixed')
         assert.equal(formik.values.amountPresetPending, false)
@@ -733,7 +766,7 @@ for (const [name, flow, connected] of [
         assert.equal(formik.values.amount, chosenAmount)
         // Clicking again applies the latest shortcut value; it does not toggle a binding.
         await act(() => button.click())
-        assert.equal(formik.values.amount, mode === 'min' ? '0.02' : mode === 'half' ? (connected ? '0.2' : '0.375') : '0.75')
+        assert.equal(formik.values.amount, mode === 'min' ? '0.02' : mode === 'half' ? '0.375' : '0.75')
         assert.equal(formik.values.amountMode, 'fixed')
       })
     }
@@ -885,11 +918,11 @@ test('Adjust amount starts a fresh calculation instead of restoring the cached M
 test('Max keeps its verified fee with the draft without writing to the manual fee cache', async () => {
   let currentFee
   function FeeProbe() {
-    const { data } = useSWR('/gases/source/ETHEREUM_MAINNET/ETH/0.9898', null)
+    const { data } = useSWR(manualGasKey, null)
     currentFee = data
     return null
   }
-  config.fallback = { '/gases/source/ETHEREUM_MAINNET/ETH/0.9898': { gas: 0.02, token } }
+  config.fallback = { [unstable_serialize(manualGasKey)]: { gas: 0.02, token } }
   await act(async () => root.render(createElement(SWRConfig, { value: config },
     createElement(SwapDataStateContext.Provider, { value: { amountPresetLocked: false, amountPresetRevision: 0 } },
       createElement(SwapDataUpdateContext.Provider, { value: updates },
@@ -905,7 +938,7 @@ test('Max keeps its verified fee with the draft without writing to the manual fe
 for (const resume of ['reselect Max', 'release execution']) {
   test(`${resume} retains a newer gas snapshot while the fresh preset request is pending`, async () => {
     await render()
-    const key = '/gases/source/ETHEREUM_MAINNET/ETH/0.9898'
+    const key = manualGasKey
     if (resume === 'reselect Max') {
       await act(() => formik.setFieldValue('amountMode', 'manual'))
     } else {
@@ -950,7 +983,7 @@ for (const exit of ['manual mode', 'widget unmount']) {
     } else {
       await act(() => root.render(createElement(StrictMode, null, createElement(SWRConfig, { value: config }))))
     }
-    const key = '/gases/source/ETHEREUM_MAINNET/ETH/0.9898'
+    const key = manualGasKey
     await act(async () => { await mutate(key, { gas: 0.02, token }, { revalidate: false }) })
     await act(async () => {
       state.deferred.resolve({ gas: 0.01, token })

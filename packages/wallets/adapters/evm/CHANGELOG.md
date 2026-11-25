@@ -1,5 +1,53 @@
 # @layerswap/wallet-evm
 
+## 2.7.1
+
+### Patch Changes
+
+- acaa41b: Polymarket swap creation now supplies the connected owner's Polygon address as
+  `refund_address`, allowing backend token-swap routes to pass refund validation.
+  `source_address` remains omitted because the Polymarket funder contract sends the
+  transfer. Refunds go to the owner's Polygon wallet as USDC.e.
+
+  Extended route funding now accepts only `wallet` or `deposit_address` (the default).
+  The `depository` mode and `usesDepository` export have been removed. Integrations
+  using regular wallet transfers should use `funding: 'wallet'`; deposit-address
+  integrations can keep their existing mode.
+
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies [acaa41b]
+- Updated dependencies
+  - @layerswap/widget-types@2.7.1
+  - @layerswap/wallet-core@2.7.1
+  - @layerswap/utils@2.7.1
+
+## 2.7.0
+
+### Minor Changes
+
+- Read refuel availability from destination entries and refuel amounts from quotes. `NetworkRouteToken` is replaced by `Token`.
+- Ethereum, BSC, and Base now quote and submit explicit fees with a 20% gas-limit margin, so Max transfers stay within the quoted budget. Base Max also covers OP Stack L1 data and operator fees, using the oracle from network metadata. Fee funding is left to the wallet. Requires viem 2.31 or later.
+- 8f004b1: Read the EVM BalanceViewer contract from network metadata instead of a hardcoded list.
+- Move provider-specific withdrawal rules into wallet adapters and share the withdrawal flow across providers. Withdrawal progress resets when the selected wallet changes.
+- Persisted stores no longer touch Node's `localStorage` during server rendering.
+- Warn when the native balance can't cover gas, showing the required fee and a refresh action. Wallet capabilities (EIP-5792) are read once per connection. If the wallet can pay gas in another token, the warning is hidden and gas is priced in the transferred token when enough of it remains.
+- Resolve multi-chain wallet registry entries in one batched request instead of one lookup per wallet.
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [8f004b1]
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @layerswap/widget-types@2.7.0
+  - @layerswap/wallet-core@2.7.0
+  - @layerswap/utils@2.7.0
+
 ## 2.6.0
 
 ### Minor Changes

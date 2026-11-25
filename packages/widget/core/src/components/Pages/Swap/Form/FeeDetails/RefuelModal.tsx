@@ -18,7 +18,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal, fee }) => 
         values,
     } = useFormikContext<SwapFormValues>();
 
-    const { to, toAsset: toCurrency, refuel, destination_address } = values || {};
+    const { to, refuel, destination_address } = values || {};
 
     const nativeAsset = to?.token
     const { balances } = useBalance(destination_address, to)
@@ -34,7 +34,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal, fee }) => 
                     <p className="text-2xl">About Refuel</p>
                     <p className="text-secondary-text max-w-sm">
                         {
-                            fee && refuel ?
+                            fee?.refuel && refuel ?
                                 <>
                                     <span><span>We&apos;ll convert</span> <span>${fee?.refuel?.amount_in_usd}</span> <span>of your transfer into</span> <span>{nativeAsset?.asset}</span> <span>so you can start using your funds on the destination chain immediately.</span></span>
                                 </>
@@ -63,14 +63,14 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal, fee }) => 
                                         null
                                 }
                                 {
-                                    (toCurrency?.refuel && nativeAsset) ?
+                                    (refuel && fee?.refuel && nativeAsset) ?
                                         <div className="gap-4 flex relative items-center outline-hidden w-full text-primary-text px-4 py-3 bg-secondary-500 rounded-xl">
                                             <div className="flex items-center justify-between w-full">
                                                 <div className="text-secondary-text">
                                                     You will receive
                                                 </div>
                                                 <p>
-                                                    <span>{truncateDecimals(toCurrency.refuel?.amount, nativeAsset.precision)} {nativeAsset?.asset}</span>
+                                                    <span>{truncateDecimals(fee.refuel.amount, nativeAsset.precision)} {nativeAsset?.asset}</span>
                                                 </p>
                                             </div>
                                         </div>

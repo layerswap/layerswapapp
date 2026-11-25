@@ -1,6 +1,6 @@
 import { HYPERLIQUID_ROUTES, HyperliquidDestination, getHyperliquidCandidates, pickHyperliquidDestination } from "./routes";
 import { HYPERLIQUID_FUNDING, HYPERLIQUID_USDC_SYMBOL } from "./constants";
-import { NetworkRoute, NetworkRouteToken, realRoutePresent } from "@layerswap/widget-types";
+import { NetworkRoute, Token, realRoutePresent } from "@layerswap/widget-types";
 import { DepositRouteRef, ExtendedRouteProvider, ExtendedTokenMapping, RealRouteRef, requiredDepositMethod } from "@layerswap/widget-types";
 
 /**
@@ -53,7 +53,7 @@ export const hyperliquidProvider: ExtendedRouteProvider = {
         if (!tokenMapping) return undefined
 
         // Tokens from `/networks` carry no `status`; pickers filter on `status === 'active'`.
-        const tokens: NetworkRouteToken[] = network.tokens
+        const tokens: Token[] = network.tokens
             .filter(t => !!tokenMapping[t.symbol])
             .map(t => ({ ...t, status: 'active' as const }))
 

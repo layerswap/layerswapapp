@@ -1,29 +1,16 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import test from 'node:test'
-import ts from 'typescript'
+import { loadSource } from './helpers/source.mjs'
 
 const require = createRequire(import.meta.url)
-
-function loadSource(path, imports = {}) {
-  const { outputText } = ts.transpileModule(readFileSync(new URL(path, import.meta.url), 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
-  })
-  const module = { exports: {} }
-  new Function('require', 'module', 'exports', outputText)(name => {
-    if (['react', 'react/jsx-runtime', 'swr', 'zustand'].includes(name)) return require(name)
-    if (name in imports) return imports[name]
-    throw new Error(`Unexpected dependency: ${name}`)
-  }, module, module.exports)
-  return module.exports
-}
 
 function harness() {
   const requests = []
   // Exercise the real handler, getLimits and URL builder. Only the HTTP boundary
   // and dependencies used by the unrelated quote hook are replaced.
-  const fees = loadSource('../src/hooks/useFee.tsx', {
+  const fees = loadSource('hooks/useFee.tsx', {
+    react: require('react'), swr: require('swr'), zustand: require('zustand'),
     '@/components/utils/numbers': {},
     '@/stores/slippageStore': {},
     '@layerswap/utils': {},
@@ -49,8 +36,9 @@ function harness() {
       },
     },
   })
-  const { handleLimitsUpdate } = loadSource('../src/components/Pages/Swap/Withdraw/QuoteUpdate.tsx', {
-    '@/helpers/swapFlow': loadSource('../src/helpers/swapFlow.ts'),
+  const { handleLimitsUpdate } = loadSource('components/Pages/Swap/Withdraw/QuoteUpdate.tsx', {
+    react: require('react'),
+    '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
     '@/hooks/useFee': fees,
     './Presentation/QuoteUpdatedView': { QuoteUpdated: () => null },
   })
@@ -116,10 +104,10 @@ for (const scenario of [
   { name: 'extended', depositMethod: 'wallet', plan: { mapping: { real: { networkName: 'POLYGON_MAINNET', tokenSymbol: 'USDC' } } } },
 ]) {
   test(`route discovery requests frontend-swap support for ${scenario.name} routes without changing their deposit mode`, () => {
-    const { resolveNetworkRoutesURL } = loadSource('../src/helpers/routes.ts', {
+    const { resolveNetworkRoutesURL } = loadSource('helpers/routes.ts', {
       '@/lib/AppSettings': { default: { AvailableSourceNetworkTypes: { all: true } } },
       '@/lib/extendedRoutes/registry': { resolveExtendedRoutePlan: () => scenario.plan },
-      '@/helpers/swapFlow': loadSource('../src/helpers/swapFlow.ts'),
+      '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
     })
     const values = { ...valuesFor('1', scenario.depositMethod), fromExchange: scenario.fromExchange }
     for (const direction of ['from', 'to']) {
