@@ -1,5 +1,6 @@
+import type { GasWithToken } from '@layerswap/widget-types';
 import type { AmountMode } from '@/lib/amountPresets';
-import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
+import { NetworkRoute, Token } from "@layerswap/widget-types";
 import { Exchange } from "@/Models/Exchange";
 
 export type SwapFormValues = {
@@ -11,10 +12,12 @@ export type SwapFormValues = {
   amountPresetPending?: boolean;
   /** Balance associated with the preset calculation, including pending/error results. */
   amountPresetBalance?: number;
+  /** Fee verified by the same calculation as the preset amount. */
+  amountPresetGas?: GasWithToken;
   destination_address?: string;
   //TODO: refactor
-  fromAsset?: NetworkRouteToken & { manuallySet?: boolean };
-  toAsset?: NetworkRouteToken & { manuallySet?: boolean };
+  fromAsset?: Token & { manuallySet?: boolean };
+  toAsset?: Token & { manuallySet?: boolean };
   refuel?: boolean;
   from?: NetworkRoute;
   to?: NetworkRoute;

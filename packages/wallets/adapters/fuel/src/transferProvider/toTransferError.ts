@@ -1,5 +1,5 @@
 import { ActionMessageType } from '@layerswap/widget-types'
-import { errorMessage, userRejectedError, walletActionError } from '@layerswap/wallet-core/errors'
+import { errorMessage, normalizeWalletErrorCode, userRejectedError, walletActionError } from '@layerswap/wallet-core/errors'
 
 /**
  * Map a failed Fuel transfer to the error the widget renders and the host is
@@ -12,10 +12,11 @@ export function toTransferError(error: unknown): Error {
     if (/^address is not authorized for this connection\.?$/i.test(message)) {
         return walletActionError(ActionMessageType.WaletMismatch, { message, cause: error, reasonCode: 'unauthorized' })
     }
-    if (message === "The account(s) sending the transaction don't have enough funds to cover the transaction."
+    if (normalizeWalletErrorCode(error) === 'insufficient_funds'
+        || message === "The account(s) sending the transaction don't have enough funds to cover the transaction."
         || message === "the target cannot be met due to no coins available or exceeding the 255 coin limit."
     ) {
-        return walletActionError(ActionMessageType.InsufficientFunds, { message, cause: error })
+        return walletActionError(ActionMessageType.InsufficientFunds, { message, cause: error, reasonCode: 'insufficient_funds' })
     }
     // A prompt closed without an answer counts as the user's action.
     if (message === "Request cancelled without user response!"

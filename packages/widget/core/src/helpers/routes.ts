@@ -69,7 +69,11 @@ export const resolveNetworkRoutesURL = (direction: SwapDirection, values: SwapFo
         destinationNetwork: to?.name,
     })
 
-    const unboundDestination = hasDepositAddress && direction === 'to'
+    // Once a source is picked, deposit-address destinations stay bound to it and
+    // keep unreachable entries listed as unavailable instead of dropping them.
+    const unboundDestination = hasDepositAddress && direction === 'to' && !from
+    const boundDepositDestination = hasDepositAddress && direction === 'to' && !!from && !isCEX
+    const includeUnreachable = !hasDepositAddress || boundDepositDestination
 
     // For source picking in the deposit-address flow we want the API to return
     // only sources that can actually route to the destination via a deposit-address
@@ -97,10 +101,10 @@ export const resolveNetworkRoutesURL = (direction: SwapDirection, values: SwapFo
         direction,
         network: networkName,
         token: tokenName,
-        includes: { unmatched: !hasDepositAddress, unavailable: !hasDepositAddress, swaps: !isCEX },
+        includes: { unmatched: includeUnreachable, unavailable: includeUnreachable, swaps: !isCEX },
         networkTypes,
         hasDepositAddress,
-        useDepositAddressSwaps: useDepositAddressSwaps || !!extendedPlan,
+        useDepositAddressSwaps: useDepositAddressSwaps || boundDepositDestination || !!extendedPlan,
         useFrontendSwap,
     })
 }
@@ -118,9 +122,9 @@ type ResolveRoutesURLForSelectedTokenProps = {
     networkTypes?: string[],
     hasDepositAddress?: boolean,
     useDepositAddressSwaps?: boolean,
-    useFrontendSwap: true,
+    useFrontendSwap: boolean,
 }
-export const resolveRoutesURLForSelectedToken = ({ direction, network, token, includes, networkTypes, hasDepositAddress, useDepositAddressSwaps }: ResolveRoutesURLForSelectedTokenProps) => {
+export const resolveRoutesURLForSelectedToken = ({ direction, network, token, includes, networkTypes, hasDepositAddress, useDepositAddressSwaps, useFrontendSwap = true }: ResolveRoutesURLForSelectedTokenProps) => {
 
     const include_unmatched = includes.unmatched ? 'true' : 'false'
     const include_unavailable = includes.unavailable ? 'true' : 'false'
@@ -133,7 +137,7 @@ export const resolveRoutesURLForSelectedToken = ({ direction, network, token, in
             : { include_swaps: includes.swaps ? 'true' : 'false' }),
         ...(networkTypes ? { network_types: networkTypes?.join(',') } : {}),
         ...(hasDepositAddress ? { has_deposit_address: 'true' } : {}),
-        use_frontend_swap: 'true',
+        use_frontend_swap: String(useFrontendSwap),
         ...(network ?
             {
                 [direction === 'to' ? 'source_network' : 'destination_network']: network,

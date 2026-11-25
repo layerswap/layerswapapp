@@ -7,10 +7,10 @@ import type { SafeTransactionRequest } from "./relayerClient";
  * Gnosis-Safe (legacy funder) gasless batch, in pure viem — no @polymarket SDK.
  *
  * A Safe executes ONE call per `execTransaction`, so to run the Flow-2 batch
- * (approve → unwrap → approve → depositERC20) in a single signature we DELEGATECALL
+ * (approve → unwrap → transfer) in a single signature we DELEGATECALL
  * the Safe `MultiSend` contract: `operation = 1`, `to = MultiSend`, `data = multiSend(txns)`.
  * The Safe then runs each inner call as itself (`msg.sender = Safe`), which is exactly
- * what the approvals/deposit require. Signing mirrors the SDK's Safe scheme: hash the
+ * what the approval/unwrap/transfer require. Signing mirrors the SDK's Safe scheme: hash the
  * EIP-712 `SafeTx` struct, sign that hash as a raw message (eth_sign), and pack r/s/(v+4)
  * into Gnosis format. The relayer broadcasts it gaslessly.
  */

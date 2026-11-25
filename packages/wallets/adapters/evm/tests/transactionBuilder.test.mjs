@@ -7,18 +7,20 @@ import { extname } from 'node:path'
 const rpcUrl = `data:text/javascript,${encodeURIComponent(`
     export * from ${JSON.stringify(import.meta.resolve('viem'))}
     export const state = {}
-    export const createPublicClient = () => {
+    export const createPublicClient = ({ chain }) => {
         state.clients++
         return {
+            chain,
+            readContract: async args => { state.operatorEstimate = args; if (state.operatorError) throw state.operatorError; return state.operatorFee },
             estimateGas: async args => { state.estimate = args; return state.estimateGas(args) },
-            estimateFeesPerGas: async () => state.fees,
+            estimateFeesPerGas: async args => { if (state.feesError) throw state.feesError; return args?.type === 'legacy' ? { gasPrice: state.gasPrice } : state.fees },
             getGasPrice: async () => state.gasPrice,
-            estimateMaxPriorityFeePerGas: async () => { state.priorityRequests++; return state.priorityFee },
+            estimateMaxPriorityFeePerGas: async () => { state.priorityRequests++; if (state.priorityError) throw state.priorityError; return state.priorityFee },
             getCode: async () => state.accountCode,
-            getBalance: async () => { state.balanceRequests++; return state.balance },
-            extend: () => ({ estimateL1Fee: async args => { state.l1Estimate = args; return state.l1Fee } }),
+            getBalance: async args => { state.balanceArgs = args; state.balanceRequests++; if (state.balanceError) throw state.balanceError; return state.balance },
         }
     }
+    export const estimateL1Fee = async (client, args) => { state.l1Estimate = args; if (state.l1Error) throw state.l1Error; return state.l1Fee }
     export default network => ({ id: Number(network.chain_id) })
     export const resolveFallbackTransport = nodes => {
         state.nodes = nodes
@@ -26,25 +28,27 @@ const rpcUrl = `data:text/javascript,${encodeURIComponent(`
         return {}
     }
 `)}`
-const settingsUrl = `data:text/javascript,${encodeURIComponent(`
-    import { state } from ${JSON.stringify(rpcUrl)}
-    export default class { static get KnownSettings() { return state.settings } }
-`)}`
 const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
     const parent = context.parentURL ?? ''
+    if (parent.endsWith('/gasProviders/resolveOpStackAdditionalFees.js') && specifier === 'viem/op-stack') {
+        return { url: rpcUrl, shortCircuit: true }
+    }
     if ((parent.endsWith('/gasProviders/resolveEVMTransactionGasParameters.js') || parent.endsWith('/gasProviders/evmGasProvider.js')) && [
         'viem', '../evmUtils/resolveChain', '../evmUtils/resolveTransports',
     ].includes(specifier)) return { url: rpcUrl, shortCircuit: true }
-    if (parent.includes('/dist/esm/gasProviders/') && specifier === '../NetworkSettings') return { url: settingsUrl, shortCircuit: true }
     if (specifier.startsWith('.') && !extname(specifier) && parent.includes('/dist/esm/')) {
-        return nextResolve(`${specifier}.js`, context)
+        try { return nextResolve(`${specifier}.js`, context) }
+        catch (error) {
+            if (error.code !== 'ERR_MODULE_NOT_FOUND') throw error
+            return nextResolve(`${specifier}/index.js`, context)
+        }
     }
     return nextResolve(specifier, context)
 } })
 const { state } = await import(rpcUrl)
 const { transactionBuilder } = await import('../dist/esm/transferProvider/transactionBuilder.js')
 const { EVMGasProvider } = await import('../dist/esm/gasProviders/evmGasProvider.js')
-const { parseUnits, parseTransaction } = await import('viem')
+const { createWalletClient, custom, parseUnits } = await import('viem')
 const token = { symbol: 'MON', decimals: 18 }
 const params = {
     amount: 1,
@@ -55,10 +59,10 @@ const params = {
 }
 beforeEach(() => Object.assign(state, {
     clients: 0, estimate: undefined,
-    nodes: undefined, settings: {}, gasPrice: 102_000_000_000n, priorityFee: 2_000_000_000n,
-    priorityRequests: 0, accountCode: '0x', estimateGas: () => 22_515n,
-    balanceRequests: 0, balance: 20n * 10n ** 18n,
-    l1Fee: 1_000_000_000n, l1Estimate: undefined,
+    nodes: undefined, gasPrice: 102_000_000_000n, priorityFee: 2_000_000_000n,
+    priorityRequests: 0, feesError: undefined, priorityError: undefined, accountCode: '0x', estimateGas: () => 22_515n,
+    balanceRequests: 0, balanceArgs: undefined, balanceError: undefined, balance: 20n * 10n ** 18n,
+    l1Fee: 1_000_000_000n, l1Estimate: undefined, l1Error: undefined, operatorFee: 0n, operatorError: undefined, operatorEstimate: undefined,
     fees: { maxFeePerGas: 122_000_000_000n, maxPriorityFeePerGas: 2_000_000_000n },
 }))
 after(() => hooks.deregister())
@@ -82,7 +86,7 @@ test('Monad token transfers retain calldata without attaching native value', asy
 })
 
 test('other EVM chains continue to let the wallet set gas parameters', async () => {
-    const tx = await transactionBuilder({ ...params, network: { ...params.network, chain_id: '1' } })
+    const tx = await transactionBuilder({ ...params, network: { ...params.network, chain_id: '10' } })
     assert.equal(state.clients, 0)
     assert.equal(tx.gas, undefined)
     assert.equal(tx.maxFeePerGas, undefined)
@@ -197,13 +201,11 @@ for (const [name, network, selectedToken, accountCode] of [
     })
 }
 
-test('quotes and explicit transactions share the priority-fee floor and adjusted cap', async () => {
-    state.settings[params.network.name] = { MinPriorityFeePerGasInGwei: 3 }
-    const quote = await new EVMGasProvider().getGas({ ...params, address: params.selectedWallet.address })
-    const tx = await transactionBuilder(params)
-    assert.equal(tx.maxPriorityFeePerGas, 3_000_000_000n)
-    assert.equal(tx.maxFeePerGas, 123_000_000_000n)
-    assert.equal(parseUnits(String(quote.maxFee), 18), tx.gas * tx.maxFeePerGas)
+test('Avalanche quotes apply the configured priority-fee floor and adjusted cap', async () => {
+    state.fees = { maxFeePerGas: 122_000_000_000n, maxPriorityFeePerGas: 1_000_000_000n }
+    const network = { ...params.network, name: 'AVAX_MAINNET', chain_id: '43114' }
+    const quote = await new EVMGasProvider().getGas({ ...params, network, address: params.selectedWallet.address })
+    assert.equal(parseUnits(String(quote.gas), 18), 22_515n * 122_500_000_000n)
 })
 
 test('missing priority-fee estimates use the shared RPC fallback', async () => {
@@ -230,10 +232,251 @@ test('Optimism L1 fees serialize the same deposit payload as the execution estim
         address: action.selectedWallet.address, recipientAddress: action.depositAddress,
     })
     assert.ok(quote)
-    const serialized = parseTransaction(state.l1Estimate.data)
-    assert.equal(serialized.data, action.callData)
-    assert.equal(serialized.to, action.depositAddress)
-    assert.equal(serialized.value, 10n ** 18n)
+    assert.equal(state.l1Estimate.data, action.callData)
+    assert.equal(state.l1Estimate.to, action.depositAddress)
+    assert.equal(state.l1Estimate.value, 10n ** 18n)
+    assert.equal(state.l1Estimate.gasPriceOracleAddress, action.network.metadata.evm_oracle_contract)
+    // Oracle metadata alone enables the L1 data fee, not the operator fee.
+    assert.equal(state.operatorEstimate, undefined)
     assert.deepEqual(state.nodes, [action.network.node_url])
     assert.equal(parseUnits(String(quote.gas), 18), 22_515n * state.fees.maxFeePerGas + state.l1Fee)
+})
+
+const bscAction = {
+    ...params,
+    network: { ...params.network, name: 'BSC_MAINNET', chain_id: '56', token: { symbol: 'BNB', decimals: 18 } },
+    token: { symbol: 'BNB', decimals: 18 },
+    callData: `0x${'12'.repeat(32)}`,
+}
+
+const quoteAction = action => new EVMGasProvider().getGas({
+    address: action.selectedWallet.address, network: action.network,
+    token: action.token, amount: action.amount, amountInBaseUnits: action.amountInBaseUnits,
+    recipientAddress: action.depositAddress, callData: action.callData,
+})
+
+test('Ethereum does not quote gasPrice when its EIP-1559 cap RPC fails', async () => {
+    state.feesError = new Error('fee estimate unavailable')
+    const action = { ...bscAction, network: { ...bscAction.network, chain_id: '1' } }
+    assert.equal(await quoteAction(action), undefined)
+    await assert.rejects(transactionBuilder(action), /EIP-1559 fee data is unavailable for chain 1/)
+})
+
+test('Ethereum does not quote an executable fee when priority data and its fallback fail', async () => {
+    state.fees = { maxFeePerGas: 200_000_000n }
+    state.priorityError = new Error('priority fee unavailable')
+    const action = { ...bscAction, network: { ...bscAction.network, chain_id: '1' } }
+    assert.equal(await quoteAction(action), undefined)
+    await assert.rejects(transactionBuilder(action), /EIP-1559 fee data is unavailable for chain 1/)
+})
+
+test('Ethereum quotes and submits a valid zero priority fee without requesting a fallback', async () => {
+    state.fees.maxPriorityFeePerGas = 0n
+    const action = { ...bscAction, network: { ...bscAction.network, chain_id: '1' } }
+    const quote = await quoteAction(action)
+    const tx = await transactionBuilder(action)
+    assert.equal(parseUnits(String(quote.maxFee), 18), tx.gas * tx.maxFeePerGas)
+    assert.equal(tx.maxPriorityFeePerGas, 0n)
+    assert.equal(state.priorityRequests, 0)
+})
+
+test('BSC Max reserves and submits the same legacy price and buffered limit', async () => {
+    state.balance = 534_967_843_846_153n
+    state.gasPrice = 50_000_000n
+    state.estimateGas = () => 22_615n
+    // An unrelated 1559 cap must not affect a legacy quote or transaction.
+    state.fees = { maxFeePerGas: 3_000_000_000n, maxPriorityFeePerGas: 1_000_000_000n }
+    const quote = await quoteAction({ ...bscAction, amount: '0.000533814478846153' })
+    const fee = parseUnits(String(quote.maxFee), 18)
+    const bufferedFee = (fee * 102n + 99n) / 100n
+    const action = { ...bscAction, amount: '0', amountInBaseUnits: String(state.balance - bufferedFee) }
+    const tx = await transactionBuilder(action)
+    assert.equal(tx.gas, 27_138n)
+    assert.equal(tx.gasPrice, 50_000_000n)
+    assert.equal(tx.maxFeePerGas, undefined)
+    assert.equal(tx.maxPriorityFeePerGas, undefined)
+    assert.equal(fee, tx.gas * tx.gasPrice)
+    assert.ok(tx.value + fee <= state.balance)
+    assert.equal(state.priorityRequests, 0)
+})
+
+test('Ethereum Max budgets the explicit EIP-1559 cap rather than wallet defaults', async () => {
+    state.balance = 330_390_000_000_000n
+    state.estimateGas = () => 22_615n
+    state.gasPrice = 100_000_000n
+    state.fees = { maxFeePerGas: 355_992_205n, maxPriorityFeePerGas: 238_915_805n }
+    const action = { ...bscAction, network: { ...bscAction.network, name: 'ETHEREUM_MAINNET', chain_id: '1' }, amount: '0' }
+    const quote = await quoteAction(action)
+    const fee = parseUnits(String(quote.maxFee), 18)
+    const tx = await transactionBuilder({ ...action, amountInBaseUnits: String(state.balance - (fee * 102n + 99n) / 100n) })
+    assert.equal(tx.gas, 27_138n)
+    assert.equal(tx.maxFeePerGas, 355_992_205n)
+    assert.equal(tx.maxPriorityFeePerGas, 238_915_805n)
+    assert.equal(tx.gasPrice, undefined)
+    assert.equal(fee, tx.gas * tx.maxFeePerGas)
+    assert.ok(tx.value + fee <= state.balance)
+})
+
+test('BSC passes a native amount the balance cannot cover with fees to the wallet unchanged', async () => {
+    const amount = '0.000533814478846153'
+    state.balance = 534_967_843_846_153n
+    state.gasPrice = 3_000_000_000n
+    state.estimateGas = () => 22_615n
+    const tx = await transactionBuilder({ ...bscAction, amount })
+    assert.equal(tx.value, parseUnits(amount, 18))
+    assert.ok(tx.value + tx.gas * tx.gasPrice > state.balance)
+})
+
+test('a fee increase after the quote submits the fixed deposit amount with the current fee', async () => {
+    state.balance = 534_967_843_846_153n
+    state.gasPrice = 50_000_000n
+    state.estimateGas = () => 22_615n
+    const quote = await quoteAction({ ...bscAction, amount: '0' })
+    const fee = parseUnits(String(quote.maxFee), 18)
+    const amountInBaseUnits = String(state.balance - (fee * 102n + 99n) / 100n)
+    state.gasPrice = 3_000_000_000n
+    const tx = await transactionBuilder({ ...bscAction, amount: '0', amountInBaseUnits })
+    assert.equal(tx.value, BigInt(amountInBaseUnits))
+    assert.equal(tx.gasPrice, 3_000_000_000n)
+    assert.equal(state.estimate.value, BigInt(amountInBaseUnits))
+})
+
+test('BSC refuses to silently return to wallet fees when its price is unavailable', async () => {
+    state.gasPrice = undefined
+    await assert.rejects(transactionBuilder(bscAction), /Legacy gas price is unavailable for chain 56/)
+    assert.equal(await quoteAction(bscAction), undefined)
+})
+
+for (const chainId of ['56', '1', '8453']) {
+    test(`chain ${chainId} passes its quoted gas parameters through to eth_sendTransaction`, async () => {
+        const action = { ...bscAction, network: { ...bscAction.network, chain_id: chainId } }
+        const tx = await transactionBuilder(action)
+        let sent
+        const wallet = createWalletClient({ transport: custom({
+            request: async ({ method, params }) => {
+                if (method === 'eth_chainId') return `0x${Number(chainId).toString(16)}`
+                assert.equal(method, 'eth_sendTransaction')
+                sent = params[0]
+                return `0x${'ab'.repeat(32)}`
+            },
+        }) })
+        await wallet.sendTransaction({ ...tx, chain: null })
+        assert.equal(BigInt(sent.gas), tx.gas)
+        assert.equal(BigInt(sent.value), tx.value)
+        if (chainId === '56') {
+            assert.equal(BigInt(sent.gasPrice), tx.gasPrice)
+            assert.equal(sent.maxFeePerGas, undefined)
+        } else {
+            assert.equal(BigInt(sent.maxFeePerGas), tx.maxFeePerGas)
+            assert.equal(BigInt(sent.maxPriorityFeePerGas), tx.maxPriorityFeePerGas)
+            assert.equal(sent.gasPrice, undefined)
+        }
+    })
+}
+
+const baseAction = {
+    ...bscAction,
+    network: {
+        ...bscAction.network, name: 'BASE_MAINNET', chain_id: '8453', token: { symbol: 'ETH', decimals: 18 },
+        metadata: { evm_oracle_contract: '0x420000000000000000000000000000000000000F' },
+    },
+    token: { symbol: 'ETH', decimals: 18 },
+}
+
+// Fee funding is the wallet's decision, so neither quotes nor submissions read the sender balance.
+for (const chainId of ['56', '1', '8453']) {
+    for (const contract of [undefined, `0x${'56'.repeat(20)}`]) {
+        test(`chain ${chainId} ${contract ? 'token' : 'native'} quotes and preparation never read the sender balance`, async () => {
+            state.balance = 0n
+            state.balanceError = new Error('balance RPC unavailable')
+            const network = chainId === '8453' ? baseAction.network : { ...bscAction.network, chain_id: chainId }
+            const action = { ...bscAction, network, token: { ...bscAction.token, contract } }
+            assert.ok(await quoteAction(action))
+            const tx = await transactionBuilder(action)
+            assert.ok(tx.gas > 0n)
+            assert.equal(tx.value, contract ? 0n : 10n ** 18n)
+            assert.equal(state.balanceRequests, 0)
+        })
+    }
+}
+
+test('Base Max includes L1 and operator fees and passes the same execution budget to the wallet', async () => {
+    state.balance = 12_728_522_241_408_235n
+    state.estimateGas = () => 22_615n
+    state.fees = { maxFeePerGas: 20_000_000n, maxPriorityFeePerGas: 1_000_000n }
+    state.l1Fee = 40_000_000_000n
+    state.operatorFee = 10_000_000_000n
+    const quote = await quoteAction({ ...baseAction, amount: 0 })
+    const fee = parseUnits(quote.maxFee.toFixed(18), 18)
+    const amountInBaseUnits = String(state.balance - (fee * 102n + 99n) / 100n)
+    const tx = await transactionBuilder({ ...baseAction, amount: 0, amountInBaseUnits })
+    assert.equal(tx.gas, 27_138n)
+    assert.equal(tx.maxFeePerGas, 20_000_000n)
+    assert.equal(fee, tx.gas * tx.maxFeePerGas + state.l1Fee + state.operatorFee)
+    assert.deepEqual(state.operatorEstimate.args, [tx.gas])
+    assert.ok(tx.value + fee <= state.balance)
+    // Quoting the final amount hands the L1 estimator the exact submission payload.
+    await quoteAction({ ...baseAction, amount: 0, amountInBaseUnits })
+    assert.equal(state.l1Estimate.data, baseAction.callData)
+    assert.equal(state.l1Estimate.to, tx.to)
+    assert.equal(state.l1Estimate.value, tx.value)
+})
+
+for (const field of ['l1Error', 'operatorError']) {
+    test(`Base ${field} aborts quotes while sends leave rollup fees to the wallet`, async () => {
+        state[field] = new Error('oracle unavailable')
+        assert.equal(await quoteAction(baseAction), undefined)
+        const tx = await transactionBuilder(baseAction)
+        assert.equal(tx.gas, 27_018n)
+        assert.equal(tx.maxFeePerGas, state.fees.maxFeePerGas)
+    })
+}
+
+test('Base generic native quotes preserve the candidate value including sub-micro ETH amounts', async () => {
+    const quote = await new EVMGasProvider().getGas({
+        address: baseAction.selectedWallet.address, network: baseAction.network,
+        token: baseAction.token, amount: 1e-7,
+    })
+    assert.ok(quote.maxFee > 0)
+    assert.equal(state.l1Estimate.value, 100_000_000_000n)
+    // Execution estimation keeps using the value-free placeholder.
+    assert.equal(state.estimate.value, undefined)
+    assert.equal(state.estimate.data, state.l1Estimate.data)
+})
+
+test('Base preparation propagates the original RPC error', async () => {
+    const timeout = Object.assign(new Error('Transport request timed out'), { name: 'TimeoutError' })
+    state.estimateGas = () => { throw timeout }
+    await assert.rejects(transactionBuilder({ ...baseAction, amount: 0.0001476 }), error => error === timeout)
+})
+
+test('Base Sepolia quotes and validates the same complete fee budget', async () => {
+    const action = { ...baseAction, network: { ...baseAction.network, name: 'BASE_SEPOLIA', chain_id: '84532' } }
+    const quote = await quoteAction(action)
+    const tx = await transactionBuilder(action)
+    assert.equal(tx.chainId, 84532)
+    assert.equal(state.l1Estimate.chain.id, 84532)
+    assert.equal(state.l1Estimate.gasPriceOracleAddress, action.network.metadata.evm_oracle_contract)
+    assert.equal(parseUnits(quote.maxFee.toFixed(18), 18), tx.gas * tx.maxFeePerGas + state.l1Fee)
+})
+
+test('L1 estimation starts while execution estimation is still pending', async () => {
+    const pending = Promise.withResolvers()
+    state.estimateGas = () => pending.promise
+    const quote = quoteAction(baseAction)
+    // Allow the parallel async fee calls to start without resolving gas units.
+    await new Promise(resolve => setImmediate(resolve))
+    assert.equal(state.l1Estimate.data, baseAction.callData)
+    assert.equal(state.operatorEstimate, undefined)
+    pending.resolve(21_512n)
+    assert.ok(await quote)
+})
+
+test('small native amounts use identical base units for exact quotes and submission', async () => {
+    const action = { ...baseAction, amount: 1e-7 }
+    const quote = await quoteAction(action)
+    assert.ok(quote)
+    const tx = await transactionBuilder(action)
+    assert.equal(tx.value, 100_000_000_000n)
+    assert.equal(state.l1Estimate.value, tx.value)
 })

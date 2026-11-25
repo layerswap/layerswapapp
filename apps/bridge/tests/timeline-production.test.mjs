@@ -63,11 +63,12 @@ function loadSource(path, imports = {}) {
         if (name.endsWith('/reportWithdrawalError')) return loadSource(`${withdraw}reportWithdrawalError.ts`, imports);
         if (name === '@/hooks/useAtomicBatchCapability') return { useAtomicBatchCapability: () => false };
         if (name === '@/helpers/atomicBatch') return { isAtomicBatchEligible: () => false };
-        if (name === '@/lib/extendedRoutes/registry') return { isExtendedSourceNetwork: () => false };
+        if (name === '@/lib/extendedRoutes/registry') return { isExtendedSourceNetwork: () => false, getExtendedProviderForNetwork: () => undefined };
         if (name === '@/lib/atomicBatchExecution') return { executeAtomicBatch: () => assert.fail('legacy flow cannot submit an atomic batch') };
         if (name === '@/lib/resolvers/resolverService') return {};
         if (name === '@/hooks/useClientLayoutEffect') return { useClientLayoutEffect: React.useLayoutEffect };
         if (name === '@/lib/amountPresets') return loadSource('lib/amountPresets.ts', {
+            '@/lib/gases/resolveGasBalanceBudget': loadSource('lib/gases/resolveGasBalanceBudget.ts'),
             '@/components/Input/Amount/helpers': loadSource('components/Input/Amount/helpers.ts', {
                 '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
                 '@/lib/gases/resolveGasBalanceBudget': loadSource('lib/gases/resolveGasBalanceBudget.ts'),
@@ -83,6 +84,8 @@ function loadSource(path, imports = {}) {
                 './isUserRejection': imports['./isUserRejection'],
             });
         }
+        if (name.endsWith('/TransferBlock')) return { TransferBlock: ({ children }) => React.createElement(React.Fragment, null, children) };
+        if (name === '@/hooks/useHasSubmittedTransfer') return { useHasSubmittedTransfer: () => false };
         throw new Error(`Unexpected dependency: ${name}`);
     }, module, module.exports);
     return module.exports;
@@ -103,6 +106,9 @@ function loadDepositActionPolling(api, stores, swapContext) {
 const withdraw = 'components/Pages/Swap/Withdraw/';
 const fees = 'components/Pages/Swap/Form/FeeDetails/';
 const gasless = loadSource('helpers/gasless.ts');
+const { browserOnlyMiddleware } = loadSource('../../../utils/src/common.ts', {
+    './formatUnits.js': { formatUnits: () => '' },
+});
 const { resolveSwapFlow } = loadSource('components/utils/resolveSwapFlow.ts');
 const addressModule = loadSource('../../../utils/src/address/Address.ts', {
     './validator': { isValidAddress: () => false },
@@ -675,6 +681,7 @@ function createSwapHistoryHarness(fetcher, { onCreate, selectedAccount } = {}) {
     const stores = loadSource('stores/swapTransactionStore.tsx', {
         zustand: coreRequire('zustand'),
         'zustand/middleware': coreRequire('zustand/middleware'),
+        '@layerswap/utils/common': { browserOnlyMiddleware },
     });
     stores.useSwapTransactionStore.setState({ swapTransactions: {}, stepTransactions: {}, pendingSubmissions: {} });
     stores.useGaslessAuthorizationStore.setState({ authorizations: {} });
@@ -722,6 +729,7 @@ function createSwapHistoryHarness(fetcher, { onCreate, selectedAccount } = {}) {
         './callbackProvider': { useCallbacks: () => ({ onSwapCreate: noop, onSwapLifecycle: noop }) },
         '@/hooks/useFee': { transformSwapDataToQuoteArgs: noop, useQuoteData: () => ({}) },
         '@/stores/recentRoutesStore': { useRecentNetworksStore: () => noop },
+        '@/stores/swapRouteHistoryStore': { recordSwapRouteHistory: noop },
         '@/stores/slippageStore': { useSlippageStore: { getState: () => ({}) } },
         '@/lib/address/Address': { Address: { equals: (left, right) => left === right } },
         '@/stores': stores,
@@ -1287,6 +1295,7 @@ for (const provider of ['Hyperliquid', 'Polymarket']) {
                 '@layerswap/widget-types': { ActionMessageType: { TransactionRejected: 'TransactionRejected' } },
                 './executeProviderWithdrawal': providerExecution,
                 '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
+                '@/helpers/swapFlow': { isSentByConnectedWallet: () => providerId !== 'polymarket' },
                 '@/lib/ErrorHandler': { ErrorHandler: noop },
                 '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: noop }) },
                 '@/lib/swapLifecycle': { lifecycleContextFromSwap: () => ({}) },
@@ -1394,6 +1403,7 @@ for (const gaslessEnabled of [true, false]) {
 for (const failure of ['rejected', 'failed']) {
     test(`adjusting the amount after a ${failure} transfer replaces the swap and wallet payload`, async () => {
         const nativeToken = { symbol: 'ETH', asset: 'ETH', decimals: 18, precision: 6 };
+        const formRoute = { ...network, token: nativeToken, tokens: [nativeToken] };
         const makeResponse = (id, amount) => ({ data: {
             swap: {
                 id, status: 'user_transfer_pending', requested_amount: Number(amount),
@@ -1451,7 +1461,7 @@ for (const failure of ['rejected', 'failed']) {
         const controllerImports = {
             ...walletHooks,
             '@/context/swap': harness.context,
-            '@/context/settings': { useInitialSettings: () => ({}), useSettingsState: () => ({ networks: [network] }) },
+            '@/context/settings': { useInitialSettings: () => ({}), useSettingsState: () => ({ networks: [formRoute], sourceRoutes: [formRoute], destinationRoutes: [formRoute] }) },
             '@/lib/swapLifecycle': lifecycle,
             '@/hooks/useTransferBlocked': { useTransferBlocked: noop },
             '@/lib/balances/useBalance': { useBalance: () => ({ balances: [{ network: network.name, token: 'ETH', amount: 1, isNativeCurrency: true }] }) },
@@ -1489,6 +1499,11 @@ for (const failure of ['rejected', 'failed']) {
             '@/stores/swapTransactionStore': stores,
             '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
             '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
+            '@/helpers/gasless': gasless,
+            '@/hooks/useIsGaslessActive': { useIsGaslessActive: () => false },
+            '@/hooks/useSelectedSourceWallet': { useSelectedSourceWallet: () => undefined },
+            '@/helpers/walletCapabilities': { getWalletCapabilities: () => undefined },
+            '@/components/utils/formatTokenAmount': { formatTokenAmount: value => String(value) },
             '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
             '@/components/Input/Amount/helpers': loadSource('components/Input/Amount/helpers.ts', {
                 '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
@@ -1499,7 +1514,6 @@ for (const failure of ['rejected', 'failed']) {
             '@/hooks/useFee': { transformSwapDataToQuoteArgs: noop, useQuoteData: () => ({ minAllowedAmount: 0.001, maxAllowedAmount: 10 }) },
             '@/lib/gases/useOutOfGas': { default: () => ({ outOfGas: true }) },
             '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput: noop } },
-            formik: { useFormikContext: () => ({ values: {}, setValues: values => { formAmount = values.amount; } }) },
             '../Form/SecondaryComponents/validationError/AdjustAmountButton': {
                 AdjustAmountButton: ({ onEditAmount }) => React.createElement('button', { onClick: onEditAmount }, 'Adjust amount'),
             },
@@ -1518,7 +1532,8 @@ for (const failure of ['rejected', 'failed']) {
         });
         function Screen() {
             harness.state = harness.context.useSwapDataState();
-            return harness.state.swapBasicData ? React.createElement(Withdraw, { type: 'contained' }) : null;
+            const formUpdate = harness.context.useSwapDataUpdate();
+            return harness.state.swapBasicData ? React.createElement(Withdraw, { type: 'contained', onAdjustAmount: updates => { formAmount = updates.amount; formUpdate.setSubmitedFormValues(updates); } }) : null;
         }
         const root = createRoot(container);
         useGaslessPreferenceStore.getState().resetGaslessPreference();
@@ -1564,6 +1579,7 @@ function createRetryHarness({
     const stores = loadSource('stores/swapTransactionStore.tsx', {
         zustand: coreRequire('zustand'),
         'zustand/middleware': coreRequire('zustand/middleware'),
+        '@layerswap/utils/common': { browserOnlyMiddleware },
     });
     stores.useSwapTransactionStore.setState({ swapTransactions: transaction ? { S: transaction } : {}, pendingSubmissions: {} });
     stores.useGaslessAuthorizationStore.setState({ authorizations: authorization ? { S: authorization } : {} });

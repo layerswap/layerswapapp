@@ -14,6 +14,7 @@ type ResolveEVMTransactionGasParametersArgs = {
     value?: bigint
 }
 
+/** Funding is never checked here: smart accounts and paymasters may pay fees without native balance. */
 export const resolveEVMTransactionGasParameters = async ({
     network,
     account,
@@ -35,15 +36,10 @@ export const resolveEVMTransactionGasParameters = async ({
         resolveEVMFeeData(publicClient, network),
     ])
 
-    const { maxFeePerGas, maxPriorityFeePerGas } = feesPerGas
-    if (maxFeePerGas === undefined || maxPriorityFeePerGas === undefined) {
-        throw new Error(`EIP-1559 fee data is unavailable for chain ${chainId}`)
-    }
-
     return buildTransactionGasParameters({
         policy,
+        chainId,
         estimatedGas,
-        maxFeePerGas,
-        maxPriorityFeePerGas,
+        ...feesPerGas,
     })
 }

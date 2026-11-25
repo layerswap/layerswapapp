@@ -1,15 +1,15 @@
 import { useState } from "react"
 import { ArrowRight } from "lucide-react"
 import { truncateDecimals } from "@/components/utils/RoundDecimals"
-import { NetworkRouteToken } from "@layerswap/widget-types";
+import { Token } from "@layerswap/widget-types";
 
 export const RateElement = ({
     fromAsset,
     toAsset,
     rate
 }: {
-    fromAsset: NetworkRouteToken
-    toAsset: NetworkRouteToken
+    fromAsset: Token
+    toAsset: Token
     rate: number
 }) => {
     const [flipped, setFlipped] = useState(false)

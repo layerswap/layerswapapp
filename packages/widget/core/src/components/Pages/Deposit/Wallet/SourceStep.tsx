@@ -6,7 +6,7 @@ import useAllWithdrawalBalances from "@/hooks/useAllWithdrawalBalances";
 import { swapInProgress } from "@/components/utils/swapUtils";
 import { updateForm } from "@/components/Pages/Swap/Form/updateForm";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
-import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
+import { NetworkRoute, Token } from "@layerswap/widget-types";
 import { useDepositSettings } from "@/context/depositSettings";
 import { useLatestSourceAccount } from "@/context/swapAccounts";
 import { useDepositStep } from "../depositStepContext";
@@ -40,7 +40,7 @@ const SourceStep: FC = () => {
     );
 
     const handleSelect = useCallback(
-        async (route: NetworkRoute, token: NetworkRouteToken) => {
+        async (route: NetworkRoute, token: Token) => {
             swapInProgress.current = false;
             await updateForm({
                 formDataKey: "fromAsset",

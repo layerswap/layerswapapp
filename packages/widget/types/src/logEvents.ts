@@ -165,6 +165,8 @@ export type SwapLifecycleOutcome =
 export type TransferBlockedReasonCode =
   | 'rpc_unhealthy'
   | 'same_account_required'
+  | 'wallet_account_mismatch'
+  | 'quote_unavailable'
   | 'wallet_unsupported_for_network'
   | 'deposit_actions_unavailable'
   | 'swap_error'
@@ -195,20 +197,67 @@ export type WalletErrorReasonCode =
   | 'request_pending'
   | 'unknown_error';
 
+/** Canonical event names. Keep wire values stable for host callbacks and telemetry. */
+export const SwapLifecycleStep = {
+  AwaitingWalletAction: 'awaiting_wallet_action',
+  AwaitingUserDeposit: 'awaiting_user_deposit',
+  InputTransferPending: 'input_transfer_pending',
+  OutputTransferPending: 'output_transfer_pending',
+  OutputSettling: 'output_settling',
+  SwapCompleted: 'swap_completed',
+  SwapFailed: 'swap_failed',
+  SwapDelayed: 'swap_delayed',
+  SwapExpired: 'swap_expired',
+  SwapCancelled: 'swap_cancelled',
+  RefundPending: 'refund_pending',
+  RefundCompleted: 'refund_completed',
+  InputTransactionDetected: 'input_transaction_detected',
+  InputTransferConfirmed: 'input_transfer_confirmed',
+  OutputTransactionDetected: 'output_transaction_detected',
+  FormSubmitted: 'form_submitted',
+  FormConfirmationCancelled: 'form_confirmation_cancelled',
+  SwapCreationStarted: 'swap_creation_started',
+  SwapCreated: 'swap_created',
+  SwapCreationFailed: 'swap_creation_failed',
+  WalletConnectionStarted: 'wallet_connection_started',
+  WalletConnected: 'wallet_connected',
+  WalletConnectionFailed: 'wallet_connection_failed',
+  NetworkSwitchStarted: 'network_switch_started',
+  NetworkSwitched: 'network_switched',
+  NetworkSwitchRejected: 'network_switch_rejected',
+  NetworkSwitchFailed: 'network_switch_failed',
+  WalletPromptOpened: 'wallet_prompt_opened',
+  WalletActionRejected: 'wallet_action_rejected',
+  WalletActionFailed: 'wallet_action_failed',
+  TransactionSubmitted: 'transaction_submitted',
+  GaslessAuthorizationSubmitted: 'gasless_authorization_submitted',
+  GaslessAuthorizationFailed: 'gasless_authorization_failed',
+  DepositAddressCopied: 'deposit_address_copied',
+  RetryRequested: 'retry_requested',
+  TransferBlocked: 'transfer_blocked',
+  FlowClosed: 'flow_closed',
+  FlowError: 'flow_error',
+  SuspectedStall: 'suspected_stall',
+} as const;
+
 /**
  * Mutually exclusive UI phase observations. Consumers dedupe these in one
  * shared slot per swap, so a real A → B → A recovery is still delivered while
  * a replay of A alone is not.
  */
 export const SWAP_LIFECYCLE_PHASE_STEPS = [
-  'awaiting_wallet_action', 'awaiting_user_deposit', 'input_transfer_pending', 'output_transfer_pending',
-  'output_settling', 'swap_completed', 'swap_failed', 'swap_delayed', 'swap_expired', 'swap_cancelled',
-  'refund_pending', 'refund_completed',
+  SwapLifecycleStep.AwaitingWalletAction, SwapLifecycleStep.AwaitingUserDeposit,
+  SwapLifecycleStep.InputTransferPending, SwapLifecycleStep.OutputTransferPending,
+  SwapLifecycleStep.OutputSettling, SwapLifecycleStep.SwapCompleted,
+  SwapLifecycleStep.SwapFailed, SwapLifecycleStep.SwapDelayed,
+  SwapLifecycleStep.SwapExpired, SwapLifecycleStep.SwapCancelled,
+  SwapLifecycleStep.RefundPending, SwapLifecycleStep.RefundCompleted,
 ] as const;
 
 /** Each on-chain transaction observation owns its own dedupe slot per swap. */
 export const SWAP_LIFECYCLE_TRANSACTION_STEPS = [
-  'input_transaction_detected', 'input_transfer_confirmed', 'output_transaction_detected',
+  SwapLifecycleStep.InputTransactionDetected, SwapLifecycleStep.InputTransferConfirmed,
+  SwapLifecycleStep.OutputTransactionDetected,
 ] as const;
 
 /**
@@ -216,13 +265,16 @@ export const SWAP_LIFECYCLE_TRANSACTION_STEPS = [
  * These are never slotted, so every emission is delivered by every consumer.
  */
 export const SWAP_LIFECYCLE_REPEATABLE_STEPS = [
-  'form_submitted', 'form_confirmation_cancelled',
-  'swap_creation_started', 'swap_created', 'swap_creation_failed',
-  'wallet_connection_started', 'wallet_connected', 'wallet_connection_failed',
-  'network_switch_started', 'network_switched', 'network_switch_rejected', 'network_switch_failed',
-  'wallet_prompt_opened', 'wallet_action_rejected', 'wallet_action_failed',
-  'transaction_submitted', 'gasless_authorization_submitted', 'gasless_authorization_failed', 'deposit_address_copied',
-  'retry_requested', 'transfer_blocked', 'flow_closed', 'flow_error', 'suspected_stall',
+  SwapLifecycleStep.FormSubmitted, SwapLifecycleStep.FormConfirmationCancelled,
+  SwapLifecycleStep.SwapCreationStarted, SwapLifecycleStep.SwapCreated, SwapLifecycleStep.SwapCreationFailed,
+  SwapLifecycleStep.WalletConnectionStarted, SwapLifecycleStep.WalletConnected, SwapLifecycleStep.WalletConnectionFailed,
+  SwapLifecycleStep.NetworkSwitchStarted, SwapLifecycleStep.NetworkSwitched,
+  SwapLifecycleStep.NetworkSwitchRejected, SwapLifecycleStep.NetworkSwitchFailed,
+  SwapLifecycleStep.WalletPromptOpened, SwapLifecycleStep.WalletActionRejected, SwapLifecycleStep.WalletActionFailed,
+  SwapLifecycleStep.TransactionSubmitted, SwapLifecycleStep.GaslessAuthorizationSubmitted,
+  SwapLifecycleStep.GaslessAuthorizationFailed, SwapLifecycleStep.DepositAddressCopied,
+  SwapLifecycleStep.RetryRequested, SwapLifecycleStep.TransferBlocked,
+  SwapLifecycleStep.FlowClosed, SwapLifecycleStep.FlowError, SwapLifecycleStep.SuspectedStall,
 ] as const;
 
 export type SwapLifecyclePhaseStep = (typeof SWAP_LIFECYCLE_PHASE_STEPS)[number];
@@ -253,8 +305,8 @@ type SwapLifecycleCategoriesAreDisjoint = AssertNever<OverlappingSwapLifecycleSt
  * Always a subset of the repeatable steps.
  */
 export const SWAP_LIFECYCLE_ATTEMPT_START_STEPS = [
-  'swap_creation_started', 'wallet_connection_started', 'network_switch_started',
-  'wallet_prompt_opened', 'retry_requested',
+  SwapLifecycleStep.SwapCreationStarted, SwapLifecycleStep.WalletConnectionStarted, SwapLifecycleStep.NetworkSwitchStarted,
+  SwapLifecycleStep.WalletPromptOpened, SwapLifecycleStep.RetryRequested,
 ] as const satisfies readonly SwapLifecycleRepeatableStep[];
 
 /**
@@ -264,7 +316,8 @@ export const SWAP_LIFECYCLE_ATTEMPT_START_STEPS = [
  * only being viewed, so its current phase is not an outcome of this session.
  */
 export const SWAP_LIFECYCLE_TRACKING_STEPS = [
-  'swap_created', 'awaiting_wallet_action', 'awaiting_user_deposit', ...SWAP_LIFECYCLE_ATTEMPT_START_STEPS,
+  SwapLifecycleStep.SwapCreated, SwapLifecycleStep.AwaitingWalletAction, SwapLifecycleStep.AwaitingUserDeposit,
+  ...SWAP_LIFECYCLE_ATTEMPT_START_STEPS,
 ] as const satisfies readonly SwapLifecycleStep[];
 
 export type SwapLifecycleEvent = {

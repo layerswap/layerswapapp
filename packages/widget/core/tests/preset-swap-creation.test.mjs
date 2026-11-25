@@ -24,7 +24,8 @@ const swapCreation = loadSource('lib/swapCreation.ts', {
   './swapLifecycle': { lifecycleErrorDetails: () => ({}) },
 })
 const { preparePresetAmount } = loadSource('lib/preparePresetAmount.ts', {
-  '@layerswap/widget-types': { usesDepository: () => false },
+  '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
+  '@layerswap/widget-types': { requiredDepositMethod: () => 'deposit_address' },
   '@/hooks/useFee': { buildLimitsUrl: () => '/limits' },
   './apiClients/layerSwapApiClient': { default: class { async fetcher() { return { data: state.limits } } } },
   './extendedRoutes/registry': { resolveExtendedRoutePlan: () => undefined },
@@ -202,7 +203,9 @@ test('created swaps reject live draft syncing until an explicit fresh attempt', 
   assert.equal(data.amountPresetLocked, true)
   assert.equal(updates.syncAmountPresetDraft({ ...values, amount: '0.4' }), false)
   assert.equal(data.swapBasicData.requested_amount, '1')
+  const previousRevision = data.amountPresetRevision
   await act(() => updates.startFreshSwapAttempt())
+  assert.equal(data.amountPresetRevision, previousRevision + 1, 'fresh attempts must invalidate cached preset calculations')
   assert.equal(data.amountPresetLocked, false)
   assert.equal(data.swapId, undefined)
 })

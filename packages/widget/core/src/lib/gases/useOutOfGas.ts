@@ -1,8 +1,8 @@
-import { TokenBalance } from "@layerswap/widget-types";
+import { NetworkType, TokenBalance } from "@layerswap/widget-types";
 import { Network, Token } from "@layerswap/widget-types";
 import useSWRGas from "./useSWRGas"
 import { resolveGasBalanceBudget } from "./resolveGasBalanceBudget"
-import type { GasProps } from "@layerswap/widget-types"
+import type { GasWithToken, GasProps } from "@layerswap/widget-types"
 
 interface UseOutOfGasParams {
     address: string | undefined
@@ -13,6 +13,14 @@ interface UseOutOfGasParams {
     minAllowedAmount?: number
     maxAllowedAmount?: number
     transaction?: Pick<GasProps, 'recipientAddress' | 'callData' | 'amountInBaseUnits'>
+    /** A supplied estimate owns the fee, including while its data is pending. */
+    gasEstimate?: { gasData?: GasWithToken }
+}
+
+type NativeGasShortage = {
+    requiredFee: number
+    availableBalance: number
+    symbol: string
 }
 
 const useOutOfGas = ({
@@ -24,12 +32,36 @@ const useOutOfGas = ({
     minAllowedAmount,
     maxAllowedAmount,
     transaction,
-}: UseOutOfGasParams): { outOfGas: boolean } => {
-    const { gasData } = useSWRGas(address, network, token, amount, undefined, { transaction })
-    const nativeTokenBalance = balances?.find(b => b.token === network?.token?.symbol)
+    gasEstimate,
+}: UseOutOfGasParams): { outOfGas: boolean, nativeGasShortage?: NativeGasShortage } => {
+    const { gasData: fetchedGas } = useSWRGas(address, network, token, amount, undefined, { transaction, enabled: gasEstimate === undefined })
+    const gasData = gasEstimate ? gasEstimate.gasData : fetchedGas
+    const nativeTokenBalance = balances?.find(balance =>
+        balance.network === network?.name
+        && balance.token === network?.token?.symbol
+        && balance.isNativeCurrency
+    )
 
     const balance = nativeTokenBalance?.amount
     const isNativeToken = nativeTokenBalance?.isNativeCurrency && token?.symbol === network?.token?.symbol
+
+    // A token amount never pays for EVM gas. Compare only the source account's
+    // native balance with the fee cap; route limits and token amounts are unrelated.
+    const requiredFee = gasData?.maxFee ?? gasData?.gas
+    if (network?.type === NetworkType.EVM
+        && token?.contract
+        && network.token
+        && gasData?.token.symbol === network.token.symbol
+        && balance != null
+        && Number.isFinite(balance)
+        && requiredFee != null
+        && Number.isFinite(requiredFee)
+        && requiredFee > balance) {
+        return {
+            outOfGas: false,
+            nativeGasShortage: { requiredFee, availableBalance: balance, symbol: network.token.symbol },
+        }
+    }
 
     if (balance == null || !gasData || !amount || !isNativeToken || minAllowedAmount == null || maxAllowedAmount == null) {
         return { outOfGas: false }

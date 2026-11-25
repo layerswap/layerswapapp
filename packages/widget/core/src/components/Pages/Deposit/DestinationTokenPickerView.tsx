@@ -9,12 +9,12 @@ import {
 import TokenChainBadge from './_shared/TokenChainBadge';
 import PickerTriggerContent from './_shared/PickerTriggerContent';
 import type { ResolvedDestination } from './DestinationTokenPicker';
-import type { NetworkRoute, NetworkRouteToken } from '@layerswap/widget-types';
+import type { NetworkRoute, Token } from '@layerswap/widget-types';
 
 export const DestinationTokenPickerView: FC<{
     resolved: ResolvedDestination[];
     destination?: NetworkRoute;
-    destinationToken?: NetworkRouteToken;
+    destinationToken?: Token;
     onSelect?: (destination: ResolvedDestination) => void;
 }> = ({ resolved, destination, destinationToken, onSelect }) => {
     const [open, setOpen] = useState(false);

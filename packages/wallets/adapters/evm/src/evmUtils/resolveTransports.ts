@@ -40,6 +40,7 @@ export const resolveFallbackTransport = (
     nodes: string[],
     options?: TransportOptions
 ) => {
-    return fallback(resolveTransports(nodes, options))
+    // Endpoints retry themselves to honor their own Retry-After; fallback rounds would multiply attempts
+    return fallback(resolveTransports(nodes, options), { retryCount: 0 })
 }
 

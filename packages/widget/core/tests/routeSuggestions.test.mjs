@@ -13,7 +13,24 @@ const historyStore = loadSource('stores/swapRouteHistoryStore.ts', {
     '@/lib/swapRouteHistoryDb': historyDb,
 })
 const { buildSwapRouteRecency } = historyStore
-const { sortSuggestedTokenElements } = loadSource('helpers/routeUtils.ts', { '@/stores/swapRouteHistoryStore': historyStore })
+const routeUtils = loadSource('helpers/routeUtils.ts', { '@/stores/swapRouteHistoryStore': historyStore })
+const { sortSuggestedTokenElements, selectTop, getTokenBalanceAmount } = routeUtils
+const { groupRoutes } = loadSource('hooks/useFormRoutes.ts', {
+    swr: {},
+    react: {},
+    '../context/settings': {},
+    './useAllWithdrawalBalances': {},
+    '../helpers/routes': {},
+    '@/lib/apiClients/layerSwapApiClient': {},
+    './useExchangeNetworks': {},
+    '@/stores/recentRoutesStore': {},
+    '@/stores/routeTokenSwitchStore': {},
+    '../helpers/balanceHelper': loadSource('helpers/balanceHelper.ts'),
+    '@/stores/routeSortingStore': { SortingOption: { RELEVANCE: 'relevance' } },
+    '../helpers/routeUtils': routeUtils,
+    '@/lib/extendedRoutes/registry': {},
+    '@/stores/swapRouteHistoryStore': historyStore,
+})
 
 function item(network, token, rank) {
     return {
@@ -53,6 +70,38 @@ const emptyHistory = {
 }
 
 describe('suggestion route sorting', () => {
+    it('keeps funded source routes ahead of availability and same-network pinning', () => {
+        const routes = [['BASE', 'inactive'], ['ARBITRUM', 'not_found'], ['AVALANCHE', 'active']]
+            .map(([name, status]) => {
+                const { route: network, token } = item(name, 'USDC', 1).route
+                return { ...network, tokens: [{ ...token, asset: 'USDC', status }] }
+            })
+        const props = {
+            routes,
+            balances: {
+                BASE: { balances: [{ token: 'USDC', amount: 88.57 }] },
+                ARBITRUM: { balances: [{ token: 'USDC', amount: 14.98 }] },
+                AVALANCHE: { balances: [{ token: 'USDC', amount: 0.12 }] },
+            },
+            direction: 'from',
+            groupBy: 'network',
+            recents: emptyHistory,
+            balancesLoaded: false,
+            oppositeNetwork: 'AVALANCHE',
+        }
+        const expectedOrder = ['BASE', 'ARBITRUM', 'AVALANCHE']
+        const rows = groupRoutes(props)
+        assert.deepEqual(rows.filter(row => row.type === 'suggested_token').map(row => row.route.route.name), expectedOrder)
+        assert.deepEqual(rows.filter(row => row.type === 'network').map(row => row.route.name), expectedOrder)
+
+        const tokenGroup = groupRoutes({ ...props, groupBy: 'token' }).find(row => row.type === 'grouped_token')
+        assert.deepEqual(tokenGroup.items.map(row => row.route.route.name), expectedOrder)
+
+        const destinations = groupRoutes({ ...props, direction: 'to' })
+        assert.deepEqual(destinations.filter(row => row.type === 'suggested_token').map(row => row.route.route.name), ['AVALANCHE'])
+        assert.equal(destinations.find(row => row.type === 'network').route.name, 'AVALANCHE')
+    })
+
     it('keeps source balance ahead of persisted recency', () => {
         const higherBalance = item('BALANCE', 'AAA', 2)
         const moreRecent = item('RECENT', 'BBB', 1)
@@ -99,5 +148,38 @@ describe('suggestion route sorting', () => {
         const recency = buildSwapRouteRecency([persisted(higherBalance, 10), persisted(moreRecent, 20)])
         const sorted = [higherBalance, moreRecent].sort(sortSuggestedTokenElements('to', balances, emptyHistory, recency))
         assert.equal(sorted[0], moreRecent)
+    })
+})
+
+describe('route sorting helpers', () => {
+    it('selectTop matches a stable sort followed by slice, including ties', () => {
+        let seed = 3
+        const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647
+        const items = Array.from({ length: 200 }, (_, id) => ({ id, score: Math.floor(random() * 10) }))
+        const compare = (a, b) => a.score - b.score
+        for (const limit of [0, 1, 4, 15, 199, 200, 250]) {
+            assert.deepEqual(selectTop(items, compare, limit), [...items].sort(compare).slice(0, limit))
+        }
+        assert.deepEqual(selectTop([], compare, 4), [])
+    })
+
+    it('getTokenBalanceAmount reads the first matching balance like the previous linear lookup', () => {
+        const balances = {
+            BASE: { balances: [{ token: 'USDC', amount: 5 }, { token: 'USDC', amount: 9 }, { token: 'ETH', amount: undefined }] },
+            EMPTY: { balances: undefined },
+        }
+        assert.equal(getTokenBalanceAmount(balances, 'BASE', 'USDC'), 5)
+        assert.equal(getTokenBalanceAmount(balances, 'BASE', 'ETH'), 0)
+        assert.equal(getTokenBalanceAmount(balances, 'BASE', 'DAI'), 0)
+        assert.equal(getTokenBalanceAmount(balances, 'EMPTY', 'USDC'), 0)
+        assert.equal(getTokenBalanceAmount(balances, 'MISSING', 'USDC'), 0)
+        assert.equal(getTokenBalanceAmount(null, 'BASE', 'USDC'), 0)
+    })
+
+    it('getTokenBalanceAmount picks up a replaced network balance object', () => {
+        const balances = { BASE: { balances: [{ token: 'USDC', amount: 5 }] } }
+        assert.equal(getTokenBalanceAmount(balances, 'BASE', 'USDC'), 5)
+        const updated = { BASE: { balances: [{ token: 'USDC', amount: 7 }] } }
+        assert.equal(getTokenBalanceAmount(updated, 'BASE', 'USDC'), 7)
     })
 })

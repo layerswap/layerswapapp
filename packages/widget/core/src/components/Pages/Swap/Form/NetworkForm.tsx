@@ -73,7 +73,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const shouldShowSlippage = autoSlippageWouldWork && !isTestingAutoSlippage;
 
     useEffect(() => {
-        if (!source || !toAsset || !toAsset.refuel) {
+        if (!source || !toAsset || !destination?.refuel_asset || toAsset.symbol === destination.refuel_asset) {
             setFieldValue('refuel', false, true);
         }
     }, [toAsset, destination, source, fromAsset]);
@@ -115,7 +115,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                         </div>
                         <div>
                             {
-                                values.toAsset?.refuel && !initialSettings.hideRefuel &&
+                                destination?.refuel_asset && toAsset && toAsset.symbol !== destination.refuel_asset && !initialSettings.hideRefuel &&
                                 <RefuelToggle
                                     quote={quote}
                                     onButtonClick={() => setOpenRefuelModal(true)}

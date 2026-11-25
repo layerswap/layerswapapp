@@ -67,12 +67,9 @@ const ConnectModalHost: React.FC<{ settings: ReturnType<typeof useSettingsState>
         return walletProvidersRegistry.subscribe(recompute)
     }, [settings, networks, isMobilePlatform, walletProvidersRegistry])
 
-    // Phase-1 trigger: hydrate every pending descriptor the first time the
-    // connect modal opens, and warm the page-1 WalletConnect registry fetch
-    // for every namespace store — twice, because descriptor hydration
-    // instantiates stores that didn't exist when the modal opened. Later
-    // phases can add finer-grained triggers (idle prefetch of connected
-    // families, swap-page hydration, etc.).
+    // Opening the modal can beat background preloading, so hydrate any pending
+    // descriptors now. Warm registry browsing again after hydration because
+    // it creates namespace stores that did not exist when the modal opened.
     useEffect(() => {
         if (!open) return
         ensureRegistryBrowseLoaded()

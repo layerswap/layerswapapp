@@ -1,3 +1,4 @@
+import type { SwapFormValues } from '../Form/SwapFormValues';
 import { WalletTransferView } from './Presentation/Page2Sections';
 import type { ReactNode } from 'react';
 import type { SwapBasicData } from '@/lib/apiClients/layerSwapApiClient';
@@ -6,11 +7,9 @@ import { useWithdrawalProvider } from '@/hooks/useWithdrawalProvider';
 import { WithdrawalProvider } from '@/context/withdrawalContext';
 import { useSwapDataState } from '@/context/swap';
 import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
-import useWallet from '@/hooks/useWallet';
-import { useSelectedAccount } from '@/context/swapAccounts';
 import { useEffect } from 'react';
 import { useWithdrawBalance } from './Withdraw';
-import { useWalletWithdrawalController } from './Wallet';
+import { useSourceWalletSupport, useWalletWithdrawalController } from './Wallet';
 import { useManualWithdrawController } from './ManualWithdraw';
 import { useProviderWithdrawal } from './WithdrawalProviders/useProviderWithdrawal';
 import { ProviderWithdrawalControls } from './WithdrawalProviders/ProviderWalletWithdrawal';
@@ -31,6 +30,7 @@ type Props = {
     partner?: Partner;
     onWalletWithdrawalSuccess?: () => void;
     onCancelWithdrawal?: () => void;
+    onAdjustAmount?: (updates: SwapFormValues) => void;
     children: (model: Model) => ReactNode;
 };
 
@@ -53,15 +53,12 @@ export function Page2Controller(props: Props) {
 function WalletController(props: Props) {
     const { swapDetails, refuel } = useSwapDataState();
     const active = useResolvedSwapStatus().showWithdrawScreen;
-    const balance = useWithdrawBalance(active);
-    const { provider, wallets } = useWallet(
+    const balance = useWithdrawBalance(active, props.onAdjustAmount);
+    const { provider, wallets, selectedSourceAccount: account, unsupported } = useSourceWalletSupport(
         props.swapBasicData.source_network,
-        'withdrawal',
     );
-    const account = useSelectedAccount(
-        'from',
-        props.swapBasicData.source_network.name,
-    );
+    // An incompatible wallet's balance is irrelevant; keep its recovery reachable.
+    const balanceBlocked = balance.blocked && !unsupported;
     useEffect(() => {
         if (!active || !account) return;
         const wallet = wallets.find(
@@ -80,9 +77,11 @@ function WalletController(props: Props) {
             swapId: swapDetails?.id,
             refuel: !!refuel,
         },
-        active && !balance.blocked,
+        active && !balanceBlocked,
     );
-    const footer = !active ? null : balance.blocked ? (
+    const footer = !active ? null : unsupported ? (
+        model.controls
+    ) : balanceBlocked ? (
         balance.warning
     ) : balance.warning ? (
         <WalletTransferView warning={balance.warning}>
@@ -95,7 +94,9 @@ function WalletController(props: Props) {
         controls: null,
         footer,
         walletProgress: model.walletProgress,
-        actionKey: balance.blocked
+        actionKey: unsupported
+            ? model.actionKey
+            : balanceBlocked
             ? balance.actionKey
             : `${balance.actionKey}:${model.actionKey}`,
     });
@@ -129,7 +130,7 @@ function ProviderController({ definition, ...props }: Props & { definition: Wall
         swapId: swapDetails?.id,
         refuel: !!refuel,
     }, definition, active);
-    const balance = useWithdrawBalance(active);
+    const balance = useWithdrawBalance(active, props.onAdjustAmount);
     const connection = useConnectWalletController();
     const network = props.swapBasicData.source_network;
     return props.children({
