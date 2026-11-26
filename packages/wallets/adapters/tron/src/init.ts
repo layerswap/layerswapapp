@@ -63,10 +63,21 @@ export function initTronProvider(): void {
 
 /** Retries a failed initialization whenever the connect modal is open, so the user can recover without a reload. */
 export function retryTronInitOnModalOpen(): () => void {
+    const isModalOpen = () => connectModalStore.getSnapshot().isWalletModalOpen
     return connectModalStore.subscribe(() => {
-        if (connectModalStore.getSnapshot().isWalletModalOpen) {
-            initTronProvider()
+        if (!isModalOpen()) {
+            return
         }
+        if (!_loadPromise) {
+            initTronProvider()
+            return
+        }
+        // A load is already running: retry once if it fails while the modal is still open.
+        _loadPromise.catch(() => {
+            if (isModalOpen()) {
+                initTronProvider()
+            }
+        })
     })
 }
 

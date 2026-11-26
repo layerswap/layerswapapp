@@ -79,3 +79,19 @@ test('reopening the modal during or after Starknet initialization does not regis
     assert.equal(fetches.get(INJECTED), 1)
     assertConnectorsRegisteredOnce(register)
 })
+
+test('a Starknet load that fails after the modal opened is retried once while the modal stays open', async t => {
+    const { initStarknetProvider, retryStarknetInitOnModalOpen, connectModalStore, fetches, register } = loadStarknetInit(t, {
+        [INJECTED]: [{ after: 300, fail: true }, { after: 300, fail: true }],
+    })
+    t.after(retryStarknetInitOnModalOpen())
+    t.mock.method(console, 'error', () => {})
+
+    initStarknetProvider()
+    await advance(t, 100)
+    connectModalStore._syncOpen(true)
+    await advance(t, 3000)
+
+    assert.equal(fetches.get(INJECTED), 3)
+    assertConnectorsRegisteredOnce(register)
+})

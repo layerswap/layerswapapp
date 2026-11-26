@@ -113,10 +113,21 @@ export function initStarknetProvider(): void {
 
 /** Retries a failed initialization whenever the connect modal is open, so the user can recover without a reload. */
 export function retryStarknetInitOnModalOpen(): () => void {
+    const isModalOpen = () => connectModalStore.getSnapshot().isWalletModalOpen
     return connectModalStore.subscribe(() => {
-        if (connectModalStore.getSnapshot().isWalletModalOpen) {
-            initStarknetProvider()
+        if (!isModalOpen()) {
+            return
         }
+        if (!_loadPromise) {
+            initStarknetProvider()
+            return
+        }
+        // A load is already running: retry once if it fails while the modal is still open.
+        _loadPromise.catch(() => {
+            if (isModalOpen()) {
+                initStarknetProvider()
+            }
+        })
     })
 }
 

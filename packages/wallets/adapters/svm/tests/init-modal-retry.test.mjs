@@ -99,3 +99,19 @@ test('reopening the modal during or after Solana initialization does not registe
     assert.equal(fetches.get(ADAPTERS_CHUNK), 1)
     assertAdaptersRegisteredOnce(register)
 })
+
+test('a Solana load that fails after the modal opened is retried once while the modal stays open', async t => {
+    const { initSvmProvider, retrySvmInitOnModalOpen, connectModalStore, fetches, register } = loadSvmInit(t, {
+        [ADAPTERS_CHUNK]: [{ after: 300, fail: true }, { after: 300, fail: true }],
+    })
+    t.after(retrySvmInitOnModalOpen())
+    t.mock.method(console, 'error', () => {})
+
+    initSvmProvider()
+    await advance(t, 100)
+    connectModalStore._syncOpen(true)
+    await advance(t, 3000)
+
+    assert.equal(fetches.get(ADAPTERS_CHUNK), 3)
+    assertAdaptersRegisteredOnce(register)
+})

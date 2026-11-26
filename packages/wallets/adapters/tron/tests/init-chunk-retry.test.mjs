@@ -113,3 +113,53 @@ test('reopening the modal during or after initialization does not register adapt
     assert.equal(fetches.get(METAMASK), 1)
     assertAllAdaptersRegistered(register)
 })
+
+test('a load that fails after the modal opened is retried once while the modal stays open', async t => {
+    const { initTronProvider, retryTronInitOnModalOpen, connectModalStore, fetches, register } = loadTronInit(t, {
+        [METAMASK]: [{ after: 300, fail: true }, { after: 300, fail: true }],
+    })
+    t.after(retryTronInitOnModalOpen())
+    t.mock.method(console, 'error', () => {})
+
+    initTronProvider()
+    await advance(t, 100)
+    connectModalStore._syncOpen(true)
+    await advance(t, 3000)
+
+    assert.equal(fetches.get(METAMASK), 3)
+    assertAllAdaptersRegistered(register)
+})
+
+test('a load that fails after the modal closed waits for the next modal event', async t => {
+    const { initTronProvider, retryTronInitOnModalOpen, connectModalStore, fetches, register } = loadTronInit(t, {
+        [METAMASK]: [{ after: 300, fail: true }, { after: 300, fail: true }],
+    })
+    t.after(retryTronInitOnModalOpen())
+    t.mock.method(console, 'error', () => {})
+
+    initTronProvider()
+    await advance(t, 100)
+    connectModalStore._syncOpen(true)
+    connectModalStore._syncOpen(false)
+    await advance(t, 3000)
+
+    assert.equal(fetches.get(METAMASK), 2)
+    assert.equal(register.mock.callCount(), 0)
+})
+
+test('a persistently missing chunk stops after one extra attempt for an open modal', async t => {
+    const failures = Array.from({ length: 6 }, () => ({ after: 300, fail: true }))
+    const { initTronProvider, retryTronInitOnModalOpen, connectModalStore, fetches, register } = loadTronInit(t, {
+        [METAMASK]: failures,
+    })
+    t.after(retryTronInitOnModalOpen())
+    t.mock.method(console, 'error', () => {})
+
+    initTronProvider()
+    await advance(t, 100)
+    connectModalStore._syncOpen(true)
+    await advance(t, 10000)
+
+    assert.equal(fetches.get(METAMASK), 4)
+    assert.equal(register.mock.callCount(), 0)
+})
