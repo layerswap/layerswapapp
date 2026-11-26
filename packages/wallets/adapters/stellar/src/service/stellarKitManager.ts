@@ -84,16 +84,22 @@ class StellarKitManager {
     private walletConnectModule: StellarWalletConnectModule | undefined
     private appKitWalletConnectModule: StellarKitWalletConnectModule | undefined
     private generation = 0
+    private retryInit: (() => Promise<void>) | undefined
 
     init(walletConnect?: WalletConnectConfig): Promise<void> {
         if (typeof window === 'undefined') return Promise.resolve()
         if (this.initPromise) return this.initPromise
 
         const generation = ++this.generation
+        this.retryInit = undefined
         stellarStore.getState().setInitializing()
         this.initPromise = this.initialize(walletConnect, generation).catch(error => {
             const message = error instanceof Error ? error.message : String(error)
-            if (generation === this.generation) stellarStore.getState().setReady(message)
+            if (generation === this.generation) {
+                this.dispose()
+                this.retryInit = () => this.init(walletConnect)
+                stellarStore.getState().setReady(message)
+            }
             throw error
         })
         return this.initPromise
@@ -202,6 +208,14 @@ class StellarKitManager {
     }
 
     warmUpWalletConnect(): void {
+        if (!this.initPromise && this.retryInit) {
+            void this.retryInit()
+                .then(() => this.walletConnectModule?.warmup())
+                .catch(error => {
+                    console.error('[Stellar] Failed to initialize wallet connectors', error)
+                })
+            return
+        }
         this.walletConnectModule?.warmup()
     }
 
@@ -267,10 +281,12 @@ class StellarKitManager {
         this.kit = undefined
         this.networks = undefined
         this.initPromise = undefined
+        this.retryInit = undefined
         this.selectedWalletId = undefined
     }
 
     private async requireReady(): Promise<void> {
+        if (!this.initPromise && this.retryInit) return this.retryInit()
         if (!this.initPromise) throw new Error('Stellar Wallets Kit is not initialized')
         await this.initPromise
     }
