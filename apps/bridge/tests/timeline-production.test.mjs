@@ -65,9 +65,9 @@ function loadSource(path, imports = {}) {
         if (name.endsWith('/reportWithdrawalError')) return loadSource(`${withdraw}reportWithdrawalError.ts`, imports);
         if (name === '@/hooks/useAtomicBatchCapability') return { useAtomicBatchCapability: () => false };
         if (name === '@/helpers/atomicBatch') return { isAtomicBatchEligible: () => false };
-        if (name === '@/lib/extendedRoutes/registry') return { isExtendedSourceNetwork: () => false };
+        if (name === '@/lib/extendedRoutes/registry') return { isExtendedSourceNetwork: () => false, getExtendedProviderForNetwork: () => undefined };
         if (name === '@/lib/atomicBatchExecution') return { executeAtomicBatch: () => assert.fail('legacy flow cannot submit an atomic batch') };
-        if (name === '@/lib/resolvers/resolverService') return {};
+        if (name === '@/lib/resolvers/resolverService') return { resolverService: { getTransferResolver: () => ({ reportsWalletPrompt: () => false }) } };
         if (name === '@/hooks/useClientLayoutEffect') return { useClientLayoutEffect: React.useLayoutEffect };
         if (name === '@/lib/amountPresets') return loadSource('lib/amountPresets.ts', {
             '@/lib/gases/resolveGasBalanceBudget': loadSource('lib/gases/resolveGasBalanceBudget.ts'),
@@ -1304,6 +1304,7 @@ for (const provider of ['Hyperliquid', 'Polymarket']) {
                 '@layerswap/widget-types': { ActionMessageType: { TransactionRejected: 'TransactionRejected' } },
                 './executeProviderWithdrawal': providerExecution,
                 '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
+                '@/helpers/swapFlow': { isSentByConnectedWallet: () => providerId !== 'polymarket' },
                 '@/lib/ErrorHandler': { ErrorHandler: noop },
                 '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: noop }) },
                 '@/lib/swapLifecycle': { lifecycleContextFromSwap: () => ({}) },
@@ -1511,6 +1512,11 @@ for (const failure of ['rejected', 'failed']) {
             '@/stores/swapTransactionStore': stores,
             '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
             '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
+            '@/helpers/gasless': gasless,
+            '@/hooks/useIsGaslessActive': { useIsGaslessActive: () => false },
+            '@/hooks/useSelectedSourceWallet': { useSelectedSourceWallet: () => undefined },
+            '@/helpers/walletCapabilities': { getWalletCapabilities: () => undefined },
+            '@/components/utils/formatTokenAmount': { formatTokenAmount: value => String(value) },
             '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),
             '@/components/Input/Amount/helpers': loadSource('components/Input/Amount/helpers.ts', {
                 '@/components/utils/RoundDecimals': loadSource('components/utils/RoundDecimals.ts'),

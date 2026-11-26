@@ -49,7 +49,7 @@ test('exact fee inputs preserve recipient, memo, amount and cache identity on an
     recipientAddress: 'recipient', callData: '22911311;', amountInBaseUnits: '0',
   } })
   const key = transferGas.gasEstimateKey({ ...result.transaction, amount: result.amount, network, token, address: 'sender' })
-  assert.deepEqual(key, ['/gases/sender/source/NATIVE/0.00009363', 'recipient', '22911311;', '0'])
+  assert.deepEqual(key, ['/gases/sender/source/NATIVE/0.00009363', null, 'recipient', '22911311;', '0'])
   assert.equal(transferGas.resolveTransferGas(action, { name: 'other' }, token, 'sender'), undefined)
   assert.equal(transferGas.resolveTransferGas(action, network, token, 'other'), undefined)
   assert.equal(transferGas.transferFeeChanged({ token, gas: 338 / unit }, { token, gas: 637 / unit }), true)
@@ -60,9 +60,10 @@ test('exact fee inputs preserve recipient, memo, amount and cache identity on an
 test('an exact transfer does not require an uncharged safety margin', () => {
   const { default: useOutOfGas } = loadSource('lib/gases/useOutOfGas.ts', {
     './useSWRGas': { default: () => ({}) }, './resolveGasBalanceBudget': { resolveGasBalanceBudget },
+    '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
   })
   const args = { network, token, amount: 9859 / unit,
-    balances: [{ token: token.symbol, amount: 10000 / unit, isNativeCurrency: true }],
+    balances: [{ network: network.name, token: token.symbol, amount: 10000 / unit, isNativeCurrency: true }],
     minAllowedAmount: 0.000001, maxAllowedAmount: 1,
     gasEstimate: { gasData: { token, gas: 141 / unit, requiredFee: 141 / unit } },
     transaction: { recipientAddress: 'recipient', callData: 'memo' } }

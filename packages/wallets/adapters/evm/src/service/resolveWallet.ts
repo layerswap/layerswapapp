@@ -1,4 +1,4 @@
-import { type Wallet } from '@layerswap/widget-types';
+import { type ChainCapabilities, type Wallet } from '@layerswap/widget-types';
 import type { Connector } from 'wagmi'
 import { getDynamicWcMetadata, getPendingDynamicWcMetadata, type AppNetworkAdapter } from "@layerswap/wallet-core"
 import { evmConnectorNameResolver, resolveEVMWalletConnectorIcon } from '../evmUtils'
@@ -27,6 +27,8 @@ export type ResolveWalletProps<Network> = {
         withdrawal: string[]
     }
     providerName: string
+    /** Published EIP-5792 answers for this connection, by lowercase account. */
+    capabilities?: Record<string, ChainCapabilities>
 }
 
 export function resolveWallet<Network>(props: ResolveWalletProps<Network>): Wallet | undefined {
@@ -39,6 +41,7 @@ export function resolveWallet<Network>(props: ResolveWalletProps<Network>): Wall
         disconnect,
         supportedNetworks,
         providerName,
+        capabilities,
     } = props
     const walletIsActive = activeConnection?.id === connection?.connector.id
     const addresses = connection?.accounts as (string[] | undefined)
@@ -84,6 +87,7 @@ export function resolveWallet<Network>(props: ResolveWalletProps<Network>): Wall
             deepLink: dynamicMetadata?.deepLink || (connector as LSConnector).deepLink,
             evmConnectorUid: connector.uid,
             walletConnectTopic: (connector as LSConnector).getSessionTopic?.(),
+            capabilities,
         },
     }
 }

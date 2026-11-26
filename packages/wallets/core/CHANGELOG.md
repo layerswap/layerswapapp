@@ -1,5 +1,34 @@
 # @layerswap/wallet-core
 
+## 2.7.1
+
+### Patch Changes
+
+- Added Outis as a supported Starknet wallet.
+- Upgraded Stellar Wallets Kit to 2.8.0 (Freighter is now Varial, Ghostsig added), with WalletConnect still reachable from merged wallet tiles. Solana and Stellar share WalletConnect connect resolution through wallet-core. The WalletConnect QR now offers a plain QR fallback after 7 seconds.
+- Updated dependencies
+- Updated dependencies [acaa41b]
+  - @layerswap/widget-types@2.7.1
+  - @layerswap/utils@2.7.1
+
+## 2.7.0
+
+### Minor Changes
+
+- Preload wallet providers once the page is idle, so the connect dialog opens with them ready.
+- Resolve multi-chain wallet registry entries in one batched request instead of one lookup per wallet.
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [8f004b1]
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @layerswap/widget-types@2.7.0
+  - @layerswap/utils@2.7.0
+
 ## 2.6.0
 
 ### Patch Changes

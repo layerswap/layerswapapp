@@ -1,4 +1,4 @@
-import type { GasProps, GasWithToken, Network, Token } from '@layerswap/widget-types'
+import type { GasProps, GasWithToken, Network, Token, Wallet } from '@layerswap/widget-types'
 import type { DepositAction } from '@/lib/apiClients/layerSwapApiClient'
 import { isTransferAction } from '@/helpers/depositActions'
 
@@ -18,11 +18,10 @@ export function resolveTransferGas(action: DepositAction | undefined, network: N
     }
 }
 
-export function gasEstimateKey({ address, network, token, amount, recipientAddress, callData, amountInBaseUnits }: Partial<GasProps>) {
+export function gasEstimateKey({ address, network, token, amount, capabilities, recipientAddress, callData, amountInBaseUnits }: Partial<GasProps> & { capabilities?: NonNullable<Wallet['metadata']>['capabilities'] }) {
     const baseKey = `/gases/${address}/${network?.name}/${token?.symbol}/${amount}`
-    return recipientAddress != null && callData != null
-        ? [baseKey, recipientAddress, callData, amountInBaseUnits ?? null]
-        : baseKey
+    return [baseKey, capabilities ?? null,
+        ...(recipientAddress != null && callData != null ? [recipientAddress, callData, amountInBaseUnits ?? null] : [])]
 }
 
 export function transferFeeChanged(previous: GasWithToken | undefined, next: GasWithToken) {

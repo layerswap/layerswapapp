@@ -1,7 +1,7 @@
 import { Network, Token } from "@layerswap/widget-types";
 import { CreateSwapParams, Quote } from "@/lib/apiClients/layerSwapApiClient";
 import { parseHmsString } from "@/components/utils/formatTime";
-import { ExtendedRoutePlan, ResolvedExtendedMapping, usesDepository } from "@layerswap/widget-types";
+import { ExtendedRoutePlan, ResolvedExtendedMapping, requiredDepositMethod } from "@layerswap/widget-types";
 import { DecimalInput, decimalToNumber, isPositiveDecimal } from "./amounts";
 
 export type ExtendedLimits = {
@@ -79,7 +79,7 @@ export type ExtendedCreateSwapParamsArgs = {
     referenceId?: string
     refuel?: boolean
     sourceAddress?: string
-    useFrontendSwap: true
+    useFrontendSwap: boolean
 }
 
 export function buildCreateSwapParamsForExtendedRoute({
@@ -96,7 +96,6 @@ export function buildCreateSwapParamsForExtendedRoute({
     if (!isPositiveDecimal(plan.realAmount)) throw new Error('Extended route amount is invalid')
 
     const { provider } = plan.mapping
-    const depository = usesDepository(provider)
 
     return {
         amount: plan.realAmount,
@@ -107,10 +106,9 @@ export function buildCreateSwapParamsForExtendedRoute({
         destination_address: destinationAddress,
         reference_id: referenceId,
         refuel: !!refuel,
-        use_deposit_address: !depository,
-        use_frontend_swap: useFrontendSwap,
+        use_deposit_address: requiredDepositMethod(provider) === 'deposit_address',
+        use_frontend_swap: useFrontendSwap && provider.supportsFrontendSwap !== false,
         use_gasless: false,
-        use_depository: depository || undefined,
         source_address: undefined,
         refund_address: provider.requiresRefundAddress ? sourceAddress : undefined,
     }

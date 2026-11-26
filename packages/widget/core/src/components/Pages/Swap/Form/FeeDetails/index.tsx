@@ -96,13 +96,13 @@ export const DetailsButton: FC<QuoteComponentProps & { enabled?: boolean }> = ({
     );
     const { wallets } = useWallet(quote?.source_network, 'withdrawal');
     const wallet = wallets.find((w) => w.id === selectedSourceAccount?.id);
-    const { gasData: gasData } = useSWRGas(
+    const { gasData, isGasLoading } = useSWRGas(
         selectedSourceAccount?.address,
         values.from,
         values.fromAsset,
         values.gasAmount ?? values.amount,
         wallet,
-        { enabled, transaction: values.gasTransaction },
+        { enabled, transaction: values.gasTransaction, keepPreviousData: true },
     );
     const gasTokenPriceInUsd = resolveTokenUsdPrice(gasData?.token, quote);
     const gasFeeInUsd =
@@ -142,6 +142,7 @@ export const DetailsButton: FC<QuoteComponentProps & { enabled?: boolean }> = ({
             gasFeeInUsd={gasFeeInUsd}
             isGasless={isGasless}
             isQuoteLoading={isQuoteLoading}
+            isGasLoading={isGasLoading}
             isExchange={!!values.fromExchange}
             averageCompletionTime={averageCompletionTime}
             reward={reward}
