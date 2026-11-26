@@ -48,6 +48,8 @@ import { StellarConnectionService } from '../dist/esm/service/StellarConnectionS
 import { toStellarConnector } from '../dist/esm/service/stellarConnector.js'
 import { stellarStore } from '../dist/esm/service/stellarStore.js'
 import { stellarKitManager } from '../dist/esm/service/stellarKitManager.js'
+import { createStellarConnection } from '../dist/esm/service/createStellarConnection.js'
+import { connectModalStore } from '@layerswap/wallet-core'
 import { createStellarTransfer } from '../dist/esm/transferProvider/createStellarTransfer.js'
 import { toSigningError, toTransferError } from '../dist/esm/transferProvider/toTransferError.js'
 import { isUserRejection } from '@layerswap/wallet-core/errors'
@@ -991,13 +993,21 @@ test('a failed kit initialization is retried by the next wallet call', async t =
 
 test('opening the connect modal recovers connectors after a failed kit initialization', async t => {
     const state = failFirstKitInit(t)
+    const connection = createStellarConnection({
+        networks: [],
+        networkAdapter: { getId: network => network.name, isStellarNetwork: () => true, getIcon: () => undefined },
+    })
+    t.after(() => {
+        connectModalStore._syncOpen(false)
+        connection.destroy()
+    })
 
     await assert.rejects(stellarKitManager.init(), error => error === state.chunkError)
-    assert.deepEqual(stellarStore.getState().wallets, [])
+    assert.deepEqual(connection.store.getState().availableConnectors, [])
 
-    stellarKitManager.warmUpWalletConnect()
+    connectModalStore._syncOpen(true)
     assert.equal(state.attempts, 2)
     await stellarKitManager.init()
 
-    assert.deepEqual(stellarStore.getState().wallets.map(wallet => wallet.id), ['freighter'])
+    assert.deepEqual(connection.store.getState().availableConnectors.map(connector => connector.id), ['freighter'])
 })

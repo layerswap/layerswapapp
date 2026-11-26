@@ -22,15 +22,15 @@ export function initTronProvider(): void {
             bybitModule,
             gateModule,
             trustModule,
-        ] = await retryChunkLoad(() => Promise.all([
-            import('@tronweb3/tronwallet-adapter-metamask-tron'),
-            import('@tronweb3/tronwallet-adapter-tronlink'),
-            import('@tronweb3/tronwallet-adapter-okxwallet'),
-            import('@tronweb3/tronwallet-adapter-bitkeep'),
-            import('@tronweb3/tronwallet-adapter-bybit'),
-            import('@tronweb3/tronwallet-adapter-gatewallet'),
-            import('@tronweb3/tronwallet-adapter-trust')
-        ]))
+        ] = await Promise.all([
+            retryChunkLoad(() => import('@tronweb3/tronwallet-adapter-metamask-tron')),
+            retryChunkLoad(() => import('@tronweb3/tronwallet-adapter-tronlink')),
+            retryChunkLoad(() => import('@tronweb3/tronwallet-adapter-okxwallet')),
+            retryChunkLoad(() => import('@tronweb3/tronwallet-adapter-bitkeep')),
+            retryChunkLoad(() => import('@tronweb3/tronwallet-adapter-bybit')),
+            retryChunkLoad(() => import('@tronweb3/tronwallet-adapter-gatewallet')),
+            retryChunkLoad(() => import('@tronweb3/tronwallet-adapter-trust')),
+        ])
 
         const { MetaMaskAdapter } = metamaskModule
         const { TronLinkAdapter } = tronLinkModule
