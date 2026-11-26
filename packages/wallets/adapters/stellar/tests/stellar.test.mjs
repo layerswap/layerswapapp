@@ -961,11 +961,15 @@ test('Stellar error mapping is pure: prompt vocabulary applies to the signing st
 
 function failFirstKitInit(t) {
     const hadWindow = 'window' in globalThis
-    if (!hadWindow) globalThis.window = {}
+    if (!hadWindow) {
+        globalThis.window = {}
+    }
     t.after(() => {
         stellarKitManager.dispose()
         stellarStore.getState().setWallets([])
-        if (!hadWindow) delete globalThis.window
+        if (!hadWindow) {
+            delete globalThis.window
+        }
     })
     stellarKitManager.dispose()
 
@@ -974,7 +978,9 @@ function failFirstKitInit(t) {
     const state = { attempts: 0, chunkError, recovered }
     t.mock.method(stellarKitManager, 'initialize', async () => {
         state.attempts += 1
-        if (state.attempts === 1) throw chunkError
+        if (state.attempts === 1) {
+            throw chunkError
+        }
         stellarStore.getState().setWallets([recovered])
     })
     return state

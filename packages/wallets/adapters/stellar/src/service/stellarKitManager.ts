@@ -286,7 +286,9 @@ class StellarKitManager {
     }
 
     private async requireReady(): Promise<void> {
-        if (!this.initPromise && this.retryInit) return this.retryInit()
+        if (!this.initPromise && this.retryInit) {
+            return this.retryInit()
+        }
         if (!this.initPromise) throw new Error('Stellar Wallets Kit is not initialized')
         await this.initPromise
     }

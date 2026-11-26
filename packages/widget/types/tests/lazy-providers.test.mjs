@@ -25,7 +25,9 @@ function flakyLoader(provider) {
     let attempts = 0
     const loader = async () => {
         attempts += 1
-        if (attempts === 1) throw chunkError()
+        if (attempts === 1) {
+            throw chunkError()
+        }
         return provider
     }
     return { loader, attempts: () => attempts }
