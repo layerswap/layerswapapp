@@ -1,5 +1,5 @@
 import { isMobile } from "@layerswap/utils"
-import { connectModalStore, retryChunkLoad } from '@layerswap/wallet-core'
+import { retryChunkLoad } from '@layerswap/wallet-core/chunkLoadRecovery'
 import { AppSettings } from "@layerswap/utils";
 import { WalletAdapterNetwork, WalletReadyState } from '@solana/wallet-adapter-base'
 import { svmAdapterManager } from './service/svmAdapterManager'
@@ -18,13 +18,17 @@ type InitOptions = {
  * One-shot initialization of the Solana adapters + manager.
  * Safe to call multiple times — subsequent calls are no-ops.
  */
-export function initSvmProvider(opts: InitOptions = {}): void {
+export function initSvmProvider(opts: InitOptions = {}): Promise<void> {
     if (opts.walletConnectConfigs) {
         setWalletConnectConfig(opts.walletConnectConfigs)
     }
 
-    if (_initialized || _loadPromise) return
-    if (typeof window === 'undefined') return
+    if (_initialized || typeof window === 'undefined') {
+        return Promise.resolve()
+    }
+    if (_loadPromise) {
+        return _loadPromise
+    }
 
     _loadPromise = (async () => {
         const adaptersModule = await retryChunkLoad(() => import('@solana/wallet-adapter-wallets'))
@@ -111,26 +115,8 @@ export function initSvmProvider(opts: InitOptions = {}): void {
         console.error('[layerswap/wallets] Solana provider initialization failed', error)
         _loadPromise = null
     })
-}
 
-/** Retries a failed initialization whenever the connect modal is open, so the user can recover without a reload. */
-export function retrySvmInitOnModalOpen(opts: InitOptions = {}): () => void {
-    const isModalOpen = () => connectModalStore.getSnapshot().isWalletModalOpen
-    return connectModalStore.subscribe(() => {
-        if (!isModalOpen()) {
-            return
-        }
-        if (!_loadPromise) {
-            initSvmProvider(opts)
-            return
-        }
-        // A load is already running: retry once if it fails while the modal is still open.
-        _loadPromise.catch(() => {
-            if (isModalOpen()) {
-                initSvmProvider(opts)
-            }
-        })
-    })
+    return _loadPromise
 }
 
 /** Visible for tests. Resets singleton init so a fresh init can run. */

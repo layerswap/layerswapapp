@@ -15,11 +15,16 @@ function rejectImports(name) {
     throw new Error(`Unexpected dependency: ${name}`)
 }
 
-/** Fresh copies of the real wallet-core modal store and chunk retry, so state never leaks between tests. */
+/** Fresh copies of the real wallet-core modal store and chunk-load recovery, so state never leaks between tests. */
 export function loadWalletCore() {
-    const { retryChunkLoad } = loadSource(new URL('../../src/lib/retryChunkLoad.ts', import.meta.url), rejectImports)
-    const { connectModalStore } = loadSource(new URL('../../src/lib/walletConnect/connectModalStore.ts', import.meta.url), rejectImports)
-    return { retryChunkLoad, connectModalStore }
+    const modalStoreModule = loadSource(new URL('../../src/lib/walletConnect/connectModalStore.ts', import.meta.url), rejectImports)
+    const recovery = loadSource(new URL('../../src/lib/chunkLoadRecovery.ts', import.meta.url), name => {
+        if (name === './walletConnect/connectModalStore') {
+            return modalStoreModule
+        }
+        return rejectImports(name)
+    })
+    return { ...recovery, connectModalStore: modalStoreModule.connectModalStore }
 }
 
 /**

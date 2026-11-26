@@ -18,15 +18,15 @@ const EXPECTED_ADAPTERS = ['Phantom', 'Nightly', 'Solflare', 'Bitget', 'Trust', 
 function loadSvmInit(t, plans) {
     useBrowserTestEnvironment(t)
     const { loadChunk, fetches } = createChunkLoader(plans)
-    const { retryChunkLoad, connectModalStore } = loadWalletCore()
+    const { retryChunkLoad, retryInitOnModalOpen, connectModalStore } = loadWalletCore()
     const register = t.mock.fn()
     let walletConnectConfig = null
     const init = loadSource(new URL('../src/init.ts', import.meta.url), name => {
         if (name === '@layerswap/utils') {
             return { isMobile: () => false, AppSettings: { ApiVersion: 'mainnet' } }
         }
-        if (name === '@layerswap/wallet-core') {
-            return { connectModalStore, retryChunkLoad }
+        if (name === '@layerswap/wallet-core/chunkLoadRecovery') {
+            return { retryChunkLoad }
         }
         if (name === '@solana/wallet-adapter-base') {
             return { WalletAdapterNetwork: { Devnet: 'devnet', Mainnet: 'mainnet-beta' }, WalletReadyState: {} }
@@ -50,7 +50,7 @@ function loadSvmInit(t, plans) {
         }
         throw new Error(`Unexpected dependency: ${name}`)
     })
-    return { ...init, connectModalStore, fetches, register }
+    return { ...init, retryInitOnModalOpen, connectModalStore, fetches, register }
 }
 
 function assertAdaptersRegisteredOnce(register) {
@@ -59,10 +59,10 @@ function assertAdaptersRegisteredOnce(register) {
 }
 
 test('opening the connect modal retries Solana initialization after its chunk retry is exhausted', async t => {
-    const { initSvmProvider, retrySvmInitOnModalOpen, connectModalStore, fetches, register } = loadSvmInit(t, {
+    const { initSvmProvider, retryInitOnModalOpen, connectModalStore, fetches, register } = loadSvmInit(t, {
         [ADAPTERS_CHUNK]: [{ after: 100, fail: true }, { after: 100, fail: true }],
     })
-    t.after(retrySvmInitOnModalOpen())
+    t.after(retryInitOnModalOpen(initSvmProvider))
     const logError = t.mock.method(console, 'error', () => {})
 
     initSvmProvider()
@@ -79,10 +79,10 @@ test('opening the connect modal retries Solana initialization after its chunk re
 })
 
 test('reopening the modal during or after Solana initialization does not register adapters again', async t => {
-    const { initSvmProvider, retrySvmInitOnModalOpen, connectModalStore, fetches, register } = loadSvmInit(t, {
+    const { initSvmProvider, retryInitOnModalOpen, connectModalStore, fetches, register } = loadSvmInit(t, {
         [ADAPTERS_CHUNK]: [{ after: 500 }],
     })
-    t.after(retrySvmInitOnModalOpen())
+    t.after(retryInitOnModalOpen(initSvmProvider))
 
     initSvmProvider()
     await advance(t, 100)
@@ -101,10 +101,10 @@ test('reopening the modal during or after Solana initialization does not registe
 })
 
 test('a Solana load that fails after the modal opened is retried once while the modal stays open', async t => {
-    const { initSvmProvider, retrySvmInitOnModalOpen, connectModalStore, fetches, register } = loadSvmInit(t, {
+    const { initSvmProvider, retryInitOnModalOpen, connectModalStore, fetches, register } = loadSvmInit(t, {
         [ADAPTERS_CHUNK]: [{ after: 300, fail: true }, { after: 300, fail: true }],
     })
-    t.after(retrySvmInitOnModalOpen())
+    t.after(retryInitOnModalOpen(initSvmProvider))
     t.mock.method(console, 'error', () => {})
 
     initSvmProvider()

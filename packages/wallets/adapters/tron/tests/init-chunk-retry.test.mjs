@@ -19,11 +19,11 @@ const TRONLINK = '@tronweb3/tronwallet-adapter-tronlink'
 function loadTronInit(t, plans) {
     useBrowserTestEnvironment(t)
     const { loadChunk, fetches } = createChunkLoader(plans)
-    const { retryChunkLoad, connectModalStore } = loadWalletCore()
+    const { retryChunkLoad, retryInitOnModalOpen, connectModalStore } = loadWalletCore()
     const register = t.mock.fn()
     const init = loadSource(new URL('../src/init.ts', import.meta.url), name => {
-        if (name === '@layerswap/wallet-core') {
-            return { connectModalStore, retryChunkLoad }
+        if (name === '@layerswap/wallet-core/chunkLoadRecovery') {
+            return { retryChunkLoad }
         }
         if (name === './service/tronAdapterManager') {
             return { tronAdapterManager: { register, dispose: () => {} } }
@@ -35,7 +35,7 @@ function loadTronInit(t, plans) {
         }
         throw new Error(`Unexpected dependency: ${name}`)
     })
-    return { ...init, connectModalStore, fetches, register }
+    return { ...init, retryInitOnModalOpen, connectModalStore, fetches, register }
 }
 
 function assertAllAdaptersRegistered(register) {
@@ -73,10 +73,10 @@ test('a failed shared chunk is fetched once more for every adapter waiting on it
 })
 
 test('opening the connect modal retries initialization after its chunk retry is exhausted', async t => {
-    const { initTronProvider, retryTronInitOnModalOpen, connectModalStore, fetches, register } = loadTronInit(t, {
+    const { initTronProvider, retryInitOnModalOpen, connectModalStore, fetches, register } = loadTronInit(t, {
         [METAMASK]: [{ after: 100, fail: true }, { after: 100, fail: true }],
     })
-    t.after(retryTronInitOnModalOpen())
+    t.after(retryInitOnModalOpen(initTronProvider))
     const logError = t.mock.method(console, 'error', () => {})
 
     initTronProvider()
@@ -93,10 +93,10 @@ test('opening the connect modal retries initialization after its chunk retry is 
 })
 
 test('reopening the modal during or after initialization does not register adapters again', async t => {
-    const { initTronProvider, retryTronInitOnModalOpen, connectModalStore, fetches, register } = loadTronInit(t, {
+    const { initTronProvider, retryInitOnModalOpen, connectModalStore, fetches, register } = loadTronInit(t, {
         [METAMASK]: [{ after: 500 }],
     })
-    t.after(retryTronInitOnModalOpen())
+    t.after(retryInitOnModalOpen(initTronProvider))
 
     initTronProvider()
     await advance(t, 100)
@@ -115,10 +115,10 @@ test('reopening the modal during or after initialization does not register adapt
 })
 
 test('a load that fails after the modal opened is retried once while the modal stays open', async t => {
-    const { initTronProvider, retryTronInitOnModalOpen, connectModalStore, fetches, register } = loadTronInit(t, {
+    const { initTronProvider, retryInitOnModalOpen, connectModalStore, fetches, register } = loadTronInit(t, {
         [METAMASK]: [{ after: 300, fail: true }, { after: 300, fail: true }],
     })
-    t.after(retryTronInitOnModalOpen())
+    t.after(retryInitOnModalOpen(initTronProvider))
     t.mock.method(console, 'error', () => {})
 
     initTronProvider()
@@ -131,10 +131,10 @@ test('a load that fails after the modal opened is retried once while the modal s
 })
 
 test('a load that fails after the modal closed waits for the next modal event', async t => {
-    const { initTronProvider, retryTronInitOnModalOpen, connectModalStore, fetches, register } = loadTronInit(t, {
+    const { initTronProvider, retryInitOnModalOpen, connectModalStore, fetches, register } = loadTronInit(t, {
         [METAMASK]: [{ after: 300, fail: true }, { after: 300, fail: true }],
     })
-    t.after(retryTronInitOnModalOpen())
+    t.after(retryInitOnModalOpen(initTronProvider))
     t.mock.method(console, 'error', () => {})
 
     initTronProvider()
@@ -149,10 +149,10 @@ test('a load that fails after the modal closed waits for the next modal event', 
 
 test('a persistently missing chunk stops after one extra attempt for an open modal', async t => {
     const failures = Array.from({ length: 6 }, () => ({ after: 300, fail: true }))
-    const { initTronProvider, retryTronInitOnModalOpen, connectModalStore, fetches, register } = loadTronInit(t, {
+    const { initTronProvider, retryInitOnModalOpen, connectModalStore, fetches, register } = loadTronInit(t, {
         [METAMASK]: failures,
     })
-    t.after(retryTronInitOnModalOpen())
+    t.after(retryInitOnModalOpen(initTronProvider))
     t.mock.method(console, 'error', () => {})
 
     initTronProvider()

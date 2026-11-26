@@ -6,7 +6,8 @@ import { type NetworkWithTokens } from "@layerswap/widget-types";
 import { TronGasProvider } from "./tronGasProvider"
 import { createTronTransfer } from "./transferProvider/createTronTransfer"
 import { createTronConnection } from "./service/createTronConnection"
-import { initTronProvider, retryTronInitOnModalOpen } from "./init"
+import { retryInitOnModalOpen } from "@layerswap/wallet-core/chunkLoadRecovery"
+import { initTronProvider } from "./init"
 import { id } from "./constants"
 
 export type TronProviderConfig<Network = NetworkWithTokens> = BaseWalletProviderConfig<Network>
@@ -25,7 +26,7 @@ export function createTronProvider<Network = NetworkWithTokens>(
 
     const init = (_ctx: WalletInitContext) => {
         initTronProvider()
-        return retryTronInitOnModalOpen()
+        return retryInitOnModalOpen(initTronProvider)
     }
 
     const createConnection = (props: WalletConnectionProviderProps<Network>): WalletConnectionStore<Network> => {

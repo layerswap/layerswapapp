@@ -7,7 +7,7 @@ import type { WalletProvider, WalletWrapper } from "@/types/provider";
 import { createWalletProvidersRegistry, type WalletProvidersRegistry } from "@/lib/walletConnect/walletProvidersRegistry";
 import { createDescriptorStubStore } from "@/lib/walletConnect/descriptorStubStore";
 import { WalletDescriptorLoaderContext } from "@/lib/walletConnect/walletDescriptorLoader";
-import { retryChunkLoad } from "@/lib/retryChunkLoad";
+import { retryChunkLoad } from "@/lib/chunkLoadRecovery";
 import { scheduleWalletPreload } from "@/lib/walletConnect/scheduleWalletPreload";
 
 type RegistryEntry = { id: string; store: StoreApi<WalletConnectionProvider> }

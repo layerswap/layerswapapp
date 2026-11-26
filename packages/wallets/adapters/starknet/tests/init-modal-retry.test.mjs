@@ -13,14 +13,17 @@ const EXPECTED_CONNECTORS = ['argentX', 'keplr', 'braavos', 'xverse', 'fordefi',
 function loadStarknetInit(t, plans) {
     useBrowserTestEnvironment(t)
     const { loadChunk, fetches } = createChunkLoader(plans)
-    const { retryChunkLoad, connectModalStore } = loadWalletCore()
+    const { retryChunkLoad, retryInitOnModalOpen, connectModalStore } = loadWalletCore()
     const register = t.mock.fn()
     const init = loadSource(new URL('../src/init.ts', import.meta.url), name => {
         if (name === '@starknet-react/core') {
             return { Connector: class {}, ConnectorNotConnectedError: Error, UserNotConnectedError: Error }
         }
         if (name === '@layerswap/wallet-core') {
-            return { connectModalStore, retryChunkLoad, getKnownConnectorIconBase64: () => 'icon' }
+            return { getKnownConnectorIconBase64: () => 'icon' }
+        }
+        if (name === '@layerswap/wallet-core/chunkLoadRecovery') {
+            return { retryChunkLoad }
         }
         if (name === './service/starknetConnectorManager') {
             return { starknetConnectorManager: { register, dispose: () => {} } }
@@ -30,7 +33,7 @@ function loadStarknetInit(t, plans) {
         }
         throw new Error(`Unexpected dependency: ${name}`)
     })
-    return { ...init, connectModalStore, fetches, register }
+    return { ...init, retryInitOnModalOpen, connectModalStore, fetches, register }
 }
 
 function assertConnectorsRegisteredOnce(register) {
@@ -39,10 +42,10 @@ function assertConnectorsRegisteredOnce(register) {
 }
 
 test('opening the connect modal retries Starknet initialization after its chunk retry is exhausted', async t => {
-    const { initStarknetProvider, retryStarknetInitOnModalOpen, connectModalStore, fetches, register } = loadStarknetInit(t, {
+    const { initStarknetProvider, retryInitOnModalOpen, connectModalStore, fetches, register } = loadStarknetInit(t, {
         [INJECTED]: [{ after: 100, fail: true }, { after: 100, fail: true }],
     })
-    t.after(retryStarknetInitOnModalOpen())
+    t.after(retryInitOnModalOpen(initStarknetProvider))
     const logError = t.mock.method(console, 'error', () => {})
 
     initStarknetProvider()
@@ -59,10 +62,10 @@ test('opening the connect modal retries Starknet initialization after its chunk 
 })
 
 test('reopening the modal during or after Starknet initialization does not register connectors again', async t => {
-    const { initStarknetProvider, retryStarknetInitOnModalOpen, connectModalStore, fetches, register } = loadStarknetInit(t, {
+    const { initStarknetProvider, retryInitOnModalOpen, connectModalStore, fetches, register } = loadStarknetInit(t, {
         [INJECTED]: [{ after: 500 }],
     })
-    t.after(retryStarknetInitOnModalOpen())
+    t.after(retryInitOnModalOpen(initStarknetProvider))
 
     initStarknetProvider()
     await advance(t, 100)
@@ -81,10 +84,10 @@ test('reopening the modal during or after Starknet initialization does not regis
 })
 
 test('a Starknet load that fails after the modal opened is retried once while the modal stays open', async t => {
-    const { initStarknetProvider, retryStarknetInitOnModalOpen, connectModalStore, fetches, register } = loadStarknetInit(t, {
+    const { initStarknetProvider, retryInitOnModalOpen, connectModalStore, fetches, register } = loadStarknetInit(t, {
         [INJECTED]: [{ after: 300, fail: true }, { after: 300, fail: true }],
     })
-    t.after(retryStarknetInitOnModalOpen())
+    t.after(retryInitOnModalOpen(initStarknetProvider))
     t.mock.method(console, 'error', () => {})
 
     initStarknetProvider()

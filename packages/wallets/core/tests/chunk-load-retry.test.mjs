@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { retryChunkLoad } from '../dist/esm/lib/retryChunkLoad.js'
+import { retryChunkLoad } from '../dist/esm/lib/chunkLoadRecovery.js'
 
 const chunkError = () => Object.assign(new Error('Loading chunk 6875 failed.'), { name: 'ChunkLoadError' })
 

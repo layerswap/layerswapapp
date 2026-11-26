@@ -8,7 +8,8 @@ import { StarknetBalanceProvider } from "./starknetBalanceProvider"
 import { StarknetNftProvider } from "./starknetNftProvider"
 import { createStarknetTransfer } from "./transferProvider/createStarknetTransfer"
 import { createStarknetConnection } from "./service/createStarknetConnection"
-import { initStarknetProvider, retryStarknetInitOnModalOpen } from "./init"
+import { retryInitOnModalOpen } from "@layerswap/wallet-core/chunkLoadRecovery"
+import { initStarknetProvider } from "./init"
 import { id } from "./constants"
 
 const isStarknetNetwork = (name: string) =>
@@ -35,7 +36,7 @@ export function createStarknetProvider<Network = NetworkWithTokens>(
 
     const init = (_ctx: WalletInitContext) => {
         initStarknetProvider()
-        return retryStarknetInitOnModalOpen()
+        return retryInitOnModalOpen(initStarknetProvider)
     }
 
     const createConnection = (props: WalletConnectionProviderProps<Network>): WalletConnectionStore<Network> => {

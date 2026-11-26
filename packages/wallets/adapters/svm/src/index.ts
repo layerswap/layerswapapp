@@ -6,7 +6,8 @@ import { LazyGasProvider } from "@layerswap/widget-types";
 import { SolanaBalanceProvider } from "./svmBalanceProvider"
 import { createSvmTransfer } from "./transferProvider/createSvmTransfer"
 import { createSvmConnection } from "./service/createSvmConnection"
-import { initSvmProvider, retrySvmInitOnModalOpen } from "./init"
+import { retryInitOnModalOpen } from "@layerswap/wallet-core/chunkLoadRecovery"
+import { initSvmProvider } from "./init"
 import { id } from "./constants"
 
 export type { WalletConnectConfig }
@@ -30,7 +31,7 @@ export function createSVMProvider<Network = NetworkWithTokens>(
 
     const init = (_ctx: WalletInitContext) => {
         initSvmProvider({ walletConnectConfigs })
-        return retrySvmInitOnModalOpen({ walletConnectConfigs })
+        return retryInitOnModalOpen(() => initSvmProvider({ walletConnectConfigs }))
     }
 
     const createConnection = (props: WalletConnectionProviderProps<Network>): WalletConnectionStore<Network> => {

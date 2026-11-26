@@ -1,6 +1,7 @@
 import { Connector, ConnectorNotConnectedError, UserNotConnectedError } from '@starknet-react/core'
 import { RpcMessage, RequestFnCall, RpcTypeToMessageMap } from '@starknet-io/types-js'
-import { connectModalStore, getKnownConnectorIconBase64, retryChunkLoad } from '@layerswap/wallet-core'
+import { getKnownConnectorIconBase64 } from '@layerswap/wallet-core'
+import { retryChunkLoad } from '@layerswap/wallet-core/chunkLoadRecovery'
 import { starknetConnectorManager } from './service/starknetConnectorManager'
 
 let _initialized = false
@@ -47,9 +48,13 @@ class DiscoveryConnector extends Connector {
  * One-shot initialization of the Starknet connectors + manager.
  * Safe to call multiple times — subsequent calls are no-ops.
  */
-export function initStarknetProvider(): void {
-    if (_initialized || _loadPromise) return
-    if (typeof window === 'undefined') return
+export function initStarknetProvider(): Promise<void> {
+    if (_initialized || typeof window === 'undefined') {
+        return Promise.resolve()
+    }
+    if (_loadPromise) {
+        return _loadPromise
+    }
 
     _loadPromise = (async () => {
         // @ts-ignore
@@ -109,26 +114,8 @@ export function initStarknetProvider(): void {
         console.error('[layerswap/wallets] Starknet provider initialization failed', error)
         _loadPromise = null
     })
-}
 
-/** Retries a failed initialization whenever the connect modal is open, so the user can recover without a reload. */
-export function retryStarknetInitOnModalOpen(): () => void {
-    const isModalOpen = () => connectModalStore.getSnapshot().isWalletModalOpen
-    return connectModalStore.subscribe(() => {
-        if (!isModalOpen()) {
-            return
-        }
-        if (!_loadPromise) {
-            initStarknetProvider()
-            return
-        }
-        // A load is already running: retry once if it fails while the modal is still open.
-        _loadPromise.catch(() => {
-            if (isModalOpen()) {
-                initStarknetProvider()
-            }
-        })
-    })
+    return _loadPromise
 }
 
 /** Visible for tests. Resets singleton init so a fresh init can run. */
