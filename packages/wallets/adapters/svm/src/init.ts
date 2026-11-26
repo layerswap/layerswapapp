@@ -1,5 +1,5 @@
 import { isMobile } from "@layerswap/utils"
-import { retryChunkLoad } from '@layerswap/wallet-core'
+import { connectModalStore, retryChunkLoad } from '@layerswap/wallet-core'
 import { AppSettings } from "@layerswap/utils";
 import { WalletAdapterNetwork, WalletReadyState } from '@solana/wallet-adapter-base'
 import { svmAdapterManager } from './service/svmAdapterManager'
@@ -110,6 +110,15 @@ export function initSvmProvider(opts: InitOptions = {}): void {
         // adapter import leaves Solana silently missing from the modal.
         console.error('[layerswap/wallets] Solana provider initialization failed', error)
         _loadPromise = null
+    })
+}
+
+/** Retries a failed initialization whenever the connect modal is open, so the user can recover without a reload. */
+export function retrySvmInitOnModalOpen(opts: InitOptions = {}): () => void {
+    return connectModalStore.subscribe(() => {
+        if (connectModalStore.getSnapshot().isWalletModalOpen) {
+            initSvmProvider(opts)
+        }
     })
 }
 

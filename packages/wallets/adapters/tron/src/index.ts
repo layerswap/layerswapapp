@@ -6,7 +6,7 @@ import { type NetworkWithTokens } from "@layerswap/widget-types";
 import { TronGasProvider } from "./tronGasProvider"
 import { createTronTransfer } from "./transferProvider/createTronTransfer"
 import { createTronConnection } from "./service/createTronConnection"
-import { initTronProvider } from "./init"
+import { initTronProvider, retryTronInitOnModalOpen } from "./init"
 import { id } from "./constants"
 
 export type TronProviderConfig<Network = NetworkWithTokens> = BaseWalletProviderConfig<Network>
@@ -25,7 +25,7 @@ export function createTronProvider<Network = NetworkWithTokens>(
 
     const init = (_ctx: WalletInitContext) => {
         initTronProvider()
-        // No-op disposer; init is idempotent across remounts.
+        return retryTronInitOnModalOpen()
     }
 
     const createConnection = (props: WalletConnectionProviderProps<Network>): WalletConnectionStore<Network> => {

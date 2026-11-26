@@ -1,4 +1,4 @@
-import { retryChunkLoad } from '@layerswap/wallet-core'
+import { connectModalStore, retryChunkLoad } from '@layerswap/wallet-core'
 import { tronAdapterManager } from './service/tronAdapterManager'
 
 let _initialized = false
@@ -58,6 +58,15 @@ export function initTronProvider(): void {
         // adapter import leaves Tron silently missing from the modal.
         console.error('[layerswap/wallets] Tron provider initialization failed', error)
         _loadPromise = null
+    })
+}
+
+/** Retries a failed initialization whenever the connect modal is open, so the user can recover without a reload. */
+export function retryTronInitOnModalOpen(): () => void {
+    return connectModalStore.subscribe(() => {
+        if (connectModalStore.getSnapshot().isWalletModalOpen) {
+            initTronProvider()
+        }
     })
 }
 

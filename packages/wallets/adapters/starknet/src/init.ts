@@ -1,6 +1,6 @@
 import { Connector, ConnectorNotConnectedError, UserNotConnectedError } from '@starknet-react/core'
 import { RpcMessage, RequestFnCall, RpcTypeToMessageMap } from '@starknet-io/types-js'
-import { getKnownConnectorIconBase64, retryChunkLoad } from '@layerswap/wallet-core'
+import { connectModalStore, getKnownConnectorIconBase64, retryChunkLoad } from '@layerswap/wallet-core'
 import { starknetConnectorManager } from './service/starknetConnectorManager'
 
 let _initialized = false
@@ -108,6 +108,15 @@ export function initStarknetProvider(): void {
         // connector import leaves Starknet silently missing from the modal.
         console.error('[layerswap/wallets] Starknet provider initialization failed', error)
         _loadPromise = null
+    })
+}
+
+/** Retries a failed initialization whenever the connect modal is open, so the user can recover without a reload. */
+export function retryStarknetInitOnModalOpen(): () => void {
+    return connectModalStore.subscribe(() => {
+        if (connectModalStore.getSnapshot().isWalletModalOpen) {
+            initStarknetProvider()
+        }
     })
 }
 
