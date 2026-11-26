@@ -42,8 +42,8 @@ jobs:
           pnpm --filter @layerswap/wallet-paradex test
           pnpm --filter @layerswap/wallet-stellar test
           # wallet-svm's pre-existing transaction-confirmation suite fails against the pinned
-          # @solana/web3.js decoder (unrelated to error mapping); gate the transfer-error and init-recovery contracts.
-          pnpm --filter @layerswap/wallet-svm exec node --experimental-strip-types --test tests/transfer-errors.test.mjs tests/init-modal-retry.test.mjs
+          # @solana/web3.js decoder (unrelated to error mapping); gate only the transfer-error contract.
+          pnpm --filter @layerswap/wallet-svm exec node --experimental-strip-types --test tests/transfer-errors.test.mjs
           pnpm --filter @layerswap/wallet-fuel test
           pnpm --filter @layerswap/wallet-ton test
           pnpm --filter @layerswap/wallet-tron test

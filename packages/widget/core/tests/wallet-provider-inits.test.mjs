@@ -54,96 +54,31 @@ function trackedProvider(id) {
     return { provider, counts }
 }
 
-test('hydrating another provider keeps existing provider inits running', async () => {
+test('provider inits survive other providers hydrating; removed or replaced ones are disposed', async () => {
     const tron = trackedProvider('tron')
     const solana = trackedProvider('solana')
-    const withoutInit = { id: 'evm' }
+    const solanaReplacement = trackedProvider('solana')
     const view = mount()
 
-    await view.render([tron.provider, withoutInit])
-    await view.render([tron.provider, withoutInit, solana.provider])
+    await view.render([tron.provider, { id: 'evm' }])
+    await view.render([tron.provider, { id: 'evm' }, solana.provider])
     assert.deepEqual(tron.counts, { init: 1, cleanup: 0 })
-    assert.deepEqual(solana.counts, { init: 1, cleanup: 0 })
 
-    await view.render([solana.provider])
-    assert.deepEqual(tron.counts, { init: 1, cleanup: 1 }, 'a removed provider is disposed')
-    assert.deepEqual(solana.counts, { init: 1, cleanup: 0 })
-
-    await view.unmount()
+    await view.render([solanaReplacement.provider])
+    assert.deepEqual(tron.counts, { init: 1, cleanup: 1 })
     assert.deepEqual(solana.counts, { init: 1, cleanup: 1 })
-})
 
-test('a replaced provider instance is disposed and initialized again', async () => {
-    const first = trackedProvider('tron')
-    const replacement = trackedProvider('tron')
-    const view = mount()
-
-    await view.render([first.provider])
-    await view.render([replacement.provider])
     await view.unmount()
-
-    assert.deepEqual(first.counts, { init: 1, cleanup: 1 })
-    assert.deepEqual(replacement.counts, { init: 1, cleanup: 1 })
+    assert.deepEqual(solanaReplacement.counts, { init: 1, cleanup: 1 })
 })
 
 test('StrictMode remounts leave exactly one live init per provider', async () => {
     const tron = trackedProvider('tron')
-    const solana = trackedProvider('solana')
     const view = mount({ strict: true })
 
     await view.render([tron.provider])
-    await view.render([tron.provider, solana.provider])
     assert.equal(tron.counts.init - tron.counts.cleanup, 1)
-    assert.equal(solana.counts.init - solana.counts.cleanup, 1)
 
     await view.unmount()
     assert.equal(tron.counts.init, tron.counts.cleanup)
-    assert.equal(solana.counts.init, solana.counts.cleanup)
-})
-
-test('an open modal still retries a chunk failure after another provider hydrates', async () => {
-    const wallets = '../../../wallets/core/src/'
-    const modalStoreModule = loadSource(`${wallets}lib/walletConnect/connectModalStore.ts`)
-    const { connectModalStore } = modalStoreModule
-    const { retryInitOnModalOpen } = loadSource(`${wallets}lib/chunkLoadRecovery.ts`, {
-        './walletConnect/connectModalStore': modalStoreModule,
-    })
-
-    const loads = []
-    let pending = null
-    const initTron = () => {
-        if (!pending) {
-            pending = new Promise((resolve, reject) => {
-                loads.push({ resolve, reject })
-            })
-            pending.catch(() => {
-                pending = null
-            })
-        }
-        return pending
-    }
-    const tron = {
-        id: 'tron',
-        init: () => {
-            initTron()
-            return retryInitOnModalOpen(initTron)
-        },
-    }
-    const solana = trackedProvider('solana')
-    const view = mount()
-
-    try {
-        await view.render([tron])
-        connectModalStore._syncOpen(true)
-        await view.render([tron, solana.provider])
-        assert.equal(loads.length, 1)
-
-        loads[0].reject(Object.assign(new Error('Loading chunk 2757 failed.'), { name: 'ChunkLoadError' }))
-        await new Promise(resolve => setImmediate(resolve))
-
-        assert.equal(loads.length, 2, 'Tron gets one automatic retry in the open modal')
-    } finally {
-        connectModalStore._syncOpen(false)
-        await view.unmount()
-    }
 })

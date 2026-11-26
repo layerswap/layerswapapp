@@ -21,7 +21,7 @@ const { LazyBalanceProvider, LazyGasProvider } = load('../src/resolvers/lazyProv
 
 const chunkError = () => Object.assign(new Error('Loading chunk 5244 failed.'), { name: 'ChunkLoadError' })
 
-function flakyLoader(provider) {
+function failingOnce(provider) {
     let attempts = 0
     const loader = async () => {
         attempts += 1
@@ -33,25 +33,19 @@ function flakyLoader(provider) {
     return { loader, attempts: () => attempts }
 }
 
-test('a failed balance provider load is retried on the next call', async () => {
-    const provider = { fetchBalance: async () => [{ amount: 1 }] }
-    const { loader, attempts } = flakyLoader(provider)
-    const lazy = new LazyBalanceProvider(() => true, loader)
+test('a failed balance or gas provider load is retried on the next call, then cached', async () => {
+    const balance = failingOnce({ fetchBalance: async () => [{ amount: 1 }] })
+    const lazyBalance = new LazyBalanceProvider(() => true, balance.loader)
+    await assert.rejects(lazyBalance.fetchBalance('0x1', {}), { name: 'ChunkLoadError' })
+    assert.deepEqual(await lazyBalance.fetchBalance('0x1', {}), [{ amount: 1 }])
+    assert.deepEqual(await lazyBalance.fetchBalance('0x1', {}), [{ amount: 1 }])
+    assert.equal(balance.attempts(), 2)
 
-    await assert.rejects(lazy.fetchBalance('0x1', {}), { name: 'ChunkLoadError' })
-    assert.deepEqual(await lazy.fetchBalance('0x1', {}), [{ amount: 1 }])
-    assert.deepEqual(await lazy.fetchBalance('0x1', {}), [{ amount: 1 }])
-    assert.equal(attempts(), 2)
-})
-
-test('a failed gas provider load is retried on the next call', async () => {
-    const provider = { getGas: async () => ({ gas: 1 }) }
-    const { loader, attempts } = flakyLoader(provider)
-    const lazy = new LazyGasProvider(() => true, loader)
-
-    await assert.rejects(lazy.getGas({}), { name: 'ChunkLoadError' })
-    assert.deepEqual(await lazy.getGas({}), { gas: 1 })
-    assert.equal(attempts(), 2)
+    const gas = failingOnce({ getGas: async () => ({ gas: 1 }) })
+    const lazyGas = new LazyGasProvider(() => true, gas.loader)
+    await assert.rejects(lazyGas.getGas({}), { name: 'ChunkLoadError' })
+    assert.deepEqual(await lazyGas.getGas({}), { gas: 1 })
+    assert.equal(gas.attempts(), 2)
 })
 
 test('concurrent calls share one in-flight load', async () => {
