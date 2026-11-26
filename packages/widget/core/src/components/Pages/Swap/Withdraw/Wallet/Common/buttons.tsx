@@ -570,6 +570,7 @@ export function useSendTransactionController({
                         onWalletWithdrawalSuccess?.()
                     },
                     onLifecycle: onSwapLifecycle,
+                    reportsWalletPrompt: network => resolverService.getTransferResolver().reportsWalletPrompt(network),
                 }
 
                 let approvalTransaction: { network: string; hash: string } | undefined

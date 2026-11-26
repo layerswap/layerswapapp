@@ -111,8 +111,6 @@ export async function calculatePresetAmount({ network, token, balance, limit, mi
         if (target === 0) return '0'
         // First establish the preset from the buffered spendable balance. Later
         // reads verify it instead of requiring exactly identical fee estimates.
-        // A separate required fee can fall when the transaction drops change.
-        // Follow that larger target once more instead of retaining absorbed dust.
         const canIncrease = gas?.requiredFee !== undefined && target > candidate
         if (affordable && (target === candidate || (mode !== 'min' && withinPreset && attempt > 0 && !canIncrease)))
             return amountText(candidate, token.decimals)

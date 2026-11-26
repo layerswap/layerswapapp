@@ -2,7 +2,6 @@ import type { GasProps, GasWithToken, Network, Token } from '@layerswap/widget-t
 import type { DepositAction } from '@/lib/apiClients/layerSwapApiClient'
 import { isTransferAction } from '@/helpers/depositActions'
 
-/** Only estimate an action belonging to the displayed source account and asset. */
 export function resolveTransferGas(action: DepositAction | undefined, network: Network | undefined, token: Token | undefined, address: string | undefined) {
     if (!action || !isTransferAction(action) || !network || !token || !address
         || !action.to_address || action.amount == null
@@ -26,7 +25,6 @@ export function gasEstimateKey({ address, network, token, amount, recipientAddre
         : baseKey
 }
 
-/** Compare in fee-token units so floating point noise never creates a review loop. */
 export function transferFeeChanged(previous: GasWithToken | undefined, next: GasWithToken) {
     if (!previous || previous.token.symbol !== next.token.symbol) return true
     const scale = 10 ** next.token.decimals

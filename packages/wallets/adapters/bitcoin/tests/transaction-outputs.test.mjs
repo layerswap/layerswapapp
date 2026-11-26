@@ -5,9 +5,10 @@ import ts from 'typescript'
 import axios from 'axios'
 import { address, networks, Transaction, Psbt } from 'bitcoinjs-lib'
 import { bitcoinAmountInSatoshis } from '../dist/esm/bitcoinAmount.js'
-import { buildPsbt, estimateBitcoinFee } from '../dist/esm/transferProvider/transactionBuilder/buildPsbt.js'
-import { dustThreshold, validateOutputs } from '../dist/esm/transferProvider/transactionBuilder/outputPolicy.js'
-import { estimateFee } from '../dist/esm/transferProvider/transactionBuilder/estimateFee.js'
+import { buildPsbt, estimateBitcoinFees } from '../dist/esm/transferProvider/transactionBuilder/buildPsbt.js'
+import { dustThreshold } from '../dist/esm/transferProvider/transactionBuilder/outputPolicy.js'
+import { estimateHomogeneousFee } from '../dist/esm/transferProvider/transactionBuilder/estimateFee.js'
+import { requireBitcoinInputType, signedInputTemplate } from '../dist/esm/transferProvider/transactionBuilder/inputScripts.js'
 
 const witness = Buffer.from('0014' + '11'.repeat(20), 'hex')
 const taproot = Buffer.from('5120' + '22'.repeat(32), 'hex')
@@ -29,22 +30,18 @@ async function withUtxo(total, run) {
 }
 
 function requiredFee(amount, change) {
-  const psbt = new Psbt()
-  psbt.addInput({ hash: Buffer.alloc(32), index: 0, witnessUtxo: { script: witness, value: 10000n } })
-  psbt.addOutput({ script: taproot, value: BigInt(amount) })
-  psbt.addOutput({ script: Buffer.from('6a053130663263', 'hex'), value: 0n })
-  if (change) psbt.addOutput({ script: witness, value: 0n })
-  return Number(estimateFee(psbt, 1))
+  const scripts = [taproot, Buffer.from('6a053130663263', 'hex'), ...(change ? [witness] : [])]
+  return Number(estimateHomogeneousFee(1, signedInputTemplate('p2wpkh'), scripts, 1))
 }
 
-test('Bitcoin amounts use exact API satoshis or truncate the decimal BTC amount', () => {
+test('Bitcoin amounts use exact API satoshis or the decimal BTC amount', () => {
   assert.equal(bitcoinAmountInSatoshis(0.00008005), 8005)
   assert.equal(bitcoinAmountInSatoshis(0.000080059), 8005)
-  assert.equal(bitcoinAmountInSatoshis(8.5e-8), 8)
+  assert.equal(bitcoinAmountInSatoshis(1.2e-7), 12)
   assert.equal(bitcoinAmountInSatoshis(0.00008004, '8005'), 8005)
   assert.equal(bitcoinAmountInSatoshis(0.00008005, '0'), 8005)
-  assert.throws(() => bitcoinAmountInSatoshis(0, '0'), /positive finite/)
-  for (const invalid of ['-1', '8005.1', '8e3', '9007199254740992']) {
+  assert.throws(() => bitcoinAmountInSatoshis(0, '0'), /positive integer/)
+  for (const invalid of ['-1', '8005.1', '8005.0', '8e3', '0x1f40', ' 8005', '9007199254740992']) {
     assert.throws(() => bitcoinAmountInSatoshis(0.00008005, invalid), /positive integer/)
   }
 })
@@ -57,8 +54,6 @@ test('dust thresholds follow script types and exempt OP_RETURN', () => {
   ]) {
     const script = Buffer.from(hex, 'hex')
     assert.equal(dustThreshold(script), threshold)
-    validateOutputs([{ script, value: threshold }])
-    if (threshold > 0n) assert.throws(() => validateOutputs([{ script, value: threshold - 1n }]), /Dust output 0/)
   }
 })
 
@@ -73,7 +68,7 @@ test('reported amounts preserve deposit and never produce dust change', async ()
         assert.equal(result.psbt.txOutputs[1].value, 0n)
         assert.equal(result.psbt.txOutputs.length, remainder >= 294 ? 3 : 2)
         assert.equal(result.fee, BigInt(total) - result.psbt.txOutputs.reduce((sum, o) => sum + o.value, 0n))
-        validateOutputs(result.psbt.txOutputs)
+        for (const output of result.psbt.txOutputs) assert.ok(output.value >= dustThreshold(output.script))
       })
     }
   }
@@ -85,7 +80,7 @@ test('exact no-change funding succeeds; underfunded signing fails but Max can es
   })
   await withUtxo(params.amount, async () => {
     await assert.rejects(buildPsbt(params), /Insufficient funds/)
-    assert.ok(await estimateBitcoinFee(params) > 0n)
+    assert.ok((await estimateBitcoinFees(params)).fee > 0n)
   })
 })
 
@@ -95,25 +90,52 @@ test('fee service failures and invalid amounts cannot produce a signable draft',
   try {
     await assert.rejects(buildPsbt({ ...params, feeRate: undefined }), /Fee service unavailable/)
   } finally { axios.get = original }
-  await assert.rejects(buildPsbt({ ...params, amount: 1 }), /Dust output/)
-  await assert.rejects(buildPsbt({ ...params, amount: 1.2 }), /positive integer/)
+  await assert.rejects(buildPsbt({ ...params, amount: 1 }), /dust limit/)
+  for (const feeRate of [0, -1, Number.NaN]) {
+    await assert.rejects(buildPsbt({ ...params, feeRate }), /Invalid Bitcoin fee rate/)
+  }
+})
+
+test('UTXOs that disagree with their previous transaction or account cannot be spent', async () => {
+  const previous = new Transaction()
+  previous.addInput(Buffer.alloc(32), 0xffffffff)
+  previous.addOutput(witness, 20000n)
+  previous.addOutput(taproot, 20000n)
+  const other = new Transaction()
+  other.addInput(Buffer.alloc(32, 1), 0xffffffff)
+  other.addOutput(witness, 20000n)
+  const cases = [
+    [{ txid: previous.getId(), vout: 0, value: 30000 }, previous, /does not match its previous transaction or account/],
+    [{ txid: previous.getId(), vout: 1, value: 20000 }, previous, /does not match its previous transaction or account/],
+    [{ txid: previous.getId(), vout: 2, value: 20000 }, previous, /does not match its previous transaction or account/],
+    [{ txid: previous.getId(), vout: 0, value: 20000 }, other, /does not match its id/],
+  ]
+  const original = axios.get
+  try {
+    for (const [utxo, served, error] of cases) {
+      axios.get = async url => {
+        if (url.endsWith('/utxo')) return { data: [utxo] }
+        if (url.endsWith('/hex')) return { data: served.toHex() }
+        throw new Error('Unexpected request: ' + url)
+      }
+      await assert.rejects(buildPsbt(params), error)
+    }
+  } finally { axios.get = original }
 })
 
 test('fee estimate covers finalized SegWit and Taproot sizes including the real memo', () => {
   for (const inputScript of [witness, taproot]) {
     for (const memoLength of [0, 80]) {
-      const psbt = new Psbt()
-      psbt.addInput({ hash: Buffer.alloc(32), index: 0, witnessUtxo: { script: inputScript, value: 10000n } })
-      psbt.addOutput({ script: taproot, value: 5000n })
       const memo = Buffer.concat([Buffer.from(memoLength > 75 ? [0x6a, 0x4c, memoLength] : [0x6a, memoLength]), Buffer.alloc(memoLength)])
-      psbt.addOutput({ script: memo, value: 0n })
-      psbt.addOutput({ script: witness, value: 1000n })
+      const outputs = [[taproot, 5000n], [memo, 0n], [witness, 1000n]]
       const signed = new Transaction()
       signed.addInput(Buffer.alloc(32), 0)
-      for (const output of psbt.txOutputs) signed.addOutput(output.script, output.value)
+      for (const [script, value] of outputs) signed.addOutput(script, value)
       signed.setWitness(0, inputScript === witness ? [Buffer.alloc(73), Buffer.alloc(33)] : [Buffer.alloc(65)])
-      assert.equal(estimateFee(psbt, 1), BigInt(signed.virtualSize()))
-      assert.equal(estimateFee(psbt, 1.1), BigInt(Math.ceil(signed.virtualSize() * 1.1)))
+      const template = signedInputTemplate(requireBitcoinInputType(inputScript))
+      const scripts = outputs.map(([script]) => script)
+      assert.equal(estimateHomogeneousFee(1, template, scripts, 1), BigInt(signed.virtualSize()))
+      assert.equal(estimateHomogeneousFee(1, template, scripts, 1.1), BigInt(Math.ceil(signed.virtualSize() * 1.1)))
     }
   }
 })
@@ -134,14 +156,12 @@ test('required fee excludes absorbed change and matches the final output shape',
 })
 
 test('the gas provider prices the sender memo, including dust absorbed into the total fee', async () => {
-  // The package barrel has extensionless bundler imports. Load the provider
-  // source with its real leaf dependencies so this remains a Node-only test.
   const deps = {
     './bitcoinAmount.js': { bitcoinAmountInSatoshis },
     './transferProvider/bitcoinMemo.js': await import('../dist/esm/transferProvider/bitcoinMemo.js'),
+    './service/connectedPublicKey.js': { connectedPublicKey: () => undefined },
     './transferProvider/transactionBuilder/buildPsbt.js': await import('../dist/esm/transferProvider/transactionBuilder/buildPsbt.js'),
     '@layerswap/utils': {
-      JsonRpcClient: class { call() { assert.fail('Fee estimation must not use the transaction RPC') } },
       ...(await import(new URL('formatUnits.js', import.meta.resolve('@layerswap/utils')))),
       KnownInternalNames: (await import('@layerswap/utils/known-ids')).default,
     },
@@ -229,6 +249,39 @@ test('the reviewed fee belongs to the exact PSBT passed to the signer', async ()
   })
 })
 
+test('a wallet that changes the prepared transaction is rejected before broadcast', async () => {
+  const { sendTransaction } = await import('../dist/esm/transferProvider/sendTransaction.js')
+  for (const mutate of [
+    p => p.addOutput({ script: p.txOutputs[0].script, value: 1n }),
+    p => p.addInput({ hash: '33'.repeat(32), index: 1 }),
+    p => p.setInputSequence(0, 1),
+    p => p.setLocktime(1),
+  ]) {
+    const connector = {
+      getProvider: async () => ({
+        request: async ({ params }) => {
+          const changed = Psbt.fromHex(params.psbt)
+          mutate(changed)
+          return changed.toHex()
+        },
+      }),
+    }
+    const rpcClient = { call: async () => assert.fail('changed transaction was broadcast') }
+    await withUtxo(10000, async () => {
+      const original = axios.get
+      axios.get = async url => url.endsWith('/fees/recommended')
+        ? { data: { economyFee: 1, minimumFee: 1 } } : original(url)
+      try {
+        await assert.rejects(sendTransaction({
+          amount: 0.00008005, userAddress, depositAddress, callData: '22911311;', connector, rpcClient,
+        }), /changed the prepared/)
+      } finally {
+        axios.get = original
+      }
+    })
+  }
+})
+
 test('Bitcoin fee review uses the transfer token when the action network omits its token', async () => {
   const widgetTypes = await import('@layerswap/widget-types')
   const { sendTransaction } = await import('../dist/esm/transferProvider/sendTransaction.js')
@@ -248,7 +301,8 @@ test('Bitcoin fee review uses the transfer token when the action network omits i
     },
     './sendTransaction': { sendTransaction },
     './toTransferError': { toTransferError: error => error },
-    '../service/getBitcoinConfig': { getBitcoinConfig: () => ({ getClient: () => undefined }) },
+    '../service/getBitcoinConfig': { getBitcoinConfig: () => ({}) },
+    '../service/connectedPublicKey': { connectedPublicKey: () => undefined },
   }
   const module = { exports: {} }
   new Function('require', 'module', 'exports', outputText)(name => {

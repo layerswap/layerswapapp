@@ -147,6 +147,8 @@ const { CallbackProvider } = await import('../dist/esm/context/callbackProvider.
 const { ErrorProvider } = await import('../dist/esm/context/ErrorProvider.js')
 const { registerWidgetErrorLogger } = await import('../dist/esm/lib/ErrorHandler.js')
 const { SendTransactionButton } = await import('../dist/esm/components/Pages/Swap/Withdraw/Wallet/Common/buttons.js')
+const { resolverService } = await import('../dist/esm/lib/resolvers/resolverService.js')
+resolverService.setProviders([], [], [], [], [])
 const { WithdrawalProvider } = await import('../dist/esm/context/withdrawalContext.js')
 const { default: FormWrapper } = await import('../dist/esm/components/Pages/Swap/Form/FormWrapper.js')
 const { useGaslessPreferenceStore } = await import('../dist/esm/stores/gaslessPreferenceStore.js')

@@ -1,4 +1,4 @@
-import { type SwapLifecycleEvent, type Wallet, ActionMessageType, NetworkType, TransferFeeReviewRequired } from '@layerswap/widget-types';
+import { type SwapLifecycleEvent, type Wallet, ActionMessageType, TransferFeeReviewRequired } from '@layerswap/widget-types';
 import LayerSwapApiClient, {
     DepositAction,
     SignDepositAction,
@@ -36,6 +36,7 @@ export type DepositExecutionContext = {
     setSwapError?: (value: string | null) => void
     onSuccess: () => void
     onLifecycle: (event: SwapLifecycleEvent) => void
+    reportsWalletPrompt?: (network: TransferProps['network']) => boolean
 }
 
 export { isSignAction, isTransferAction, getActionableDepositAction, getDepositActionLabel, getDepositActionDescription, requiresDepositActionRefresh } from '@/helpers/depositActions';
@@ -52,7 +53,7 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
     const transferProps = resolveTransactionData(swapData, action, swapBasicData, selectedWallet)
     const lifecycleContext = lifecycleContextFromSwap(swapBasicData, swapData)
     const confirmationText = approval ? "Approve in your wallet" : "Confirm in your wallet"
-    const usesPreparedSigning = transferProps.network.type === NetworkType.Bitcoin
+    const usesPreparedSigning = ctx.reportsWalletPrompt?.(transferProps.network) ?? false
     setActionStateText(usesPreparedSigning ? 'Preparing transaction…' : confirmationText)
 
     let hash: string

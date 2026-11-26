@@ -11,7 +11,6 @@ type WalletOperationOptions = {
     allowEmptyHash?: boolean
     /** Approval transactions do not submit the swap input transfer. */
     reportsSubmission?: boolean
-    /** Prepared transfers report the prompt when signing begins. */
     deferPrompt?: boolean
     /** A recoverable error (such as the first expired Stellar transaction) has no terminal event. */
     shouldReportError?: (error: unknown) => boolean

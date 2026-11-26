@@ -72,7 +72,7 @@ function createWorkflow({
     walletController = false,
     page2Host = false,
     realBalance = false,
-    networkType,
+    reportsWalletPrompt = false,
 } = {}) {
     let view
     const calls = { executionHolds: 0, batchStatus: [], statusChecks: [], statusSignals: [], blocked: [], refresh: [], confirmations: [], sign: [], authorize: [], transfer: [], batches: [], executionStarts: [], quoteLoading: [], storedTransactions: [], authorizations: [], signatures: [], errors: [], lifecycle: [], success: 0 }
@@ -136,7 +136,7 @@ function createWorkflow({
         }),
     }
     const preferenceStore = { useGaslessPreferenceStore: store(preferences) }
-    const network = { name: 'BASE_MAINNET', transaction_explorer_template: 'https://base.example.invalid/tx/{0}', ...(networkType ? { type: networkType } : {}) }
+    const network = { name: 'BASE_MAINNET', transaction_explorer_template: 'https://base.example.invalid/tx/{0}' }
     const wallet = { id: 'wallet', address: sourceAddress, addresses: [sourceAddress], isActive: true, asSourceSupportedNetworks: [network.name], withdrawalSupportedNetworks: [network.name] }
     const cache = new Map([[cacheKey, { data: state.depositActionsResponse }]])
     let pollingKey
@@ -424,7 +424,7 @@ function createWorkflow({
         } },
         '@/lib/resolvers/resolverService': { resolverService: { getTransferResolver: () => ({ getAtomicBatchProvider: () => ({
             getStatus: async (...args) => { calls.batchStatus.push(args); return state.onBatchStatus ? state.onBatchStatus() : state.batchStatusResponse },
-        }) }) } },
+        }), reportsWalletPrompt: () => reportsWalletPrompt }) } },
         '@/helpers/gasless': gasless,
         './isUserRejection': rejection,
         swr: realPolling ? require('swr') : {
@@ -2809,7 +2809,7 @@ for (const signatureState of ['completed sign-only action', 'saved signature bef
 }
 
 test('a changed prepared fee pauses before the wallet and resumes after review', async () => {
-    const flow = createWorkflow({ networkType: walletTypes.NetworkType.Bitcoin })
+    const flow = createWorkflow({ reportsWalletPrompt: true })
     const token = { symbol: 'NATIVE', decimals: 8 }
     flow.state.sourceToken = token
     flow.state.gasData = { token, gas: 338 / 1e8, requiredFee: 338 / 1e8 }
@@ -2831,7 +2831,6 @@ test('a changed prepared fee pauses before the wallet and resumes after review',
     assert.equal(flow.calls.lifecycle.filter(event => event.step === 'wallet_prompt_opened').length, 0)
     assert.equal(flow.state.gasData.gas, 637 / 1e8)
 
-    // A new build can change fees again after the first review.
     fee = 700
     await flow.render().viewProps.handleClick()
     assert.equal(flow.calls.transfer.length, 0)
@@ -2843,7 +2842,7 @@ test('a changed prepared fee pauses before the wallet and resumes after review',
 })
 
 test('a prepared transfer with no previous fee requires first review', async () => {
-    const flow = createWorkflow({ networkType: walletTypes.NetworkType.Bitcoin })
+    const flow = createWorkflow({ reportsWalletPrompt: true })
     const token = { symbol: 'NATIVE', decimals: 8 }
     flow.state.sourceToken = token
     flow.state.prepareFee = review => review({ token, gas: 172 / 1e8, requiredFee: 172 / 1e8 })

@@ -12,6 +12,10 @@ export class TransferResolver {
         return this.providers.find(p => p.supportsNetwork(network))?.atomicBatch
     }
 
+    reportsWalletPrompt(network: TransferProps['network']): boolean {
+        return !!this.providers.find(p => p.supportsNetwork(network))?.reportsWalletPrompt
+    }
+
     getWithdrawalProvider(network: TransferProps['network']) {
         return this.providers.find(p => p.supportsNetwork(network))?.withdrawal
     }

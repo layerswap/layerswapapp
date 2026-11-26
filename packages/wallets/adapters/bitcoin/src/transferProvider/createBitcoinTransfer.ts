@@ -6,9 +6,11 @@ import { JsonRpcClient, KnownInternalNames } from "@layerswap/utils";
 import { sendTransaction } from "./sendTransaction"
 import { toTransferError } from "./toTransferError"
 import { getBitcoinConfig } from "../service/getBitcoinConfig"
+import { connectedPublicKey } from "../service/connectedPublicKey"
 
 export function createBitcoinTransfer(): TransferProvider {
     return {
+        reportsWalletPrompt: true,
         supportsNetwork(network: Network): boolean {
             return network.type === NetworkType.Bitcoin
         },
@@ -29,7 +31,6 @@ export function createBitcoinTransfer(): TransferProvider {
 
             const rpcClient = new JsonRpcClient(network.node_url)
             const isTestnet = network?.name === KnownInternalNames.Networks.BitcoinTestnet
-            const publicClient = config.getClient()
 
             const feeToken = network.token ?? params.token
 
@@ -43,11 +44,11 @@ export function createBitcoinTransfer(): TransferProvider {
                     }) : undefined,
                     depositAddress,
                     userAddress: params.selectedWallet.address,
+                    publicKey: connectedPublicKey(params.selectedWallet.address),
                     isTestnet,
                     rpcClient,
                     callData,
                     connector,
-                    publicClient
                 })
 
                 return txHash
