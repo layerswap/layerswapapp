@@ -1,6 +1,7 @@
 'use client'
-import { FC, ReactNode, createElement, useEffect, useMemo, createContext, useContext } from "react"
+import { FC, ReactNode, createElement, useMemo, createContext, useContext } from "react"
 import { WalletProvidersProvider } from "@/context/walletProviders";
+import { useWalletProviderInits } from "./useWalletProviderInits";
 import { WalletModalProvider } from "../WalletModal";
 import type { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@layerswap/wallet-core/types"
 import { isWalletProviderDescriptor } from "@layerswap/wallet-core/types"
@@ -51,19 +52,7 @@ const WalletsProviders: FC<{
         [walletProviders],
     );
 
-    useEffect(() => {
-        const disposers: Array<() => void> = []
-        for (const p of realProviders) {
-            const init = (p as WalletWrapper).init
-            if (typeof init === 'function') {
-                const dispose = init({ appName })
-                if (typeof dispose === 'function') disposers.push(dispose)
-            }
-        }
-        return () => disposers.forEach(d => { try { d() } catch { /* swallow */ } })
-        // appName is stable per LayerswapProvider mount.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [realProviders])
+    useWalletProviderInits(realProviders, appName)
 
     return (
         <WalletProvidersListContext.Provider value={walletProviders}>
