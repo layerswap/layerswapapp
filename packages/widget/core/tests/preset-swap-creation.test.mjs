@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test, { beforeEach, afterEach, after } from 'node:test'
-import React, { act, createElement } from 'react'
+import { act, createElement } from 'react'
 import { JSDOM } from 'jsdom'
 import { create } from 'zustand'
 import { createSwapContext } from './helpers/swap-context.mjs'
@@ -8,11 +8,18 @@ import { loadSource, amountPresets } from './helpers/source.mjs'
 import { createPresetPreparation } from './helpers/preset-preparation.mjs'
 
 const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://widget.example' })
-const previous = Object.getOwnPropertyDescriptors(globalThis)
-for (const [key, value] of Object.entries({ window: dom.window, document: dom.window.document, localStorage: dom.window.localStorage, IS_REACT_ACT_ENVIRONMENT: true }))
+const previousGlobals = Object.getOwnPropertyDescriptors(globalThis)
+const testGlobals = {
+  window: dom.window,
+  document: dom.window.document,
+  localStorage: dom.window.localStorage,
+  IS_REACT_ACT_ENVIRONMENT: true,
+}
+for (const [key, value] of Object.entries(testGlobals)) {
   Object.defineProperty(globalThis, key, { configurable: true, writable: true, value })
+}
 const { createRoot } = await import('react-dom/client')
-const state = {}
+let state
 const transactionStore = create(() => ({ swapTransactions: {}, pendingSubmissions: {}, stepTransactions: {} }))
 const stores = {
   useSwapTransactionStore: transactionStore,
@@ -29,8 +36,19 @@ const context = createSwapContext({
   Client: class {
     async CreateSwapAsync(params) {
       state.created.push(params)
-      if (state.request) await state.request(params)
-      return { data: { swap: { id: state.created.length === 1 ? 'created' : `created-${state.created.length}`, source_address: 'source', requested_amount: params.amount }, deposit_actions: state.depositActions } }
+      if (state.request) {
+        await state.request(params)
+      }
+      return {
+        data: {
+          swap: {
+            id: state.created.length === 1 ? 'created' : `created-${state.created.length}`,
+            source_address: 'source',
+            requested_amount: params.amount,
+          },
+          deposit_actions: state.depositActions,
+        },
+      }
     }
   },
   getSwapId: () => undefined, getAccount: () => state.account,
@@ -49,9 +67,11 @@ const context = createSwapContext({
         return state.prepare(...args)
       }
       // The confirmation check estimates live; the post-creation check supplies the deposit fee.
-      return { calculate: (gasFloor, estimateGas) => {
-        return estimateGas ? state.verify(gasFloor, estimateGas) : state.preparation.promise
-      } }
+      return {
+        calculate: (gasFloor, estimateGas) => estimateGas
+          ? state.verify(gasFloor, estimateGas)
+          : state.preparation.promise,
+      }
     } },
     '@/lib/depositActionGas': { estimateDepositActionGas: async () => state.depositGas },
     '@/hooks/useWithdrawalProvider': { useWithdrawalProvider: () => state.provider },
@@ -66,27 +86,75 @@ const token = { symbol: 'ETH', decimals: 18 }
 const network = { name: 'BASE_MAINNET', token }
 let root, container, data, updates, values
 function Probe() {
-  data = context.useSwapDataState(); updates = context.useSwapDataUpdate()
+  data = context.useSwapDataState()
+  updates = context.useSwapDataUpdate()
   return createElement('button', { disabled: !updates.canAdjustAmount() }, 'Adjust amount')
 }
 const render = key => act(() => root.render(createElement(context.SwapDataProvider, { key }, createElement(Probe))))
+
+async function setDraft(overrides) {
+  values = { ...values, ...overrides }
+  await act(() => updates.setSubmitedFormValues(values))
+}
+
+function setDepositGas(gas) {
+  state.depositActions = [{
+    type: 'transfer',
+    step: 'deposit',
+    status: 'action_required',
+    to_address: 'deposit',
+    amount: Number(values.amount),
+  }]
+  state.depositGas = { gas, token }
+}
+
 beforeEach(async () => {
-  transactionStore.setState({ swapTransactions: {}, pendingSubmissions: {} })
-  container = document.createElement('div'); document.body.append(container); root = createRoot(container)
-  Object.assign(state, { account: { id: 'wallet', address: 'source' }, created: [], announced: [], lifecycle: [], history: [], prepares: 0,
-    preparation: Promise.withResolvers(), verification: Promise.withResolvers(),
-    depositActions: undefined, depositGas: undefined, provider: undefined, request: undefined, prepare: undefined })
+  transactionStore.setState({ swapTransactions: {}, pendingSubmissions: {}, stepTransactions: {} })
+  stores.useGaslessAuthorizationStore.setState({ authorizations: {} })
+  stores.useDepositSignatureStore.setState({ signatures: {} })
+  container = document.createElement('div')
+  document.body.append(container)
+  root = createRoot(container)
+  state = {
+    account: { id: 'wallet', address: 'source' },
+    created: [],
+    announced: [],
+    lifecycle: [],
+    history: [],
+    prepares: 0,
+    preparation: Promise.withResolvers(),
+    verification: Promise.withResolvers(),
+  }
   state.verify = () => state.verification.promise
-  values = { from: network, to: network, fromAsset: token, toAsset: token, amount: '0.9', destination_address: 'destination',
-    depositMethod: 'wallet', amountMode: 'max', amountPresetSource: amountPresets.amountPresetSource(network.name, token.symbol, 'wallet', 'source') }
+  values = {
+    from: network,
+    to: network,
+    fromAsset: token,
+    toAsset: token,
+    amount: '0.9',
+    destination_address: 'destination',
+    depositMethod: 'wallet',
+    amountMode: 'max',
+    amountPresetSource: amountPresets.amountPresetSource(network.name, token.symbol, 'wallet', 'source'),
+  }
   await render()
-  await act(() => { updates.setSubmitedFormValues(values); updates.setSwapViewMounted(true) })
+  await act(() => {
+    updates.setSubmitedFormValues(values)
+    updates.setSwapViewMounted(true)
+  })
 })
-afterEach(async () => { await act(() => root.unmount()); container.remove() })
+afterEach(async () => {
+  await act(() => root.unmount())
+  container.remove()
+})
 after(() => {
   dom.window.close()
-  for (const key of ['window', 'document', 'localStorage', 'IS_REACT_ACT_ENVIRONMENT']) {
-    if (previous[key]) Object.defineProperty(globalThis, key, previous[key]); else delete globalThis[key]
+  for (const key of Object.keys(testGlobals)) {
+    if (previousGlobals[key]) {
+      Object.defineProperty(globalThis, key, previousGlobals[key])
+    } else {
+      delete globalThis[key]
+    }
   }
 })
 
@@ -183,17 +251,26 @@ test('a changed final Max stops before creation and proposes the new amount with
   assert.equal(updates.applyPresetRevision(), undefined, 'nothing is left to apply')
 })
 
-test('unchanged Max creates exactly the reviewed amount and remains frozen after creation', async () => {
-  let pending
-  await act(() => { pending = updates.createSwap(values, {}) })
-  await act(async () => { state.preparation.resolve('0.900'); await pending })
-  assert.equal(state.created.length, 1)
-  assert.equal(state.created[0].amount, '0.9')
-  assert.equal('amountMode' in state.created[0], false, 'Max is local intent, not an API field')
-  assert.equal(data.amountPresetLocked, true, 'Creation must freeze before the caller attaches the swap id')
-  await act(() => { assert.equal(updates.syncAmountPresetDraft({ ...values, amount: '0.7' }), false) })
-  assert.equal(data.swapBasicData.requested_amount, '0.9')
-})
+for (const mode of ['min', 'half', 'max']) {
+  test(`${mode}: unchanged confirmation creates exactly the reviewed amount and freezes the draft`, async () => {
+    await setDraft({ amountMode: mode })
+    let pending
+    await act(() => { pending = updates.createSwap(values, {}) })
+    await act(async () => {
+      // Equivalent numeric formatting must not prompt for another review.
+      state.preparation.resolve('0.900')
+      await pending
+    })
+    assert.equal(state.created.length, 1)
+    assert.equal(state.created[0].amount, values.amount)
+    assert.equal('amountMode' in state.created[0], false, 'the preset is local intent, not an API field')
+    assert.equal(data.amountPresetLocked, true, 'creation must freeze before the caller attaches the swap id')
+    await act(() => {
+      assert.equal(updates.syncAmountPresetDraft({ ...values, amount: '0.1' }), false)
+    })
+    assert.equal(data.swapBasicData.requested_amount, values.amount)
+  })
+}
 
 test('an account change during preparation cannot create a swap for the previous account', async () => {
   let rejected
@@ -276,8 +353,7 @@ test('provider execution leases cannot release each other or the regular wallet 
 
 for (const [mode, fresh] of [['min', '1'], ['half', '0.4']]) {
   test(`${mode}: a changed final amount is proposed and requires adjustment before creation`, async () => {
-    values.amountMode = mode
-    await act(() => updates.setSubmitedFormValues(values))
+    await setDraft({ amountMode: mode })
     let rejected
     await act(() => { rejected = assert.rejects(updates.createSwap(values, {}), amountPresets.AmountPresetChangedError) })
     assert.equal(data.amountPresetLocked, true)
@@ -288,28 +364,15 @@ for (const [mode, fresh] of [['min', '1'], ['half', '0.4']]) {
     assert.equal(data.swapBasicData.amountMode, mode)
     assert.equal(data.amountPresetLocked, true)
   })
-  test(`${mode}: unchanged confirmation creates exactly the reviewed amount and freezes the draft`, async () => {
-    values.amountMode = mode
-    await act(() => updates.setSubmitedFormValues(values))
-    let pending
-    await act(() => { pending = updates.createSwap(values, {}) })
-    await act(async () => { state.preparation.resolve(values.amount); await pending })
-    assert.equal(state.created[0].amount, values.amount)
-    assert.equal(data.amountPresetLocked, true)
-    assert.equal(updates.syncAmountPresetDraft({ ...values, amount: '0.1' }), false)
-  })
 }
-
-const depositActions = [{ type: 'transfer', step: 'deposit', status: 'action_required', to_address: 'deposit', amount: 0.9 }]
 
 for (const plainGas of [0.005, 0.012]) {
   test(`Half stays at its reviewed amount with a ${plainGas} plain fee and a 0.012 deposit fee`, async () => {
-    values = { ...values, amountMode: 'half', amount: '0.49745' }
+    await setDraft({ amountMode: 'half', amount: '0.49745' })
     state.prepare = createPresetPreparation({
       token, balance: 1, gas: plainGas, limits: { min_amount: 0.497, max_amount: 2 },
     }).startPresetPreparation
-    Object.assign(state, { depositActions, depositGas: { gas: 0.012, token } })
-    await act(() => updates.setSubmitedFormValues(values))
+    setDepositGas(0.012)
     await act(() => updates.createSwap(values, {}))
     assert.deepEqual(state.created.map(request => request.amount), ['0.49745'])
     assert.equal(data.swapBasicData.requested_amount, '0.49745')
@@ -320,12 +383,11 @@ for (const plainGas of [0.005, 0.012]) {
 
 test('failed Min retries wait for the floor to expire, then accept cheaper fees on the same route and account', async t => {
   t.mock.timers.enable({ apis: ['Date', 'setTimeout'], now: 1000 })
-  values = { ...values, amountMode: 'min', amount: '0.009' }
+  await setDraft({ amountMode: 'min', amount: '0.009' })
   state.prepare = createPresetPreparation({
     token, balance: 0.01, gas: 0.0001, limits: { min_amount: 0.009, max_amount: 2 },
   }).startPresetPreparation
-  Object.assign(state, { depositActions, depositGas: { gas: 0.0012, token } })
-  await act(() => updates.setSubmitedFormValues(values))
+  setDepositGas(0.0012)
   await act(() => assert.rejects(updates.createSwap(values, {}), /Not enough ETH for network fees/))
   assert.equal(state.created.length, 1)
   assert.deepEqual(state.announced, [])
@@ -333,7 +395,7 @@ test('failed Min retries wait for the floor to expire, then accept cheaper fees 
   const failedFloor = data.depositGasFloor
   assert.equal(failedFloor.expiresAt, Date.now() + amountPresets.FAILED_MIN_GAS_FLOOR_TTL_MS)
 
-  state.depositGas = { gas: 0.0004, token }
+  setDepositGas(0.0004)
   await act(() => assert.rejects(updates.createSwap(values, {}), /Not enough ETH for network fees/))
   assert.equal(state.created.length, 1, 'immediate retries cannot create abandoned API swaps')
   assert.equal(data.depositGasFloor, failedFloor, 'a blocked retry must not extend the deadline')
@@ -362,8 +424,7 @@ test('a refreshed deposit fee replaces a failed Min floor without being cleared 
 })
 
 test('a large deposit fee keeps the reviewed amount until the proposal is accepted', async () => {
-  const gas = { gas: 0.2, token }
-  Object.assign(state, { depositActions, depositGas: gas })
+  setDepositGas(0.2)
   state.preparation.resolve('0.897')
   state.verification.resolve('0.65')
   await act(() => assert.rejects(updates.createSwap(values, {}), amountPresets.AmountPresetChangedError))
@@ -376,12 +437,12 @@ test('a large deposit fee keeps the reviewed amount until the proposal is accept
   assert.deepEqual(state.history, [])
   await act(() => updates.applyPresetRevision())
   assert.equal(data.swapBasicData.requested_amount, '0.65')
-  assert.equal(data.depositGasFloor.gas, gas)
+  assert.equal(data.depositGasFloor.gas, state.depositGas)
   assert.equal(data.presetRevisionProposal, undefined)
 })
 
 test('a small deposit fee shortfall publishes only the affordable replacement', async () => {
-  Object.assign(state, { depositActions, depositGas: { gas: 0.004, token } })
+  setDepositGas(0.004)
   state.preparation.resolve(values.amount)
   const floor = { scope: amountPresets.amountPresetGasFloorScope(values.amountPresetSource, network.name, token.symbol), gas: { gas: 0.01, token } }
   await act(() => updates.recordDepositGasFloor(floor))
@@ -404,7 +465,7 @@ test('a small deposit fee shortfall publishes only the affordable replacement', 
 })
 
 test('a replacement that still falls short proposes an amount instead of creating a third swap', async () => {
-  Object.assign(state, { depositActions, depositGas: { gas: 0.004, token } })
+  setDepositGas(0.004)
   state.preparation.resolve(values.amount)
   const amounts = ['0.895', '0.891']
   state.verify = async () => amounts.shift()
@@ -426,8 +487,7 @@ test('a failed request does not commit a small amount revision', async () => {
 })
 
 test('confirmation can apply a reduction worth under a cent even when it exceeds one percent', async () => {
-  values = { ...values, amount: '0.0001', fromAsset: { ...token, price_in_usd: 1800 } }
-  await act(() => updates.setSubmitedFormValues(values))
+  await setDraft({ amount: '0.0001', fromAsset: { ...token, price_in_usd: 1800 } })
   state.preparation.resolve('0.000098')
   await act(() => updates.createSwap(values, {}))
   assert.deepEqual(state.created.map(request => request.amount), ['0.000098'])
@@ -436,8 +496,8 @@ test('confirmation can apply a reduction worth under a cent even when it exceeds
 })
 
 test('Min rejects a deposit fee the account cannot afford', async () => {
-  values.amountMode = 'min'
-  Object.assign(state, { depositActions, depositGas: { gas: 0.1, token } })
+  await setDraft({ amountMode: 'min' })
+  setDepositGas(0.1)
   state.preparation.resolve(values.amount)
   state.verify = (_floor, estimateGas) => amountPresets.calculatePresetAmount({
     network, token, balance: { amount: 0.905 }, limit: 2, minimum: 0.9,
@@ -449,7 +509,7 @@ test('Min rejects a deposit fee the account cannot afford', async () => {
 })
 
 test('an account change during the deposit check discards the proposal and its fee floor', async () => {
-  Object.assign(state, { depositActions, depositGas: { gas: 0.2, token } })
+  setDepositGas(0.2)
   state.preparation.resolve(values.amount)
   let rejected
   await act(() => { rejected = assert.rejects(updates.createSwap(values, {}), /source account changed/) })
@@ -464,7 +524,7 @@ test('an account change during the deposit check discards the proposal and its f
 for (const stage of ['preparation', 'deposit fee']) {
   test(`provider withdrawals require confirmation even for a small ${stage} reduction`, async () => {
     state.provider = { id: 'provider' }
-    Object.assign(state, { depositActions, depositGas: { gas: 0.004, token } })
+    setDepositGas(0.004)
     await render()
     state.preparation.resolve(stage === 'preparation' ? '0.895' : values.amount)
     state.verification.resolve('0.895')

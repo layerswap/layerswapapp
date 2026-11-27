@@ -64,31 +64,31 @@ test('a failed real balance-store refresh can be retried instead of reusing its 
   assert.equal(attempts, 2)
 })
 
-test('the confirmation check lowers the reviewed amount when a small fee increase consumes its buffer', async () => {
-  const { preparePresetAmount, calls } = setup({ gas: 0.10001 })
-  assert.equal(await preparePresetAmount({ ...values, amount: '0.898' }, 'source', {}, [], false), '0.897989')
-  assert.equal(calls.filter(([name]) => name === 'gas').length, 2)
-})
+for (const { name, gas, reviewed, expected, gasReads } of [
+  { name: 'lowers the reviewed amount when a small fee increase consumes its buffer', gas: 0.10001, reviewed: '0.898', expected: '0.897989', gasReads: 2 },
+  { name: 'lowers the reviewed amount when the fresh fee exceeds the reserve', gas: 0.12, reviewed: '0.898', expected: '0.8776', gasReads: 2 },
+  { name: 'preserves a reviewed amount that covers the buffered fee', gas: 0.10001, reviewed: '0.897', expected: '0.897', gasReads: 1 },
+]) {
+  test(`confirmation ${name}`, async () => {
+    const { preparePresetAmount, calls } = setup({ gas })
+    const amount = await preparePresetAmount({ ...values, amount: reviewed }, 'source', {}, [], false)
+    assert.equal(amount, expected)
+    assert.equal(calls.filter(([name]) => name === 'gas').length, gasReads)
+  })
+}
 
-test('the confirmation check lowers an amount when the fresh fee exceeds the reserve', async () => {
-  const { preparePresetAmount } = setup({ gas: 0.12 })
-  assert.equal(await preparePresetAmount({ ...values, amount: '0.898' }, 'source', {}, [], false), '0.8776')
-})
-
-
-test('Half confirmation preserves a reviewed amount within the full spendable balance', async () => {
-  const decreased = setup({ balance: 0.8, gas: 0.1 })
-  assert.equal(await decreased.preparePresetAmount({ ...values, amountMode: 'half', amount: '0.449' }, 'source', {}, [], false), '0.449')
-  const increased = setup({ balance: 2, gas: 0.01 })
-  assert.equal(await increased.preparePresetAmount({ ...values, amountMode: 'half', amount: '0.449' }, 'source', {}, [], false), '0.449')
-})
-
-test('Half confirmation replaces an unfundable amount with Half of the payable balance or route cap', async () => {
-  const decreased = setup({ balance: 0.5, gas: 0.1 })
-  assert.equal(await decreased.preparePresetAmount({ ...values, amountMode: 'half', amount: '0.449' }, 'source', {}, [], false), '0.199')
-  const capped = setup({ limits: { min_amount: 0.1, max_amount: 0.4 } })
-  assert.equal(await capped.preparePresetAmount({ ...values, amountMode: 'half', amount: '0.449' }, 'source', {}, [], false), '0.2')
-})
+for (const { name, options, expected } of [
+  { name: 'preserves a fundable amount after the balance decreases', options: { balance: 0.8, gas: 0.1 }, expected: '0.449' },
+  { name: 'preserves the reviewed amount after the balance increases', options: { balance: 2, gas: 0.01 }, expected: '0.449' },
+  { name: 'replaces an unfundable amount with Half of the payable balance', options: { balance: 0.5, gas: 0.1 }, expected: '0.199' },
+  { name: 'replaces an amount above the route cap with Half of the cap', options: { limits: { min_amount: 0.1, max_amount: 0.4 } }, expected: '0.2' },
+]) {
+  test(`Half confirmation ${name}`, async () => {
+    const { preparePresetAmount } = setup(options)
+    const amount = await preparePresetAmount({ ...values, amountMode: 'half', amount: '0.449' }, 'source', {}, [], false)
+    assert.equal(amount, expected)
+  })
+}
 
 for (const mode of ['half', 'max']) {
   test(`${mode} confirmation refuses a reviewed amount below a refreshed route minimum`, async () => {
@@ -106,13 +106,13 @@ test('Min preparation returns a new required minimum for review and rejects an u
   await assert.rejects(insufficient.preparePresetAmount({ ...values, amountMode: 'min', amount: '0.1' }, 'source', {}, [], false), /Insufficient ETH balance/)
 })
 
-for (const flow of [
-  { depositMethod: 'deposit_address' },
-  { depositMethod: 'deposit_address', fromExchange: { name: 'exchange' } },
-  { depositMethod: 'wallet', fromExchange: { name: 'exchange' } },
-  { depositMethod: undefined },
+for (const { name, flow } of [
+  { name: 'deposit address', flow: { depositMethod: 'deposit_address' } },
+  { name: 'exchange deposit', flow: { depositMethod: 'deposit_address', fromExchange: { name: 'exchange' } } },
+  { name: 'exchange source with a wallet deposit method', flow: { depositMethod: 'wallet', fromExchange: { name: 'exchange' } } },
+  { name: 'no deposit method', flow: { depositMethod: undefined } },
 ]) {
-  test(`${JSON.stringify(flow)}: preparation preserves the submitted amount without live reads`, async () => {
+  test(`${name}: preparation preserves the submitted amount without live reads`, async () => {
     const { preparePresetAmount, calls } = setup({ limits: { min_amount: 1, max_amount: 2 } })
     assert.equal(await preparePresetAmount({ ...values, ...flow, amountMode: 'max' }, undefined, undefined, [], false), values.amount)
     assert.deepEqual(calls, [])
@@ -140,8 +140,7 @@ for (const [name, symbol] of [['TON_MAINNET', 'TON'], ['PARADEX_MAINNET', 'USDC'
   })
 }
 
-
-test('live Max and confirmation reserve the maximum fee plus the native account reserve', async () => {
+test('Max confirmation reserves the maximum fee plus the native account reserve', async () => {
   const { preparePresetAmount } = setup({ balance: 20, gas: 0.01, maxFee: 0.02, reserve: 10,
     limits: { min_amount: 0.001, max_amount: 30 } })
   const amount = await preparePresetAmount({ ...values, amountMode: 'max', amount: '19' }, 'source', {}, [], false)
@@ -149,10 +148,4 @@ test('live Max and confirmation reserve the maximum fee plus the native account 
   const refreshed = setup({ balance: 20, gas: 0.01, maxFee: 0.04, reserve: 10,
     limits: { min_amount: 0.001, max_amount: 30 } })
   assert.equal(await refreshed.preparePresetAmount({ ...values, amountMode: 'max', amount }, 'source', {}, [], false), '9.9592')
-})
-
-test('confirmation preserves a reviewed amount that covers the buffered fee', async () => {
-  const { preparePresetAmount, calls } = setup({ gas: 0.10001 })
-  assert.equal(await preparePresetAmount({ ...values, amount: '0.897' }, 'source', {}, [], false), '0.897')
-  assert.equal(calls.filter(([name]) => name === 'gas').length, 1)
 })
