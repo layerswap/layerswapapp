@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useMemo } from 'react';
-import type { Network, NetworkRouteToken } from '@layerswap/widget-types';
+import type { Network, Token } from '@layerswap/widget-types';
 import type {
     SwapQuote,
     QuoteReward,
@@ -69,7 +69,7 @@ export const ExchangeTokenContractView = ({
     network,
     addressContent,
 }: {
-    fromAsset: NetworkRouteToken | undefined;
+    fromAsset: Token | undefined;
     network: Network | undefined;
     addressContent?: ReactNode;
 }) => {

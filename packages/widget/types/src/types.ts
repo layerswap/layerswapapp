@@ -1,4 +1,4 @@
-import type { NetworkType, GaslessStandard, Refuel } from './network';
+import type { NetworkType, GaslessStandard } from './network';
 
 export class LayerswapNetwork {
     name: string;
@@ -65,9 +65,6 @@ export class Metadata extends LayerswapNetworkMetadata {
 }
 
 export class NetworkRoute extends Network {
-    tokens: NetworkRouteToken[]
-}
-
-export class NetworkRouteToken extends Token {
-    refuel?: Refuel
+    tokens: Token[]
+    refuel_asset?: string | null;
 }

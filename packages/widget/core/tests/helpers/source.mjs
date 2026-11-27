@@ -10,6 +10,8 @@ export function loadSource(path, imports = {}) {
     const module = { exports: {} }
     new Function('require', 'module', 'exports', outputText)(name => {
         if (name in imports) return imports[name]
+        if (name === '@/lib/extendedRoutes/registry') return { getExtendedProviderForNetwork: () => undefined }
+        if (name === '@/lib/lifecycleObservationScope') return loadSource('lib/lifecycleObservationScope.ts')
         if (name === 'react/jsx-runtime') return require(name)
         throw new Error(`Unexpected ${path} dependency: ${name}`)
     }, module, module.exports)
@@ -19,8 +21,9 @@ export const rounding = loadSource('../../../utils/src/truncateDecimals.ts')
 export const maxHelpers = loadSource('components/Input/Amount/helpers.ts', { '@layerswap/utils': rounding, '@/lib/gases/resolveGasBalanceBudget': loadSource('lib/gases/resolveGasBalanceBudget.ts') })
 export const amountPresets = loadSource('lib/amountPresets.ts', {
     '@/lib/gases/resolveGasBalanceBudget': loadSource('lib/gases/resolveGasBalanceBudget.ts'),
-    '@/components/Input/Amount/helpers': maxHelpers, '@layerswap/utils': rounding,
-    '@layerswap/utils/known-ids': require('@layerswap/utils/known-ids'),
+    '@/components/Input/Amount/helpers': maxHelpers,
+    '@layerswap/utils': { ...rounding, AppSettings: loadSource('../../../utils/src/AppSettings.ts').default },
+    '@layerswap/widget-types': require('@layerswap/widget-types'),
 })
 export const amountMessages = loadSource('lib/amountMessages.ts', {
     '@layerswap/utils': rounding,

@@ -95,35 +95,29 @@ export async function buildDepositWalletBatchRequest(params: BuildDepositBatchPa
 }
 
 export type BuildDepositCallsParams = {
-    /** The token the funder currently holds (pUSD → needs unwrap; USDC.e → deposit directly). */
+    /** The token the funder currently holds (pUSD → needs unwrap; USDC.e → transfer directly). */
     funderTokenAddress: `0x${string}`
-    /** The funder/deposit wallet itself — unwrap target and the address that approves + deposits. */
+    /** The funder/deposit wallet itself — unwrap target and the address that transfers. */
     funderAddress: `0x${string}`
-    /** Single amount used across approve/unwrap/deposit (pUSD↔USDC.e is 1:1, both 6 decimals). */
+    /** Single amount used across approve/unwrap/transfer (pUSD↔USDC.e is 1:1, both 6 decimals). */
     amountBaseUnits: bigint
-    /** Layerswap Depository contract (the deposit action's `to_address`) — approval + deposit target. */
-    depository: `0x${string}`
-    /** Backend-encoded `depositERC20(...)` calldata (the deposit action's `call_data`). */
-    depositCallData: Hex
+    /** Backend-encoded USDC.e `transfer` calldata (the deposit action's `call_data`). */
+    transferCallData: Hex
 }
 
 /**
- * Flow 2 calls for the deposit-wallet batch:
- *   pUSD funder → [approve pUSD→offramp, unwrap pUSD→USDC.e, approve USDC.e→depository, depositERC20]
- *   USDC.e funder → [approve USDC.e→depository, depositERC20]
- * The deposit leg reuses the backend `call_data`/`to_address` verbatim (no client-side encoding).
+ * Calls for the funder batch:
+ *   pUSD funder → [approve pUSD→offramp, unwrap pUSD→USDC.e, USDC.e transfer]
+ *   USDC.e funder → [USDC.e transfer]
+ * The transfer reuses the backend `call_data` verbatim, including its swap identifier.
  */
 export function buildPolymarketDepositCalls(params: BuildDepositCallsParams): PolymarketCall[] {
-    const { funderTokenAddress, funderAddress, amountBaseUnits, depository, depositCallData } = params
+    const { funderTokenAddress, funderAddress, amountBaseUnits, transferCallData } = params
 
-    const approveDepository: PolymarketCall = {
-        target: POLYMARKET_USDC_E_ADDRESS,
-        data: encodeFunctionData({ abi: erc20Abi, functionName: 'approve', args: [depository, amountBaseUnits] }),
-    }
-    const deposit: PolymarketCall = { target: depository, data: depositCallData }
+    const transfer: PolymarketCall = { target: POLYMARKET_USDC_E_ADDRESS, data: transferCallData }
 
     const holdsPusd = funderTokenAddress.toLowerCase() === POLYMARKET_PUSD_ADDRESS.toLowerCase()
-    if (!holdsPusd) return [approveDepository, deposit]
+    if (!holdsPusd) return [transfer]
 
     return [
         {
@@ -134,7 +128,6 @@ export function buildPolymarketDepositCalls(params: BuildDepositCallsParams): Po
             target: POLYMARKET_COLLATERAL_OFFRAMP,
             data: encodeFunctionData({ abi: POLYMARKET_OFFRAMP_ABI, functionName: 'unwrap', args: [POLYMARKET_USDC_E_ADDRESS, funderAddress, amountBaseUnits] }),
         },
-        approveDepository,
-        deposit,
+        transfer,
     ]
 }

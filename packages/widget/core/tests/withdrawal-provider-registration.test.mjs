@@ -34,6 +34,9 @@ function createRegistry() {
         }),
         '@/lib/walletConnect/walletDescriptorLoader': { WalletDescriptorLoaderContext: React.createContext(null) },
         '@/lib/walletConnect/scheduleWalletPreload': loadSource(`${wallets}lib/walletConnect/scheduleWalletPreload.ts`),
+        '@/lib/chunkLoadRecovery': loadSource(`${wallets}lib/chunkLoadRecovery.ts`, {
+            './walletConnect/connectModalStore': loadSource(`${wallets}lib/walletConnect/connectModalStore.ts`),
+        }),
     })
     const { TransferResolver } = loadSource('lib/transfers/transferResolver.ts')
     const { GaslessResolver } = loadSource('lib/gasless/gaslessResolver.ts')

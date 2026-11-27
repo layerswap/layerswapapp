@@ -38,6 +38,11 @@ const connectorsConfigs = [
         name: 'Fordefi',
         installLink: 'https://chromewebstore.google.com/detail/fordefi/hcmehenccjdmfbojapcbcofkgdpbnlle',
     },
+    {
+        id: 'outis',
+        name: 'Outis',
+        installLink: 'https://chromewebstore.google.com/detail/outis/oihdeooalpdlhnlnpbjehjkmdjkjnpab',
+    },
 ]
 
 type ResolveStarknetWalletProps = {

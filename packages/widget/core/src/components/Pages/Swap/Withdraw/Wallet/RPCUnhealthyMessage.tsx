@@ -1,5 +1,4 @@
 import { useCopyClipboard } from '@layerswap/utils/react';
-import { KnownInternalNames } from '@layerswap/utils';
 import {
     AddEthereumChainParams,
     Network,
@@ -41,9 +40,9 @@ const RPCUnhealthyMessage: FC<Props> = ({
 
     const handleAddRpc = async () => {
         setRpcAddStatus('idle');
-        const isTempo =
-            network.name === KnownInternalNames.Networks.TempoMainnet ||
-            network.name === KnownInternalNames.Networks.TempoTestnet;
+        const chainId = Number(network.chain_id);
+        // Tempo mainnet and testnet.
+        const isTempo = chainId === 4217 || chainId === 42431;
         try {
             const result = await suggestRpcForCurrentChain(network.node_url, {
                 chainName: network.display_name,

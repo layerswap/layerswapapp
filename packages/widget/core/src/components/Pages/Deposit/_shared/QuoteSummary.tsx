@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { ImageWithFallback } from "@layerswap/ui-kit";
-import { NetworkRouteToken } from "@layerswap/widget-types";
+import { Token } from "@layerswap/widget-types";
 import { formatTokenAmount } from "@/components/utils/formatTokenAmount";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
 import { useUsdModeStore } from "@/stores/usdModeStore";
@@ -9,7 +9,7 @@ type Props = {
     receiveAmount?: number;
     receiveAmountInUsd?: number;
     tokenSymbol?: string;
-    token?: NetworkRouteToken;
+    token?: Token;
     isLoading?: boolean;
 };
 

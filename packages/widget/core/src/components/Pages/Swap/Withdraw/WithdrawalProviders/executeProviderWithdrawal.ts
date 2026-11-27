@@ -18,7 +18,7 @@ export async function getProviderDepositActions(swapId: string, sourceAddress?: 
 export async function executeProviderWithdrawal<T>({ swapId, sourceAddress, prepare, execute, onReconcile, signal }: {
     signal?: AbortSignal
     swapId: string
-    sourceAddress: string
+    sourceAddress?: string
     prepare: () => Promise<T>
     execute: (prepared: T, onSubmissionStateChange: SubmissionCallback) => Promise<string>
     onReconcile: (response: ApiResponse<SwapResponse>) => Promise<unknown>

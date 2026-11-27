@@ -1,6 +1,7 @@
 import { GasProvider, GasProps, NetworkType, LayerswapNetwork, LayerswapToken } from "@layerswap/widget-types";
-import { PublicClient, TransactionSerializedEIP1559, createPublicClient, encodeFunctionData, serializeTransaction, formatUnits, erc20Abi } from "viem";
-import { publicActionsL2 } from 'viem/op-stack'
+import { PublicClient, createPublicClient, encodeFunctionData, formatUnits, erc20Abi } from "viem";
+import { resolveOpStackFees, resolveOpStackL1Fee, resolveOpStackOperatorFee, type OpStackFees } from './resolveOpStackAdditionalFees'
+import { parseNativeAmount } from '../evmUtils/parseNativeAmount'
 import resolveChain from "../evmUtils/resolveChain";
 import NetworkSettings from "../NetworkSettings";
 import { ErrorHandler } from "@layerswap/widget-types";
@@ -9,6 +10,7 @@ import { calculateGasFeeAmounts, resolveAccountBalanceReserve } from "./evmGasMa
 import { resolveEVMGasPolicy } from "./evmGasPolicies";
 import { resolveEVMFeeData } from "./resolveEVMFeeData";
 import { resolveEVMTransactionRequest } from "../transferProvider/resolveEVMTransactionRequest";
+import { resolveTokenPaidGas } from "./resolveTokenPaidGas";
 
 type GasTransaction = ReturnType<typeof resolveEVMTransactionRequest>
 
@@ -23,7 +25,7 @@ export class EVMGasProvider implements GasProvider {
         return network.type === NetworkType.EVM && !!network.token
     }
 
-    getGas = async ({ address, network, token, recipientAddress, callData, amount, amountInBaseUnits }: GasProps) => {
+    getGas = async ({ address, network, token, recipientAddress, callData, amount, amountInBaseUnits, wallet }: GasProps) => {
 
         const chainId = Number(network?.chain_id)
         const destination = recipientAddress ?? '0x2fc617e933a52713247ce25730f6695920b3befe'
@@ -41,7 +43,14 @@ export class EVMGasProvider implements GasProvider {
                 transport: resolveFallbackTransport(network.nodes?.length ? network.nodes : [network.node_url]),
             })
 
-            const getGas = network?.metadata?.evm_oracle_contract ? getOptimismGas : getEthereumGas
+            const opStackFees = resolveOpStackFees(network, resolveEVMGasPolicy(chainId))
+            const getGas = opStackFees ? getOptimismGas : getEthereumGas
+
+            // Only the OP Stack L1 data fee depends on the exact value; other quotes never read it.
+            let nativeValue = 0n
+            if (opStackFees && !token.contract) {
+                nativeValue = parseNativeAmount(amount ?? 0, token.decimals, amountInBaseUnits)
+            }
 
             const gasProvider = new getGas(
                 {
@@ -53,6 +62,8 @@ export class EVMGasProvider implements GasProvider {
                     currency: token,
                     destination: destination as `0x${string}`,
                     nativeToken: network.token,
+                    nativeValue,
+                    opStackFees,
                     transaction: recipientAddress != null && callData != null && amount != null ? resolveEVMTransactionRequest({
                         network, token, amount, amountInBaseUnits, callData,
                         depositAddress: recipientAddress,
@@ -64,7 +75,12 @@ export class EVMGasProvider implements GasProvider {
             const resolvedGas = await gasProvider.resolveGas()
 
             if (resolvedGas) {
-                return { ...resolvedGas, token: network.token }
+                const tokenPaidGas = await resolveTokenPaidGas({
+                    publicClient, network, token, wallet, amount,
+                    account: address as `0x${string}`,
+                    nativeGas: resolvedGas,
+                })
+                return tokenPaidGas ?? { ...resolvedGas, token: network.token }
             }
         }
         catch (e) {
@@ -92,6 +108,8 @@ abstract class getEVMGas {
     protected currency: LayerswapToken
     protected destination: `0x${string}`
     protected nativeToken: LayerswapToken
+    protected nativeValue: bigint
+    protected opStackFees?: OpStackFees
     protected transaction?: GasTransaction
     constructor(
         {
@@ -103,6 +121,8 @@ abstract class getEVMGas {
             currency,
             destination,
             nativeToken,
+            nativeValue,
+            opStackFees,
             transaction,
         }: {
             publicClient: PublicClient,
@@ -113,6 +133,8 @@ abstract class getEVMGas {
             currency: LayerswapToken,
             destination: `0x${string}`,
             nativeToken: LayerswapToken,
+            nativeValue: bigint,
+            opStackFees?: OpStackFees,
             transaction?: GasTransaction,
         }
     ) {
@@ -124,6 +146,8 @@ abstract class getEVMGas {
         this.currency = currency
         this.destination = destination
         this.nativeToken = nativeToken
+        this.nativeValue = nativeValue
+        this.opStackFees = opStackFees
         this.transaction = transaction
     }
 
@@ -135,7 +159,7 @@ abstract class getEVMGas {
 
     protected async estimateGasLimit(accountBalanceReserve = 0n) {
         if (!this.transaction) {
-            return this.contract_address ? this.estimateERC20GasLimit() : this.estimateNativeGasLimit()
+            return this.publicClient.estimateGas(this.placeholderTransaction())
         }
 
         if (this.transaction.value > 0n && accountBalanceReserve > 0n) {
@@ -154,35 +178,17 @@ abstract class getEVMGas {
         return this.publicClient.estimateGas(this.transaction)
     }
 
-    protected async estimateNativeGasLimit() {
-        const to = this.destination;
-        const gasEstimate = await this.publicClient.estimateGas({
+    /** Generic transfer payload for quotes without a deposit transaction. Carries no native value. */
+    protected placeholderTransaction() {
+        return {
             account: this.account,
-            to: to,
-            data: this.constructSweeplessTxData(),
-        })
-
-        return gasEstimate
-    }
-
-    protected async estimateERC20GasLimit() {
-        let encodedData = encodeFunctionData({
-            abi: erc20Abi,
-            functionName: "transfer",
-            args: [this.destination, BigInt(1000)]
-        })
-
-        if (encodedData) {
-            encodedData = this.constructSweeplessTxData(encodedData)
+            to: this.contract_address || this.destination,
+            data: this.constructSweeplessTxData(this.contract_address ? encodeFunctionData({
+                abi: erc20Abi,
+                functionName: 'transfer',
+                args: [this.destination, 1000n],
+            }) : undefined),
         }
-
-        const estimatedERC20GasLimit = await this.publicClient.estimateGas({
-            data: encodedData,
-            to: this.contract_address,
-            account: this.account
-        });
-
-        return estimatedERC20GasLimit
     }
 
     protected constructSweeplessTxData = (txData: string = "0x") => {
@@ -235,83 +241,27 @@ class getEthereumGas extends getEVMGas {
 
 
 export default class getOptimismGas extends getEVMGas {
-
-    chain = resolveChain(this.from)
-
-    client: any = createPublicClient({
-        chain: this.chain,
-        transport: resolveFallbackTransport(this.from.nodes?.length ? this.from.nodes : [this.from.node_url]),
-    }).extend(publicActionsL2())
-
     resolveGas = async () => {
-        const feeData = await this.resolveFeeData()
-
-        const estimatedGasLimit = await this.estimateGasLimit()
-
-        const multiplier = feeData.maxFeePerGas || feeData.gasPrice
-
-        if (!multiplier || !feeData.gasPrice)
+        const policy = resolveEVMGasPolicy(this.chainId)
+        const { oracle, operatorFee: hasOperatorFee } = this.opStackFees!
+        const transaction = this.transaction ?? { ...this.placeholderTransaction(), value: this.nativeValue }
+        const [feeData, estimatedGas, l1Fee] = await Promise.all([
+            this.resolveFeeData(),
+            this.estimateGasLimit(),
+            resolveOpStackL1Fee({ publicClient: this.publicClient, oracle, transaction }),
+        ])
+        const feeAmounts = calculateGasFeeAmounts({ policy, estimatedGas, ...feeData })
+        if (!feeAmounts) {
             return undefined
+        }
 
-        const l1OpFee = await this.GetOpL1Fee(feeData.gasPrice)
-
-        let totalGas = (multiplier * estimatedGasLimit) + l1OpFee
-
-        const formattedGas = Number(formatUnits(BigInt(totalGas), this.nativeToken?.decimals))
-        return { gas: formattedGas }
+        let operatorFee = 0n
+        if (hasOperatorFee) {
+            operatorFee = await resolveOpStackOperatorFee({ publicClient: this.publicClient, oracle, gasLimit: feeAmounts.gasLimit })
+        }
+        const additionalFees = l1Fee + operatorFee
+        const gas = Number(formatUnits(feeAmounts.estimatedFee + additionalFees, this.nativeToken.decimals))
+        const maxFee = Number(formatUnits(feeAmounts.maximumFee + additionalFees, this.nativeToken.decimals))
+        return { gas, ...(policy.reserveMaximumFee ? { maxFee } : {}) }
     }
-
-    private GetOpL1Fee = async (gasPrice: bigint): Promise<bigint> => {
-        const amount = BigInt(1000000000000)
-        let serializedTransaction: TransactionSerializedEIP1559
-
-        if (this.transaction) {
-            serializedTransaction = serializeTransaction({
-                ...this.transaction,
-                type: 'eip1559',
-            }) as TransactionSerializedEIP1559
-        }
-        else if (this.contract_address) {
-            let encodedData = encodeFunctionData({
-                abi: erc20Abi,
-                functionName: "transfer",
-                args: [this.destination, amount]
-            })
-
-            if (encodedData) {
-                encodedData = this.constructSweeplessTxData(encodedData)
-            }
-
-            serializedTransaction = serializeTransaction({
-                client: this.client,
-                abi: erc20Abi,
-                functionName: "transfer",
-                chainId: this.chainId,
-                args: [this.destination, amount],
-                to: this.contract_address,
-                data: encodedData,
-                type: 'eip1559',
-            }) as TransactionSerializedEIP1559
-        }
-        else {
-            serializedTransaction = serializeTransaction({
-                client: this.client,
-                chainId: this.chainId,
-                to: this.destination,
-                data: this.constructSweeplessTxData(),
-                type: 'eip1559',
-            }) as TransactionSerializedEIP1559
-        }
-
-        const fee = await this.client.estimateL1Fee({
-            data: serializedTransaction,
-            to: this.destination,
-            account: this.account,
-            gasPriceOracleAddress: this.from.metadata?.evm_oracle_contract as `0x${string}`,
-            gasPrice: gasPrice as any
-        })
-
-        return fee;
-    }
-
 }

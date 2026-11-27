@@ -1,5 +1,68 @@
 # @layerswap/widget
 
+## 2.7.1
+
+### Patch Changes
+
+- Missing deposit addresses and replacement swaps are now reported as `transfer_blocked` lifecycle events. Manual instructions show an unavailable state instead of a loading placeholder. `SwapLifecycleStep` is now exported as a constant map, and late waiting observations no longer roll back progressed lifecycle steps.
+- acaa41b: Polymarket swap creation now supplies the connected owner's Polygon address as
+  `refund_address`, allowing backend token-swap routes to pass refund validation.
+  `source_address` remains omitted because the Polymarket funder contract sends the
+  transfer. Refunds go to the owner's Polygon wallet as USDC.e.
+
+  Extended route funding now accepts only `wallet` or `deposit_address` (the default).
+  The `depository` mode and `usesDepository` export have been removed. Integrations
+  using regular wallet transfers should use `funding: 'wallet'`; deposit-address
+  integrations can keep their existing mode.
+
+- Unsupported source wallets now get an explicit recovery action to switch to a compatible wallet, shown ahead of the insufficient-balance warning. The form pickers and the recovery screen share one source wallet drawer.
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies [acaa41b]
+- Updated dependencies
+  - @layerswap/widget-types@2.7.1
+  - @layerswap/wallet-core@2.7.1
+  - @layerswap/ui-kit@2.7.1
+  - @layerswap/utils@2.7.1
+
+## 2.7.0
+
+### Minor Changes
+
+- Fix swaps that never opened the wallet: deposit actions no longer depend on the removed `next_action` endpoint. Malformed publication calldata is rejected before the wallet runs it, and **Try again** refreshes the existing swap when no actions are available.
+- Read refuel availability from destination entries and refuel amounts from quotes. `NetworkRouteToken` is replaced by `Token`.
+- Fuel: detect the wrong network (including chain ID 0) and treat missing balances as zero, so unfunded transfers show insufficient funds.
+- Keep the gas fee visible in the details panel and the collapsed quote summary while a new amount's estimate loads.
+- The 50% shortcut uses half of the route maximum for manual transfers or when no wallet is connected.
+- Redesign the insufficient-balance warning to compare wallet balance with the swap amount, with funding guidance and a Refresh balance action.
+- Keep the Easy Deposit wallet picker below the header tabs on mobile.
+- Preload wallet providers once the page is idle, so the connect dialog opens with them ready.
+- Route picker fixes: the list no longer jumps when a group opens or closes, the chevron stays visible on expanded groups, and destinations stay listed in deposit-address mode.
+- Pin the source network to the top of the destination picker when it has same-network routes. Source suggestions are ranked by USD balance, including balances that load late.
+- Speed up the route picker with large route lists, and virtualize tokens in expanded groups so networks like Ethereum open without freezing.
+- Run a single approval as a normal token approval followed by publication instead of an atomic batch. Confirmed approvals persist across retries and reloads.
+- Move provider-specific withdrawal rules into wallet adapters and share the withdrawal flow across providers. Withdrawal progress resets when the selected wallet changes.
+- Fix server rendering crashes: direct swap links render without a form, empty network settings show maintenance, and route tokens missing from the network catalog are skipped.
+- Persisted stores no longer touch Node's `localStorage` during server rendering.
+- Remember recent swap routes in IndexedDB and use them to rank route suggestions.
+- Keep transfer status controls visible after submission instead of replacing them with a balance warning. `transfer_blocked` is reported only by the control actually blocking the transfer.
+- Warn when the native balance can't cover gas, showing the required fee and a refresh action. Wallet capabilities (EIP-5792) are read once per connection. If the wallet can pay gas in another token, the warning is hidden and gas is priced in the transferred token when enough of it remains.
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [8f004b1]
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @layerswap/widget-types@2.7.0
+  - @layerswap/wallet-core@2.7.0
+  - @layerswap/utils@2.7.0
+  - @layerswap/ui-kit@2.7.0
+
 ## 2.6.0
 
 ### Minor Changes

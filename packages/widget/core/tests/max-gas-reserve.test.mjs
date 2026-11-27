@@ -175,7 +175,7 @@ test('a failed estimate refresh cannot use the cached fee to enable Max', async 
   await render()
   await settle(state.requests[0], 0.01)
   let refresh
-  await act(async () => { refresh = mutateGas('/gases/source/ETHEREUM_MAINNET/ETH/0.5') })
+  await act(async () => { refresh = mutateGas(['/gases/source/ETHEREUM_MAINNET/ETH/0.5', null]) })
   assert.equal(state.requests.length, 2)
   await act(async () => {
     state.requests[1].reject(new Error('RPC unavailable'))

@@ -48,18 +48,30 @@ function calldataContext(callData, network) {
   }
 }
 
-test('a sufficient-allowance backend transfer with only base units submits one zero-value transaction', async () => {
+for (const shape of ['transfer', 'send_calls', 'completed-approval']) test(`${shape} ERC-20 publication sends exact calldata and zero native value to the wallet`, async () => {
   const fixture = JSON.parse(readFileSync(new URL('./fixtures/atomic-batch.json', import.meta.url)))
   const publication = fixture.deposit_actions.sufficient_allowance[0]
   assert.equal(publication.amount, undefined)
-  const actions = await resolveAtomicDepositActions([publication], async () => ({
-    step: 'publish', status: 'action_required', action: publication,
-  }))
+  const input = shape === 'send_calls'
+    ? [{ ...publication, type: 'send_calls', calls: [{ to: publication.to_address, data: publication.call_data, value: '0x0' }] }]
+    : shape === 'completed-approval' ? [{ step: 'approve', status: 'completed' }, publication] : [publication]
+  const actions = resolveAtomicDepositActions(input)
   const { transactionBuilder } = loadAdapterSource('../../../wallets/adapters/evm/src/transferProvider/transactionBuilder.ts', {
-    './resolveEVMTransactionRequest': loadAdapterSource('../../../wallets/adapters/evm/src/transferProvider/resolveEVMTransactionRequest.ts', {}),
+    './resolveEVMTransactionRequest': loadAdapterSource('../../../wallets/adapters/evm/src/transferProvider/resolveEVMTransactionRequest.ts', {
+      '../evmUtils/parseNativeAmount': loadAdapterSource('../../../wallets/adapters/evm/src/evmUtils/parseNativeAmount.ts', {}),
+    }),
     '../gasProviders/resolveEVMTransactionGasParameters': { resolveEVMTransactionGasParameters: async () => undefined },
   })
-  const transactions = [], receipts = [], catchups = []
+  const transactions = [], receipts = [], catchups = [], walletRequests = []
+  const hash = `0x${'ab'.repeat(32)}`
+  const { createWalletClient, custom } = require('viem')
+  const wallet = createWalletClient({ account: fixture.account, transport: custom({
+    request: async ({ method, params }) => {
+      assert.equal(method, 'eth_sendTransaction')
+      walletRequests.push(params[0])
+      return hash
+    },
+  }) })
   let successes = 0
   const ctx = {
     swapData: { id: 'sufficient-allowance', metadata: {} },
@@ -71,15 +83,20 @@ test('a sufficient-allowance backend transfer with only base units submits one z
     layerswapApiClient: { SwapCatchup: async (...args) => { catchups.push(args) } },
   }
   await executeWalletTransfer(ctx, async props => {
-    transactions.push(await transactionBuilder(props))
-    return 'intake-hash'
+    const transaction = await transactionBuilder(props)
+    transactions.push(transaction)
+    return wallet.sendTransaction({ ...transaction, chain: null })
   })
   assert.equal(transactions.length, 1)
   assert.equal(transactions[0].value, 0n)
   assert.equal(transactions[0].to, publication.to_address)
   assert.equal(transactions[0].data, publication.call_data)
-  assert.deepEqual(receipts, [['sufficient-allowance', 'intake-hash', 'frontend-swap']])
-  assert.deepEqual(catchups, [['sufficient-allowance', 'intake-hash']])
+  assert.equal(walletRequests.length, 1)
+  assert.equal(walletRequests[0].value, '0x0')
+  assert.equal(walletRequests[0].to, publication.to_address)
+  assert.equal(walletRequests[0].data, publication.call_data)
+  assert.deepEqual(receipts, [['sufficient-allowance', hash, 'frontend-swap']])
+  assert.deepEqual(catchups, [['sufficient-allowance', hash]])
   assert.equal(successes, 1)
 })
 
@@ -111,7 +128,9 @@ for (const [callData, expectedMemo] of [[null, ''], [undefined, ''], ['', ''], [
 for (const [callData, expectedData] of [[null, '0x'], [undefined, '0x'], ['', '0x'], ['0x1234', '0x1234']]) {
   test(`EVM normalizes deposit calldata ${JSON.stringify(callData)} at the adapter boundary`, async () => {
     const { transactionBuilder } = loadAdapterSource('../../../wallets/adapters/evm/src/transferProvider/transactionBuilder.ts', {
-      './resolveEVMTransactionRequest': loadAdapterSource('../../../wallets/adapters/evm/src/transferProvider/resolveEVMTransactionRequest.ts', {}),
+      './resolveEVMTransactionRequest': loadAdapterSource('../../../wallets/adapters/evm/src/transferProvider/resolveEVMTransactionRequest.ts', {
+        '../evmUtils/parseNativeAmount': loadAdapterSource('../../../wallets/adapters/evm/src/evmUtils/parseNativeAmount.ts', {}),
+      }),
       '../gasProviders/resolveEVMTransactionGasParameters': { resolveEVMTransactionGasParameters: async () => undefined },
     })
     const ctx = calldataContext(callData, { name: 'ETHEREUM_MAINNET', type: 'evm', chain_id: '1' })

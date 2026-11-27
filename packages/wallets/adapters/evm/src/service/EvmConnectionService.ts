@@ -16,6 +16,7 @@ import { resolveWallet } from './resolveWallet'
 import { resolveWalletConnector } from './resolveWalletConnector'
 import { attemptGetAccount, computeConfiguredConnectors, splitRegistryConnectors, supportsRegistryConnects, wagmiDisplayUriSource, } from './connectorsHelpers'
 import { useEvmStore } from './evmStore'
+import type { PublishedCapabilities } from '../transferProvider/walletCapabilities'
 
 type ActiveConnection = { id: string; address: string }
 
@@ -103,6 +104,7 @@ export class EvmConnectionService<Network extends LayerswapNetwork = LayerswapNe
     getConnectedWallets(
         connections: readonly Connection[],
         activeConnection: ActiveConnection | undefined,
+        capabilities?: PublishedCapabilities,
     ): Wallet[] {
         const disconnectFn = this.disconnectWallet.bind(this)
         return connections
@@ -113,6 +115,7 @@ export class EvmConnectionService<Network extends LayerswapNetwork = LayerswapNe
                 networks: this._networks,
                 supportedNetworks: this._buckets,
                 providerName: PROVIDER_NAME,
+                capabilities: capabilities?.[connection.connector.uid],
             }))
             .filter((w): w is Wallet => w !== undefined)
     }

@@ -28,6 +28,7 @@ const migrated = [
     [59144, 1.7], [8453, 1.7], [169, 1.7], [570, 1.7], [204, 1.7],
     [424, 2.1], [43114, 1.7], [7777777, 1.7], [690, 1.7],
 ]
+const explicitGasModes = { 1: 'explicit-eip1559', 56: 'explicit-legacy', 8453: 'explicit-eip1559' }
 const network = chainId => ({
     chain_id: String(chainId), name: `CUSTOM_NAME_${chainId}`, display_name: 'Test network',
     token: { symbol: 'ETH', asset: 'ETH', decimals: 18 }, nodes: [], node_url: 'https://rpc.example',
@@ -37,9 +38,7 @@ for (const [chainId, multiplier] of migrated) {
     test(`chain ${chainId} preserves its price multiplier independently of network name`, () => {
         assert.equal(resolveEVMGasPolicy(chainId).baseFeeMultiplier, multiplier)
         assert.equal(resolveChain(network(chainId)).fees.baseFeeMultiplier(), multiplier)
-        if (chainId !== 1 && chainId !== 56) {
-            assert.equal(resolveEVMGasPolicy(chainId).transactionGasMode, 'wallet')
-        }
+        assert.equal(resolveEVMGasPolicy(chainId).transactionGasMode, explicitGasModes[chainId] ?? 'wallet')
     })
 }
 
@@ -88,3 +87,10 @@ for (const [chainId, priority, cap] of [[10, 100000n, 100150n], [43114, 15000000
         assert.equal(fees.maxFeePerGas, cap)
     })
 }
+
+test('Base sandbox shares mainnet execution and rollup policies', () => {
+    const mainnet = resolveEVMGasPolicy(8453)
+    assert.equal(resolveEVMGasPolicy(84532), mainnet)
+    assert.equal(mainnet.transactionGasMode, 'explicit-eip1559')
+    assert.equal(mainnet.opStack.operatorFee, true)
+})

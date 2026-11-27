@@ -1,7 +1,7 @@
 import { TransferProvider, TransferProps, TransferProgress, LayerswapNetwork } from "@layerswap/widget-types";
 import { Config } from "wagmi"
 import { switchChain, getWalletClient } from "@wagmi/core"
-import { createPublicClient, decodeAbiParameters, type Hex, type PublicClient, type WalletClient } from "viem"
+import { createPublicClient, decodeFunctionData, erc20Abi, type Hex, type PublicClient, type WalletClient } from "viem"
 import resolveChain from "../../evmUtils/resolveChain"
 import { resolveFallbackTransport } from "../../evmUtils/resolveTransports"
 import { resolvePolymarketHolding, selectPolymarketFunder } from "./funder"
@@ -37,19 +37,13 @@ const fail = (header: string, details: string): Error => {
     return e
 }
 
-// depositERC20(bytes32 id, address token, address receiver, uint256 amount) — all static.
-const DEPOSIT_ERC20_PARAMS = [{ type: 'bytes32' }, { type: 'address' }, { type: 'address' }, { type: 'uint256' }] as const
-
-type DepositoryAction = { tokenContract: string; amountBaseUnits: bigint }
-
-/** Decode the depository `depositERC20` calldata to the real token + amount the deposit
- * pulls — the approve/unwrap legs must move exactly what the deposit consumes. */
-function decodeDepositAction(depositCallData: Hex): DepositoryAction | undefined {
+/** Amount of the backend's USDC.e `transfer` calldata (the swap identifier trails the args). */
+function decodeTransferAmount(callData: Hex): bigint | undefined {
     try {
-        const [, decodedToken, , amount] = decodeAbiParameters(DEPOSIT_ERC20_PARAMS, `0x${depositCallData.slice(10)}` as Hex)
-        const amountBaseUnits = amount as bigint
-        if (amountBaseUnits <= 0n) return undefined
-        return { tokenContract: decodedToken as string, amountBaseUnits }
+        const { functionName, args } = decodeFunctionData({ abi: erc20Abi, data: callData })
+        if (functionName !== 'transfer') return undefined
+        const amount = args[1] as bigint
+        return amount > 0n ? amount : undefined
     } catch {
         return undefined
     }
@@ -70,14 +64,15 @@ async function pollDeployed(publicClient: PublicClient, address: `0x${string}`):
  * The Polymarket transfer provider — a standard `TransferProvider` whose `supportsNetwork`
  * matches the synthesized Polymarket source. It owns the full Flow 2 withdrawal (switch the
  * wallet to Polygon → resolve which derived funder holds the collateral → sign ONE gasless
- * `Batch` that unwraps pUSD → USDC.e 1:1 and deposits USDC.e into the Layerswap Depository →
- * submit via the relayer proxy), plus deposit-wallet deploy + the wagmi-dependent EIP-712
- * signing, so the widget needs none of this logic. Conforms to the shared contract: returns a
- * tx hash (empty — the backend detects the depository deposit, there is no source hash),
- * throws on rejection/failure, and reports the deploy prerequisite through `onProgress`.
+ * `Batch` that unwraps pUSD → USDC.e 1:1 and transfers USDC.e to Layerswap → submit via the
+ * relayer proxy), plus deposit-wallet deploy + the wagmi-dependent EIP-712 signing, so the
+ * widget needs none of this logic. Conforms to the shared contract: returns a tx hash (empty —
+ * the relayer broadcasts asynchronously, there is no source hash yet), throws on
+ * rejection/failure, and reports the deploy prerequisite through `onProgress`.
  *
- * The deposit action carries the Depository address (`depositAddress`) + `depositERC20`
- * calldata (`callData`); the amount + token are decoded from that calldata so all legs agree.
+ * The deposit action is a regular wallet transfer: `depositAddress` is the USDC.e contract and
+ * `callData` its `transfer` with the swap identifier; the amount is decoded from that calldata
+ * so all legs agree.
  * The batch of calls is identical across funder types; only the signing/relayer wrapping differs
  * (deposit wallet → EIP-712 `Batch`, legacy Gnosis Safe → `MultiSend` SafeTx). The email/Magic
  * `proxy` funder is not supported — its owner key lives with Magic and can't be connected to sign.
@@ -96,17 +91,15 @@ export function createPolymarketTransferProvider(
             const pmConfig = resolvePolymarketConfig(network?.name)
             if (!pmConfig) throw fail('Unsupported network', 'No Polymarket route for this destination.')
             if (!sourceAddress) throw fail('No account', 'No connected Polymarket account.')
-            if (!depositAddress) throw fail('No deposit address', 'Missing destination depository address.')
-            if (!callData) throw fail('Withdrawal failed', 'Missing deposit action data.')
+            if (!depositAddress || !callData) throw fail('Withdrawal failed', 'Missing deposit action data.')
 
-            // The depository deposit is denominated in USDC.e — the token the funder ends up
-            // holding after unwrap. Decode the amount + token; bail if anything else.
-            const action = decodeDepositAction(callData as Hex)
-            if (!action) throw fail('Withdrawal failed', 'No depository deposit action.')
-            if (action.tokenContract.toLowerCase() !== POLYMARKET_USDC_E_ADDRESS.toLowerCase()) {
-                throw fail('Withdrawal failed', 'Unexpected depository token (expected USDC.e).')
+            // The transfer is denominated in USDC.e — the token the funder ends up holding
+            // after unwrap. Bail on any other token or calldata shape.
+            if (depositAddress.toLowerCase() !== POLYMARKET_USDC_E_ADDRESS.toLowerCase()) {
+                throw fail('Withdrawal failed', 'Unexpected deposit token (expected USDC.e).')
             }
-            const amountBaseUnits = action.amountBaseUnits
+            const amountBaseUnits = decodeTransferAmount(callData as Hex)
+            if (!amountBaseUnits) throw fail('Withdrawal failed', 'Unexpected deposit action data.')
 
             // The gasless batch signature is an EIP-712 message on Polygon — keep the wallet on
             // Polygon so the prompt is unambiguous. Switching networks costs no gas.
@@ -145,14 +138,13 @@ export function createPolymarketTransferProvider(
                 throw fail('Insufficient balance', `Your available Polymarket balance (${largest.amount} ${sourceToken.asset}) is below the withdrawal amount.`)
             }
 
-            // Assemble the batch (unwrap if holding pUSD, then approve + deposit). The calls are
+            // Assemble the batch (unwrap if holding pUSD, then transfer). The calls are
             // identical across funder types; only the signing/relayer wrapping differs.
             const calls = buildPolymarketDepositCalls({
                 funderTokenAddress: funder.tokenAddress,
                 funderAddress: funder.address,
                 amountBaseUnits,
-                depository: depositAddress as `0x${string}`,
-                depositCallData: callData as Hex,
+                transferCallData: callData as Hex,
             })
 
             const walletClient = await getWalletClient(config, { chainId: POLYMARKET_CHAIN_ID }) as WalletClient | null
@@ -210,7 +202,7 @@ export function createPolymarketTransferProvider(
                 throw fail(header, details)
             }
 
-            // No real source tx hash — the backend detects the depository deposit. The empty
+            // No source tx hash yet — the relayer broadcasts asynchronously. The empty
             // string flips the swap off the withdraw screen; the Processing screen takes over.
             return ''
         },

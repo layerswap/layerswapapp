@@ -2,7 +2,7 @@ import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, 
 import useSWR from "swr";
 import LayerSwapApiClient, { CreateSwapParams, DepositAction, SwapResponse } from "@/lib/apiClients/layerSwapApiClient";
 import type { ApiResponse } from "@layerswap/widget-types";
-import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
+import { NetworkRoute, Token } from "@layerswap/widget-types";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import useDepositAddressSources from "@/hooks/useDepositAddressSources";
 import { pickAutoSource } from "@/hooks/useAutoSourceRoute";
@@ -20,7 +20,7 @@ import { useDepositSelection } from "./depositSelectionContext";
 import { useDepositStep } from "./depositStepContext";
 import { lifecycleContextFromForm } from "@/lib/swapLifecycle";
 
-export type PrefetchedSource = { network: NetworkRoute; token: NetworkRouteToken };
+export type PrefetchedSource = { network: NetworkRoute; token: Token };
 
 type DepositPrefetchContextValue = {
     /** Auto-picked source for the current destination — the same pick the

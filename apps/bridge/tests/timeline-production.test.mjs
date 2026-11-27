@@ -63,7 +63,7 @@ function loadSource(path, imports = {}) {
         if (name.endsWith('/reportWithdrawalError')) return loadSource(`${withdraw}reportWithdrawalError.ts`, imports);
         if (name === '@/hooks/useAtomicBatchCapability') return { useAtomicBatchCapability: () => false };
         if (name === '@/helpers/atomicBatch') return { isAtomicBatchEligible: () => false };
-        if (name === '@/lib/extendedRoutes/registry') return { isExtendedSourceNetwork: () => false };
+        if (name === '@/lib/extendedRoutes/registry') return { isExtendedSourceNetwork: () => false, getExtendedProviderForNetwork: () => undefined };
         if (name === '@/lib/atomicBatchExecution') return { executeAtomicBatch: () => assert.fail('legacy flow cannot submit an atomic batch') };
         if (name === '@/lib/resolvers/resolverService') return {};
         if (name === '@/hooks/useClientLayoutEffect') return { useClientLayoutEffect: React.useLayoutEffect };
@@ -1298,6 +1298,7 @@ for (const provider of ['Hyperliquid', 'Polymarket']) {
                 '@layerswap/widget-types': { ActionMessageType: { TransactionRejected: 'TransactionRejected' } },
                 './executeProviderWithdrawal': providerExecution,
                 '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
+                '@/helpers/swapFlow': { isSentByConnectedWallet: () => providerId !== 'polymarket' },
                 '@/lib/ErrorHandler': { ErrorHandler: noop },
                 '@/context/callbackProvider': { useCallbacks: () => ({ onSwapLifecycle: noop }) },
                 '@/lib/swapLifecycle': { lifecycleContextFromSwap: () => ({}) },
@@ -1502,6 +1503,11 @@ for (const failure of ['rejected', 'failed']) {
             '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
             '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
             '@layerswap/utils': loadSource('../../../utils/src/truncateDecimals.ts'),
+            '@/helpers/gasless': gasless,
+            '@/hooks/useIsGaslessActive': { useIsGaslessActive: () => false },
+            '@/hooks/useSelectedSourceWallet': { useSelectedSourceWallet: () => undefined },
+            '@/helpers/walletCapabilities': { getWalletCapabilities: () => undefined },
+            '@/components/utils/formatTokenAmount': { formatTokenAmount: value => String(value) },
             '@/components/Input/Amount/helpers': loadSource('components/Input/Amount/helpers.ts', {
                 '@layerswap/utils': loadSource('../../../utils/src/truncateDecimals.ts'),
                 '@/lib/gases/resolveGasBalanceBudget': loadSource('lib/gases/resolveGasBalanceBudget.ts'),

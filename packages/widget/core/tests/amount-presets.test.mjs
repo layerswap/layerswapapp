@@ -13,7 +13,9 @@ const previous = Object.getOwnPropertyDescriptors(globalThis)
 for (const [key, value] of Object.entries({ window: dom.window, document: dom.window.document, Element: dom.window.Element, IS_REACT_ACT_ENVIRONMENT: true }))
   Object.defineProperty(globalThis, key, { configurable: true, writable: true, value })
 const { createRoot } = await import('react-dom/client')
-const { default: useSWR, SWRConfig, useSWRConfig } = await import('swr')
+const { default: useSWR, SWRConfig, useSWRConfig, unstable_serialize } = await import('swr')
+// The manual fee cache entry useSWRGas reads for this account and amount.
+const manualGasKey = ['/gases/source/ETHEREUM_MAINNET/ETH/0.9898', null]
 const state = {}
 const { default: FormTelemetry } = loadSource('components/Pages/Swap/Form/FormTelemetry.tsx', {
   react: React, formik: require('formik'), '@/lib/widgetTelemetry': { widgetTelemetry },
@@ -618,8 +620,7 @@ function PresetButtons() {
     depositMethod: values.depositMethod, onActionHover() {} })
 }
 const { BalanceResolver } = loadSource('lib/balances/balanceResolver.ts', {
-  '@/lib/ErrorHandler': { ErrorHandler() {} }, '@layerswap/widget-types': {},
-  '../knownIds': require('@layerswap/utils/known-ids'),
+  '@/lib/ErrorHandler': { ErrorHandler() {} }, '@layerswap/widget-types': require('@layerswap/widget-types'),
   '../widgetTelemetry': { widgetTelemetry: { beginOperation: () => () => {} } },
 })
 // Use the bundled adapter's actual unsupported gas implementation.
@@ -629,7 +630,7 @@ const { TonGasProvider } = loadSource('../../../wallets/adapters/ton/src/tonGasP
 })
 async function setupUnsupportedAdapter(name) {
   const asset = name === 'TON_MAINNET' ? { symbol: 'TON', decimals: 9 } : { symbol: 'USDC', decimals: 6 }
-  initialValues.from = { name, token: asset, deposit_methods: ['wallet'] }
+  initialValues.from = { name, type: name === 'TON_MAINNET' ? 'ton' : 'paradex', token: asset, deposit_methods: ['wallet'] }
   initialValues.fromAsset = asset
   initialValues.amountMode = 'manual'
   initialValues.amountPresetSource = undefined
@@ -916,11 +917,11 @@ test('Adjust amount starts a fresh calculation instead of restoring the cached M
 test('Max keeps its verified fee with the draft without writing to the manual fee cache', async () => {
   let currentFee
   function FeeProbe() {
-    const { data } = useSWR('/gases/source/ETHEREUM_MAINNET/ETH/0.9898', null)
+    const { data } = useSWR(manualGasKey, null)
     currentFee = data
     return null
   }
-  config.fallback = { '/gases/source/ETHEREUM_MAINNET/ETH/0.9898': { gas: 0.02, token } }
+  config.fallback = { [unstable_serialize(manualGasKey)]: { gas: 0.02, token } }
   await act(async () => root.render(createElement(SWRConfig, { value: config },
     createElement(SwapDataStateContext.Provider, { value: { amountPresetLocked: false, amountPresetRevision: 0 } },
       createElement(SwapDataUpdateContext.Provider, { value: updates },
@@ -936,7 +937,7 @@ test('Max keeps its verified fee with the draft without writing to the manual fe
 for (const resume of ['reselect Max', 'release execution']) {
   test(`${resume} retains a newer gas snapshot while the fresh preset request is pending`, async () => {
     await render()
-    const key = '/gases/source/ETHEREUM_MAINNET/ETH/0.9898'
+    const key = manualGasKey
     if (resume === 'reselect Max') {
       await act(() => formik.setFieldValue('amountMode', 'manual'))
     } else {
@@ -981,7 +982,7 @@ for (const exit of ['manual mode', 'widget unmount']) {
     } else {
       await act(() => root.render(createElement(StrictMode, null, createElement(SWRConfig, { value: config }))))
     }
-    const key = '/gases/source/ETHEREUM_MAINNET/ETH/0.9898'
+    const key = manualGasKey
     await act(async () => { await mutate(key, { gas: 0.02, token }, { revalidate: false }) })
     await act(async () => {
       state.deferred.resolve({ gas: 0.01, token })

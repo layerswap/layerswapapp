@@ -5,6 +5,7 @@ import { LazyBalanceProvider, NetworkType, type LayerswapNetwork } from "@layers
 import { TronGasProvider } from "./tronGasProvider"
 import { createTronTransfer } from "./transferProvider/createTronTransfer"
 import { createTronConnection } from "./service/createTronConnection"
+import { retryInitOnModalOpen } from "@layerswap/wallet-core/chunkLoadRecovery"
 import { initTronProvider } from "./init"
 import { id } from "./constants"
 
@@ -24,7 +25,7 @@ export function createTronProvider<Network extends LayerswapNetwork = LayerswapN
 
     const init = (_ctx: WalletInitContext) => {
         initTronProvider()
-        // No-op disposer; init is idempotent across remounts.
+        return retryInitOnModalOpen(initTronProvider)
     }
 
     const createConnection = (props: WalletConnectionProviderProps<Network>): WalletConnectionStore<Network> => {

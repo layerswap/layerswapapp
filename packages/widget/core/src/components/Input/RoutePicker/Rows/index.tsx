@@ -1,8 +1,8 @@
-import { RefObject } from "react";
+import { memo, RefObject } from "react";
 import { RowElement } from "@/Models/Route";
 import { CurrencySelectItemDisplay } from "../Routes";
 import { CollapsibleRow } from "./CollapsibleRow";
-import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
+import { NetworkRoute, Token } from "@layerswap/widget-types";
 import { SelectItem } from "@/components/Select/Selector/SelectItem";
 import { SwapDirection } from "@/components/Pages/Swap/Form/SwapFormValues";
 import TitleRow from "./TitleRow";
@@ -15,7 +15,7 @@ type Props = {
     searchQuery: string
     direction: SwapDirection;
     toggleContent: (itemName: string) => void;
-    onSelect: (route: NetworkRoute, token: NetworkRouteToken) => void;
+    onSelect: (route: NetworkRoute, token: Token) => void;
     openValues: string[];
     scrollContainerRef: RefObject<HTMLDivElement | null>;
     index: number;
@@ -23,7 +23,7 @@ type Props = {
     hideBalances?: boolean;
 };
 
-export default function Row({
+function Row({
     item,
     direction,
     selectedRoute,
@@ -109,3 +109,5 @@ export default function Row({
             return null
     }
 }
+
+export default memo(Row)

@@ -16,7 +16,7 @@ import {
   GroupedTokenElement,
 } from "@/Models/Route";
 import { CurrencySelectItemDisplay } from "../Routes";
-import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
+import { NetworkRoute, Token } from "@layerswap/widget-types";
 import { CollapsableHeader } from "./CollapsableHeader";
 import { StickyHeader } from "./StickyHeader";
 import { SwapDirection } from "@/components/Pages/Swap/Form/SwapFormValues";
@@ -28,7 +28,7 @@ import { defaultRangeExtractor, type Range } from "@/lib/virtual/core";
 type GenericAccordionRowProps = {
   item: NetworkElement | GroupedTokenElement;
   direction: SwapDirection;
-  onSelect: (route: NetworkRoute, token: NetworkRouteToken) => void;
+  onSelect: (route: NetworkRoute, token: Token) => void;
   selectedRoute: string | undefined;
   selectedToken: string | undefined;
   searchQuery: string
@@ -39,7 +39,7 @@ type GenericAccordionRowProps = {
 };
 
 type ChildWrapper = {
-  token: NetworkRouteToken;
+  token: Token;
   route: NetworkRoute;
 };
 
@@ -127,7 +127,7 @@ export const CollapsibleRow = ({
         <StickyHeader
           item={item}
           direction={direction}
-          scrollContainer={scrollContainerRef.current}
+          scrollContainerRef={scrollContainerRef}
           open={isOpen}
           headerRef={headerRef}
           contentRef={contentRef}
@@ -182,7 +182,7 @@ const VirtualTokenList = ({
   selectedRoute: string | undefined;
   selectedToken: string | undefined;
   direction: SwapDirection;
-  onSelect: (route: NetworkRoute, token: NetworkRouteToken) => void;
+  onSelect: (route: NetworkRoute, token: Token) => void;
   scrollContainerRef: RefObject<HTMLDivElement | null>;
   hideBalances?: boolean;
 }) => {
@@ -268,14 +268,14 @@ const VirtualTokenList = ({
 
 // Memoized child item to prevent re-renders when siblings change focus
 const TokenItem = memo<{
-  token: NetworkRouteToken;
+  token: Token;
   route: NetworkRoute;
   childIndex: number;
   groupName: string;
   parentIndex: number;
   isSelected: boolean;
   direction: SwapDirection;
-  onSelect: (route: NetworkRoute, token: NetworkRouteToken) => void;
+  onSelect: (route: NetworkRoute, token: Token) => void;
   hideBalances?: boolean;
 }>(({
   token,

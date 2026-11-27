@@ -10,7 +10,7 @@ import type {
     QuoteReward,
     SwapQuote,
 } from '@/lib/apiClients/layerSwapApiClient';
-import type { NetworkRouteToken } from '@layerswap/widget-types';
+import type { Token } from '@layerswap/widget-types';
 import type { SwapValues } from '../../Form/FeeDetails';
 import { RateElement } from '../../Form/FeeDetails/Rate';
 type RowWrapperProps = {
@@ -142,8 +142,8 @@ export const Reward = ({ reward }: { reward: QuoteReward }) => {
     );
 };
 type RateProps = {
-    fromAsset?: NetworkRouteToken;
-    toAsset?: NetworkRouteToken;
+    fromAsset?: Token;
+    toAsset?: Token;
     rate?: number;
 };
 export const Rate = ({ fromAsset, toAsset, rate }: RateProps) => {

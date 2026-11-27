@@ -34,6 +34,7 @@ export interface NavigatableRegistrationContextType {
     /** Declares a parent's full child count, for virtualized children that aren't all mounted. */
     setChildCount: (parentId: number, count: number | undefined) => void;
     getNavigableIndex: (id: number) => number;
+    subscribe: (listener: () => void) => () => void;
     registerClickHandler: (index: FocusedIndex, handler: () => void) => void;
     unregisterClickHandler: (index: FocusedIndex) => void;
 }

@@ -1,4 +1,4 @@
-import { decodeAbiParameters, decodeFunctionData, erc20Abi, size, toFunctionSelector, zeroAddress, type Hex } from "viem";
+import { decodeFunctionData, erc20Abi, size, zeroAddress, type Hex } from "viem";
 import {
     MULTISEND_ABI,
     POLYMARKET_COLLATERAL_OFFRAMP,
@@ -12,12 +12,11 @@ import {
 /**
  * Validation of relayer `/submit` requests (pure, no I/O). The relay proxy is public
  * but relays on Layerswap's builder credentials, so it only accepts the exact batch
- * shape `buildPolymarketDepositCalls` produces — [approve → deposit] or
- * [approve → unwrap → approve → deposit] — with the token/factory/MultiSend targets
- * checked against the known contracts, the approve spender bound to the deposit leg's
- * target, and all amounts equal to the deposit amount. The depository address itself
- * is backend-resolved per swap, so it is deliberately not pinned here. Input is
- * untrusted JSON: everything is type-guarded and the validator never throws.
+ * shape `buildPolymarketDepositCalls` produces — [transfer] or [approve → unwrap → transfer]
+ * — with the token/factory/MultiSend targets checked against the known contracts and all
+ * amounts equal to the transfer amount. The recipient is backend-resolved per swap, so it
+ * is deliberately not pinned here. Input is untrusted JSON: everything is type-guarded and
+ * the validator never throws.
  */
 
 export type RelayValidation = { ok: boolean; kind?: 'create' | 'deposit'; reason?: string }
@@ -26,15 +25,7 @@ const ADDRESS_RE = /^0x[0-9a-fA-F]{40}$/
 const HEX_RE = /^0x(?:[0-9a-fA-F]{2})*$/
 
 const MAX_MULTISEND_BYTES = 16_384
-const MAX_CALLS = 4
-
-// depositERC20(bytes32 id, address token, address receiver, uint256 amount) — all static.
-const DEPOSIT_ERC20_PARAMS = [{ type: 'bytes32' }, { type: 'address' }, { type: 'address' }, { type: 'uint256' }] as const
-// The deposit target is backend-resolved per swap (deliberately not pinned), so the selector
-// is the only thing tying the last leg to depositERC20. Without it, an attacker-chosen target +
-// any 4-byte selector over the same static layout would pass, turning the sponsored relay into
-// an arbitrary gas-funded call.
-const DEPOSIT_ERC20_SELECTOR = toFunctionSelector('depositERC20(bytes32,address,address,uint256)')
+const MAX_CALLS = 3
 
 type DecodedCall = { target: string; data: Hex }
 
@@ -85,36 +76,30 @@ const decodeApprove = (call: DecodedCall): { spender: string; amount: bigint } |
     } catch { return null }
 }
 
+const decodeTransfer = (call: DecodedCall): { amount: bigint } | null => {
+    try {
+        const { functionName, args } = decodeFunctionData({ abi: erc20Abi, data: call.data })
+        if (functionName !== 'transfer') return null
+        return { amount: args[1] as bigint }
+    } catch { return null }
+}
+
 type CallsVerdict = { ok: boolean; reason?: string }
 
 function validateDepositCalls(calls: DecodedCall[], funder: string): CallsVerdict {
-    if (calls.length !== 2 && calls.length !== 4) return { ok: false, reason: `unexpected call count: ${calls.length}` }
+    if (calls.length !== 1 && calls.length !== 3) return { ok: false, reason: `unexpected call count: ${calls.length}` }
     for (const c of calls) {
         if (!isAddress(c.target) || !isHex(c.data)) return { ok: false, reason: 'malformed call target/data' }
     }
 
-    const deposit = calls[calls.length - 1]
-    if (deposit.data.length !== 10 + 4 * 64) return { ok: false, reason: 'unexpected deposit calldata length' }
-    if (deposit.data.slice(0, 10).toLowerCase() !== DEPOSIT_ERC20_SELECTOR) return { ok: false, reason: 'deposit selector is not depositERC20' }
-    let depositToken: string
-    let depositAmount: bigint
-    try {
-        const [, token, , amount] = decodeAbiParameters(DEPOSIT_ERC20_PARAMS, `0x${deposit.data.slice(10)}` as Hex)
-        depositToken = token as string
-        depositAmount = amount as bigint
-    } catch { return { ok: false, reason: 'undecodable deposit calldata' } }
-    if (!sameAddress(depositToken, POLYMARKET_USDC_E_ADDRESS)) return { ok: false, reason: 'deposit token is not USDC.e' }
-    if (depositAmount <= 0n) return { ok: false, reason: 'non-positive deposit amount' }
+    const transferLeg = calls[calls.length - 1]
+    if (!sameAddress(transferLeg.target, POLYMARKET_USDC_E_ADDRESS)) return { ok: false, reason: 'transfer token is not USDC.e' }
+    const transfer = decodeTransfer(transferLeg)
+    if (!transfer) return { ok: false, reason: 'last call is not a transfer' }
+    const depositAmount = transfer.amount
+    if (depositAmount <= 0n) return { ok: false, reason: 'non-positive transfer amount' }
 
-    const approveLeg = calls[calls.length - 2]
-    const approveDepository = decodeApprove(approveLeg)
-    if (!approveDepository
-        || !sameAddress(approveLeg.target, POLYMARKET_USDC_E_ADDRESS)
-        || !sameAddress(approveDepository.spender, deposit.target)
-        || approveDepository.amount !== depositAmount)
-        return { ok: false, reason: 'invalid depository approve leg' }
-
-    if (calls.length === 4) {
+    if (calls.length === 3) {
         const approveOfframp = decodeApprove(calls[0])
         if (!approveOfframp
             || !sameAddress(calls[0].target, POLYMARKET_PUSD_ADDRESS)

@@ -1,15 +1,9 @@
-import { NetworkBalance, TokenBalance } from "@layerswap/widget-types";
+import { NetworkType, NetworkBalance, TokenBalance } from "@layerswap/widget-types";
 import { BalanceProvider } from "@layerswap/widget-types";
 import { NetworkWithTokens } from "@layerswap/widget-types";
 import { ErrorHandler } from "@/lib/ErrorHandler";
 import { classifyNodeError, extractErrorDetails } from "@layerswap/widget-types";
-import KnownInternalNames from "../knownIds";
 import { widgetTelemetry } from '../widgetTelemetry';
-
-const SKIP_BALANCE_NETWORKS = [
-    KnownInternalNames.Networks.ParadexMainnet,
-    KnownInternalNames.Networks.ParadexTestnet,
-];
 
 function formatErrorBalances(errorBalances: TokenBalance[]) {
     return errorBalances.map(b => ({
@@ -37,7 +31,7 @@ export class BalanceResolver {
     }
 
     async getBalance(network: NetworkWithTokens, address?: string, options?: { timeoutMs?: number, retryCount?: number }): Promise<NetworkBalance> {
-        if (SKIP_BALANCE_NETWORKS.includes(network.name)) {
+        if (network.type === NetworkType.Paradex) {
             return { balances: [] }
         }
 

@@ -16,6 +16,7 @@ export function ManualInstructionsView({
     quote,
     loading,
     depositAddress,
+    depositAddressError,
     sourceSelector,
     destinationAddress,
     recipient,
@@ -28,6 +29,7 @@ export function ManualInstructionsView({
     quote?: SwapQuote;
     loading?: boolean;
     depositAddress?: string;
+    depositAddressError?: string;
     sourceSelector?: ReactNode;
     destinationAddress?: ReactNode;
     recipient?: RecipientPresentation;
@@ -37,6 +39,7 @@ export function ManualInstructionsView({
     quoteDetails?: ReactNode;
 }) {
     const destinationLogo = swapBasicData.destination_network.logo;
+    const depositAddressUnavailable = !depositAddress && !!depositAddressError;
     const requestAmount = (
         <span className="inline-flex items-center gap-1 px-1.5 bg-secondary-300 rounded-lg whitespace-nowrap">
             <span>
@@ -98,6 +101,8 @@ export function ManualInstructionsView({
                                                 ).toShortString()}
                                                 {addressCopy}
                                             </span>
+                                        ) : depositAddressUnavailable ? (
+                                            <span className="text-secondary-text">—</span>
                                         ) : (
                                             <span className="inline-block w-28 bg-secondary-400 h-5 rounded animate-pulse"></span>
                                         )}

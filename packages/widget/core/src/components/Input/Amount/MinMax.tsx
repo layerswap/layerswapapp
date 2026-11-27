@@ -1,6 +1,6 @@
 import { useFormikContext } from "formik";
 import useSWRGas from "@/lib/gases/useSWRGas";
-import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
+import { NetworkRoute, Token } from "@layerswap/widget-types";
 import React, { useEffect, useId, useMemo, useRef } from "react";
 import { LayoutGroup, motion } from "framer-motion";
 import { resolveMaxAllowedAmount } from "./helpers";
@@ -17,7 +17,7 @@ import { truncateToDecimals, isScientific } from "@layerswap/utils";
 import { amountPresetSource, isAmountPreset, isWalletAmountFlow, resolvePresetAmount, supportsLiveAmountPreset, type AmountPreset } from '@/lib/amountPresets';
 
 type MinMaxProps = {
-    fromCurrency: NetworkRouteToken,
+    fromCurrency: Token,
     from: NetworkRoute,
     limitsMaxAmount: number | undefined,
     limitsMinAmount: number | undefined,

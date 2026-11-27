@@ -60,6 +60,7 @@ export function createEvmConnection<Network extends LayerswapNetwork = Layerswap
             return {
                 connections: evmState.connections,
                 allConnectors: evmState.allConnectors,
+                walletCapabilities: evmState.walletCapabilities,
                 wagmiAccount: evmState.wagmiAccount,
                 selectedAddress: evmState.selectedAddress,
                 browseConnectors: additionalState.browseConnectors,
@@ -73,7 +74,7 @@ export function createEvmConnection<Network extends LayerswapNetwork = Layerswap
                 recentConnectors: inputs.recentConnectors,
             })
 
-            const { wagmiAccount, selectedAddress, allConnectors, connections } = inputs
+            const { wagmiAccount, selectedAddress, allConnectors, connections, walletCapabilities } = inputs
 
             const isSelectedAddressActive = !!selectedAddress
                 && !!wagmiAccount.addresses
@@ -84,7 +85,7 @@ export function createEvmConnection<Network extends LayerswapNetwork = Layerswap
                 ? { id: activeConnectionId, address: activeAddress }
                 : undefined
 
-            const connectedWallets = evmConnectionService.getConnectedWallets(connections, activeConnection)
+            const connectedWallets = evmConnectionService.getConnectedWallets(connections, activeConnection, walletCapabilities)
             const activeWallet = evmConnectionService.getActiveWallet(connectedWallets)
             const availableConnectors = evmConnectionService.getAvailableConnectors(allConnectors)
             const additionalConnectors = evmConnectionService.getAdditionalConnectors(allConnectors)
