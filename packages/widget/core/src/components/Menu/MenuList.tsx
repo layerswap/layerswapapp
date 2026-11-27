@@ -1,4 +1,4 @@
-import { BookOpen, BookUser, Gift, Map, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus } from "lucide-react";
+import { BookOpen, BookUser, Gift, Map, ScrollText, LibraryIcon, Shield, MessageSquarePlus } from "lucide-react";
 import { FC, useState } from "react";
 import { useIntercom } from "react-use-intercom";
 import ChatIcon from "../Icons/ChatIcon";
@@ -44,11 +44,8 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path?: string) => void }> = ({ g
                 }} target="_blank" icon={<ChatIcon strokeWidth={2} className="h-5 w-5" />} >
                     Help
                 </Menu.Item>
-                <Menu.Item pathname='https://layerswap.io/help' target="_blank" icon={<BookOpen className="h-5 w-5" />} >
-                    Help Center
-                </Menu.Item>
-                <Menu.Item pathname='https://docs.layerswap.io/get-started/choose-your-integration' target="_blank" icon={<Users className="h-5 w-5" />} >
-                    Developer Docs
+                <Menu.Item pathname='https://docs.layerswap.io/get-started/choose-your-integration' target="_blank" icon={<BookOpen className="h-5 w-5" />} >
+                    Docs
                 </Menu.Item>
             </Menu.Group>
 
