@@ -6,7 +6,7 @@ import type {
     QuoteReward,
 } from '@/lib/apiClients/layerSwapApiClient';
 import { Address } from '@/lib/address/Address';
-import shortenString from '@/components/utils/ShortenString';
+import { shortenString } from '@layerswap/utils';
 import { AddressDetailsView } from '@/components/Common/AddressDetailsView';
 import type { SwapValues } from '..';
 import {

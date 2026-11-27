@@ -1,5 +1,4 @@
-import { Network } from "@layerswap/widget-types";
-import { TransferProvider, TransferProps, TransferProgress } from "@layerswap/widget-types";
+import { TransferProvider, TransferProps, TransferProgress, LayerswapNetwork } from "@layerswap/widget-types";
 import { Config } from "wagmi"
 import { switchChain, getWalletClient } from "@wagmi/core"
 import { createPublicClient, decodeFunctionData, erc20Abi, type Hex, type PublicClient, type WalletClient } from "viem"
@@ -80,7 +79,7 @@ async function pollDeployed(publicClient: PublicClient, address: `0x${string}`):
  */
 export function createPolymarketTransferProvider(
     config: Config,
-    supportsNetwork: (network: Network) => boolean,
+    supportsNetwork: (network: LayerswapNetwork) => boolean,
 ): TransferProvider {
     return {
         supportsNetwork,
@@ -116,7 +115,7 @@ export function createPolymarketTransferProvider(
             if (!chain) throw fail('Network unavailable', 'Could not connect to Polygon for this withdrawal. Please try again.')
             const publicClient = createPublicClient({
                 chain,
-                transport: resolveFallbackTransport(network.nodes),
+                transport: resolveFallbackTransport(network.nodes?.length ? network.nodes : [network.node_url]),
             }) as PublicClient
 
             const holding = await resolvePolymarketHolding(sourceAddress, publicClient)

@@ -103,7 +103,7 @@ test('pending Rainbow metadata takes precedence over an old MetaMask record for 
         const wallet = resolveWallet({
             connection: { connector: rainbow, accounts: [address], chainId: 1 },
             activeConnection: { id: rainbow.id, address },
-            networks: [], networkAdapter: {}, supportedNetworks: { asSource: [], withdrawal: [], autofill: [] },
+            networks: [], supportedNetworks: { asSource: [], withdrawal: [], autofill: [] },
             providerName: 'EVM', disconnect() {},
         })
         assert.equal(wallet.id, 'Rainbow')
@@ -128,7 +128,7 @@ test('registry connection returns the hidden transport identity and retains the 
         provideExternalEvmConfig(config)
         useEvmStore.getState()._setConnectors(config.connectors)
         const service = new EvmConnectionService()
-        service.setNetworks([], {})
+        service.setNetworks([])
         service.configure({ isMobilePlatform: true })
         const wallet = await service.connectWallet({ connector: {
             id: 'rainbow', name: 'Rainbow', source: 'registry', type: 'walletConnect',

@@ -1,6 +1,5 @@
-import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
+import { NetworkType, type InternalConnector, type Wallet, type LayerswapNetwork } from '@layerswap/widget-types';
 import type { EnsureWalletChainOptions, WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types";
-import type { AppNetworkAdapter } from "@layerswap/wallet-core"
 import { sleep } from "@layerswap/utils"
 import type { FuelConnector } from '@fuel-ts/account'
 import { Address } from '@fuel-ts/address'
@@ -11,32 +10,27 @@ import { useFuelStore } from './fuelStore'
 import { resolveFuelChainId, type KnownFuelNetwork } from './resolveFuelChainId'
 import { ensureFuelChain } from './ensureFuelChain'
 
-export class FuelConnectionService<Network> implements WalletConnectionService<never, Network> {
+export class FuelConnectionService<Network extends LayerswapNetwork = LayerswapNetwork> implements WalletConnectionService<never, Network> {
     // All services share the wallet store. An older account query must not
     // overwrite a newer permissions snapshot, even from another widget.
     private static _walletSyncVersion = 0
     private _networks: Network[] = []
-    private _networkAdapter: AppNetworkAdapter<Network> | undefined
+
     // `connectWallet` mutates the module-global `BAKO_STATE.{state.last_req,
     // period_durtion}` while connecting. Rapid double-clicks or a retry firing
     // while a connect is still in flight would interleave those writes. Chain
     // connects through this promise so they run one-at-a-time.
     private _connectQueue: Promise<unknown> = Promise.resolve()
 
-    setNetworks(networks: Network[], networkAdapter: AppNetworkAdapter<Network>): void {
+    setNetworks(networks: Network[]): void {
         // RPC URLs can change even when the configured network IDs stay the same.
         this._networks = networks
-        this._networkAdapter = networkAdapter
     }
 
     private getKnownNetworks(): KnownFuelNetwork[] {
-        const adapter = this._networkAdapter
-        if (!adapter) {
-            return []
-        }
-        return this._networks.filter(network => adapter.isFuelNetwork(network)).map(network => ({
-            chainId: adapter.getChainId(network),
-            rpcUrls: adapter.getRpcUrls(network),
+        return this._networks.filter(network => network.type === NetworkType.Fuel).map(network => ({
+            chainId: network.chain_id,
+            rpcUrls: network.nodes?.length ? network.nodes : [network.node_url],
         }))
     }
 
@@ -56,14 +50,14 @@ export class FuelConnectionService<Network> implements WalletConnectionService<n
 
     private getSupportedNetworks(): string[] {
         return this._networks
-            .filter(network => this._networkAdapter?.isFuelNetwork(network))
-            .map(network => this._networkAdapter?.getId(network))
+            .filter(network => network.type === NetworkType.Fuel)
+            .map(network => network.name)
             .filter((id): id is string => !!id)
     }
 
     getNetworkIcon(): string | undefined {
-        const network = this._networks.find(item => this._networkAdapter?.isFuelNetwork(item))
-        return network && this._networkAdapter ? this._networkAdapter.getIcon(network) : undefined
+        const network = this._networks.find(item => item.type === NetworkType.Fuel)
+        return network?.logo
     }
 
     // Connector icons come either as a URL string or as a { dark, light } pair

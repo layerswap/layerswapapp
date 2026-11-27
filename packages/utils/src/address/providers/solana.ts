@@ -1,4 +1,4 @@
-import { NetworkType, type Network } from '@layerswap/widget-types';
+import { NetworkType } from '@layerswap/widget-types';
 import bs58 from 'bs58';
 import { AddressSelectionMode, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
 
@@ -11,8 +11,8 @@ export class SolanaAddressUtilsProvider implements AddressUtilsProvider {
     readonly selection = AddressSelectionMode.Networks;
     readonly defaultScope = 'primary' as const;
 
-    supportsNetwork(network: Network): boolean {
-        return network.type === NetworkType.Solana
+    supportsNetwork(network: { name: string; type: string; token?: unknown }): boolean {
+        return network.type === NetworkType.Solana;
     }
 
     isValidAddress(props: AddressUtilsProviderProps): boolean {

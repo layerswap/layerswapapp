@@ -1,9 +1,8 @@
-import { NetworkType } from '@layerswap/widget-types';
 import { FC } from 'react'
 import clsx from 'clsx'
 import { classifyAddress, addressTypeLabel } from '@layerswap/utils'
 
-type BadgeEntry = { address?: string, networkTypes?: NetworkType[] }
+type BadgeEntry = { address?: string, networkTypes?: string[] }
 
 const scopeLabel = ({ address, networkTypes }: BadgeEntry): string | null => {
     const trimmed = (address ?? '').trim()

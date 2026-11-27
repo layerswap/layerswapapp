@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, useIsPresent } from 'framer-motion';
-import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion';
+import { useHydratedReducedMotion } from '@layerswap/ui-kit';
 import { swapFlowTransition } from './swapFlowAnimation';
 import type { ReactNode } from 'react';
 import { WalletExecutionTransition } from './WalletExecutionTransition';

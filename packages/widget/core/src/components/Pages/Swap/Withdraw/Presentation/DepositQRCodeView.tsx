@@ -2,9 +2,9 @@ import {
     Popover,
     PopoverContent,
     PopoverTrigger,
-} from '@/components/shadcn/popover';
+} from '@layerswap/ui-kit';
 import QRIcon from '@/components/Icons/QRIcon';
-import { StyledQRCode } from '@layerswap/ui-kit/components';
+import { StyledQRCode } from '@layerswap/ui-kit';
 export function DepositQRCodeView({
     depositAddress,
     showQR = false,

@@ -1,5 +1,4 @@
-import { NetworkType, type Network } from '@layerswap/widget-types';
-import KnownInternalNames from "@/knownIds";
+import { NetworkType } from '@layerswap/widget-types';
 import { AddressSelectionMode, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
 
 export const name = 'Fuel';
@@ -10,8 +9,8 @@ export class FuelAddressUtilsProvider implements AddressUtilsProvider {
     readonly label = 'Fuel';
     readonly selection = AddressSelectionMode.Auto;
 
-    supportsNetwork(network: Network): boolean {
-        return (KnownInternalNames.Networks.FuelMainnet.includes(network.name) || KnownInternalNames.Networks.FuelTestnet.includes(network.name))
+    supportsNetwork(network: { name: string; type: string; token?: unknown }): boolean {
+        return network.type === NetworkType.Fuel;
     }
 
     isValidAddress(props: AddressUtilsProviderProps): boolean {

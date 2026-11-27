@@ -1,7 +1,6 @@
-import { KnownInternalNames, formatUnits, retryWithExponentialBackoff, AppSettings } from "@layerswap/utils";
-import { insertIfNotExists } from "@layerswap/widget-types";
+import { formatUnits, retryWithExponentialBackoff, AppSettings } from "@layerswap/utils";
+import { insertIfNotExists, NetworkType, LayerswapNetwork, LayerswapToken } from "@layerswap/widget-types";
 import { createTonClient } from "./client";
-import { Network, Token } from "@layerswap/widget-types";
 import { BalanceProvider, TokenBalance } from "@layerswap/widget-types";
 import { TonClient } from "@ton/ton";
 
@@ -14,7 +13,7 @@ export class TonBalanceProvider extends BalanceProvider {
     }
 
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
-        return KnownInternalNames.Networks.TONMainnet.includes(network.name)
+        return (network.type === NetworkType.TON && !AppSettings.isTestnet())
     }
 
     fetchBalance: BalanceProvider['fetchBalance'] = async (address, network) => {
@@ -40,8 +39,8 @@ export class TonBalanceProvider extends BalanceProvider {
 
 
 export const resolveBalance = async ({ address, network, token, apiKey }: {
-    network: Network,
-    token: Token,
+    network: LayerswapNetwork,
+    token: LayerswapToken,
     address: string,
     apiKey?: string
 }
@@ -58,7 +57,7 @@ export const resolveBalance = async ({ address, network, token, apiKey }: {
     }
 }
 
-const getNativeAssetBalance = async ({ network, token, address, tonClient }: { network: Network, token: Token, address: string, tonClient: TonClient }) => {
+const getNativeAssetBalance = async ({ network, token, address, tonClient }: { network: LayerswapNetwork, token: LayerswapToken, address: string, tonClient: TonClient }) => {
     const { Address } = await import("@ton/ton");
 
     const getBalance = async () => {
@@ -77,7 +76,7 @@ const getNativeAssetBalance = async ({ network, token, address, tonClient }: { n
 
 }
 
-const getJettonBalance = async ({ network, token, address, tonClient }: { network: Network, token: Token, address: string, tonClient: TonClient }) => {
+const getJettonBalance = async ({ network, token, address, tonClient }: { network: LayerswapNetwork, token: LayerswapToken, address: string, tonClient: TonClient }) => {
     const { JettonMaster, JettonWallet, Address } = await import("@ton/ton");
 
     const jettonMasterAddress = Address.parse(token.contract!)

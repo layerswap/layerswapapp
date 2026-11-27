@@ -1,9 +1,7 @@
-import KnownInternalNames from "@layerswap/utils/known-ids"
+import { NetworkType } from '@layerswap/widget-types'
 import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
 import { defineWalletDescriptor, type DescriptorNetworkOptions } from "./defineWalletDescriptor"
 import { readStorageJson } from "./persistedSession"
-
-const BITCOIN_NETWORKS = [KnownInternalNames.Networks.BitcoinMainnet, KnownInternalNames.Networks.BitcoinTestnet]
 
 /**
  * Tree-shake-safe stand-in for `createBitcoinProvider`. Defers `bitcoinjs-lib`,
@@ -11,9 +9,10 @@ const BITCOIN_NETWORKS = [KnownInternalNames.Networks.BitcoinMainnet, KnownInter
  * ~88 KB gzip — out of the host's entry chunk.
  */
 export function createBitcoinDescriptor(options?: DescriptorNetworkOptions): WalletProviderDescriptor {
-    const supportedNetworks = options?.supportedNetworks ?? BITCOIN_NETWORKS
+    const supportedNetworks = options?.supportedNetworks
     return defineWalletDescriptor({
         id: 'bitcoin',
+        supportedNetworkTypes: [NetworkType.Bitcoin],
         name: 'Bitcoin',
         autofillSupportedNetworks: supportedNetworks,
         withdrawalSupportedNetworks: supportedNetworks,

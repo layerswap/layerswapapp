@@ -1,4 +1,4 @@
-import { Network } from "../types"
+import { LayerswapNetwork } from "../types"
 
 /**
  * `chainId` is the chain the verdict was measured on. Providers that probe the wallet's
@@ -63,7 +63,7 @@ export type RpcHealthCheckStore = {
 }
 
 export interface RpcHealthCheckProvider {
-  supportsNetwork(network: Network): boolean
+  supportsNetwork(network: LayerswapNetwork): boolean
   /** Lazy-create (and cache) the store. Multiple calls should return the same instance. */
   createStore(): RpcHealthCheckStore
 }

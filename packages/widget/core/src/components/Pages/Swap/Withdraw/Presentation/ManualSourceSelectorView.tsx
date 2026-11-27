@@ -2,13 +2,13 @@ import {
     Popover,
     PopoverContent,
     PopoverTrigger,
-} from '@/components/shadcn/popover';
+} from '@layerswap/ui-kit';
 import {
     CommandItem,
     CommandList,
     CommandWrapper,
-} from '@/components/shadcn/command';
-import { ImageWithFallback } from '@layerswap/ui-kit/components';
+} from '@layerswap/ui-kit';
+import { ImageWithFallback } from '@layerswap/ui-kit';
 import type { Network, Token } from '@layerswap/widget-types';
 import { ChevronDown } from 'lucide-react';
 export function ManualSourceSelectorView({

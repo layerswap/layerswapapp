@@ -117,7 +117,7 @@ class StellarKitManager {
         ])
         if (generation !== this.generation) return
 
-        const isTestnet = AppSettings.ApiVersion === 'testnet' || AppSettings.ApiVersion === 'sandbox'
+        const isTestnet = AppSettings.isTestnet()
         const network = isTestnet ? kitTypesModule.Networks.TESTNET : kitTypesModule.Networks.PUBLIC
         const modules = kitUtilsModule.defaultModules({ filterBy: module => module.productId !== ghostsigModule.GHOSTSIG_ID })
         modules.push(new ghostsigModule.GhostsigModule({ network }))

@@ -1,13 +1,12 @@
-import { Network } from "@layerswap/widget-types";
-import { GasProvider } from "@layerswap/widget-types";
-import { KnownInternalNames } from "@layerswap/utils";
+import { AppSettings } from '@layerswap/utils';
+import { GasProvider, NetworkType, LayerswapNetwork } from "@layerswap/widget-types";
 
 export class TonGasProvider implements GasProvider {
-    supportsNetwork(network: Network): boolean {
-        return KnownInternalNames.Networks.TONMainnet.includes(network.name)
+    supportsNetwork(network: LayerswapNetwork): boolean {
+        return (network.type === NetworkType.TON && !AppSettings.isTestnet())
     }
 
-    async getGas({ address: string, network: Network, token: Token }): Promise<any> {
+    async getGas({ address: string, network: LayerswapNetwork, token: Token }): Promise<any> {
         return undefined;
     }
 }

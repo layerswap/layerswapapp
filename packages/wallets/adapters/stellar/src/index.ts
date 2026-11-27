@@ -5,23 +5,17 @@ import type {
     WalletInitContext,
     WalletProvider,
 } from '@layerswap/wallet-core/types'
-import {
-    LazyBalanceProvider,
-    LazyGasProvider,
-    NetworkType,
-    type NetworkWithTokens,
-    type WalletConnectConfig,
-} from '@layerswap/widget-types'
+import { LazyBalanceProvider, LazyGasProvider, NetworkType, type WalletConnectConfig, type LayerswapNetwork } from '@layerswap/widget-types'
 import { id } from './constants'
 import { createStellarConnection } from './service/createStellarConnection'
 import { stellarKitManager } from './service/stellarKitManager'
 import { createStellarTransfer } from './transferProvider/createStellarTransfer'
 
-export type StellarProviderConfig<Network = NetworkWithTokens> = BaseWalletProviderConfig<Network> & {
+export type StellarProviderConfig<Network extends LayerswapNetwork = LayerswapNetwork> = BaseWalletProviderConfig<Network> & {
     walletConnect?: WalletConnectConfig
 }
 
-export function createStellarProvider<Network = NetworkWithTokens>(
+export function createStellarProvider<Network extends LayerswapNetwork = LayerswapNetwork>(
     config: StellarProviderConfig<Network> = {},
 ): WalletProvider<Network> & { id: typeof id } {
     const {

@@ -1,5 +1,4 @@
 import { NetworkType } from '@layerswap/widget-types'
-import KnownInternalNames from '@layerswap/utils/known-ids'
 import type { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
 import { detectPocketUniverse } from '@/lib/pocketUniverse'
 
@@ -7,5 +6,5 @@ export function shouldUseDepository({ from, fromAsset, depositMethod, fromExchan
     const usePocketUniverseDepository = depositMethod === 'wallet' && !fromExchange && sourceIsSupported && !!sourceAddress
         && from?.type === NetworkType.EVM && !!fromAsset && fromAsset.symbol === from.token?.symbol && !fromAsset.contract && detectPocketUniverse()
 
-    return from?.name === KnownInternalNames.Networks.StellarTestnet || from?.name === KnownInternalNames.Networks.StellarMainnet || usePocketUniverseDepository
+    return from?.type === NetworkType.Stellar || usePocketUniverseDepository
 }

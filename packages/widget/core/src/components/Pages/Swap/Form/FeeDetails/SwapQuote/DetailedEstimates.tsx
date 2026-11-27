@@ -1,6 +1,6 @@
 import { GasFeeView } from './GasFeeView';
 import { DetailedEstimatesView } from './DetailedEstimatesView';
-import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon';
+import { ExtendedAddress } from '@layerswap/ui-kit';
 import { useSelectedAccount } from '@/context/swapAccounts';
 import { isGaslessCapableRoute } from '@/helpers/gasless';
 import { resolveTokenUsdPrice } from '@/helpers/tokenHelper';

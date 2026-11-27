@@ -1,5 +1,5 @@
-import { NetworkType } from '@layerswap/widget-types';
-import { NetworkRoute, NetworkWithTokens, Token, realRoutePresent } from "@layerswap/widget-types";
+import { NetworkType, type NetworkWithTokens, type Token } from '@layerswap/widget-types';
+import { NetworkRoute, realRoutePresent } from "@layerswap/widget-types";
 import { ExtendedRouteProvider, ExtendedTokenMapping, RealRouteRef, requiredDepositMethod } from "@layerswap/widget-types";
 import { getPolymarketCandidates, pickPolymarketDestination, POLYMARKET_CONFIG, POLYMARKET_DISPLAY_SYMBOL, PolymarketConfig } from "./routes";
 import { POLYMARKET_BASE_TOKEN_SYMBOL, POLYMARKET_DISPLAY_NAME, POLYMARKET_LOGO, POLYMARKET_PUSD_ADDRESS } from "./constants";
@@ -53,7 +53,7 @@ export const polymarketProvider: ExtendedRouteProvider = {
         let byName = networkCache.get(allNetworks)
         if (byName?.has(networkName)) return byName.get(networkName)
 
-        const base = allNetworks.find(n => n.name === cfg.realNetworkName)
+        const base = allNetworks.find(n => n.type === NetworkType.EVM && Number(n.chain_id) === 137)
         if (!base) return undefined
         const baseToken = base.tokens?.find(t => t.symbol === POLYMARKET_BASE_TOKEN_SYMBOL)
         if (!baseToken) return undefined

@@ -1,14 +1,14 @@
 import { type Wallet } from '../wallet';
-import type { Network } from "../types";
+import type { LayerswapNetwork } from "../types";
 
 export type GaslessSignParams = {
-    network: Network
+    network: LayerswapNetwork
     address: string
     typedData: unknown
     wallet?: Wallet
 }
 
 export interface GaslessProvider {
-    supportsNetwork(network: Network): boolean
+    supportsNetwork(network: LayerswapNetwork): boolean
     signGaslessDeposit(params: GaslessSignParams): Promise<string>
 }

@@ -1,4 +1,5 @@
-import { type InternalConnector } from '@layerswap/widget-types';
+import type { AddressUtilsProvider } from '@layerswap/utils';
+import type { InternalConnector, LayerswapNetwork } from '@layerswap/widget-types';
 import { TransferProvider } from '@layerswap/widget-types';
 import { BalanceProvider } from '@layerswap/widget-types';
 import { GasProvider } from '@layerswap/widget-types';
@@ -7,7 +8,6 @@ import { ContractAddressCheckerProvider } from '@layerswap/widget-types';
 import { RpcHealthCheckProvider } from '@layerswap/widget-types';
 import { ExtendedRouteProvider } from '@layerswap/widget-types';
 import { GaslessProvider } from '@layerswap/widget-types';
-import type { NetworkWithTokens } from '@layerswap/widget-types';
 import type { WalletConnectionProviderProps, WalletConnectionStore, MultiStepHandler } from './wallet';
 
 export type WalletModalConnector = InternalConnector & {
@@ -52,13 +52,14 @@ export type WalletWrapper = {
     init?: (ctx: WalletInitContext) => (() => void) | void,
 }
 
-export type WalletProvider<Network = NetworkWithTokens> = WalletWrapper & {
+export type WalletProvider<Network extends LayerswapNetwork = LayerswapNetwork> = WalletWrapper & {
     /**
      * Vanilla external-store factory for connection state. Replaces the old
      * `walletConnectionProvider` hook field. Called once per provider, NOT
      * during render.
      */
     createConnection: (props: WalletConnectionProviderProps<Network>) => WalletConnectionStore<Network>,
+    addressProvider?: AddressUtilsProvider,
     nftProvider?: NftProvider | NftProvider[],
     gasProvider?: GasProvider | GasProvider[],
     balanceProvider?: BalanceProvider | BalanceProvider[],
@@ -76,7 +77,7 @@ export type WalletProviderModule = {
     multiStepHandler?: MultiStepHandler,
 }
 
-export type BaseWalletProviderConfig<Network = NetworkWithTokens> = {
+export type BaseWalletProviderConfig<Network extends LayerswapNetwork = LayerswapNetwork> = {
     /**
      * Optional custom connection-store factory. Replaces the previous
      * hook-shaped `customHook` field. Implementations build their own

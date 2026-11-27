@@ -1,13 +1,12 @@
-import { NetworkType } from '@layerswap/widget-types';
 import { FC, useState } from 'react'
 import clsx from 'clsx'
 import { BookmarkPlus } from 'lucide-react'
-import { FilledX } from "@layerswap/ui-kit/components";
+import { FilledX } from "@layerswap/ui-kit";
 import { useAddressBookStore, NAME_MAX, COUNTER_SHOW_AT } from '@/stores/addressBookStore'
 import SecondaryButton from '../Buttons/secondaryButton'
 import { addressSelectionType, AddressSelectionMode } from '@layerswap/utils'
 
-export const SaveToBookNameForm: FC<{ address: string, network: { name?: string, type: NetworkType }, onDone: () => void, compact?: boolean }> = ({ address, network, onDone, compact }) => {
+export const SaveToBookNameForm: FC<{ address: string, network: { name?: string, type: string }, onDone: () => void, compact?: boolean }> = ({ address, network, onDone, compact }) => {
     const addAddress = useAddressBookStore(s => s.addAddress)
     const [name, setName] = useState('')
 
@@ -74,7 +73,7 @@ export const SaveToBookNameForm: FC<{ address: string, network: { name?: string,
     )
 }
 
-const SaveToBookInline: FC<{ address: string, network: { name?: string, type: NetworkType } }> = ({ address, network }) => {
+const SaveToBookInline: FC<{ address: string, network: { name?: string, type: string } }> = ({ address, network }) => {
     const [editing, setEditing] = useState(false)
 
     if (!editing) {

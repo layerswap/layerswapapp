@@ -1,9 +1,9 @@
 import { Address } from '@/lib/address/Address';
-import shortenString from '@/components/utils/ShortenString';
-import { ImageWithFallback } from '@layerswap/ui-kit/components';
+import { shortenString } from '@layerswap/utils';
+import { ImageWithFallback } from '@layerswap/ui-kit';
 import type { Network, Wallet } from '@layerswap/widget-types';
 import type { ReactNode } from 'react';
-import { AddressIconView } from './AddressIcon/AddressIconView';
+import { AddressIconView } from '@layerswap/ui-kit';
 import { AddressDetailsView } from './AddressDetailsView';
 
 export type RecipientPresentation = {

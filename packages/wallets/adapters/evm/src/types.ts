@@ -1,15 +1,14 @@
-import { type WalletConnectConfig } from '@layerswap/widget-types';
+import type { WalletConnectConfig, LayerswapNetwork } from '@layerswap/widget-types';
 import type { Config } from '@wagmi/core'
 import type {
     BaseWalletProviderConfig,
     WalletProviderModule,
 } from "@layerswap/wallet-core/types"
 import type { EvmAdditionalSupportedNetworks } from "./service/networkBuckets"
-import type { NetworkWithTokens } from "@layerswap/widget-types";
 
 export type { WalletConnectConfig }
 
-export type EVMProviderConfig<Network = NetworkWithTokens> = BaseWalletProviderConfig<Network> & {
+export type EVMProviderConfig<Network extends LayerswapNetwork = LayerswapNetwork> = BaseWalletProviderConfig<Network> & {
     walletConnectConfigs?: WalletConnectConfig
     walletProviderModules?: WalletProviderModule[]
     /**
@@ -25,5 +24,4 @@ export type EVMProviderConfig<Network = NetworkWithTokens> = BaseWalletProviderC
      */
     wagmiConfig?: Config
     additionalSupportedNetworks?: EvmAdditionalSupportedNetworks
-    ethereumChainIds?: readonly number[]
 }

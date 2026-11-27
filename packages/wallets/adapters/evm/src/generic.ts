@@ -1,21 +1,20 @@
-import { NetworkType } from '@layerswap/widget-types';
 import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/wallet-core/types"
 import type { WalletProvider, WalletInitContext } from "@layerswap/wallet-core/types"
-import { LazyBalanceProvider, LazyGasProvider } from "@layerswap/widget-types";
+import { LazyBalanceProvider, LazyGasProvider, NetworkType } from "@layerswap/widget-types";
 import { createEvmConnection } from "./service/createEvmConnection"
 import { initEvmProvider } from "./EVMProvider/init"
 import { createEvmTransfer } from "./transferProvider/createEvmTransfer"
 import { EVMContractAddressProvider } from "./evmContractAddressProvider"
 import type { EVMProviderConfig, WalletConnectConfig } from "./types"
 import { getEvmConfig } from "./service/getEvmConfig"
-import type { Network, NetworkWithTokens } from "@layerswap/widget-types";
+import type { LayerswapNetwork } from "@layerswap/widget-types";
 import type { GaslessProvider } from "@layerswap/widget-types";
 import { createEVMGaslessProvider } from "./gaslessProvider/createEVMGaslessProvider"
 import { id } from "./constants"
 
 export type { EVMProviderConfig, WalletConnectConfig }
 
-export function createEVMProvider<TNetwork = NetworkWithTokens>(
+export function createEVMProvider<TNetwork extends LayerswapNetwork = LayerswapNetwork>(
     config: EVMProviderConfig<TNetwork> = {},
 ): WalletProvider<TNetwork> & { id: typeof id } {
     const {
@@ -30,7 +29,6 @@ export function createEVMProvider<TNetwork = NetworkWithTokens>(
         rpcHealthCheckProviders,
         wagmiConfig,
         additionalSupportedNetworks,
-        ethereumChainIds,
     } = config
 
     const moduleMultiStepHandlers = walletProviderModules
@@ -45,7 +43,6 @@ export function createEVMProvider<TNetwork = NetworkWithTokens>(
     ): WalletConnectionStore<TNetwork> => {
         initEvmProvider({
             networks: props.networks,
-            networkAdapter: props.networkAdapter,
             walletConnectConfigs,
             externalWagmiConfig: wagmiConfig ?? null,
         })
@@ -56,7 +53,7 @@ export function createEVMProvider<TNetwork = NetworkWithTokens>(
             walletConnectProjectId: walletConnectConfigs?.projectId,
             extraMultiStepHandlers: moduleMultiStepHandlers,
             additionalSupportedNetworks,
-            ethereumChainIds,
+
         })
     }
 
@@ -104,7 +101,7 @@ export function createEVMProvider<TNetwork = NetworkWithTokens>(
 
     const defaultGaslessProviders = [
         (): GaslessProvider => {
-            const supportsNetwork = (network: Network) =>
+            const supportsNetwork = (network: LayerswapNetwork) =>
                 network.type === NetworkType.EVM && !!network.token
             return {
                 supportsNetwork,

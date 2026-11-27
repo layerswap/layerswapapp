@@ -1,7 +1,7 @@
 'use client'
+import type { LayerswapNetwork } from '@layerswap/widget-types';
 import { useLayoutEffect, type FC } from 'react'
 import { createStore } from 'zustand/vanilla'
-import type { NetworkWithTokens } from '@layerswap/widget-types';
 import type { WalletConnectionProvider, WalletConnectionProviderProps, WalletConnectionStore, } from '@/types/wallet'
 
 /**
@@ -38,7 +38,7 @@ const EMPTY_PROVIDER: WalletConnectionProvider = Object.freeze({
     ready: false,
 })
 
-export type ReactHookConnectionAdapter<Network = NetworkWithTokens> = {
+export type ReactHookConnectionAdapter<Network extends LayerswapNetwork = LayerswapNetwork> = {
     /**
      * Render this inside the package's `wrapper` component. It calls the
      * underlying hook and mirrors its value into the external store.
@@ -58,7 +58,7 @@ export type ReactHookConnectionAdapter<Network = NetworkWithTokens> = {
  *   // inside wrapper: <adapter.Hydrator networks={networksFromSettings} />
  *   // in factory:    createConnection: adapter.createConnection
  */
-export function createReactHookConnectionAdapter<Network = NetworkWithTokens>(
+export function createReactHookConnectionAdapter<Network extends LayerswapNetwork = LayerswapNetwork>(
     useConnection: (props: WalletConnectionProviderProps<Network>) => WalletConnectionProvider,
 ): ReactHookConnectionAdapter<Network> {
     const store = createStore<WalletConnectionProvider>(() => EMPTY_PROVIDER)

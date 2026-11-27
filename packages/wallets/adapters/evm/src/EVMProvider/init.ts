@@ -1,6 +1,7 @@
+import type { LayerswapNetwork } from '@layerswap/widget-types';
 import type { Config } from '@wagmi/core'
 import type { Chain, Transport } from 'viem'
-import { DEFAULT_WALLETCONNECT_PROJECT_ID, type AppNetworkAdapter } from "@layerswap/wallet-core"
+import { DEFAULT_WALLETCONNECT_PROJECT_ID } from "@layerswap/wallet-core"
 import { getEvmChainsConfig } from '../evmUtils/chainConfigs'
 import { buildEVMConnectors } from './Connectors'
 import { getEvmConfig, hasEvmConfig, provideExternalEvmConfig, setEvmConfigInitParams, } from '../service/getEvmConfig'
@@ -15,9 +16,8 @@ const DEFAULT_WC_CONFIG: WalletConnectConfig = {
     icons: ['https://www.layerswap.app/favicon.ico'],
 }
 
-type InitOptions<Network> = {
+type InitOptions<Network extends LayerswapNetwork = LayerswapNetwork> = {
     networks: Network[]
-    networkAdapter: AppNetworkAdapter<Network>
     walletConnectConfigs?: WalletConnectConfig
     externalWagmiConfig?: Config | null
 }
@@ -37,8 +37,8 @@ let _initialized = false
  * chains the host didn't configure. `getClient` resolves chains and
  * transports at call time, so appended entries are picked up. Idempotent.
  */
-function syncLayerswapChains<Network>(config: Config, networks: Network[], networkAdapter: AppNetworkAdapter<Network>): void {
-    const { chains, transports } = getEvmChainsConfig(networks, networkAdapter)
+function syncLayerswapChains<Network extends LayerswapNetwork = LayerswapNetwork>(config: Config, networks: Network[]): void {
+    const { chains, transports } = getEvmChainsConfig(networks)
     const existingIds = new Set(config.chains.map(c => c.id))
     const additions = chains.filter(c => !existingIds.has(c.id))
     if (additions.length === 0) return
@@ -59,8 +59,8 @@ function syncLayerswapChains<Network>(config: Config, networks: Network[], netwo
  * One-shot initialization of the EVM wagmi config and store sync. Safe to
  * call multiple times — subsequent calls are no-ops.
  */
-export function initEvmProvider<Network>(opts: InitOptions<Network>): void {
-    const { networks, networkAdapter, walletConnectConfigs, externalWagmiConfig } = opts
+export function initEvmProvider<Network extends LayerswapNetwork = LayerswapNetwork>(opts: InitOptions<Network>): void {
+    const { networks, walletConnectConfigs, externalWagmiConfig } = opts
     const resolvedWalletConnectConfigs = walletConnectConfigs?.projectId ? walletConnectConfigs : DEFAULT_WC_CONFIG
 
     if (_initialized) {
@@ -68,7 +68,7 @@ export function initEvmProvider<Network>(opts: InitOptions<Network>): void {
         // when a different config is already live.
         if (externalWagmiConfig) {
             provideExternalEvmConfig(externalWagmiConfig)
-            syncLayerswapChains(getEvmConfig(), networks, networkAdapter)
+            syncLayerswapChains(getEvmConfig(), networks)
         }
         return
     }
@@ -80,7 +80,7 @@ export function initEvmProvider<Network>(opts: InitOptions<Network>): void {
         // to whichever config is actually live so there is exactly one
         // synced wagmi state.
         provideExternalEvmConfig(externalWagmiConfig)
-        syncLayerswapChains(getEvmConfig(), networks, networkAdapter)
+        syncLayerswapChains(getEvmConfig(), networks)
         attachWagmiSync(getEvmConfig())
         _initialized = true
         return
@@ -92,7 +92,7 @@ export function initEvmProvider<Network>(opts: InitOptions<Network>): void {
         return
     }
 
-    const { chains, transports } = getEvmChainsConfig(networks, networkAdapter)
+    const { chains, transports } = getEvmChainsConfig(networks)
     const connectors = buildEVMConnectors(resolvedWalletConnectConfigs)
 
     setEvmConfigInitParams({

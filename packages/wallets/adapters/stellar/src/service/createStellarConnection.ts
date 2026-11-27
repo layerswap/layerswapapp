@@ -1,3 +1,4 @@
+import type { LayerswapNetwork } from '@layerswap/widget-types';
 import type { WalletConnectionProviderProps, WalletConnectionStore } from '@layerswap/wallet-core/types'
 import type { WalletModalConnector } from '@layerswap/wallet-core/types'
 import { connectModalStore, createMemoizedConnectionStore, getAdditionalConnectorsStore } from '@layerswap/wallet-core'
@@ -11,16 +12,15 @@ type CreateStellarConnectionOptions = {
     walletConnectProjectId?: string
 }
 
-export function createStellarConnection<Network>(
+export function createStellarConnection<Network extends LayerswapNetwork = LayerswapNetwork>(
     initialProps: WalletConnectionProviderProps<Network>,
     options: CreateStellarConnectionOptions = {},
 ): WalletConnectionStore<Network> {
     registerStellarWalletConnectChain()
 
     let networks = initialProps.networks
-    let networkAdapter = initialProps.networkAdapter
     const service = new StellarConnectionService<Network>()
-    service.setNetworks(networks, networkAdapter)
+    service.setNetworks(networks)
     const additionalConnectorsStore = options.walletConnectProjectId
         ? getAdditionalConnectorsStore(stellarWalletConnectChain.namespace, options.walletConnectProjectId)
         : undefined
@@ -69,8 +69,7 @@ export function createStellarConnection<Network>(
         ],
         onUpdateProps: nextProps => {
             networks = nextProps.networks
-            networkAdapter = nextProps.networkAdapter
-            service.setNetworks(networks, networkAdapter)
+            service.setNetworks(networks)
         },
     })
 }

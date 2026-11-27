@@ -1,5 +1,5 @@
-import { retryWithExponentialBackoff, fetchWithTimeout, KnownInternalNames, formatUnits } from "@layerswap/utils";
-import { BalanceProvider, TokenBalance } from "@layerswap/widget-types";
+import { retryWithExponentialBackoff, fetchWithTimeout, formatUnits } from "@layerswap/utils";
+import { BalanceProvider, NetworkType, TokenBalance } from "@layerswap/widget-types";
 
 type FuelBalancePage = {
     data?: {
@@ -26,7 +26,7 @@ const BALANCES_QUERY = `query Balances($filter: BalanceFilterInput, $after: Stri
 
 export class FuelBalanceProvider extends BalanceProvider {
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
-        return KnownInternalNames.Networks.FuelMainnet.includes(network.name) || KnownInternalNames.Networks.FuelTestnet.includes(network.name)
+        return network.type === NetworkType.Fuel
     }
 
     fetchBalance: BalanceProvider['fetchBalance'] = async (address, network, options) => {

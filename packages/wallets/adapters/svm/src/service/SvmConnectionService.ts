@@ -1,7 +1,7 @@
-import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
+import { NetworkType, type InternalConnector, type Wallet, type LayerswapNetwork } from '@layerswap/widget-types';
 import type { RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types";
 import type { WalletModalConnector } from "@layerswap/wallet-core/types"
-import { buildDeepLink, chainsToNetworkTypes, clearPendingDynamicWcMetadata, createRegistryConnector, getDynamicWcMetadata, getPendingDynamicWcMetadata, mapConnectError, resolveWalletConnectConnection, setDynamicWcMetadata, setPendingMetadataForRegistry, subscribeDisplayUri, walletKey, type AppNetworkAdapter, type WalletConnectServiceDeps } from "@layerswap/wallet-core"
+import { buildDeepLink, chainsToNetworkTypes, clearPendingDynamicWcMetadata, createRegistryConnector, getDynamicWcMetadata, getPendingDynamicWcMetadata, mapConnectError, resolveWalletConnectConnection, setDynamicWcMetadata, setPendingMetadataForRegistry, subscribeDisplayUri, walletKey, type WalletConnectServiceDeps } from "@layerswap/wallet-core"
 import { resolveWalletConnectorIcon } from "@layerswap/wallet-core"
 import { name as PROVIDER_NAME, id as PROVIDER_ID, solanaWalletConnectChain } from '../constants'
 import { resolveSolanaWalletConnectorIcon } from '../utils'
@@ -17,31 +17,18 @@ const SOLANA_HIDDEN_WC_NAME = 'Hidden WalletConnect'
 const SVM_NS = solanaWalletConnectChain.namespace
 
 const normalizeWcName = (name?: string) => name === SOLANA_HIDDEN_WC_NAME ? SOLANA_WC_MODAL_NAME : name
-const networkSupport: Record<string, string[]> = {
-    soon: ['okx wallet', 'tokenpocket', 'nightly'],
-    eclipse: ['nightly', 'backpack'],
-}
 
-function resolveSupportedNetworks(supportedNetworks: string[], connectorId: string): string[] {
-    return supportedNetworks.filter((network) => {
-        const restrictedToConnectors = networkSupport[network.split('_')[0].toLowerCase()]
-        return !restrictedToConnectors || restrictedToConnectors.includes(connectorId?.toLowerCase())
-    })
-}
-
-export class SvmConnectionService<Network> implements WalletConnectionService<WalletConnectServiceDeps, Network> {
+export class SvmConnectionService<Network extends LayerswapNetwork = LayerswapNetwork> implements WalletConnectionService<WalletConnectServiceDeps, Network> {
     private _networks: Network[] = []
-    private _networkAdapter: AppNetworkAdapter<Network> | undefined
     private _supported: string[] = []
     private _networksKey = ''
     private _deps: WalletConnectServiceDeps = {}
 
-    setNetworks(networks: Network[], networkAdapter: AppNetworkAdapter<Network>): void {
-        const key = networks.map(network => networkAdapter.getId(network)).join('|')
+    setNetworks(networks: Network[]): void {
+        const key = networks.map(network => network.name).join('|')
         if (this._networksKey === key) return
         this._networks = networks
-        this._networkAdapter = networkAdapter
-        this._supported = networks.filter(network => networkAdapter.isSolanaNetwork(network)).map(network => networkAdapter.getId(network))
+        this._supported = networks.filter(network => network.type === NetworkType.Solana).map(network => network.name)
         this._networksKey = key
     }
 
@@ -54,8 +41,8 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Wa
     }
 
     getProviderIcon(): string | undefined {
-        const network = this._networks.find(item => this._networkAdapter?.isSolanaNetwork(item))
-        return network && this._networkAdapter ? this._networkAdapter.getIcon(network) : undefined
+        const network = this._networks.find(item => item.type === NetworkType.Solana)
+        return network?.logo
     }
 
     getNetworkIcon(): string | undefined {
@@ -120,7 +107,7 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Wa
         const displayId = dynamicMeta?.id || normalizedName
         const displayIconRaw = dynamicMeta?.icon || snapshot.icon
 
-        const supported = resolveSupportedNetworks(this._supported, displayId)
+        const supported = this._supported
         return {
             id: displayId,
             address: activeAddress,
@@ -169,9 +156,9 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Wa
         if (!network) return false
         if (!connectorId) return true
         if (!purpose) {
-            return resolveSupportedNetworks([network], connectorId).length === 0
+            return false
         }
-        const supported = resolveSupportedNetworks(this._supported, connectorId)
+        const supported = this._supported
         return supported.length === 0 || !supported.includes(network)
     }
 
@@ -298,7 +285,7 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Wa
 
             if (!newAddress || !connectedAdapter || !displayId) return undefined
 
-            const supported = resolveSupportedNetworks(this._supported, displayId)
+            const supported = this._supported
             const wallet: Wallet = {
                 id: displayId,
                 address: newAddress,

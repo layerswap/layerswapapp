@@ -1,5 +1,5 @@
+import { WalletIcon } from '@layerswap/ui-kit';
 import { TransferBlock } from '../TransferBlock';
-import { WalletIcon } from '@layerswap/ui-kit/components';
 import type { Network } from '@layerswap/widget-types';
 import { Loader2 } from 'lucide-react';
 import { type ReactNode } from 'react';

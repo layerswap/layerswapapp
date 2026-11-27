@@ -1,10 +1,9 @@
-import { KnownInternalNames, formatUnits } from "@layerswap/utils";
-import { Network } from "@layerswap/widget-types";
-import { GasProvider, GasProps } from "@layerswap/widget-types";
+import { formatUnits, AppSettings } from "@layerswap/utils";
+import { GasProvider, GasProps, NetworkType, LayerswapNetwork } from "@layerswap/widget-types";
 
 export class TronGasProvider implements GasProvider {
-    supportsNetwork(network: Network): boolean {
-        return KnownInternalNames.Networks.TronMainnet.includes(network.name)
+    supportsNetwork(network: LayerswapNetwork): boolean {
+        return (network.type === NetworkType.Tron && !AppSettings.isTestnet())
     }
 
     async getGas({ address, network, token }: GasProps): Promise<any> {

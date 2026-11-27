@@ -1,13 +1,5 @@
-import type { AppNetworkAdapter } from "@layerswap/wallet-core"
-import { ethereumNames } from "../constants"
+import { NetworkType, type LayerswapNetwork } from '@layerswap/widget-types'
 
-export function findEthereumNetwork<Network>(
-    networks: Network[],
-    networkAdapter: AppNetworkAdapter<Network>,
-    ethereumChainIds: readonly number[] = [],
-): Network | undefined {
-    return networks.find(network =>
-        ethereumNames.includes(networkAdapter.getId(network))
-        || ethereumChainIds.includes(Number(networkAdapter.getChainId(network)))
-    )
+export function findEthereumNetwork<Network extends LayerswapNetwork>(networks: Network[]): Network | undefined {
+    return networks.find(network => network.type === NetworkType.EVM && [1, 11155111].includes(Number(network.chain_id)))
 }

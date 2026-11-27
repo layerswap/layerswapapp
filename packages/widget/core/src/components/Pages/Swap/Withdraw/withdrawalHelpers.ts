@@ -1,5 +1,5 @@
 import type { NetworkRoute, Wallet } from '@layerswap/widget-types';
-import type { AccountIdentity } from '@/context/swapAccounts';
+import type { AccountIdentity } from '@layerswap/wallet-core/types';
 import type { SwapBasicData } from '@/lib/apiClients/layerSwapApiClient';
 import type { SwapFormValues } from '../Form/SwapFormValues';
 
@@ -24,4 +24,3 @@ export function walletWithdrawalValues(swap: SwapBasicData, refuel: boolean, amo
         depositMethod: 'wallet',
     };
 }
-

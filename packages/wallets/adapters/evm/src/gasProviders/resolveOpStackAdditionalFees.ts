@@ -1,4 +1,4 @@
-import type { Network } from '@layerswap/widget-types'
+import type { LayerswapNetwork } from '@layerswap/widget-types'
 import { parseAbi, type PublicClient } from 'viem'
 import { estimateL1Fee } from 'viem/op-stack'
 import type { EVMGasPolicy } from './evmGasPolicies.js'
@@ -9,7 +9,7 @@ type OpStackTransaction = { account: `0x${string}`; to: `0x${string}`; data?: `0
 export type OpStackFees = { oracle: `0x${string}`; operatorFee: boolean }
 
 /** The oracle comes from network metadata; the `opStack` policy only opts into the operator fee. */
-export function resolveOpStackFees(network: Network, policy: EVMGasPolicy): OpStackFees | undefined {
+export function resolveOpStackFees(network: LayerswapNetwork, policy: EVMGasPolicy): OpStackFees | undefined {
     const oracle = network.metadata?.evm_oracle_contract as `0x${string}` | undefined
     if (!oracle) {
         return undefined

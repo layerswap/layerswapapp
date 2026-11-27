@@ -1,5 +1,5 @@
 import { widgetTelemetry } from '@/lib/widgetTelemetry';
-import { truncateDecimals } from '@/components/utils/RoundDecimals';
+import { ceilToDecimals, truncateDecimals, truncateToDecimals } from '@layerswap/utils';
 import { Widget } from '@/components/Widget/Index';
 import { useSettingsState } from '@/context/settings';
 import { useSwapDataState, useSwapDataUpdate } from '@/context/swap';
@@ -11,7 +11,6 @@ import useOutOfGas from '@/lib/gases/useOutOfGas';
 import useSWRGas from '@/lib/gases/useSWRGas';
 import { resolveMaxAllowedAmount } from '@/components/Input/Amount/helpers';
 import { amountPresetSource, isAmountPreset } from '@/lib/amountPresets';
-import { ceilToDecimals, truncateToDecimals } from '@/components/utils/RoundDecimals';
 import { formatTokenAmount } from '@/components/utils/formatTokenAmount';
 import { NetworkType } from '@layerswap/widget-types';
 import type { JSX } from 'react';

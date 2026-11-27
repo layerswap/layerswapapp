@@ -1,12 +1,12 @@
-import { Network } from "../types";
+import { LayerswapNetwork } from "../types";
 
 export interface NftBalanceProps {
     address: string;
-    network: Network;
+    network: LayerswapNetwork;
     contractAddress: string;
 }
 
 export interface NftProvider {
-    supportsNetwork(network: Network): boolean;
+    supportsNetwork(network: LayerswapNetwork): boolean;
     getBalance(props: NftBalanceProps): Promise<number>;
 } 

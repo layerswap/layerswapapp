@@ -1,6 +1,6 @@
 # @layerswap/wallet-core
 
-Headless foundation of the Layerswap wallet stack. Owns the wallet contracts (`WalletProvider`, `WalletConnectionStore`, `WalletConnectionService`, `WalletProviderDescriptor`, `AppNetworkAdapter`), the provider registry and descriptor-hydration machinery, WalletConnect plumbing (registry connectors, deep links, dynamic metadata), EIP-6963 detection, and string-based wallet icon resolution.
+Headless foundation of the Layerswap wallet stack. Owns the wallet contracts (`WalletProvider`, `WalletConnectionStore`, `WalletConnectionService`, `WalletProviderDescriptor`), the provider registry and descriptor-hydration machinery, WalletConnect plumbing (registry connectors, deep links, dynamic metadata), EIP-6963 detection, and string-based wallet icon resolution.
 
 Contains no UI. React appears only as a peer dependency for the headless context providers (`WalletProvidersRegistryProvider`, `DescriptorHydrationBoundary`). The visual layer (connect modal, connectors list) lives in `@layerswap/ui-kit`, which depends on this package — never the other way around.
 
@@ -10,3 +10,9 @@ Contains no UI. React appears only as a peer dependency for the headless context
   Transfer providers throw through `walletActionError(name, { message, cause?, reasonCode? })` and `userRejectedError({ message?, cause? })`: `name` is the `ActionMessageType` the widget renders (UI copy only, it never classifies), `reasonCode` is what the host and telemetry are told and wins over every inferred signal anywhere in the `cause` chain. Rule: labels are UI copy; declare declines with `userRejectedError`. `tests/adapter-sentinel-guard.test.mjs` fails CI for any adapter that assigns the rejected label by hand.
 
 Chain packages (`@layerswap/wallet-evm`, `@layerswap/wallet-svm`, …) must depend only on this package, `@layerswap/utils`, and `@layerswap/widget-types` — never on `@layerswap/ui-kit`.
+
+## Host network types
+
+Pass `LayerswapNetwork` objects from `@layerswap/widget-types` to the registry. Map host network fields once at the integration boundary; `type` identifies the family (`NetworkType.EVM`, `NetworkType.Solana`, etc.) and `name` remains the host's identifier. Layerswap's own `Network` extends this shared model and can be passed directly.
+
+A wallet package for a custom family declares `supportedNetworkTypes: ['aztec']` on its descriptor and supplies an `addressProvider` there, outside `loadProvider`, so address validation works before hydration. The provider must not import the chain SDK. It implements `AddressUtilsProvider` from `@layerswap/utils`; registration deduplicates by `providerName`, keeping the first provider. Without an address provider, addresses for unknown types are invalid.

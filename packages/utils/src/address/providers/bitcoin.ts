@@ -1,6 +1,6 @@
+import AppSettings from '@/AppSettings';
 import { NetworkType } from '@layerswap/widget-types';
 import { validate, Network as BtcNetwork } from 'bitcoin-address-validation';
-import KnownInternalNames from "@/knownIds";
 import { AddressSelectionMode, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
 
 export const name = 'Bitcoin';
@@ -11,8 +11,8 @@ export class BitcoinAddressUtilsProvider implements AddressUtilsProvider {
     readonly label = 'Bitcoin';
     readonly selection = AddressSelectionMode.Auto;
 
-    supportsNetwork(network: { name: string }): boolean {
-        return KnownInternalNames.Networks.BitcoinMainnet.includes(network.name) || KnownInternalNames.Networks.BitcoinTestnet.includes(network.name)
+    supportsNetwork(network: { name: string; type: string; token?: unknown }): boolean {
+        return network.type === NetworkType.Bitcoin;
     }
 
     isValidAddress(props: AddressUtilsProviderProps): boolean {
@@ -24,7 +24,7 @@ export class BitcoinAddressUtilsProvider implements AddressUtilsProvider {
         if (!network) {
             return validate(address, BtcNetwork.mainnet) || validate(address, BtcNetwork.testnet);
         }
-        const isTestnet = network.name.toLowerCase().includes("testnet");
+        const isTestnet = AppSettings.isTestnet();
         return validate(address, isTestnet ? BtcNetwork.testnet : BtcNetwork.mainnet);
     }
 

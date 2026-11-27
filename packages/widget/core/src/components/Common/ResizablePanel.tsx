@@ -1,7 +1,7 @@
 import { useMeasure } from "@uidotdev/usehooks";
 import { motion } from "framer-motion";
 import { ReactNode, useEffect, useState } from "react";
-import { useHydratedReducedMotion } from "@/hooks/useHydratedReducedMotion";
+import { useHydratedReducedMotion } from "@layerswap/ui-kit";
 
 type ResizablePanelProps = {
     children: ReactNode;

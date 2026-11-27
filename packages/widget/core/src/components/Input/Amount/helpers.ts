@@ -1,6 +1,6 @@
 import { TokenBalance } from "@layerswap/widget-types";
 import { Token } from "@layerswap/widget-types";
-import { truncateToDecimals } from "@/components/utils/RoundDecimals";
+import { truncateToDecimals } from "@layerswap/utils";
 import { resolveGasBalanceBudget } from "@/lib/gases/resolveGasBalanceBudget";
 
 
@@ -10,7 +10,7 @@ type ResolveMaxAllowedAmountProps = {
     gasAmount: number | undefined
     gasReserve?: number
     fromCurrency: Token
-    native_currency: Token | undefined
+    native_currency: Pick<Token, 'symbol'> | undefined
     depositMethod: 'wallet' | 'deposit_address' | undefined
 }
 

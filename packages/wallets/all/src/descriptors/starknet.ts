@@ -1,13 +1,7 @@
-import KnownInternalNames from "@layerswap/utils/known-ids"
+import { NetworkType } from '@layerswap/widget-types'
 import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
 import { defineWalletDescriptor, type DescriptorNetworkOptions } from "./defineWalletDescriptor"
 import { readStorageJson } from "./persistedSession"
-
-const STARKNET_NETWORKS = [
-    KnownInternalNames.Networks.StarkNetMainnet,
-    KnownInternalNames.Networks.StarkNetSepolia,
-    KnownInternalNames.Networks.StarkNetGoerli,
-]
 
 /**
  * Tree-shake-safe stand-in for `createStarknetProvider` — defers
@@ -15,9 +9,10 @@ const STARKNET_NETWORKS = [
  * entry chunk.
  */
 export function createStarknetDescriptor(options?: DescriptorNetworkOptions): WalletProviderDescriptor {
-    const supportedNetworks = options?.supportedNetworks ?? STARKNET_NETWORKS
+    const supportedNetworks = options?.supportedNetworks
     return defineWalletDescriptor({
         id: 'starknet',
+        supportedNetworkTypes: [NetworkType.Starknet],
         name: 'Starknet',
         autofillSupportedNetworks: supportedNetworks,
         withdrawalSupportedNetworks: supportedNetworks,

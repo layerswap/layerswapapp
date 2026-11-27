@@ -3,7 +3,7 @@ import { ActionMessageType, type WalletWithdrawal, type TransferProgress } from 
 import { isUserRejection } from '@layerswap/wallet-core/errors';
 import { AmountPresetChangedError } from '@/lib/amountPresets';
 import type { DepositAction } from '@/lib/apiClients/layerSwapApiClient';
-import { truncateToDecimals } from '@/components/utils/RoundDecimals';
+import { truncateToDecimals } from '@layerswap/utils';
 import { isTransferAction } from '@/helpers/depositActions';
 import { isSentByConnectedWallet } from '@/helpers/swapFlow';
 import { useSwapDataState, useSwapDataUpdate } from '@/context/swap';

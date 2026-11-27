@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test, { after } from 'node:test'
 import { createRequire, registerHooks } from 'node:module'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { extname } from 'node:path'
 import ts from 'typescript'
 import { ActionMessageType } from '@layerswap/widget-types'
@@ -13,7 +13,8 @@ const hooks = registerHooks({
       return { url: 'data:text/javascript,export const BackendTransactionStatus = { Pending: "pending" }', shortCircuit: true }
     }
     if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
-      return nextResolve(`${specifier}.js`, context)
+      const file = new URL(`${specifier}.js`, context.parentURL)
+      return nextResolve(existsSync(file) ? `${specifier}.js` : `${specifier}/index.js`, context)
     }
     return nextResolve(specifier, context)
   },

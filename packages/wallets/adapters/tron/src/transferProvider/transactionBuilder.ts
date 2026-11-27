@@ -1,11 +1,11 @@
-import { Token } from "@layerswap/widget-types";
+import { LayerswapToken } from "@layerswap/widget-types";
 import { TronWeb } from 'tronweb';
 // @ts-ignore
 import { ContractParamter, Transaction, TransferContract } from 'tronweb/lib/esm/types';
 
 type BuildIniitialTransactionProps = {
     tronWeb: TronWeb,
-    token: Token,
+    token: LayerswapToken,
     depositAddress: string,
     amountInWei: number,
     gas: number | undefined,

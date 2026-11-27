@@ -1,4 +1,3 @@
-import { NetworkType } from '@layerswap/widget-types';
 import { AddressUtilsProvider, AddressUtilsProviderProps, AddressSelectionMode } from "@/types";
 
 export class AddressUtilsResolver {
@@ -8,9 +7,21 @@ export class AddressUtilsResolver {
         this.providers = providers || [];
     }
 
+    registerAddressProviders(providers: AddressUtilsProvider[]): void {
+        for (const provider of providers) {
+            if (!this.providers.some(existing => existing.providerName === provider.providerName)) {
+                this.providers.push(provider);
+            }
+        }
+    }
+
+    private supportsNetwork(provider: AddressUtilsProvider, network: { name: string; type: string }): boolean {
+        return provider.networkType === network.type || provider.supportsNetwork(network);
+    }
+
     /** Which network type(s) a raw address string matches, and how its scope is picked.
      *  Multiple matches (e.g. Starknet + Fuel share 0x+64hex) collapse to `Overlap`. */
-    classifyAddress(address: string): { types: NetworkType[]; selection: AddressSelectionMode | 'none' } {
+    classifyAddress(address: string): { types: string[]; selection: AddressSelectionMode | 'none' } {
         const a = (address ?? '').trim();
         const matched = a ? this.providers.filter(p => p.isValidAddress({ address: a })) : [];
         if (!matched.length) return { types: [], selection: 'none' };
@@ -20,17 +31,17 @@ export class AddressUtilsResolver {
         return { types, selection: matched[0].selection };
     }
 
-    addressTypeLabel(type: NetworkType): string {
+    addressTypeLabel(type: string): string {
         return this.providers.find(p => p.networkType === type)?.label ?? type;
     }
 
-    addressSelectionType(type: NetworkType): AddressSelectionMode | undefined {
+    addressSelectionType(type: string): AddressSelectionMode | undefined {
         return this.providers.find(p => p.networkType === type)?.selection;
     }
 
     /** Default selection for a `Networks`-mode address among `candidates` (already scoped to type/availability).
      *  `defaultScope: 'primary'` => the primary subset when present; otherwise all candidates. */
-    defaultNetworkScope(type: NetworkType, candidates: { name: string; type: NetworkType }[]): string[] {
+    defaultNetworkScope(type: string, candidates: { name: string; type: string }[]): string[] {
         if (this.providers.find(p => p.networkType === type)?.defaultScope === 'primary') {
             const typeName = String(type).toLowerCase();
             const primaries = candidates
@@ -42,14 +53,14 @@ export class AddressUtilsResolver {
     }
 
     isValidAddress({ network, providerName, address }: AddressUtilsProviderProps): boolean {
-        const provider = this.providers.find(p => network ? p.supportsNetwork(network) : providerName ? p.providerName === providerName : false);
+        const provider = this.providers.find(p => network ? this.supportsNetwork(p, network) : providerName ? p.providerName === providerName : false);
         if (!provider) return false;
 
         return provider.isValidAddress({ address, network, providerName });
     }
 
     addressFormat({ address, network, providerName }: AddressUtilsProviderProps): string {
-        const provider = this.providers.find(p => network ? p.supportsNetwork(network) : providerName ? p.providerName === providerName : false);
+        const provider = this.providers.find(p => network ? this.supportsNetwork(p, network) : providerName ? p.providerName === providerName : false);
         if (!provider) return address;
 
         return provider.addressFormat ? provider.addressFormat({ address, network, providerName }) : address;

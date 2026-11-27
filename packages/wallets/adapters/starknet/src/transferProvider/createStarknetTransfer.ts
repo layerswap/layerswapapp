@@ -1,19 +1,11 @@
-import type { Wallet } from '@layerswap/widget-types';
-import { KnownInternalNames } from "@layerswap/utils";
-import { Network } from "@layerswap/widget-types";
+import { NetworkType, LayerswapNetwork, type Wallet } from '@layerswap/widget-types';
 import { TransferProvider, TransferProps } from "@layerswap/widget-types";
 import { toTransferError } from "./toTransferError"
 
-const supportedNetworks = [
-    KnownInternalNames.Networks.StarkNetMainnet,
-    KnownInternalNames.Networks.StarkNetGoerli,
-    KnownInternalNames.Networks.StarkNetSepolia
-]
-
 export function createStarknetTransfer(): TransferProvider {
     return {
-        supportsNetwork(network: Network): boolean {
-            return supportedNetworks.includes(network.name)
+        supportsNetwork(network: LayerswapNetwork): boolean {
+            return network.type === NetworkType.Starknet
         },
 
         async executeTransfer(params: TransferProps, wallet?: Wallet): Promise<string> {

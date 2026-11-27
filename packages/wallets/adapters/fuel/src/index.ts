@@ -1,3 +1,4 @@
+import type { LayerswapNetwork } from '@layerswap/widget-types';
 import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/wallet-core/types"
 import type { WalletProvider, WalletInitContext, BaseWalletProviderConfig } from "@layerswap/wallet-core/types"
 import { FuelBalanceProvider } from "./fuelBalanceProvider"
@@ -6,13 +7,12 @@ import { createFuelTransfer } from "./transferProvider/createFuelTransfer"
 import { createFuelConnection } from "./service/createFuelConnection"
 import { initFuelProvider } from "./init"
 import { id } from "./constants"
-import type { NetworkWithTokens } from "@layerswap/widget-types";
 
-export type FuelProviderConfig<Network = NetworkWithTokens> = BaseWalletProviderConfig<Network>
+export type FuelProviderConfig<Network extends LayerswapNetwork = LayerswapNetwork> = BaseWalletProviderConfig<Network>
 
 // The literal id in the return type lets `defineWalletDescriptor` in
 // `@layerswap/wallets` verify it matches the descriptor id at compile time.
-export function createFuelProvider<Network = NetworkWithTokens>(
+export function createFuelProvider<Network extends LayerswapNetwork = LayerswapNetwork>(
     config: FuelProviderConfig<Network> = {},
 ): WalletProvider<Network> & { id: typeof id } {
     const {

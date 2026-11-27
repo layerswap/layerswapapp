@@ -1,17 +1,18 @@
+import { useSettingsState } from '@/context/settings';
 import { type Wallet } from '@layerswap/widget-types';
 import { FC, useMemo, useState } from "react";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
-import { SelectAccountProps } from "@layerswap/wallet-core/types";
+import { SelectAccountProps, AccountIdentity } from "@layerswap/wallet-core/types";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import { ChevronDown, Plus } from "lucide-react";
 import { WalletItem } from "@/components/Wallet/WalletComponents/WalletsList";
 import { Network, NetworkRoute, Token } from "@layerswap/widget-types";
-import { WalletIcon } from "@layerswap/ui-kit/components";
-import WalletIconView from "@/components/Wallet/WalletIconView";
-import ConnectButton from "@/components/Buttons/connectButton";
-import { WalletsIcons } from "@/components/Wallet/WalletComponents/ConnectedWallets";
+import { WalletIcon } from "@layerswap/ui-kit";
+import { WalletIconView } from "@layerswap/ui-kit";
+import { ConnectButton } from "@layerswap/ui-kit";
+import { WalletsIcons } from "@layerswap/ui-kit";
 import { useFormikContext } from "formik";
-import { AccountIdentity, useSwapAccounts, useSelectSwapAccount } from "@/context/swapAccounts";
+import { useSwapAccounts, useSelectSwapAccount } from "@/context/swapAccounts";
 import { SwapDirection, SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { Address } from "@/lib/address/Address";
 import { useNamedAddress } from "@/stores/addressBookStore";
@@ -133,7 +134,8 @@ const AccountsList: FC<Props> = (props) => {
     const { selectedAccount, onSelect, network } = props
     const provider = selectedAccount?.provider;
     const connectedWallets = provider?.connectedWallets || []
-    const networkName = provider?.autofillSupportedNetworks ? { name: provider?.autofillSupportedNetworks[0] } : undefined
+    const { networks } = useSettingsState()
+    const networkName = networks.find(item => item.name === provider?.autofillSupportedNetworks?.[0])
 
     const walletNetwork = network || networkName;
 

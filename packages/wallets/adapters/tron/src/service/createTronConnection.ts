@@ -1,5 +1,6 @@
+import type { LayerswapNetwork } from '@layerswap/widget-types';
 import type { MultiStepHandler, WalletConnectionProviderProps, WalletConnectionStore } from "@layerswap/wallet-core/types"
-import { createMemoizedConnectionStore, getEip6963Providers, subscribeEip6963Providers, type AppNetworkAdapter } from "@layerswap/wallet-core"
+import { createMemoizedConnectionStore, getEip6963Providers, subscribeEip6963Providers } from "@layerswap/wallet-core"
 import { createTronTransfer } from '../transferProvider/createTronTransfer'
 import { TronConnectionService } from './TronConnectionService'
 import { useTronStore } from './tronStore'
@@ -12,16 +13,15 @@ type CreateTronConnectionOptions = {
  * Vanilla external-store factory for the Tron wallet connection. Replaces the
  * old `useTronConnection` hook. The widget consumes this via `useSyncExternalStore`.
  */
-export function createTronConnection<Network>(
+export function createTronConnection<Network extends LayerswapNetwork = LayerswapNetwork>(
     initialProps: WalletConnectionProviderProps<Network>,
     options: CreateTronConnectionOptions = {},
 ): WalletConnectionStore<Network> {
     const { extraMultiStepHandlers = [] } = options
 
     let networks = initialProps.networks
-    let networkAdapter = initialProps.networkAdapter
     const tronConnectionService = new TronConnectionService<Network>()
-    tronConnectionService.setNetworks(networks, networkAdapter)
+    tronConnectionService.setNetworks(networks)
 
     const transferProvider = createTronTransfer()
     const transfer = transferProvider.executeTransfer
@@ -49,8 +49,7 @@ export function createTronConnection<Network>(
         ],
         onUpdateProps: nextProps => {
             networks = nextProps.networks
-            networkAdapter = nextProps.networkAdapter
-            tronConnectionService.setNetworks(networks, networkAdapter)
+            tronConnectionService.setNetworks(networks)
         },
     })
 }

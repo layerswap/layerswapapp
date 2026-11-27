@@ -4,7 +4,7 @@ import { AddressItem } from ".";
 import { NetworkRoute } from "@layerswap/widget-types";
 import { Partner } from "@/Models/Partner";
 import AddressWithIcon from "./AddressWithIcon";
-import FilledCheck from "@/components/Icons/FilledCheck";
+import { FilledCheck } from "@layerswap/ui-kit";
 type Props = {
     item: AddressItem;
     network?: NetworkRoute;

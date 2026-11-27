@@ -6,20 +6,14 @@
 // `getEvmConfig()` singleton); do NOT make it a bundled dependency or the
 // signer would bind to a different, empty config. Keep usage limited to these
 // documented, package-root exports.
-import type { Wallet } from '@layerswap/widget-types';
+import { NetworkType, type Wallet } from '@layerswap/widget-types';
 import { getEthersSigner, getEvmConfig } from '@layerswap/wallet-evm'
-import { KnownInternalNames } from "@layerswap/utils";
-import type { Network } from "@layerswap/widget-types";
+import type { LayerswapNetwork } from "@layerswap/widget-types";
 import { type TransferProvider, type TransferProps } from "@layerswap/widget-types";
 import { getChainId, switchChain } from '@wagmi/core'
 import AuthorizeEthereum from '../Authorize/Ethereum'
 import { AuthorizeStarknet } from '../Authorize/Starknet'
 import { toTransferError } from './toTransferError'
-
-const supportedNetworks = [
-    KnownInternalNames.Networks.ParadexMainnet,
-    KnownInternalNames.Networks.ParadexTestnet,
-]
 
 const PARADEX_MAX_FEE = '1000000000000000'
 
@@ -52,8 +46,8 @@ async function resolveParadexAccount(wallet: Wallet) {
 
 export function createParadexTransfer(): TransferProvider {
     return {
-        supportsNetwork(network: Network): boolean {
-            return supportedNetworks.includes(network.name)
+        supportsNetwork(network: LayerswapNetwork): boolean {
+            return network.type === NetworkType.Paradex
         },
 
         async executeTransfer(params: TransferProps, wallet?: Wallet): Promise<string> {

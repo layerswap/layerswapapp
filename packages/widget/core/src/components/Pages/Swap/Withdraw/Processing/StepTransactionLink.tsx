@@ -3,7 +3,7 @@ import {
     Tooltip,
     TooltipContent,
     TooltipTrigger,
-} from '@/components/shadcn/tooltip';
+} from '@layerswap/ui-kit';
 
 export function StepTransactionLink({
     url,

@@ -1,8 +1,9 @@
 "use client";
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type FC, type PropsWithChildren, type ReactNode } from "react";
+import type { LayerswapNetwork } from '@layerswap/widget-types';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type PropsWithChildren, type ReactNode } from "react";
 import type { StoreApi } from "zustand/vanilla";
+import { registerAddressProviders } from "@layerswap/utils";
 import { WalletConnectionProvider, WalletConnectionStore, WalletProviderDescriptor, isWalletProviderDescriptor, } from "@/types/wallet";
-import type { AppNetworkAdapter } from "@/types/network";
 import type { WalletProvider, WalletWrapper } from "@/types/provider";
 import { createWalletProvidersRegistry, type WalletProvidersRegistry } from "@/lib/walletConnect/walletProvidersRegistry";
 import { createDescriptorStubStore } from "@/lib/walletConnect/descriptorStubStore";
@@ -12,7 +13,7 @@ import { scheduleWalletPreload } from "@/lib/walletConnect/scheduleWalletPreload
 
 type RegistryEntry = { id: string; store: StoreApi<WalletConnectionProvider> }
 
-type ProviderEntry<Network> = WalletProvider<Network> | WalletWrapper | WalletProviderDescriptor<Network>
+type ProviderEntry<Network extends LayerswapNetwork = LayerswapNetwork> = WalletProvider<Network> | WalletWrapper | WalletProviderDescriptor<Network>
 
 const WalletProvidersContext = createContext<WalletProvidersRegistry | null>(null)
 const WalletProvidersReadyContext = createContext(false)
@@ -32,7 +33,7 @@ export function useHasConfiguredWalletProviders(): boolean {
     return useContext(HasConfiguredWalletProvidersContext)
 }
 
-export function DescriptorHydrationBoundary<Network>({
+export function DescriptorHydrationBoundary<Network extends LayerswapNetwork = LayerswapNetwork>({
     walletProviders,
     children,
 }: {
@@ -111,17 +112,19 @@ export function DescriptorHydrationBoundary<Network>({
     )
 }
 
-export function WalletProvidersRegistryProvider<Network>({
+export function WalletProvidersRegistryProvider<Network extends LayerswapNetwork = LayerswapNetwork>({
     children,
     networks,
-    networkAdapter,
     walletProviders,
 }: PropsWithChildren<{
     networks: Network[]
-    networkAdapter: AppNetworkAdapter<Network>
     walletProviders: ProviderEntry<Network>[]
 }>) {
     const walletProvidersRegistry = useMemo(() => createWalletProvidersRegistry(), [])
+    registerAddressProviders(walletProviders.flatMap(provider => {
+        const addressProvider = (provider as WalletProvider<Network> | WalletProviderDescriptor<Network>).addressProvider
+        return addressProvider ? [addressProvider] : []
+    }))
     const [isInitialized, setIsInitialized] = useState(false)
     const hasConfiguredProviders = useMemo(
         () => walletProviders.some(
@@ -147,7 +150,7 @@ export function WalletProvidersRegistryProvider<Network>({
                 // route filtering and the registry see the provider exists.
                 let stub = stubsRef.current.get(p.id)
                 if (!stub) {
-                    stub = createDescriptorStubStore(p)
+                    stub = createDescriptorStubStore(p, networks)
                     stubsRef.current.set(p.id, stub)
                 }
                 entries.push({ id: p.id, store: stub })
@@ -160,7 +163,6 @@ export function WalletProvidersRegistryProvider<Network>({
             if (!conn && (p as WalletProvider<Network>).createConnection) {
                 conn = (p as WalletProvider<Network>).createConnection({
                     networks,
-                    networkAdapter,
                     walletProvidersRegistry,
                 })
                 connectionsRef.current.set(p.id, conn)
@@ -194,8 +196,8 @@ export function WalletProvidersRegistryProvider<Network>({
     }, [walletProvidersRegistry])
 
     useEffect(() => {
-        connectionsRef.current.forEach(c => c.updateProps?.({ networks, networkAdapter, walletProvidersRegistry }))
-    }, [networks, networkAdapter, walletProvidersRegistry])
+        connectionsRef.current.forEach(c => c.updateProps?.({ networks, walletProvidersRegistry }))
+    }, [networks, walletProvidersRegistry])
 
     return (
         <WalletProvidersContext.Provider value={walletProvidersRegistry}>

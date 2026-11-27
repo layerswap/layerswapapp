@@ -1,4 +1,4 @@
-import type { AppNetworkAdapter } from '@layerswap/wallet-core'
+import { NetworkType, type LayerswapNetwork } from '@layerswap/widget-types';
 
 export type EvmNetworkBuckets = {
     asSource: string[]
@@ -18,19 +18,19 @@ const emptyAdditionalSupportedNetworks: EvmAdditionalSupportedNetworks = {
     autofill: [],
 }
 
-export function computeEvmNetworkBuckets<Network>(
+export function computeEvmNetworkBuckets<Network extends LayerswapNetwork = LayerswapNetwork>(
     networks: Network[],
-    networkAdapter: AppNetworkAdapter<Network>,
     additionalSupportedNetworks: EvmAdditionalSupportedNetworks = emptyAdditionalSupportedNetworks,
 ): EvmNetworkBuckets {
     const asSource = [
         ...networks
-            .filter(network => networkAdapter.isEvmNetwork(network))
-            .map(network => networkAdapter.getId(network)),
+            .filter(network => network.type === NetworkType.EVM)
+            .map(network => network.name),
         ...additionalSupportedNetworks.asSource,
     ]
     const withdrawal = [
         ...asSource,
+        ...networks.filter(network => network.type === NetworkType.Hyperliquid || network.type === NetworkType.Polymarket).map(network => network.name),
         ...additionalSupportedNetworks.withdrawal,
     ]
     const autofill = [

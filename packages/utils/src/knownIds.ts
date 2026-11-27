@@ -76,12 +76,6 @@ export default class KnownInternalNames {
 
         public static readonly PolygonMainnet: string = "POLYGON_MAINNET";
 
-        public static readonly LoopringMainnet: string = "LOOPRING_MAINNET";
-
-        public static readonly LoopringGoerli: string = "LOOPRING_GOERLI";
-
-        public static readonly LoopringSepolia: string = "LOOPRING_SEPOLIA";
-
         public static readonly MoonbeamMainnet: string = "MOONBEAM_MAINNET";
 
         public static readonly StarkNetGoerli: string = "STARKNET_GOERLI";
@@ -151,8 +145,6 @@ export default class KnownInternalNames {
         public static readonly TONMainnet: string = "TON_MAINNET";
 
         public static readonly TONTestnet: string = "TON_TESTNET";
-
-        public static readonly BrineMainnet: string = "BRINE_MAINNET";
 
         public static readonly BlastSepolia: string = "BLAST_SEPOLIA";
 

@@ -1,6 +1,6 @@
 import { type Wallet } from '@layerswap/widget-types';
 import { FC, useCallback, useEffect } from "react";
-import { ConnectorsList } from "@layerswap/ui-kit/components";
+import { ConnectorsList } from "@layerswap/ui-kit";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { useDepositStep } from "../depositStepContext";
 import { useDepositSelection } from "../depositSelectionContext";

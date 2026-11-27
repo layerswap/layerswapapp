@@ -1,19 +1,15 @@
-import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
+import { NetworkType, type InternalConnector, type Wallet, type LayerswapNetwork } from '@layerswap/widget-types';
 import type { RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types";
-import { KnownInternalNames, sleep } from "@layerswap/utils"
-import { isWalletConnectRegistryConnector, type AppNetworkAdapter, isProviderConnectReady } from "@layerswap/wallet-core"
+import { sleep } from "@layerswap/utils"
+import { isWalletConnectRegistryConnector, isProviderConnectReady } from "@layerswap/wallet-core"
 import { Address } from "@layerswap/utils"
 import { getEvmConfig, walletClientToSigner } from '@layerswap/wallet-evm'
 import { getChainId, getWalletClient, switchChain, type ConnectorAlreadyConnectedError, } from '@wagmi/core'
 import type { ParadexAccount } from './paradexActiveStore'
 import { ParadexAccountMapper, type ParadexAccountMap } from './ParadexAccountMapper'
-import { name, paradexNames } from '../constants'
+import { name } from '../constants'
 
 export { name, id } from '../constants'
-
-export const withdrawalSupportedNetworks = [...paradexNames]
-export const autofillSupportedNetworks = [...withdrawalSupportedNetworks]
-export const asSourceSupportedNetworks = [...withdrawalSupportedNetworks]
 
 type Account = ParadexAccount
 
@@ -51,18 +47,16 @@ type ResolveWalletsListProps = {
  * EVM/Starknet providers and drives the Paradex SDK authorization flows.
  * L1 ↔ Paradex account bookkeeping lives in {@link ParadexAccountMapper}.
  */
-export class ParadexConnectionService<Network> implements WalletConnectionService<RuntimeDeps, Network> {
+export class ParadexConnectionService<Network extends LayerswapNetwork = LayerswapNetwork> implements WalletConnectionService<RuntimeDeps, Network> {
     private _networks: Network[] = []
-    private _networkAdapter: AppNetworkAdapter<Network> | undefined
     private _networksKey = ''
     private _deps: RuntimeDeps = {}
     private readonly _accounts = new ParadexAccountMapper()
 
-    setNetworks(networks: Network[], networkAdapter: AppNetworkAdapter<Network>): void {
-        const key = networks.map(network => networkAdapter.getId(network)).join('|')
+    setNetworks(networks: Network[]): void {
+        const key = networks.map(network => network.name).join('|')
         if (this._networksKey === key) return
         this._networks = networks
-        this._networkAdapter = networkAdapter
         this._networksKey = key
     }
 
@@ -84,32 +78,25 @@ export class ParadexConnectionService<Network> implements WalletConnectionServic
 
     getParadexNetwork(): Network | undefined {
         return this._networks.find(network =>
-            this._networkAdapter && paradexNames.includes(this._networkAdapter.getId(network))
+            network.type === NetworkType.Paradex
         )
     }
 
     getStarknetNetwork(): Network | undefined {
-        return this._networks.find(network => {
-            if (!this._networkAdapter) return false
-            const id = this._networkAdapter.getId(network)
-            return id === KnownInternalNames.Networks.StarkNetMainnet
-                || id === KnownInternalNames.Networks.StarkNetGoerli
-                || id === KnownInternalNames.Networks.StarkNetSepolia
-        })
+        return this._networks.find(network => network.type === NetworkType.Starknet)
     }
 
     getEvmNetwork(): Network | undefined {
-        return this._networks.find(network => {
-            if (!this._networkAdapter) return false
-            const id = this._networkAdapter.getId(network)
-            return id === KnownInternalNames.Networks.EthereumMainnet
-                || id === KnownInternalNames.Networks.EthereumSepolia
-        })
+        return this._networks.find(network => network.type === NetworkType.EVM && [1, 11155111].includes(Number(network.chain_id)))
+    }
+
+    getSupportedNetworks(): string[] {
+        return this._networks.filter(network => network.type === NetworkType.Paradex).map(network => network.name)
     }
 
     getProviderIcon(): string | undefined {
         const network = this.getParadexNetwork()
-        return network && this._networkAdapter ? this._networkAdapter.getIcon(network) : undefined
+        return network?.logo
     }
 
     getAvailableConnectors(): InternalConnector[] {
@@ -160,15 +147,15 @@ export class ParadexConnectionService<Network> implements WalletConnectionServic
             // Paradex transactions execute on a derived account, not directly
             // on the backing L1 wallet's connected chain.
             chainId: undefined,
-            asSourceSupportedNetworks,
-            withdrawalSupportedNetworks,
-            autofillSupportedNetworks,
+            asSourceSupportedNetworks: this.getSupportedNetworks(),
+            withdrawalSupportedNetworks: this.getSupportedNetworks(),
+            autofillSupportedNetworks: this.getSupportedNetworks(),
             metadata: {
                 ...wallet.metadata,
                 l1Address: l1Account,
                 l1ProviderName: provider.name,
                 l1ChainId: provider.name === 'EVM' && evmNetwork
-                    ? this._networkAdapter?.getChainId(evmNetwork) ?? undefined
+                    ? evmNetwork.chain_id ?? undefined
                     : undefined,
             },
             providerName: name,
@@ -252,7 +239,7 @@ export class ParadexConnectionService<Network> implements WalletConnectionServic
                 if (!connectionResult) return
                 if (!existingAccounts?.[connectionResult.address?.toLowerCase()]) {
                     const l1Network = this.getEvmNetwork()
-                    const l1ChainId = Number(l1Network && this._networkAdapter?.getChainId(l1Network))
+                    const l1ChainId = Number(l1Network && l1Network.chain_id)
                     if (!Number(l1ChainId)) throw Error('Could not find ethereum network')
 
                     const config = getEvmConfig()
@@ -303,7 +290,7 @@ export class ParadexConnectionService<Network> implements WalletConnectionServic
                 if (!existingAccounts?.[connectionResult.address?.toLowerCase()]) {
                     if (!snAccount) throw Error('Starknet account not found')
                     const starknetNetwork = this.getStarknetNetwork()
-                    if (!starknetNetwork || !this._networkAdapter?.getRpcUrls(starknetNetwork)[0]) throw Error('Starknet node url not found')
+                    if (!starknetNetwork || !(starknetNetwork.nodes?.length ? starknetNetwork.nodes : [starknetNetwork.node_url])[0]) throw Error('Starknet node url not found')
 
                     const { AuthorizeStarknet } = await import('../Authorize/Starknet')
                     const paradexAccount = await AuthorizeStarknet(snAccount as any)

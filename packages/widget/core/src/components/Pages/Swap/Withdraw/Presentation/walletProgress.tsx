@@ -8,7 +8,7 @@ import { getCurrentDepositActionIndex } from '@/helpers/depositActions';
 import { WalletMessageDetails } from '../messages/Message';
 import { getDepositWorkflowProgress } from './DepositWorkflowView';
 import { resolveSwapFlow, type ResolvedSwapFlow } from '@/components/utils/resolveSwapFlow';
-import { truncateDecimals } from '@/components/utils/RoundDecimals';
+import { truncateDecimals } from '@layerswap/utils';
 import { ProgressStatus, type StatusStep } from '../Processing/types';
 import type { ProgressPanelData } from './ProgressPanelView';
 

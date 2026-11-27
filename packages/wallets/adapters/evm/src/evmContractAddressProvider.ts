@@ -1,16 +1,14 @@
-import { NetworkType } from '@layerswap/widget-types';
-import type { Network } from "@layerswap/widget-types";
-import type { ContractAddressCheckerProvider } from "@layerswap/widget-types";
+import { NetworkType, type ContractAddressCheckerProvider, type LayerswapNetwork } from "@layerswap/widget-types";
 import resolveChain from "./evmUtils/resolveChain";
 import { createPublicClient } from "viem";
 import { resolveFallbackTransport } from "./evmUtils/resolveTransports";
 
 export class EVMContractAddressProvider implements ContractAddressCheckerProvider {
-    supportsNetwork(network: Network): boolean {
+    supportsNetwork(network: LayerswapNetwork): boolean {
         return network.type === NetworkType.EVM;
     }
 
-    async isContractAddress(address: string, network: Network): Promise<boolean> {
+    async isContractAddress(address: string, network: LayerswapNetwork): Promise<boolean> {
         if (!network || !address) {
             return false;
         }
@@ -19,7 +17,7 @@ export class EVMContractAddressProvider implements ContractAddressCheckerProvide
             const chain = resolveChain(network)
             const publicClient = createPublicClient({
                 chain,
-                transport: resolveFallbackTransport(network.nodes)
+                transport: resolveFallbackTransport(network.nodes?.length ? network.nodes : [network.node_url])
             })
             const bytecode = await publicClient.getCode({
                 address: address as `0x${string}`

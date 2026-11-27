@@ -45,6 +45,10 @@ class WalletsConfigs {
 }
 
 export default class AppSettings extends WalletsConfigs {
+    static isTestnet(): boolean {
+        return this.ApiVersion === 'testnet' || this.ApiVersion === 'sandbox'
+    }
+
     static ApiVersion: string = "mainnet"
     static ExplorerURl: string = `https://www.layerswap.io/explorer/`
     static LayerswapApiUri?: string = 'https://api.layerswap.io'

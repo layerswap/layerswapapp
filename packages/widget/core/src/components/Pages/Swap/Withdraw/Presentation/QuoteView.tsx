@@ -2,7 +2,7 @@ import {
     Accordion,
     AccordionContent,
     AccordionItem,
-} from '@/components/shadcn/accordion';
+} from '@layerswap/ui-kit';
 import { ChevronDown } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { swapFlowTransition } from './swapFlowAnimation';

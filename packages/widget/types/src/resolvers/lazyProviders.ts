@@ -1,5 +1,5 @@
 import { TokenBalance, GasProps } from "./balanceModels";
-import { Network, NetworkWithTokens } from "../types";
+import { LayerswapNetwork, LayerswapToken } from "../types";
 import { BalanceProvider } from "./balance";
 import { GasProvider, GasWithToken } from "./gas";
 
@@ -17,19 +17,19 @@ export class LazyBalanceProvider extends BalanceProvider {
     private loadingPromise: Promise<BalanceProvider> | null = null;
 
     constructor(
-        private readonly networkPredicate: (network: NetworkWithTokens) => boolean,
+        private readonly networkPredicate: (network: LayerswapNetwork & { tokens: LayerswapToken[] }) => boolean,
         private readonly loader: () => Promise<BalanceProvider>,
     ) {
         super();
     }
 
-    supportsNetwork = (network: NetworkWithTokens): boolean => {
+    supportsNetwork = (network: LayerswapNetwork & { tokens: LayerswapToken[] }): boolean => {
         return this.networkPredicate(network);
     };
 
     fetchBalance = async (
         address: string,
-        network: NetworkWithTokens,
+        network: LayerswapNetwork & { tokens: LayerswapToken[] },
         options?: { timeoutMs?: number; retryCount?: number }
     ): Promise<TokenBalance[] | null | undefined> => {
         const provider = await this.resolve();
@@ -59,11 +59,11 @@ export class LazyGasProvider implements GasProvider {
     private loadingPromise: Promise<GasProvider> | null = null;
 
     constructor(
-        private readonly networkPredicate: (network: Network) => boolean,
+        private readonly networkPredicate: (network: LayerswapNetwork) => boolean,
         private readonly loader: () => Promise<GasProvider>,
     ) {}
 
-    supportsNetwork(network: Network): boolean {
+    supportsNetwork(network: LayerswapNetwork): boolean {
         return this.networkPredicate(network);
     }
 

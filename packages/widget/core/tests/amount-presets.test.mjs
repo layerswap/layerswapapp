@@ -604,14 +604,13 @@ const { default: MinMax } = loadSource('components/Input/Amount/MinMax.tsx', {
   react: { ...React, default: React }, formik: require('formik'),
   '@/lib/gases/useSWRGas': { default: () => ({ gasData: state.previewGas, isGasLoading: false }) },
   'framer-motion': require('framer-motion'), './helpers': maxHelpers,
-  '@/components/shadcn/tooltip': { Tooltip: ({ children }) => children, TooltipTrigger: ({ children }) => children, TooltipContent: () => null },
+  '@layerswap/ui-kit': { Tooltip: ({ children }) => children, TooltipTrigger: ({ children }) => children, TooltipContent: () => null, useHydratedReducedMotion: () => true },
   '@/context/swapAccounts': { useSelectedAccount: () => state.account },
   '@/lib/balances/useBalance': { useBalance: () => ({ balances: state.balances, mutate() {} }) },
   '@/hooks/useWallet': { default: () => ({ wallets: state.wallets }) },
   '@/stores/usdModeStore': { useUsdModeStore: usdStore }, '@/hooks/useUsdTokenSync': { skipNextUsdSync() {} },
   '@/components/utils/formatUsdAmount': require('@layerswap/utils/common'),
-  '@/components/utils/RoundDecimals': rounding,
-  '@/hooks/useHydratedReducedMotion': { useHydratedReducedMotion: () => true },
+  '@layerswap/utils': rounding,
   '@/lib/amountPresets': amountPresets,
 })
 function PresetButtons() {
@@ -621,17 +620,17 @@ function PresetButtons() {
     depositMethod: values.depositMethod, onActionHover() {} })
 }
 const { BalanceResolver } = loadSource('lib/balances/balanceResolver.ts', {
-  '@/lib/ErrorHandler': { ErrorHandler() {} }, '@layerswap/widget-types': {},
-  '../knownIds': require('@layerswap/utils/known-ids'),
+  '@/lib/ErrorHandler': { ErrorHandler() {} }, '@layerswap/widget-types': require('@layerswap/widget-types'),
   '../widgetTelemetry': { widgetTelemetry: { beginOperation: () => () => {} } },
 })
 // Use the bundled adapter's actual unsupported gas implementation.
 const { TonGasProvider } = loadSource('../../../wallets/adapters/ton/src/tonGasProvider.ts', {
-  '@layerswap/utils': { KnownInternalNames: require('@layerswap/utils/known-ids').default },
+  '@layerswap/utils': { AppSettings: { isTestnet: () => false } },
+  '@layerswap/widget-types': { NetworkType: { TON: 'ton' } },
 })
 async function setupUnsupportedAdapter(name) {
   const asset = name === 'TON_MAINNET' ? { symbol: 'TON', decimals: 9 } : { symbol: 'USDC', decimals: 6 }
-  initialValues.from = { name, token: asset, deposit_methods: ['wallet'] }
+  initialValues.from = { name, type: name === 'TON_MAINNET' ? 'ton' : 'paradex', token: asset, deposit_methods: ['wallet'] }
   initialValues.fromAsset = asset
   initialValues.amountMode = 'manual'
   initialValues.amountPresetSource = undefined

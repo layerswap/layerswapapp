@@ -1,6 +1,5 @@
 import type { PublicClient } from "viem";
-import { KnownInternalNames } from "@layerswap/utils";
-import { BalanceProvider, TokenBalance } from "@layerswap/widget-types";
+import { BalanceProvider, TokenBalance, NetworkType } from "@layerswap/widget-types";
 import resolveChain from "../../evmUtils/resolveChain";
 import { resolveFallbackTransport } from "../../evmUtils/resolveTransports";
 import { resolvePolymarketHolding } from "./funder";
@@ -17,7 +16,7 @@ import { POLYMARKET_DISPLAY_SYMBOL, POLYMARKET_PUSD_DECIMALS } from "./constants
  */
 export class PolymarketBalanceProvider extends BalanceProvider {
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
-        return network.name === KnownInternalNames.Networks.PolymarketMainnet
+        return network.type === NetworkType.Polymarket
     }
 
     fetchBalance: BalanceProvider['fetchBalance'] = async (address, network, options) => {
@@ -28,7 +27,7 @@ export class PolymarketBalanceProvider extends BalanceProvider {
         const { createPublicClient } = await import("viem")
         const publicClient = createPublicClient({
             chain,
-            transport: resolveFallbackTransport(network.nodes, { retryCount: options?.retryCount, timeoutMs: options?.timeoutMs }),
+            transport: resolveFallbackTransport(network.nodes?.length ? network.nodes : [network.node_url], { retryCount: options?.retryCount, timeoutMs: options?.timeoutMs }),
         }) as PublicClient
 
         const holding = await resolvePolymarketHolding(address, publicClient)

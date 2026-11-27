@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { formatVerboseHms, parseHmsString } from "@/components/utils/formatTime";
 import { resolveRouteSpeed, routeSpeedTextClass } from "@/lib/routeSpeed";
-import { cn } from "@/components/utils/cn";
+import { cn } from "@layerswap/utils";
 
 type AverageCompletionTimeProps = {
     avgCompletionTime: string | undefined

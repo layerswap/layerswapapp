@@ -1,6 +1,7 @@
+import type { LayerswapNetwork } from '@layerswap/widget-types';
 import type { WalletConnectionProvider, WalletConnectionProviderProps, WalletConnectionStore, MultiStepHandler } from "@layerswap/wallet-core/types"
 import { isMobile } from "@layerswap/utils"
-import { connectModalStore, createMemoizedConnectionStore, getAdditionalConnectorsStore, type AppNetworkAdapter } from "@layerswap/wallet-core"
+import { connectModalStore, createMemoizedConnectionStore, getAdditionalConnectorsStore } from "@layerswap/wallet-core"
 import { EIP155_NAMESPACE, evmWalletConnectChain, id as PROVIDER_ID, name as PROVIDER_NAME, registerEvmWalletConnectChain } from '../constants'
 import { createEvmTransfer } from '../transferProvider/createEvmTransfer'
 import { supportsRegistryConnects } from './connectorsHelpers'
@@ -13,7 +14,6 @@ type CreateEvmConnectionOptions = {
     walletConnectProjectId?: string
     extraMultiStepHandlers?: MultiStepHandler[]
     additionalSupportedNetworks?: EvmAdditionalSupportedNetworks
-    ethereumChainIds?: readonly number[]
 }
 
 /**
@@ -22,7 +22,7 @@ type CreateEvmConnectionOptions = {
  * `useSyncExternalStore`; wallet packages and other non-React callers can
  * read snapshots imperatively.
  */
-export function createEvmConnection<Network>(
+export function createEvmConnection<Network extends LayerswapNetwork = LayerswapNetwork>(
     initialProps: WalletConnectionProviderProps<Network>,
     options: CreateEvmConnectionOptions = {},
 ): WalletConnectionStore<Network> {
@@ -32,14 +32,12 @@ export function createEvmConnection<Network>(
         walletConnectProjectId,
         extraMultiStepHandlers = [],
         additionalSupportedNetworks,
-        ethereumChainIds = [],
     } = options
     const isMobilePlatform = isMobile()
 
     let networks = initialProps.networks
-    let networkAdapter = initialProps.networkAdapter
     const evmConnectionService = new EvmConnectionService<Network>()
-    evmConnectionService.setNetworks(networks, networkAdapter, additionalSupportedNetworks)
+    evmConnectionService.setNetworks(networks, additionalSupportedNetworks)
 
     const additionalConnectorsStore = getAdditionalConnectorsStore(EIP155_NAMESPACE, walletConnectProjectId)
 
@@ -50,7 +48,6 @@ export function createEvmConnection<Network>(
         registryConnectors: additionalConnectorsStore.getSnapshot().browseConnectors,
         recentConnectors: additionalConnectorsStore.getSnapshot().recentConnectors,
         isMobilePlatform,
-        ethereumChainIds,
     })
 
     const transferProvider = createEvmTransfer()
@@ -92,8 +89,8 @@ export function createEvmConnection<Network>(
             const activeWallet = evmConnectionService.getActiveWallet(connectedWallets)
             const availableConnectors = evmConnectionService.getAvailableConnectors(allConnectors)
             const additionalConnectors = evmConnectionService.getAdditionalConnectors(allConnectors)
-            const providerNetwork = findEthereumNetwork(inputs.networks, networkAdapter, ethereumChainIds)
-            const providerIcon = providerNetwork ? networkAdapter.getIcon(providerNetwork) : undefined
+            const providerNetwork = findEthereumNetwork(inputs.networks)
+            const providerIcon = providerNetwork ? providerNetwork.logo : undefined
             const buckets = evmConnectionService.getBuckets()
             const registryCapabilities = supportsRegistryConnects(allConnectors)
                 ? {
@@ -145,8 +142,7 @@ export function createEvmConnection<Network>(
         ],
         onUpdateProps: nextProps => {
             networks = nextProps.networks
-            networkAdapter = nextProps.networkAdapter
-            evmConnectionService.setNetworks(networks, networkAdapter, additionalSupportedNetworks)
+            evmConnectionService.setNetworks(networks, additionalSupportedNetworks)
         },
     })
 }

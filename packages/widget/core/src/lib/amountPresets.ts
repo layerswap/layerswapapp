@@ -1,8 +1,7 @@
-import type { GasWithToken, NetworkRoute, Token, TokenBalance } from '@layerswap/widget-types'
+import { NetworkType, type GasWithToken, type NetworkRoute, type Token, type TokenBalance } from '@layerswap/widget-types'
 import { resolveMaxAllowedAmount } from '@/components/Input/Amount/helpers'
-import { ceilToDecimals, truncateToDecimals } from '@/components/utils/RoundDecimals'
+import { AppSettings, ceilToDecimals, truncateToDecimals } from '@layerswap/utils'
 import { resolveGasBalanceBudget } from '@/lib/gases/resolveGasBalanceBudget'
-import KnownInternalNames from '@layerswap/utils/known-ids'
 
 export type AmountPreset = 'min' | 'half' | 'max'
 // Quick fills keep the chosen token amount fixed, including in USD display mode.
@@ -19,9 +18,8 @@ export function isAmountPreset(mode: string | undefined): mode is AmountPreset {
 /** Bundled adapter capability gaps, not a fallback for transient RPC failures.
  * These routes retain quick fills until balance/fee estimation is supported. */
 export function supportsLiveAmountPreset(network: NetworkRoute, token: Token): boolean {
-    if (network.name === KnownInternalNames.Networks.ParadexMainnet
-        || network.name === KnownInternalNames.Networks.ParadexTestnet) return false
-    return !(network.name === KnownInternalNames.Networks.TONMainnet
+    if (network.type === NetworkType.Paradex) return false
+    return !(network.type === NetworkType.TON && !AppSettings.isTestnet()
         && token.symbol === network.token?.symbol)
 }
 

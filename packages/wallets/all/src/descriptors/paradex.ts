@@ -1,18 +1,17 @@
-import KnownInternalNames from "@layerswap/utils/known-ids"
+import { NetworkType } from '@layerswap/widget-types'
 import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
 import { defineWalletDescriptor, type DescriptorNetworkOptions } from "./defineWalletDescriptor"
 import { readStorageJson } from "./persistedSession"
-
-const PARADEX_NETWORKS = [KnownInternalNames.Networks.ParadexMainnet, KnownInternalNames.Networks.ParadexTestnet]
 
 /**
  * Tree-shake-safe stand-in for `createParadexProvider` — defers
  * `@paradex/sdk` → `starknet` out of the host's entry chunk.
  */
 export function createParadexDescriptor(options?: DescriptorNetworkOptions): WalletProviderDescriptor {
-    const supportedNetworks = options?.supportedNetworks ?? PARADEX_NETWORKS
+    const supportedNetworks = options?.supportedNetworks
     return defineWalletDescriptor({
         id: 'paradex',
+        supportedNetworkTypes: [NetworkType.Paradex],
         name: 'Paradex',
         autofillSupportedNetworks: supportedNetworks,
         withdrawalSupportedNetworks: supportedNetworks,

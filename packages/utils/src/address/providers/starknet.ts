@@ -1,6 +1,5 @@
-import { NetworkType, type Network } from '@layerswap/widget-types';
+import { NetworkType } from '@layerswap/widget-types';
 import BN from 'bn.js';
-import KnownInternalNames from "@/knownIds";
 import { AddressSelectionMode, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
 
 export const name = 'Starknet';
@@ -60,9 +59,8 @@ export class StarknetAddressUtilsProvider implements AddressUtilsProvider {
     readonly label = 'Starknet';
     readonly selection = AddressSelectionMode.Auto;
 
-    supportsNetwork(network: Network): boolean {
-        return (KnownInternalNames.Networks.StarkNetMainnet.includes(network.name) || KnownInternalNames.Networks.StarkNetSepolia.includes(network.name))
-            || (KnownInternalNames.Networks.ParadexMainnet.includes(network.name) || KnownInternalNames.Networks.ParadexTestnet.includes(network.name))
+    supportsNetwork(network: { name: string; type: string; token?: unknown }): boolean {
+        return network.type === NetworkType.Starknet || network.type === NetworkType.Paradex;
     }
 
     isValidAddress(props: AddressUtilsProviderProps): boolean {

@@ -1,5 +1,5 @@
 'use client';
-import { truncateDecimals } from '@/components/utils/RoundDecimals';
+import { truncateDecimals } from '@layerswap/utils';
 import type {
     Quote,
     SwapBasicData,
@@ -10,7 +10,7 @@ import { FC, ReactNode } from 'react';
 
 import NumFlowWithFallback from '@/components/Common/NumFlowWithFallback';
 import { PriceImpact } from '@/components/Input/Amount/PriceImpact';
-import { ImageWithFallback } from '@layerswap/ui-kit/components';
+import { ImageWithFallback } from '@layerswap/ui-kit';
 import { Token } from '@layerswap/widget-types';
 
 export type SwapInfoProps = Omit<SwapResponse, 'quote' | 'swap'> & {

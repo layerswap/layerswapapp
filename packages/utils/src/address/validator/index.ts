@@ -1,6 +1,6 @@
 import { addressUtilsResolver } from "@/address/instance";
 
-export function isValidAddress({address, network, providerName}: {address?: string, network?: { name: string } | null, providerName?: string}): boolean {
+export function isValidAddress({address, network, providerName}: {address?: string, network?: { name: string; type: string } | null, providerName?: string}): boolean {
     if (!address || !network || isBlacklistedAddress(address)) {
         return false
     }

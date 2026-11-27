@@ -386,18 +386,11 @@ test('legacy network metadata follows configured RPC URLs, including updates wit
     const fuelWallet = connector()
     t.mock.method(fuelWallet, 'currentNetwork', async () => ({ url: 'https://custom.fuel.example/' }))
     t.mock.method(globalThis, 'fetch', () => assert.fail('metadata resolution must not query the node'))
-    const adapter = {
-        getId: network => network.name,
-        getChainId: network => network.chainId,
-        getRpcUrls: network => network.rpcUrls,
-        getIcon: () => undefined,
-        isFuelNetwork: () => true,
-    }
     const service = new FuelConnectionService()
-    service.setNetworks([{ name: 'custom', chainId: 0, rpcUrls: ['https://custom.fuel.example'] }], adapter)
+    service.setNetworks([{ name: 'custom', type: 'fuel', chain_id: '0', nodes: ['https://custom.fuel.example'] }])
     assert.equal((await service.resolveFuelWallet(fuelWallet, addressA, [addressA])).chainId, 0)
 
-    service.setNetworks([{ name: 'custom', chainId: 0, rpcUrls: ['https://new.fuel.example'] }], adapter)
+    service.setNetworks([{ name: 'custom', type: 'fuel', chain_id: '0', nodes: ['https://new.fuel.example'] }])
     assert.equal((await service.resolveFuelWallet(fuelWallet, addressA, [addressA])).chainId, undefined)
 })
 

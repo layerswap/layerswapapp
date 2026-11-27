@@ -1,6 +1,6 @@
 import { AnimatePresence, motion, useIsPresent } from 'framer-motion';
 import type { ReactNode } from 'react';
-import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion';
+import { useHydratedReducedMotion } from '@layerswap/ui-kit';
 import { swapFlowTransition } from './swapFlowAnimation';
 
 /** Callers resolve section visibility before constructing their views. */

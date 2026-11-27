@@ -1,0 +1,38 @@
+'use client'
+import { type Wallet } from '@layerswap/widget-types';
+import { FC } from 'react'
+import { clsx } from 'clsx'
+import { ImageWithFallback } from "../common/ImageWithFallback";
+import WalletIcon from "../icons/WalletIcon";
+import AddressIcon from "../address/address-icon";
+
+type Props = {
+    wallet: Pick<Wallet, 'icon' | 'address' | 'displayName' | 'id'>
+    className?: string
+    size?: number
+}
+
+/**
+ * Renders a wallet's icon. After the contract migration to `Wallet.icon: string`,
+ * use this component everywhere instead of `<wallet.icon />`. Falls back to a
+ * generative AddressIcon when the wallet didn't ship an icon URL.
+ */
+const WalletIconView: FC<Props> = ({ wallet, className, size = 24 }) => {
+    if (wallet.icon) {
+        return (
+            <ImageWithFallback
+                src={wallet.icon}
+                alt={wallet.displayName ?? wallet.id}
+                width={size}
+                height={size}
+                className={clsx('max-w-none object-contain', className)}
+            />
+        )
+    }
+    if (wallet.address) {
+        return <AddressIcon address={wallet.address} size={size} className={className} />
+    }
+    return <WalletIcon className={className} />
+}
+
+export default WalletIconView

@@ -1,5 +1,5 @@
 import { type Wallet } from '@layerswap/widget-types';
-import { Command, CommandGroup, CommandItem, CommandList } from "@/components/shadcn/command";
+import { Command, CommandGroup, CommandItem, CommandList } from "@layerswap/ui-kit";
 import { Address } from "@/lib/address/Address";
 import { AddressGroup, AddressItem } from ".";
 import { NetworkRoute } from "@layerswap/widget-types";

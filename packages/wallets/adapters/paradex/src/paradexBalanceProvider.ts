@@ -1,10 +1,9 @@
-import { AppSettings, KnownInternalNames } from "@layerswap/utils";
-import { BalanceProvider, TokenBalance } from "@layerswap/widget-types";
+import { BalanceProvider, NetworkType } from "@layerswap/widget-types";
 import * as Paradex from "@paradex/sdk";
 
 export class ParadexBalanceProvider extends BalanceProvider {
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
-        return KnownInternalNames.Networks.ParadexMainnet.includes(network.name) || KnownInternalNames.Networks.ParadexTestnet.includes(network.name)
+        return network.type === NetworkType.Paradex
     }
 
     fetchBalance: BalanceProvider['fetchBalance'] = async (address, network) => {

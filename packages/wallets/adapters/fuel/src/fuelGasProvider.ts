@@ -1,12 +1,11 @@
 import WatchdogAbi from './jsons/FUELWATCHDOG.json'
-import { Network } from "@layerswap/widget-types";
-import { GasProvider, GasProps } from "@layerswap/widget-types";
-import { KnownInternalNames, formatUnits } from "@layerswap/utils";
+import { GasProvider, GasProps, LayerswapNetwork, NetworkType } from "@layerswap/widget-types";
+import { formatUnits } from "@layerswap/utils";
 import { ErrorHandler } from "@layerswap/widget-types";
 
 export class FuelGasProvider implements GasProvider {
-    supportsNetwork(network: Network): boolean {
-        return (KnownInternalNames.Networks.FuelMainnet.includes(network.name) || KnownInternalNames.Networks.FuelTestnet.includes(network.name))
+    supportsNetwork(network: LayerswapNetwork): boolean {
+        return network.type === NetworkType.Fuel
     }
 
     async getGas({ address, network, token }: GasProps): Promise<any> {

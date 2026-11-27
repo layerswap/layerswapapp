@@ -1,6 +1,5 @@
-import { NetworkType, type Network } from '@layerswap/widget-types';
+import { NetworkType } from '@layerswap/widget-types';
 import sha3 from "js-sha3";
-import KnownInternalNames from "@/knownIds";
 import { AddressSelectionMode, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
 
 export const name = 'EVM';
@@ -39,11 +38,10 @@ export class EVMAddressUtilsProvider implements AddressUtilsProvider {
     readonly selection = AddressSelectionMode.Networks;
     readonly defaultScope = 'all' as const;
 
-    supportsNetwork(network: Network): boolean {
+    supportsNetwork(network: { name: string; type: string; token?: unknown }): boolean {
         return (network.type === NetworkType.EVM && !!network.token)
-            || KnownInternalNames.Networks.HyperliquidMainnet.includes(network.name)
-            || KnownInternalNames.Networks.HyperliquidTestnet.includes(network.name)
-            || KnownInternalNames.Networks.PolymarketMainnet.includes(network.name);
+            || network.type === NetworkType.Hyperliquid
+            || network.type === NetworkType.Polymarket;
     }
 
     isValidAddress(props: AddressUtilsProviderProps): boolean {

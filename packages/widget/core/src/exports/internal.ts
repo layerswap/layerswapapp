@@ -4,11 +4,13 @@ export { KnownInternalNames }
 export * from "../lib/retry"
 export { fetchWithTimeout } from "../lib/fetchWithTimeout"
 export { default as AppSettings } from "../lib/AppSettings";
-export { ImageWithFallback } from "@layerswap/ui-kit/components";
+export { ImageWithFallback } from "@layerswap/ui-kit";
 export { usePersistedState } from "@layerswap/wallet-core";
 export { useSettingsState } from "../context/settings";
 export * from "../components/Icons"
-export * from "../components/shadcn"
+export { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, Command, CommandWrapper, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, CommandShortcut, CommandSeparator, Accordion, AccordionItem, AccordionTrigger, AccordionContent, Checkbox, Progress } from "@layerswap/ui-kit"
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider, TooltipArrow } from "@layerswap/ui-kit"
+export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor } from "@layerswap/ui-kit"
 export { default as WalletMessage } from "../components/Pages/Swap/Withdraw/messages/Message"
 export * from "../components/Buttons"
 export * from "../components/Pages/Swap/Withdraw/Wallet/Common/buttons"
@@ -25,10 +27,10 @@ export { useRecentNetworksStore, type RoutesHistory } from "../stores/recentRout
 export { useBalanceStore, selectResolvedSortingBalances, getKey, type BalanceEntry } from "../stores/balanceStore"
 export { useRouteTokenSwitchStore } from "../stores/routeTokenSwitchStore"
 export { useManualDestAddressesStore, type ManualDestAddress } from "../stores/manualDestAddressesStore"
-export { default as ShortenString } from "../components/utils/ShortenString"
+export { shortenString } from "@layerswap/utils"
 export { formatTokenAmount } from "../components/utils/formatTokenAmount"
 export { Address } from "../lib/address/Address"
-export { getExplorerUrl } from "../lib/address/explorerUrl"
+export { getExplorerUrl } from "@layerswap/utils"
 export * from "../context/swap"
 export { useWalletProvidersList } from "../components/Wallet/WalletProviders"
 export { ErrorHandler } from '../lib/ErrorHandler';
@@ -47,3 +49,5 @@ export type { SwapDetails, SwapQuote, Transaction, DepositAction } from '../lib/
 export type { Page2PreviewMode } from '../components/Pages/Swap/Withdraw/Presentation/Page2PreviewFrame';
 export { DepositPreview } from '../components/Pages/Deposit/DepositPreview';
 export type { DepositSnapshot } from '../components/Pages/Deposit/DepositSnapshot';
+
+export { Select, SelectGroup, SelectValue, SelectTrigger, SelectContent, SelectLabel, SelectItem, SelectSeparator, Tabs, TabsList, TabsTrigger, TabsContent } from "@layerswap/ui-kit"

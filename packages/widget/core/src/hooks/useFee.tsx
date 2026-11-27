@@ -274,7 +274,7 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
     }
 }
 
-export function validDestinationAddress(address: string | undefined, network: { name: string } | undefined | null): string | undefined {
+export function validDestinationAddress(address: string | undefined, network: { name: string; type: string } | undefined | null): string | undefined {
     return address && Address.isValid(address, network) ? address : undefined
 }
 

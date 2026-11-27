@@ -9,12 +9,12 @@ import {
     Popover,
     PopoverContent,
     PopoverTrigger,
-} from '@/components/shadcn/popover';
+} from '@layerswap/ui-kit';
 import {
     Tooltip,
     TooltipContent,
     TooltipTrigger,
-} from '@/components/shadcn/tooltip';
+} from '@layerswap/ui-kit';
 
 type SlippageProps = {
     quoteData: SwapQuote | undefined;
@@ -104,7 +104,7 @@ export const SlippageView = ({
                             </span>
                         </TooltipTrigger>
                         <TooltipContent
-                            className="pointer-events-none w-80 grow p-2 border-none! bg-secondary-300! text-xs rounded-xl"
+                            className="pointer-events-none w-80 grow border-none! bg-secondary-300! text-xs rounded-xl"
                             side="top"
                             align="start"
                             alignOffset={-30}

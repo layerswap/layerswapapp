@@ -1,18 +1,14 @@
-import { AddressDetailsView } from "@/components/Common/AddressDetailsView";
-import { NetworkType } from '@layerswap/widget-types';
-import { FC, ReactNode, useMemo, useState } from "react"
+import { FC, ComponentProps, useMemo } from "react"
 import { AddressGroup, AddressItem } from ".";
-import { WalletIcon, Pencil, Link2 } from "lucide-react";
+import { Pencil, Link2, WalletIcon } from "lucide-react";
 import { Partner } from "@/Models/Partner";
 import { Network } from "@layerswap/widget-types";
-import { ImageWithFallback } from "@layerswap/ui-kit/components";
-import { useCopyClipboard } from "@layerswap/ui-kit";
-import shortenString from "@/components/utils/ShortenString";
-import { useAddressName, useLabeledAddress } from "@/stores/addressBookStore";
-import useWindowDimensions from "@/hooks/useWindowDimensions";
+import { ImageWithFallback, AddressIcon, ExtendedAddress } from "@layerswap/ui-kit";
+import { shortenString } from "@layerswap/utils";
+import { useAddressName } from "@/stores/addressBookStore";
 import { Address } from "@/lib/address/Address";
-import AddressIcon from "@/components/Common/AddressIcon";
-import { SaveToBookNameForm } from "@/components/AddressBook/SaveToBookInline";
+
+type ExtendedAddressProps = ComponentProps<typeof ExtendedAddress>
 
 type Props = {
     addressItem: AddressItem;
@@ -141,25 +137,6 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
         </div>
     )
 }
-type ExtendedAddressBaseProps = {
-    address: string;
-    isForCurrency?: boolean;
-    addressClassNames?: string;
-    onDisconnect?: () => void;
-    onRemove?: () => void;
-    showDetails?: boolean;
-    title?: string;
-    description?: string;
-    logo?: string;
-    children?: ReactNode
-    shouldShowChevron?: boolean
-    onPopoverOpenChange?: (open: boolean) => void;
-    onTooltipOpenChange?: (open: boolean) => void;
-    /** When provided, the popover Save button calls this instead of showing the inline name form for saving address to address book. */
-    onSaveRequest?: () => void;
-}
-type ExtendedAddressProps = ExtendedAddressBaseProps
-    & { network?: Network, providerName?: string }
 
 const calculateMaxWidth = (balance: string | undefined) => {
     const symbolCount = balance?.length || 0;
@@ -173,51 +150,4 @@ const calculateMaxWidth = (balance: string | undefined) => {
     }
 };
 
-export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, onRemove, showDetails = false, title, description, logo: Logo, onPopoverOpenChange, onTooltipOpenChange, shouldShowChevron = true, onSaveRequest }) => {
-    if (!network && !providerName) {
-        return children ?? <p className="text-sm block font-medium text-secondary-text">
-            {shortenString(address)}
-        </p>
-    }
-    return <AddressDetailsPopover address={address} network={network!} providerName={providerName!} isForCurrency={isForCurrency} onDisconnect={onDisconnect} onRemove={onRemove} showDetails={showDetails} title={title} description={description} logo={Logo} onPopoverOpenChange={onPopoverOpenChange} onTooltipOpenChange={onTooltipOpenChange} shouldShowChevron={shouldShowChevron} onSaveRequest={onSaveRequest}>{children}</AddressDetailsPopover>
-}
-type AddressDetailsPopoverProps = ExtendedAddressBaseProps
-    & ({ network: Network, providerName?: string } | { network?: Network, providerName: string })
-
-const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, onRemove, showDetails = false, title, description, logo: Logo, onPopoverOpenChange, onTooltipOpenChange, shouldShowChevron = true, onSaveRequest }) => {
-    const [isCopied, setCopied] = useCopyClipboard()
-    const [isPopoverOpen, setPopoverOpen] = useState(false)
-    const [saving, setSaving] = useState(false)
-    const { isMobile } = useWindowDimensions()
-
-    const handlePopoverChange = (open: boolean) => {
-        setPopoverOpen(open)
-        if (!open) setSaving(false)
-        onPopoverOpenChange?.(open)
-    }
-
-    const addr = useMemo(() =>
-        new Address(address, network ?? null, providerName!),
-        [address, network, providerName]
-    );
-
-    const displayName = useAddressName(address, network, providerName)
-    const labeledAddress = useLabeledAddress(address, network, providerName)
-
-    const saveNetworkType = network?.type ?? (providerName ? providerName.toLowerCase() as NetworkType : undefined)
-    const canSave = !isForCurrency && !displayName && !!saveNetworkType
-
-    return <AddressDetailsView address={address} network={network} providerName={providerName} isForCurrency={isForCurrency}
-        shouldShowChevron={shouldShowChevron} showDetails={showDetails} title={title} description={description} logo={Logo}
-        displayName={displayName} label={labeledAddress} isCopied={isCopied} isPopoverOpen={isPopoverOpen} saving={saving} canSave={canSave}
-        container={isMobile ? (document.querySelector('[data-vaul-drawer]') as HTMLElement | null) : undefined}
-        onPopoverOpenChange={handlePopoverChange} onTooltipOpenChange={onTooltipOpenChange}
-        onCopy={() => setCopied(addr.normalized)}
-        onSave={() => { if (onSaveRequest) { setPopoverOpen(false); onSaveRequest(); } else { setSaving(true); } }}
-        onDisconnect={onDisconnect && (() => { setPopoverOpen(false); onDisconnect(); })}
-        onRemove={onRemove && (() => { setPopoverOpen(false); onRemove(); })}
-        savingForm={saveNetworkType && !onSaveRequest && <SaveToBookNameForm address={address} network={{ name: network?.name, type: saveNetworkType }} onDone={() => setSaving(false)} compact />}
-    >{children}</AddressDetailsView>;
-}
-
-export default AddressWithIcon;
+export default AddressWithIcon

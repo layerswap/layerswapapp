@@ -9,7 +9,6 @@ import VaulDrawer from "@/components/Modal/vaulModal";
 import IconButton from "@/components/Buttons/iconButton";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import AppSettings from "@/lib/AppSettings";
-import { walletNetworkAdapter } from "@/lib/walletNetworkAdapter";
 import { filterSourceNetworks } from "@/helpers/filterSourceNetworks";
 import useWallet from "@/hooks/useWallet";
 import LayerSwapLogoSmall from "@/components/Icons/layerSwapLogoSmall";
@@ -17,7 +16,7 @@ import type { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@l
 
 export { useWalletProvidersReady } from "@layerswap/wallet-core"
 
-const ConnectorsList = lazy(() => import("@layerswap/ui-kit/components").then(module => ({ default: module.ConnectorsList })));
+const ConnectorsList = lazy(() => import("@layerswap/ui-kit").then(module => ({ default: module.ConnectorsList })));
 
 const ConnectorsListFallback: React.FC = () => (
     <div className="flex h-full w-full items-center justify-center py-10">
@@ -30,7 +29,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
     const settings = useSettingsState();
     const { networks } = settings;
     return (
-        <WalletProvidersRegistryProvider networks={networks} networkAdapter={walletNetworkAdapter} walletProviders={walletProviders}>
+        <WalletProvidersRegistryProvider networks={networks} walletProviders={walletProviders}>
             {children}
             <ConnectModalHost settings={settings} />
         </WalletProvidersRegistryProvider>

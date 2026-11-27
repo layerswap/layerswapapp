@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { ArrowLeft, MenuIcon } from 'lucide-react';
-import { WalletIcon } from '@layerswap/ui-kit/components';
+import { WalletIcon } from '@layerswap/ui-kit';
 import IconButton from '../Buttons/iconButton';
 export function WidgetBackButton({ onClick }: { onClick?: () => void }) {
     return (

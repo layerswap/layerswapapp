@@ -1,16 +1,16 @@
+import type { LayerswapNetwork } from '@layerswap/widget-types';
 import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/wallet-core/types"
 import type { WalletProvider, BaseWalletProviderConfig } from "@layerswap/wallet-core/types"
 import { ParadexBalanceProvider } from "./paradexBalanceProvider"
 import { createParadexConnection } from "./service/createParadexConnection"
 import { createParadexTransfer } from "./transferProvider/createParadexTransfer"
 import { id } from "./constants"
-import type { NetworkWithTokens } from "@layerswap/widget-types";
 
-export type ParadexProviderConfig<Network = NetworkWithTokens> = BaseWalletProviderConfig<Network>
+export type ParadexProviderConfig<Network extends LayerswapNetwork = LayerswapNetwork> = BaseWalletProviderConfig<Network>
 
 // The literal id in the return type lets `defineWalletDescriptor` in
 // `@layerswap/wallets` verify it matches the descriptor id at compile time.
-export function createParadexProvider<Network = NetworkWithTokens>(
+export function createParadexProvider<Network extends LayerswapNetwork = LayerswapNetwork>(
     config: ParadexProviderConfig<Network> = {},
 ): WalletProvider<Network> & { id: typeof id } {
     const {

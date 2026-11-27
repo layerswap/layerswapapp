@@ -1,4 +1,4 @@
-import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon';
+import { ExtendedAddress } from '@layerswap/ui-kit';
 import { useDepositSettings } from '@/context/depositSettings';
 import { useInitialSettings } from '@/context/settings';
 import { Address } from '@/lib/address/Address';

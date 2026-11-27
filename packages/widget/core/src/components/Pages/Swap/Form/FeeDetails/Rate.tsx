@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { ArrowRight } from "lucide-react"
-import { truncateDecimals } from "@/components/utils/RoundDecimals"
+import { truncateDecimals } from "@layerswap/utils"
 import { Token } from "@layerswap/widget-types";
 
 export const RateElement = ({

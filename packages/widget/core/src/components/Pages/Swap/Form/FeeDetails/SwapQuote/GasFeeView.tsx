@@ -3,7 +3,7 @@ import {
     Tooltip,
     TooltipContent,
     TooltipTrigger,
-} from '@/components/shadcn/tooltip';
+} from '@layerswap/ui-kit';
 import GaslessBadge from '../GaslessBadge';
 import { RowWrapper } from '../../../Withdraw/Presentation/QuoteEstimateRows';
 

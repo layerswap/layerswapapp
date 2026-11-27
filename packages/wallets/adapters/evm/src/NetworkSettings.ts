@@ -1,12 +1,11 @@
-import { KnownInternalNames } from "@layerswap/utils";
 
 export default class NetworkSettings {
     ChainOrder?: number
     FeeParsingDecimalPlaces?: number
 
-    private static _knownSettings: { [network: string]: NetworkSettings } | undefined;
+    private static _knownSettings: { [chainId: number]: NetworkSettings } | undefined;
 
-    public static get KnownSettings(): { [network: string]: NetworkSettings } {
+    public static get KnownSettings(): { [chainId: number]: NetworkSettings } {
         if (!NetworkSettings._knownSettings) {
             NetworkSettings._knownSettings = {};
             NetworkSettings.Initialize();
@@ -22,13 +21,13 @@ export default class NetworkSettings {
 
         NetworkSettings._isInitialized = true;
 
-        NetworkSettings.KnownSettings[KnownInternalNames.Networks.EthereumSepolia] = {
+        NetworkSettings.KnownSettings[11155111] = {
             ChainOrder: 1
         };
-        NetworkSettings.KnownSettings[KnownInternalNames.Networks.TempoTestnet] = {
+        NetworkSettings.KnownSettings[42431] = {
             FeeParsingDecimalPlaces: 18,
         };
-        NetworkSettings.KnownSettings[KnownInternalNames.Networks.TempoMainnet] = {
+        NetworkSettings.KnownSettings[4217] = {
             FeeParsingDecimalPlaces: 18,
         };
     }

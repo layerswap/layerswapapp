@@ -1,6 +1,7 @@
-import { NetworkRoute, NetworkWithTokens, realRoutePresent } from "@layerswap/widget-types";
+import { AppSettings } from '@layerswap/utils';
+import { NetworkRoute, realRoutePresent, type LayerswapToken, type LayerswapNetwork } from "@layerswap/widget-types";
 import { depositMethodForFunding } from "@layerswap/widget-types";
-import { HYPERLIQUID_ROUTES, pickHyperliquidDestination } from "./routes";
+import { HYPERLIQUID_ROUTES, MAINNET_NODE, TESTNET_NODE, pickHyperliquidDestination } from "./routes";
 
 /** How the real backend leg is funded. The provider and the CCTP config resolver
  * below must derive the deposit method from this same value, or their destination
@@ -61,15 +62,14 @@ export type HyperliquidConfig = {
     forwardingFee: number
 }
 
-export function resolveHyperliquidNodeUrl(networkName: string, override: string | undefined): string | undefined {
-    const route = HYPERLIQUID_ROUTES[networkName]
-    if (!route) return undefined
-    return resolveNodeUrl(override, route.defaultNodeUrl)
+export function resolveHyperliquidNodeUrl(override: string | undefined): string {
+    const defaultNodeUrl = AppSettings.isTestnet() ? TESTNET_NODE : MAINNET_NODE
+    return resolveNodeUrl(override, defaultNodeUrl)
 }
 
 export function resolveHyperliquidConfig(
     sourceNetworkName: string | undefined,
-    networks: NetworkWithTokens[],
+    networks: (LayerswapNetwork & { tokens: LayerswapToken[] })[],
     toNetworkName?: string,
     toTokenSymbol?: string,
     availableRoutes?: NetworkRoute[],

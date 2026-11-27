@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { useCopyClipboard } from '@layerswap/ui-kit';
+import { useCopyClipboard } from '@layerswap/utils/react';
 import { Network, Token } from '@layerswap/widget-types';
 import DepositQuoteDetails from './DepositQuoteDetails';
 import { DepositAddressInfoView } from './DepositAddressInfoView';

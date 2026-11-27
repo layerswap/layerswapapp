@@ -213,7 +213,7 @@ function createWorkflow({
         './isUserRejection': rejection,
         '@/helpers/depositActions': depositActions,
         '@/helpers/gasless': gasless,
-        '@/lib/address/explorerUrl': loadSource('../src/lib/address/explorerUrl.ts'),
+        '@layerswap/utils': loadSource('../../../utils/src/explorerUrl.ts'),
         '@/lib/swapLifecycle': lifecycle,
         '@/lib/widgetTelemetry': { widgetTelemetry: { beginOperation: () => () => {} } },
         './executeWalletOperation': { executeWalletOperation },
@@ -246,13 +246,13 @@ function createWorkflow({
     })
     const workflowView = loadSource('../src/components/Pages/Swap/Withdraw/Presentation/DepositWorkflowView.tsx', {
         '@/helpers/depositActions': depositActions,
-        '@/components/utils/RoundDecimals': { truncateDecimals: value => value },
+        '@layerswap/utils': { truncateDecimals: value => value },
         './ProgressPanelView': progressPanel,
         '../Processing/types': progressTypes,
     })
     const walletProgress = loadSource('../src/components/Pages/Swap/Withdraw/Presentation/walletProgress.tsx', {
         '@/helpers/depositActions': depositActions,
-        '@/components/utils/RoundDecimals': loadSource('../src/components/utils/RoundDecimals.ts'),
+        '@layerswap/utils': loadSource('../../../utils/src/truncateDecimals.ts'),
         '../Processing/types': progressTypes,
         './DepositWorkflowView': workflowView,
         '../messages/Message': { WalletMessageDetails: ({ children }) => children },
@@ -272,7 +272,7 @@ function createWorkflow({
             WalletExecutionTransition: ({ workflow, controls }) =>
                 createElement(Fragment, null, workflow, controls),
         },
-        '@layerswap/ui-kit/components': { WalletIcon: noop },
+        '@layerswap/ui-kit': { WalletIcon: noop },
         'lucide-react': { Loader2: noop },
         '../../Form/SecondaryComponents/validationError/constants': {},
         '../../Form/SecondaryComponents/validationError/ErrorDismissButton': { default: noop },
@@ -346,7 +346,7 @@ function createWorkflow({
             },
         },
         react: mounted ? React : { useState, useRef: initial => useState({ current: initial })[0], useMemo: fn => fn(), useCallback: fn => fn, useEffect: noop },
-        '@layerswap/ui-kit/components': { WalletIcon: noop },
+        '@layerswap/ui-kit': { WalletIcon: noop },
         '@/components/Buttons/submitButton': { default: noop },
         '@/hooks/useWallet': { default: () => ({ wallets: state.disconnected ? [] : [wallet], provider: state.provider }) },
         '@/hooks/useWithdrawalProvider': { useWithdrawalProvider: () => undefined },
@@ -519,7 +519,7 @@ function createWorkflow({
                 ...buttonImports,
                 '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
                 '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput: noop } },
-                '@/components/utils/RoundDecimals': loadSource('../src/components/utils/RoundDecimals.ts'),
+                '@layerswap/utils': loadSource('../../../utils/src/truncateDecimals.ts'),
                 '@/components/Input/Amount/helpers': {},
                 '@/lib/amountPresets': amountPresets,
                 '@/components/Widget/Index': {},
@@ -2828,7 +2828,7 @@ for (const scenario of [
         const flow = createWorkflow({ mounted: true })
         const { SpecializedWithdrawalView } = loadSource('../src/components/Pages/Swap/Withdraw/Presentation/SpecializedWithdrawalView.tsx', {
             '../TransferBlock': flow.blockBoundary,
-            '@layerswap/ui-kit/components': { WalletIcon: () => null },
+            '@layerswap/ui-kit': { WalletIcon: () => null },
             'lucide-react': { Loader2: () => null },
             '../messages/Message': { default: ({ header }) => createElement('p', null, header) },
             '../messages/TransactionMessages': { ActionMessages: { WalletMismatchMessage: () => createElement('p', null, 'Wrong account') } },

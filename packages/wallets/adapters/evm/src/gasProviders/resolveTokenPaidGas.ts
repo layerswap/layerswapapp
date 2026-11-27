@@ -1,7 +1,8 @@
-import { capabilitiesForChain, type GasWithToken, type Network, type Token, type Wallet } from '@layerswap/widget-types'
+import { capabilitiesForChain, type GasWithToken, type LayerswapNetwork, type LayerswapToken, type Wallet } from '@layerswap/widget-types'
 import { erc20Abi, formatUnits, type PublicClient } from 'viem'
 
 type NativeGas = Pick<GasWithToken, 'gas' | 'maxFee' | 'reserve'>
+type PricedToken = LayerswapToken & { price_in_usd?: number }
 
 /**
  * Prices the fee in the transferred token when the wallet pays gas in tokens
@@ -10,8 +11,8 @@ type NativeGas = Pick<GasWithToken, 'gas' | 'maxFee' | 'reserve'>
  */
 export async function resolveTokenPaidGas({ publicClient, network, token, wallet, account, amount, nativeGas }: {
     publicClient: PublicClient
-    network: Network
-    token: Token
+    network: LayerswapNetwork & { token?: PricedToken }
+    token: PricedToken
     wallet: Wallet | undefined
     account: `0x${string}`
     amount: number | undefined

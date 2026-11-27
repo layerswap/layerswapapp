@@ -21,7 +21,7 @@ let canAdjust = true;
 let adjust;
 const imports = {
     '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput: noop } },
-    '@/components/utils/RoundDecimals': { truncateDecimals: String, truncateToDecimals: String },
+    '@layerswap/utils': { truncateDecimals: String, truncateToDecimals: String },
     '@/components/Widget/Index': { Widget: { Footer: ({ children }) => children } },
     '@/context/settings': { useSettingsState: () => ({ networks: [network], sourceRoutes: [network], destinationRoutes: [network] }) },
     '@/context/swap': {

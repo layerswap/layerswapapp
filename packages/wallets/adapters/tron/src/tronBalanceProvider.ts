@@ -1,12 +1,11 @@
-import { KnownInternalNames, formatUnits } from "@layerswap/utils";
-import { insertIfNotExists } from "@layerswap/widget-types";
-import { Network, Token } from "@layerswap/widget-types";
+import { formatUnits } from "@layerswap/utils";
+import { insertIfNotExists, NetworkType, LayerswapNetwork, LayerswapToken } from "@layerswap/widget-types";
 import { BalanceProvider, TokenBalance } from "@layerswap/widget-types";
 import { TronWeb } from 'tronweb'
 
 export class TronBalanceProvider extends BalanceProvider {
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
-        return (KnownInternalNames.Networks.TronMainnet.includes(network.name) || KnownInternalNames.Networks.TronTestnet.includes(network.name))
+        return (network.type === NetworkType.Tron)
     }
 
     fetchBalance: BalanceProvider['fetchBalance'] = async (address, network) => {
@@ -31,8 +30,8 @@ export class TronBalanceProvider extends BalanceProvider {
 }
 
 type GetBalanceProps = {
-    network: Network,
-    token: Token,
+    network: LayerswapNetwork,
+    token: LayerswapToken,
     address: string,
     provider: TronWeb
 }

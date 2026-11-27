@@ -1,4 +1,3 @@
-import { ActionMessageType } from '@layerswap/widget-types';
 import { FC } from "react"
 import WalletMessage, { WalletUnknownError } from "./Message"
 import { Address } from "@/lib/address/Address"
@@ -54,7 +53,7 @@ const TransactionExpiredMessage: FC = () => {
         details='Refresh the transfer details and try again' />
 }
 
-const WalletMismatchMessage: FC<{ address: string; network: { name: string }; details?: string }> = ({ address, network, details }) => {
+const WalletMismatchMessage: FC<{ address: string; network: { name: string; type: string }; details?: string }> = ({ address, network, details }) => {
     return <WalletMessage
         status="error"
         header='Account mismatch'

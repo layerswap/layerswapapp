@@ -1,10 +1,8 @@
-import KnownInternalNames from "@layerswap/utils/known-ids"
+import { NetworkType } from '@layerswap/widget-types'
 import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
 import type { TonClientConfig } from "@layerswap/wallet-ton"
 import { defineWalletDescriptor, type DescriptorNetworkOptions } from "./defineWalletDescriptor"
 import { hasStorageKey } from "./persistedSession"
-
-const TON_NETWORKS = [KnownInternalNames.Networks.TONMainnet, KnownInternalNames.Networks.TONTestnet]
 
 /**
  * Tree-shake-safe stand-in for `createTONProvider`. Defers `@tonconnect/sdk`
@@ -13,9 +11,10 @@ const TON_NETWORKS = [KnownInternalNames.Networks.TONMainnet, KnownInternalNames
  * supplied, mirroring the previous conditional in `getDefaultProviders`.
  */
 export function createTONDescriptor(tonConfigs: TonClientConfig, options?: DescriptorNetworkOptions): WalletProviderDescriptor {
-    const supportedNetworks = options?.supportedNetworks ?? TON_NETWORKS
+    const supportedNetworks = options?.supportedNetworks
     return defineWalletDescriptor({
         id: 'ton',
+        supportedNetworkTypes: [NetworkType.TON],
         name: 'Ton',
         autofillSupportedNetworks: supportedNetworks,
         withdrawalSupportedNetworks: supportedNetworks,

@@ -17,15 +17,16 @@ export function loadSource(path, imports = {}) {
     }, module, module.exports)
     return module.exports
 }
-export const rounding = loadSource('components/utils/RoundDecimals.ts')
-export const maxHelpers = loadSource('components/Input/Amount/helpers.ts', { '@/components/utils/RoundDecimals': rounding, '@/lib/gases/resolveGasBalanceBudget': loadSource('lib/gases/resolveGasBalanceBudget.ts') })
+export const rounding = loadSource('../../../utils/src/truncateDecimals.ts')
+export const maxHelpers = loadSource('components/Input/Amount/helpers.ts', { '@layerswap/utils': rounding, '@/lib/gases/resolveGasBalanceBudget': loadSource('lib/gases/resolveGasBalanceBudget.ts') })
 export const amountPresets = loadSource('lib/amountPresets.ts', {
     '@/lib/gases/resolveGasBalanceBudget': loadSource('lib/gases/resolveGasBalanceBudget.ts'),
-    '@/components/Input/Amount/helpers': maxHelpers, '@/components/utils/RoundDecimals': rounding,
-    '@layerswap/utils/known-ids': require('@layerswap/utils/known-ids'),
+    '@/components/Input/Amount/helpers': maxHelpers,
+    '@layerswap/utils': { ...rounding, AppSettings: loadSource('../../../utils/src/AppSettings.ts').default },
+    '@layerswap/widget-types': require('@layerswap/widget-types'),
 })
 export const amountMessages = loadSource('lib/amountMessages.ts', {
-    '@/components/utils/RoundDecimals': rounding,
+    '@layerswap/utils': rounding,
     '@/components/utils/formatUsdAmount': require('@layerswap/utils/common'),
 })
 export const formValidation = loadSource('hooks/useFormValidation.ts', {

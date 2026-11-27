@@ -1,14 +1,15 @@
+import { AppSettings } from '@layerswap/utils'
 import { Horizon, rpc } from '@stellar/stellar-sdk'
-import type { Network } from '@layerswap/widget-types'
+import type { LayerswapNetwork } from '@layerswap/widget-types'
 
 type StellarServer = Horizon.Server | rpc.Server
 
 const horizonServers = new Map<string, Promise<Horizon.Server>>()
 const rpcServers = new Map<string, Promise<rpc.Server>>()
 
-function getCandidateUrls(network: Network, kind: 'Horizon' | 'RPC'): string[] {
+function getCandidateUrls(network: LayerswapNetwork, kind: 'Horizon' | 'RPC'): string[] {
     // Pin mainnet endpoints by protocol so public-node health flags cannot hide either API.
-    if (network.name === 'STELLAR_MAINNET') {
+    if (!AppSettings.isTestnet()) {
         return kind === 'Horizon'
             ? ['https://horizon.stellar.org']
             : ['https://mainnet.sorobanrpc.com']
@@ -17,7 +18,7 @@ function getCandidateUrls(network: Network, kind: 'Horizon' | 'RPC'): string[] {
 }
 
 async function findServer<T extends StellarServer>(
-    network: Network,
+    network: LayerswapNetwork,
     networkPassphrase: string,
     kind: 'Horizon' | 'RPC',
     createAndVerify: (url: string) => Promise<T>,
@@ -47,7 +48,7 @@ function cachedServer<T>(cache: Map<string, Promise<T>>, key: string, load: () =
     return pending
 }
 
-export function getStellarHorizonServer(network: Network, networkPassphrase: string): Promise<Horizon.Server> {
+export function getStellarHorizonServer(network: LayerswapNetwork, networkPassphrase: string): Promise<Horizon.Server> {
     const key = `${network.name}:${networkPassphrase}:${getCandidateUrls(network, 'Horizon').join('|')}`
     return cachedServer(horizonServers, key, () => findServer(
         network,
@@ -64,7 +65,7 @@ export function getStellarHorizonServer(network: Network, networkPassphrase: str
     ))
 }
 
-export function getStellarRpcServer(network: Network, networkPassphrase: string): Promise<rpc.Server> {
+export function getStellarRpcServer(network: LayerswapNetwork, networkPassphrase: string): Promise<rpc.Server> {
     const key = `${network.name}:${networkPassphrase}:${getCandidateUrls(network, 'RPC').join('|')}`
     return cachedServer(rpcServers, key, () => findServer(
         network,

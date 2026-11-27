@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test, { after, afterEach, beforeEach } from 'node:test'
 import { registerHooks } from 'node:module'
+import { existsSync } from 'node:fs'
 import { extname } from 'node:path'
 import { JSDOM } from 'jsdom'
 import { act, createElement, useLayoutEffect, useRef, useState } from 'react'
@@ -49,7 +50,8 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
         url: 'data:text/javascript,export const widgetTelemetry = { beginOperation: () => () => {} };', shortCircuit: true,
     }
     if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
-        return nextResolve(`${specifier}.js`, context)
+        const file = new URL(`${specifier}.js`, context.parentURL)
+        return nextResolve(existsSync(file) ? `${specifier}.js` : `${specifier}/index.js`, context)
     }
     return nextResolve(specifier, context)
 } })

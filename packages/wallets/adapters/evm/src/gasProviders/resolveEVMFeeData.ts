@@ -1,4 +1,4 @@
-import { ErrorHandler, type Network } from '@layerswap/widget-types'
+import { ErrorHandler, type LayerswapNetwork } from '@layerswap/widget-types'
 import { parseGwei, type PublicClient } from 'viem'
 import { resolveEVMGasPolicy } from './evmGasPolicies'
 
@@ -13,7 +13,7 @@ const resolveFeeEstimate = async <T>(type: 'GasPriceError' | 'FeesPerGasError' |
 }
 
 /** Shared RPC fallbacks and priority-fee floors for fee quotes and signed transactions. */
-export const resolveEVMFeeData = async (publicClient: PublicClient, network: Network) => {
+export const resolveEVMFeeData = async (publicClient: PublicClient, network: LayerswapNetwork) => {
     const policy = resolveEVMGasPolicy(Number(network.chain_id))
     if (policy.transactionGasMode === 'explicit-legacy') {
         // Do not mix a legacy transaction's price with an unrelated EIP-1559 cap.

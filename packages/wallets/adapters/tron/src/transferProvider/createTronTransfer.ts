@@ -1,21 +1,14 @@
-import { Network } from "@layerswap/widget-types";
-import { TransferProvider, TransferProps } from "@layerswap/widget-types";
+import { TransferProvider, TransferProps, NetworkType, LayerswapNetwork } from "@layerswap/widget-types";
 import { TronWeb } from 'tronweb'
 import { buildInitialTransaction } from "./transactionBuilder"
 import { toTransferError } from "./toTransferError"
 import { TronGasProvider } from "../tronGasProvider"
-import { KnownInternalNames } from "@layerswap/utils";
 import { tronAdapterManager } from "../service/tronAdapterManager"
-
-const supportedNetworks = [
-    KnownInternalNames.Networks.TronMainnet,
-    KnownInternalNames.Networks.TronTestnet
-]
 
 export function createTronTransfer(): TransferProvider {
     return {
-        supportsNetwork(network: Network): boolean {
-            return supportedNetworks.includes(network.name)
+        supportsNetwork(network: LayerswapNetwork): boolean {
+            return network.type === NetworkType.Tron
         },
 
         async executeTransfer(params: TransferProps): Promise<string> {

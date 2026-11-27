@@ -1,6 +1,6 @@
 import { swapFlowTransition } from './swapFlowAnimation';
 import { motion } from 'framer-motion';
-import { useHydratedReducedMotion } from '@/hooks/useHydratedReducedMotion';
+import { useHydratedReducedMotion } from '@layerswap/ui-kit';
 import NumFlowWithFallback from '@/components/Common/NumFlowWithFallback';
 import {
     RecipientAddressView,

@@ -1,8 +1,8 @@
+import type { LayerswapNetwork } from '@layerswap/widget-types';
 import { createStore } from 'zustand/vanilla'
-import type { NetworkWithTokens } from '@layerswap/widget-types';
 import type { WalletConnectionProvider, WalletConnectionProviderProps, WalletConnectionStore, } from '@/types/wallet'
 
-export type MemoizedConnectionStoreConfig<Inputs extends Record<string, unknown>, Network = NetworkWithTokens> = {
+export type MemoizedConnectionStoreConfig<Inputs extends Record<string, unknown>, Network extends LayerswapNetwork = LayerswapNetwork> = {
     /**
      * Read every upstream store the snapshot depends on and return the raw
      * values as a flat record. Values are compared by identity (`===`) against
@@ -40,7 +40,7 @@ function sameInputs<Inputs extends Record<string, unknown>>(a: Inputs, b: Inputs
  * only on a new snapshot" cycle so chain packages declare just their inputs,
  * snapshot builder, and subscriptions.
  */
-export function createMemoizedConnectionStore<Inputs extends Record<string, unknown>, Network = NetworkWithTokens>(
+export function createMemoizedConnectionStore<Inputs extends Record<string, unknown>, Network extends LayerswapNetwork = LayerswapNetwork>(
     config: MemoizedConnectionStoreConfig<Inputs, Network>,
 ): WalletConnectionStore<Network> {
     let lastInputs: Inputs | null = null

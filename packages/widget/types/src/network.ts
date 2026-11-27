@@ -3,6 +3,7 @@ import type { Network, Token } from './types';
 export enum NetworkType {
   EVM = 'evm',
   Starknet = 'starknet',
+  Paradex = 'paradex',
   Solana = 'solana',
   Cosmos = 'cosmos',
   StarkEx = 'starkex',

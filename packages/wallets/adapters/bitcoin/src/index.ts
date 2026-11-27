@@ -1,3 +1,4 @@
+import type { LayerswapNetwork } from '@layerswap/widget-types';
 import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/wallet-core/types"
 import type { WalletProvider, WalletInitContext, BaseWalletProviderConfig } from "@layerswap/wallet-core/types"
 import { BitcoinGasProvider } from "./bitcoinGasProvider"
@@ -6,13 +7,12 @@ import { createBitcoinTransfer } from "./transferProvider/createBitcoinTransfer"
 import { createBitcoinConnection } from "./service/createBitcoinConnection"
 import { initBitcoinProvider } from "./init"
 import { id } from "./constants"
-import type { NetworkWithTokens } from "@layerswap/widget-types";
 
-export type BitcoinProviderConfig<Network = NetworkWithTokens> = BaseWalletProviderConfig<Network>
+export type BitcoinProviderConfig<Network extends LayerswapNetwork = LayerswapNetwork> = BaseWalletProviderConfig<Network>
 
 // The literal id in the return type lets `defineWalletDescriptor` in
 // `@layerswap/wallets` verify it matches the descriptor id at compile time.
-export function createBitcoinProvider<Network = NetworkWithTokens>(
+export function createBitcoinProvider<Network extends LayerswapNetwork = LayerswapNetwork>(
     config: BitcoinProviderConfig<Network> = {},
 ): WalletProvider<Network> & { id: typeof id } {
     const { customConnection, balanceProviders, gasProviders, transferProviders, } = config
@@ -24,7 +24,7 @@ export function createBitcoinProvider<Network = NetworkWithTokens>(
     }
 
     const createConnection = (props: WalletConnectionProviderProps<Network>): WalletConnectionStore<Network> => {
-        initBitcoinProvider({ networks: props.networks, networkAdapter: props.networkAdapter })
+        initBitcoinProvider({ networks: props.networks })
         if (customConnection) {
             return customConnection(props)
         }

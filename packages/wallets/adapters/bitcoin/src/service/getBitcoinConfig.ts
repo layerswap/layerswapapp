@@ -1,3 +1,4 @@
+import { AppSettings } from '@layerswap/utils'
 import {
     bitget,
     createConfig,
@@ -53,7 +54,7 @@ export function ensureBitcoinConfig(network: BitcoinNetworkConfig | undefined): 
     const nextConfigKey = getNetworkConfigKey(network)
     if (_config && _configKey === nextConfigKey) return _config
 
-    const chain = network?.id.toLowerCase().includes('testnet')
+    const chain = AppSettings.isTestnet()
         ? bitcoinTestnet(network)
         : bitcoin
 
@@ -98,13 +99,13 @@ function getNetworkConfigKey(network: BitcoinNetworkConfig | undefined): string 
     ].join('|')
 }
 
-const bitcoinTestnet = (network: BitcoinNetworkConfig) => defineChain({
+const bitcoinTestnet = (network: BitcoinNetworkConfig | undefined) => defineChain({
     id: ChainId.BITCOIN_TESTNET,
     name: 'Bitcoin Testnet',
     nativeCurrency: { name: 'Bitcoin', symbol: 'BTC', decimals: 8 },
     rpcUrls: {
         default: {
-            http: network.rpcUrl ? [network.rpcUrl] : [],
+            http: network?.rpcUrl ? [network?.rpcUrl] : [],
         },
     },
     testnet: true,

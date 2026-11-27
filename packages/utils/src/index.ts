@@ -32,6 +32,7 @@ export { StellarAddressUtilsProvider, isValidStellarAddress } from "@/address/pr
 export {
     addressUtilsProviders,
     addressUtilsResolver,
+    registerAddressProviders,
     classifyAddress,
     addressTypeLabel,
     addressSelectionType,
@@ -46,7 +47,11 @@ export { addressFormat } from "@/address/formatter";
 export { isAndroid, isIOS, isMobile } from "@/isMobile";
 export { default as sleep } from "@/sleep";
 
+export { cn } from "@/cn";
 export { formatUnits } from "@/formatUnits";
+export { truncateDecimals, isScientific, ceilToDecimals, truncateToDecimals, roundToDecimals } from "@/truncateDecimals";
+export { shortenString } from "@/shortenString";
+export { getExplorerUrl } from "@/explorerUrl";
 export { retry, retryWithExponentialBackoff } from "@/retry";
 export { fetchWithTimeout } from "@/fetchWithTimeout";
 export { JsonRpcClient } from "@/jsonRpcClient";

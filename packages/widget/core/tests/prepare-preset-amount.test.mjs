@@ -118,12 +118,12 @@ test('fresh confirmation limits reach the live cache before the revised amount r
   assert.deepEqual(published, { key: 'limits', response: { data: limits } })
 })
 
-for (const [name, symbol] of [['TON_MAINNET', 'TON'], ['PARADEX_MAINNET', 'USDC'], ['PARADEX_TESTNET', 'USDC']]) {
+for (const [name, type, symbol] of [['TON_MAINNET', 'ton', 'TON'], ['PARADEX_MAINNET', 'paradex', 'USDC'], ['PARADEX_TESTNET', 'paradex', 'USDC']]) {
   test(`${name}: direct confirmation rejects stale live intent before requesting unsupported data`, async () => {
     const { preparePresetAmount, calls } = setup()
     const asset = { ...token, symbol }
     await assert.rejects(preparePresetAmount({ ...values, amountMode: 'min',
-      from: { name, token: asset }, fromAsset: asset,
+      from: { name, type, token: asset }, fromAsset: asset,
     }, 'source', {}, [], false), /Select an amount again/)
     assert.deepEqual(calls, [])
   })

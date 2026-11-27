@@ -1,37 +1,26 @@
-import { KnownInternalNames } from "@layerswap/utils";const SPECIFIC_NETWORKS_BY_CONNECTOR: { id: string; supportedNetworks: string[] }[] = [
+import { NetworkType, type LayerswapNetwork } from '@layerswap/widget-types'
+
+const SPECIFIC_NETWORKS_BY_CONNECTOR: { id: string; chainIds: number[] }[] = [
     {
         id: 'com.immutable.passport',
-        supportedNetworks: [
-            KnownInternalNames.Networks.ImmutableZkEVM,
-            KnownInternalNames.Networks.ImmutableZkTestnet,
-        ],
+        chainIds: [13371, 13473],
     },
     {
         id: 'com.roninchain.wallet',
-        supportedNetworks: [
-            KnownInternalNames.Networks.RoninMainnet,
-            KnownInternalNames.Networks.EthereumMainnet,
-            KnownInternalNames.Networks.PolygonMainnet,
-            KnownInternalNames.Networks.BaseMainnet,
-            KnownInternalNames.Networks.BNBChainMainnet,
-            KnownInternalNames.Networks.ArbitrumMainnet,
-        ],
+        chainIds: [2020, 1, 137, 8453, 56, 42161],
     },
     {
         id: 'app.phantom',
-        supportedNetworks: [
-            KnownInternalNames.Networks.EthereumMainnet,
-            KnownInternalNames.Networks.BaseMainnet,
-            KnownInternalNames.Networks.PolygonMainnet,
-            KnownInternalNames.Networks.MonadMainnet,
-        ],
+        chainIds: [1, 8453, 137, 143],
     },
 ]
 
-export function resolveSupportedNetworks(supportedNetworks: string[], connectorId: string): string[] {
-    const specific = SPECIFIC_NETWORKS_BY_CONNECTOR.find(c => c.id === connectorId)
+export function resolveSupportedNetworks(supportedNetworks: string[], connectorId: string, networks: LayerswapNetwork[]): string[] {
+    const specific = SPECIFIC_NETWORKS_BY_CONNECTOR.find(connector => connector.id === connectorId)
     if (specific) {
-        return specific.supportedNetworks.filter(n => supportedNetworks.includes(n))
+        return networks.filter(network => network.type === NetworkType.EVM
+            && specific.chainIds.includes(Number(network.chain_id))
+            && supportedNetworks.includes(network.name)).map(network => network.name)
     }
     return supportedNetworks
 }

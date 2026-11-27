@@ -25,8 +25,8 @@ const settings = { sourceRoutes: [source], destinationRoutes: [destination] }
 const state = {}
 const { BalanceResolver } = loadSource('lib/balances/balanceResolver.ts', {
   '@/lib/ErrorHandler': { ErrorHandler() {} },
-  '@layerswap/widget-types': { classifyNodeError: () => 'rpc', extractErrorDetails: error => ({ message: error.message }) },
-  '../knownIds': { default: { Networks: {} } },
+  '@layerswap/widget-types': { NetworkType: require('@layerswap/widget-types').NetworkType,
+    classifyNodeError: () => 'rpc', extractErrorDetails: error => ({ message: error.message }) },
   '../widgetTelemetry': { widgetTelemetry: { beginOperation: () => () => {} } },
 })
 const context = createSwapContext({
@@ -108,7 +108,7 @@ const { SendTransactionView } = loadSource('components/Pages/Swap/Withdraw/Prese
   './ProgressPanelView': { ProgressPanelView: noop },
   './walletProgress': { getWalletProgress: noop, getWalletWorkflowState: () => ({}) },
   './WalletExecutionTransition': { WalletExecutionTransition: ({ controls }) => controls },
-  '@layerswap/ui-kit/components': { WalletIcon: noop }, 'lucide-react': { Loader2: noop },
+  '@layerswap/ui-kit': { WalletIcon: noop }, 'lucide-react': { Loader2: noop },
   '../../Form/SecondaryComponents/validationError/constants': {},
   '../../Form/SecondaryComponents/validationError/ErrorDismissButton': { default: noop },
   '../../Form/SecondaryComponents/validationError/ErrorDisplay': errorDisplay,
@@ -152,7 +152,7 @@ const { default: Withdraw } = loadSource('components/Pages/Swap/Withdraw/Withdra
   '@/helpers/depositActions': loadSource('helpers/depositActions.ts'),
   '@/lib/widgetTelemetry': { widgetTelemetry: { recordAmountInput() {} } },
   react: React, formik: require('formik'), '@/context/swap': context,
-  '@/components/utils/RoundDecimals': rounding, '@/components/Input/Amount/helpers': maxHelpers,
+  '@layerswap/utils': rounding, '@/components/Input/Amount/helpers': maxHelpers,
   '@/lib/amountPresets': amountPresets,
   '@/stores/swapTransactionStore': { useSwapTransactionStore: selector => selector({ swapTransactions: {}, pendingSubmissions: {} }) },
   '@/components/Widget/Index': { Widget: { Footer: passthrough } },

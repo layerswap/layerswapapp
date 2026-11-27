@@ -4,10 +4,10 @@ import { ChevronDown, Settings2 } from 'lucide-react'
 import CheckboxRow from './CheckboxRow'
 import { filterChipClasses } from './chipStyles'
 import { Address } from '@/lib/address/Address'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/shadcn'
+import { Popover, PopoverContent, PopoverTrigger } from '@layerswap/ui-kit'
 import VaulDrawer from '@/components/Modal/vaulModal'
 import WalletsList from '@/components/Wallet/WalletComponents/WalletsList'
-import WalletIconView from '@/components/Wallet/WalletIconView'
+import { WalletIconView } from '@layerswap/ui-kit'
 import { useAddressNameFinder } from '@/stores/addressBookStore'
 import { HistoryWalletAddress, MAX_HISTORY_ADDRESSES } from '@/lib/historyWalletAddresses'
 
@@ -52,7 +52,7 @@ const WalletsDropdown: FC<WalletsDropdownProps> = ({ wallets, addresses, selecte
                         <ChevronDown className="w-4 h-4" />
                     </button>
                 </PopoverTrigger>
-                <PopoverContent align="start" className="p-1 w-64 overflow-hidden">
+                <PopoverContent align="start" className="overflow-hidden">
                     <div className="max-h-72 overflow-y-auto styled-scroll">
                         {rows.map(({ address, label, short, icon }) => {
                             const checked = selectedAddresses.includes(address)

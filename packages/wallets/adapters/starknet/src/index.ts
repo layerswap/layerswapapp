@@ -1,9 +1,7 @@
 import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/wallet-core/types"
 import type { WalletProvider, WalletInitContext, BaseWalletProviderConfig } from "@layerswap/wallet-core/types";
-import type { NftProvider } from "@layerswap/widget-types";
+import { NetworkType, type NftProvider, type LayerswapNetwork } from "@layerswap/widget-types";
 import { LazyGasProvider } from "@layerswap/widget-types";
-import { KnownInternalNames } from "@layerswap/utils";
-import { type NetworkWithTokens } from "@layerswap/widget-types";
 import { StarknetBalanceProvider } from "./starknetBalanceProvider"
 import { StarknetNftProvider } from "./starknetNftProvider"
 import { createStarknetTransfer } from "./transferProvider/createStarknetTransfer"
@@ -12,18 +10,15 @@ import { retryInitOnModalOpen } from "@layerswap/wallet-core/chunkLoadRecovery"
 import { initStarknetProvider } from "./init"
 import { id } from "./constants"
 
-const isStarknetNetwork = (name: string) =>
-    KnownInternalNames.Networks.StarkNetMainnet.includes(name) ||
-    KnownInternalNames.Networks.StarkNetGoerli.includes(name) ||
-    KnownInternalNames.Networks.StarkNetSepolia.includes(name)
+const isStarknetNetwork = (network: LayerswapNetwork) => network.type === NetworkType.Starknet
 
-export type StarknetProviderConfig<Network = NetworkWithTokens> = BaseWalletProviderConfig<Network> & {
+export type StarknetProviderConfig<Network extends LayerswapNetwork = LayerswapNetwork> = BaseWalletProviderConfig<Network> & {
     nftProviders?: NftProvider | NftProvider[]
 }
 
 // The literal id in the return type lets `defineWalletDescriptor` in
 // `@layerswap/wallets` verify it matches the descriptor id at compile time.
-export function createStarknetProvider<Network = NetworkWithTokens>(
+export function createStarknetProvider<Network extends LayerswapNetwork = LayerswapNetwork>(
     config: StarknetProviderConfig<Network> = {},
 ): WalletProvider<Network> & { id: typeof id } {
     const {
@@ -54,7 +49,7 @@ export function createStarknetProvider<Network = NetworkWithTokens>(
 
     const defaultGasProviders = [
         new LazyGasProvider(
-            (n) => isStarknetNetwork(n.name),
+            (n) => isStarknetNetwork(n),
             () => import("./starknetGasProvider").then(m => new m.StarknetGasProvider())
         )
     ]

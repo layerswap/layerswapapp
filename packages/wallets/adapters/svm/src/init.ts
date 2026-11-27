@@ -1,6 +1,5 @@
-import { isMobile } from "@layerswap/utils"
+import { isMobile, AppSettings } from "@layerswap/utils"
 import { retryChunkLoad } from '@layerswap/wallet-core/chunkLoadRecovery'
-import { AppSettings } from "@layerswap/utils";
 import { WalletAdapterNetwork, WalletReadyState } from '@solana/wallet-adapter-base'
 import { svmAdapterManager } from './service/svmAdapterManager'
 import { SolanaWalletConnectAdapter } from './connectors/SolanaWalletConnectAdapter'
@@ -69,7 +68,7 @@ export function initSvmProvider(opts: InitOptions = {}): Promise<void> {
                 // Intentionally empty — see class comment.
             }
         }
-        const solNetwork = AppSettings.ApiVersion == 'testnet'
+        const solNetwork = AppSettings.isTestnet()
             ? WalletAdapterNetwork.Devnet
             : WalletAdapterNetwork.Mainnet
 
