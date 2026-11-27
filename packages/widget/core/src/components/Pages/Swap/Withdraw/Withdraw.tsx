@@ -1,5 +1,5 @@
 import { widgetTelemetry } from '@/lib/widgetTelemetry';
-import { truncateDecimals } from '@/components/utils/RoundDecimals';
+import { ceilToDecimals, truncateDecimals } from '@/components/utils/RoundDecimals';
 import { Widget } from '@/components/Widget/Index';
 import { useSettingsState } from '@/context/settings';
 import { useSwapDataState, useSwapDataUpdate } from '@/context/swap';
@@ -9,13 +9,10 @@ import { transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { useBalance } from '@/lib/balances/useBalance';
 import useOutOfGas from '@/lib/gases/useOutOfGas';
 import useSWRGas from '@/lib/gases/useSWRGas';
-import { resolveMaxAllowedAmount } from '@/components/Input/Amount/helpers';
-import { amountPresetSource, isAmountPreset } from '@/lib/amountPresets';
-import { ceilToDecimals, truncateToDecimals } from '@/components/utils/RoundDecimals';
+import { amountPresetGasFloorScope, amountPresetSource, isAmountPreset, resolveDepositFeeAdjustedAmount } from '@/lib/amountPresets';
 import { formatTokenAmount } from '@/components/utils/formatTokenAmount';
-import { NetworkType } from '@layerswap/widget-types';
 import type { JSX } from 'react';
-import { FC, useCallback, useMemo, useRef } from 'react';
+import { FC, useCallback, useEffect, useMemo, useRef } from 'react';
 import { AdjustAmountButton } from '../Form/SecondaryComponents/validationError/AdjustAmountButton';
 import { RefreshBalanceButton } from '../Form/SecondaryComponents/validationError/RefreshBalanceButton';
 import type { SwapFormValues } from '../Form/SwapFormValues';
@@ -29,7 +26,7 @@ import { lifecycleContextFromSwap } from '@/lib/swapLifecycle';
 import { TransferBlock } from './TransferBlock';
 import { useHasSubmittedTransfer } from '@/hooks/useHasSubmittedTransfer';
 import { type ObservedLifecycleEvent, useLifecycleObservation } from '@/hooks/useLifecycleObservation';
-import { getActionableDepositAction, isTransferAction } from '@/helpers/depositActions';
+import { resolveDepositGasTransaction } from '@/helpers/depositActions';
 import { isGaslessDepositWorkflow } from '@/helpers/gasless';
 import { useIsGaslessActive } from '@/hooks/useIsGaslessActive';
 import { useSelectedSourceWallet } from '@/hooks/useSelectedSourceWallet';
@@ -44,9 +41,9 @@ const AWAITING_WALLET_ACTION: ObservedLifecycleEvent = {
 }
 
 export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: SwapFormValues) => void) {
-    const { swapBasicData, swapDetails, swapId, amountPresetLocked, depositActionsResponse, refuel, quoteIsLoading } =
+    const { swapBasicData, swapDetails, swapId, amountPresetLocked, depositActionsResponse, refuel, quoteIsLoading, presetRevisionProposal } =
         useSwapDataState();
-    const { startFreshSwapAttempt, canAdjustAmount } = useSwapDataUpdate();
+    const { startFreshSwapAttempt, canAdjustAmount, recordDepositGasFloor } = useSwapDataUpdate();
     const hasSubmittedTransfer = useHasSubmittedTransfer();
     const draftGasless = useIsGaslessActive(swapBasicData);
     // Created swaps follow their execution plan even if the draft preference changed.
@@ -74,19 +71,14 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
                 b?.token === swapBasicData?.source_token?.symbol,
         );
     const walletBalanceAmount = walletBalance?.amount;
-    const action = getActionableDepositAction(depositActionsResponse);
-    const transferAction = action && isTransferAction(action)
-        && source_network?.type === NetworkType.EVM
-        && (!action.network || action.network.name === source_network?.name)
-        && (!action.token || action.token.symbol === swapBasicData?.source_token.symbol)
-        && (!action.from_address || action.from_address.toLowerCase() === selectedSourceAccount?.address?.toLowerCase())
-        ? action : undefined;
-    const gasTransaction = transferAction?.to_address && transferAction.amount != null ? {
-        recipientAddress: transferAction.to_address,
-        callData: transferAction.call_data ?? '',
-        amountInBaseUnits: transferAction.amount_in_base_units,
-    } : undefined;
-    const gasEstimationAmount = gasTransaction ? transferAction?.amount : swapBasicData?.requested_amount;
+    const deposit = swapBasicData && source_network
+        ? resolveDepositGasTransaction(depositActionsResponse, { network: source_network, token: swapBasicData.source_token.symbol, address: selectedSourceAccount?.address })
+        : undefined;
+    const resolvedTransaction = deposit?.transaction;
+    // The estimate's effect and hook options compare the payload by identity.
+    const gasTransaction = useMemo(() => resolvedTransaction,
+        [resolvedTransaction?.recipientAddress, resolvedTransaction?.callData, resolvedTransaction?.amountInBaseUnits]);
+    const gasEstimationAmount = gasTransaction ? deposit?.action.amount : swapBasicData?.requested_amount;
     const currentPresetSource = amountPresetSource(
         swapBasicData?.source_network.name, swapBasicData?.source_token.symbol,
         selectedSourceAccount?.id, selectedSourceAccount?.address,
@@ -102,6 +94,17 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
     );
 
     const gasData = livePreset ? swapBasicData?.amountPresetGas : estimatedGas;
+
+    // The form's Max can only price a plain transfer until a swap exists. Keep what
+    // the real deposit transaction costs so Adjust amount and later retries never
+    // budget less than it for this route and funding account.
+    useEffect(() => {
+        if (!active || !gasTransaction || !estimatedGas || !swapBasicData) return;
+        recordDepositGasFloor({
+            scope: amountPresetGasFloorScope(currentPresetSource, swapBasicData.destination_network.name, swapBasicData.destination_token.symbol),
+            gas: estimatedGas,
+        });
+    }, [active, gasTransaction, estimatedGas, currentPresetSource, swapBasicData?.destination_network.name, swapBasicData?.destination_token.symbol, recordDepositGasFloor]);
 
     const lifecycleContext = useMemo(
         () => swapBasicData ? lifecycleContextFromSwap(swapBasicData, swapDetails) : undefined,
@@ -126,22 +129,15 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
     const { minAllowedAmount, maxAllowedAmount } = useQuoteData(quoteArgs, {
         skipLimits: isDepositAddressSwap(swapBasicData),
     });
-    const adjustedAmount = (() => {
-        if (!swapBasicData || walletBalanceAmount == null || !selectedSourceAccount?.address
-            || minAllowedAmount == null || !Number.isFinite(minAllowedAmount)
-            || maxAllowedAmount == null || !Number.isFinite(maxAllowedAmount)) return undefined;
-        const maxAmount = resolveMaxAllowedAmount({
-            walletBalance, gasAmount: gasData?.maxFee ?? gasData?.gas, gasReserve: gasData?.reserve,
-            fromCurrency: swapBasicData.source_token, native_currency: gasData?.token ?? source_network?.token,
-            limitsMaxAmount: maxAllowedAmount, depositMethod: 'wallet',
-        });
-        if (maxAmount == null || !Number.isFinite(maxAmount)) return undefined;
-        const newAmount = truncateToDecimals(String(maxAmount), swapBasicData.source_token.decimals);
-        const amount = Number(newAmount);
-        // Only offer a reduction that can satisfy the route after token rounding.
-        return amount > 0 && amount >= minAllowedAmount && amount < Number(swapBasicData.requested_amount)
-            ? newAmount : undefined;
-    })();
+    const adjustedAmount = swapBasicData && walletBalanceAmount != null && selectedSourceAccount?.address
+        && minAllowedAmount != null && Number.isFinite(minAllowedAmount)
+        && maxAllowedAmount != null && Number.isFinite(maxAllowedAmount)
+        ? resolveDepositFeeAdjustedAmount({
+            requestedAmount: swapBasicData.requested_amount, walletBalance, gas: gasData,
+            token: swapBasicData.source_token, nativeToken: source_network?.token,
+            limitsMaxAmount: maxAllowedAmount, minAllowedAmount,
+        })
+        : undefined;
     // API swap networks are display metadata, not complete form routes. Restart
     // with configured routes so balance readers retain token lists and RPC data.
     const formSource = sourceRoutes?.find(route => route.name === swapBasicData?.source_network.name);
@@ -196,7 +192,9 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
         && (swapBasicData?.amountPresetPending || !Object.is(swapBasicData?.amountPresetBalance, walletBalanceAmount));
     // A submitted swap only needs a read-only status check. Its original balance
     // may already be spent, so funding warnings must not replace recovery controls.
-    const showInsufficientBalanceWarning = !hasSubmittedTransfer && !presetIsSyncing &&
+    // The proposal already explains the funding change and owns its acceptance.
+    // A generic balance block would hide that action while its amount is frozen.
+    const showInsufficientBalanceWarning = !presetRevisionProposal && !hasSubmittedTransfer && !presetIsSyncing &&
         swapBasicData?.use_deposit_address === false &&
         swapBasicData?.requested_amount &&
         Number(swapBasicData?.requested_amount) &&
@@ -256,7 +254,7 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
                 />
             </TransferBlock>
         );
-    } else if (!hasSubmittedTransfer && !isGaslessExecution && swapBasicData?.use_deposit_address === false && shownGasShortage) {
+    } else if (!presetRevisionProposal && !hasSubmittedTransfer && !isGaslessExecution && swapBasicData?.use_deposit_address === false && shownGasShortage) {
         // Keep execution mounted: a refreshed estimate or balance must not
         // interrupt an in-flight wallet request. Sending rechecks pending funds.
         const { requiredFee, availableBalance, symbol } = shownGasShortage;
@@ -265,7 +263,7 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
             message={`Required maximum gas fee: ${formatTokenAmount(ceilToDecimals(requiredFee, precision), precision)} ${symbol}. Available native balance: ${truncateDecimals(availableBalance, precision)} ${symbol}. Add ${symbol} to your source account; reducing the token amount will not fund gas.`}
             adjustButton={<RefreshBalanceButton onRefresh={mutate} isLoading={isLoading} />}
         />;
-    } else if (!hasSubmittedTransfer && swapBasicData?.use_deposit_address === false && outOfGas && !presetIsSyncing) {
+    } else if (!presetRevisionProposal && !hasSubmittedTransfer && swapBasicData?.use_deposit_address === false && outOfGas && !presetIsSyncing) {
         // A changing gas warning must preserve the active wallet execution.
         actionKey = 'transfer';
         warning = <GasWarningView adjustButton={showAdjustAmount && <AdjustAmountButton compact onEditAmount={handleEditAmount} isLoading={quoteIsLoading} />} />;

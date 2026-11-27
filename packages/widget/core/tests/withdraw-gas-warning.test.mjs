@@ -19,8 +19,8 @@ for (const [key, value] of Object.entries(globals)) {
 const mockUrl = `data:text/javascript,${encodeURIComponent(`
   import { createElement } from ${JSON.stringify(import.meta.resolve('react'))}
   export const state = {}
-  export const useSwapDataState = () => ({ swapBasicData: state.swap, amountPresetLocked: state.locked, swapId: state.swapId, swapDetails: state.swapDetails, inputTransactionStatus: state.inputTransactionStatus, depositActionsResponse: state.actions, quoteIsLoading: state.quoteLoading })
-  export const useSwapDataUpdate = () => ({ setSubmitedFormValues(values) { state.submitted = values }, startFreshSwapAttempt() { state.freshAttempts++ }, canAdjustAmount: () => !state.locked })
+  export const useSwapDataState = () => ({ swapBasicData: state.swap, amountPresetLocked: state.locked, swapId: state.swapId, swapDetails: state.swapDetails, inputTransactionStatus: state.inputTransactionStatus, depositActionsResponse: state.actions, quoteIsLoading: state.quoteLoading, presetRevisionProposal: state.proposal })
+  export const useSwapDataUpdate = () => ({ setSubmitedFormValues(values) { state.submitted = values }, startFreshSwapAttempt() { state.freshAttempts++ }, canAdjustAmount: () => !state.locked, recordDepositGasFloor(floor) { state.recorded.push(floor) } })
   export const useSettingsState = () => ({ networks: [state.swap.source_network], sourceRoutes: [{ ...state.swap.source_network, tokens: [state.swap.source_token] }], destinationRoutes: [{ ...state.swap.destination_network, tokens: [state.swap.destination_token] }] })
   export const useSelectedAccount = () => ({ id: state.walletId, address: state.walletAddress ?? 'source' })
   export const useBalance = () => ({ balances: state.balances, mutate() {}, isLoading: false })
@@ -94,8 +94,8 @@ beforeEach(() => {
   useGaslessPreferenceStore.getState().resetGaslessPreference()
   Object.assign(state, {
     swapId: undefined, swapDetails: undefined, inputTransactionStatus: undefined,
-    walletId: undefined, wallets: [], alternateGasFees: undefined,
-    actions: undefined, gasRequests: [], events: [], walletAddress: undefined, locked: false, freshAttempts: 0, submitted: undefined, formValues: undefined, quoteLoading: false,
+    walletId: undefined, wallets: [], alternateGasFees: undefined, proposal: undefined,
+    actions: undefined, gasRequests: [], events: [], recorded: [], walletAddress: undefined, locked: false, freshAttempts: 0, submitted: undefined, formValues: undefined, quoteLoading: false,
     swap: { source_network: network, source_token: token, destination_network: { name: 'BASE_MAINNET' }, destination_token: token, requested_amount: '0.95', use_deposit_address: false },
     balances: [{ network: network.name, token: token.symbol, amount: 1, isNativeCurrency: true }],
     gasData: { gas: 0.1, token },
@@ -213,6 +213,7 @@ test('a balance covering the fee but missing its safety buffer offers Adjust amo
 })
 
 test('the warning and adjustment request the current deposit action payload', async () => {
+  const { amountPresetGasFloorScope, amountPresetSource } = await import('../dist/esm/lib/amountPresets.js')
   state.actions = [{ type: 'transfer', to_address: 'recipient', amount: 0.95, amount_in_base_units: '950000000000000001', call_data: '0x1234', network, token }]
   await render()
   assert.ok(state.gasRequests.length > 0)
@@ -222,6 +223,10 @@ test('the warning and adjustment request the current deposit action payload', as
       recipientAddress: 'recipient', callData: '0x1234', amountInBaseUnits: '950000000000000001',
     })
   }
+  assert.deepEqual(state.recorded.at(-1), {
+    scope: amountPresetGasFloorScope(amountPresetSource(network.name, token.symbol, undefined, 'source'), 'BASE_MAINNET', token.symbol),
+    gas: state.gasData,
+  })
 })
 
 test('deposit actions for another source account cannot replace its gas estimate', async () => {
@@ -290,6 +295,7 @@ test('Adjust amount explicitly starts a fresh draft with Max enabled', async () 
   assert.equal(state.submitted.amountMode, 'max')
   assert.equal(state.submitted.amount, '0.898')
   assert.equal(state.formValues.amount, state.submitted.amount)
+  assert.deepEqual(state.recorded, [])
 })
 test('Adjust amount cannot abandon an executing swap', async () => {
   state.locked = true
@@ -542,6 +548,19 @@ for (const symbol of ['BNB', 'ETH']) {
     assert.doesNotMatch(container.textContent, /Insufficient balance for gas/)
   })
 }
+
+test('a pending amount proposal takes precedence over the native gas warning', async () => {
+  state.swap.source_token = { symbol: 'USDT', decimals: 18, contract: '0xtoken' }
+  state.balances = [
+    { network: network.name, token: 'USDT', amount: 100, isNativeCurrency: false },
+    { network: network.name, token: token.symbol, amount: 0, isNativeCurrency: true },
+  ]
+  state.proposal = { amount: '0.8', message: 'Adjust the amount to continue.' }
+  await render()
+  assert.doesNotMatch(container.textContent, /Insufficient balance for gas|Required maximum gas fee/)
+  assert.ok(sendButton(), 'the wallet view must remain mounted to render its proposal action')
+  assert.deepEqual(blocks(), [])
+})
 
 test('a token gas warning follows the fee token returned by the gas provider for the selected wallet', async () => {
   const usdc = { symbol: 'USDC', decimals: 6, contract: '0xtoken' }

@@ -155,7 +155,7 @@ export function useSendTransactionController({
     refuel,
     ...props
 }: SendFromWalletButtonProps, active = true) {
-    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, depositActionsError, flow, refuel: refuelData, swapError, setSwapError, walletExecutionStarted, gaslessAuthorization, inputTransactionStatus } = useSwapDataState()
+    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, depositActionsError, flow, refuel: refuelData, swapError, setSwapError, walletExecutionStarted, gaslessAuthorization, inputTransactionStatus, presetRevisionProposal } = useSwapDataState()
     const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
     const gaslessErrorMessage = useGaslessPreferenceStore(s => s.gaslessErrorMessage)
     const gaslessFailureStage = useGaslessPreferenceStore(s => s.gaslessFailureStage)
@@ -171,6 +171,7 @@ export function useSendTransactionController({
         markWalletExecutionStarted,
         acquireWalletExecution,
         setWalletActionExecuting,
+        applyPresetRevision,
     } = useSwapDataUpdate()
     const setSwapTransaction = useSwapTransactionStore(state => state.setSwapTransaction)
     const storedWalletTransaction = useSwapTransactionStore(
@@ -379,6 +380,8 @@ export function useSendTransactionController({
 
                 const newSwapData = await createSwapForCurrentSelection.current(swapValues, initialSettings).catch((e: any) => {
                     signal.throwIfAborted()
+                    // A revised preset is a review step for the handler below, not a creation failure.
+                    if (e instanceof AmountPresetChangedError) throw e
                     // Failed gasless attempt is surfaced as the switch prompt, not a raw API error.
                     if (useGaslessPreferenceStore.getState().gaslessUnavailable) {
                         setSwapError?.(null)
@@ -624,10 +627,9 @@ export function useSendTransactionController({
         }
         catch (e) {
             if (signal.aborted) return
-            if (e instanceof AmountPresetChangedError) {
-                setSwapError?.(e.message)
-                return
-            }
+            // A revised preset is a review step, not a failure: the context already shows
+            // the new amount and its notice, and the same action sends it.
+            if (e instanceof AmountPresetChangedError) return
             if (e instanceof NetworkSwitchError) {
                 // Keep the prepared swap intact; retry refreshes it before asking the wallet again.
                 setNetworkSwitch({ isPending: false, isError: true, error: e })
@@ -691,6 +693,9 @@ export function useSendTransactionController({
         setCriticalConfirmation(undefined)
         return executeWorkflow(false)
     }
+    // Adjust amount accepts the proposal: the draft takes the amount and the confirm
+    // action returns, so the user reviews the new amount before sending it.
+    const handleAdjustAmount = () => { applyPresetRevision() }
 
     const retryGasless = () => {
         onSwapLifecycle({
@@ -765,6 +770,7 @@ export function useSendTransactionController({
             stepTransactions: stepTransactions,
             error: error,
             swapError: !!(swapError || depositActionsError),
+            amountProposal: presetRevisionProposal ? { message: presetRevisionProposal.message, onAdjust: handleAdjustAmount } : undefined,
             swapId: swapId,
             criticalMarketPriceImpact: criticalMarketPriceImpact,
             showCriticalMarketPriceImpactButtons: !!activeCriticalConfirmation,

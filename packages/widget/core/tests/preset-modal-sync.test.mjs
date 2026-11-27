@@ -8,6 +8,7 @@ import { create } from 'zustand'
 import { createSwapContext } from './helpers/swap-context.mjs'
 import { resolveSwapFlow } from '../dist/esm/components/utils/resolveSwapFlow.js'
 import { loadSource, amountPresets, amountMessages, formValidation, maxHelpers, rounding } from './helpers/source.mjs'
+import { createPresetPreparation } from './helpers/preset-preparation.mjs'
 
 const require = createRequire(import.meta.url)
 const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://widget.example' })
@@ -30,9 +31,36 @@ const { BalanceResolver } = loadSource('lib/balances/balanceResolver.ts', {
   '../widgetTelemetry': { widgetTelemetry: { beginOperation: () => () => {} } },
 })
 const context = createSwapContext({
-  Client: class {}, getSwapId: () => undefined, getAccount: () => state.account,
+  Client: class {
+    async CreateSwapAsync(params) {
+      state.created.push(params)
+      return {
+        data: {
+          swap: { ...state.backendResponse.data.swap, requested_amount: params.amount },
+        },
+      }
+    }
+  },
+  getSwapId: () => undefined, getAccount: () => state.account,
   overrides: {
+    '@/lib/preparePresetAmount': {
+      startPresetPreparation: async (...args) => {
+        if (state.prepare) {
+          return state.prepare(...args)
+        }
+        return { calculate: () => state.confirmation.promise }
+      },
+    },
+    '@/helpers/gasless': { isGaslessCapableRoute: () => false },
+    '@/lib/extendedRoutes/registry': { resolveExtendedRoutePlan: () => undefined },
     '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
+    '@/lib/swapLifecycle': { lifecycleContextFromForm: values => ({ requestedAmount: values.amount }) },
+    '@/lib/swapCreation': loadSource('lib/swapCreation.ts', {
+      '@layerswap/widget-types': require('@layerswap/widget-types'),
+      '@/lib/ErrorHandler': { ErrorHandler() {} },
+      './swapLifecycle': { lifecycleErrorDetails: () => ({}) },
+      './amountPresets': amountPresets,
+    }),
     '@/hooks/useSwapPolling': { useSwapPolling: id => ({ data: id ? state.backendResponse : undefined, mutate() {} }) },
   },
 })
@@ -98,6 +126,12 @@ const { default: SubmitButton } = loadSource('components/Buttons/submitButton.ts
   '../Icons/spinIcon': { default: () => createElement('span', { 'data-spinner': true }) }, clsx: { default: require('clsx') },
 })
 const noop = () => null
+const proposalView = loadSource('components/Pages/Swap/Withdraw/Presentation/AmountProposalView.tsx', {
+  '@/components/Icons/InfoIcon': { default: noop },
+  '../../Form/SecondaryComponents/validationError/constants': {},
+  '../../Form/SecondaryComponents/validationError/ErrorDisplay': errorDisplay,
+  '../../Form/SecondaryComponents/validationError/AdjustAmountButton': { AdjustAmountButton: ({ onEditAmount }) => createElement('button', { onClick: onEditAmount }, 'Adjust amount') },
+})
 const { SendTransactionView } = loadSource('components/Pages/Swap/Withdraw/Presentation/WalletActionsView.tsx', {
   '../TransferBlock': { TransferBlock: ({ children }) => children },
   '@/components/utils/resolveSwapFlow': { resolveSwapFlow },
@@ -112,6 +146,7 @@ const { SendTransactionView } = loadSource('components/Pages/Swap/Withdraw/Prese
   '../../Form/SecondaryComponents/validationError/constants': {},
   '../../Form/SecondaryComponents/validationError/ErrorDismissButton': { default: noop },
   '../../Form/SecondaryComponents/validationError/ErrorDisplay': errorDisplay,
+  './AmountProposalView': proposalView,
   '../messages/Message': {}, '../Wallet/Common/ensureSourceChain': {},
   '../messages/walletErrorMessage': loadSource('components/Pages/Swap/Withdraw/messages/walletErrorMessage.ts', {
     '@layerswap/widget-types': require('@layerswap/widget-types'),
@@ -131,9 +166,11 @@ const callbackImports = {
 const { default: WalletTransferButton } = loadSource('components/Pages/Swap/Withdraw/WalletTransferButton.tsx', {
   './Presentation/Page2Sections': { WalletTransferView: ({ children, warning }) => createElement('div', null, warning, children) },
   './Wallet': { WalletTransferAction: () => {
-    const { quoteIsLoading, quoteError } = context.useSwapDataState()
+    const { quoteIsLoading, quoteError, presetRevisionProposal } = context.useSwapDataState()
+    const { applyPresetRevision } = context.useSwapDataUpdate()
     useEffect(() => { state.walletMounts++; return () => { state.walletUnmounts++ } }, [])
-    return createElement(SendTransactionView, { quoteIsLoading, quoteError: !!quoteError })
+    return createElement(SendTransactionView, { quoteIsLoading, quoteError: !!quoteError,
+      amountProposal: presetRevisionProposal ? { message: presetRevisionProposal.message, onAdjust: applyPresetRevision } : undefined })
   } },
 })
 const { default: Withdraw } = loadSource('components/Pages/Swap/Withdraw/Withdraw.tsx', {
@@ -214,7 +251,8 @@ beforeEach(() => {
   container = document.createElement('div'); document.body.append(container); root = createRoot(container)
   Object.assign(state, { account: { id: 'wallet', address: 'source' }, formKey: 0, maximum: 1, minimum: 0.00001, price: 2400,
     rejectIncompleteNetworks: false,
-    enableAutoAdjust: false, renderQuoteDetails: false, events: [], commits: [], walletMounts: 0, walletUnmounts: 0,
+    enableAutoAdjust: false, renderQuoteDetails: false, prepare: undefined, confirmation: undefined,
+    created: [], events: [], commits: [], walletMounts: 0, walletUnmounts: 0,
     gas: { gas: 0.0000001, token }, gasRequest: undefined, gasError: undefined, balanceLoading: false,
     balances: [{ amount: 0.00182643, network: source.name, token: token.symbol, request_time: 1, isNativeCurrency: true }] })
   state.backendResponse = { data: { swap: { id: 'created', source_network: { name: source.name }, source_token: {}, destination_network: { name: source.name }, destination_token: {}, requested_amount: 1, transactions: [], use_deposit_address: false } } }
@@ -589,4 +627,74 @@ test('Adjust after wallet rejection and a USDC balance decrease restores configu
   assert.equal(formik.values.amountPresetPending, false)
   assert.doesNotMatch(container.textContent, /Balance unavailable|Something went wrong/)
   assert.equal(container.querySelector('button').disabled, false)
+})
+
+
+async function proposeBalanceReduction() {
+  await render(); await openReview()
+  const reviewed = summaryAmount()
+  state.confirmation = Promise.withResolvers()
+  let rejected
+  await act(() => { rejected = assert.rejects(updates.createSwap(formik.values, {}), amountPresets.AmountPresetChangedError) })
+  await decreaseBalance()
+  const proposed = '0.001411528'
+  await act(async () => { state.confirmation.resolve(proposed); await rejected })
+  return { reviewed, proposed }
+}
+
+test('a proposal freezes the live summary until Adjust accepts it and resumes Formik', async () => {
+  const { reviewed, proposed } = await proposeBalanceReduction()
+  assert.equal(data.presetRevisionProposal.amount, proposed)
+  assert.equal(data.amountPresetLocked, true)
+  assert.equal(summaryAmount(), reviewed)
+  assert.equal(formik.values.amount, reviewed)
+  assert.doesNotMatch(container.textContent, /Insufficient balance/)
+  const adjust = [...container.querySelectorAll('button')].find(button => button.textContent === 'Adjust amount')
+  assert.ok(adjust, 'the proposal action must not be hidden by a balance block')
+  state.gasRequest = Promise.withResolvers()
+  await act(() => adjust.click())
+  assert.equal(data.presetRevisionProposal, undefined)
+  assert.equal(data.amountPresetLocked, false)
+  assert.equal(summaryAmount(), proposed)
+  assert.equal(formik.values.amount, proposed)
+  await act(() => state.gasRequest.resolve())
+  assert.equal(summaryAmount(), proposed)
+  assert.equal(formik.values.amount, proposed)
+})
+
+test('an adjusted Half proposal survives the live refresh and its next confirmation', async () => {
+  initialValues.amountMode = 'half'
+  // Each confirmation reads the same current balance, limits and fee as the live preset.
+  state.prepare = (...args) => createPresetPreparation({
+    ...state.gas,
+    balance: state.balances[0].amount,
+    limits: { min_amount: state.minimum, max_amount: state.maximum },
+  }).startPresetPreparation(...args)
+  await render()
+  await openReview()
+  state.balances = [{ ...state.balances[0], amount: 0.0008, request_time: 2 }]
+  await act(() => assert.rejects(updates.createSwap(formik.values, {}), amountPresets.AmountPresetChangedError))
+  assert.deepEqual(state.created, [], 'a proposal must not create a swap before it is accepted')
+  const proposed = data.presetRevisionProposal.amount
+  const adjust = [...container.querySelectorAll('button')].find(button => button.textContent === 'Adjust amount')
+  assert.ok(adjust)
+  await act(() => adjust.click())
+  await render()
+  assert.equal(formik.values.amount, proposed, 'the live Half must settle on the accepted proposal')
+  assert.equal(summaryAmount(), proposed)
+  await act(() => updates.createSwap(formik.values, {}))
+  assert.deepEqual(state.created.map(request => request.amount), [proposed])
+  assert.equal(summaryAmount(), proposed)
+  assert.equal(data.amountPresetLocked, true)
+  assert.equal(data.presetRevisionProposal, undefined)
+})
+
+test('changing the funding account clears the proposal and releases its live preset lock', async () => {
+  await proposeBalanceReduction()
+  state.account = { ...state.account, address: 'another-account' }
+  await render()
+  assert.equal(data.presetRevisionProposal, undefined)
+  assert.equal(data.amountPresetLocked, false)
+  assert.equal(formik.values.amountMode, 'manual')
+  assert.equal(updates.applyPresetRevision(), undefined)
 })

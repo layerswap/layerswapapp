@@ -31,12 +31,15 @@ function harness({ useGasless = false, request = async () => ({ data: swap }), o
   let gaslessUnavailable = 0
   setErrorLogger(event => reported.push(event))
   const attempt = createSwapAttempt(
-    prepare ?? (async () => ({ request, useGasless, onCreated })),
+    async () => {
+      const prepared = prepare ? await prepare() : { request, useGasless, onCreated }
+      const created = await requestSwap(prepared, () => { gaslessUnavailable++ })
+      return { swap: created, onCreated: prepared.onCreated }
+    },
     {
       path: 'test.createSwap',
       lifecycleContext,
       onLifecycle: event => lifecycle.push(event),
-      onGaslessUnavailable: () => { gaslessUnavailable++ },
     },
   )
   return { attempt, lifecycle, reported, steps: () => lifecycle.map(e => e.step), gaslessUnavailable: () => gaslessUnavailable }
@@ -138,12 +141,11 @@ test('a throwing swap_created listener is a side-effect failure too: the swap is
   setErrorLogger(event => reported.push(event))
   const lifecycle = []
   const result = await createSwapAttempt(
-    async () => ({ request: async () => ({ data: swap }), useGasless: false, onCreated: [{ name: 'onSwapCreate', run: () => calls.push('onSwapCreate') }] }),
+    async () => ({ swap, onCreated: [{ name: 'onSwapCreate', run: () => calls.push('onSwapCreate') }] }),
     {
       path: 'test.createSwap',
       lifecycleContext,
       onLifecycle: event => { lifecycle.push(event.step); if (event.step === 'swap_created') throw new Error('listener broke') },
-      onGaslessUnavailable: () => assert.fail('not a request failure'),
     },
   )
   assert.equal(result, swap)

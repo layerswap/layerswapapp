@@ -164,7 +164,7 @@ for (const source of [polymarket, polygon]) {
 
 test('live amount confirmation refreshes Polymarket limits without opting into frontend swaps', async () => {
     let requestedUrl
-    const { preparePresetAmount } = loadSource('lib/preparePresetAmount.ts', {
+    const { startPresetPreparation } = loadSource('lib/preparePresetAmount.ts', {
         ...shared,
         '@/hooks/useFee': feeHarness(),
         './apiClients/layerSwapApiClient': { default: class { async fetcher(url) {
@@ -180,7 +180,8 @@ test('live amount confirmation refreshes Polymarket limits without opting into f
             calculatePresetAmount: async () => '10',
         },
     })
-    assert.equal(await preparePresetAmount({ ...values, amountMode: 'max' }, owner, {}, [polygon], false), '10')
+    const preparation = await startPresetPreparation({ ...values, amountMode: 'max' }, owner, {}, [polygon], false)
+    assert.equal(await preparation.calculate(), '10')
     const params = new URL(requestedUrl, 'https://api.test').searchParams
     assert.equal(params.get('source_network'), polygon.name)
     assert.equal(params.get('use_frontend_swap'), 'false')

@@ -24,7 +24,7 @@ for (const [key, value] of Object.entries(surfaces)) {
 dom.window.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} })
 const fixtureUrl = 'data:text/javascript,' + encodeURIComponent(`
   export const state = { events: [], errors: [] }
-  export const useSwapDataState = () => ({ swapDetails: state.swapDetails, depositActionsResponse: state.depositActions })
+  export const useSwapDataState = () => ({ swapDetails: state.swapDetails, depositActionsResponse: state.depositActions, presetRevisionProposal: state.proposal })
   export const useSwapDataUpdate = () => ({ reportWalletActionFeedback() { return () => {} }, setSwapId(id) { state.selectedSwapId = id },
     setWalletActionExecuting(value) { state.executionUpdates.setWalletActionExecuting(value); state.executionLocks.push(value) },
     acquireWalletExecution() {
@@ -33,6 +33,7 @@ const fixtureUrl = 'data:text/javascript,' + encodeURIComponent(`
       return () => { release(); state.executionLocks.push(false) }
     },
     startFreshSwapAttempt() { state.freshAttempts++ },
+    applyPresetRevision: () => state.applyPresetRevision(),
     createSwap: (...args) => { state.creations++; return state.createSwap(...args) },
     mutateSwap: async response => { state.reconciled.push(response); state.swapDetails = response.data.swap },
   })
@@ -95,6 +96,7 @@ function ExecutionProbe() {
 }
 Object.defineProperty(state, 'executing', { get: () => !state.executionUpdates.canAdjustAmount() })
 const { useProviderWithdrawal } = await import('../dist/esm/components/Pages/Swap/Withdraw/WithdrawalProviders/useProviderWithdrawal.js')
+const { AmountPresetChangedError } = await import('../dist/esm/lib/amountPresets.js')
 const { useWithdrawalProvider } = await import('../dist/esm/hooks/useWithdrawalProvider.js')
 const { TransferResolver } = await import('../dist/esm/lib/transfers/transferResolver.js')
 const { hyperliquidWithdrawal } = loadSource('../../../wallets/adapters/evm/src/additionalProviders/hyperliquid/withdrawal.ts')
@@ -128,7 +130,7 @@ beforeEach(async () => {
   Object.assign(state, {
     events: [], errors: [], transfers: [], transferResolver: new TransferResolver([]), published: [], successes: 0, error: undefined, sourceAddress: 'source', provider: undefined,
     refreshes: [], actionRefreshes: [], reconciled: [], freshAttempts: 0, creations: 0, selectedSwapId: 'swap-1',
-    swapDetails: { id: 'swap-1' }, onSuccess: undefined, executionLocks: [],
+    swapDetails: { id: 'swap-1' }, onSuccess: undefined, executionLocks: [], proposal: undefined,
     depositActions: [{ type: 'transfer', to_address: 'deposit', call_data: '0x', amount_in_base_units: '1000000' }],
     executeTransfer: async params => { params.onSubmissionStateChange('preparing'); throw state.error },
     createSwap: async () => assert.fail('unexpected swap creation'),
@@ -354,6 +356,33 @@ async function mountWithdrawal(useWithdrawal, props = {}) {
   await act(async () => root.render(createElement(Probe)))
   return { get result() { return result }, rerender: () => act(() => root.render(createElement(Probe))), setActive: value => { active = value; return act(() => root.render(createElement(Probe))); }, unmount: () => act(async () => root.unmount()) }
 }
+
+test('provider adjustment waits for another confirmation and transfers the accepted amount', async t => {
+  const props = { swapId: undefined, swapBasicData: { ...swapBasicData } }
+  state.createSwap = async values => {
+    if (state.creations === 1) {
+      state.proposal = { amount: '0.995', message: 'Adjust amount' }
+      throw new AmountPresetChangedError()
+    }
+    assert.equal(values.amount, '0.995')
+    return { swap: { id: 'adjusted' }, deposit_actions: state.depositActions }
+  }
+  state.applyPresetRevision = () => {
+    props.swapBasicData = { ...props.swapBasicData, requested_amount: state.proposal.amount }
+    state.proposal = undefined
+  }
+  state.executeTransfer = async () => 'hash'
+  const mounted = await mountWithdrawal(usePolymarketWithdrawal, props)
+  t.after(() => mounted.unmount())
+  await act(() => mounted.result.handleWithdraw())
+  assert.deepEqual(state.transfers, [])
+  assert.deepEqual(state.errors, [])
+  await act(() => mounted.result.amountProposal.onAdjust())
+  await mounted.rerender()
+  assert.deepEqual(state.transfers, [])
+  await act(() => mounted.result.handleWithdraw())
+  assert.equal(state.transfers[0][0].amount, 0.995)
+})
 
 test('an arbitrary registered adapter uses the shared withdrawal flow without widget configuration', async () => {
   const withdrawal = {

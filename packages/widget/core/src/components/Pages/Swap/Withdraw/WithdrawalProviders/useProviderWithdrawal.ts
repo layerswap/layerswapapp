@@ -30,8 +30,8 @@ export function useProviderWithdrawal({ swapBasicData, refuel, swapId }: Withdra
     const { networks, sourceRoutes } = useSettingsState();
     const initialSettings = useInitialSettings();
     const { onWalletWithdrawalSuccess } = useWalletWithdrawalState();
-    const { swapDetails } = useSwapDataState();
-    const { createSwap, setSwapId, startFreshSwapAttempt, mutateSwap, acquireWalletExecution } = useSwapDataUpdate();
+    const { swapDetails, presetRevisionProposal } = useSwapDataState();
+    const { createSwap, setSwapId, startFreshSwapAttempt, mutateSwap, acquireWalletExecution, applyPresetRevision } = useSwapDataUpdate();
     const { executeTransfer } = useTransfer();
     const { onSwapLifecycle } = useCallbacks();
     const account = useSelectedAccount('from', source_network.name);
@@ -159,7 +159,6 @@ export function useProviderWithdrawal({ swapBasicData, refuel, swapId }: Withdra
                 return;
             }
             if (cause instanceof AmountPresetChangedError) {
-                setError({ header: 'Amount updated', details: cause.message });
                 return;
             }
             lastFailureWasUserRejection.current = isUserRejection(cause);
@@ -185,9 +184,17 @@ export function useProviderWithdrawal({ swapBasicData, refuel, swapId }: Withdra
         draftKey, setSwapId, mutateSwap, executeTransfer, source_network, source_token, destination_network,
         destination_token, networks, sourceRoutes, onWalletWithdrawalSuccess]);
 
+    const handleAdjustAmount = useCallback(() => {
+        applyPresetRevision();
+        setError(undefined);
+    }, [applyPresetRevision]);
+
     return {
         handleWithdraw, loading: loading || submissionAccepted, submissionAccepted, progress, error, rejected,
         isConnected: !!wallet, wallet, activeAddress: wallet?.address, sourceAddress,
+        amountProposal: presetRevisionProposal
+            ? { message: presetRevisionProposal.message, onAdjust: handleAdjustAmount }
+            : undefined,
     };
 }
 

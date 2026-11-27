@@ -22,6 +22,7 @@ import { Loader2 } from 'lucide-react';
 import { type FC, type ReactNode } from 'react';
 import { ICON_CLASSES_WARNING } from '../../Form/SecondaryComponents/validationError/constants';
 import ErrorDismissButton from '../../Form/SecondaryComponents/validationError/ErrorDismissButton';
+import { AmountProposalView, type AmountProposalAction } from './AmountProposalView';
 import { ErrorDisplay } from '../../Form/SecondaryComponents/validationError/ErrorDisplay';
 import WalletMessage from '../messages/Message';
 import { walletDisconnectedMessage } from '../messages/walletErrorMessage';
@@ -150,6 +151,8 @@ export type SendTransactionViewProps = SubmitButtonProps & {
     readOnly?: boolean;
     error?: boolean;
     swapError?: boolean;
+    /** The confirmation could not send the reviewed amount; Adjust applies the proposal for a new confirmation. */
+    amountProposal?: AmountProposalAction;
     swapId?: string;
     criticalMarketPriceImpact?: boolean;
     showCriticalMarketPriceImpactButtons?: boolean;
@@ -188,6 +191,7 @@ export function getSendTransactionPresentation({
     readOnly,
     error,
     swapError,
+    amountProposal,
     swapId,
     criticalMarketPriceImpact,
     showCriticalMarketPriceImpactButtons,
@@ -307,6 +311,13 @@ export function getSendTransactionPresentation({
                         </ButtonWrapper>
                     </TransferBlock>
                 ) };
+    }
+    // The reviewed amount cannot be sent as is. Like the funding warnings, the proposal
+    // takes the send action's place until Adjust amount applies it.
+    if (amountProposal && !pendingSubmission && !submissionAccepted && !workflowCompleted) {
+        return { walletProgress, controls: (
+            <AmountProposalView {...amountProposal} />
+        ) };
     }
     // A quote error disables the actual send action. Loading and completed
     // workflows are progress states, not funding or readiness blocks.

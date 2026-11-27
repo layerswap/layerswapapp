@@ -257,7 +257,7 @@ function createWorkflow({
         './DepositWorkflowView': workflowView,
         '../messages/Message': { WalletMessageDetails: ({ children }) => children },
     })
-    const ErrorDisplay = () => null
+    const ErrorDisplay = ({ title, message, action }) => createElement('div', null, title, message, action)
     const walletViews = loadSource('../src/components/Pages/Swap/Withdraw/Presentation/WalletActionsView.tsx', {
         '../TransferBlock': { TransferBlock: props => mounted
             ? createElement(blockBoundary.TransferBlock, props)
@@ -277,6 +277,12 @@ function createWorkflow({
         '../../Form/SecondaryComponents/validationError/constants': {},
         '../../Form/SecondaryComponents/validationError/ErrorDismissButton': { default: noop },
         '../../Form/SecondaryComponents/validationError/ErrorDisplay': { ErrorDisplay },
+        './AmountProposalView': loadSource('../src/components/Pages/Swap/Withdraw/Presentation/AmountProposalView.tsx', {
+            '@/components/Icons/InfoIcon': { default: noop },
+            '../../Form/SecondaryComponents/validationError/constants': {},
+            '../../Form/SecondaryComponents/validationError/ErrorDisplay': { ErrorDisplay },
+            '../../Form/SecondaryComponents/validationError/AdjustAmountButton': { AdjustAmountButton: ({ onEditAmount }) => createElement('button', { onClick: onEditAmount }, 'Adjust amount') },
+        }),
         '../messages/Message': { default: ({ header, details }) => createElement('div', null, header, details) },
         '../messages/walletErrorMessage': loadSource('../src/components/Pages/Swap/Withdraw/messages/walletErrorMessage.ts', {
             '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
@@ -370,6 +376,12 @@ function createWorkflow({
                     setWalletActionExecuting: noop,
                 }),
                 createSwap: (...args) => state.createSwap ? state.createSwap(...args) : assert.fail('Retry must keep the existing swap'),
+                applyPresetRevision: () => {
+                    const proposal = state.presetRevisionProposal
+                    state.presetRevisionProposal = undefined
+                    if (proposal) state.swapBasicData = { ...state.swapBasicData, requested_amount: proposal.amount }
+                    return proposal?.amount
+                },
                 startFreshSwapAttempt: noop,
                 mutateSwap: async () => {},
                 setSwapId: id => { state.swapId = id },
@@ -2808,6 +2820,7 @@ for (const scenario of [
 
 for (const scenario of [
     { name: 'wrong provider account', isConnected: true, accountMismatch: true, reason: 'wallet_account_mismatch', text: /Wrong account/ },
+    { name: 'provider amount proposal', isConnected: true, amountProposal: { message: 'Adjust amount' }, text: /Adjust amount/ },
     { name: 'normal provider connection', isConnected: false, accountMismatch: true, text: /Connect wallet/ },
     { name: 'submitted provider transfer after account change', isConnected: true, accountMismatch: true, submissionAccepted: true, loading: true, text: /Withdrawing/ },
     { name: 'submitted provider transfer after disconnect', isConnected: false, accountMismatch: true, submissionAccepted: true, loading: true, progress: { title: 'Provider progress' }, text: /Provider progress/ },
@@ -2833,6 +2846,7 @@ for (const scenario of [
             '../messages/Message': { default: ({ header }) => createElement('p', null, header) },
             '../messages/TransactionMessages': { ActionMessages: { WalletMismatchMessage: () => createElement('p', null, 'Wrong account') } },
             './WalletActionsView': flow.walletViews,
+            './AmountProposalView': { AmountProposalView: ({ message }) => createElement('p', null, message) },
         })
         await act(() => root.render(createElement(SpecializedWithdrawalView, {
             ...scenario, provider: 'Provider', network: flow.network,
@@ -2895,3 +2909,30 @@ for (const signatureState of ['completed sign-only action', 'saved signature bef
         })
     }
 }
+
+test('the send action offers a proposal and confirms only after adjustment', async () => {
+    const flow = createWorkflow()
+    flow.network.chain_id = '8453'
+    flow.wallet.chainId = 8453
+    Object.assign(flow.state, {
+        resolveCurrentFlow: true, swapId: undefined, swapDetails: undefined, depositActionsResponse: undefined,
+        swapBasicData: { ...atomicFixtures.swap, source_network: flow.network, destination_network: { name: 'ARBITRUM_MAINNET' } },
+    })
+    const amounts = []
+    flow.state.createSwap = async values => {
+        amounts.push(values.amount)
+        flow.state.presetRevisionProposal = { amount: '0.65', message: 'Adjust the amount to cover the deposit fee.' }
+        throw new amountPresets.AmountPresetChangedError()
+    }
+    const reviewed = String(flow.state.swapBasicData.requested_amount)
+    await flow.render().viewProps.handleClick()
+    const proposal = flow.render()
+    assert.equal(proposal.warning, 'Adjust the amount to cover the deposit fee.')
+    assert.equal(proposal.button, undefined, 'the proposal replaces Confirm')
+    assert.deepEqual(flow.calls.errors, [])
+    proposal.viewProps.amountProposal.onAdjust()
+    assert.deepEqual(amounts, [reviewed], 'Adjust does not submit')
+    assert.equal(flow.state.presetRevisionProposal, undefined)
+    await flow.render().button.props.onClick()
+    assert.deepEqual(amounts, [reviewed, '0.65'])
+})

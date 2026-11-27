@@ -4,9 +4,10 @@ import type { ApiResponse } from '@layerswap/widget-types'
 import type { SwapResponse } from '@/lib/apiClients/layerSwapApiClient'
 import { ErrorHandler } from '@/lib/ErrorHandler'
 import { lifecycleErrorDetails, type SwapLifecycleContext } from './swapLifecycle'
+import { AmountPresetChangedError } from './amountPresets'
 
 // Swap creation is split into three scopes so that each has one owner:
-//  - attempt (createSwapAttempt): emits exactly one of swap_created / swap_creation_failed,
+//  - attempt (createSwapAttempt): owns the full confirmation and its accepted outcome,
 //  - request (requestSwap): the API call and its response guards; the only place that can
 //    declare gasless unavailable,
 //  - post-creation (announceCreatedSwap): side effects that run once the swap exists and
@@ -24,16 +25,22 @@ export type PreparedSwapRequest = {
     request: () => Promise<ApiResponse<SwapResponse> | undefined>
     /** True iff the request being sent carries use_gasless. */
     useGasless: boolean
-    /** Post-creation effects, in order. Built by prepare() because they depend on the same plan as the request. */
+    /** Post-creation effects, in order, belonging to this request's route and execution plan. */
     onCreated: ReadonlyArray<SwapCreatedEffect>
+}
+
+/** A candidate becomes host-visible only when the whole creation attempt returns it. */
+export type SwapCreationResult = {
+    swap: SwapResponse
+    onCreated: ReadonlyArray<SwapCreatedEffect>
+    /** The accepted amount may differ from the amount at the start of confirmation. */
+    lifecycleContext?: SwapLifecycleContext
 }
 
 export type SwapCreationHooks = {
     path: string
     lifecycleContext: SwapLifecycleContext
     onLifecycle: (event: SwapLifecycleEvent) => void
-    /** Request scope only: fired when the API rejected or returned `error` for a use_gasless request. */
-    onGaslessUnavailable: () => void
 }
 
 /**
@@ -81,28 +88,38 @@ export function announceCreatedSwap(swap: SwapResponse, effects: ReadonlyArray<S
     }
 }
 
+const AMOUNT_ADJUSTMENT_REASON_CODE = 'amount_adjustment_required'
+
+// A proposed amount waits for the user; failure counts must not include it.
+function creationFailureDetails(error: unknown): Pick<SwapLifecycleEvent, 'outcome' | 'reasonCode' | 'reason' | 'errorCode' | 'occurrenceId'> {
+    if (error instanceof AmountPresetChangedError) {
+        return { outcome: 'blocked', reasonCode: AMOUNT_ADJUSTMENT_REASON_CODE, reason: error.message }
+    }
+    return { outcome: 'failed', ...lifecycleErrorDetails(error) }
+}
+
 /**
  * Attempt scope. Invariants:
- *  (a) exactly one of swap_created / swap_creation_failed per call;
- *  (b) the promise rejects iff swap_creation_failed was emitted;
+ *  (a) start is emitted before any preparation, request or fee verification;
+ *  (b) exactly one of swap_created / swap_creation_failed ends the attempt, including
+ *      proposals (outcome `blocked`) and discarded candidates; only the accepted swap is announced;
  *  (c) onGaslessUnavailable fires only from requestSwap;
  *  (d) post-creation effects never affect (a)/(b).
  */
 export async function createSwapAttempt(
-    prepare: () => Promise<PreparedSwapRequest>,
+    create: () => Promise<SwapCreationResult>,
     hooks: SwapCreationHooks,
 ): Promise<SwapResponse> {
     const base = { stage: 'swap_creation' as const, path: hooks.path }
     hooks.onLifecycle({ step: 'swap_creation_started', outcome: 'started', ...base, ...hooks.lifecycleContext })
-    let prepared: PreparedSwapRequest
-    let swap: SwapResponse
+    let result: SwapCreationResult
     try {
-        prepared = await prepare()
-        swap = await requestSwap(prepared, hooks.onGaslessUnavailable)
+        result = await create()
     } catch (error) {
-        hooks.onLifecycle({ step: 'swap_creation_failed', outcome: 'failed', ...base, ...lifecycleErrorDetails(error), ...hooks.lifecycleContext })
+        hooks.onLifecycle({ step: 'swap_creation_failed', ...base, ...creationFailureDetails(error), ...hooks.lifecycleContext })
         throw error
     }
+    const { swap, onCreated, lifecycleContext } = result
     announceCreatedSwap(swap, [
         {
             name: 'swap_created_lifecycle',
@@ -111,12 +128,13 @@ export async function createSwapAttempt(
                 outcome: 'succeeded',
                 ...base,
                 ...hooks.lifecycleContext,
+                ...lifecycleContext,
                 swapId: swap.swap.id,
                 fromAddress: swap.swap.source_address,
                 status: swap.swap.status,
             }),
         },
-        ...prepared.onCreated,
+        ...onCreated,
     ])
     return swap
 }

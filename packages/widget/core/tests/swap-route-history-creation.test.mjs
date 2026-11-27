@@ -3,7 +3,7 @@ import test, { after, afterEach, beforeEach } from 'node:test'
 import React, { act, createElement } from 'react'
 import { JSDOM } from 'jsdom'
 import { createSwapContext } from './helpers/swap-context.mjs'
-import { loadSource } from './helpers/source.mjs'
+import { loadSource, amountPresets } from './helpers/source.mjs'
 
 const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://widget.example' })
 const previous = Object.getOwnPropertyDescriptors(globalThis)
@@ -18,6 +18,7 @@ const swapCreation = loadSource('lib/swapCreation.ts', {
     '@layerswap/widget-types': { getErrorOccurrenceId: () => 'test-error' },
     '@/lib/ErrorHandler': { ErrorHandler: error => state.errors.push(error) },
     './swapLifecycle': { lifecycleErrorDetails: () => ({}) },
+    './amountPresets': amountPresets,
 })
 const context = createSwapContext({
     Client: class {
