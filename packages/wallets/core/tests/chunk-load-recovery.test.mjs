@@ -78,7 +78,7 @@ test('retryChunkLoad gives up after one retry and never retries other errors', a
     assert.equal(sdkLoad.mock.callCount(), 1)
 })
 
-test('retryInitOnModalOpen runs init on each opening and retries a chunk failure once per opening', async () => {
+test('retryInitOnModalOpen waits for the next opening after a chunk failure', async () => {
     const { retryInitOnModalOpen, modal } = loadRecovery()
     const { init, loads } = controlledInit()
     const stop = retryInitOnModalOpen(init)
@@ -89,51 +89,28 @@ test('retryInitOnModalOpen runs init on each opening and retries a chunk failure
     modal._syncOpen(true)
     loads[0].reject(chunkError())
     await flush()
-    assert.equal(loads.length, 2, 'one automatic retry')
+    assert.equal(loads.length, 1, 'no extra automatic initialization retry')
 
     modal._syncSelectedConnector({ id: 'okx' })
-    loads[1].reject(chunkError())
-    await flush()
-    assert.equal(loads.length, 2, 'selecting a connector does not allow another')
+    assert.equal(loads.length, 1, 'selecting a connector does not retry initialization')
 
     modal._syncOpen(false)
     modal._syncOpen(true)
-    assert.equal(loads.length, 3, 'reopening runs init again')
-
-    modal._syncOpen(false)
-    loads[2].reject(chunkError())
-    await flush()
-    assert.equal(loads.length, 3, 'no automatic retry after the modal closed')
+    assert.equal(loads.length, 2, 'reopening runs init again')
     stop()
 })
 
-test('retryInitOnModalOpen does not retry non-chunk failures automatically', async () => {
-    const { retryInitOnModalOpen, modal } = loadRecovery()
-    const { init, loads } = controlledInit()
-    const stop = retryInitOnModalOpen(init)
-
-    modal._syncOpen(true)
-    loads[0].reject(new Error('wallet discovery failed'))
-    await flush()
-
-    assert.equal(loads.length, 1)
-    stop()
-})
-
-test('retryInitOnModalOpen joins a modal that is already open', async () => {
+test('retryInitOnModalOpen joins a modal that is already open', () => {
     const { retryInitOnModalOpen, modal } = loadRecovery()
     const { init, loads } = controlledInit()
 
     modal._syncOpen(true)
     const stop = retryInitOnModalOpen(init)
-    loads[0].reject(chunkError())
-    await flush()
-
-    assert.equal(loads.length, 2)
+    assert.equal(loads.length, 1, 'initializes when subscribing to an open modal')
     stop()
 })
 
-test('retryInitOnModalOpen cleanup stops retries for loads still in flight', async () => {
+test('retryInitOnModalOpen cleanup stops initialization on later openings', async () => {
     const { retryInitOnModalOpen, modal } = loadRecovery()
     const { init, loads } = controlledInit()
     const stop = retryInitOnModalOpen(init)
@@ -143,5 +120,7 @@ test('retryInitOnModalOpen cleanup stops retries for loads still in flight', asy
     loads[0].reject(chunkError())
     await flush()
 
+    modal._syncOpen(false)
+    modal._syncOpen(true)
     assert.equal(loads.length, 1)
 })
