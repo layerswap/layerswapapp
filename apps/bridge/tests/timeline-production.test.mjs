@@ -73,8 +73,11 @@ function loadSource(path, imports = {}) {
                 '@layerswap/utils': loadSource('../../../utils/src/truncateDecimals.ts'),
                 '@/lib/gases/resolveGasBalanceBudget': loadSource('lib/gases/resolveGasBalanceBudget.ts'),
             }),
-            '@layerswap/utils': loadSource('../../../utils/src/truncateDecimals.ts'),
-            '@layerswap/utils/known-ids': coreRequire('@layerswap/utils/known-ids'),
+            '@layerswap/utils': {
+                ...loadSource('../../../utils/src/truncateDecimals.ts'),
+                AppSettings: loadSource('../../../utils/src/AppSettings.ts').default,
+            },
+            '@layerswap/widget-types': loadSource('../../types/src/network.ts'),
         });
         // The send button's chain-switch helper is real logic, not presentation: load it
         // with the button's own lifecycle and rejection stubs instead of stubbing it away.
