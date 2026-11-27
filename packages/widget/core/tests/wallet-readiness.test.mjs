@@ -84,6 +84,8 @@ const mockedDependencies = [
 // moves, update this path or the real wallet SDKs will load unmocked.
 // The real readiness predicate, without the wallet-core barrel that would pull in every SDK.
 const providerReadinessUrl = new URL('../../../wallets/core/dist/esm/lib/providerReadiness.js', import.meta.url).href
+// No login wallet configured: the drawer keeps every connected account.
+const loginWalletUrl = 'data:text/javascript,export const useLoginWallet = () => undefined; export const restrictToLoginAccount = wallets => wallets'
 const hooks = registerHooks({
   resolve(specifier, context, nextResolve) {
     if (context.parentURL?.endsWith('/helpers/swapProgress.js') && specifier.endsWith('/lib/apiClients/layerSwapApiClient')) {
@@ -94,11 +96,13 @@ const hooks = registerHooks({
       if (specifier.endsWith('/Presentation/WalletActionsView')) return { url: mockUrl, shortCircuit: true }
       if (specifier.endsWith('/messages/Message')) return { url: 'data:text/javascript,export default ({ details }) => details', shortCircuit: true }
       if (specifier.endsWith('/context/swapAccounts')) return { url: mockUrl, shortCircuit: true }
+      if (specifier === '@layerswap/wallet-core') return { url: loginWalletUrl, shortCircuit: true }
     }
     if (context.parentURL?.endsWith('/SourceWalletDrawer.js')) {
       if (specifier.endsWith('/Modal/vaulModal')) return { url: 'data:text/javascript,' + encodeURIComponent(`import { Drawer } from ${JSON.stringify(mockUrl)}; export default Drawer`), shortCircuit: true }
       if (specifier.endsWith('/WalletsList')) return { url: 'data:text/javascript,' + encodeURIComponent(`import { WalletsList } from ${JSON.stringify(mockUrl)}; export default WalletsList`), shortCircuit: true }
       if (specifier.endsWith('/hooks/useWallet')) return { url: mockUrl, shortCircuit: true }
+      if (specifier === '@layerswap/wallet-core') return { url: loginWalletUrl, shortCircuit: true }
     }
     if (context.parentURL?.endsWith('/components/Pages/Swap/Withdraw/Wallet/index.js')) {
       if (specifier.endsWith('/RPCUnhealthyMessage')) return { url: 'data:text/javascript,export default () => %22RPC unhealthy%22', shortCircuit: true }

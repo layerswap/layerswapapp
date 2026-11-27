@@ -74,25 +74,33 @@ function App() {
   useEffect(()=>{if(!toast)return;const timer=setTimeout(()=>setToast(''),4200);return()=>clearTimeout(timer);},[toast]);
   useEffect(()=>{if(session.authenticated&&modal==='auth'){setModal(null);setAuthError('');}},[session.authenticated,modal]);
   useEffect(()=>{
-    if(session.address&&pendingDeposit.current!==undefined){
+    if(session.ready&&session.address&&pendingDeposit.current!==undefined){
       const method=pendingDeposit.current;
       pendingDeposit.current=undefined;
       setModal(null);
       setAuthError('');
       setDepositRequest(previous=>({id:(previous?.id||0)+1,method,address:session.address!}));
     }
-  },[session.address]);
+  },[session.address,session.ready]);
   const notify=useCallback((message:string)=>setToast(message),[]);
+  useEffect(()=>{
+    if(session.connectionError && pendingDeposit.current!==undefined){
+      pendingDeposit.current=undefined;
+      notify(session.connectionError);
+    }
+  },[session.connectionError,notify]);
   const navigate=(next:View)=>{setView(next);setQuery('');setCategory('All');};
   const openDeposit=(method:DepositMethod|null=null)=>{
     if(!process.env.NEXT_PUBLIC_LAYERSWAP_API_KEY){
       notify('Add your Layerswap API key in Integration setup to enable deposits.');
       return;
     }
-    if(!session.address){
+    if(session.connectionError){notify(session.connectionError);return;}
+    if(!session.address || !session.ready){
       pendingDeposit.current=method;
       setAuthError('');
-      setModal('auth');
+      if(session.authenticated)notify('Preparing your wallet connection…');
+      else setModal('auth');
       return;
     }
     setDepositRequest(previous=>({id:(previous?.id||0)+1,method,address:session.address!}));
@@ -134,6 +142,9 @@ function App() {
   const destinationNetwork=(process.env.NEXT_PUBLIC_DEPOSIT_NETWORK||'BASE_MAINNET').replace('_MAINNET','').replaceAll('_',' ');
   const depositAvailable=Boolean(process.env.NEXT_PUBLIC_LAYERSWAP_API_KEY);
   const accountLabel=session.address?shortAddress(session.address):session.email?.split('@')[0]||'My account';
+  // Keep an opened deposit and its recipient alive across host logout/account
+  // changes. The next explicit Deposit request selects the new recipient.
+  const widgetAddress=depositRequest?.address ?? (session.ready?session.address:null);
   return <>
     <header className="site-header"><div className="topbar page-width">
       <button className="brand" onClick={()=>navigate('markets')} aria-label="Foresight home"><BrandMark/><span>foresight<span className="brand-period">.</span></span></button>
@@ -187,7 +198,7 @@ function App() {
         <details className="market-rules"><summary>Market rules <ChevronDown size={15}/></summary><p>{trade.market.description}</p></details>
       </>:null}
     </Dialog>
-    {depositAvailable&&session.address?<DepositWidget key={session.address} address={session.address} request={depositRequest?.address===session.address?depositRequest:null} onComplete={depositComplete} onStatus={notify}/>:null}
+    {depositAvailable&&widgetAddress?<DepositWidget address={widgetAddress} request={depositRequest} wagmiConfig={session.wagmiConfig} onComplete={depositComplete} onStatus={notify}/>:null}
     {toast?<div className="toast" role="status"><Check size={17}/><span>{toast}</span><button aria-label="Dismiss notification" onClick={()=>setToast('')}><X size={15}/></button></div>:null}
   </>;
 }

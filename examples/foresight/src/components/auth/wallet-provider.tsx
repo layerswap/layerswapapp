@@ -42,7 +42,7 @@ function BasicProvider({ children }: {children:React.ReactNode}) {
   const disconnect = useCallback(async()=>{
     setAddress(null); sessionStorage.removeItem('foresight-wallet-connected');
   },[]);
-  const value = useMemo(()=>({address,email:null,authenticated:Boolean(address),method:address?'wallet' as const:null,ready:true,reownConfigured:false,privyConfigured:false,connectWallet,login,disconnect}),[address,connectWallet,login,disconnect]);
+  const value = useMemo(()=>({address,email:null,authenticated:Boolean(address),method:address?'wallet' as const:null,ready:true,connectionError:null,reownConfigured:false,privyConfigured:false,connectWallet,login,disconnect}),[address,connectWallet,login,disconnect]);
   return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;
 }
 export default function WalletProvider({children}:{children:React.ReactNode}) {

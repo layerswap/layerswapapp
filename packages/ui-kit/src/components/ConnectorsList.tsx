@@ -127,13 +127,14 @@ export const ConnectorsList: FC<ConnectorsListProps> = ({
             />
         )
     } else if (selectedMultiChainConnector) {
-        const liveVariants = getLiveVariants(selectedMultiChainConnector)
-        const pickerConnector = (
-            liveVariants.length
-            > (selectedMultiChainConnector.variants?.length ?? 0)
-        )
-            ? { ...selectedMultiChainConnector, variants: liveVariants }
-            : selectedMultiChainConnector
+        const featuredNames = new Set(featuredProviders.map(provider => provider.name))
+        const isFeatured = (variant: { providerName: string }) => featuredNames.has(variant.providerName)
+        const liveVariants = getLiveVariants(selectedMultiChainConnector).filter(isFeatured)
+        const variants = selectedMultiChainConnector.variants?.filter(isFeatured) ?? []
+        const pickerConnector = {
+            ...selectedMultiChainConnector,
+            variants: liveVariants.length > variants.length ? liveVariants : variants,
+        }
 
         content = (
             <MultichainConnectorPicker

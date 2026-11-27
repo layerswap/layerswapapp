@@ -9,6 +9,7 @@ import clsx from "clsx";
 import { useClickOutside } from "@/hooks/useClickOutside";
 import { useState } from "react";
 import { SwapFormValues } from "../Pages/Swap/Form/SwapFormValues";
+import type { LoginWallet } from "@layerswap/widget-types";
 
 type Props = {
     minAllowedAmount: ReturnType<typeof useQuoteData>['minAllowedAmount'];
@@ -18,10 +19,12 @@ type Props = {
     fee: ReturnType<typeof useQuoteData>['quote'];
     quoteTokenPrices?: QuoteTokenPrices;
     hideManualTransfer?: boolean;
+    /** Bind the login wallet's family to its configured account. */
+    loginWallet?: LoginWallet;
     onRoutePickerTriggerClick?: () => void;
 }
 
-const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd, fee, quoteTokenPrices, hideManualTransfer, onRoutePickerTriggerClick }: Props) => {
+const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd, fee, quoteTokenPrices, hideManualTransfer, loginWallet, onRoutePickerTriggerClick }: Props) => {
     const { values } = useFormikContext<SwapFormValues>()
 
     const { fromAsset: fromCurrency, from, depositMethod } = values || {}
@@ -40,7 +43,7 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, mi
                 Send from
             </label>
             <div className="col-span-5 justify-self-end">
-                <SourceWalletPicker hideManualTransfer={hideManualTransfer} />
+                <SourceWalletPicker hideManualTransfer={hideManualTransfer} loginWallet={loginWallet} />
             </div>
         </div>
         <div className="relative">

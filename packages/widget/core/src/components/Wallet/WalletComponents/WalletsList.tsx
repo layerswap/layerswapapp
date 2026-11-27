@@ -26,11 +26,12 @@ type Props = {
     provider?: WalletConnectionProvider | undefined;
     onSelect?: (props: SelectAccountProps) => void;
     selectedDepositMethod?: "wallet" | "deposit_address";
+    hideConnect?: boolean;
 }
 
 const WalletsList: FC<Props> = (props) => {
 
-    const { wallets, token, network, provider, selectable, onSelect, selectedDepositMethod } = props
+    const { wallets, token, network, provider, selectable, onSelect, selectedDepositMethod, hideConnect } = props
 
     const { connect } = useConnectModal()
 
@@ -50,14 +51,17 @@ const WalletsList: FC<Props> = (props) => {
 
     return (
         <div className="space-y-3">
-            <button type='button' onClick={connectWallet} className="w-full flex justify-center p-2 bg-secondary-500 rounded-md hover:bg-secondary-400">
-                <div className="flex items-center text-secondary-text gap-1 px-3 py-1">
-                    <Plus className="h-4 w-4" />
-                    <span className="text-sm">
-                        Connect new wallet
-                    </span>
-                </div>
-            </button>
+            {
+                !hideConnect &&
+                <button type='button' onClick={connectWallet} className="w-full flex justify-center p-2 bg-secondary-500 rounded-md hover:bg-secondary-400">
+                    <div className="flex items-center text-secondary-text gap-1 px-3 py-1">
+                        <Plus className="h-4 w-4" />
+                        <span className="text-sm">
+                            Connect new wallet
+                        </span>
+                    </div>
+                </button>
+            }
             {
                 wallets.length > 0 &&
                 <div className="flex flex-col justify-start space-y-3">
@@ -195,7 +199,7 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: item, net
                                             logo={item.icon}
                                             showDetails
                                             addressClassNames="font-normal text-sm"
-                                            onDisconnect={() => hasDisconnect(item) && item.disconnect()}
+                                            onDisconnect={canDisconnect(item) ? () => item.disconnect() : undefined}
                                             onSaveRequest={saveInDrawer ? () => setSaveAddress(item.address) : undefined}
                                         />
                                     }
@@ -227,7 +231,7 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: item, net
                     }
                 </div>
                 {
-                    !selectable && hasDisconnect(item) &&
+                    !selectable && canDisconnect(item) &&
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <button type="button" onClick={(e) => { e.stopPropagation(); item.disconnect() }} className="text-xs text-secondary-text hover:text-primary-text rounded-full p-1.5 bg-secondary-700 transition-colors duration-200">
@@ -361,7 +365,7 @@ const NestedWalletAddress: FC<NestedWalletAddressProps> = ({ selectable, address
                             network={network}
                             providerName={item.providerName}
                             addressClassNames="font-normal text-sm"
-                            onDisconnect={() => hasDisconnect(item) && item?.disconnect()}
+                            onDisconnect={canDisconnect(item) ? () => item.disconnect() : undefined}
 
                             title={item.displayName?.split("-")[0]}
                             description={item.providerName}
@@ -407,6 +411,9 @@ function hasNetworkIcon(w: AccountIdentity | Wallet): w is Wallet & { networkIco
 }
 function hasDisconnect(w: AccountIdentity | Wallet): w is Wallet & { disconnect: Function } {
     return 'disconnect' in w && typeof w.disconnect === 'function';
+}
+function canDisconnect(w: AccountIdentity | Wallet): w is Wallet & { disconnect: Function } {
+    return hasDisconnect(w) && !w.isLoginWallet;
 }
 function isLoading(w: AccountIdentity | Wallet): w is Wallet & { isLoading: boolean } {
     return 'isLoading' in w && typeof w.isLoading === 'boolean' && w.isLoading;

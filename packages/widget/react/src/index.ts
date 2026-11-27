@@ -34,6 +34,7 @@ export type {
   WidgetOperationOutcome,
   WalletDefaults,
   WalletProviderId,
+  LoginWallet,
   DepositConfig,
   DepositMethodId,
   SupportedDestination,

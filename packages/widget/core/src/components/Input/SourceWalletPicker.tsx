@@ -1,4 +1,4 @@
-import { type Wallet } from '@layerswap/widget-types';
+import { type LoginWallet, type Wallet } from '@layerswap/widget-types';
 import { useFormikContext } from "formik";
 import { Dispatch, FC, SetStateAction, useCallback, useState } from "react";
 import useWallet from "@/hooks/useWallet";
@@ -20,9 +20,10 @@ import { useNamedAddress } from "@/stores/addressBookStore";
 
 type SourceWalletPickerProps = {
     hideManualTransfer?: boolean;
+    loginWallet?: LoginWallet;
 }
 
-const SourceWalletPicker: FC<SourceWalletPickerProps> = ({ hideManualTransfer }) => {
+const SourceWalletPicker: FC<SourceWalletPickerProps> = ({ hideManualTransfer, loginWallet }) => {
     const [openModal, setOpenModal] = useState<boolean>(false)
 
     const {
@@ -103,6 +104,7 @@ const SourceWalletPicker: FC<SourceWalletPickerProps> = ({ hideManualTransfer })
             setShow={setOpenModal}
             onSelect={handleSelectWallet}
             selectedDepositMethod={values.depositMethod}
+            loginWallet={loginWallet}
             snapClassName="pb-4 flex flex-col gap-3"
             listClassName={clsx('w-full order-1', {
                 'order-3 space-y-2': values.depositMethod == 'deposit_address',

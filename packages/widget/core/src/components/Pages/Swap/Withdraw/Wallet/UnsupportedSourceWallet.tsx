@@ -2,6 +2,8 @@ import { useState } from 'react';
 import type { SwapBasicData } from '@/lib/apiClients/layerSwapApiClient';
 import type { SelectAccountProps } from '@layerswap/wallet-core/types';
 import { useSelectSwapAccount } from '@/context/swapAccounts';
+import { useDepositSettings } from '@/context/depositSettings';
+import { useLoginWallet } from '@layerswap/wallet-core';
 import { SourceWalletDrawer } from '@/components/Wallet/WalletComponents/SourceWalletDrawer';
 import { ButtonWrapper } from '../Presentation/WalletActionsView';
 import WalletMessage from '../messages/Message';
@@ -14,6 +16,8 @@ type Props = {
 export function UnsupportedSourceWallet({ swapData, walletName }: Props) {
     const [openModal, setOpenModal] = useState(false);
     const selectSourceAccount = useSelectSwapAccount('from');
+    const { isDepositFlow } = useDepositSettings();
+    const loginWallet = useLoginWallet();
 
     const selectWallet = (account: SelectAccountProps) => {
         selectSourceAccount({
@@ -38,6 +42,7 @@ export function UnsupportedSourceWallet({ swapData, walletName }: Props) {
                 show={openModal}
                 setShow={setOpenModal}
                 onSelect={selectWallet}
+                loginWallet={isDepositFlow ? loginWallet : undefined}
             />
         </div>
     );
