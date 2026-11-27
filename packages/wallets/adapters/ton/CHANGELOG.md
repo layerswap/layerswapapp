@@ -1,5 +1,37 @@
 # @layerswap/wallet-ton
 
+## 2.7.1
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies [acaa41b]
+- Updated dependencies
+  - @layerswap/widget-types@2.7.1
+  - @layerswap/wallet-core@2.7.1
+  - @layerswap/utils@2.7.1
+
+## 2.7.0
+
+### Minor Changes
+
+- TON: find transactions when the wallet (e.g. Tonhub) returns only the signed body, and stop confirmation polling at the retry limit.
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [8f004b1]
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @layerswap/widget-types@2.7.0
+  - @layerswap/wallet-core@2.7.0
+  - @layerswap/utils@2.7.0
+
 ## 2.6.0
 
 ### Patch Changes

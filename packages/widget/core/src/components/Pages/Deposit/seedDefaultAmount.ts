@@ -1,4 +1,4 @@
-import { NetworkRouteToken } from "@layerswap/widget-types";
+import { Token } from "@layerswap/widget-types";
 import { formatTokenAmount } from "@/components/utils/formatTokenAmount";
 
 /**
@@ -11,7 +11,7 @@ import { formatTokenAmount } from "@/components/utils/formatTokenAmount";
  * (SourceStep), the shortcut seeds at Formik mount (useDepositInitialValues).
  */
 export function seedDefaultAmount(
-    token: NetworkRouteToken | undefined,
+    token: Token | undefined,
     defaultAmountUsd: number,
 ): string | undefined {
     const price = token?.price_in_usd;

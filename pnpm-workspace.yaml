@@ -18,7 +18,7 @@ catalog:
   react-dom: 19.2.3
   rimraf: ^5.0.0
   swr: ^2.2.5
-  viem: ^2.21.16
+  viem: ^2.31.0
   wagmi: 2.14.11
   zustand: ^4.5.7
   starknet: ^8.5.2

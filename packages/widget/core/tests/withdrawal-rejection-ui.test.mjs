@@ -99,10 +99,15 @@ const { useWithdrawalProvider } = await import('../dist/esm/hooks/useWithdrawalP
 const { TransferResolver } = await import('../dist/esm/lib/transfers/transferResolver.js')
 const { hyperliquidWithdrawal } = loadSource('../../../wallets/adapters/evm/src/additionalProviders/hyperliquid/withdrawal.ts')
 const { polymarketWithdrawal } = loadSource('../../../wallets/adapters/evm/src/additionalProviders/polymarket/withdrawal.ts')
+const { setExtendedRouteProviders } = await import('../dist/esm/lib/extendedRoutes/registry.js')
+// Polymarket's route provider marks its source as not sent by the connected wallet.
+const addresslessSource = { id: 'polymarket', extendedNetworkNames: ['source'], supportsFrontendSwap: false }
 function useHyperliquidWithdrawal(props, active) {
+  setExtendedRouteProviders([])
   return useProviderWithdrawal(props, hyperliquidWithdrawal, active)
 }
 function usePolymarketWithdrawal(props, active) {
+  setExtendedRouteProviders([addresslessSource])
   return useProviderWithdrawal(props, polymarketWithdrawal, active)
 }
 const stores = await import('../dist/esm/stores/swapTransactionStore.js')
@@ -540,6 +545,7 @@ for (const reload of [false, true]) {
 }
 
 for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal]) {
+  const backendSourceAddress = useWithdrawal === usePolymarketWithdrawal ? undefined : 'source'
   for (const change of ['amount', 'destination']) {
     test(`${useWithdrawal.name} prepares new instructions after changing the reviewed ${change}`, async () => {
       state.swapDetails = undefined
@@ -684,7 +690,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
         await act(async () => mounted.result.handleWithdraw())
         assert.equal(retryCreations, 0, 'a pre-submission failure retries on the original swap')
         assert.equal(state.transfers.at(-1)[0].depositAddress, 'refreshed-deposit')
-        assert.deepEqual(state.actionRefreshes, [['swap-1', 'source'], ['swap-1', 'source']])
+        assert.deepEqual(state.actionRefreshes, [['swap-1', backendSourceAddress], ['swap-1', backendSourceAddress]])
         if (useWithdrawal === usePolymarketWithdrawal) {
           assert.equal(state.transfers.at(-1)[0].callData, '0xfresh')
         } else {
@@ -722,7 +728,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
         assert.equal(state.transfers.length, 1)
         assert.equal(state.creations, 0)
         assert.equal(state.freshAttempts, 0)
-        assert.deepEqual(state.refreshes, [['swap-1', 'source']])
+        assert.deepEqual(state.refreshes, [['swap-1', backendSourceAddress]])
         assert.equal(state.successes, 0)
 
         await mounted.unmount()
@@ -744,7 +750,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
         assert.equal(state.transfers.length, 1, 'reconciliation never opens a second provider request')
         assert.equal(state.creations, 0)
         assert.equal(state.selectedSwapId, 'swap-1')
-        assert.deepEqual(state.actionRefreshes, [['swap-1', 'source']], 'ambiguous retries do not prepare another withdrawal')
+        assert.deepEqual(state.actionRefreshes, [['swap-1', backendSourceAddress]], 'ambiguous retries do not prepare another withdrawal')
         assert.deepEqual(state.published, [['swap-1', 'accepted-withdrawal']])
         assert.equal(state.successes, 1)
         assert.equal(mounted.result.error, undefined)
@@ -786,7 +792,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
       await act(async () => mounted.result.handleWithdraw())
       assert.equal(state.transfers.length, 1)
       assert.equal(state.creations, 0)
-      assert.deepEqual(state.refreshes, [['swap-1', 'source']], 'a saved receipt always fetches its current backend outcome')
+      assert.deepEqual(state.refreshes, [['swap-1', backendSourceAddress]], 'a saved receipt always fetches its current backend outcome')
       assert.equal(mounted.result.error, undefined)
       assert.equal(state.successes, 2)
     } finally {
@@ -801,7 +807,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
       await act(async () => mounted.result.handleWithdraw())
       assert.equal(state.transfers.length, 0)
       assert.equal(state.creations, 0)
-      assert.deepEqual(state.refreshes, [['swap-1', 'source']])
+      assert.deepEqual(state.refreshes, [['swap-1', backendSourceAddress]])
       assert.equal(mounted.result.error.header, 'Withdrawal status unknown')
     } finally {
       await mounted.unmount()
@@ -828,12 +834,13 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
     try {
       await act(async () => mounted.result.handleWithdraw())
       assert.equal(mounted.result.error, undefined)
-      assert.deepEqual(state.refreshes, [['swap-1', 'source']])
-      assert.deepEqual(state.actionRefreshes, [['swap-1', 'source']])
+      assert.deepEqual(state.refreshes, [['swap-1', backendSourceAddress]])
+      assert.deepEqual(state.actionRefreshes, [['swap-1', backendSourceAddress]])
       assert.equal(state.reconciled.length, 1)
       assert.equal(state.transfers.length, 1)
       assert.equal(state.transfers[0][0].swapId, 'swap-1')
       assert.equal(state.transfers[0][0].depositAddress, 'fresh-deposit')
+      assert.equal(state.transfers[0][0].sourceAddress, 'source', 'the owner is still needed for local signing')
       assert.equal(state.creations, 0)
       assert.equal(state.successes, 1)
       assert.equal(useSwapTransactionStore.getState().swapTransactions['swap-1'].hash, 'retry-hash')
@@ -908,7 +915,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
       assert.deepEqual(state.transfers.map(([params]) => [params.swapId, params.depositAddress]), [
         ['new-swap', 'new-deposit'], ['new-swap', 'refreshed-deposit'],
       ])
-      assert.deepEqual(state.actionRefreshes, [['new-swap', 'source']])
+      assert.deepEqual(state.actionRefreshes, [['new-swap', backendSourceAddress]])
       if (useWithdrawal === usePolymarketWithdrawal) {
         assert.deepEqual(state.transfers.map(([params]) => params.callData), ['new-calldata', '0xfresh'])
       } else {
@@ -930,7 +937,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
     try {
       await act(async () => mounted.result.handleWithdraw())
       assert.equal(state.creations, 0)
-      assert.deepEqual(state.actionRefreshes, [['swap-1', 'source']])
+      assert.deepEqual(state.actionRefreshes, [['swap-1', backendSourceAddress]])
       assert.equal(state.transfers[0][0].depositAddress, 'refreshed-deposit')
       if (useWithdrawal === useHyperliquidWithdrawal) {
         assert.equal(state.transfers[0][0].amountInBaseUnits, '2000000')
@@ -966,7 +973,7 @@ for (const useWithdrawal of [useHyperliquidWithdrawal, usePolymarketWithdrawal])
         assert.equal(state.creations, 0)
         assert.equal(state.transfers.length, 2)
         assert.equal(state.transfers[1][0].depositAddress, 'current-deposit')
-        assert.deepEqual(state.actionRefreshes, Array.from({ length: 3 }, () => ['swap-1', 'source']))
+        assert.deepEqual(state.actionRefreshes, Array.from({ length: 3 }, () => ['swap-1', backendSourceAddress]))
         assert.deepEqual(state.published, [])
         assert.equal(state.successes, 1)
       } finally {

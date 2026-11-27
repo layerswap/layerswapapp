@@ -425,8 +425,9 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const depositActionsResponse = depositActions?.data
         ?? (swapId && swapId === initialSwapData?.swap.id && initialSwapData?.deposit_actions?.length ? initialSwapData.deposit_actions : undefined)
     // Cached or swap-scoped prefetched actions remain usable after a failed refresh.
-    const depositActionsError = !depositActionsResponse && (depositActionsSwrError || depositActions)
-        ? (depositActionsSwrError?.response?.data?.error?.message || depositActionsSwrError?.message || depositActions?.error?.message || 'Could not generate deposit address.')
+    const missingDepositActions = !depositActionsResponse || (awaitsWalletDeposit && depositActionsResponse.length === 0)
+    const depositActionsError = missingDepositActions && (depositActionsSwrError || depositActions)
+        ? (depositActionsSwrError?.response?.data?.error?.message || depositActionsSwrError?.message || depositActions?.error?.message || 'Could not load transaction instructions. Please try again.')
         : undefined
 
     // Server-reported completion is read from the latest response on every render.

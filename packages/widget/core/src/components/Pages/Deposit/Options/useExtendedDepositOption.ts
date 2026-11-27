@@ -5,7 +5,7 @@ import useWallet from "@/hooks/useWallet";
 import { getExtendedProviderForNetwork, getSourceProviders, resolveExtendedRoutePlan } from "@/lib/extendedRoutes/registry";
 import { depositMethodForFunding } from "@layerswap/widget-types";
 import { getKey, useBalanceStore } from "@/stores/balanceStore";
-import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
+import { NetworkRoute, Token } from "@layerswap/widget-types";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { useDepositSelection } from "../depositSelectionContext";
 import { DepositMethodId } from "../depositMethods";
@@ -22,7 +22,7 @@ type ExtendedDepositOption = {
      * meaningful once `loading` is false; the card is enabled only when true. */
     available: boolean;
     network?: NetworkRoute;
-    token?: NetworkRouteToken;
+    token?: Token;
     /** The configured extended network name. */
     networkName?: string;
     /** An already-connected wallet that can sign this source's withdrawals (EVM),
@@ -52,7 +52,7 @@ export function useExtendedDepositOption(providerId: DepositMethodId): ExtendedD
     const { wallets } = useWallet();
 
     // The deposit method of the real backend route this provider funds through:
-    // 'deposit_address' for CCTP-style sources, 'wallet' for depository sources.
+    // 'deposit_address' for CCTP-style sources, 'wallet' for wallet-transfer sources like Polymarket.
     const provider = useMemo(() => getSourceProviders().find(p => p.id === providerId), [providerId]);
     const depositMethod = depositMethodForFunding(provider?.funding);
 

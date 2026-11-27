@@ -10,6 +10,8 @@ import type { GasProps } from '@layerswap/widget-types'
 type GasOptions = {
     enabled?: boolean
     transaction?: Pick<GasProps, 'recipientAddress' | 'callData' | 'amountInBaseUnits'>
+    /** Display-only: show the previous estimate while a new amount loads. */
+    keepPreviousData?: boolean
 }
 
 const useSWRGas = (
@@ -18,7 +20,7 @@ const useSWRGas = (
     token?: Token | null,
     amount?: number | string | null,
     wallet?: Wallet,
-    { enabled = true, transaction }: GasOptions = {},
+    { enabled = true, transaction, keepPreviousData = false }: GasOptions = {},
 ): { gasData: GasWithToken | undefined, isGasLoading: boolean, gasError: any } => {
 
     const hasAmount = amount != null && amount !== ''
@@ -33,15 +35,15 @@ const useSWRGas = (
     const canEstimate = estimationAmount !== undefined && Number.isFinite(estimationAmount)
         && (hasTransaction ? estimationAmount >= 0 : estimationAmount > 0)
     const baseKey = `/gases/${address}/${network?.name}/${token?.symbol}/${estimationAmount}`
-    const gasKey = hasTransaction
-        ? [baseKey, transaction.recipientAddress, transaction.callData, transaction.amountInBaseUnits ?? null]
-        : baseKey
+    // Wallet capabilities can change which token pays the fee.
+    const gasKey = [baseKey, wallet?.metadata?.capabilities ?? null,
+        ...(hasTransaction ? [transaction.recipientAddress, transaction.callData, transaction.amountInBaseUnits ?? null] : [])]
 
     // Preserve the last values while hidden controls finish their collapse animation.
     const { data: gasData, error: gasError, isLoading } = useSWR((enabled && network && token && address && canEstimate) ? gasKey : null, () => {
         if (!network || !token || !address || !canEstimate) return
         return resolverService.getGasResolver().getGas({ address, network, token, amount: estimationAmount, wallet, ...transaction })
-    }, { refreshInterval: enabled ? 60000 : 0, keepPreviousData: !enabled })
+    }, { refreshInterval: enabled ? 60000 : 0, keepPreviousData: keepPreviousData || !enabled })
 
     return {
         gasData,

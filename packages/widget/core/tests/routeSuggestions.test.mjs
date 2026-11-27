@@ -14,7 +14,7 @@ const historyStore = loadSource('stores/swapRouteHistoryStore.ts', {
 })
 const { buildSwapRouteRecency } = historyStore
 const routeUtils = loadSource('helpers/routeUtils.ts', { '@/stores/swapRouteHistoryStore': historyStore })
-const { sortSuggestedTokenElements } = routeUtils
+const { sortSuggestedTokenElements, selectTop, getTokenBalanceAmount } = routeUtils
 const { groupRoutes } = loadSource('hooks/useFormRoutes.ts', {
     swr: {},
     react: {},
@@ -148,5 +148,38 @@ describe('suggestion route sorting', () => {
         const recency = buildSwapRouteRecency([persisted(higherBalance, 10), persisted(moreRecent, 20)])
         const sorted = [higherBalance, moreRecent].sort(sortSuggestedTokenElements('to', balances, emptyHistory, recency))
         assert.equal(sorted[0], moreRecent)
+    })
+})
+
+describe('route sorting helpers', () => {
+    it('selectTop matches a stable sort followed by slice, including ties', () => {
+        let seed = 3
+        const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647
+        const items = Array.from({ length: 200 }, (_, id) => ({ id, score: Math.floor(random() * 10) }))
+        const compare = (a, b) => a.score - b.score
+        for (const limit of [0, 1, 4, 15, 199, 200, 250]) {
+            assert.deepEqual(selectTop(items, compare, limit), [...items].sort(compare).slice(0, limit))
+        }
+        assert.deepEqual(selectTop([], compare, 4), [])
+    })
+
+    it('getTokenBalanceAmount reads the first matching balance like the previous linear lookup', () => {
+        const balances = {
+            BASE: { balances: [{ token: 'USDC', amount: 5 }, { token: 'USDC', amount: 9 }, { token: 'ETH', amount: undefined }] },
+            EMPTY: { balances: undefined },
+        }
+        assert.equal(getTokenBalanceAmount(balances, 'BASE', 'USDC'), 5)
+        assert.equal(getTokenBalanceAmount(balances, 'BASE', 'ETH'), 0)
+        assert.equal(getTokenBalanceAmount(balances, 'BASE', 'DAI'), 0)
+        assert.equal(getTokenBalanceAmount(balances, 'EMPTY', 'USDC'), 0)
+        assert.equal(getTokenBalanceAmount(balances, 'MISSING', 'USDC'), 0)
+        assert.equal(getTokenBalanceAmount(null, 'BASE', 'USDC'), 0)
+    })
+
+    it('getTokenBalanceAmount picks up a replaced network balance object', () => {
+        const balances = { BASE: { balances: [{ token: 'USDC', amount: 5 }] } }
+        assert.equal(getTokenBalanceAmount(balances, 'BASE', 'USDC'), 5)
+        const updated = { BASE: { balances: [{ token: 'USDC', amount: 7 }] } }
+        assert.equal(getTokenBalanceAmount(updated, 'BASE', 'USDC'), 7)
     })
 })

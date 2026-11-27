@@ -1,10 +1,41 @@
 import {
   SWAP_LIFECYCLE_PHASE_STEPS, SWAP_LIFECYCLE_TRANSACTION_STEPS,
-  type SwapLifecycleEvent, type SwapLifecycleStep, type SwapLifecycleTransactionStep,
+  SwapLifecycleStep, type SwapLifecycleEvent, type SwapLifecycleTransactionStep,
 } from './logEvents';
 
 const PHASE_STEPS = new Set<SwapLifecycleStep>(SWAP_LIFECYCLE_PHASE_STEPS);
 const TRANSACTION_STEPS = new Set<SwapLifecycleStep>(SWAP_LIFECYCLE_TRANSACTION_STEPS);
+const WAITING_STEPS: ReadonlySet<SwapLifecycleStep> = new Set([
+  SwapLifecycleStep.AwaitingWalletAction,
+  SwapLifecycleStep.AwaitingUserDeposit,
+]);
+// An operation or transfer milestone must retain precedence over a waiting
+// observation that arrives late with replacement-swap details. These steps
+// have different semantics from attempt starts or observation dedupe slots.
+const PROGRESSED_STEPS: ReadonlySet<SwapLifecycleStep> = new Set([
+  SwapLifecycleStep.WalletPromptOpened,
+  SwapLifecycleStep.WalletActionRejected,
+  SwapLifecycleStep.WalletActionFailed,
+  SwapLifecycleStep.TransactionSubmitted,
+  SwapLifecycleStep.GaslessAuthorizationSubmitted,
+  SwapLifecycleStep.DepositAddressCopied,
+  SwapLifecycleStep.InputTransactionDetected,
+  SwapLifecycleStep.InputTransferPending,
+  SwapLifecycleStep.InputTransferConfirmed,
+  SwapLifecycleStep.OutputTransferPending,
+  SwapLifecycleStep.SwapCompleted,
+]);
+
+/** Whether the latest event for this swap makes a late waiting observation stale. */
+export function isStaleWaitingObservation(
+  observation: Pick<SwapLifecycleEvent, 'step' | 'swapId'>,
+  latestEvent: Pick<SwapLifecycleEvent, 'step' | 'swapId'> | undefined,
+): boolean {
+  if (!latestEvent || latestEvent.swapId !== observation.swapId) {
+    return false;
+  }
+  return WAITING_STEPS.has(observation.step) && PROGRESSED_STEPS.has(latestEvent.step);
+}
 
 /** The dedupe slot an observation occupies within one swap, or undefined. */
 export type SwapLifecycleObservationKey = 'phase' | SwapLifecycleTransactionStep;
