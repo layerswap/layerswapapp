@@ -1,5 +1,4 @@
-import { Network } from "@layerswap/widget-types";
-import { TransferProvider, TransferProps } from "@layerswap/widget-types";
+import { TransferProvider, TransferProps, LayerswapNetwork } from "@layerswap/widget-types";
 import { sendTransaction, Config } from '@wagmi/core'
 import { toTransferError } from "./toTransferError"
 import { resolveWalletConnector } from '../service/resolveWalletConnector'
@@ -8,7 +7,7 @@ type TransactionBuilder = (params: TransferProps) => Promise<any>
 
 export function createEVMTransferProvider(
     config: Config,
-    supportsNetwork: (network: Network) => boolean,
+    supportsNetwork: (network: LayerswapNetwork) => boolean,
     buildTransaction: TransactionBuilder
 ): TransferProvider {
     return {

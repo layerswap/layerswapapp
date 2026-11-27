@@ -624,7 +624,8 @@ const { BalanceResolver } = loadSource('lib/balances/balanceResolver.ts', {
 })
 // Use the bundled adapter's actual unsupported gas implementation.
 const { TonGasProvider } = loadSource('../../../wallets/adapters/ton/src/tonGasProvider.ts', {
-  '@layerswap/utils': { KnownInternalNames: require('@layerswap/utils/known-ids').default },
+  '@layerswap/utils': { AppSettings: { isTestnet: () => false } },
+  '@layerswap/widget-types': { NetworkType: { TON: 'ton' } },
 })
 async function setupUnsupportedAdapter(name) {
   const asset = name === 'TON_MAINNET' ? { symbol: 'TON', decimals: 9 } : { symbol: 'USDC', decimals: 6 }

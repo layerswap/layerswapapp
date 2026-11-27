@@ -1,3 +1,4 @@
+import type { LayerswapNetwork } from '@layerswap/widget-types';
 import type { MultiStepHandler, WalletConnectionProviderProps, WalletConnectionStore, WalletModalConnector } from "@layerswap/wallet-core/types"
 import { isMobile } from "@layerswap/utils"
 import { connectModalStore, createMemoizedConnectionStore, getAdditionalConnectorsStore } from "@layerswap/wallet-core"
@@ -15,7 +16,7 @@ type CreateSvmConnectionOptions = {
  * Vanilla external-store factory for the Solana wallet connection. Replaces
  * the old `useSvmConnection` hook.
  */
-export function createSvmConnection<Network>(
+export function createSvmConnection<Network extends LayerswapNetwork = LayerswapNetwork>(
     initialProps: WalletConnectionProviderProps<Network>,
     options: CreateSvmConnectionOptions = {},
 ): WalletConnectionStore<Network> {
@@ -25,9 +26,8 @@ export function createSvmConnection<Network>(
     const isMobilePlatform = isMobile()
 
     let networks = initialProps.networks
-    let networkAdapter = initialProps.networkAdapter
     const svmConnectionService = new SvmConnectionService<Network>()
-    svmConnectionService.setNetworks(networks, networkAdapter)
+    svmConnectionService.setNetworks(networks)
 
     const walletConnectConfig = getWalletConnectConfig()
     const additionalConnectorsStore = getAdditionalConnectorsStore(
@@ -60,7 +60,6 @@ export function createSvmConnection<Network>(
                 browseConnectors: additional.browseConnectors,
                 recentConnectors: additional.recentConnectors,
                 networks,
-                networkAdapter,
             }
         },
         buildSnapshot: inputs => {
@@ -93,8 +92,7 @@ export function createSvmConnection<Network>(
         ],
         onUpdateProps: nextProps => {
             networks = nextProps.networks
-            networkAdapter = nextProps.networkAdapter
-            svmConnectionService.setNetworks(networks, networkAdapter)
+            svmConnectionService.setNetworks(networks)
         },
     })
 }

@@ -1,7 +1,7 @@
 "use client"
 import { createContext, useContext, useMemo, type ReactNode } from "react"
 import { Address, shortenString } from "@layerswap/utils"
-import type { Network, NetworkType, Token, Wallet } from "@layerswap/widget-types"
+import type { LayerswapNetwork, LayerswapToken, Wallet } from "@layerswap/widget-types"
 import type { WalletConnectionProvider } from "@layerswap/wallet-core/types"
 
 export type WalletBalanceResult = {
@@ -16,29 +16,29 @@ export type AddressLabelResult = {
 
 export type SaveAddressRequest = {
     address: string
-    networkType?: NetworkType
+    networkType?: string
     supportedNetworks: string[]
 }
 
 export type RenderSaveFormProps = {
     address: string
-    network: { name?: string; type: NetworkType }
+    network: { name?: string; type: string }
     onDone: () => void
 }
 
 export type WalletListAdapters = {
-    networks: Network[]
+    networks: LayerswapNetwork[]
     connect: (provider?: WalletConnectionProvider, context?: { layout?: "overlay" | "standalone" }) => Promise<Wallet | undefined>
-    getNetworkId: (network: Network) => string
-    useWalletBalance: (args: { address?: string; network?: Network; token?: Token }) => WalletBalanceResult
-    useAddressLabel: (address?: string | null, network?: { name: string } | null, providerName?: string) => AddressLabelResult
-    useAddressName: (address?: string | null, network?: { name: string } | null, providerName?: string) => string | undefined
+    getNetworkId: (network: LayerswapNetwork) => string
+    useWalletBalance: (args: { address?: string; network?: LayerswapNetwork; token?: LayerswapToken }) => WalletBalanceResult
+    useAddressLabel: (address?: string | null, network?: { name: string; type: string } | null, providerName?: string) => AddressLabelResult
+    useAddressName: (address?: string | null, network?: { name: string; type: string } | null, providerName?: string) => string | undefined
     renderSaveForm?: (props: RenderSaveFormProps) => ReactNode
 }
 
 const defaultUseWalletBalance = (): WalletBalanceResult => ({ formatted: undefined, isLoading: false })
 
-const defaultUseAddressLabel = (address?: string | null, network?: { name: string } | null, providerName?: string): AddressLabelResult => {
+const defaultUseAddressLabel = (address?: string | null, network?: { name: string; type: string } | null, providerName?: string): AddressLabelResult => {
     if (!address) return { name: undefined, labeled: '' }
     if (!network && !providerName) return { name: undefined, labeled: shortenString(address) }
     return { name: undefined, labeled: new Address(address, network ?? null, providerName!).toShortString() }

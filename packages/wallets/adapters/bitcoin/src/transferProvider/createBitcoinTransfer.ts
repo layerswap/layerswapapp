@@ -1,15 +1,13 @@
-import { NetworkType } from '@layerswap/widget-types';
-import { Network } from "@layerswap/widget-types";
-import { TransferProvider, TransferProps } from "@layerswap/widget-types";
+import { TransferProvider, TransferProps, NetworkType, LayerswapNetwork } from "@layerswap/widget-types";
 import { getAccount } from '@bigmi/client'
-import { JsonRpcClient, KnownInternalNames } from "@layerswap/utils";
+import { JsonRpcClient, AppSettings } from "@layerswap/utils";
 import { sendTransaction } from "./sendTransaction"
 import { toTransferError } from "./toTransferError"
 import { getBitcoinConfig } from "../service/getBitcoinConfig"
 
 export function createBitcoinTransfer(): TransferProvider {
     return {
-        supportsNetwork(network: Network): boolean {
+        supportsNetwork(network: LayerswapNetwork): boolean {
             return network.type === NetworkType.Bitcoin
         },
 
@@ -28,7 +26,7 @@ export function createBitcoinTransfer(): TransferProvider {
             }
 
             const rpcClient = new JsonRpcClient(network.node_url)
-            const isTestnet = network?.name === KnownInternalNames.Networks.BitcoinTestnet
+            const isTestnet = AppSettings.isTestnet()
             const publicClient = config.getClient()
 
             try {

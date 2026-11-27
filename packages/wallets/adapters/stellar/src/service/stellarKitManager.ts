@@ -110,7 +110,7 @@ class StellarKitManager {
         ])
         if (generation !== this.generation) return
 
-        const isTestnet = AppSettings.ApiVersion === 'testnet' || AppSettings.ApiVersion === 'sandbox'
+        const isTestnet = AppSettings.isTestnet()
         const network = isTestnet ? kitTypesModule.Networks.TESTNET : kitTypesModule.Networks.PUBLIC
         const modules = kitUtilsModule.defaultModules()
         if (walletConnect?.projectId) {

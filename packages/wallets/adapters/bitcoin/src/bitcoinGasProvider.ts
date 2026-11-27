@@ -1,12 +1,11 @@
 import { buildPsbt } from "./transferProvider/transactionBuilder/buildPsbt";
-import { JsonRpcClient, KnownInternalNames, formatUnits } from "@layerswap/utils";
-import { ErrorHandler } from "@layerswap/widget-types";
-import { Network } from "@layerswap/widget-types";
+import { JsonRpcClient, formatUnits, AppSettings } from "@layerswap/utils";
+import { ErrorHandler, NetworkType, LayerswapNetwork } from "@layerswap/widget-types";
 import { GasProps, GasWithToken, GasProvider } from "@layerswap/widget-types";
 
 export class BitcoinGasProvider implements GasProvider {
-    supportsNetwork(network: Network): boolean {
-        return KnownInternalNames.Networks.BitcoinMainnet.includes(network.name) || KnownInternalNames.Networks.BitcoinTestnet.includes(network.name)
+    supportsNetwork(network: LayerswapNetwork): boolean {
+        return network.type === NetworkType.Bitcoin
     }
 
     async getGas({ address, network, recipientAddress, amount }: GasProps): Promise<GasWithToken | undefined> {
@@ -14,7 +13,7 @@ export class BitcoinGasProvider implements GasProvider {
         if (!address) throw new Error("No address provided")
         if (!amount) throw new Error("No amount provided")
 
-        const version = KnownInternalNames.Networks.BitcoinMainnet.includes(network.name) ? 'mainnet' : 'testnet';
+        const version = AppSettings.isTestnet() ? 'testnet' : 'mainnet';
         const bitcoinAddress = recipientAddress || version == 'testnet' ? 'tb1q5dc7f552h57tfepls66tgkta8wwjpha3ktw45s': 'bc1plxa9q77gz9r33g8pd4c2ygzezchjffuedtzdrkclyceseyw8v80qasmquf'
         const rpcClient = new JsonRpcClient(network.node_url);
 

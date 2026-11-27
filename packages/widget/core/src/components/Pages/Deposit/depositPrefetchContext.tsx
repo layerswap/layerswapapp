@@ -53,11 +53,11 @@ const DepositPrefetchContext = createContext<DepositPrefetchContextValue | null>
 const makeKey = (
     from: string,
     fromToken: string,
-    to: { name: string },
+    to: { name: string; type: string },
     toToken: string,
     address: string,
     sourceAddress?: string,
-    sourceNetwork?: { name: string },
+    sourceNetwork?: { name: string; type: string },
 ) => {
     const normalizedDestinationAddress = new Address(address, to).normalized;
     const normalizedSourceAddress = sourceAddress && sourceNetwork

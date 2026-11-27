@@ -1,5 +1,3 @@
-import { NetworkType } from '@layerswap/widget-types';
-
 export enum AddressSelectionMode {
     // Unambiguous — assign the type directly
     Auto = 'auto',
@@ -11,11 +9,11 @@ export enum AddressSelectionMode {
 
 export interface AddressUtilsProvider {
     providerName: string,
-    supportsNetwork(network: { name: string }): boolean,
+    supportsNetwork(network: { name: string; type: string }): boolean,
     isValidAddress: (props: AddressUtilsProviderProps) => boolean,
     addressFormat?: (props: AddressUtilsProviderProps) => string,
     // The network type this provider validates — used by address classification.
-    networkType: NetworkType,
+    networkType: string,
     // Human-readable label for the type (e.g. "EVM", "Starknet").
     label: string,
     // How a classified address of this type maps to a network scope.
@@ -26,6 +24,6 @@ export interface AddressUtilsProvider {
 
 export type AddressUtilsProviderProps = {
     address: string,
-    network?: { name: string } | null,
+    network?: { name: string; type: string } | null,
     providerName?: string
 }

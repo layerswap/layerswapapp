@@ -1,3 +1,4 @@
+import type { LayerswapNetwork } from '@layerswap/widget-types';
 import type { MultiStepHandler, WalletConnectionProviderProps, WalletConnectionStore } from "@layerswap/wallet-core/types"
 import { isMobile } from "@layerswap/utils"
 import { connectModalStore, createMemoizedConnectionStore } from "@layerswap/wallet-core"
@@ -13,7 +14,7 @@ type CreateTonConnectionOptions = {
  * Vanilla external-store factory for the TON wallet connection. Replaces the
  * old `useTonConnection` hook. The widget consumes this via `useSyncExternalStore`.
  */
-export function createTonConnection<Network>(
+export function createTonConnection<Network extends LayerswapNetwork = LayerswapNetwork>(
     initialProps: WalletConnectionProviderProps<Network>,
     options: CreateTonConnectionOptions = {},
 ): WalletConnectionStore<Network> {
@@ -21,9 +22,8 @@ export function createTonConnection<Network>(
     const isMobilePlatform = isMobile()
 
     let networks = initialProps.networks
-    let networkAdapter = initialProps.networkAdapter
     const tonConnectionService = new TonConnectionService<Network>()
-    tonConnectionService.setNetworks(networks, networkAdapter)
+    tonConnectionService.setNetworks(networks)
     tonConnectionService.configure({
         setSelectedConnector: connectModalStore.setSelectedConnector,
         isMobilePlatform,
@@ -40,7 +40,6 @@ export function createTonConnection<Network>(
                 wallets: state.wallets,
                 ready: state.ready,
                 networks,
-                networkAdapter,
             }
         },
         buildSnapshot: inputs => ({
@@ -53,8 +52,7 @@ export function createTonConnection<Network>(
         ],
         onUpdateProps: nextProps => {
             networks = nextProps.networks
-            networkAdapter = nextProps.networkAdapter
-            tonConnectionService.setNetworks(networks, networkAdapter)
+            tonConnectionService.setNetworks(networks)
         },
     })
 }

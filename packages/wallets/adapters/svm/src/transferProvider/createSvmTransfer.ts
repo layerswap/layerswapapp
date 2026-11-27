@@ -1,5 +1,4 @@
-import { NetworkType, ActionMessageType } from '@layerswap/widget-types';
-import { Network } from "@layerswap/widget-types";
+import { NetworkType, ActionMessageType, LayerswapNetwork } from '@layerswap/widget-types';
 import { TransferProvider, TransferProps } from "@layerswap/widget-types";
 import { walletActionError } from "@layerswap/wallet-core/errors"
 import type { Connection, Transaction } from "@solana/web3.js"
@@ -9,7 +8,7 @@ import { svmAdapterManager } from "../service/svmAdapterManager"
 
 export function createSvmTransfer(): TransferProvider {
     return {
-        supportsNetwork(network: Network): boolean {
+        supportsNetwork(network: LayerswapNetwork): boolean {
             return network.type === NetworkType.Solana
         },
 

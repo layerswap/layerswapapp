@@ -1,8 +1,7 @@
-import { NetworkType } from '@layerswap/widget-types';
-import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
+import { AppSettings } from '@layerswap/utils';
+import { NetworkType, type InternalConnector, type Wallet, type LayerswapNetwork } from '@layerswap/widget-types';
 import type { WalletConnectionProvider, WalletConnectionService, WalletModalConnector } from "@layerswap/wallet-core/types";
 import { walletIconResolver } from "@layerswap/wallet-core";
-import type { AppNetworkAdapter } from "@layerswap/utils";
 import {
     connect,
     disconnect,
@@ -20,17 +19,15 @@ type RuntimeDeps = {
     setSelectedConnector?: (connector: unknown) => void
 }
 
-export class BitcoinConnectionService<Network> implements WalletConnectionService<RuntimeDeps, Network> {
+export class BitcoinConnectionService<Network extends LayerswapNetwork = LayerswapNetwork> implements WalletConnectionService<RuntimeDeps, Network> {
     private _networks: Network[] = []
-    private _networkAdapter: AppNetworkAdapter<Network> | undefined
     private _networksKey = ''
     private _deps: RuntimeDeps = {}
 
-    setNetworks(networks: Network[], networkAdapter: AppNetworkAdapter<Network>): void {
-        const key = networks.map(network => networkAdapter.getId(network)).join('|')
+    setNetworks(networks: Network[]): void {
+        const key = networks.map(network => network.name).join('|')
         if (this._networksKey === key) return
         this._networks = networks
-        this._networkAdapter = networkAdapter
         this._networksKey = key
     }
 
@@ -40,15 +37,15 @@ export class BitcoinConnectionService<Network> implements WalletConnectionServic
 
     getCommonSupportedNetworks(): string[] {
         return this._networks
-            .filter(network => this._networkAdapter?.getNetworkType(network) === NetworkType.Bitcoin)
-            .map(network => this._networkAdapter?.getId(network))
+            .filter(network => network.type === NetworkType.Bitcoin)
+            .map(network => network.name)
             .filter((id): id is string => !!id)
     }
 
     getProviderIcon(): string | undefined {
         const supported = this.getCommonSupportedNetworks()
-        const network = this._networks.find(item => supported.includes(this._networkAdapter?.getId(item) ?? ''))
-        return network && this._networkAdapter ? this._networkAdapter.getIcon(network) : undefined
+        const network = this._networks.find(item => supported.includes(item.name ?? ''))
+        return network?.logo
     }
 
     getNetworkIcon(): string | undefined {
@@ -123,11 +120,10 @@ export class BitcoinConnectionService<Network> implements WalletConnectionServic
 
             const address = result.accounts[0].address
             const supported = this.getCommonSupportedNetworks()
-            const network = this._networks.find(item => supported.includes(this._networkAdapter?.getId(item) ?? ''))
+            const network = this._networks.find(item => supported.includes(item.name ?? ''))
             if (!network) throw new Error('Network not found')
 
-            const networkId = this._networkAdapter?.getId(network).toLowerCase() ?? ''
-            const isTestnet = networkId.includes('testnet') || networkId.includes('signet')
+            const isTestnet = AppSettings.isTestnet()
             if (address && !isBitcoinAddressValid(address, isTestnet)) {
                 await disconnect(config, { connector })
                 throw new Error(`Please switch the network in your wallet to ${isTestnet ? 'Testnet' : 'Mainnet'} and click connect again`)

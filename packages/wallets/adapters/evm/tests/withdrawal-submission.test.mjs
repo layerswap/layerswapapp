@@ -36,6 +36,7 @@ const routes = loadProvider('../src/additionalProviders/hyperliquid/routes.ts', 
     '@layerswap/utils': { KnownInternalNames },
 })
 const constants = loadProvider('../src/additionalProviders/hyperliquid/constants.ts', {
+    '@layerswap/utils': { AppSettings: { isTestnet: () => false } },
     '@layerswap/widget-types': widgetTypes,
     './routes': routes,
 })

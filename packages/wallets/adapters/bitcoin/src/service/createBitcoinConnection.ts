@@ -1,3 +1,4 @@
+import type { LayerswapNetwork } from '@layerswap/widget-types';
 import type { MultiStepHandler, WalletConnectionProviderProps, WalletConnectionStore } from "@layerswap/wallet-core/types"
 import { connectModalStore, createMemoizedConnectionStore } from "@layerswap/wallet-core"
 import { createBitcoinTransfer } from '../transferProvider/createBitcoinTransfer'
@@ -12,16 +13,15 @@ type CreateBitcoinConnectionOptions = {
  * Vanilla external-store factory for the Bitcoin wallet connection. Replaces the
  * old `useBitcoinConnection` hook.
  */
-export function createBitcoinConnection<Network>(
+export function createBitcoinConnection<Network extends LayerswapNetwork = LayerswapNetwork>(
     initialProps: WalletConnectionProviderProps<Network>,
     options: CreateBitcoinConnectionOptions = {},
 ): WalletConnectionStore<Network> {
     const { extraMultiStepHandlers = [] } = options
 
     let networks = initialProps.networks
-    let networkAdapter = initialProps.networkAdapter
     const bitcoinConnectionService = new BitcoinConnectionService<Network>()
-    bitcoinConnectionService.setNetworks(networks, networkAdapter)
+    bitcoinConnectionService.setNetworks(networks)
     bitcoinConnectionService.configure({
         setSelectedConnector: connectModalStore.setSelectedConnector,
     })
@@ -37,7 +37,6 @@ export function createBitcoinConnection<Network>(
                 resolvedConnectors: state.resolvedConnectors,
                 ready: state.ready,
                 networks,
-                networkAdapter,
             }
         },
         buildSnapshot: () => ({
@@ -50,8 +49,7 @@ export function createBitcoinConnection<Network>(
         ],
         onUpdateProps: nextProps => {
             networks = nextProps.networks
-            networkAdapter = nextProps.networkAdapter
-            bitcoinConnectionService.setNetworks(networks, networkAdapter)
+            bitcoinConnectionService.setNetworks(networks)
         },
     })
 }

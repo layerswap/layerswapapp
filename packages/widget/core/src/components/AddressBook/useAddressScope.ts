@@ -19,7 +19,7 @@ export type AddressScope = {
  *  - Overlapping address types (e.g. Fuel + Starknet) → one flagship per type.
  *  - A whole provider type with no explicit networks → every network of that type.
  */
-export function useAddressScope(address: string, networkTypes?: NetworkType[], networks?: string[]): AddressScope {
+export function useAddressScope(address: string, networkTypes?: string[], networks?: string[]): AddressScope {
     const { networks: allNetworks } = useSettingsState()
 
     return useMemo<AddressScope>(() => {
@@ -35,7 +35,7 @@ export function useAddressScope(address: string, networkTypes?: NetworkType[], n
             return { items: d, summary: d.length === 1 ? d[0].name : summary }
         }
         // Flagship network standing in for a whole provider type (EVM → Ethereum, etc.).
-        const typeItem = (type: NetworkType): ScopeItem => {
+        const typeItem = (type: string): ScopeItem => {
             const ofType = allNetworks.filter(n => n.type === type)
             const flagship = ofType.find(n => n.name === KnownInternalNames.Networks.EthereumMainnet) ?? ofType[0]
             return { name: addressTypeLabel(type), logo: flagship?.logo }

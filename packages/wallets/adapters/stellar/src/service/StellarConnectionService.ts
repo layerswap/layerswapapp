@@ -1,5 +1,4 @@
-import { NetworkType } from '@layerswap/widget-types';
-import { type InternalConnector, type Wallet } from '@layerswap/widget-types'
+import { NetworkType, type InternalConnector, type Wallet, type LayerswapNetwork } from '@layerswap/widget-types'
 import type {
     RequestAdditionalConnectorsParams,
     RequestAdditionalConnectorsResult,
@@ -25,7 +24,6 @@ import { STELLAR_APPKIT_WALLET_CONNECT_ID } from './StellarWalletConnectModule'
 import { stellarKitManager } from './stellarKitManager'
 import { stellarStore, type StellarWalletSnapshot } from './stellarStore'
 import { toStellarConnector } from './stellarConnector'
-import { AppNetworkAdapter } from '@layerswap/utils'
 
 type RegistryRequestFn = (params?: RequestAdditionalConnectorsParams) => Promise<{
     connectors: WalletConnectWalletBase[]
@@ -48,19 +46,17 @@ type StellarKitConnectionManager = Pick<
     'connect' | 'disconnect' | 'onDisplayUri'
 >
 
-export class StellarConnectionService<Network> implements WalletConnectionService<RuntimeDeps, Network> {
+export class StellarConnectionService<Network extends LayerswapNetwork = LayerswapNetwork> implements WalletConnectionService<RuntimeDeps, Network> {
     private networks: Network[] = []
-    private networkAdapter: AppNetworkAdapter<Network> | undefined
     private networksKey = ''
     private deps: RuntimeDeps = {}
 
     constructor(private readonly kitManager: StellarKitConnectionManager = stellarKitManager) { }
 
-    setNetworks(networks: Network[], networkAdapter: AppNetworkAdapter<Network>): void {
-        const key = networks.map(network => networkAdapter.getId(network)).join('|')
+    setNetworks(networks: Network[]): void {
+        const key = networks.map(network => network.name).join('|')
         if (this.networksKey === key) return
         this.networks = networks
-        this.networkAdapter = networkAdapter
         this.networksKey = key
     }
 
@@ -248,14 +244,13 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
     }
 
     private getNetworkLogo(): string | undefined {
-        const network = this.networks.find(item => this.networkAdapter?.getNetworkType(item) === NetworkType.Stellar)
-        return network && this.networkAdapter ? this.networkAdapter.getIcon(network) : undefined
+        const network = this.networks.find(item => item.type === NetworkType.Stellar)
+        return network?.logo
     }
 
     private getSupportedNetworks(): string[] {
-        if (!this.networkAdapter) return []
         return this.networks
-            .filter(network => this.networkAdapter?.getNetworkType(network) === NetworkType.Stellar)
-            .map(network => this.networkAdapter!.getId(network))
+            .filter(network => network.type === NetworkType.Stellar)
+            .map(network => network.name)
     }
 }

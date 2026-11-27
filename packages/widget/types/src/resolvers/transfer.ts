@@ -1,10 +1,10 @@
 import { type Wallet } from '../wallet';
-import { Network, NetworkRoute, NetworkWithTokens, Token } from "../types"
+import { LayerswapNetwork, NetworkRoute, LayerswapToken } from "../types"
 import { TokenBalance } from "./balanceModels"
 
 export type TransferProps = {
-    network: Network,
-    token: Token,
+    network: LayerswapNetwork,
+    token: LayerswapToken,
     callData: string
     amountInBaseUnits?: string
     encodedArgs?: string[] | null
@@ -17,10 +17,10 @@ export type TransferProps = {
     balances?: TokenBalance[] | undefined | null
     /** Selected destination route. Optional — only routed sources (e.g. a CCTP-forwarded
      *  withdrawal) need to know where the swap is going; on-chain sources ignore it. */
-    destinationNetwork?: Network
-    destinationToken?: Token
+    destinationNetwork?: LayerswapNetwork
+    destinationToken?: LayerswapToken
     /** Settings networks, for per-network endpoint overrides. Optional. */
-    networks?: NetworkWithTokens[]
+    networks?: (LayerswapNetwork & { tokens: LayerswapToken[] })[]
     /** Address that owns the source balance, when it differs from the signing wallet
      *  (e.g. an off-chain account a routed source draws from). Optional. */
     sourceAddress?: string
@@ -44,7 +44,7 @@ export type WithdrawalAction = {
     call_data?: string | null
     amount?: number
     amount_in_base_units?: string
-    token?: Token
+    token?: LayerswapToken
 }
 
 /** Adapter-owned withdrawal behavior. The widget has no provider-name registry. */
@@ -52,7 +52,7 @@ export type WalletWithdrawal = {
     id: string
     displayName: string
     preparationLabel?: string
-    amountDecimals?: (token: Token) => number
+    amountDecimals?: (token: LayerswapToken) => number
     prepareTransfer: (action: WithdrawalAction | undefined, amount: number) =>
         Pick<TransferProps, 'amount' | 'depositAddress' | 'callData'>
         & Partial<Pick<TransferProps, 'amountInBaseUnits' | 'token'>>
@@ -61,12 +61,12 @@ export type WalletWithdrawal = {
 export interface TransferProvider {
     withdrawal?: WalletWithdrawal
     atomicBatch?: AtomicBatchProvider
-    supportsNetwork(network: Network): boolean
+    supportsNetwork(network: LayerswapNetwork): boolean
     executeTransfer(params: TransferProps, wallet?: Wallet, onProgress?: (info: TransferProgress | undefined) => void): Promise<string>
 }
 
 export type AtomicBatchContext = {
-    network: Network
+    network: LayerswapNetwork
     wallet: Wallet
     account: string
     signal?: AbortSignal

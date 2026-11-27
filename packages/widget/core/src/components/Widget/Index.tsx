@@ -23,7 +23,7 @@ const Widget = ({ children, hideMenu, goBack, contextualMenu, fitHeight = false 
       isEmbedded={isEmbedded}
       fitHeight={fitHeight}
       backgroundStyle={AppSettings.ThemeData?.cardBackgroundStyle}
-      testnet={AppSettings.ApiVersion === 'testnet'}
+      testnet={AppSettings.isTestnet()}
       header={!hideMenu && <HeaderWithMenu goBack={goBack} contextualMenu={contextualMenu} />}
    >
       {children}

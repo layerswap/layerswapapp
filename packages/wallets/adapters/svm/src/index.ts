@@ -1,7 +1,6 @@
-import { NetworkType, type WalletConnectConfig } from '@layerswap/widget-types';
+import { NetworkType, type WalletConnectConfig, type LayerswapNetwork } from '@layerswap/widget-types';
 import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/wallet-core/types"
 import type { WalletProvider, WalletInitContext, BaseWalletProviderConfig } from "@layerswap/wallet-core/types"
-import { type NetworkWithTokens } from "@layerswap/widget-types";
 import { LazyGasProvider } from "@layerswap/widget-types";
 import { SolanaBalanceProvider } from "./svmBalanceProvider"
 import { createSvmTransfer } from "./transferProvider/createSvmTransfer"
@@ -11,13 +10,13 @@ import { id } from "./constants"
 
 export type { WalletConnectConfig }
 
-export type SVMProviderConfig<Network = NetworkWithTokens> = BaseWalletProviderConfig<Network> & {
+export type SVMProviderConfig<Network extends LayerswapNetwork = LayerswapNetwork> = BaseWalletProviderConfig<Network> & {
     walletConnectConfigs?: WalletConnectConfig
 }
 
 // The literal id in the return type lets `defineWalletDescriptor` in
 // `@layerswap/wallets` verify it matches the descriptor id at compile time.
-export function createSVMProvider<Network = NetworkWithTokens>(
+export function createSVMProvider<Network extends LayerswapNetwork = LayerswapNetwork>(
     config: SVMProviderConfig<Network> = {},
 ): WalletProvider<Network> & { id: typeof id } {
     const {

@@ -2734,7 +2734,7 @@ for (const scenario of [
         const flow = createWorkflow({ mounted: true })
         const { SpecializedWithdrawalView } = loadSource('../src/components/Pages/Swap/Withdraw/Presentation/SpecializedWithdrawalView.tsx', {
             '../TransferBlock': flow.blockBoundary,
-            '@layerswap/ui-kit/components': { WalletIcon: () => null },
+            '@layerswap/ui-kit': { WalletIcon: () => null },
             'lucide-react': { Loader2: () => null },
             '../messages/Message': { default: ({ header }) => createElement('p', null, header) },
             '../messages/TransactionMessages': { ActionMessages: { WalletMismatchMessage: () => createElement('p', null, 'Wrong account') } },

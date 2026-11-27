@@ -1,5 +1,4 @@
-import { NetworkType, type Network } from '@layerswap/widget-types';
-import KnownInternalNames from "@/knownIds";
+import { NetworkType } from '@layerswap/widget-types';
 import { AddressSelectionMode, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
 
 export const name = 'Tron';
@@ -53,8 +52,8 @@ export class TronAddressUtilsProvider implements AddressUtilsProvider {
     readonly label = 'Tron';
     readonly selection = AddressSelectionMode.Auto;
 
-    supportsNetwork(network: Network): boolean {
-        return KnownInternalNames.Networks.TronMainnet.includes(network.name) || KnownInternalNames.Networks.TronTestnet.includes(network.name)
+    supportsNetwork(network: { name: string; type: string; token?: unknown }): boolean {
+        return network.type === NetworkType.Tron;
     }
 
     isValidAddress(props: AddressUtilsProviderProps): boolean {

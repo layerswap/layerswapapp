@@ -1,28 +1,24 @@
-import { NetworkType } from '@layerswap/widget-types';
-import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
+import { NetworkType, type InternalConnector, type Wallet, type LayerswapNetwork } from '@layerswap/widget-types';
 import type { WalletConnectionProvider, WalletConnectionService, WalletModalConnector } from "@layerswap/wallet-core/types";
 import { walletIconResolver, getEip6963Providers, walletKey } from "@layerswap/wallet-core"
-import type { AppNetworkAdapter } from "@layerswap/utils"
 import { name as PROVIDER_NAME, id as PROVIDER_ID } from '../constants'
 import { tronAdapterManager } from './tronAdapterManager'
 import { type TronWalletSnapshot, useTronStore } from './tronStore'
 
-export class TronConnectionService<Network> implements WalletConnectionService<never, Network> {
+export class TronConnectionService<Network extends LayerswapNetwork = LayerswapNetwork> implements WalletConnectionService<never, Network> {
     private _networks: Network[] = []
-    private _networkAdapter: AppNetworkAdapter<Network> | undefined
     private _networksKey = ''
 
-    setNetworks(networks: Network[], networkAdapter: AppNetworkAdapter<Network>): void {
-        const key = networks.map(network => networkAdapter.getId(network)).join('|')
+    setNetworks(networks: Network[]): void {
+        const key = networks.map(network => network.name).join('|')
         if (this._networksKey === key) return
         this._networks = networks
-        this._networkAdapter = networkAdapter
         this._networksKey = key
     }
 
     getNetworkLogo(): string | undefined {
-        const network = this._networks.find(item => this._networkAdapter?.getNetworkType(item) === NetworkType.Tron)
-        return network && this._networkAdapter ? this._networkAdapter.getIcon(network) : undefined
+        const network = this._networks.find(item => item.type === NetworkType.Tron)
+        return network?.logo
     }
 
     getProviderIcon(): string | undefined {
@@ -130,8 +126,6 @@ export class TronConnectionService<Network> implements WalletConnectionService<n
     }
 
     private getSupportedNetworks(): string[] {
-        return this._networkAdapter
-            ? this._networks.filter(network => this._networkAdapter?.getNetworkType(network) === NetworkType.Tron).map(network => this._networkAdapter!.getId(network))
-            : []
+        return this._networks.filter(network => network.type === NetworkType.Tron).map(network => network.name)
     }
 }

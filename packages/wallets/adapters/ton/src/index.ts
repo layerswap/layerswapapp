@@ -1,8 +1,7 @@
+import { AppSettings } from '@layerswap/utils';
 import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/wallet-core/types"
 import type { WalletProvider, WalletInitContext, BaseWalletProviderConfig } from "@layerswap/wallet-core/types"
-import { LazyBalanceProvider } from "@layerswap/widget-types";
-import { KnownInternalNames } from "@layerswap/utils";
-import { type NetworkWithTokens } from "@layerswap/widget-types";
+import { LazyBalanceProvider, NetworkType, type LayerswapNetwork } from "@layerswap/widget-types";
 import { TonGasProvider } from "./tonGasProvider"
 import { createTonTransfer } from "./transferProvider/createTonTransfer"
 import { createTonConnection } from "./service/createTonConnection"
@@ -14,13 +13,13 @@ export type TonClientConfig = {
     manifestUrl: string
 }
 
-export type TONProviderConfig<Network = NetworkWithTokens> = BaseWalletProviderConfig<Network> & {
+export type TONProviderConfig<Network extends LayerswapNetwork = LayerswapNetwork> = BaseWalletProviderConfig<Network> & {
     tonConfigs?: TonClientConfig
 }
 
 // The literal id in the return type lets `defineWalletDescriptor` in
 // `@layerswap/wallets` verify it matches the descriptor id at compile time.
-export function createTONProvider<Network = NetworkWithTokens>(
+export function createTONProvider<Network extends LayerswapNetwork = LayerswapNetwork>(
     config: TONProviderConfig<Network> = {},
 ): WalletProvider<Network> & { id: typeof id } {
     const {
@@ -46,7 +45,7 @@ export function createTONProvider<Network = NetworkWithTokens>(
 
     const defaultBalanceProviders = [
         new LazyBalanceProvider(
-            (n) => KnownInternalNames.Networks.TONMainnet.includes(n.name),
+            (n) => (n.type === NetworkType.TON && !AppSettings.isTestnet()),
             () => import("./tonBalanceProvider").then(m => new m.TonBalanceProvider(tonConfigs?.tonApiKey))
         ),
     ]

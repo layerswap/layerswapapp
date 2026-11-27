@@ -16,13 +16,13 @@ export interface AddressFormatOptions {
  * ```typescript
  * const addr = new Address('0x1234...', network);
  * addr.toShortString(); // "0x123...5678"
- * Address.isValid('0x1234...', { name: 'ETHEREUM_MAINNET' }); // true
+ * Address.isValid('0x1234...', { name: 'ETHEREUM_MAINNET', type: 'evm' }); // true
  * ```
  */
 export class Address {
   private readonly _raw: string;
   private readonly _normalized: string;
-  private readonly _network: { name: string } | null | undefined;
+  private readonly _network: { name: string; type: string } | null | undefined;
   private readonly _providerName: string | undefined;
 
   /**
@@ -31,7 +31,7 @@ export class Address {
    * @param network - Network context for network-specific formatting
    * @param providerName - Optional provider name for additional context
    */
-  constructor(address: string, network: { name: string }, providerName?: string);
+  constructor(address: string, network: { name: string; type: string }, providerName?: string);
 
   /**
    * Creates a new Address instance with provider name only
@@ -48,9 +48,9 @@ export class Address {
    * @param network - Optional network context (can be null or undefined)
    * @param providerName - Provider name for provider-specific formatting
    */
-  constructor(address: string, network: { name: string } | null | undefined, providerName: string);
+  constructor(address: string, network: { name: string; type: string } | null | undefined, providerName: string);
 
-  constructor(address: string, network: { name: string } | null | undefined, providerName?: string) {
+  constructor(address: string, network: { name: string; type: string } | null | undefined, providerName?: string) {
     if (!network && !providerName) {
       throw new Error('Address requires either network or providerName');
     }
@@ -87,14 +87,14 @@ export class Address {
   /**
    * Get the associated network
    */
-  get network(): { name: string } | null | undefined {
+  get network(): { name: string; type: string } | null | undefined {
     return this._network;
   }
 
   /**
    * Check if this address is valid for its network
    */
-  static isValid(address: string, network: { name: string } | null = null, providerName?: string): boolean {
+  static isValid(address: string, network: { name: string; type: string } | null = null, providerName?: string): boolean {
     return isValidAddress({ address, network, providerName });
   }
 
@@ -191,7 +191,7 @@ export class Address {
   static equals(
     addr1: string,
     addr2: string,
-    network?: { name: string } | null,
+    network?: { name: string; type: string } | null,
     providerName?: string
   ): boolean {
     if (!addr1 || !addr2) return false;

@@ -10,7 +10,7 @@ type ResolveMaxAllowedAmountProps = {
     gasAmount: number | undefined
     gasReserve?: number
     fromCurrency: Token
-    native_currency: Token | undefined
+    native_currency: Pick<Token, 'symbol'> | undefined
     depositMethod: 'wallet' | 'deposit_address' | undefined
 }
 

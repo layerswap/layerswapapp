@@ -1,12 +1,10 @@
-import { NetworkType } from '@layerswap/widget-types';
-import { Network } from "@layerswap/widget-types";
-import { GasProps, GasProvider } from "@layerswap/widget-types";
+import { GasProps, GasProvider, NetworkType, LayerswapNetwork } from "@layerswap/widget-types";
 import { transactionBuilderForGas } from "./utils";
 import { formatUnits } from "@layerswap/utils";
 import { ErrorHandler } from "@layerswap/widget-types";
 
 export class SolanaGasProvider implements GasProvider {
-    supportsNetwork(network: Network): boolean {
+    supportsNetwork(network: LayerswapNetwork): boolean {
         return network.type === NetworkType.Solana
     }
 

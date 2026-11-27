@@ -11,7 +11,7 @@ import {
 import { bytesToHex } from '@layerswap/utils/common'
 import { isValidStellarAddress } from '@layerswap/utils'
 import { ActionMessageType } from '@layerswap/widget-types'
-import type { Token as LayerswapToken } from '@layerswap/widget-types'
+import type { LayerswapToken as LayerswapToken } from '@layerswap/widget-types'
 import { resolveStellarAsset } from '../stellarNetwork'
 
 export type ValidateStellarXdrParams = {

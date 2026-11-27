@@ -1,4 +1,4 @@
-import type { NetworkWithTokens, Token, TokenBalance } from '@layerswap/widget-types'
+import type { LayerswapToken, TokenBalance, LayerswapNetwork } from '@layerswap/widget-types'
 import { baseUnitsToNumber } from '@layerswap/utils/common'
 import { resolveStellarAsset } from './stellarNetwork'
 
@@ -18,8 +18,8 @@ export type StellarAccountReserveData = {
 }
 
 export function createStellarZeroBalance(
-    token: Token,
-    network: NetworkWithTokens,
+    token: LayerswapToken,
+    network: (LayerswapNetwork & { tokens: LayerswapToken[] }),
 ): TokenBalance {
     const asset = resolveStellarAsset(token)
     return {
@@ -33,7 +33,7 @@ export function createStellarZeroBalance(
 }
 
 export function resolveStellarBalanceAmount(
-    token: Token,
+    token: LayerswapToken,
     balances: readonly StellarBalanceLine[],
     reserve?: { account: StellarAccountReserveData, baseReserveInStroops: number },
 ): number {
@@ -62,8 +62,8 @@ export function resolveStellarBalanceAmount(
 }
 
 export function createUnfundedStellarBalances(
-    tokens: readonly Token[],
-    network: NetworkWithTokens,
+    tokens: readonly LayerswapToken[],
+    network: (LayerswapNetwork & { tokens: LayerswapToken[] }),
 ): TokenBalance[] {
     return tokens.map(token => createStellarZeroBalance(token, network))
 }

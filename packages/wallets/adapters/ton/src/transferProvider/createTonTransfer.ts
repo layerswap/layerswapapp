@@ -1,5 +1,4 @@
-import type { Wallet } from '@layerswap/widget-types';
-import { Network } from "@layerswap/widget-types";
+import { NetworkType, LayerswapNetwork, type Wallet } from '@layerswap/widget-types';
 import { TransferProvider, TransferProps } from "@layerswap/widget-types";
 import { isMobile } from "@layerswap/utils"
 import { isWalletInfoRemote } from "@tonconnect/sdk"
@@ -12,8 +11,8 @@ import { useTonStore } from "../service/tonStore"
 
 export function createTonTransfer(): TransferProvider {
     return {
-        supportsNetwork(network: Network): boolean {
-            return network.name.toLowerCase().includes('ton')
+        supportsNetwork(network: LayerswapNetwork): boolean {
+            return network.type === NetworkType.TON
         },
 
         async executeTransfer(params: TransferProps, wallet?: Wallet): Promise<string> {

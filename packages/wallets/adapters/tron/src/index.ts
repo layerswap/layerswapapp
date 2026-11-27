@@ -1,19 +1,18 @@
+import { AppSettings } from '@layerswap/utils';
 import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/wallet-core/types"
 import type { WalletProvider, WalletInitContext, BaseWalletProviderConfig } from "@layerswap/wallet-core/types"
-import { LazyBalanceProvider } from "@layerswap/widget-types";
-import { KnownInternalNames } from "@layerswap/utils";
-import { type NetworkWithTokens } from "@layerswap/widget-types";
+import { LazyBalanceProvider, NetworkType, type LayerswapNetwork } from "@layerswap/widget-types";
 import { TronGasProvider } from "./tronGasProvider"
 import { createTronTransfer } from "./transferProvider/createTronTransfer"
 import { createTronConnection } from "./service/createTronConnection"
 import { initTronProvider } from "./init"
 import { id } from "./constants"
 
-export type TronProviderConfig<Network = NetworkWithTokens> = BaseWalletProviderConfig<Network>
+export type TronProviderConfig<Network extends LayerswapNetwork = LayerswapNetwork> = BaseWalletProviderConfig<Network>
 
 // The literal id in the return type lets `defineWalletDescriptor` in
 // `@layerswap/wallets` verify it matches the descriptor id at compile time.
-export function createTronProvider<Network = NetworkWithTokens>(
+export function createTronProvider<Network extends LayerswapNetwork = LayerswapNetwork>(
     config: TronProviderConfig<Network> = {},
 ): WalletProvider<Network> & { id: typeof id } {
     const {
@@ -38,7 +37,7 @@ export function createTronProvider<Network = NetworkWithTokens>(
 
     const defaultBalanceProviders = [
         new LazyBalanceProvider(
-            (n) => KnownInternalNames.Networks.TronMainnet.includes(n.name),
+            (n) => (n.type === NetworkType.Tron && !AppSettings.isTestnet()),
             () => import("./tronBalanceProvider").then(m => new m.TronBalanceProvider())
         )
     ]

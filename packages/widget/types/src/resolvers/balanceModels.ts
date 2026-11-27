@@ -1,10 +1,10 @@
 import { type Wallet } from '../wallet';
-import { Network, Token } from "../types"
+import { LayerswapNetwork, LayerswapToken } from "../types"
 import { NodeErrorCategory } from "./nodeErrorClassifier"
 
 export type GasProps = {
-    network: Network,
-    token: Token,
+    network: LayerswapNetwork,
+    token: LayerswapToken,
     address?: string,
     recipientAddress?: string,
     /** Exact deposit action calldata, including an empty string for a plain transfer. */

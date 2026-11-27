@@ -1,4 +1,4 @@
-import { Network } from "@layerswap/widget-types";
+import { LayerswapNetwork } from "@layerswap/widget-types";
 import { BaseError, createPublicClient, InsufficientFundsError } from "viem";
 import resolveChain from "../evmUtils/resolveChain";
 import { resolveFallbackTransport } from "../evmUtils/resolveTransports";
@@ -7,7 +7,7 @@ import { resolveEVMGasPolicy } from "./evmGasPolicies";
 import { resolveEVMFeeData } from "./resolveEVMFeeData";
 
 type ResolveEVMTransactionGasParametersArgs = {
-    network: Network
+    network: LayerswapNetwork
     account: `0x${string}`
     to: `0x${string}`
     data?: `0x${string}`
@@ -27,7 +27,7 @@ export const resolveEVMTransactionGasParameters = async ({
 
     const publicClient = createPublicClient({
         chain: resolveChain(network),
-        transport: resolveFallbackTransport(network.nodes?.length > 0 ? network.nodes : [network.node_url]),
+        transport: resolveFallbackTransport(network.nodes?.length ? network.nodes : [network.node_url]),
     })
 
     const [estimatedGas, feesPerGas] = await Promise.all([

@@ -9,7 +9,6 @@ import VaulDrawer from "@/components/Modal/vaulModal";
 import IconButton from "@/components/Buttons/iconButton";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import AppSettings from "@/lib/AppSettings";
-import { walletNetworkAdapter } from "@/lib/walletNetworkAdapter";
 import { filterSourceNetworks } from "@/helpers/filterSourceNetworks";
 import useWallet from "@/hooks/useWallet";
 import LayerSwapLogoSmall from "@/components/Icons/layerSwapLogoSmall";
@@ -30,7 +29,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
     const settings = useSettingsState();
     const { networks } = settings;
     return (
-        <WalletProvidersRegistryProvider networks={networks} networkAdapter={walletNetworkAdapter} walletProviders={walletProviders}>
+        <WalletProvidersRegistryProvider networks={networks} walletProviders={walletProviders}>
             {children}
             <ConnectModalHost settings={settings} />
         </WalletProvidersRegistryProvider>

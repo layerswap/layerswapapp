@@ -1,6 +1,5 @@
-import { NetworkType } from '@layerswap/widget-types';
+import type { AddressUtilsProvider } from '@/types';
 import { AddressUtilsResolver } from "@/address/addressUtilsResolver";
-import type { AppNetworkAdapter } from "@/networkAdapter";
 import { EVMAddressUtilsProvider } from "@/address/providers/evm";
 import { BitcoinAddressUtilsProvider } from "@/address/providers/bitcoin";
 import { SolanaAddressUtilsProvider } from "@/address/providers/solana";
@@ -26,11 +25,10 @@ export const addressUtilsProviders = [
 // address validation/formatting/classification.
 export const addressUtilsResolver = new AddressUtilsResolver(addressUtilsProviders);
 
-export const setNetworkAdapter = <Network,>(adapter: AppNetworkAdapter<Network>) => addressUtilsResolver.setNetworkAdapter(adapter);
-export const getNetworkAdapter = () => addressUtilsResolver.getNetworkAdapter();
+export const registerAddressProviders = (providers: AddressUtilsProvider[]) => addressUtilsResolver.registerAddressProviders(providers);
 
 export const classifyAddress = (address: string) => addressUtilsResolver.classifyAddress(address);
-export const addressTypeLabel = (type: NetworkType) => addressUtilsResolver.addressTypeLabel(type);
-export const addressSelectionType = (type: NetworkType) => addressUtilsResolver.addressSelectionType(type);
-export const defaultNetworkScope = (type: NetworkType, candidates: { name: string; type: NetworkType }[]) =>
+export const addressTypeLabel = (type: string) => addressUtilsResolver.addressTypeLabel(type);
+export const addressSelectionType = (type: string) => addressUtilsResolver.addressSelectionType(type);
+export const defaultNetworkScope = (type: string, candidates: { name: string; type: string }[]) =>
     addressUtilsResolver.defaultNetworkScope(type, candidates);

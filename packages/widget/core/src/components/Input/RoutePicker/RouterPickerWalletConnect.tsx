@@ -1,3 +1,4 @@
+import { useSettingsState } from '@/context/settings';
 import { type Wallet } from '@layerswap/widget-types';
 import { FC, useMemo, useState } from "react";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
@@ -133,7 +134,8 @@ const AccountsList: FC<Props> = (props) => {
     const { selectedAccount, onSelect, network } = props
     const provider = selectedAccount?.provider;
     const connectedWallets = provider?.connectedWallets || []
-    const networkName = provider?.autofillSupportedNetworks ? { name: provider?.autofillSupportedNetworks[0] } : undefined
+    const { networks } = useSettingsState()
+    const networkName = networks.find(item => item.name === provider?.autofillSupportedNetworks?.[0])
 
     const walletNetwork = network || networkName;
 

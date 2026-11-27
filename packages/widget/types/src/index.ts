@@ -55,7 +55,7 @@ export type {
 export type { InternalConnector, Wallet, WalletConnectConfig, WalletConnectLink } from './wallet';
 export { ActionMessageType } from './actionMessage';
 export { GasCalculation } from './GasCalculation';
-export { Network, NetworkWithTokens, Token, Metadata, NetworkRoute, NetworkRouteToken } from './types';
+export { LayerswapNetwork, LayerswapToken, LayerswapNetworkMetadata, Network, NetworkWithTokens, Token, Metadata, NetworkRoute, NetworkRouteToken } from './types';
 export { ErrorHandler, setErrorLogger, setErrorClassifier, createSafeErrorLogger, defaultErrorLogger, reportErrorLoggerFailure } from './errorHandler';
 export type { ErrorLogger, ErrorClassifier } from './errorHandler';
 export { getErrorOccurrenceId } from './errorOccurrence';

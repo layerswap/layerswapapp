@@ -1,5 +1,4 @@
-import { NetworkType, type Network } from '@layerswap/widget-types';
-import KnownInternalNames from '@/knownIds';
+import { NetworkType } from '@layerswap/widget-types';
 import { AddressSelectionMode, type AddressUtilsProvider, type AddressUtilsProviderProps } from '@/types';
 
 export const name = 'Stellar';
@@ -11,10 +10,8 @@ export class StellarAddressUtilsProvider implements AddressUtilsProvider {
     readonly selection = AddressSelectionMode.Networks;
     readonly defaultScope = 'primary' as const;
 
-    supportsNetwork(network: Network): boolean {
-        return network.type === NetworkType.Stellar
-            || KnownInternalNames.Networks.StellarMainnet === network.name
-            || KnownInternalNames.Networks.StellarTestnet === network.name;
+    supportsNetwork(network: { name: string; type: string; token?: unknown }): boolean {
+        return network.type === NetworkType.Stellar;
     }
 
     isValidAddress({ address }: AddressUtilsProviderProps): boolean {

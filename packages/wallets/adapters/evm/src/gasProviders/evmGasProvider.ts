@@ -1,6 +1,4 @@
-import { NetworkType } from '@layerswap/widget-types';
-import { Network, Token } from "@layerswap/widget-types";
-import { GasProvider, GasProps } from "@layerswap/widget-types";
+import { GasProvider, GasProps, NetworkType, LayerswapNetwork, LayerswapToken } from "@layerswap/widget-types";
 import { PublicClient, TransactionSerializedEIP1559, createPublicClient, encodeFunctionData, serializeTransaction, formatUnits, erc20Abi } from "viem";
 import { publicActionsL2 } from 'viem/op-stack'
 import resolveChain from "../evmUtils/resolveChain";
@@ -21,7 +19,7 @@ type ResolvedGas = {
 }
 
 export class EVMGasProvider implements GasProvider {
-    supportsNetwork(network: Network): boolean {
+    supportsNetwork(network: LayerswapNetwork): boolean {
         return network.type === NetworkType.EVM && !!network.token
     }
 
@@ -40,7 +38,7 @@ export class EVMGasProvider implements GasProvider {
 
             const publicClient = createPublicClient({
                 chain: resolveChain(network),
-                transport: resolveFallbackTransport(network.nodes?.length > 0 ? network.nodes : [network.node_url]),
+                transport: resolveFallbackTransport(network.nodes?.length ? network.nodes : [network.node_url]),
             })
 
             const getGas = network?.metadata?.evm_oracle_contract ? getOptimismGas : getEthereumGas
@@ -90,10 +88,10 @@ abstract class getEVMGas {
     protected chainId: number
     protected contract_address: `0x${string}`
     protected account: `0x${string}`
-    protected from: Network
-    protected currency: Token
+    protected from: LayerswapNetwork
+    protected currency: LayerswapToken
     protected destination: `0x${string}`
-    protected nativeToken: Token
+    protected nativeToken: LayerswapToken
     protected transaction?: GasTransaction
     constructor(
         {
@@ -111,10 +109,10 @@ abstract class getEVMGas {
             chainId: number,
             contract_address: `0x${string}`,
             account: `0x${string}`,
-            from: Network,
-            currency: Token,
+            from: LayerswapNetwork,
+            currency: LayerswapToken,
             destination: `0x${string}`,
-            nativeToken: Token,
+            nativeToken: LayerswapToken,
             transaction?: GasTransaction,
         }
     ) {
@@ -221,7 +219,7 @@ class getEthereumGas extends getEVMGas {
         if (!feeAmounts)
             return undefined
 
-        const decimals = NetworkSettings.KnownSettings[this.from.name]?.FeeParsingDecimalPlaces || this.nativeToken?.decimals
+        const decimals = NetworkSettings.KnownSettings[Number(this.from.chain_id)]?.FeeParsingDecimalPlaces || this.nativeToken?.decimals
         const gas = Number(formatUnits(feeAmounts.estimatedFee, decimals))
         const maxFee = Number(formatUnits(feeAmounts.maximumFee, decimals))
         const reserve = Number(formatUnits(accountBalanceReserve, decimals))
@@ -242,7 +240,7 @@ export default class getOptimismGas extends getEVMGas {
 
     client: any = createPublicClient({
         chain: this.chain,
-        transport: resolveFallbackTransport(this.from.nodes?.length > 0 ? this.from.nodes : [this.from.node_url]),
+        transport: resolveFallbackTransport(this.from.nodes?.length ? this.from.nodes : [this.from.node_url]),
     }).extend(publicActionsL2())
 
     resolveGas = async () => {

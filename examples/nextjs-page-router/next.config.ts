@@ -16,7 +16,6 @@ const nextConfig: NextConfig = {
     '@layerswap/wallet-ton',
     '@layerswap/wallet-tron',
     '@layerswap/wallet-imtbl-passport',
-    '@layerswap/wallet-module-loopring',
     '@layerswap/wallets',
     '@layerswap/utils',
   ],

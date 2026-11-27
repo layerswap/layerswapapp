@@ -7,7 +7,7 @@ type Props = {
     address: string;
     size?: number;
     className?: string;
-    network?: { name: string } | null;
+    network?: { name: string; type: string } | null;
     providerName?: string;
 };
 

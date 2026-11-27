@@ -26,7 +26,7 @@ function createRegistry() {
     const descriptors = { isWalletProviderDescriptor: provider => 'loadProvider' in provider }
     const walletContext = loadSource(`${wallets}context/WalletProvidersRegistryProvider.tsx`, {
         react: React,
-        '@layerswap/utils': { setNetworkAdapter() {} },
+        '@layerswap/utils': { registerAddressProviders() {} },
         '@/types/wallet': descriptors,
         '@/lib/walletConnect/walletProvidersRegistry': loadSource(`${wallets}lib/walletConnect/walletProvidersRegistry.ts`),
         '@/lib/walletConnect/descriptorStubStore': loadSource(`${wallets}lib/walletConnect/descriptorStubStore.ts`, {
@@ -71,7 +71,7 @@ function createRegistry() {
     })
     const wrap = (walletProviders, children) => createElement(
         walletContext.WalletProvidersRegistryProvider,
-        { walletProviders, networks: [], networkAdapter: {} },
+        { walletProviders, networks: [] },
         createElement(context.ResolverProviders, { walletProviders }, children),
     )
     const root = createRoot(document.createElement('div'))
@@ -80,7 +80,7 @@ function createRegistry() {
         useGasless,
         renderServer: (walletProviders, children) => renderToString(wrap(walletProviders, children)),
         render: (walletProviders, children) => act(() => root.render(
-            createElement(walletContext.WalletProvidersRegistryProvider, { walletProviders, networks: [], networkAdapter: {} },
+            createElement(walletContext.WalletProvidersRegistryProvider, { walletProviders, networks: [] },
                 createElement(context.ResolverProviders, { walletProviders }, children)),
         )),
         unmount: () => act(() => root.unmount()),

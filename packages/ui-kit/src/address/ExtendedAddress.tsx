@@ -1,9 +1,9 @@
 'use client'
-import { NetworkType, type Network } from '@layerswap/widget-types';
+import { type LayerswapNetwork } from '@layerswap/widget-types';
 import { FC, MouseEventHandler, ReactNode, SVGProps, useCallback, useMemo, useState } from "react"
 import { Copy, Check, ChevronDown, Unplug, Info, SquareArrowOutUpRight, Trash2, BookmarkPlus } from "lucide-react";
 import clsx from "clsx";
-import { Address, getExplorerUrl, getNetworkAdapter, shortenString } from "@layerswap/utils";
+import { Address, getExplorerUrl, shortenString } from "@layerswap/utils";
 import { useCopyClipboard, useWindowDimensions } from "@layerswap/utils/react";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
@@ -28,7 +28,7 @@ type ExtendedAddressBaseProps = {
     onSaveRequest?: () => void;
 }
 type ExtendedAddressProps = ExtendedAddressBaseProps
-    & { network?: Network, providerName?: string }
+    & { network?: LayerswapNetwork, providerName?: string }
 
 export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, onRemove, showDetails = false, title, description, logo: Logo, onPopoverOpenChange, onTooltipOpenChange, shouldShowChevron = true, onSaveRequest }) => {
     if (!network && !providerName) {
@@ -39,7 +39,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, pr
     return <AddressDetailsPopover address={address} network={network!} providerName={providerName!} isForCurrency={isForCurrency} onDisconnect={onDisconnect} onRemove={onRemove} showDetails={showDetails} title={title} description={description} logo={Logo} onPopoverOpenChange={onPopoverOpenChange} onTooltipOpenChange={onTooltipOpenChange} shouldShowChevron={shouldShowChevron} onSaveRequest={onSaveRequest}>{children}</AddressDetailsPopover>
 }
 type AddressDetailsPopoverProps = ExtendedAddressBaseProps
-    & ({ network: Network, providerName?: string } | { network?: Network, providerName: string })
+    & ({ network: LayerswapNetwork, providerName?: string } | { network?: LayerswapNetwork, providerName: string })
 
 const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, onRemove, showDetails = false, title, description, logo: Logo, onPopoverOpenChange, onTooltipOpenChange, shouldShowChevron = true, onSaveRequest }) => {
     const adapters = useWalletListAdapters()
@@ -68,7 +68,7 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
         return false
     }, [addr.full, network]);
 
-    const saveNetworkType = network?.type ?? (providerName ? providerName.toLowerCase() as NetworkType : undefined)
+    const saveNetworkType = network?.type ?? (providerName ? providerName.toLowerCase() : undefined)
     const canSave = !isForCurrency && !displayName && !!saveNetworkType && (!!onSaveRequest || !!adapters.renderSaveForm)
 
     // Resolver for action buttons
@@ -83,7 +83,7 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
             ...((network && isAddressValid) ? [{
                 title: 'View',
                 Icon: SquareArrowOutUpRight,
-                href: getExplorerUrl(getNetworkAdapter()?.getAccountExplorerUrl(network) ?? network.account_explorer_template, addr.full)
+                href: getExplorerUrl(network.account_explorer_template, addr.full)
             }] : []),
             ...(canSave && !saving ? [{
                 title: 'Save',

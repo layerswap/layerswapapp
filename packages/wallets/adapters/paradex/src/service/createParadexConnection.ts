@@ -1,6 +1,7 @@
+import type { LayerswapNetwork } from '@layerswap/widget-types';
 import type { WalletConnectionProviderProps, WalletConnectionStore } from "@layerswap/wallet-core/types"
 import { connectModalStore, createMemoizedConnectionStore } from "@layerswap/wallet-core"
-import { asSourceSupportedNetworks, autofillSupportedNetworks, id, name, ParadexConnectionService, withdrawalSupportedNetworks, } from './ParadexConnectionService'
+import { id, name, ParadexConnectionService } from './ParadexConnectionService'
 import { useParadexActiveStore } from './paradexActiveStore'
 import { paradexAccountStore } from './paradexAccountStore'
 
@@ -8,14 +9,13 @@ import { paradexAccountStore } from './paradexAccountStore'
  * Vanilla external-store factory for the Paradex wallet connection. Replaces
  * the old `useParadexConnection` hook + `ActiveParadexAccount` React context.
  */
-export function createParadexConnection<Network>(
+export function createParadexConnection<Network extends LayerswapNetwork = LayerswapNetwork>(
     initialProps: WalletConnectionProviderProps<Network>,
 ): WalletConnectionStore<Network> {
     let networks = initialProps.networks
-    let networkAdapter = initialProps.networkAdapter
     const peerProviders = initialProps.walletProvidersRegistry
     const paradexConnectionService = new ParadexConnectionService<Network>()
-    paradexConnectionService.setNetworks(networks, networkAdapter)
+    paradexConnectionService.setNetworks(networks)
     paradexConnectionService.configure({
         setSelectedConnector: connectModalStore.setSelectedConnector,
         getProviderById: id => peerProviders?.getById(id),
@@ -39,9 +39,9 @@ export function createParadexConnection<Network>(
             availableConnectors: paradexConnectionService.getAvailableConnectors(),
             additionalConnectors: paradexConnectionService.getAdditionalConnectors(),
 
-            withdrawalSupportedNetworks,
-            autofillSupportedNetworks,
-            asSourceSupportedNetworks,
+            withdrawalSupportedNetworks: paradexConnectionService.getSupportedNetworks(),
+            autofillSupportedNetworks: paradexConnectionService.getSupportedNetworks(),
+            asSourceSupportedNetworks: paradexConnectionService.getSupportedNetworks(),
 
             name,
             id,
@@ -61,8 +61,7 @@ export function createParadexConnection<Network>(
         },
         onUpdateProps: nextProps => {
             networks = nextProps.networks
-            networkAdapter = nextProps.networkAdapter
-            paradexConnectionService.setNetworks(networks, networkAdapter)
+            paradexConnectionService.setNetworks(networks)
         },
     })
 }

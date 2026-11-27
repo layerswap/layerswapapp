@@ -19,7 +19,6 @@ const { resolveEVMGasPolicy } = await import('../dist/esm/gasProviders/evmGasPol
 const { resolveEVMFeeData } = await import('../dist/esm/gasProviders/resolveEVMFeeData.js')
 const { default: resolveChain } = await import('../dist/esm/evmUtils/resolveChain.js')
 const { default: NetworkSettings } = await import('../dist/esm/NetworkSettings.js')
-const { KnownInternalNames } = await import('@layerswap/utils')
 
 // Snapshot of the former NetworkSettings overrides. These must not change
 // merely because fee settings move from network names into chain policies.
@@ -31,7 +30,7 @@ const migrated = [
 ]
 const network = chainId => ({
     chain_id: String(chainId), name: `CUSTOM_NAME_${chainId}`, display_name: 'Test network',
-    token: { symbol: 'ETH', decimals: 18 }, nodes: [], node_url: 'https://rpc.example',
+    token: { symbol: 'ETH', asset: 'ETH', decimals: 18 }, nodes: [], node_url: 'https://rpc.example',
 })
 
 for (const [chainId, multiplier] of migrated) {
@@ -54,9 +53,9 @@ test('unknown chains retain the default policy', () => {
 
 test('unit-conversion and ordering overrides remain in NetworkSettings', () => {
     const settings = NetworkSettings.KnownSettings
-    assert.equal(settings[KnownInternalNames.Networks.EthereumSepolia].ChainOrder, 1)
-    assert.equal(settings[KnownInternalNames.Networks.TempoMainnet].FeeParsingDecimalPlaces, 18)
-    assert.equal(settings[KnownInternalNames.Networks.TempoTestnet].FeeParsingDecimalPlaces, 18)
+    assert.equal(settings[11155111].ChainOrder, 1)
+    assert.equal(settings[4217].FeeParsingDecimalPlaces, 18)
+    assert.equal(settings[42431].FeeParsingDecimalPlaces, 18)
 })
 
 const feeClient = chainId => createPublicClient({

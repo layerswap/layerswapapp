@@ -11,10 +11,11 @@ import { SaveToBookNameForm } from "@/components/AddressBook/SaveToBookInline"
 const useWidgetWalletBalance: WalletListAdapters["useWalletBalance"] = ({ address, network, token }) => {
     const { networks } = useSettingsState()
     const balanceNetwork = token && network ? networks.find(n => n.name === network.name && n.tokens.some(t => t.symbol === token.symbol)) : undefined
+    const balanceToken = balanceNetwork?.tokens.find(t => t.symbol === token?.symbol)
     const { balances, isLoading } = useBalance(address, balanceNetwork)
     const walletBalance = balances?.find(b => b?.token === token?.symbol)
     return {
-        formatted: walletBalance?.amount !== undefined ? truncateDecimals(walletBalance.amount, token?.precision) : undefined,
+        formatted: walletBalance?.amount !== undefined ? truncateDecimals(walletBalance.amount, balanceToken?.precision) : undefined,
         isLoading
     }
 }

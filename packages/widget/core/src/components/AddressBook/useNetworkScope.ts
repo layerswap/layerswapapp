@@ -1,4 +1,3 @@
-import { NetworkType } from '@layerswap/widget-types';
 import { useMemo, useState } from 'react'
 import { useSettingsState } from '@/context/settings'
 import { classifyAddress, addressTypeLabel, AddressSelectionMode, defaultNetworkScope } from '@layerswap/utils'
@@ -10,7 +9,7 @@ const validKeys = (keys: string[] | undefined, options: { key: string }[]) => {
     return (keys ?? []).filter(key => optionKeys.includes(key))
 }
 
-export function useNetworkScope(address: string, initial?: Partial<SavedAddress>, availableNetworks?: string[]): { selector: NetworkScopeSelectorProps | null, entry: Pick<SavedAddress, 'networkTypes' | 'networks'>, provider: NetworkType | undefined } {
+export function useNetworkScope(address: string, initial?: Partial<SavedAddress>, availableNetworks?: string[]): { selector: NetworkScopeSelectorProps | null, entry: Pick<SavedAddress, 'networkTypes' | 'networks'>, provider: string | undefined } {
     const { networks } = useSettingsState()
     const [picked, setPicked] = useState<{ signature: string, keys: string[] } | null>(null)
 
@@ -48,7 +47,7 @@ export function useNetworkScope(address: string, initial?: Partial<SavedAddress>
                     selectorProps: { sectionLabel: 'Network', masterLabel: '', overlapping: true, options },
                     defaults: [],
                     saved: initial?.networkTypes,
-                    toEntry: keys => ({ networkTypes: keys as NetworkType[] }),
+                    toEntry: keys => ({ networkTypes: keys }),
                 }
             }
             default:

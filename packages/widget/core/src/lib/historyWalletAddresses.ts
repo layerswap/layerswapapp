@@ -6,6 +6,7 @@ export const MAX_HISTORY_ADDRESSES = 6
 type NetworkForHistoryAddress = {
     chain_id?: string | number | null
     name: string
+    type: string
 }
 
 export type HistoryWalletAddress = {

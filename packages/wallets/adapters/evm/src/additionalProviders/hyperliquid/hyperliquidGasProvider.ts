@@ -1,7 +1,5 @@
-import { NetworkType } from '@layerswap/widget-types';
 import { HYPERLIQUID_USDC_SYMBOL, HYPERLIQUID_WITHDRAW_HEADROOM } from "./constants";
-import { Network } from "@layerswap/widget-types";
-import { GasProps, GasProvider, GasWithToken } from "@layerswap/widget-types";
+import { GasProps, GasProvider, GasWithToken, NetworkType, LayerswapNetwork } from "@layerswap/widget-types";
 
 /**
  * Headroom HL reserves for the `sendToEvmWithData` HyperCore-side processing, in
@@ -12,7 +10,7 @@ import { GasProps, GasProvider, GasWithToken } from "@layerswap/widget-types";
  * flow's source-pool `required` math stay in lockstep.
  */
 export class HyperliquidGasProvider implements GasProvider {
-    supportsNetwork(network: Network): boolean {
+    supportsNetwork(network: LayerswapNetwork): boolean {
         return network.type === NetworkType.Hyperliquid
     }
 

@@ -1,5 +1,4 @@
-import { Network, NetworkType } from "@layerswap/widget-types";
-import { TransferProvider, TransferProps } from "@layerswap/widget-types";
+import { TransferProvider, TransferProps, LayerswapNetwork, NetworkType } from "@layerswap/widget-types";
 import { Account, Provider } from '@fuel-ts/account'
 import { Address } from '@fuel-ts/address'
 import { transactionBuilder } from "./transactionBuilder"
@@ -9,7 +8,7 @@ import { ensureFuelChain } from "../service/ensureFuelChain"
 
 export function createFuelTransfer(): TransferProvider {
     return {
-        supportsNetwork(network: Network): boolean {
+        supportsNetwork(network: LayerswapNetwork): boolean {
             return network.type === NetworkType.Fuel
         },
 

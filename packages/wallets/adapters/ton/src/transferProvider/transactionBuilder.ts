@@ -1,8 +1,8 @@
 import { Address, JettonMaster, beginCell, toNano } from '@ton/ton'
-import { Token } from "@layerswap/widget-types";
+import { LayerswapToken } from "@layerswap/widget-types";
 import { createTonClient } from '../client';
 
-export const transactionBuilder = async (amount: number, token: Token, depositAddress: string, sourceAddress: string, callData: string, apiKey?: string) => {
+export const transactionBuilder = async (amount: number, token: LayerswapToken, depositAddress: string, sourceAddress: string, callData: string, apiKey?: string) => {
     const parsedCallData = JSON.parse(callData)
 
     if (token.contract) {

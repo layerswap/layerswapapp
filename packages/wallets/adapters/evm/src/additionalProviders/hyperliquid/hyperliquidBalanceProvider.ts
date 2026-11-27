@@ -1,5 +1,4 @@
-import { NetworkType } from '@layerswap/widget-types';
-import { BalanceProvider, TokenBalance } from "@layerswap/widget-types";
+import { BalanceProvider, TokenBalance, NetworkType } from "@layerswap/widget-types";
 import { resolveHyperliquidNodeUrl, HYPERLIQUID_USDC_SYMBOL } from "./constants";
 import { HyperliquidClient } from "./hyperliquidClient";
 import { formatUnits } from "viem";
@@ -22,8 +21,8 @@ export class HyperliquidBalanceProvider extends BalanceProvider {
         try {
             // Route the settings `node_url` through the same allowlist the
             // withdrawal flow uses — an attacker-controlled override could
-            // otherwise feed forged balances here. Falls back to the route default.
-            const nodeUrl = resolveHyperliquidNodeUrl(network.name, network.node_url);
+            // otherwise feed forged balances here. Falls back to the environment default.
+            const nodeUrl = resolveHyperliquidNodeUrl(network.node_url);
             if (!nodeUrl) return;
 
             const balances: TokenBalance[] = [];

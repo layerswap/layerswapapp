@@ -1,11 +1,9 @@
-import { KnownInternalNames } from "@layerswap/utils";
-import { Network } from "@layerswap/widget-types";
-import { TransferProvider } from "@layerswap/widget-types";
+import { TransferProvider, NetworkType, LayerswapNetwork } from "@layerswap/widget-types";
 import { useConfig } from "wagmi"
 import { createPolymarketTransferProvider } from "./createPolymarketTransferProvider"
 
-const isPolymarketNetwork = (network: Network): boolean =>
-    network.name === KnownInternalNames.Networks.PolymarketMainnet
+const isPolymarketNetwork = (network: LayerswapNetwork): boolean =>
+    network.type === NetworkType.Polymarket
 
 export function usePolymarketTransfer(): TransferProvider {
     const config = useConfig()

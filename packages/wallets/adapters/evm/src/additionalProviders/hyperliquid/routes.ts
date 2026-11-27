@@ -34,8 +34,8 @@ export type HyperliquidRoute = {
     destinations: HyperliquidDestination[]
 }
 
-const MAINNET_NODE = "https://api.hyperliquid.xyz"
-const TESTNET_NODE = "https://api.hyperliquid-testnet.xyz"
+export const MAINNET_NODE = "https://api.hyperliquid.xyz"
+export const TESTNET_NODE = "https://api.hyperliquid-testnet.xyz"
 
 /** Avalanche C-Chain CCTP domain. */
 const AVALANCHE_CCTP_DOMAIN = 1

@@ -1,11 +1,10 @@
-import { Network } from "@layerswap/widget-types";
-import { GaslessProvider, GaslessSignParams } from "@layerswap/widget-types";
+import { GaslessProvider, GaslessSignParams, LayerswapNetwork } from "@layerswap/widget-types";
 import { getAccount, Config } from '@wagmi/core'
 import { resolveWalletConnector } from '../service/resolveWalletConnector'
 
 export function createEVMGaslessProvider(
     config: Config,
-    supportsNetwork: (network: Network) => boolean
+    supportsNetwork: (network: LayerswapNetwork) => boolean
 ): GaslessProvider {
     return {
         supportsNetwork,

@@ -1,8 +1,6 @@
-import { NetworkType } from '@layerswap/widget-types';
-import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
+import { NetworkType, type InternalConnector, type Wallet, type LayerswapNetwork } from '@layerswap/widget-types';
 import type { WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types";
 import { walletIconResolver } from "@layerswap/wallet-core";
-import type { AppNetworkAdapter } from "@layerswap/utils";
 import type { Connector } from '@starknet-react/core'
 import { name as PROVIDER_NAME, id as PROVIDER_ID } from '../constants'
 import { resolveStarknetWalletIcon } from '../utils'
@@ -145,33 +143,31 @@ function toStarknetChainHex(chainId: string | null | undefined): string | undefi
     return `0x${hex}`
 }
 
-export class StarknetConnectionService<Network> implements WalletConnectionService<never, Network> {
+export class StarknetConnectionService<Network extends LayerswapNetwork = LayerswapNetwork> implements WalletConnectionService<never, Network> {
     private _networks: Network[] = []
-    private _networkAdapter: AppNetworkAdapter<Network> | undefined
     private _networksKey = ''
     private _restoreTimer: number | undefined
     private _restoringStoredWallets = false
     private _restoreAttempts = 0
     private readonly _maxRestoreAttempts = 20
 
-    setNetworks(networks: Network[], networkAdapter: AppNetworkAdapter<Network>): void {
-        const key = networks.map(network => networkAdapter.getId(network)).join('|')
+    setNetworks(networks: Network[]): void {
+        const key = networks.map(network => network.name).join('|')
         if (this._networksKey === key) return
         this._networks = networks
-        this._networkAdapter = networkAdapter
         this._networksKey = key
         this.requestStoredWalletHydration()
     }
 
     getStarknetNetwork(): StarknetNetwork | undefined {
-        const network = this._networks.find(item => this._networkAdapter?.getNetworkType(item) === NetworkType.Starknet)
-        if (!network || !this._networkAdapter) return undefined
+        const network = this._networks.find(item => item.type === NetworkType.Starknet)
+        if (!network) return undefined
         return {
-            id: this._networkAdapter.getId(network),
-            displayName: this._networkAdapter.getDisplayName(network),
-            chainId: this._networkAdapter.getChainId(network),
-            rpcUrl: this._networkAdapter.getRpcUrls(network)[0],
-            icon: this._networkAdapter.getIcon(network),
+            id: network.name,
+            displayName: network.display_name,
+            chainId: network.chain_id,
+            rpcUrl: (network.nodes?.length ? network.nodes : [network.node_url])[0],
+            icon: network.logo,
         }
     }
 
@@ -418,8 +414,6 @@ export class StarknetConnectionService<Network> implements WalletConnectionServi
     }
 
     private getSupportedNetworks(): string[] {
-        return this._networkAdapter
-            ? this._networks.filter(network => this._networkAdapter?.getNetworkType(network) === NetworkType.Starknet).map(network => this._networkAdapter!.getId(network))
-            : []
+        return this._networks.filter(network => network.type === NetworkType.Starknet).map(network => network.name)
     }
 }

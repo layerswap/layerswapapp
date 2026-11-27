@@ -1,6 +1,6 @@
 # @layerswap/wallet-core
 
-Headless foundation of the Layerswap wallet stack. Owns the wallet contracts (`WalletProvider`, `WalletConnectionStore`, `WalletConnectionService`, `WalletProviderDescriptor`, `AppNetworkAdapter`), the provider registry and descriptor-hydration machinery, WalletConnect plumbing (registry connectors, deep links, dynamic metadata), EIP-6963 detection, and string-based wallet icon resolution.
+Headless foundation of the Layerswap wallet stack. Owns the wallet contracts (`WalletProvider`, `WalletConnectionStore`, `WalletConnectionService`, `WalletProviderDescriptor`), the provider registry and descriptor-hydration machinery, WalletConnect plumbing (registry connectors, deep links, dynamic metadata), EIP-6963 detection, and string-based wallet icon resolution.
 
 Contains no UI. React appears only as a peer dependency for the headless context providers (`WalletProvidersRegistryProvider`, `DescriptorHydrationBoundary`). The visual layer (connect modal, connectors list) lives in `@layerswap/ui-kit`, which depends on this package — never the other way around.
 
@@ -13,28 +13,6 @@ Chain packages (`@layerswap/wallet-evm`, `@layerswap/wallet-svm`, …) must depe
 
 ## Host network types
 
-`AppNetworkAdapter<Network>.getNetworkType(network)` returns the shared `NetworkType` from `@layerswap/widget-types`. Any package can check EVM with `adapter.getNetworkType(network) === NetworkType.EVM`, or Solana with `NetworkType.Solana`.
+Pass `LayerswapNetwork` objects from `@layerswap/widget-types` to the registry. Map host network fields once at the integration boundary; `type` identifies the family (`NetworkType.EVM`, `NetworkType.Solana`, etc.) and `name` remains the host's identifier. Layerswap's own `Network` extends this shared model and can be passed directly.
 
-Layerswap already uses this enum, so its getter returns `network.type`. Train maps its existing enum in the app adapter:
-
-```ts
-import { NetworkTypes, type ExtendedNetwork } from '@/Models/Network'
-import { NetworkType } from '@layerswap/widget-types'
-
-const packageTypes = new Map<string, NetworkType>([
-    [NetworkTypes.EVM, NetworkType.EVM],
-    [NetworkTypes.Solana, NetworkType.Solana],
-    [NetworkTypes.Starknet, NetworkType.Starknet],
-    [NetworkTypes.TON, NetworkType.TON],
-    [NetworkTypes.Fuel, NetworkType.Fuel],
-])
-const getNetworkType = (network: ExtendedNetwork): NetworkType | undefined => {
-    const normalizedType = network.networkType.toLowerCase()
-    if (normalizedType === 'tron') return NetworkType.Tron
-    if (normalizedType === 'bitcoin') return NetworkType.Bitcoin
-    if (normalizedType === 'fuel') return NetworkType.Fuel
-    return packageTypes.get(network.networkType)
-}
-```
-
-Replace the adapter's `is*Network` methods with `getNetworkType`. Keep its other getters and optional address validation/formatting functions. Unregistered ecosystems return `undefined`. Existing provider factory generics are unchanged, so Train can keep calls such as `createTronProvider<ExtendedNetwork>()`.
+A wallet package for a custom family declares `supportedNetworkTypes: ['aztec']` on its descriptor and supplies an `addressProvider` there, outside `loadProvider`, so address validation works before hydration. The provider must not import the chain SDK. It implements `AddressUtilsProvider` from `@layerswap/utils`; registration deduplicates by `providerName`, keeping the first provider. Without an address provider, addresses for unknown types are invalid.

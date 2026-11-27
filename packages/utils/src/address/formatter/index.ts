@@ -2,7 +2,7 @@ import { addressUtilsResolver } from "@/address/instance";
 
 type AddressFormatProps = {
     address: string;
-    network?: { name: string } | null;
+    network?: { name: string; type: string } | null;
     providerName?: string
 }
 

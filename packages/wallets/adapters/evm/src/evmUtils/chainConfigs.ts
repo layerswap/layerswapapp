@@ -1,8 +1,7 @@
-import { NetworkType } from '@layerswap/widget-types';
+import { NetworkType, type LayerswapNetwork } from '@layerswap/widget-types';
 import NetworkSettings from "../NetworkSettings";
-import type { AppNetworkAdapter } from "@layerswap/utils"
 import { Chain, fallback, http } from 'viem';
-import { resolveAdapterChain } from "./resolveChain";
+import resolveChain from "./resolveChain";
 
 const chainsToFilter = [70700, 70701]
 
@@ -11,18 +10,18 @@ export type EvmChainsConfig = {
     transports: Record<number, ReturnType<typeof fallback> | ReturnType<typeof http>>
 }
 
-export function getEvmChainsConfig<Network>(networks: Network[], networkAdapter: AppNetworkAdapter<Network>): EvmChainsConfig {
+export function getEvmChainsConfig<Network extends LayerswapNetwork = LayerswapNetwork>(networks: Network[]): EvmChainsConfig {
     const isChain = (c: Chain | undefined): c is Chain => c != undefined
 
     const settingsChains = networks
         .slice()
-        .sort((a, b) => (NetworkSettings.KnownSettings[networkAdapter.getId(a)]?.ChainOrder || Number(networkAdapter.getChainId(a))) - (NetworkSettings.KnownSettings[networkAdapter.getId(b)]?.ChainOrder || Number(networkAdapter.getChainId(b))))
-        .filter(network => networkAdapter.getNetworkType(network) === NetworkType.EVM
-            && networkAdapter.getRpcUrls(network).length > 0
-            && networkAdapter.getNativeCurrency(network)
-            && networkAdapter.getChainId(network) && !chainsToFilter.includes(Number(networkAdapter.getChainId(network)))
+        .sort((a, b) => (NetworkSettings.KnownSettings[Number(a.chain_id)]?.ChainOrder || Number(a.chain_id)) - (NetworkSettings.KnownSettings[Number(b.chain_id)]?.ChainOrder || Number(b.chain_id)))
+        .filter(network => network.type === NetworkType.EVM
+            && ((network.nodes?.length ?? 0) > 0 || !!network.node_url)
+            && network.token
+            && network.chain_id && !chainsToFilter.includes(Number(network.chain_id))
         )
-        .map(network => resolveAdapterChain(network, networkAdapter))
+        .map(network => resolveChain(network))
         .filter(isChain) as Chain[]
 
     const transports: Record<number, ReturnType<typeof fallback> | ReturnType<typeof http>> = {}

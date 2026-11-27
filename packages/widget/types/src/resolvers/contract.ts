@@ -1,6 +1,6 @@
-import type { Network } from '../types';
+import type { LayerswapNetwork } from '../types';
 
 export interface ContractAddressCheckerProvider {
-    supportsNetwork(network: Network): boolean;
-    isContractAddress(address: string, network: Network): Promise<boolean>;
+    supportsNetwork(network: LayerswapNetwork): boolean;
+    isContractAddress(address: string, network: LayerswapNetwork): Promise<boolean>;
 }

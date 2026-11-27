@@ -1,11 +1,10 @@
 import WatchdogAbi from './jsons/FUELWATCHDOG.json'
-import { Network, NetworkType } from "@layerswap/widget-types";
-import { GasProvider, GasProps } from "@layerswap/widget-types";
+import { GasProvider, GasProps, LayerswapNetwork, NetworkType } from "@layerswap/widget-types";
 import { formatUnits } from "@layerswap/utils";
 import { ErrorHandler } from "@layerswap/widget-types";
 
 export class FuelGasProvider implements GasProvider {
-    supportsNetwork(network: Network): boolean {
+    supportsNetwork(network: LayerswapNetwork): boolean {
         return network.type === NetworkType.Fuel
     }
 

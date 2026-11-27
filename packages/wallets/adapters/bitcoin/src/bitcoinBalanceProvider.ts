@@ -1,5 +1,5 @@
-import { TokenBalance, BalanceProvider } from "@layerswap/widget-types";
-import { KnownInternalNames, retry } from "@layerswap/utils";
+import { TokenBalance, BalanceProvider, NetworkType } from "@layerswap/widget-types";
+import { retry, AppSettings } from "@layerswap/utils";
 import axios from "axios";
 
 interface Utxo {
@@ -11,7 +11,7 @@ interface Utxo {
 
 export class BitcoinBalanceProvider extends BalanceProvider {
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
-        return KnownInternalNames.Networks.BitcoinMainnet.includes(network.name) || KnownInternalNames.Networks.BitcoinTestnet.includes(network.name)
+        return network.type === NetworkType.Bitcoin
     }
 
     fetchBalance: BalanceProvider['fetchBalance'] = async (address, network, options) => {
@@ -22,7 +22,7 @@ export class BitcoinBalanceProvider extends BalanceProvider {
 
         try {
             const utxos = await retry(
-                async () => await fetchUtxos(address, network.name, options?.timeoutMs),
+                async () => await fetchUtxos(address, options?.timeoutMs),
                 options?.retryCount ?? 3,
                 500
             )
@@ -49,8 +49,8 @@ export class BitcoinBalanceProvider extends BalanceProvider {
     }
 }
 
-async function fetchUtxos(address: string, networkName: string, timeoutMs?: number): Promise<Utxo[]> {
-    const url = `https://mempool.space${networkName.toLowerCase().includes('testnet') ? '/testnet' : ''}/api/address/${address}/utxo`;
+async function fetchUtxos(address: string, timeoutMs?: number): Promise<Utxo[]> {
+    const url = `https://mempool.space${AppSettings.isTestnet() ? '/testnet' : ''}/api/address/${address}/utxo`;
     //TODO: use fetch and unisntall axios
     const utxosData = await axios.get<Utxo[]>(url, { timeout: timeoutMs ?? 60000 })
     const utxos = utxosData.data;

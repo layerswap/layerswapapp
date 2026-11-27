@@ -1,16 +1,12 @@
-import { BalanceProvider, NetworkType, type Network, type NetworkWithTokens, type Token, type TokenBalance } from '@layerswap/widget-types';
+import { BalanceProvider, NetworkType, type LayerswapNetwork, type LayerswapToken, type TokenBalance } from '@layerswap/widget-types';
 import { multicall, getBalance, GetBalanceReturnType, createConfig } from '@wagmi/core'
 import { Chain, PublicClient, erc20Abi } from "viem"
 import resolveChain from "../evmUtils/resolveChain"
 import BalanceGetterAbi from "../jsons/BALANCEGETTERABI.json"
-import { KnownInternalNames } from "@layerswap/utils";
 import { resolveFallbackTransport } from "../evmUtils/resolveTransports"
 import { toSafeBalanceNumber } from "./toSafeBalanceNumber"
 
-const nativeBalanceSkip = [
-    KnownInternalNames.Networks.TempoMainnet,
-    KnownInternalNames.Networks.TempoTestnet
-]
+const nativeBalanceSkip = [4217, 42431]
 
 export class EVMBalanceProvider extends BalanceProvider {
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
@@ -36,12 +32,12 @@ export class EVMBalanceProvider extends BalanceProvider {
         return balances
     }
 
-    getBalances = async (address: string, chain: Chain, network: NetworkWithTokens, options?: { timeoutMs?: number, retryCount?: number }): Promise<TokenBalance[] | undefined> => {
+    getBalances = async (address: string, chain: Chain, network: (LayerswapNetwork & { tokens: LayerswapToken[] }), options?: { timeoutMs?: number, retryCount?: number }): Promise<TokenBalance[] | undefined> => {
         try {
             const { createPublicClient } = await import("viem")
             const publicClient = createPublicClient({
                 chain,
-                transport: resolveFallbackTransport(network.nodes, { retryCount: options?.retryCount, timeoutMs: options?.timeoutMs })
+                transport: resolveFallbackTransport(network.nodes?.length ? network.nodes : [network.node_url], { retryCount: options?.retryCount, timeoutMs: options?.timeoutMs })
             })
 
             let erc20Balances: TokenBalance[] = []
@@ -56,7 +52,7 @@ export class EVMBalanceProvider extends BalanceProvider {
                 retryCount: options?.retryCount
             });
             const nativeToken = network.token
-            const skipNativeBalance = nativeBalanceSkip.includes(network.name)
+            const skipNativeBalance = nativeBalanceSkip.includes(Number(network.chain_id))
 
             const nativePromise = skipNativeBalance
                 ? Promise.resolve(null)
@@ -82,7 +78,7 @@ export class EVMBalanceProvider extends BalanceProvider {
         }
     }
 
-    contractGetBalances = async (address: string, chain: Chain, network: NetworkWithTokens, options?: { timeoutMs?: number, retryCount?: number }): Promise<TokenBalance[] | null> => {
+    contractGetBalances = async (address: string, chain: Chain, network: (LayerswapNetwork & { tokens: LayerswapToken[] }), options?: { timeoutMs?: number, retryCount?: number }): Promise<TokenBalance[] | null> => {
         if (!network) throw new Error("Network is required for contract get balances")
 
         const contract = network.metadata?.evm_balance_viewer_contract
@@ -91,7 +87,7 @@ export class EVMBalanceProvider extends BalanceProvider {
         const { createPublicClient } = await import("viem")
         const publicClient = createPublicClient({
             chain,
-            transport: resolveFallbackTransport(network.nodes, { retryCount: options?.retryCount, timeoutMs: options?.timeoutMs })
+            transport: resolveFallbackTransport(network.nodes?.length ? network.nodes : [network.node_url], { retryCount: options?.retryCount, timeoutMs: options?.timeoutMs })
         })
 
         const tokenContracts = network.tokens?.filter(a => a.contract).map(a => a.contract as `0x${string}`)
@@ -138,7 +134,7 @@ export class EVMBalanceProvider extends BalanceProvider {
 
     resolveERC20Balances = (
         multicallRes: ERC20ContractRes[],
-        network: NetworkWithTokens,
+        network: (LayerswapNetwork & { tokens: LayerswapToken[] }),
     ): TokenBalance[] | null => {
         const assets = network?.tokens?.filter(a => a.contract)
         if (!assets)
@@ -163,8 +159,8 @@ export class EVMBalanceProvider extends BalanceProvider {
     }
 
     resolveBalance = (
-        network: Network,
-        token: Token,
+        network: LayerswapNetwork,
+        token: LayerswapToken,
         balanceData: NativeBalanceResponse
     ) => {
 
@@ -196,8 +192,8 @@ export type ERC20ContractRes = ({
 
 type GetBalanceArgs = {
     address: string,
-    network: Network,
-    assets: Token[],
+    network: LayerswapNetwork,
+    assets: LayerswapToken[],
     publicClient: PublicClient,
     hasMulticall: boolean,
     timeoutMs?: number,
@@ -230,7 +226,7 @@ export const getErc20Balances = async ({
             const config = createConfig({
                 chains: [chain],
                 transports: {
-                    [chain.id]: resolveFallbackTransport(network.nodes, { retryCount, timeoutMs })
+                    [chain.id]: resolveFallbackTransport(network.nodes?.length ? network.nodes : [network.node_url], { retryCount, timeoutMs })
                 }
             })
 
@@ -284,7 +280,7 @@ type NativeBalanceResponse = (GetBalanceReturnType & {
     error: string
 })
 
-export const getTokenBalance = async (address: `0x${string}`, network: Network, contract?: `0x${string}` | null, timeoutMs?: number, retryCount?: number): Promise<NativeBalanceResponse | null> => {
+export const getTokenBalance = async (address: `0x${string}`, network: LayerswapNetwork, contract?: `0x${string}` | null, timeoutMs?: number, retryCount?: number): Promise<NativeBalanceResponse | null> => {
 
     try {
         const chain = resolveChain(network)
@@ -292,7 +288,7 @@ export const getTokenBalance = async (address: `0x${string}`, network: Network, 
         const config = createConfig({
             chains: [chain],
             transports: {
-                [chain.id]: resolveFallbackTransport(network.nodes, { retryCount, timeoutMs })
+                [chain.id]: resolveFallbackTransport(network.nodes?.length ? network.nodes : [network.node_url], { retryCount, timeoutMs })
             }
         })
 

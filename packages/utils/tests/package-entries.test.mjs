@@ -41,16 +41,19 @@ test('the utility root loads and runs without the optional React dependency', as
     }
 })
 
-test('custom Stellar networks validate and normalize addresses through their adapter', async () => {
-    const { AddressUtilsResolver, StellarAddressUtilsProvider } = await import('@layerswap/utils')
-    const resolver = new AddressUtilsResolver([new StellarAddressUtilsProvider()])
-    resolver.setNetworkAdapter({ getNetworkType: network => network.family })
-    const network = { name: 'custom-stellar', family: 'stellar' }
-    const address = 'GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF'
+test('custom address providers register and validate their network type', async () => {
+    const { registerAddressProviders, addressUtilsResolver: resolver, AddressSelectionMode } = await import('@layerswap/utils')
+    const address = 'fake-aztec-address'
+    registerAddressProviders([{
+        providerName: 'test-aztec',
+        networkType: 'aztec',
+        label: 'Aztec',
+        selection: AddressSelectionMode.Auto,
+        supportsNetwork: network => network.type === 'aztec',
+        isValidAddress: props => props.address === address,
+    }])
+    const network = { name: 'custom-aztec', type: 'aztec' }
 
     assert.equal(resolver.isValidAddress({ network, address }), true)
-    assert.equal(resolver.addressFormat({ network, address: ` ${address.toLowerCase()} ` }), address)
-    assert.equal(resolver.isValidAddress({ network, address: `${address.slice(0, -1)}G` }), false)
-    assert.equal(resolver.isValidAddress({ network: { name: 'another-family', family: 'evm' }, address }), false)
-    assert.equal(resolver.isValidAddress({ network: { name: 'STELLAR_MAINNET' }, address }), true)
+    assert.equal(resolver.isValidAddress({ network: { name: 'unknown-network', type: 'unknown' }, address }), false)
 })

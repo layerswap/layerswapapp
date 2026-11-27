@@ -32,16 +32,12 @@ export { StellarAddressUtilsProvider, isValidStellarAddress } from "@/address/pr
 export {
     addressUtilsProviders,
     addressUtilsResolver,
-    setNetworkAdapter,
-    getNetworkAdapter,
+    registerAddressProviders,
     classifyAddress,
     addressTypeLabel,
     addressSelectionType,
     defaultNetworkScope,
 } from "@/address/instance";
-
-export type { AppNetworkAdapter, WalletNativeCurrency } from "@/networkAdapter";
-export { defineNetworkAdapter } from "@/networkAdapter";
 
 export { Address, EmailAddress, isEmailAddress } from "@/address/Address";
 export type { AddressDisplayFormat, AddressFormatOptions } from "@/address/Address";

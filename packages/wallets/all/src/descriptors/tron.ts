@@ -1,9 +1,7 @@
-import KnownInternalNames from "@layerswap/utils/known-ids"
+import { NetworkType } from '@layerswap/widget-types'
 import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
 import { defineWalletDescriptor, type DescriptorNetworkOptions } from "./defineWalletDescriptor"
 import { readStorageJson } from "./persistedSession"
-
-const TRON_NETWORKS = [KnownInternalNames.Networks.TronMainnet, KnownInternalNames.Networks.TronTestnet]
 
 /**
  * Tree-shake-safe stand-in for `createTronProvider`. Defers `tronweb` +
@@ -12,9 +10,10 @@ const TRON_NETWORKS = [KnownInternalNames.Networks.TronMainnet, KnownInternalNam
  * host's entry chunk.
  */
 export function createTronDescriptor(options?: DescriptorNetworkOptions): WalletProviderDescriptor {
-    const supportedNetworks = options?.supportedNetworks ?? TRON_NETWORKS
+    const supportedNetworks = options?.supportedNetworks
     return defineWalletDescriptor({
         id: 'tron',
+        supportedNetworkTypes: [NetworkType.Tron],
         name: 'Tron',
         autofillSupportedNetworks: supportedNetworks,
         withdrawalSupportedNetworks: supportedNetworks,

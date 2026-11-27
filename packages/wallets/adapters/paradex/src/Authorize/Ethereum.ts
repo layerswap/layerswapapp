@@ -4,7 +4,7 @@ import { TypedData } from '../lib/types';
 import { AppSettings } from "@layerswap/utils";
 
 export default async function AuhorizeEthereum(ethersSigner: providers.JsonRpcSigner) {
-    const environment = AppSettings.ApiVersion === 'testnet' ? 'testnet' : 'prod'
+    const environment = AppSettings.isTestnet() ? 'testnet' : 'prod'
     const config = await Paradex.Config.fetch(environment);
 
     function ethersSignerAdapter(signer: typeof ethersSigner) {

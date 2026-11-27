@@ -1,10 +1,9 @@
-import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
+import type { InternalConnector, Wallet, LayerswapNetwork } from '@layerswap/widget-types';
 import type { EnsureWalletChainOptions, RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, WalletConnectionService } from "@layerswap/wallet-core/types";
 import type { WalletModalConnector } from "@layerswap/wallet-core/types"
 import type { Connector } from 'wagmi'
 import { connect, disconnect, getConnections, switchAccount as wagmiSwitchAccount, type Connection, } from '@wagmi/core'
 import { buildDeepLink, clearPendingDynamicWcMetadata, isWalletConnectRegistryConnector, mapConnectError, setDynamicWcMetadata, setPendingMetadataForRegistry, subscribeDisplayUri, type WalletConnectWalletBase } from "@layerswap/wallet-core"
-import type { AppNetworkAdapter } from "@layerswap/utils"
 import { evmConnectorNameResolver, resolveEVMWalletConnectorIcon } from '../evmUtils'
 import { EIP155_NAMESPACE, name as PROVIDER_NAME, HIDDEN_WALLETCONNECT_ID } from '../constants'
 import type { LSConnector } from '../connectors/types'
@@ -33,26 +32,22 @@ type RuntimeDeps = {
     registryConnectors?: readonly WalletConnectWalletBase[]
     recentConnectors?: readonly InternalConnector[]
     isMobilePlatform?: boolean
-    ethereumChainIds?: readonly number[]
 }
 
-export class EvmConnectionService<Network> implements WalletConnectionService<RuntimeDeps, Network> {
+export class EvmConnectionService<Network extends LayerswapNetwork = LayerswapNetwork> implements WalletConnectionService<RuntimeDeps, Network> {
     private _networks: Network[] = []
-    private _networkAdapter: AppNetworkAdapter<Network> | undefined
     private _buckets: EvmNetworkBuckets = { asSource: [], withdrawal: [], autofill: [] }
     private _networksKey = ''
     private _deps: RuntimeDeps = {}
 
     setNetworks(
         networks: Network[],
-        networkAdapter: AppNetworkAdapter<Network>,
         additionalSupportedNetworks?: EvmAdditionalSupportedNetworks,
     ): void {
-        const key = networks.map(network => networkAdapter.getId(network)).join('|')
+        const key = networks.map(network => network.name).join('|')
         if (this._networksKey === key) return
         this._networks = networks
-        this._networkAdapter = networkAdapter
-        this._buckets = computeEvmNetworkBuckets(networks, networkAdapter, additionalSupportedNetworks)
+        this._buckets = computeEvmNetworkBuckets(networks, additionalSupportedNetworks)
         this._networksKey = key
     }
 
@@ -116,8 +111,6 @@ export class EvmConnectionService<Network> implements WalletConnectionService<Ru
                 connection,
                 disconnect: disconnectFn,
                 networks: this._networks,
-                networkAdapter: this._networkAdapter!,
-                ethereumChainIds: this._deps.ethereumChainIds,
                 supportedNetworks: this._buckets,
                 providerName: PROVIDER_NAME,
             }))
@@ -137,14 +130,14 @@ export class EvmConnectionService<Network> implements WalletConnectionService<Ru
         if (!connectorId) return true
 
         if (!purpose) {
-            return resolveSupportedNetworks([network], connectorId).length === 0
+            return resolveSupportedNetworks([network], connectorId, this._networks).length === 0
         }
 
         const pool = purpose === 'withdrawal' ? this._buckets.withdrawal
             : purpose === 'autofill' ? this._buckets.autofill
                 : this._buckets.asSource
 
-        const supported = resolveSupportedNetworks(pool, connectorId)
+        const supported = resolveSupportedNetworks(pool, connectorId, this._networks)
         return supported.length === 0 || !supported.includes(network)
     }
 
@@ -382,8 +375,6 @@ export class EvmConnectionService<Network> implements WalletConnectionService<Ru
                 connection,
                 disconnect: this.disconnectWallet.bind(this),
                 networks: this._networks,
-                networkAdapter: this._networkAdapter!,
-                ethereumChainIds: this._deps.ethereumChainIds,
                 supportedNetworks: this._buckets,
                 providerName: PROVIDER_NAME,
             })

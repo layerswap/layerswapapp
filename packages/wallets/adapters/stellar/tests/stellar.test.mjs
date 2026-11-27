@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import test from 'node:test'
+import test, { beforeEach } from 'node:test'
 import {
     Account,
     Address,
@@ -19,7 +19,7 @@ import {
     xdr,
 } from '@stellar/stellar-sdk'
 import { baseUnitsToNumber } from '@layerswap/utils/common'
-import { isValidStellarAddress } from '@layerswap/utils'
+import { AppSettings, isValidStellarAddress } from '@layerswap/utils'
 import {
     STELLAR_PUBLIC_PASSPHRASE,
     STELLAR_TESTNET_PASSPHRASE,
@@ -51,6 +51,8 @@ import { stellarKitManager } from '../dist/esm/service/stellarKitManager.js'
 import { createStellarTransfer } from '../dist/esm/transferProvider/createStellarTransfer.js'
 import { toSigningError, toTransferError } from '../dist/esm/transferProvider/toTransferError.js'
 import { isUserRejection } from '@layerswap/wallet-core/errors'
+
+beforeEach(() => { AppSettings.ApiVersion = 'testnet' })
 
 const sourceKey = Keypair.random()
 const receiverKey = Keypair.random()
@@ -207,15 +209,18 @@ test('validates G- and M-address checksums and rejects C-addresses', () => {
     assert.equal(isValidStellarAddress(`X${gAddress.slice(1)}`), false)
 })
 
-test('pins backend network IDs to their chain_id passphrases', () => {
+test('checks configured environment against chain_id passphrases', () => {
+    AppSettings.ApiVersion = 'mainnet'
     assert.equal(resolveStellarNetworkPassphrase({
         name: 'STELLAR_MAINNET',
         chain_id: STELLAR_PUBLIC_PASSPHRASE,
     }), Networks.PUBLIC)
+    AppSettings.ApiVersion = 'testnet'
     assert.equal(resolveStellarNetworkPassphrase({
         name: 'STELLAR_TESTNET',
         chain_id: STELLAR_TESTNET_PASSPHRASE,
     }), Networks.TESTNET)
+    AppSettings.ApiVersion = 'mainnet'
     assert.throws(() => resolveStellarNetworkPassphrase({
         name: 'STELLAR_MAINNET',
         chain_id: Networks.TESTNET,
@@ -443,6 +448,7 @@ test('maps spendable Horizon balances like the backend', () => {
 })
 
 test('uses verified mainnet endpoints when backend public nodes are unavailable', async t => {
+    AppSettings.ApiVersion = 'mainnet'
     const requests = []
     let passphrase = Networks.TESTNET
     t.mock.method(globalThis, 'fetch', async (input, init) => {

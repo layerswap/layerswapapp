@@ -1,7 +1,5 @@
 import { Contract, RpcProvider } from "starknet-rpc";
-import { Network } from "@layerswap/widget-types";
-import { NftBalanceProps, NftProvider } from "@layerswap/widget-types";
-import { KnownInternalNames } from "@layerswap/utils";
+import { NftBalanceProps, NftProvider, NetworkType, LayerswapNetwork } from "@layerswap/widget-types";
 
 const NFT_ABI = [
     {
@@ -24,8 +22,8 @@ const NFT_ABI = [
 ];
 
 export class StarknetNftProvider implements NftProvider {
-    supportsNetwork(network: Network): boolean {
-        return (KnownInternalNames.Networks.StarkNetMainnet.includes(network.name) || KnownInternalNames.Networks.StarkNetGoerli.includes(network.name) || KnownInternalNames.Networks.StarkNetSepolia.includes(network.name))
+    supportsNetwork(network: LayerswapNetwork): boolean {
+        return (network.type === NetworkType.Starknet)
     }
 
     getBalance = async ({ address, network, contractAddress }: NftBalanceProps): Promise<number> => {

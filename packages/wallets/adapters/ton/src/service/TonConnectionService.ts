@@ -1,9 +1,7 @@
-import { NetworkType } from '@layerswap/widget-types';
-import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
+import { NetworkType, type InternalConnector, type Wallet, type LayerswapNetwork } from '@layerswap/widget-types';
 import type { WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types";
 import type { WalletModalConnector } from "@layerswap/wallet-core/types"
 import { connectModalStore } from "@layerswap/wallet-core"
-import type { AppNetworkAdapter } from "@layerswap/utils"
 import { resolveWalletIconString } from "@layerswap/wallet-core"
 import { isWalletInfoInjectable, isWalletInfoRemote, type Wallet as TonWallet, type WalletInfo, type WalletInfoRemote, } from '@tonconnect/sdk'
 import { Address } from '@ton/core'
@@ -18,17 +16,15 @@ type RuntimeDeps = {
     isMobilePlatform?: boolean
 }
 
-export class TonConnectionService<Network> implements WalletConnectionService<RuntimeDeps, Network> {
+export class TonConnectionService<Network extends LayerswapNetwork = LayerswapNetwork> implements WalletConnectionService<RuntimeDeps, Network> {
     private _networks: Network[] = []
-    private _networkAdapter: AppNetworkAdapter<Network> | undefined
     private _networksKey = ''
     private _deps: RuntimeDeps = {}
 
-    setNetworks(networks: Network[], networkAdapter: AppNetworkAdapter<Network>): void {
-        const key = networks.map(network => networkAdapter.getId(network)).join('|')
+    setNetworks(networks: Network[]): void {
+        const key = networks.map(network => network.name).join('|')
         if (this._networksKey === key) return
         this._networks = networks
-        this._networkAdapter = networkAdapter
         this._networksKey = key
     }
 
@@ -37,14 +33,14 @@ export class TonConnectionService<Network> implements WalletConnectionService<Ru
     }
 
     getNetworkIcon(): string | undefined {
-        const network = this._networks.find(item => this._networkAdapter?.getNetworkType(item) === NetworkType.TON)
-        return network && this._networkAdapter ? this._networkAdapter.getIcon(network) : undefined
+        const network = this._networks.find(item => item.type === NetworkType.TON)
+        return network?.logo
     }
 
     private getSupportedNetworks(): string[] {
         return this._networks
-            .filter(network => this._networkAdapter?.getNetworkType(network) === NetworkType.TON)
-            .map(network => this._networkAdapter?.getId(network))
+            .filter(network => network.type === NetworkType.TON)
+            .map(network => network.name)
             .filter((id): id is string => !!id)
     }
 

@@ -1,5 +1,5 @@
 'use client'
-import { NetworkType, type Network, type Token, type Wallet } from '@layerswap/widget-types';
+import { type LayerswapNetwork, type LayerswapToken, type Wallet } from '@layerswap/widget-types';
 import { ChevronDown, Plus, Unplug } from "lucide-react";
 import { SelectAccountProps, WalletConnectionProvider, AccountIdentity } from "@layerswap/wallet-core/types";
 import { FC, ReactNode, useCallback, useState } from "react";
@@ -15,8 +15,8 @@ import { useWalletListAdapters, type SaveAddressRequest } from "@/lib/adapters";
 type Props = {
     selectable?: boolean;
     wallets: (Wallet | AccountIdentity)[];
-    token?: Token;
-    network?: Network;
+    token?: LayerswapToken;
+    network?: LayerswapNetwork;
     provider?: WalletConnectionProvider | undefined;
     onSelect?: (props: SelectAccountProps) => void;
     selectedAddress?: string;
@@ -93,8 +93,8 @@ const WalletsList: FC<Props> = (props) => {
 type WalletItemProps = {
     account: AccountIdentity | Wallet,
     selectable?: boolean,
-    token?: Token;
-    network?: Network;
+    token?: LayerswapToken;
+    network?: LayerswapNetwork;
     selectedAddress: string | undefined;
     onWalletSelect?: (props: SelectAccountProps) => void;
     isCompatible?: boolean;
@@ -111,7 +111,7 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: item, net
 
     const isSelected = selectable && (item.addresses.length == 1 && item.address == selectedAddress)
 
-    const saveType = network?.type ?? (item.providerName ? item.providerName.toLowerCase() as NetworkType : undefined)
+    const saveType = network?.type ?? (item.providerName ? item.providerName.toLowerCase() : undefined)
     const supportedNetworks = getWithdrawalSupportedNetworks(item)
     const saveInDrawer = !(selectable && onWalletSelect && network)
     const requestSave = (saveInDrawer && onSaveRequest)
@@ -291,8 +291,8 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: item, net
 type NestedWalletAddressProps = {
     address: string,
     selectable?: boolean,
-    token?: Token;
-    network?: Network;
+    token?: LayerswapToken;
+    network?: LayerswapNetwork;
     item: AccountIdentity | Wallet,
     onWalletSelect?: (props: SelectAccountProps) => void;
     selectedAddress: string | undefined;

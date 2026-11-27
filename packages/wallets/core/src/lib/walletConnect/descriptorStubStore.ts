@@ -1,3 +1,4 @@
+import type { LayerswapNetwork } from '@layerswap/widget-types'
 import { createStore, type StoreApi } from "zustand/vanilla"
 import type { WalletConnectionProvider, WalletProviderDescriptor } from "@/types"
 
@@ -11,15 +12,19 @@ import type { WalletConnectionProvider, WalletProviderDescriptor } from "@/types
  */
 export function createDescriptorStubStore(
     d: WalletProviderDescriptor,
+    networks: LayerswapNetwork[] = [],
 ): StoreApi<WalletConnectionProvider> {
+    const supportedNetworks = d.supportedNetworkTypes
+        ? networks.filter(network => d.supportedNetworkTypes?.includes(network.type)).map(network => network.name)
+        : undefined
     return createStore<WalletConnectionProvider>(() => ({
         id: d.id,
         name: d.name ?? d.id,
         capabilities: d.capabilities,
         providerIcon: d.providerIcon,
-        autofillSupportedNetworks: d.autofillSupportedNetworks,
-        withdrawalSupportedNetworks: d.withdrawalSupportedNetworks ?? [],
-        asSourceSupportedNetworks: d.asSourceSupportedNetworks,
+        autofillSupportedNetworks: d.autofillSupportedNetworks ?? supportedNetworks,
+        withdrawalSupportedNetworks: d.withdrawalSupportedNetworks ?? supportedNetworks ?? [],
+        asSourceSupportedNetworks: d.asSourceSupportedNetworks ?? supportedNetworks,
         unsupportedPlatforms: d.unsupportedPlatforms,
         hideFromList: d.hideFromList,
         connectedWallets: undefined,

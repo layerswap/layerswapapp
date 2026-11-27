@@ -1,8 +1,7 @@
-import type { NetworkType, NetworkWithTokens } from '@layerswap/widget-types';
+import type { AddressUtilsProvider } from '@layerswap/utils';
 import type { StoreApi } from 'zustand/vanilla';
-import type { TransferProps } from '@layerswap/widget-types';
+import type { TransferProps, LayerswapNetwork, NetworkType } from '@layerswap/widget-types';
 import type { WalletProvider, WalletWrapper } from './provider';
-import type { AppNetworkAdapter } from '@layerswap/utils';
 
 import type { InternalConnector, Wallet } from '@layerswap/widget-types';
 
@@ -11,7 +10,7 @@ import type { InternalConnector, Wallet } from '@layerswap/widget-types';
  * exposes a vanilla zustand store (`store`); React consumers subscribe via
  * `useStore(store, selector)`, non-React peers read `store.getState()`.
  */
-export type WalletConnectionStore<Network = NetworkWithTokens> = {
+export type WalletConnectionStore<Network extends LayerswapNetwork = LayerswapNetwork> = {
     store: StoreApi<WalletConnectionProvider>
     /** Called when host inputs change (e.g. settings refreshed and networks shifted). */
     updateProps?(props: WalletConnectionProviderProps<Network>): void
@@ -44,10 +43,12 @@ export type WalletProviderCapabilities = {
     }
 }
 
-export type WalletProviderDescriptor<Network = NetworkWithTokens> = {
+export type WalletProviderDescriptor<Network extends LayerswapNetwork = LayerswapNetwork> = {
     id: string,
     name?: string,
     capabilities?: WalletProviderCapabilities,
+    supportedNetworkTypes?: string[],
+    addressProvider?: AddressUtilsProvider,
     providerIcon?: string,
     autofillSupportedNetworks?: string[],
     withdrawalSupportedNetworks?: string[],
@@ -59,15 +60,14 @@ export type WalletProviderDescriptor<Network = NetworkWithTokens> = {
     loadProvider: () => Promise<WalletProvider<Network> | WalletWrapper>,
 }
 
-export function isWalletProviderDescriptor<Network>(
+export function isWalletProviderDescriptor<Network extends LayerswapNetwork = LayerswapNetwork>(
     p: WalletProvider<Network> | WalletWrapper | WalletProviderDescriptor<Network>
 ): p is WalletProviderDescriptor<Network> {
     return typeof (p as WalletProviderDescriptor).loadProvider === 'function'
 }
 
-export type WalletConnectionProviderProps<Network = NetworkWithTokens> = {
+export type WalletConnectionProviderProps<Network extends LayerswapNetwork = LayerswapNetwork> = {
     networks: Network[]
-    networkAdapter: AppNetworkAdapter<Network>
     /** Access to peer wallet providers scoped to the current widget instance. */
     walletProvidersRegistry?: WalletProviderStoreRegistry
 }
@@ -77,8 +77,8 @@ export type WalletConnectionProviderProps<Network = NetworkWithTokens> = {
  * expose additional chain-specific methods, but every connection factory can
  * rely on this core lifecycle and connect surface.
  */
-export interface WalletConnectionService<TDeps = never, Network = NetworkWithTokens> {
-    setNetworks(networks: Network[], networkAdapter: AppNetworkAdapter<Network>): void
+export interface WalletConnectionService<TDeps = never, Network extends LayerswapNetwork = LayerswapNetwork> {
+    setNetworks(networks: Network[]): void
     configure?(deps: TDeps): void
     connectWallet(props: { connector: InternalConnector }): Promise<Wallet | undefined>
     disconnectWallets?(): Promise<void>

@@ -6,29 +6,11 @@ import {
   Wallet as DynamicWallet,
 } from "@dynamic-labs/sdk-react-core";
 import { resolveWalletConnectorIcon, createReactHookConnectionAdapter } from "@layerswap/widget/internal"
-import { NetworkType, type InternalConnector, type NetworkWithTokens, type Wallet } from "@layerswap/widget-types"
+import { NetworkType, type InternalConnector, type LayerswapNetwork, type Wallet } from "@layerswap/widget-types"
 import type { WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types"
 
 const DYNAMIC_CONNECTOR_ID = "dynamic-starknet"
 const STARKNET_PROVIDER_NAME = "Starknet"
-
-export const customStarknetNetworkAdapter: WalletConnectionProviderProps["networkAdapter"] = {
-  getNetworkType: network => network.type,
-  getId: network => network.name,
-  getDisplayName: network => network.display_name,
-  getChainId: network => network.chain_id,
-  getRpcUrls: network => network.nodes?.length
-    ? network.nodes
-    : [network.node_url].filter((url): url is string => Boolean(url)),
-  getIcon: network => network.logo,
-  getTransactionExplorerUrl: network => network.transaction_explorer_template,
-  getAccountExplorerUrl: network => network.account_explorer_template,
-  getNativeCurrency: network => network.token && {
-    symbol: network.token.symbol,
-    decimals: network.token.decimals,
-  },
-  getMulticallAddress: network => network.metadata?.evm_multicall_contract ?? undefined,
-}
 
 function useStarknet({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
   const name = STARKNET_PROVIDER_NAME;
@@ -39,10 +21,7 @@ function useStarknet({ networks }: WalletConnectionProviderProps): WalletConnect
   const userWallets = useUserWallets();
 
   // Starknet network names
-  const starknetNetworkNames = [
-    "STARKNET_MAINNET",
-    "STARKNET_SEPOLIA",
-  ]
+  const starknetNetworkNames = useMemo(() => networks.filter(network => network.type === NetworkType.Starknet).map(network => network.name), [networks])
 
   // Supported-networks
   const supportedNetworks = useMemo(
@@ -124,7 +103,7 @@ function useStarknet({ networks }: WalletConnectionProviderProps): WalletConnect
     [userWallets, networks, supportedNetworks, disconnectWallets],
   );
 
-  const logo = networks.find((n) => n.name.toLowerCase().includes("starknet"))?.logo;
+  const logo = networks.find((n) => n.type === NetworkType.Starknet)?.logo;
   // Keep one connector available even while logged out. The concrete Argent,
   // Braavos, etc. connector is only known after Dynamic finishes authentication.
   const availableConnectors = useMemo<InternalConnector[]>(() => [{
@@ -156,7 +135,7 @@ function useStarknet({ networks }: WalletConnectionProviderProps): WalletConnect
 /** Reusable helper to turn a DynamicWallet + context into our `Wallet` shape */
 function resolveWallet(props: {
   connection: DynamicWallet;
-  networks: NetworkWithTokens[];
+  networks: LayerswapNetwork[];
   supportedNetworks: {
     asSource: string[];
     autofill: string[];
@@ -172,7 +151,7 @@ function resolveWallet(props: {
   if (!connectorName || !address) return;
 
   const displayName = `${connectorName} – ${providerName}`;
-  const networkIcon = networks.find((n) => n.name.toLowerCase().includes("starknet"))?.logo;
+  const networkIcon = networks.find((n) => n.type === NetworkType.Starknet)?.logo;
 
   return {
     id: connectorName,

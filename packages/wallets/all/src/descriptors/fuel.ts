@@ -1,13 +1,7 @@
-import KnownInternalNames from "@layerswap/utils/known-ids"
+import { NetworkType } from '@layerswap/widget-types'
 import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
 import { defineWalletDescriptor, type DescriptorNetworkOptions } from "./defineWalletDescriptor"
 import { hasStorageKey } from "./persistedSession"
-
-const FUEL_NETWORKS = [
-    KnownInternalNames.Networks.FuelMainnet,
-    KnownInternalNames.Networks.FuelTestnet,
-    KnownInternalNames.Networks.FuelDevnet,
-]
 
 /**
  * Tree-shake-safe stand-in for `createFuelProvider`. Defers `@fuel-ts/*` +
@@ -15,9 +9,10 @@ const FUEL_NETWORKS = [
  * chunk.
  */
 export function createFuelDescriptor(options?: DescriptorNetworkOptions): WalletProviderDescriptor {
-    const supportedNetworks = options?.supportedNetworks ?? FUEL_NETWORKS
+    const supportedNetworks = options?.supportedNetworks
     return defineWalletDescriptor({
         id: 'fuel',
+        supportedNetworkTypes: [NetworkType.Fuel],
         name: 'Fuel',
         autofillSupportedNetworks: supportedNetworks,
         withdrawalSupportedNetworks: supportedNetworks,

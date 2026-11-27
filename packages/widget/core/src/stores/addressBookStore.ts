@@ -9,7 +9,7 @@ import { AddressSelectionMode, classifyAddress } from '@layerswap/utils'
 import KnownInternalNames from '@/lib/knownIds'
 import AppSettings from '@/lib/AppSettings'
 
-const SolanaNetwork = AppSettings.ApiVersion === 'testnet' ? KnownInternalNames.Networks.SolanaDevnet : KnownInternalNames.Networks.SolanaMainnet
+const SolanaNetwork = AppSettings.isTestnet() ? KnownInternalNames.Networks.SolanaDevnet : KnownInternalNames.Networks.SolanaMainnet
 
 export const NAME_MAX = 20
 export const COUNTER_SHOW_AT = 15
@@ -17,7 +17,7 @@ export const COUNTER_SHOW_AT = 15
 export type SavedAddress = {
     address: string
     name: string
-    networkTypes?: NetworkType[]
+    networkTypes?: string[]
     networks?: string[]
 }
 
@@ -29,7 +29,7 @@ type AddressBookState = {
     clearAll: () => void
 }
 
-const toSaved = (raw: string, name: string, networkTypes?: NetworkType[], networks?: string[]): SavedAddress | null => {
+const toSaved = (raw: string, name: string, networkTypes?: string[], networks?: string[]): SavedAddress | null => {
     const primary = networkTypes?.[0]
     const address = primary ? addressFormat({ address: raw.trim(), providerName: primary }) : raw.trim()
     const trimmed = name.trim()
@@ -48,7 +48,7 @@ type PersistedAddress = {
 const cleanStrings = (value: unknown) =>
     Array.isArray(value) ? value.filter(v => typeof v === 'string' && v.length > 0) as string[] : undefined
 
-const migrateLegacyScope = (address: string, networkTypes: NetworkType[] | undefined, networks: string[] | undefined, legacyType: NetworkType | undefined, hadNetworkTypes: boolean): Pick<SavedAddress, 'networkTypes' | 'networks'> => {
+const migrateLegacyScope = (address: string, networkTypes: string[] | undefined, networks: string[] | undefined, legacyType: string | undefined, hadNetworkTypes: boolean): Pick<SavedAddress, 'networkTypes' | 'networks'> => {
     const shouldMigrate = !hadNetworkTypes || legacyType === NetworkType.EVM || legacyType === NetworkType.Solana || (networkTypes?.includes(NetworkType.Solana) && !networks?.length)
     if (!shouldMigrate) return { networkTypes, networks }
 
@@ -121,8 +121,8 @@ export const useAddressBookStore = create<AddressBookState>()(browserOnlyMiddlew
                     if (!o || typeof o.address !== 'string' || o.address.trim().length === 0 || typeof o.name !== 'string' || o.name.trim().length === 0) {
                         return null
                     }
-                    const parsedNetworkTypes = cleanStrings(o.networkTypes) as NetworkType[] | undefined
-                    const legacyType = typeof o.networkType === 'string' && o.networkType.length > 0 ? o.networkType as NetworkType : undefined
+                    const parsedNetworkTypes = cleanStrings(o.networkTypes) as string[] | undefined
+                    const legacyType = typeof o.networkType === 'string' && o.networkType.length > 0 ? o.networkType : undefined
                     const networkTypes = parsedNetworkTypes?.length ? parsedNetworkTypes : (legacyType ? [legacyType] : undefined)
                     const networks = cleanStrings(o.networks)
                     const scope = migrateLegacyScope(o.address, networkTypes, networks, legacyType, !!parsedNetworkTypes?.length)
@@ -139,28 +139,28 @@ export const useAddressBookStore = create<AddressBookState>()(browserOnlyMiddlew
     }
 ))
 
-export const findSavedAddress = (savedAddresses: SavedAddress[], address: string | undefined | null, network?: { name: string } | null, providerName?: string) => {
+export const findSavedAddress = (savedAddresses: SavedAddress[], address: string | undefined | null, network?: { name: string; type: string } | null, providerName?: string) => {
     if (!address) return undefined
     return savedAddresses.find(e => Address.equals(e.address, address, network, providerName))
 }
 
-export const savedAddressMatchesNetwork = (entry: SavedAddress, network: { name: string; type: NetworkType }): boolean => {
+export const savedAddressMatchesNetwork = (entry: SavedAddress, network: { name: string; type: string }): boolean => {
     if (entry.networkTypes?.length && !entry.networkTypes.includes(network.type)) return false
     if (entry.networks?.length && !entry.networks.includes(network.name)) return false
     return true
 }
 
 /** Reactive saved name, or undefined when the address isn't in the book. */
-export const useAddressName = (address?: string | null, network?: { name: string } | null, providerName?: string) =>
+export const useAddressName = (address?: string | null, network?: { name: string; type: string } | null, providerName?: string) =>
     useAddressBookStore(s => findSavedAddress(s.savedAddresses, address, network, providerName)?.name)
 
-export const useNamedAddress = (address?: string | null, network?: { name: string } | null, providerName?: string) => {
+export const useNamedAddress = (address?: string | null, network?: { name: string; type: string } | null, providerName?: string) => {
     const name = useAddressName(address, network, providerName)
     if (name) return name
     return address ? new Address(address, network ?? null, providerName!).toShortString() : ''
 }
 
-export const useLabeledAddress = (address?: string | null, network?: { name: string } | null, providerName?: string) => {
+export const useLabeledAddress = (address?: string | null, network?: { name: string; type: string } | null, providerName?: string) => {
     const name = useAddressName(address, network, providerName)
     if (!address) return ''
     const short = new Address(address, network ?? null, providerName!).toShortString()
@@ -171,7 +171,7 @@ export const useLabeledAddress = (address?: string | null, network?: { name: str
 export const useAddressNameFinder = () => {
     const savedAddresses = useAddressBookStore(s => s.savedAddresses)
     return useCallback(
-        (address: string | undefined | null, network?: { name: string } | null, providerName?: string) =>
+        (address: string | undefined | null, network?: { name: string; type: string } | null, providerName?: string) =>
             findSavedAddress(savedAddresses, address, network, providerName)?.name,
         [savedAddresses]
     )

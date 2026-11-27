@@ -1,22 +1,19 @@
-import { type Wallet } from '@layerswap/widget-types';
+import { NetworkType, type Wallet, type LayerswapNetwork } from '@layerswap/widget-types';
 import type { Connector } from 'wagmi'
 import { getDynamicWcMetadata, getPendingDynamicWcMetadata } from "@layerswap/wallet-core"
-import type { AppNetworkAdapter } from "@layerswap/utils"
 import { evmConnectorNameResolver, resolveEVMWalletConnectorIcon } from '../evmUtils'
-import { EIP155_NAMESPACE, HIDDEN_WALLETCONNECT_ID, immutableZKEvm } from '../constants'
+import { EIP155_NAMESPACE, HIDDEN_WALLETCONNECT_ID } from '../constants'
 import type { LSConnector } from '../connectors/types'
 import { findEthereumNetwork } from './findEthereumNetwork'
 import { resolveSupportedNetworks } from './resolveSupportedNetworks'
 
-export type ResolveWalletProps<Network> = {
+export type ResolveWalletProps<Network extends LayerswapNetwork = LayerswapNetwork> = {
     connection: {
         accounts: readonly [`0x${string}`, ...`0x${string}`[]]
         chainId: number
         connector: Connector
     } | undefined
     networks: Network[]
-    networkAdapter: AppNetworkAdapter<Network>
-    ethereumChainIds?: readonly number[]
     activeConnection: {
         id: string
         address: string
@@ -30,13 +27,11 @@ export type ResolveWalletProps<Network> = {
     providerName: string
 }
 
-export function resolveWallet<Network>(props: ResolveWalletProps<Network>): Wallet | undefined {
+export function resolveWallet<Network extends LayerswapNetwork = LayerswapNetwork>(props: ResolveWalletProps<Network>): Wallet | undefined {
     const {
         activeConnection,
         connection,
         networks,
-        networkAdapter,
-        ethereumChainIds,
         disconnect,
         supportedNetworks,
         providerName,
@@ -61,8 +56,8 @@ export function resolveWallet<Network>(props: ResolveWalletProps<Network>): Wall
     const walletDisplayName = `${walletName} ${walletId === 'com.immutable.passport' ? '' : ' - EVM'}`
 
     const iconNetwork = walletId === 'com.immutable.passport'
-        ? networks.find(network => immutableZKEvm.some(name => name === networkAdapter.getId(network)))
-        : findEthereumNetwork(networks, networkAdapter, ethereumChainIds)
+        ? networks.find(network => network.type === NetworkType.EVM && Number(network.chain_id) === 13371)
+        : findEthereumNetwork(networks)
 
     return {
         chainId: connection?.chainId,
@@ -75,10 +70,10 @@ export function resolveWallet<Network>(props: ResolveWalletProps<Network>): Wall
         providerName,
         icon: resolveEVMWalletConnectorIcon({ connector: evmConnectorNameResolver(connector), iconUrl: walletIcon }),
         disconnect: () => disconnect(connector.name),
-        asSourceSupportedNetworks: resolveSupportedNetworks(supportedNetworks.asSource, walletId),
-        autofillSupportedNetworks: resolveSupportedNetworks(supportedNetworks.autofill, walletId),
-        withdrawalSupportedNetworks: resolveSupportedNetworks(supportedNetworks.withdrawal, walletId),
-        networkIcon: iconNetwork ? networkAdapter.getIcon(iconNetwork) : undefined,
+        asSourceSupportedNetworks: resolveSupportedNetworks(supportedNetworks.asSource, walletId, networks),
+        autofillSupportedNetworks: resolveSupportedNetworks(supportedNetworks.autofill, walletId, networks),
+        withdrawalSupportedNetworks: resolveSupportedNetworks(supportedNetworks.withdrawal, walletId, networks),
+        networkIcon: iconNetwork ? iconNetwork.logo : undefined,
         metadata: {
             connectorId: connector.id,
             connectorUid: connector.uid,

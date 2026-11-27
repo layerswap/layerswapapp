@@ -1,42 +1,22 @@
-import { NetworkType } from '@layerswap/widget-types';
-import { LazyBalanceProvider, LazyGasProvider } from "@layerswap/widget-types";
+import { LazyBalanceProvider, LazyGasProvider, NetworkType, type LayerswapNetwork } from "@layerswap/widget-types";
 import type { TransferProvider } from "@layerswap/widget-types";
-import type { Network, NetworkWithTokens } from "@layerswap/widget-types";
-import { KnownInternalNames } from "@layerswap/utils"
 import { createEVMProvider as createBaseEVMProvider } from "./generic"
 import { createHyperliquidTransfer } from "./additionalProviders/hyperliquid/createHyperliquidTransferProvider"
 import { hyperliquidProvider } from "./additionalProviders/hyperliquid/hyperliquidExtendedRouteProvider"
-import { HYPERLIQUID_ROUTES } from "./additionalProviders/hyperliquid/routes"
 import { createPolymarketTransferProvider } from "./additionalProviders/polymarket/createPolymarketTransferProvider"
-import { POLYMARKET_CONFIG } from "./additionalProviders/polymarket/constants"
 import { polymarketProvider } from "./additionalProviders/polymarket/polymarketExtendedRouteProvider"
 import { polymarketWithdrawal } from './additionalProviders/polymarket/withdrawal'
 import { getEvmConfig } from "./service/getEvmConfig"
 import type { EVMProviderConfig, WalletConnectConfig } from "./types"
 
-const additionalSupportedNetworks = {
-    asSource: [
-        KnownInternalNames.Networks.LoopringGoerli,
-        KnownInternalNames.Networks.LoopringMainnet,
-        KnownInternalNames.Networks.LoopringSepolia,
-    ],
-    withdrawal: [
-        ...Object.keys(HYPERLIQUID_ROUTES),
-        ...Object.keys(POLYMARKET_CONFIG),
-    ],
-    autofill: [KnownInternalNames.Networks.BrineMainnet],
-}
-
 const asArray = <T,>(value: T | T[] | undefined): T[] =>
     value === undefined ? [] : Array.isArray(value) ? value : [value]
 
-export function createEVMProvider<TNetwork = NetworkWithTokens>(
+export function createEVMProvider<TNetwork extends LayerswapNetwork = LayerswapNetwork>(
     config: EVMProviderConfig<TNetwork> = {},
 ) {
     const provider = createBaseEVMProvider({
         ...config,
-        additionalSupportedNetworks:
-            config.additionalSupportedNetworks ?? additionalSupportedNetworks,
     })
 
     const balanceProviders = asArray(provider.balanceProvider)
@@ -58,7 +38,7 @@ export function createEVMProvider<TNetwork = NetworkWithTokens>(
                         .then(module => new module.HyperliquidBalanceProvider()),
                 ),
                 new LazyBalanceProvider(
-                    network => network.name === KnownInternalNames.Networks.PolymarketMainnet,
+                    network => network.type === NetworkType.Polymarket,
                     () => import("./additionalProviders/polymarket/polymarketBalanceProvider")
                         .then(module => new module.PolymarketBalanceProvider()),
                 ),
@@ -82,8 +62,8 @@ export function createEVMProvider<TNetwork = NetworkWithTokens>(
                 ...asArray(provider.transferProvider),
                 createHyperliquidTransfer,
                 (): TransferProvider => {
-                    const supportsNetwork = (network: Network) =>
-                        network.name === KnownInternalNames.Networks.PolymarketMainnet
+                    const supportsNetwork = (network: LayerswapNetwork) =>
+                        network.type === NetworkType.Polymarket
                     return {
                         supportsNetwork,
                         withdrawal: polymarketWithdrawal,
