@@ -8,8 +8,8 @@ import { POLYMARKET_BASE_TOKEN_SYMBOL, POLYMARKET_DISPLAY_NAME, POLYMARKET_LOGO,
  * Polymarket extended SOURCE provider. Unlike Hyperliquid (which the backend
  * defines), Polymarket is synthesized entirely on the client from the real Polygon
  * network — see `resolveExtendedNetwork`. Its withdrawal unwraps pUSD → USDC.e 1:1 and
- * deposits into the Layerswap Depository on Polygon (funding: 'depository'); the backend
- * then bridges to the final destination.
+ * sends it as a regular wallet transfer on Polygon (funding: 'wallet'); the backend then
+ * bridges to the final destination.
  */
 
 const toMapping = (cfg: PolymarketConfig): ExtendedTokenMapping => ({
@@ -37,7 +37,12 @@ export const polymarketProvider: ExtendedRouteProvider = {
     // creds, so when no resolved flag covers this provider (flags endpoint
     // unreachable) the route must stay hidden rather than break mid-flow.
     enabledByDefault: false,
-    funding: 'depository',
+    funding: 'wallet',
+    // The owner signs, but a funder contract deposits, so frontend execution
+    // cannot use the connected owner as the backend source address.
+    supportsFrontendSwap: false,
+    // Backend token swaps require a refund destination. Return USDC.e to the
+    // owner's Polygon wallet without treating the owner as the funding sender.
     requiresRefundAddress: true,
     extendedNetworkNames: Object.keys(POLYMARKET_CONFIG),
     mappings,

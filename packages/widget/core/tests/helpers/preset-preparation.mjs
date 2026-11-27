@@ -11,7 +11,8 @@ export function createPresetPreparation({
 }) {
   const calls = []
   const { startPresetPreparation } = loadSource('lib/preparePresetAmount.ts', {
-    '@layerswap/widget-types': { usesDepository: () => false },
+    '@/helpers/swapFlow': loadSource('helpers/swapFlow.ts'),
+    '@layerswap/widget-types': { requiredDepositMethod: () => 'deposit_address' },
     '@/hooks/useFee': {
       buildLimitsUrl: args => {
         calls.push(['limits', args])

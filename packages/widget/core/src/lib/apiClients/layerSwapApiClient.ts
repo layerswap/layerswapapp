@@ -34,8 +34,8 @@ export default class LayerSwapApiClient {
     fetcher = (url: string, options?: { signal?: AbortSignal }) =>
         this.AuthenticatedRequest<ApiResponse<any>>("GET", url, undefined, undefined, options?.signal)
 
-    async GetRoutesAsync(direction: 'sources' | 'destinations', _useFrontendSwap: true = true): Promise<ApiResponse<NetworkRoute[]>> {
-        return await this.UnauthenticatedRequest<ApiResponse<NetworkRoute[]>>("GET", `/${direction}?include_unmatched=true&include_swaps=true&include_unavailable=true&use_frontend_swap=true`)
+    async GetRoutesAsync(direction: 'sources' | 'destinations', useFrontendSwap: boolean = true): Promise<ApiResponse<NetworkRoute[]>> {
+        return await this.UnauthenticatedRequest<ApiResponse<NetworkRoute[]>>("GET", `/${direction}?include_unmatched=true&include_swaps=true&include_unavailable=true&use_frontend_swap=${useFrontendSwap}`)
     }
 
     async GetSourceExchangesAsync(): Promise<ApiResponse<Exchange[]>> {
@@ -50,7 +50,7 @@ export default class LayerSwapApiClient {
         const correlationId = uuidv4()
         const response = await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("POST", `/swaps`, {
             ...params,
-            use_frontend_swap: true,
+            use_frontend_swap: params.use_frontend_swap !== false,
             use_gasless: params.use_gasless === true,
         }, { 'X-LS-CORRELATION-ID': correlationId });
         return this.resolveSwapDepositActions(response);
@@ -206,7 +206,7 @@ export type CreateSwapParams = {
     use_deposit_address: boolean
     use_depository?: boolean
     use_gasless: boolean
-    use_frontend_swap: true
+    use_frontend_swap: boolean
     use_atomic_batch?: boolean
     app_name?: string,
 }
@@ -368,7 +368,7 @@ export type GetQuoteParams = {
     destination_token: string,
     destination_address: string,
     use_deposit_address: boolean,
-    use_frontend_swap: true,
+    use_frontend_swap: boolean,
     include_gas?: boolean,
     amount: number,
     refuel?: boolean

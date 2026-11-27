@@ -28,6 +28,7 @@ function pure(path, imports = {}) {
     const module = { exports: {} }
     new Function('require', 'module', 'exports', output)(name => {
         if (name in imports) return imports[name]
+        if (name === '@/lib/extendedRoutes/registry') return { getExtendedProviderForNetwork: () => undefined }
         if (name === '../components/utils/resolveSwapFlow.js') return pure('../src/components/utils/resolveSwapFlow.ts')
         if (name === '../../helpers/depositActions.js') return pure('../src/helpers/depositActions.ts')
         throw new Error(`Unexpected dependency: ${name}`)

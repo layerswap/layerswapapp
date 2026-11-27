@@ -1,3 +1,4 @@
+import { retryChunkLoad } from '@layerswap/wallet-core/chunkLoadRecovery'
 import { tronAdapterManager } from './service/tronAdapterManager'
 
 let _initialized = false
@@ -8,9 +9,13 @@ let _loadPromise: Promise<void> | null = null
  * Safe to call multiple times — subsequent calls are no-ops.
  * Adapter loading is browser-only and runs once per session.
  */
-export function initTronProvider(): void {
-    if (_initialized || _loadPromise) return
-    if (typeof window === 'undefined') return
+export function initTronProvider(): Promise<void> {
+    if (_initialized || typeof window === 'undefined') {
+        return Promise.resolve()
+    }
+    if (_loadPromise) {
+        return _loadPromise
+    }
 
     _loadPromise = (async () => {
         const [
@@ -22,13 +27,13 @@ export function initTronProvider(): void {
             gateModule,
             trustModule,
         ] = await Promise.all([
-            import('@tronweb3/tronwallet-adapter-metamask-tron'),
-            import('@tronweb3/tronwallet-adapter-tronlink'),
-            import('@tronweb3/tronwallet-adapter-okxwallet'),
-            import('@tronweb3/tronwallet-adapter-bitkeep'),
-            import('@tronweb3/tronwallet-adapter-bybit'),
-            import('@tronweb3/tronwallet-adapter-gatewallet'),
-            import('@tronweb3/tronwallet-adapter-trust')
+            retryChunkLoad(() => import('@tronweb3/tronwallet-adapter-metamask-tron')),
+            retryChunkLoad(() => import('@tronweb3/tronwallet-adapter-tronlink')),
+            retryChunkLoad(() => import('@tronweb3/tronwallet-adapter-okxwallet')),
+            retryChunkLoad(() => import('@tronweb3/tronwallet-adapter-bitkeep')),
+            retryChunkLoad(() => import('@tronweb3/tronwallet-adapter-bybit')),
+            retryChunkLoad(() => import('@tronweb3/tronwallet-adapter-gatewallet')),
+            retryChunkLoad(() => import('@tronweb3/tronwallet-adapter-trust')),
         ])
 
         const { MetaMaskAdapter } = metamaskModule
@@ -58,6 +63,8 @@ export function initTronProvider(): void {
         console.error('[layerswap/wallets] Tron provider initialization failed', error)
         _loadPromise = null
     })
+
+    return _loadPromise
 }
 
 /** Visible for tests. Resets singleton init so a fresh init can run. */

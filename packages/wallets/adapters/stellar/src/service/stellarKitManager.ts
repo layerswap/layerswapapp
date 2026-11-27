@@ -84,16 +84,22 @@ class StellarKitManager {
     private walletConnectModule: StellarWalletConnectModule | undefined
     private appKitWalletConnectModule: StellarKitWalletConnectModule | undefined
     private generation = 0
+    private retryInit: (() => Promise<void>) | undefined
 
     init(walletConnect?: WalletConnectConfig): Promise<void> {
         if (typeof window === 'undefined') return Promise.resolve()
         if (this.initPromise) return this.initPromise
 
         const generation = ++this.generation
+        this.retryInit = undefined
         stellarStore.getState().setInitializing()
         this.initPromise = this.initialize(walletConnect, generation).catch(error => {
             const message = error instanceof Error ? error.message : String(error)
-            if (generation === this.generation) stellarStore.getState().setReady(message)
+            if (generation === this.generation) {
+                this.dispose()
+                this.retryInit = () => this.init(walletConnect)
+                stellarStore.getState().setReady(message)
+            }
             throw error
         })
         return this.initPromise
@@ -103,16 +109,18 @@ class StellarKitManager {
         const kitPromise = import('@creit.tech/stellar-wallets-kit/sdk')
         const kitTypesPromise = import('@creit.tech/stellar-wallets-kit/types')
         const kitUtilsPromise = import('@creit.tech/stellar-wallets-kit/modules/utils')
-        const [kitModule, kitTypesModule, kitUtilsModule] = await Promise.all([
+        const [kitModule, kitTypesModule, kitUtilsModule, ghostsigModule] = await Promise.all([
             kitPromise,
             kitTypesPromise,
             kitUtilsPromise,
+            import('@creit.tech/stellar-wallets-kit/modules/ghostsig'),
         ])
         if (generation !== this.generation) return
 
         const isTestnet = AppSettings.ApiVersion === 'testnet' || AppSettings.ApiVersion === 'sandbox'
         const network = isTestnet ? kitTypesModule.Networks.TESTNET : kitTypesModule.Networks.PUBLIC
-        const modules = kitUtilsModule.defaultModules()
+        const modules = kitUtilsModule.defaultModules({ filterBy: module => module.productId !== ghostsigModule.GHOSTSIG_ID })
+        modules.push(new ghostsigModule.GhostsigModule({ network }))
         if (walletConnect?.projectId) {
             this.walletConnectModule = new StellarWalletConnectModule(walletConnect, undefined, [isTestnet ? StellarWalletConnectChain.Testnet : StellarWalletConnectChain.Public,])
             modules.push(this.walletConnectModule)
@@ -135,7 +143,6 @@ class StellarKitManager {
         const persisted = readPersistedSession()
         kitModule.StellarWalletsKit.init({
             modules,
-            selectedWalletId: persisted?.walletId,
             network,
         })
         this.kit = kitModule.StellarWalletsKit
@@ -201,6 +208,14 @@ class StellarKitManager {
     }
 
     warmUpWalletConnect(): void {
+        if (!this.initPromise && this.retryInit) {
+            void this.retryInit()
+                .then(() => this.walletConnectModule?.warmup())
+                .catch(error => {
+                    console.error('[Stellar] Failed to initialize wallet connectors', error)
+                })
+            return
+        }
         this.walletConnectModule?.warmup()
     }
 
@@ -266,10 +281,14 @@ class StellarKitManager {
         this.kit = undefined
         this.networks = undefined
         this.initPromise = undefined
+        this.retryInit = undefined
         this.selectedWalletId = undefined
     }
 
     private async requireReady(): Promise<void> {
+        if (!this.initPromise && this.retryInit) {
+            return this.retryInit()
+        }
         if (!this.initPromise) throw new Error('Stellar Wallets Kit is not initialized')
         await this.initPromise
     }

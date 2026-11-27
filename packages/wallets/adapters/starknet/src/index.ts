@@ -8,6 +8,7 @@ import { StarknetBalanceProvider } from "./starknetBalanceProvider"
 import { StarknetNftProvider } from "./starknetNftProvider"
 import { createStarknetTransfer } from "./transferProvider/createStarknetTransfer"
 import { createStarknetConnection } from "./service/createStarknetConnection"
+import { retryInitOnModalOpen } from "@layerswap/wallet-core/chunkLoadRecovery"
 import { initStarknetProvider } from "./init"
 import { id } from "./constants"
 
@@ -35,7 +36,7 @@ export function createStarknetProvider<Network = NetworkWithTokens>(
 
     const init = (_ctx: WalletInitContext) => {
         initStarknetProvider()
-        // No-op disposer; init is idempotent across remounts.
+        return retryInitOnModalOpen(initStarknetProvider)
     }
 
     const createConnection = (props: WalletConnectionProviderProps<Network>): WalletConnectionStore<Network> => {

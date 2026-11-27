@@ -1,4 +1,5 @@
 import { isMobile } from "@layerswap/utils"
+import { retryChunkLoad } from '@layerswap/wallet-core/chunkLoadRecovery'
 import { AppSettings } from "@layerswap/utils";
 import { WalletAdapterNetwork, WalletReadyState } from '@solana/wallet-adapter-base'
 import { svmAdapterManager } from './service/svmAdapterManager'
@@ -17,16 +18,20 @@ type InitOptions = {
  * One-shot initialization of the Solana adapters + manager.
  * Safe to call multiple times — subsequent calls are no-ops.
  */
-export function initSvmProvider(opts: InitOptions = {}): void {
+export function initSvmProvider(opts: InitOptions = {}): Promise<void> {
     if (opts.walletConnectConfigs) {
         setWalletConnectConfig(opts.walletConnectConfigs)
     }
 
-    if (_initialized || _loadPromise) return
-    if (typeof window === 'undefined') return
+    if (_initialized || typeof window === 'undefined') {
+        return Promise.resolve()
+    }
+    if (_loadPromise) {
+        return _loadPromise
+    }
 
     _loadPromise = (async () => {
-        const adaptersModule = await import('@solana/wallet-adapter-wallets')
+        const adaptersModule = await retryChunkLoad(() => import('@solana/wallet-adapter-wallets'))
         const {
             NightlyWalletAdapter,
             PhantomWalletAdapter,
@@ -110,6 +115,8 @@ export function initSvmProvider(opts: InitOptions = {}): void {
         console.error('[layerswap/wallets] Solana provider initialization failed', error)
         _loadPromise = null
     })
+
+    return _loadPromise
 }
 
 /** Visible for tests. Resets singleton init so a fresh init can run. */

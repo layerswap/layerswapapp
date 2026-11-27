@@ -1,6 +1,7 @@
 import { Connector, ConnectorNotConnectedError, UserNotConnectedError } from '@starknet-react/core'
 import { RpcMessage, RequestFnCall, RpcTypeToMessageMap } from '@starknet-io/types-js'
 import { getKnownConnectorIconBase64 } from '@layerswap/wallet-core'
+import { retryChunkLoad } from '@layerswap/wallet-core/chunkLoadRecovery'
 import { starknetConnectorManager } from './service/starknetConnectorManager'
 
 let _initialized = false
@@ -47,17 +48,21 @@ class DiscoveryConnector extends Connector {
  * One-shot initialization of the Starknet connectors + manager.
  * Safe to call multiple times — subsequent calls are no-ops.
  */
-export function initStarknetProvider(): void {
-    if (_initialized || _loadPromise) return
-    if (typeof window === 'undefined') return
+export function initStarknetProvider(): Promise<void> {
+    if (_initialized || typeof window === 'undefined') {
+        return Promise.resolve()
+    }
+    if (_loadPromise) {
+        return _loadPromise
+    }
 
     _loadPromise = (async () => {
         // @ts-ignore
-        const injectedModule = await import('starknetkit/injected')
+        const injectedModule = await retryChunkLoad(() => import('starknetkit/injected'))
         // @ts-ignore
-        const webWalletModule = await import('starknetkit/webwallet')
+        const webWalletModule = await retryChunkLoad(() => import('starknetkit/webwallet'))
         // @ts-ignore
-        const controllerModule = await import('starknetkit/controller')
+        const controllerModule = await retryChunkLoad(() => import('starknetkit/controller'))
 
         const InjectedConnector = (injectedModule as any).InjectedConnector
         const WebWalletConnector = (webWalletModule as any).WebWalletConnector
@@ -78,10 +83,11 @@ export function initStarknetProvider(): void {
             defaultConnectors.push(new InjectedConnector({ options: { id: 'xverse' } }))
             defaultConnectors.push(new InjectedConnector({ options: { id: 'fordefi' } }))
             defaultConnectors.push(new InjectedConnector({ options: { id: 'okxwallet', icon: getKnownConnectorIconBase64('okxwallet') } }))
+            defaultConnectors.push(new InjectedConnector({ options: { id: 'outis', icon: getKnownConnectorIconBase64('outis') } }))
         }
 
         if ((isAndroid || isIOS) && !defaultConnectors.some(c => c.id === 'braavos')) {
-            const starknet = (await import('@starknet-io/get-starknet-core')).default
+            const starknet = (await retryChunkLoad(() => import('@starknet-io/get-starknet-core'))).default
             const injectedWallets = isAndroid ? await starknet.getAvailableWallets() : []
             if (injectedWallets.length) {
                 defaultConnectors.push(...injectedWallets.map(w => new InjectedConnector({ options: { id: w.id } })))
@@ -108,6 +114,8 @@ export function initStarknetProvider(): void {
         console.error('[layerswap/wallets] Starknet provider initialization failed', error)
         _loadPromise = null
     })
+
+    return _loadPromise
 }
 
 /** Visible for tests. Resets singleton init so a fresh init can run. */

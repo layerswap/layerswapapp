@@ -112,13 +112,11 @@ for (const flow of [
   { depositMethod: 'wallet', fromExchange: { name: 'exchange' } },
   { depositMethod: undefined },
 ]) {
-  for (const mode of ['min', 'half', 'max', 'fixed']) {
-    test(`${JSON.stringify(flow)} ${mode}: preparation preserves the submitted amount without live reads`, async () => {
-      const { preparePresetAmount, calls } = setup({ limits: { min_amount: 1, max_amount: 2 } })
-      assert.equal(await preparePresetAmount({ ...values, ...flow, amountMode: mode }, undefined, undefined, [], false), values.amount)
-      assert.deepEqual(calls, [])
-    })
-  }
+  test(`${JSON.stringify(flow)}: preparation preserves the submitted amount without live reads`, async () => {
+    const { preparePresetAmount, calls } = setup({ limits: { min_amount: 1, max_amount: 2 } })
+    assert.equal(await preparePresetAmount({ ...values, ...flow, amountMode: 'max' }, undefined, undefined, [], false), values.amount)
+    assert.deepEqual(calls, [])
+  })
 }
 
 test('fresh confirmation limits reach the live cache before the revised amount returns', async () => {

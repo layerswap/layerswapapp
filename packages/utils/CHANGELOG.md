@@ -1,5 +1,28 @@
 # @layerswap/utils
 
+## 2.7.1
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [acaa41b]
+  - @layerswap/widget-types@2.7.1
+
+## 2.7.0
+
+### Minor Changes
+
+- Persisted stores no longer touch Node's `localStorage` during server rendering.
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [8f004b1]
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @layerswap/widget-types@2.7.0
+
 ## 2.6.0
 
 ### Patch Changes
