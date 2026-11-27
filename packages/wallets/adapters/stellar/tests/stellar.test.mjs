@@ -48,6 +48,8 @@ import { StellarConnectionService } from '../dist/esm/service/StellarConnectionS
 import { toStellarConnector } from '../dist/esm/service/stellarConnector.js'
 import { stellarStore } from '../dist/esm/service/stellarStore.js'
 import { stellarKitManager } from '../dist/esm/service/stellarKitManager.js'
+import { createStellarConnection } from '../dist/esm/service/createStellarConnection.js'
+import { connectModalStore } from '@layerswap/wallet-core'
 import { createStellarTransfer } from '../dist/esm/transferProvider/createStellarTransfer.js'
 import { toSigningError, toTransferError } from '../dist/esm/transferProvider/toTransferError.js'
 import { isUserRejection } from '@layerswap/wallet-core/errors'
@@ -955,4 +957,63 @@ test('Stellar error mapping is pure: prompt vocabulary applies to the signing st
     // Errors that already carry a label pass through untouched.
     const labelled = Object.assign(new Error('expired'), { name: 'TransactionExpired' })
     assert.equal(toTransferError(labelled), labelled)
+})
+
+function failFirstKitInit(t) {
+    const hadWindow = 'window' in globalThis
+    if (!hadWindow) {
+        globalThis.window = {}
+    }
+    t.after(() => {
+        stellarKitManager.dispose()
+        stellarStore.getState().setWallets([])
+        if (!hadWindow) {
+            delete globalThis.window
+        }
+    })
+    stellarKitManager.dispose()
+
+    const chunkError = Object.assign(new Error('Loading chunk 4318 failed.'), { name: 'ChunkLoadError' })
+    const recovered = { id: 'freighter', name: 'Freighter', type: 'HOT_WALLET', isAvailable: true, isPlatformWrapper: false, icon: '', url: '' }
+    const state = { attempts: 0, chunkError, recovered }
+    t.mock.method(stellarKitManager, 'initialize', async () => {
+        state.attempts += 1
+        if (state.attempts === 1) {
+            throw chunkError
+        }
+        stellarStore.getState().setWallets([recovered])
+    })
+    return state
+}
+
+test('a failed kit initialization is retried by the next wallet call', async t => {
+    const state = failFirstKitInit(t)
+    const refreshSupportedWallets = t.mock.fn(async () => [])
+    t.mock.method(stellarKitManager, 'requireKit', () => ({ refreshSupportedWallets }))
+
+    await assert.rejects(stellarKitManager.init(), error => error === state.chunkError)
+    await assert.doesNotReject(stellarKitManager.refreshWallets())
+    assert.equal(state.attempts, 2)
+    assert.equal(refreshSupportedWallets.mock.callCount(), 1)
+})
+
+test('opening the connect modal recovers connectors after a failed kit initialization', async t => {
+    const state = failFirstKitInit(t)
+    const connection = createStellarConnection({
+        networks: [],
+        networkAdapter: { getId: network => network.name, isStellarNetwork: () => true, getIcon: () => undefined },
+    })
+    t.after(() => {
+        connectModalStore._syncOpen(false)
+        connection.destroy()
+    })
+
+    await assert.rejects(stellarKitManager.init(), error => error === state.chunkError)
+    assert.deepEqual(connection.store.getState().availableConnectors, [])
+
+    connectModalStore._syncOpen(true)
+    assert.equal(state.attempts, 2)
+    await stellarKitManager.init()
+
+    assert.deepEqual(connection.store.getState().availableConnectors.map(connector => connector.id), ['freighter'])
 })

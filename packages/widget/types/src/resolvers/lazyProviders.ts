@@ -41,8 +41,9 @@ export class LazyBalanceProvider extends BalanceProvider {
         if (!this.loadingPromise) {
             this.loadingPromise = this.loader().then(p => {
                 this.instance = p;
-                this.loadingPromise = null;
                 return p;
+            }).finally(() => {
+                this.loadingPromise = null;
             });
         }
         return this.loadingPromise;
@@ -76,8 +77,9 @@ export class LazyGasProvider implements GasProvider {
         if (!this.loadingPromise) {
             this.loadingPromise = this.loader().then(p => {
                 this.instance = p;
-                this.loadingPromise = null;
                 return p;
+            }).finally(() => {
+                this.loadingPromise = null;
             });
         }
         return this.loadingPromise;

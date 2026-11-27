@@ -18,6 +18,10 @@
     "./errors": {
       "types": "./dist/types/lib/walletErrors.d.ts",
       "default": "./dist/esm/lib/walletErrors.js"
+    },
+    "./chunkLoadRecovery": {
+      "types": "./dist/types/lib/chunkLoadRecovery.d.ts",
+      "default": "./dist/esm/lib/chunkLoadRecovery.js"
     }
   },
   "sideEffects": false,
