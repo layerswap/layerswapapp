@@ -48,7 +48,7 @@ import { hasSwapExecutionProgress, hasUnacknowledgedWalletAction } from '@/helpe
 import { formatTokenAmount } from '@/components/utils/formatTokenAmount';
 import { startPresetPreparation } from '@/lib/preparePresetAmount';
 import { estimateDepositActionGas } from '@/lib/depositActionGas';
-import { isAmountPreset, isWalletAmountFlow, isSmallAmountRevision, amountPresetSource, amountPresetGasFloorScope, resolveAmountPresetGasFloor, AmountPresetChangedError, AMOUNT_ADJUSTMENT_MESSAGE, DEPOSIT_FEE_ADJUSTMENT_MESSAGE, type AmountPresetGasFloor, type AmountPresetProposal } from '@/lib/amountPresets';
+import { isAmountPreset, isWalletAmountFlow, isSmallAmountRevision, amountPresetSource, amountPresetGasFloorScope, resolveAmountPresetGasFloor, AmountPresetChangedError, AMOUNT_ADJUSTMENT_MESSAGE, DEPOSIT_FEE_ADJUSTMENT_MESSAGE, FAILED_MIN_GAS_FLOOR_TTL_MS, type AmountPresetGasFloor, type AmountPresetProposal } from '@/lib/amountPresets';
 
 export const SwapDataStateContext = createContext<SwapContextData | null>(null);
 
@@ -150,9 +150,20 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const latestDepositGasFloor = useRef<AmountPresetGasFloor | undefined>(undefined)
     latestDepositGasFloor.current = depositGasFloor
     const recordDepositGasFloor = useCallback((floor: AmountPresetGasFloor) => setDepositGasFloor(current =>
-        current && current.scope === floor.scope && current.gas.gas === floor.gas.gas && current.gas.maxFee === floor.gas.maxFee
+        current && current.scope === floor.scope && current.expiresAt === floor.expiresAt && current.gas.gas === floor.gas.gas && current.gas.maxFee === floor.gas.maxFee
             && current.gas.reserve === floor.gas.reserve && current.gas.token?.symbol === floor.gas.token?.symbol ? current : floor), [])
     const clearDepositGasFloor = useCallback(() => setDepositGasFloor(undefined), [])
+    useEffect(() => {
+        if (depositGasFloor?.expiresAt === undefined) {
+            return
+        }
+        // Clearing state also changes the live preset's cache key, so an expired
+        // Min failure retries even when its balance and route have not changed.
+        const timeout = setTimeout(() => {
+            setDepositGasFloor(current => current === depositGasFloor ? undefined : current)
+        }, Math.max(0, depositGasFloor.expiresAt - Date.now()))
+        return () => clearTimeout(timeout)
+    }, [depositGasFloor])
     const [presetRevisionProposal, setPresetRevisionProposal] = useState<AmountPresetProposal>()
     const latestPresetRevisionProposal = useRef<AmountPresetProposal | undefined>(undefined)
     latestPresetRevisionProposal.current = presetRevisionProposal
@@ -820,10 +831,12 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             if (!depositGas) return finish(created, sendValues)
             const floor = { scope: floorScope, gas: depositGas }
             if (values.amountMode === 'min') {
-                // Exception: Min can't be reduced, so keep the observed fee for later affordability checks even if this attempt fails.
-                recordDepositGasFloor(floor)
+                // Throttle retries of an unaffordable Min without leaving it stuck
+                // forever: a rejected candidate has no withdrawal view to refresh its fee.
+                recordDepositGasFloor({ ...floor, expiresAt: Date.now() + FAILED_MIN_GAS_FLOOR_TTL_MS })
             }
-            const affordable = await preparation.calculate(gasFloor, async () => depositGas)
+            // This swap's exact fee replaces the historical deposit-fee floor.
+            const affordable = await preparation.calculate(undefined, async () => depositGas)
             assertCurrentSource()
             if (Number(affordable) >= Number(sendValues.amount)) return finish(created, sendValues, floor)
             sendValues = revise(affordable, 'deposit-fee', floor)
@@ -832,7 +845,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             const replacementGas = await estimateDepositActionGas(replacement.swap.deposit_actions, sendValues, address, selectedWallet)
             assertCurrentSource()
             if (!replacementGas) return finish(replacement, sendValues, floor)
-            const stillAffordable = await preparation.calculate(gasFloor, async () => replacementGas)
+            const stillAffordable = await preparation.calculate(undefined, async () => replacementGas)
             assertCurrentSource()
             const replacementFloor = { scope: floorScope, gas: replacementGas }
             if (Number(stillAffordable) < Number(sendValues.amount)) propose(stillAffordable, DEPOSIT_FEE_ADJUSTMENT_MESSAGE, replacementFloor)

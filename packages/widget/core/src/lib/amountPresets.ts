@@ -31,15 +31,21 @@ export function amountPresetSource(network?: string, token?: string, accountId?:
 
 /** Fee observed for a swap attempt's real deposit transaction, kept by the swap
  * context. Before a swap exists the preset can only price a plain transfer, so
- * every later Max for the same route and funding account budgets at least this. */
-export type AmountPresetGasFloor = { scope: string; gas: GasWithToken }
+ * later presets for the same route and funding account budget at least this.
+ * Failed Min attempts expire because no accepted swap can refresh their fee. */
+export type AmountPresetGasFloor = { scope: string; gas: GasWithToken; expiresAt?: number }
+
+export const FAILED_MIN_GAS_FLOOR_TTL_MS = 60_000
 
 export function amountPresetGasFloorScope(presetSource: string | undefined, destinationNetwork: string | undefined, destinationToken: string | undefined): string {
     return JSON.stringify([presetSource, destinationNetwork, destinationToken])
 }
 
 export function resolveAmountPresetGasFloor(floor: AmountPresetGasFloor | undefined, scope: string): GasWithToken | undefined {
-    return floor?.scope === scope ? floor.gas : undefined
+    if (!floor || floor.scope !== scope || (floor.expiresAt !== undefined && floor.expiresAt <= Date.now())) {
+        return undefined
+    }
+    return floor.gas
 }
 
 /** The fresh estimate still owns failures and the fee token. The floor only raises
@@ -135,7 +141,7 @@ export async function calculatePresetAmount({ network, token, balance, limit, mi
     minimum?: number
     mode?: AmountPreset
     probeAmount?: string
-    /** At confirmation, keep the reviewed amount if it still fits this preset's bounds. */
+    /** At confirmation, keep a reviewed amount the payable balance and route limits still cover. */
     preserveAmount?: boolean
     estimateGas: (amount: number) => Promise<GasWithToken | undefined>
 }): Promise<string> {
@@ -154,6 +160,9 @@ export async function calculatePresetAmount({ network, token, balance, limit, mi
     }
 
     const probe = Number(probeAmount)
+    if (preserveAmount && mode !== 'min' && probe < Number(minAmount)) {
+        throw new AmountPresetUnavailableError('The minimum swap amount increased. Select an amount again.')
+    }
     const initialAmount = mode === 'min'
         ? (preserveAmount && probe >= Number(minAmount) && probe <= upperBound ? probe : Number(minAmount))
         : Math.min(Number.isFinite(probe) && probe > 0 ? probe : upperBound, upperBound)
@@ -171,9 +180,13 @@ export async function calculatePresetAmount({ network, token, balance, limit, mi
         const feeToken = gas?.token ?? network.token
         const paysFeeInSource = !feeToken || feeToken.symbol === token.symbol
         const requiredFee = paysFeeInSource ? resolveGasBalanceBudget(gas) : 0
-        const withinPreset = candidate <= payable * (mode === 'half' ? 0.5 : 1)
+        const presetScale = mode === 'half' ? 0.5 : 1
+        const withinPreset = candidate <= payable * presetScale
             && (mode !== 'min' || candidate >= Number(minAmount))
-        if (preserveAmount && candidate === probe && withinPreset) return amountText(candidate, token.decimals)
+        // Half only selects the form amount. A reviewed amount the full payable
+        // balance still covers is kept; a replacement is Half of what remains.
+        const fundable = mode === 'half' ? candidate <= payable : withinPreset
+        if (preserveAmount && candidate === probe && fundable) return amountText(candidate, token.decimals)
         if (mode === 'min' && target > payable)
             throw new AmountPresetUnavailableError(balance.amount >= target && paysFeeInSource
                 ? `Not enough ${feeToken?.symbol ?? token.symbol} for network fees`
@@ -189,7 +202,6 @@ export async function calculatePresetAmount({ network, token, balance, limit, mi
         // Account reserves stay separate and are never multiplied.
         const maximumFee = gas?.maxFee ?? gas?.gas ?? 0
         const feeMargin = paysFeeInSource ? requiredFee - maximumFee - (gas?.reserve ?? 0) : 0
-        const presetScale = mode === 'half' ? 0.5 : 1
         const smallFeeIncrease = attempt > 0 && mode !== 'min'
             && candidate > target && candidate - target <= feeMargin * presetScale
         const cushionedTarget = Number(resolvePresetAmount(mode, Math.max(0, payable - feeMargin), minimum ?? 0, token.decimals))

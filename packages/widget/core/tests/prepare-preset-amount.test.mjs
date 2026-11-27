@@ -1,35 +1,16 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { createRequire } from 'node:module'
+import { loadSource } from './helpers/source.mjs'
+import { createPresetPreparation } from './helpers/preset-preparation.mjs'
+
 const require = createRequire(import.meta.url)
-import { loadSource, amountPresets } from './helpers/source.mjs'
 
 const token = { symbol: 'ETH', decimals: 6 }
 const network = { name: 'ETHEREUM_MAINNET', token }
 const values = { amount: '0.95', from: network, fromAsset: token, to: { name: 'BASE_MAINNET' },
   toAsset: token, destination_address: 'destination', depositMethod: 'wallet', refuel: false }
-const setup = ({ balance = 1, gas = 0.1, maxFee, reserve, limits = { min_amount: 0.001, max_amount: 2 } } = {}) => {
-  const calls = []
-  const { startPresetPreparation } = loadSource('lib/preparePresetAmount.ts', {
-    '@layerswap/widget-types': { usesDepository: () => false },
-    '@/hooks/useFee': { buildLimitsUrl: args => { calls.push(['limits', args]); return 'limits' } },
-    './apiClients/layerSwapApiClient': { default: class { async fetcher() { return { data: limits } } } },
-    './extendedRoutes/registry': { resolveExtendedRoutePlan: () => undefined },
-    './extendedRoutes/transforms': {},
-    '@/stores/balanceStore': { useBalanceStore: { getState: () => ({ fetchBalance: async (address, chain, options) => {
-      calls.push(['balance', address, chain.name, options])
-      return { balances: [{ network: chain.name, token: token.symbol, amount: balance }] }
-    } }) } },
-    './resolvers/resolverService': { resolverService: { getGasResolver: () => ({ getGas: async args => {
-      calls.push(['gas', args]); return { gas, maxFee, reserve, token }
-    } }) } },
-    './amountPresets': amountPresets,
-  })
-  // The confirmation check reads once and calculates once.
-  const preparePresetAmount = async (values, address, wallet, sourceRoutes, useGasless, publishLimits) =>
-    (await startPresetPreparation(values, address, wallet, sourceRoutes, useGasless, publishLimits)).calculate()
-  return { preparePresetAmount, startPresetPreparation, calls }
-}
+const setup = options => createPresetPreparation({ token, ...options })
 
 test('a preparation recalculates from the same balance and limits with another fee source', async () => {
   const { startPresetPreparation, calls } = setup({ gas: 0.1 })
@@ -95,12 +76,26 @@ test('the confirmation check lowers an amount when the fresh fee exceeds the res
 })
 
 
-test('50% preparation refreshes spendable balance and never increases a reviewed amount', async () => {
+test('Half confirmation preserves a reviewed amount within the full spendable balance', async () => {
   const decreased = setup({ balance: 0.8, gas: 0.1 })
-  assert.equal(await decreased.preparePresetAmount({ ...values, amountMode: 'half', amount: '0.449' }, 'source', {}, [], false), '0.349')
+  assert.equal(await decreased.preparePresetAmount({ ...values, amountMode: 'half', amount: '0.449' }, 'source', {}, [], false), '0.449')
   const increased = setup({ balance: 2, gas: 0.01 })
   assert.equal(await increased.preparePresetAmount({ ...values, amountMode: 'half', amount: '0.449' }, 'source', {}, [], false), '0.449')
 })
+
+test('Half confirmation replaces an unfundable amount with Half of the payable balance or route cap', async () => {
+  const decreased = setup({ balance: 0.5, gas: 0.1 })
+  assert.equal(await decreased.preparePresetAmount({ ...values, amountMode: 'half', amount: '0.449' }, 'source', {}, [], false), '0.199')
+  const capped = setup({ limits: { min_amount: 0.1, max_amount: 0.4 } })
+  assert.equal(await capped.preparePresetAmount({ ...values, amountMode: 'half', amount: '0.449' }, 'source', {}, [], false), '0.2')
+})
+
+for (const mode of ['half', 'max']) {
+  test(`${mode} confirmation refuses a reviewed amount below a refreshed route minimum`, async () => {
+    const raised = setup({ limits: { min_amount: 0.5, max_amount: 2 } })
+    await assert.rejects(raised.preparePresetAmount({ ...values, amountMode: mode, amount: '0.449' }, 'source', {}, [], false), /minimum swap amount increased/)
+  })
+}
 
 test('Min preparation returns a new required minimum for review and rejects an unfundable minimum', async () => {
   const raised = setup({ limits: { min_amount: 0.2, max_amount: 2 } })

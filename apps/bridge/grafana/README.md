@@ -182,9 +182,10 @@ optional unless the emitting code has them at that step.
 | diagnostic | `retry_requested`, `suspected_stall`, `transfer_blocked` | per retry, timer threshold or blocking-state transition |
 
 For wallet amount presets, creation spans confirmation preparation, deposit-fee
-verification and any replacement request. Only the accepted swap emits
-`swap_created` and a swap ID. `swap_creation_failed` means the attempt ended
-without an accepted swap; provisional API IDs remain private. An amount proposal
+verification and any replacement request. `swap_created` and lifecycle callbacks
+carry only the accepted swap ID. `swap_creation_failed` means the attempt ended
+without an accepted swap. Request telemetry retains provisional API IDs for
+diagnosing abandoned candidates. An amount proposal
 waiting for the user's adjustment reports outcome `blocked` with reason code
 `amount_adjustment_required`, so failure panels and alerts (outcome `failed`)
 exclude it. The creation timer covers this whole attempt.

@@ -5,6 +5,7 @@ import { JSDOM } from 'jsdom'
 import { create } from 'zustand'
 import { createSwapContext } from './helpers/swap-context.mjs'
 import { loadSource, amountPresets } from './helpers/source.mjs'
+import { createPresetPreparation } from './helpers/preset-preparation.mjs'
 
 const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://widget.example' })
 const previous = Object.getOwnPropertyDescriptors(globalThis)
@@ -42,8 +43,11 @@ const context = createSwapContext({
     }) },
     '@/stores/swapRouteHistoryStore': { recordSwapRouteHistory: response => state.history.push(response.swap.id) },
     '@/stores/contractAddressStore': { useContractAddressStore: () => ({ checkContractStatus: async () => ({ sourceIsContract: false }) }) },
-    '@/lib/preparePresetAmount': { startPresetPreparation: async () => {
+    '@/lib/preparePresetAmount': { startPresetPreparation: async (...args) => {
       state.prepares++
+      if (state.prepare) {
+        return state.prepare(...args)
+      }
       // The confirmation check estimates live; the post-creation check supplies the deposit fee.
       return { calculate: (gasFloor, estimateGas) => {
         return estimateGas ? state.verify(gasFloor, estimateGas) : state.preparation.promise
@@ -71,12 +75,19 @@ beforeEach(async () => {
   container = document.createElement('div'); document.body.append(container); root = createRoot(container)
   Object.assign(state, { account: { id: 'wallet', address: 'source' }, created: [], announced: [], lifecycle: [], history: [], prepares: 0,
     preparation: Promise.withResolvers(), verification: Promise.withResolvers(),
-    depositActions: undefined, depositGas: undefined, provider: undefined, request: undefined })
+    depositActions: undefined, depositGas: undefined, provider: undefined, request: undefined, prepare: undefined })
   state.verify = () => state.verification.promise
   values = { from: network, to: network, fromAsset: token, toAsset: token, amount: '0.9', destination_address: 'destination',
     depositMethod: 'wallet', amountMode: 'max', amountPresetSource: amountPresets.amountPresetSource(network.name, token.symbol, 'wallet', 'source') }
   await render()
   await act(() => { updates.setSubmitedFormValues(values); updates.setSwapViewMounted(true) })
+})
+afterEach(async () => { await act(() => root.unmount()); container.remove() })
+after(() => {
+  dom.window.close()
+  for (const key of ['window', 'document', 'localStorage', 'IS_REACT_ACT_ENVIRONMENT']) {
+    if (previous[key]) Object.defineProperty(globalThis, key, previous[key]); else delete globalThis[key]
+  }
 })
 
 for (const mode of ['min', 'max']) {
@@ -143,13 +154,6 @@ test('a provider submission arriving between render and click prevents detaching
     if (guardAtRender()) updates.startFreshSwapAttempt()
   })
   assert.equal(data.swapId, 'existing')
-})
-afterEach(async () => { await act(() => root.unmount()); container.remove() })
-after(() => {
-  dom.window.close()
-  for (const key of ['window', 'document', 'localStorage', 'IS_REACT_ACT_ENVIRONMENT']) {
-    if (previous[key]) Object.defineProperty(globalThis, key, previous[key]); else delete globalThis[key]
-  }
 })
 
 test('a changed final Max stops before creation and proposes the new amount without touching the draft', async () => {
@@ -298,6 +302,65 @@ for (const [mode, fresh] of [['min', '1'], ['half', '0.4']]) {
 
 const depositActions = [{ type: 'transfer', step: 'deposit', status: 'action_required', to_address: 'deposit', amount: 0.9 }]
 
+for (const plainGas of [0.005, 0.012]) {
+  test(`Half stays at its reviewed amount with a ${plainGas} plain fee and a 0.012 deposit fee`, async () => {
+    values = { ...values, amountMode: 'half', amount: '0.49745' }
+    state.prepare = createPresetPreparation({
+      token, balance: 1, gas: plainGas, limits: { min_amount: 0.497, max_amount: 2 },
+    }).startPresetPreparation
+    Object.assign(state, { depositActions, depositGas: { gas: 0.012, token } })
+    await act(() => updates.setSubmitedFormValues(values))
+    await act(() => updates.createSwap(values, {}))
+    assert.deepEqual(state.created.map(request => request.amount), ['0.49745'])
+    assert.equal(data.swapBasicData.requested_amount, '0.49745')
+    assert.equal(data.presetRevisionProposal, undefined)
+    assert.deepEqual(state.announced, ['created'])
+  })
+}
+
+test('failed Min retries wait for the floor to expire, then accept cheaper fees on the same route and account', async t => {
+  t.mock.timers.enable({ apis: ['Date', 'setTimeout'], now: 1000 })
+  values = { ...values, amountMode: 'min', amount: '0.009' }
+  state.prepare = createPresetPreparation({
+    token, balance: 0.01, gas: 0.0001, limits: { min_amount: 0.009, max_amount: 2 },
+  }).startPresetPreparation
+  Object.assign(state, { depositActions, depositGas: { gas: 0.0012, token } })
+  await act(() => updates.setSubmitedFormValues(values))
+  await act(() => assert.rejects(updates.createSwap(values, {}), /Not enough ETH for network fees/))
+  assert.equal(state.created.length, 1)
+  assert.deepEqual(state.announced, [])
+  assert.equal(data.amountPresetLocked, false)
+  const failedFloor = data.depositGasFloor
+  assert.equal(failedFloor.expiresAt, Date.now() + amountPresets.FAILED_MIN_GAS_FLOOR_TTL_MS)
+
+  state.depositGas = { gas: 0.0004, token }
+  await act(() => assert.rejects(updates.createSwap(values, {}), /Not enough ETH for network fees/))
+  assert.equal(state.created.length, 1, 'immediate retries cannot create abandoned API swaps')
+  assert.equal(data.depositGasFloor, failedFloor, 'a blocked retry must not extend the deadline')
+  await act(() => t.mock.timers.tick(amountPresets.FAILED_MIN_GAS_FLOOR_TTL_MS - 1))
+  assert.equal(data.depositGasFloor, failedFloor)
+  await act(() => t.mock.timers.tick(1))
+  assert.equal(data.depositGasFloor, undefined, 'expiry must publish state so live presets recalculate')
+
+  await act(() => updates.createSwap(values, {}))
+  assert.deepEqual(state.created.map(request => request.amount), ['0.009', '0.009'])
+  assert.deepEqual(state.announced, ['created-2'])
+  assert.deepEqual(state.history, ['created-2'])
+  assert.equal(data.depositGasFloor.gas.gas, 0.0004)
+  assert.equal(data.depositGasFloor.expiresAt, undefined)
+  assert.equal(data.swapBasicData.requested_amount, '0.009')
+})
+
+test('a refreshed deposit fee replaces a failed Min floor without being cleared by its old deadline', async t => {
+  t.mock.timers.enable({ apis: ['Date', 'setTimeout'], now: 1000 })
+  const scope = amountPresets.amountPresetGasFloorScope(values.amountPresetSource, network.name, token.symbol)
+  const gas = { gas: 0.0012, token }
+  await act(() => updates.recordDepositGasFloor({ scope, gas, expiresAt: Date.now() + amountPresets.FAILED_MIN_GAS_FLOOR_TTL_MS }))
+  await act(() => updates.recordDepositGasFloor({ scope, gas }))
+  await act(() => t.mock.timers.tick(amountPresets.FAILED_MIN_GAS_FLOOR_TTL_MS))
+  assert.deepEqual(data.depositGasFloor, { scope, gas }, 'even an unchanged fee replaces the expiring observation')
+})
+
 test('a large deposit fee keeps the reviewed amount until the proposal is accepted', async () => {
   const gas = { gas: 0.2, token }
   Object.assign(state, { depositActions, depositGas: gas })
@@ -320,8 +383,17 @@ test('a large deposit fee keeps the reviewed amount until the proposal is accept
 test('a small deposit fee shortfall publishes only the affordable replacement', async () => {
   Object.assign(state, { depositActions, depositGas: { gas: 0.004, token } })
   state.preparation.resolve(values.amount)
-  state.verification.resolve('0.895')
+  const floor = { scope: amountPresets.amountPresetGasFloorScope(values.amountPresetSource, network.name, token.symbol), gas: { gas: 0.01, token } }
+  await act(() => updates.recordDepositGasFloor(floor))
+  let verifications = 0
+  state.verify = async (gasFloor, estimateGas) => {
+    verifications++
+    assert.equal(gasFloor, undefined, 'both the candidate and replacement must use their own exact fee without the old floor')
+    assert.equal(await estimateGas(), state.depositGas)
+    return '0.895'
+  }
   await act(() => updates.createSwap(values, {}))
+  assert.equal(verifications, 2)
   assert.deepEqual(state.created.map(request => request.amount), ['0.9', '0.895'])
   assert.equal(data.swapBasicData.requested_amount, '0.895')
   assert.equal(data.presetRevisionProposal, undefined)
