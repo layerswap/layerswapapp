@@ -1,4 +1,4 @@
-import { BookOpen, BookUser, Gift, Map, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus } from "lucide-react";
+import { BookOpen, BookUser, Gift, Map, ScrollText, LibraryIcon, Shield, MessageSquarePlus } from "lucide-react";
 import { FC, useState } from "react";
 import { useIntercom } from "react-use-intercom";
 import ChatIcon from "../Icons/ChatIcon";
@@ -44,19 +44,16 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path?: string) => void }> = ({ g
                 }} target="_blank" icon={<ChatIcon strokeWidth={2} className="h-5 w-5" />} >
                     Help
                 </Menu.Item>
-                <Menu.Item pathname='https://learn.layerswap.io/' target="_blank" icon={<BookOpen className="h-5 w-5" />} >
-                    Docs for Users
-                </Menu.Item>
-                <Menu.Item pathname='https://learn.layerswap.io/user-docs/partners-and-integrations/' target="_blank" icon={<Users className="h-5 w-5" />} >
-                    Docs for Partners
+                <Menu.Item pathname='https://docs.layerswap.io/home' target="_blank" icon={<BookOpen className="h-5 w-5" />} >
+                    Docs
                 </Menu.Item>
             </Menu.Group>
 
             <Menu.Group>
-                <Menu.Item pathname='https://learn.layerswap.io/user-docs/more-information/privacy-policy/' target="_blank" icon={<Shield className="h-5 w-5" />} >
+                <Menu.Item pathname='https://docs.layerswap.io/legal/privacy-policy' target="_blank" icon={<Shield className="h-5 w-5" />} >
                     Privacy Policy
                 </Menu.Item>
-                <Menu.Item pathname='https://learn.layerswap.io/user-docs/more-information/terms-of-services/' target="_blank" icon={<LibraryIcon className="h-5 w-5" />} >
+                <Menu.Item pathname='https://docs.layerswap.io/legal/terms-of-service' target="_blank" icon={<LibraryIcon className="h-5 w-5" />} >
                     Terms of Service
                 </Menu.Item>
             </Menu.Group>
