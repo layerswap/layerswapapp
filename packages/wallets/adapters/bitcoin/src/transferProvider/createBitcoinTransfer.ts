@@ -1,4 +1,4 @@
-import { NetworkType } from '@layerswap/widget-types';
+import { NetworkType, TransferFeeReviewRequired } from '@layerswap/widget-types';
 import { Network } from "@layerswap/widget-types";
 import { TransferProvider, TransferProps } from "@layerswap/widget-types";
 import { getAccount } from '@bigmi/client'
@@ -6,15 +6,17 @@ import { JsonRpcClient, KnownInternalNames } from "@layerswap/utils";
 import { sendTransaction } from "./sendTransaction"
 import { toTransferError } from "./toTransferError"
 import { getBitcoinConfig } from "../service/getBitcoinConfig"
+import { connectedPublicKey } from "../service/connectedPublicKey"
 
 export function createBitcoinTransfer(): TransferProvider {
     return {
+        reportsWalletPrompt: true,
         supportsNetwork(network: Network): boolean {
             return network.type === NetworkType.Bitcoin
         },
 
         async executeTransfer(params: TransferProps): Promise<string> {
-            const { amount, callData, depositAddress, network } = params
+            const { amount, amountInBaseUnits, callData, depositAddress, network, reviewFee, onWalletPrompt } = params
 
             if (!depositAddress) {
                 throw new Error("Deposit address not provided")
@@ -29,22 +31,29 @@ export function createBitcoinTransfer(): TransferProvider {
 
             const rpcClient = new JsonRpcClient(network.node_url)
             const isTestnet = network?.name === KnownInternalNames.Networks.BitcoinTestnet
-            const publicClient = config.getClient()
+
+            const feeToken = network.token ?? params.token
 
             try {
                 const txHash = await sendTransaction({
                     amount,
+                    amountInBaseUnits,
+                    onWalletPrompt,
+                    reviewFee: reviewFee ? (fee, requiredFee) => reviewFee({
+                        token: feeToken, gas: Number(fee) / 1e8, requiredFee: Number(requiredFee) / 1e8,
+                    }) : undefined,
                     depositAddress,
                     userAddress: params.selectedWallet.address,
+                    publicKey: connectedPublicKey(params.selectedWallet.address),
                     isTestnet,
                     rpcClient,
                     callData,
                     connector,
-                    publicClient
                 })
 
                 return txHash
             } catch (error) {
+                if (error instanceof TransferFeeReviewRequired) throw error
                 throw toTransferError(error)
             }
         }

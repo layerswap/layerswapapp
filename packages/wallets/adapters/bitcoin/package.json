@@ -47,6 +47,7 @@
   },
   "dependencies": {
     "@bitcoinerlab/secp256k1": "^1.2.0",
+    "@metamask/multichain-api-client": "0.12.0",
     "@wallet-standard/app": "^1.1.1",
     "axios": "catalog:",
     "bitcoin-address-validation": "^3.0.0",

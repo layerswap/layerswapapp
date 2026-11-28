@@ -1,12 +1,17 @@
 import { type Wallet } from '../wallet';
 import { Network, NetworkRoute, NetworkWithTokens, Token } from "../types"
 import { TokenBalance } from "./balanceModels"
+import type { GasWithToken } from "./gas"
+
+export class TransferFeeReviewRequired extends Error {}
 
 export type TransferProps = {
     network: Network,
     token: Token,
     callData: string
     amountInBaseUnits?: string
+    reviewFee?: (fee: GasWithToken) => Promise<void>
+    onWalletPrompt?: () => void
     encodedArgs?: string[] | null
     depositAddress?: string
     amount: number
@@ -61,6 +66,7 @@ export type WalletWithdrawal = {
 export interface TransferProvider {
     withdrawal?: WalletWithdrawal
     atomicBatch?: AtomicBatchProvider
+    reportsWalletPrompt?: boolean
     supportsNetwork(network: Network): boolean
     executeTransfer(params: TransferProps, wallet?: Wallet, onProgress?: (info: TransferProgress | undefined) => void): Promise<string>
 }

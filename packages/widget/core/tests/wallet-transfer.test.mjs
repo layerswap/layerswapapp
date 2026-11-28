@@ -141,6 +141,32 @@ for (const [callData, expectedData] of [[null, '0x'], [undefined, '0x'], ['', '0
   })
 }
 
+for (const [network, reportsWalletPrompt] of [[{ name: 'BITCOIN_MAINNET', type: 'bitcoin' }, false], [{ name: 'CUSTOM_MAINNET', type: 'custom' }, true]]) {
+  test(`wallet prompt ownership follows the provider capability on ${network.name}`, async () => {
+    const lifecycle = []
+    const states = []
+    const ctx = {
+      ...calldataContext('0x', network),
+      setActionStateText: text => states.push(text),
+      onLifecycle: event => lifecycle.push(event),
+      reportsWalletPrompt: received => {
+        assert.equal(received.name, network.name)
+        return reportsWalletPrompt
+      },
+    }
+    await executeWalletTransfer(ctx, async props => {
+      assert.equal(typeof props.onWalletPrompt, reportsWalletPrompt ? 'function' : 'undefined')
+      assert.equal(lifecycle.filter(event => event.step === 'wallet_prompt_opened').length, reportsWalletPrompt ? 0 : 1)
+      props.onWalletPrompt?.()
+      assert.equal(lifecycle.filter(event => event.step === 'wallet_prompt_opened').length, 1)
+      return 'hash'
+    })
+    assert.deepEqual(states.slice(0, reportsWalletPrompt ? 2 : 1), reportsWalletPrompt
+      ? ['Preparing transaction…', 'Confirm in your wallet']
+      : ['Confirm in your wallet'])
+  })
+}
+
 for (const result of ['success', 'rejected', 'expired-again', 'refresh-failed', 'empty-refresh']) {
   test(`expired Stellar transfer refreshes once and reports prompts/timing: ${result}`, async t => {
     const lifecycle = []

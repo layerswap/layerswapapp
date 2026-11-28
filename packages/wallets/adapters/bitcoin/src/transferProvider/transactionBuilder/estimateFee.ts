@@ -1,31 +1,27 @@
-import { JsonRpcClient } from "@layerswap/utils";
-import axios from 'axios';
-import { Psbt } from 'bitcoinjs-lib'
+import axios from 'axios'
+import type { SignedInputTemplate } from './inputScripts.js'
+import { compactSizeLength } from './outputPolicy.js'
 
-export const estimateFee = async (psbt: Psbt, rpcClient: JsonRpcClient, version: 'testnet' | 'mainnet') => {
-    const recommendedFee = await fetchRecommendedFee(version)
-    const satsPerVbyte = recommendedFee.economyFee
-
-    const fee = calculateFee(psbt.txInputs.length, psbt.txOutputs.length, satsPerVbyte);
-    return fee
+export async function fetchFeeRate(version: 'testnet' | 'mainnet'): Promise<number> {
+  const base = `https://mempool.space${version === 'testnet' ? '/testnet' : ''}`
+  const { data } = await axios.get<{ economyFee: number; minimumFee: number }>(`${base}/api/v1/fees/recommended`)
+  const rate = Math.max(data.economyFee, data.minimumFee)
+  if (!Number.isFinite(rate) || rate <= 0) throw new Error('Invalid Bitcoin fee rate')
+  return rate
 }
 
-type RecommendedFeeResponse = {
-    fastestFee: number,
-    halfHourFee: number,
-    hourFee: number,
-    economyFee: number,
-    minimumFee: number
-}
+export function estimateHomogeneousFee(inputCount: number, input: SignedInputTemplate, outputScripts: readonly Uint8Array[], feeRate: number): bigint {
+  const scriptSigLength = input.scriptSig?.length ?? 0
+  const inputBytes = 32 + 4 + compactSizeLength(scriptSigLength) + scriptSigLength + 4
+  const outputBytes = outputScripts.reduce((total, script) => total + 8 + compactSizeLength(script.length) + script.length, 0)
+  const baseBytes = 4 + compactSizeLength(inputCount) + inputCount * inputBytes
+    + compactSizeLength(outputScripts.length) + outputBytes + 4
+  const witnessBytes = input.witness && inputCount > 0
+    ? 2 + inputCount * input.witness.reduce(
+      (total, item) => total + compactSizeLength(item.length) + item.length,
+      compactSizeLength(input.witness.length),
+    )
+    : 0
 
-async function fetchRecommendedFee(
-    version: 'mainnet' | 'testnet',
-): Promise<RecommendedFeeResponse> {
-    const base = `https://mempool.space${version === 'testnet' ? '/testnet' : ''}`
-    const { data } = await axios.get<RecommendedFeeResponse>(`${base}/api/v1/fees/recommended`)
-    return data
-}
-
-function calculateFee(numInputs: number, numOutputs: number, feePerByte: number) {
-    return (numInputs * 148 + numOutputs * 34 + 10) * feePerByte;
+  return BigInt(Math.ceil(Math.ceil((baseBytes * 4 + witnessBytes) / 4) * feeRate))
 }

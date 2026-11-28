@@ -1,12 +1,14 @@
 import axios from 'axios'
-import { Psbt, Transaction, networks, opcodes, script, initEccLib } from 'bitcoinjs-lib'
+import { Psbt, Transaction, address, networks, opcodes, script, initEccLib } from 'bitcoinjs-lib'
 import type { TransactionBuilderParams, Utxo } from './types'
-import { estimateFee } from './estimateFee'
+import { estimateHomogeneousFee, fetchFeeRate } from './estimateFee.js'
+import { dustThreshold } from './outputPolicy.js'
+import { requireBitcoinInputType, signedInputTemplate, signingFields } from './inputScripts.js'
+import { hexToBytes, sameBytes } from '../../bytes.js'
 import ecc from '@bitcoinerlab/secp256k1';
 
 initEccLib(ecc);
 
-const MIN_FEE = 0n // sats, as BigInt
 
 async function fetchUtxos(
   address: string,
@@ -23,100 +25,90 @@ async function fetchAllRawTxs(
 ): Promise<Record<string, Transaction>> {
   const base = `https://mempool.space${version === 'testnet' ? '/testnet' : ''}/api/tx/`
   const pairs = await Promise.all(
-    utxos.map(u =>
+    [...new Set(utxos.map(u => u.txid))].map(txid =>
       axios
-        .get<string>(`${base}${u.txid}/hex`)
-        .then(res => [u.txid, Transaction.fromHex(res.data)] as const),
+        .get<string>(`${base}${txid}/hex`)
+        .then(res => {
+          const transaction = Transaction.fromHex(res.data)
+          if (transaction.getId() !== txid) throw new Error('Bitcoin previous transaction does not match its id')
+          return [txid, transaction] as const
+        }),
     ),
   )
   return Object.fromEntries(pairs)
 }
 
-function selectUtxos(utxos: Utxo[], target: bigint): { selected: Utxo[]; total: bigint } {
-  const sorted = utxos.slice().sort((a, b) => a.value - b.value)
-  let sum = 0n
-  const selected: Utxo[] = []
-  for (const u of sorted) {
-    selected.push(u)
-    sum += BigInt(u.value)
-    if (sum >= target) break
+export async function buildPsbt(params: TransactionBuilderParams) {
+  const plan = await planTransaction(params, false)
+  const { network, changeScript, inputType, accountKey } = plan
+  const inputFields = signingFields(inputType, changeScript, accountKey, network)
+  const psbt = new Psbt({ network })
+  for (const { utxo, output, previous } of plan.inputs) {
+    if (inputType === 'p2pkh') {
+      psbt.addInput({ hash: utxo.txid, index: utxo.vout, nonWitnessUtxo: previous.toBuffer() })
+    } else {
+      psbt.addInput({ hash: utxo.txid, index: utxo.vout, witnessUtxo: output, ...inputFields })
+    }
   }
-  if (sum < target) {
-    throw new Error(`Insufficient funds: need ${target} sats, have only ${sum}`)
-  }
-  return { selected, total: sum }
+  for (const output of plan.outputs) psbt.addOutput(output)
+  return { psbt, fee: plan.fee, requiredFee: plan.requiredFee }
 }
 
-export async function buildPsbt({
-  amount,
-  depositAddress,
-  userAddress,
-  memo,
-  version,
-  rpcClient,
-}: TransactionBuilderParams) {
+export async function estimateBitcoinFees(params: TransactionBuilderParams): Promise<{ fee: bigint; requiredFee: bigint }> {
+  const { fee, requiredFee } = await planTransaction(params, true)
+  return { fee, requiredFee }
+}
+
+async function planTransaction({
+  amount, depositAddress, userAddress, publicKey, memo, version, feeRate,
+}: TransactionBuilderParams, estimateOnly: boolean) {
   const network = version === 'testnet' ? networks.testnet : networks.bitcoin
-
-  // fetch & cache
-  const utxos = await fetchUtxos(userAddress, version)
-  const rawTxMap = await fetchAllRawTxs(utxos, version)
-
-  // validate memo
-  const data = Buffer.from(memo || '', 'utf8')
+  const depositScript = address.toOutputScript(depositAddress, network)
+  const changeScript = address.toOutputScript(userAddress, network)
+  const inputType = requireBitcoinInputType(changeScript)
+  const accountKey = publicKey ? hexToBytes(publicKey) : undefined
+  if (BigInt(amount) < dustThreshold(depositScript)) throw new Error('Bitcoin amount is below the dust limit')
+  const data = new TextEncoder().encode(memo || '')
   if (data.length > 80) throw new Error('Memo too long; max 80 bytes')
 
-  let psbt: Psbt | undefined = undefined
-  let fee = MIN_FEE
-  let totalSelected: bigint
-  let error: unknown = undefined;
+  const rate = feeRate ?? await fetchFeeRate(version)
+  if (!Number.isFinite(rate) || rate <= 0) throw new Error('Invalid Bitcoin fee rate')
+  const utxos = await fetchUtxos(userAddress, version)
+  const rawTxMap = await fetchAllRawTxs(utxos, version)
+  const sorted = utxos.slice().sort((a, b) => a.value - b.value)
+  const outputs = [
+    { script: depositScript, value: BigInt(amount) },
+    { script: script.compile([opcodes.OP_RETURN, data]), value: 0n },
+  ]
+  const outputScripts = outputs.map(output => output.script)
+  const inputTemplate = signedInputTemplate(inputType, accountKey)
+  const feeFor = (inputCount: number, scripts: readonly Uint8Array[]) => estimateHomogeneousFee(inputCount, inputTemplate, scripts, rate)
+  const plan = { network, changeScript, inputType, accountKey }
 
-  try {
-    // 4️⃣ iterate until selection covers amount + fee
-    do {
-      const target = BigInt(amount) + fee
-      const { selected, total } = selectUtxos(utxos, target)
-      totalSelected = total
-
-      // build a fresh PSBT
-      psbt = new Psbt({ network })
-
-      // inputs
-      for (const u of selected) {
-        const tx = rawTxMap[u.txid]
-        const out = tx.outs[u.vout]
-        psbt.addInput({
-          hash: u.txid,
-          index: u.vout,
-          witnessUtxo: { script: out.script, value: out.value },
-        })
-      }
-
-      // main output
-      psbt.addOutput({ address: depositAddress, value: BigInt(amount) })
-
-      // OP_RETURN
-      psbt.addOutput({
-        script: script.compile([opcodes.OP_RETURN, data]),
-        value: 0n,
-      })
-
-      // re‐estimate fee on this draft PSBT
-      try {
-        const recommendedFee = await estimateFee(psbt, rpcClient, version)
-        fee = BigInt(recommendedFee.toFixed())
-      } catch (e) {
-        console.log(e)
-        fee = MIN_FEE
-      }
-    } while (totalSelected < BigInt(amount) + fee)
-    // 5️⃣ add change if any
-    const change = totalSelected - BigInt(amount) - fee
-    if (change > 0n) {
-      psbt.addOutput({ address: userAddress, value: change })
+  const inputs: { utxo: Utxo; output: { script: Uint8Array; value: bigint }; previous: Transaction }[] = []
+  let total = 0n
+  for (const utxo of sorted) {
+    const previous = rawTxMap[utxo.txid]
+    const output = previous?.outs[utxo.vout]
+    if (!output || output.value !== BigInt(utxo.value) || !sameBytes(output.script, changeScript)) {
+      throw new Error('Bitcoin UTXO does not match its previous transaction or account')
     }
-  } catch (e) {
-    error = e
-  }
+    total += output.value
+    inputs.push({ utxo, output, previous })
+    const feeWithoutChange = feeFor(inputs.length, outputScripts)
+    if (total < BigInt(amount) + feeWithoutChange) continue
 
-  return { psbt, utxos, fee, error }
+    const feeWithChange = feeFor(inputs.length, [...outputScripts, changeScript])
+    const change = total - BigInt(amount) - feeWithChange
+    const includeChange = change >= dustThreshold(changeScript)
+    const finalOutputs = includeChange ? [...outputs, { script: changeScript, value: change }] : outputs
+    const fee = total - finalOutputs.reduce((sum, item) => sum + item.value, 0n)
+    const requiredFee = includeChange ? feeWithChange : feeWithoutChange
+    return { ...plan, inputs, outputs: finalOutputs, fee, requiredFee }
+  }
+  if (estimateOnly && inputs.length > 0) {
+    const requiredFee = feeFor(inputs.length, [...outputScripts, changeScript])
+    return { ...plan, inputs, outputs, fee: requiredFee, requiredFee }
+  }
+  throw new Error('Insufficient funds for Bitcoin amount and network fee')
 }

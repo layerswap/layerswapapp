@@ -36,7 +36,7 @@ const imports = {
     '@/lib/gases/useSWRGas': { default: () => ({}) },
     '@/components/Input/Amount/helpers': { resolveMaxAllowedAmount: () => 0.9 },
     '@/lib/amountPresets': { amountPresetSource: noop, isAmountPreset: () => false },
-    '@layerswap/widget-types': { NetworkType: { EVM: 'evm' } },
+    '@/lib/gases/resolveTransferGas': { resolveTransferGas: () => undefined },
     '../Form/SecondaryComponents/validationError/AdjustAmountButton': {
         AdjustAmountButton: ({ onEditAmount }) => { adjust = onEditAmount; return React.createElement('button', null, 'Adjust amount'); },
     },
@@ -53,7 +53,7 @@ const imports = {
     '@/hooks/useTransferBlocked': { useTransferBlocked: noop },
     '@/hooks/useLifecycleObservation': { useLifecycleObservation: noop },
     '@/stores/swapTransactionStore': { useSwapTransactionStore: selector => selector({}) },
-    '@/helpers/depositActions': { getActionableDepositAction: noop, isTransferAction: () => false },
+    '@/helpers/depositActions': { getActionableDepositAction: noop },
     '@/helpers/gasless': { isGaslessDepositWorkflow: () => undefined },
     '@/hooks/useIsGaslessActive': { useIsGaslessActive: () => false },
     '@/hooks/useSelectedSourceWallet': { useSelectedSourceWallet: () => undefined },

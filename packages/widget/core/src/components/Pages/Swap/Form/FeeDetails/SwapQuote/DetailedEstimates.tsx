@@ -103,9 +103,9 @@ export const GasFee = ({
         selectedSourceAccount?.address,
         sourceAccountNetwork,
         values.fromAsset,
-        values.amount,
+        values.gasAmount ?? values.amount,
         wallet,
-        { enabled },
+        { enabled, transaction: values.gasTransaction },
     );
     const gasTokenPriceInUsd = resolveTokenUsdPrice(gasData?.token, quote);
     const gasFeeInUsd =

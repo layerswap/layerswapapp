@@ -13,7 +13,7 @@ import { resolveMaxAllowedAmount } from '@/components/Input/Amount/helpers';
 import { amountPresetSource, isAmountPreset } from '@/lib/amountPresets';
 import { ceilToDecimals, truncateToDecimals } from '@/components/utils/RoundDecimals';
 import { formatTokenAmount } from '@/components/utils/formatTokenAmount';
-import { NetworkType } from '@layerswap/widget-types';
+import { resolveTransferGas } from '@/lib/gases/resolveTransferGas';
 import type { JSX } from 'react';
 import { FC, useCallback, useMemo, useRef } from 'react';
 import { AdjustAmountButton } from '../Form/SecondaryComponents/validationError/AdjustAmountButton';
@@ -29,7 +29,7 @@ import { lifecycleContextFromSwap } from '@/lib/swapLifecycle';
 import { TransferBlock } from './TransferBlock';
 import { useHasSubmittedTransfer } from '@/hooks/useHasSubmittedTransfer';
 import { type ObservedLifecycleEvent, useLifecycleObservation } from '@/hooks/useLifecycleObservation';
-import { getActionableDepositAction, isTransferAction } from '@/helpers/depositActions';
+import { getActionableDepositAction } from '@/helpers/depositActions';
 import { isGaslessDepositWorkflow } from '@/helpers/gasless';
 import { useIsGaslessActive } from '@/hooks/useIsGaslessActive';
 import { useSelectedSourceWallet } from '@/hooks/useSelectedSourceWallet';
@@ -75,18 +75,9 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
         );
     const walletBalanceAmount = walletBalance?.amount;
     const action = getActionableDepositAction(depositActionsResponse);
-    const transferAction = action && isTransferAction(action)
-        && source_network?.type === NetworkType.EVM
-        && (!action.network || action.network.name === source_network?.name)
-        && (!action.token || action.token.symbol === swapBasicData?.source_token.symbol)
-        && (!action.from_address || action.from_address.toLowerCase() === selectedSourceAccount?.address?.toLowerCase())
-        ? action : undefined;
-    const gasTransaction = transferAction?.to_address && transferAction.amount != null ? {
-        recipientAddress: transferAction.to_address,
-        callData: transferAction.call_data ?? '',
-        amountInBaseUnits: transferAction.amount_in_base_units,
-    } : undefined;
-    const gasEstimationAmount = gasTransaction ? transferAction?.amount : swapBasicData?.requested_amount;
+    const transferGas = resolveTransferGas(action, source_network, swapBasicData?.source_token, selectedSourceAccount?.address);
+    const gasTransaction = transferGas?.transaction;
+    const gasEstimationAmount = transferGas?.amount ?? swapBasicData?.requested_amount;
     const currentPresetSource = amountPresetSource(
         swapBasicData?.source_network.name, swapBasicData?.source_token.symbol,
         selectedSourceAccount?.id, selectedSourceAccount?.address,
@@ -131,7 +122,7 @@ export function useWithdrawBalance(active = true, adjustFormAmount?: (updates: S
             || minAllowedAmount == null || !Number.isFinite(minAllowedAmount)
             || maxAllowedAmount == null || !Number.isFinite(maxAllowedAmount)) return undefined;
         const maxAmount = resolveMaxAllowedAmount({
-            walletBalance, gasAmount: gasData?.maxFee ?? gasData?.gas, gasReserve: gasData?.reserve,
+            walletBalance, gasAmount: gasData?.maxFee ?? gasData?.requiredFee ?? gasData?.gas, gasReserve: gasData?.reserve,
             fromCurrency: swapBasicData.source_token, native_currency: gasData?.token ?? source_network?.token,
             limitsMaxAmount: maxAllowedAmount, depositMethod: 'wallet',
         });
